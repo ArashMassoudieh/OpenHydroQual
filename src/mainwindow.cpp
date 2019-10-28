@@ -12,9 +12,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
         // create our object and add it to the scene
     item = new GItem();
-    item->ImageFileName = "/home/arash/Projects/Aquifolium_GUI/resources/Icons/Darcy.png";
-    item->Name = "myTestBlock";
-    item->size_h = 30;
+    item->Properties.ImageFileName = QString("C:\\Projects\\GIFMod\\src\\resources\\Icons\\Darcy.png");
+    item->Properties.Name = "myTestBlock";
+    item->Properties.size_h = 100;
     scene->addItem(item);
 }
 
