@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "System.h"
+#include <QTreeWidget>
 
 namespace Ui {
 class MainWindow;
@@ -29,6 +30,8 @@ private slots:
     void onaddblock();
     void onaddsource();
     void onaddentity();
+    void preparetreeviewMenu(const QPoint &pos);
+    void onTreeSelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
 };
 

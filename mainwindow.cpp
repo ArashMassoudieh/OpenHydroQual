@@ -23,8 +23,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->actionObject_Browser,SIGNAL(triggered()),this,SLOT(on_check_object_browser()));
     connect(ui->dockWidget_3,SIGNAL(visibilityChanged(bool)),this,SLOT(on_object_browser_closed(bool)));
-
+    ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     BuildObjectsToolBar();
+    connect(ui->treeWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(preparetreeviewMenu(const QPoint&)));
+    connect(ui->treeWidget,SIGNAL(currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)));
+
 }
 
 MainWindow::~MainWindow()
@@ -41,6 +44,7 @@ bool MainWindow::Populate_TreeWidget()
         QTreeWidgetItem *Item = new QTreeWidgetItem(ui->treeWidget);
         QTreeWidgetItem(ui->treeWidget);
         Item->setText(0,treeitems[i]);
+        Item->setData(0,Qt::UserRole,"main");
         ui->treeWidget->addTopLevelItem(Item);
     }
 
@@ -162,6 +166,7 @@ void MainWindow::RefreshTreeView()
         else {
             QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
             QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,Qt::UserRole,"child");
             treechlditem->setText(0,QString::fromStdString(system.block(i)->GetName()));
             treeitem->addChild(treechlditem);
         }
@@ -178,4 +183,50 @@ string MainWindow::CreateNewName(string type)
     }
     return newname;
 
+}
+
+void MainWindow::preparetreeviewMenu(const QPoint &pos)
+{
+    QTreeWidget *tree = ui->treeWidget;
+
+    QTreeWidgetItem *nd = tree->itemAt( pos );
+
+    qDebug()<<nd->data(0,Qt::UserRole);
+
+    qDebug()<<pos<<nd->text(0);
+
+    if (nd->data(0,Qt::UserRole)=="main")
+    {
+        QAction *AddAct = new QAction(QIcon(":/Resource/warning32.ico"), "Add " + nd->text(0), this);
+        AddAct->setStatusTip("Append " + nd->text(0));
+        connect(AddAct, SIGNAL(triggered()), this, SLOT(onAddItem()));
+        QMenu menu(this);
+        menu.addAction(AddAct);
+
+        QPoint pt(pos);
+        menu.exec( tree->mapToGlobal(pos) );
+
+    }
+
+    if (nd->data(0,Qt::UserRole)=="child")
+    {
+        QAction *DeleteAct = new QAction(QIcon(":/Resource/warning32.ico"), "Delete" , this);
+        DeleteAct->setStatusTip("Delete");
+        connect(DeleteAct, SIGNAL(triggered()), this, SLOT(onDeleteItem()));
+        QMenu menu(this);
+        menu.addAction(DeleteAct);
+
+        QPoint pt(pos);
+        menu.exec( tree->mapToGlobal(pos) );
+
+    }
+
+
+
+
+}
+
+void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+{
+    qDebug()<<current->data(0,Qt::UserRole);
 }
