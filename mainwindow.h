@@ -24,6 +24,7 @@ private:
     bool BuildObjectsToolBar();
     void RefreshTreeView();
     string CreateNewName(string type);
+    void PopulatePropertyTable(QuanSet* quanset);
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);
@@ -31,7 +32,7 @@ private slots:
     void onaddsource();
     void onaddentity();
     void preparetreeviewMenu(const QPoint &pos);
-    void onTreeSelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    void onTreeSelectionChanged(QTreeWidgetItem *current);
 
 };
 

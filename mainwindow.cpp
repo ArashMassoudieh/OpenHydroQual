@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     BuildObjectsToolBar();
     connect(ui->treeWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(preparetreeviewMenu(const QPoint&)));
-    connect(ui->treeWidget,SIGNAL(currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)));
+    connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
 
 }
 
@@ -226,7 +226,22 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
 
 }
 
-void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
 {
     qDebug()<<current->data(0,Qt::UserRole);
+    current->text(0);
+    PopulatePropertyTable(system.object(current->text(0).toStdString())->GetVars());
+}
+
+void MainWindow::PopulatePropertyTable(QuanSet* quanset)
+{
+    ui->tableWidget->clear();
+    ui->tableWidget->setColumnCount(2);
+    ui->tableWidget->setRowCount(quanset->size());
+    int j=0;
+    for (map<string,Quan>::iterator i = quanset->begin(); i!=quanset->end(); i++)
+    {
+        ui->tableWidget->setItem(j, 0, new QTableWidgetItem(QString::fromStdString(i->second.Description())));
+        j++;
+    }
 }
