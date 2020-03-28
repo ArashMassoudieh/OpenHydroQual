@@ -235,13 +235,13 @@ void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
 
 void MainWindow::PopulatePropertyTable(QuanSet* quanset)
 {
-    ui->tableWidget->clear();
-    ui->tableWidget->setColumnCount(2);
-    ui->tableWidget->setRowCount(quanset->size());
-    int j=0;
-    for (map<string,Quan>::iterator i = quanset->begin(); i!=quanset->end(); i++)
-    {
-        ui->tableWidget->setItem(j, 0, new QTableWidgetItem(QString::fromStdString(i->second.Description())));
-        j++;
-    }
+    //ui->tableView->clear();
+    //ui->tableView->setColumnCount(2);
+    //ui->tableWidget->setRowCount(quanset->size());
+    //int j=0;
+    //for (map<string,Quan>::iterator i = quanset->begin(); i!=quanset->end(); i++)
+   // {
+     //   ui->tableWidget->setItem(j, 0, new QTableWidgetItem(QString::fromStdString(i->second.Description())));
+     //   j++;
+    //}
 }

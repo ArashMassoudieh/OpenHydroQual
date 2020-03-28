@@ -59,7 +59,8 @@ SOURCES += \
     ../Aquifolium/src/Parameter.cpp \
     ../Aquifolium/src/ErrorHandler.cpp \
     ../Aquifolium/src/Link.cpp \
-    ../Aquifolium/src/GA/DistributionNUnif.cpp
+    ../Aquifolium/src/GA/DistributionNUnif.cpp \
+    propmodel.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -92,7 +93,8 @@ HEADERS += \
     ../jsoncpp/include/json/version.h \
     ../jsoncpp/include/json/writer.h \
     ../jsoncpp/src/lib_json/json_tool.h \
-    ../jsoncpp/src/lib_json/version.h.in
+    ../jsoncpp/src/lib_json/version.h.in \
+    propmodel.h
 
 FORMS += \
         mainwindow.ui
