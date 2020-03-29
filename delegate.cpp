@@ -35,8 +35,8 @@ QWidget *Delegate::createEditor(QWidget *parent,
     if (delegateType.contains("UnitBox"))
     {
         QTextEdit *editor = new QTextEdit(parent);
-        //QStringList QL = index.data(UnitsListRole).toStringList();
-        //editor->setUnitsList(index.data(UnitsListRole).toStringList());
+        QString text = index.data(Qt::DisplayRole).toString();
+        editor->setText(text);
         return editor;
     }
     if (delegateType.contains("MultiComboBox"))
@@ -129,7 +129,13 @@ void Delegate::setEditorData(QWidget *editor,
         return;
     }
 
-
+    if (delegateType.contains("String"))
+    {
+        QTextEdit *textBox = static_cast<QTextEdit*>(editor);
+        textBox->setText(index.model()->data(index, Qt::EditRole).toString());
+        textBox->show();
+        return;
+    }
     if (delegateType.contains("UnitBox"))
     {
         QTextEdit *textBox = static_cast<QTextEdit*>(editor);

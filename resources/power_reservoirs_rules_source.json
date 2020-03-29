@@ -8,7 +8,8 @@
     },
     "Name": {
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String" 
     },
     "Storage": {
       "type": "balance",
@@ -62,7 +63,8 @@
     },
     "Name": {
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String"
     },
     "coefficient": {
       "type": "expression",
@@ -85,7 +87,8 @@
     },
     "Name": {
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String"
     },
     "Storage": {
       "type": "balance",
@@ -94,26 +97,30 @@
       "inflow": "inflow",
       "includeinoutput": "true",
       "description": "Initial Storage",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     },
     "reservoir_power": {
       "type": "value",
       "default": "2",
       "description": "Reservoir rating curve power",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     },
     "reservoir_coeff": {
       "type": "value",
       "default": "10",
       "description": "Reservoir rating curve coefficient",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     },
     "inflow": {
       "type": "timeseries",
       "includeinoutput": "true",
       "applylimit": "true",
       "description": "Flow rate time series",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "Browser" 
     }
   },
   "Special_Reservoir": {
@@ -124,7 +131,8 @@
     },
     "Name": {
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String" 
     },
     "Storage": {
       "type": "balance",
@@ -133,26 +141,30 @@
       "inflow": "inflow",
       "includeinoutput": "true",
       "description": "Initial Storage",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     },
     "reservoir_power": {
       "type": "value",
       "default": "2",
       "description": "Reservoir rating curve power",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     },
     "reservoir_coeff": {
       "type": "value",
       "default": "10",
       "description": "Reservoir rating curve coefficient",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     },
     "inflow": {
       "type": "timeseries",
       "includeinoutput": "true",
       "applylimit": "true",
       "description": "Flow rate time series",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "Browser" 
     }
   },
   "Reservoir_link": {
@@ -163,14 +175,16 @@
     },
     "Name": {
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String" 
     },
     "flow": {
       "type": "expression",
       "expression": "reservoir_coeff.s*Storage.s^reservoir_power.s",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "Browser" 
     }
   },
   "Catchment_link": {
@@ -181,14 +195,16 @@
     },
     "Name": {
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String" 
     },
     "flow": {
       "type": "expression",
       "expression": "(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(Storage.s/Area.s^(1.666667))*86400",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "delegate": "TimeSeries" 
     }
   },
   "Reservoir_link_rule": {
@@ -199,7 +215,8 @@
     },
     "Name": {
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String" 
     },
     "flow": {
       "type": "rule",
@@ -245,7 +262,8 @@
     },
     "Name": {
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String" 
     },
     "Storage": {
       "type": "balance",
@@ -253,7 +271,8 @@
       "flow": "flow",
       "includeinoutput": "true",
       "description": "Initial Storage",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     }
   },
   "User_flow": {
@@ -271,7 +290,8 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "description": "Flow rate time series",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "Browser" 
     }
   },
   "Parameter": {
@@ -282,19 +302,22 @@
     },
     "Name": {
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String" 
     },
     "low": {
       "type": "value",
       "includeinoutput": "true",
       "description": "Lower Limit",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     },
     "high": {
       "type": "value",
       "includeinoutput": "true",
       "description": "Upper Limit",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     }
   },
   "Objective_Function": {
@@ -305,7 +328,8 @@
     },
     "Name": {
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String" 
     },
     "object": {
       "type": "string",
