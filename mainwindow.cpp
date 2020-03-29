@@ -2,6 +2,9 @@
 #include "ui_mainwindow.h"
 #include <string>
 #include <QDebug>
+#include "enums.h"
+#include "propmodel.h"
+#include "delegate.h"
 
 using namespace std;
 
@@ -27,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     BuildObjectsToolBar();
     connect(ui->treeWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(preparetreeviewMenu(const QPoint&)));
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
-
+    ui->tableView->setItemDelegateForRow(1,new Delegate(this));
 }
 
 MainWindow::~MainWindow()
@@ -124,8 +127,10 @@ void MainWindow::onaddblock()
     Block block;
     block.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
     block.SetType(obj->objectName().toStdString());
-    block.SetName(CreateNewName(obj->objectName().toStdString()));
+    string name = CreateNewName(obj->objectName().toStdString());
+    block.SetName(name);
     system.AddBlock(block);
+    system.object(name)->SetName(name);
     RefreshTreeView();
     //Node* item = new Node(diagramview,obj->objectName(),obj->objectName() + QString::number(counts[obj->objectName()]),int(diagramview->scene()->width()/2), int(diagramview->scene()->height()/2));
 
@@ -220,28 +225,20 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         menu.exec( tree->mapToGlobal(pos) );
 
     }
-
-
-
-
 }
 
 void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
 {
     qDebug()<<current->data(0,Qt::UserRole);
     current->text(0);
-    PopulatePropertyTable(system.object(current->text(0).toStdString())->GetVars());
+    if (current->data(0,Qt::UserRole)=="child")
+        PopulatePropertyTable(system.object(current->text(0).toStdString())->GetVars());
 }
 
 void MainWindow::PopulatePropertyTable(QuanSet* quanset)
 {
-    //ui->tableView->clear();
-    //ui->tableView->setColumnCount(2);
-    //ui->tableWidget->setRowCount(quanset->size());
-    //int j=0;
-    //for (map<string,Quan>::iterator i = quanset->begin(); i!=quanset->end(); i++)
-   // {
-     //   ui->tableWidget->setItem(j, 0, new QTableWidgetItem(QString::fromStdString(i->second.Description())));
-     //   j++;
-    //}
+    if (propmodel != nullptr)
+        delete  propmodel;
+    propmodel = new PropModel(quanset,this);
+    ui->tableView->setModel(propmodel);
 }

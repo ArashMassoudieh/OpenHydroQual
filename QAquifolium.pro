@@ -60,7 +60,9 @@ SOURCES += \
     ../Aquifolium/src/ErrorHandler.cpp \
     ../Aquifolium/src/Link.cpp \
     ../Aquifolium/src/GA/DistributionNUnif.cpp \
-    propmodel.cpp
+    propmodel.cpp \
+    delegate.cpp \
+    utilityfuncs.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -94,7 +96,10 @@ HEADERS += \
     ../jsoncpp/include/json/writer.h \
     ../jsoncpp/src/lib_json/json_tool.h \
     ../jsoncpp/src/lib_json/version.h.in \
-    propmodel.h
+    enums.h \
+    propmodel.h \
+    delegate.h \
+    utilityfuncs.h
 
 FORMS += \
         mainwindow.ui

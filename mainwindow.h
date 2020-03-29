@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "System.h"
 #include <QTreeWidget>
+#include "propmodel.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,6 +26,7 @@ private:
     void RefreshTreeView();
     string CreateNewName(string type);
     void PopulatePropertyTable(QuanSet* quanset);
+    PropModel *propmodel = nullptr;
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);
