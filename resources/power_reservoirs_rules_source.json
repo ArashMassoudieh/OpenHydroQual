@@ -325,7 +325,7 @@
     "type": "objective_function",
     "typecategory": "Objective Functions",
     "icon": {
-      "filename": "parameter.png"
+      "filename": "objective.png"
     },
     "Name": {
       "type": "string",
