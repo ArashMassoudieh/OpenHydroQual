@@ -32,6 +32,7 @@ private slots:
     void on_object_browser_closed(bool visible);
     void onaddblock();
     void onaddsource();
+    void onaddparameter();
     void onaddentity();
     void preparetreeviewMenu(const QPoint &pos);
     void onTreeSelectionChanged(QTreeWidgetItem *current);

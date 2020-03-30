@@ -59,7 +59,7 @@
     "type": "source",
     "typecategory": "Sources",
     "icon": {
-      "filename": "cloud.png"
+      "filename": "cloud.jpg"
     },
     "Name": {
       "type": "string",
@@ -69,7 +69,8 @@
     "coefficient": {
       "type": "expression",
       "expression": "Area",
-      "ask_user": "false"
+      "ask_user": "false",
+      "delegate": "UnitBox"
     },
     "timeseries": {
       "type": "timeseries_prec",

@@ -112,7 +112,12 @@ bool MainWindow::BuildObjectsToolBar()
                 action->setIcon(icon);
                 ui->mainToolBar->addAction(action);
                 action->setText(QString::fromStdString(type));
-                connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
+                if (typecategory=="Sources")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddsource()));
+                else if (typecategory == "Parameters")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddparameter()));
+                else
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
             }
         ui->mainToolBar->addSeparator();
     }
@@ -142,11 +147,29 @@ void MainWindow::onaddsource()
     QObject* obj = sender();
     Source source;
     source.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
+    source.SetType(obj->objectName().toStdString());
+    string name = CreateNewName(obj->objectName().toStdString());
+    source.SetName(name);
     system.AddSource(source);
     qDebug() << "source added! " << obj->objectName();
-    //Entity* item = new Entity(obj->objectName(), obj->objectName() + QString::number(counts[obj->objectName()]), diagramview,"Sources");
-
+    system.object(name)->SetName(name);
+    RefreshTreeView();
 }
+
+void MainWindow::onaddparameter()
+{
+    QObject* obj = sender();
+    Parameter parameter;
+    parameter.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
+    parameter.SetType(obj->objectName().toStdString());
+    string name = CreateNewName(obj->objectName().toStdString());
+    parameter.SetName(name);
+    system.Parameters().Append(name,parameter);
+    qDebug() << "parameter added! " << obj->objectName();
+    //system.object(name)->SetName(name);
+    RefreshTreeView();
+}
+
 
 void MainWindow::onaddentity()
 {
@@ -173,6 +196,40 @@ void MainWindow::RefreshTreeView()
             QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
             treechlditem->setData(0,Qt::UserRole,"child");
             treechlditem->setText(0,QString::fromStdString(system.block(i)->GetName()));
+            treeitem->addChild(treechlditem);
+        }
+    }
+
+    for (int i=0; i<system.SourcesCount(); i++)
+    {
+        QString TypeCategory = QString::fromStdString(system.source(i)->TypeCategory());
+        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.source(i)->TypeCategory()),Qt::MatchExactly);
+        if (MatchedItems.size()==0)
+            qDebug() << "No category called '" + TypeCategory + "' was found!";
+        else if (MatchedItems.size()>1)
+            qDebug() << "More than one category called '" + TypeCategory + "' was found!";
+        else {
+            QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
+            QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setText(0,QString::fromStdString(system.source(i)->GetName()));
+            treeitem->addChild(treechlditem);
+        }
+    }
+
+    for (int i=0; i<system.ParametersCount(); i++)
+    {
+        QString TypeCategory = QString::fromStdString(system.Parameters()[i]->TypeCategory());
+        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.Parameters()[i]->TypeCategory()),Qt::MatchExactly);
+        if (MatchedItems.size()==0)
+            qDebug() << "No category called '" + TypeCategory + "' was found!";
+        else if (MatchedItems.size()>1)
+            qDebug() << "More than one category called '" + TypeCategory + "' was found!";
+        else {
+            QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
+            QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setText(0,QString::fromStdString(system.Parameters()[i]->GetName()));
             treeitem->addChild(treechlditem);
         }
     }
