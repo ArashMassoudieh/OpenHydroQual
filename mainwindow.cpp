@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     BuildObjectsToolBar();
     connect(ui->treeWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(preparetreeviewMenu(const QPoint&)));
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
-    ui->tableView->setItemDelegateForRow(1,new Delegate(this));
+    ui->tableView->setItemDelegateForColumn(1,new Delegate(this));
 }
 
 MainWindow::~MainWindow()

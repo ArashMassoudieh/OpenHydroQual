@@ -22,7 +22,7 @@ QWidget *Delegate::createEditor(QWidget *parent,
     QString delegateType = index.data(CustomRoleCodes::Role::TypeRole).toString();
     if (delegateType.toLower().contains("date"))
     {
-        QCalendarWidget *editor = new QCalendarWidget(nullptr);
+        QDateEdit *editor = new QDateEdit(nullptr);
         //(option.rect.left());
         return editor;
     }
@@ -32,9 +32,17 @@ QWidget *Delegate::createEditor(QWidget *parent,
         editor->setText(index.data().toString());
         return editor;
     }
+    if (delegateType.contains("String"))
+    {
+        QLineEdit *editor = new QLineEdit(parent);
+        QString text = index.data(Qt::DisplayRole).toString();
+        editor->setText(text);
+        return editor;
+    }
+
     if (delegateType.contains("UnitBox"))
     {
-        QTextEdit *editor = new QTextEdit(parent);
+        QLineEdit *editor = new QLineEdit(parent);
         QString text = index.data(Qt::DisplayRole).toString();
         editor->setText(text);
         return editor;
@@ -119,7 +127,7 @@ void Delegate::setEditorData(QWidget *editor,
     QString delegateType = index.data(CustomRoleCodes::Role::TypeRole).toString();
     if (delegateType.toLower().contains("date"))
     {
-        qint64 selectedDate = index.model()->data(index, Qt::EditRole).toDouble();
+        qint64 selectedDate = index.model()->data(index, Qt::DisplayRole).toDouble();
         qint64 julianDate = xldate2julian(selectedDate);// currentDate += 2415020;// QDate(1900, 1, 1).toJulianDay();
         QDate date = QDate::fromJulianDay(julianDate);
 
@@ -131,22 +139,22 @@ void Delegate::setEditorData(QWidget *editor,
 
     if (delegateType.contains("String"))
     {
-        QTextEdit *textBox = static_cast<QTextEdit*>(editor);
-        textBox->setText(index.model()->data(index, Qt::EditRole).toString());
+        QLineEdit *textBox = static_cast<QLineEdit*>(editor);
+        textBox->setText(index.model()->data(index, Qt::DisplayRole).toString());
         textBox->show();
         return;
     }
     if (delegateType.contains("UnitBox"))
     {
-        QTextEdit *textBox = static_cast<QTextEdit*>(editor);
-        textBox->setText(index.model()->data(index, Qt::EditRole).toString());
+        QLineEdit *textBox = static_cast<QLineEdit*>(editor);
+        textBox->setText(index.model()->data(index, Qt::DisplayRole).toString());
         textBox->show();
         return;
     }
     if (delegateType.contains("MultiComboBox"))
     {
         QListWidget *list = static_cast<QListWidget*>(editor);
-        QStringList selectedList = index.model()->data(index, Qt::EditRole).toString().split(':');
+        QStringList selectedList = index.model()->data(index, Qt::DisplayRole).toString().split(':');
         for (int i = 0; i < list->count(); i++)
         {
             if (selectedList.contains(list->item(i)->text()))
@@ -160,7 +168,7 @@ void Delegate::setEditorData(QWidget *editor,
     if (delegateType.contains("ComboBox"))
     {
         QComboBox *comboBox = static_cast<QComboBox*>(editor);
-        comboBox->setCurrentText(index.model()->data(index, Qt::EditRole).toString());
+        comboBox->setCurrentText(index.model()->data(index, Qt::DisplayRole).toString());
         return;
     }
     if (delegateType.contains("CheckBox"))
@@ -226,8 +234,8 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
 
     if (delegateType.contains("UnitBox"))
     {
-        QTextEdit *textBox = static_cast<QTextEdit*>(editor);
-        model->setData(index, textBox->toPlainText());
+        QLineEdit *textBox = static_cast<QLineEdit*>(editor);
+        model->setData(index, textBox->text());
     //	delete editor;
         return;
     }
@@ -292,7 +300,7 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     {
         return;
     }
-    if (delegateType.toLower().contains("text"))
+    if (delegateType.toLower().contains("String"))
     {
         QLineEdit *textBox = static_cast<QLineEdit*>(editor);
 
