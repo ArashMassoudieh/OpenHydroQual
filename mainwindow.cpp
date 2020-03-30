@@ -231,14 +231,24 @@ void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
 {
     qDebug()<<current->data(0,Qt::UserRole);
     current->text(0);
+
     if (current->data(0,Qt::UserRole)=="child")
+    {   if (system.object(current->text(0).toStdString())==nullptr)
+        {
+            RefreshTreeView();
+            return;
+        }
         PopulatePropertyTable(system.object(current->text(0).toStdString())->GetVars());
+    }
 }
 
 void MainWindow::PopulatePropertyTable(QuanSet* quanset)
 {
     if (propmodel != nullptr)
         delete  propmodel;
-    propmodel = new PropModel(quanset,this);
+    if (quanset!=nullptr)
+        propmodel = new PropModel(quanset,this);
+    else
+        propmodel = nullptr;
     ui->tableView->setModel(propmodel);
 }
