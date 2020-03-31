@@ -99,7 +99,9 @@ HEADERS += \
     enums.h \
     propmodel.h \
     delegate.h \
-    utilityfuncs.h
+    utilityfuncs.h \
+    ../Aquifolium/include/Parameter.h \
+    ../Aquifolium/include/Parameter_Set.h
 
 FORMS += \
         mainwindow.ui
