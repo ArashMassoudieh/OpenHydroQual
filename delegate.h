@@ -3,15 +3,16 @@
 #include <qstyleditemdelegate.h>
 #include <qfiledialog.h>
 
+class MainWindow;
+
 class Delegate : public QStyledItemDelegate
 {
     Q_OBJECT
 
 public:
 
-    Delegate(QObject *parent) : QStyledItemDelegate(parent) {
-
-    }
+    MainWindow *mainwindow;
+    Delegate(QObject *parent, MainWindow *mainwindow);
 
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
                           const QModelIndex &index) const Q_DECL_OVERRIDE;
@@ -28,14 +29,15 @@ public:
 
 
 public slots:
-//    void browserClicked();
-//    void dirBrowserClicked();
-//    void browserCheck(QString);// const;
+    void browserClicked();
+    void dirBrowserClicked();
+    //void browserCheck(QString);// const;
 
 private:
     QString browserFileName;
     QModelIndex *tempIndex;
     QFileDialog *fileDialog;
     QStyleOptionViewItem option;
+    QString selected_fileName;
 };
 #endif // DELEGATE_H

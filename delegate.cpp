@@ -9,7 +9,13 @@
 #include "utilityfuncs.h"
 #include "QDateEdit"
 #include "QLineEdit"
+#include "mainwindow.h"
+#include "QMessageBox"
 
+Delegate::Delegate(QObject *parent, MainWindow *_mainwindow) : QStyledItemDelegate(parent)
+{
+    mainwindow = _mainwindow;
+}
 
 QWidget *Delegate::createEditor(QWidget *parent,
     const QStyleOptionViewItem &option,
@@ -287,6 +293,8 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     }
     if (delegateType.contains("PushButton"))
     {
+        QPushButton *comboBox = static_cast<QPushButton*>(editor);
+        model->setData(index, comboBox->text(), Qt::EditRole);
         return;
     }
     if (delegateType.contains("Memo"))
@@ -365,4 +373,24 @@ void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
     }
     else
         QStyledItemDelegate::paint(painter, option, index);
+}
+
+
+void Delegate::browserClicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(mainwindow,
+            tr("Open"), "",
+            tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"));
+    if (fileName!="")
+    {
+        if (QFile(fileName).exists())
+            selected_fileName = fileName;
+        else {
+            QMessageBox::information(mainwindow, "File not found!", "File " + fileName + " was not found!", QMessageBox::Ok, QMessageBox::StandardButton::Ok);
+        }
+    }
+}
+void Delegate::dirBrowserClicked()
+{
+
 }
