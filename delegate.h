@@ -39,5 +39,6 @@ private:
     QFileDialog *fileDialog;
     QStyleOptionViewItem option;
     QString selected_fileName;
+    QModelIndex selectedindex;
 };
 #endif // DELEGATE_H

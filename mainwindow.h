@@ -17,7 +17,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
+    PropModel *propModel() {return propmodel;}
 private:
     Ui::MainWindow *ui;
     System system;

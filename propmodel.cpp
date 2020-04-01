@@ -25,8 +25,15 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
     int row = index.row();
     int col = index.column();
    // generate a log message when this method gets called
-   qDebug() << QString("row %1, col%2, role %3")
-           .arg(row).arg(col).arg(role);
+   //qDebug() << QString("row %1, col%2, role %3")
+   //        .arg(row).arg(col).arg(role);
+
+    if (role == CustomRoleCodes::Role::saveIndex)
+    {
+        save(index);
+        return "index Saved";
+    }
+
 
    switch (role) {
    case Qt::DisplayRole:
@@ -74,13 +81,25 @@ QVariant PropModel::headerData(int section, Qt::Orientation orientation, int rol
 
 bool PropModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
-     if (role == Qt::EditRole)
-     {
-         QString result = value.toString();
-         quanset->GetVar(index.row())->SetProperty(result.toStdString());
-         emit editCompleted(result);
-     }
-     return true;
+    if (index.row() >= rows()) return false;
+    int row = index.row();
+    int col = index.column();
+
+    QString VariableName;
+    if (role == CustomRoleCodes::Role::loadIndex) {
+        QModelIndex idx = load();
+        role = Qt::EditRole;
+        VariableName = idx.sibling(idx.row(), 0).data().toString();
+    }
+    else
+        VariableName = index.sibling(row, 0).data().toString();
+
+    bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString());
+
+    QString result = value.toString();
+
+    emit editCompleted(result);
+    return true;
 }
 
 Qt::ItemFlags PropModel::flags(const QModelIndex & /*index*/) const

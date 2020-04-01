@@ -17,7 +17,27 @@ public:
     bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex & index) const override;
 private:
+    int rows(const QModelIndex & index = QModelIndex()) const{
 
+        return quanset->QuanNames().size();
+    }
+    void save(const QModelIndex index) const{
+        loadSave(index, "s");
+    }
+    QModelIndex load() const{
+        return loadSave(QModelIndex(), "l");
+    }
+
+    QModelIndex loadSave(QModelIndex index, QString ls) const
+    {
+        static QModelIndex r;
+        if (ls == "s") {
+            r = index;
+            return QModelIndex();
+        }
+        if (ls == "l")return r;
+        return QModelIndex();
+    }
 signals:
      void editCompleted(const QString &);
 };

@@ -129,6 +129,7 @@ void Delegate::setEditorData(QWidget *editor,
     const QModelIndex &index) const
 {
     //parent->startEditingDelegate(index.data(VariableNameRole).toString());
+
     if (index.column() == 0) QStyledItemDelegate::setEditorData(editor, index);
     QString delegateType = index.data(CustomRoleCodes::Role::TypeRole).toString();
     if (delegateType.toLower().contains("date"))
@@ -187,7 +188,7 @@ void Delegate::setEditorData(QWidget *editor,
     {
         QPushButton *pushButton = static_cast<QPushButton*>(editor);
         pushButton->setText(index.data().toString());
-        //index.model()->data(index, saveIndex);
+        index.model()->data(index, CustomRoleCodes::Role::saveIndex);
         QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(dirBrowserClicked()));
         return;
     }
@@ -195,7 +196,7 @@ void Delegate::setEditorData(QWidget *editor,
     {
         QPushButton *pushButton = static_cast<QPushButton*>(editor);
         pushButton->setText(index.data().toString());
-        //index.model()->data(index, saveIndex);
+        index.model()->data(index, CustomRoleCodes::Role::saveIndex);
         QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(browserClicked()));
         return;
     }
@@ -389,6 +390,8 @@ void Delegate::browserClicked()
             QMessageBox::information(mainwindow, "File not found!", "File " + fileName + " was not found!", QMessageBox::Ok, QMessageBox::StandardButton::Ok);
         }
     }
+
+    mainwindow->propModel()->setData(selectedindex, fileName, CustomRoleCodes::Role::loadIndex);
 }
 void Delegate::dirBrowserClicked()
 {
