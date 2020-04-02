@@ -2,14 +2,16 @@
 #define PROPMODEL_H
 #include <QAbstractTableModel>
 #include <QuanSet.h>
+class MainWindow;
 
 class PropModel: public QAbstractTableModel
 {
 private:
     Q_OBJECT
     QuanSet *quanset;
+    MainWindow *mainwindow;
 public:
-    PropModel(QuanSet*, QObject *parent = nullptr);
+    PropModel(QuanSet*, QObject *parent = nullptr, MainWindow *_mainwindow = nullptr);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;

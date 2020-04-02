@@ -304,7 +304,7 @@ void MainWindow::PopulatePropertyTable(QuanSet* quanset)
     if (propmodel != nullptr)
         delete  propmodel;
     if (quanset!=nullptr)
-        propmodel = new PropModel(quanset,this);
+        propmodel = new PropModel(quanset,this,this);
     else
         propmodel = nullptr;
     ui->tableView->setModel(propmodel);

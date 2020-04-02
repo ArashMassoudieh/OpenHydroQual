@@ -3,11 +3,14 @@
 #include <QFont>
 #include <QBrush>
 #include "enums.h"
+#include "qmessagebox.h"
+#include "mainwindow.h"
 
-PropModel::PropModel(QuanSet* _quanset, QObject *parent)
+PropModel::PropModel(QuanSet* _quanset, QObject *parent, MainWindow *_mainwindow)
     : QAbstractTableModel(parent)
 {
     quanset = _quanset;
+    mainwindow = _mainwindow;
 }
 
 int PropModel::rowCount(const QModelIndex &i) const
@@ -95,6 +98,12 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
         VariableName = index.sibling(row, 0).data().toString();
 
     bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString());
+
+    if (!r && (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries || quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries))
+    {
+        QMessageBox::question(mainwindow, "File does not have the right format!", "File does not have the right format!", QMessageBox::Ok);
+
+    }
 
     QString result = value.toString();
 

@@ -65,6 +65,7 @@ SOURCES += \
     utilityfuncs.cpp
 
 HEADERS += \
+    ../Aquifolium/include/Precipitation.h \
         mainwindow.h \
     ../Aquifolium/include/Block.h \
     ../Aquifolium/include/BTC.h \
