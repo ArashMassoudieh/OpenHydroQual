@@ -267,6 +267,15 @@ QString string2QString_qt(string s)
 {
     return QString::fromStdString(s);
 }
+
+QStringList toQSringList(const vector<string> &s)
+{
+    QStringList out;
+    for (int i=0; i<s.size(); i++)
+        out<<QString::fromStdString(s[i]);
+    return out;
+
+}
 #else
 string string2QString_nqt(string s)
 {

@@ -18,6 +18,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     PropModel *propModel() {return propmodel;}
+    System *GetSystem() {return &system;}
 private:
     Ui::MainWindow *ui;
     System system;

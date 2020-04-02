@@ -5,6 +5,7 @@
 #include "enums.h"
 #include "qmessagebox.h"
 #include "mainwindow.h"
+#include "utilityfuncs.h"
 
 PropModel::PropModel(QuanSet* _quanset, QObject *parent, MainWindow *_mainwindow)
     : QAbstractTableModel(parent)
@@ -52,7 +53,7 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
        break;
    case Qt::BackgroundRole:
        if (col == 0)
-           return QBrush(Qt::red);
+           return QBrush(Qt::lightGray);
        break;
    case Qt::CheckStateRole:
        //if (row == 1 && col == 0) //add a checkbox to cell(1,0)
@@ -61,6 +62,12 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
    case CustomRoleCodes::TypeRole:
        return QString::fromStdString(quanset->GetVar(index.row())->Delegate());
        break;
+   case CustomRoleCodes::Role::DefaultValuesListRole:
+       if (QString::fromStdString(quanset->GetVar(index.row())->Delegate()).contains("Sources"))
+       {
+
+           return toQSringList(mainwindow->GetSystem()->GetAllSourceNames());
+       }
    }
    return QVariant();
 }
