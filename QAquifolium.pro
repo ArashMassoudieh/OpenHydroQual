@@ -28,6 +28,8 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_version Aquifolium DEBUG
 CONFIG += c++14
 
 SOURCES += \
+    diagramview.cpp \
+    edge.cpp \
         main.cpp \
         mainwindow.cpp \
     ../Aquifolium/src/Block.cpp \
@@ -60,12 +62,15 @@ SOURCES += \
     ../Aquifolium/src/ErrorHandler.cpp \
     ../Aquifolium/src/Link.cpp \
     ../Aquifolium/src/GA/DistributionNUnif.cpp \
+    node.cpp \
     propmodel.cpp \
     delegate.cpp \
     utilityfuncs.cpp
 
 HEADERS += \
     ../Aquifolium/include/Precipitation.h \
+    diagramview.h \
+    edge.h \
         mainwindow.h \
     ../Aquifolium/include/Block.h \
     ../Aquifolium/include/BTC.h \
@@ -98,6 +103,7 @@ HEADERS += \
     ../jsoncpp/src/lib_json/json_tool.h \
     ../jsoncpp/src/lib_json/version.h.in \
     enums.h \
+    node.h \
     propmodel.h \
     delegate.h \
     utilityfuncs.h \

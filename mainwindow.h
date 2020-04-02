@@ -5,6 +5,7 @@
 #include "System.h"
 #include <QTreeWidget>
 #include "propmodel.h"
+#include "diagramview.h"
 
 namespace Ui {
 class MainWindow;
@@ -22,6 +23,7 @@ public:
 private:
     Ui::MainWindow *ui;
     System system;
+    DiagramView* dView;
     bool Populate_TreeWidget();
     bool BuildObjectsToolBar();
     void RefreshTreeView();

@@ -6,6 +6,7 @@
 #include "propmodel.h"
 #include "delegate.h"
 
+
 using namespace std;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -13,6 +14,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    dView = new DiagramView(ui->centralWidget,this);
+    dView->setObjectName(QStringLiteral("graphicsView"));
+    ui->horizontalLayout->addWidget(dView);
 #ifndef Win_Version
     string modelfilename = qApp->applicationDirPath().toStdString() + "/../../resources/power_reservoirs_rules_source.json";
     string entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/entities.json";
