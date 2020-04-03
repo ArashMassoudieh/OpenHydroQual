@@ -5,7 +5,7 @@
 #include "enums.h"
 #include "propmodel.h"
 #include "delegate.h"
-
+#include "node.h"
 
 using namespace std;
 
@@ -140,6 +140,7 @@ void MainWindow::onaddblock()
     block.SetName(name);
     system.AddBlock(block);
     system.object(name)->SetName(name);
+    Node *node = new Node(dView,system);
     RefreshTreeView();
     //Node* item = new Node(diagramview,obj->objectName(),obj->objectName() + QString::number(counts[obj->objectName()]),int(diagramview->scene()->width()/2), int(diagramview->scene()->height()/2));
 

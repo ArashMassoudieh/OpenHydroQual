@@ -13,12 +13,12 @@ class DiagramView : public QGraphicsView
     Q_OBJECT
 public:
     explicit DiagramView(QWidget* parent, MainWindow *_mainwindow);
-
+    QGraphicsScene *MainGraphicsScene;
 private:
     MainWindow *mainwindow;
     QList<Node*> nodes;
     QList<Edge*> edges;
-    QGraphicsScene *MainGraphicsScene;
+
 signals:
 
 };

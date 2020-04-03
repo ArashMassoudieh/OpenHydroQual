@@ -1,5 +1,6 @@
 #ifndef ENUMS_H
 #define ENUMS_H
+#include "qcolor.h"
 
 namespace CustomRoleCodes {
     enum Role {
@@ -33,6 +34,11 @@ namespace CustomRoleCodes {
         allowableWordsRole =				3201,
 
     };
+};
+
+struct objectColor
+{
+    QColor color1, color2, defaultColor;
 };
 
 
