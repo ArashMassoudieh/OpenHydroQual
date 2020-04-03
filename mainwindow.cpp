@@ -140,7 +140,8 @@ void MainWindow::onaddblock()
     block.SetName(name);
     system.AddBlock(block);
     system.object(name)->SetName(name);
-    Node *node = new Node(dView,system);
+    Node *node = new Node(dView,&system);
+    node->SetObject(system.object(name));
     RefreshTreeView();
     //Node* item = new Node(diagramview,obj->objectName(),obj->objectName() + QString::number(counts[obj->objectName()]),int(diagramview->scene()->width()/2), int(diagramview->scene()->height()/2));
 
