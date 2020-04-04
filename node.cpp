@@ -1,8 +1,9 @@
 #include "node.h"
 #include "diagramview.h"
 #include "System.h"
-
-
+#include "mainwindow.h"
+#include "qapplication.h"
+#include <qdebug.h>
 
 Node::Node(DiagramView *_parent, System *_system)
 {
@@ -19,6 +20,8 @@ Node::Node(DiagramView *_parent, System *_system)
     itemType = Object_Types::BlockType;
     //setX(x);
     //setY(y);
+    setX(1000-width/2);
+    setY(1000-height/2);
 
     //width = max(minW, _width);
     //height = max(minH, _height);
@@ -43,15 +46,14 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     painter->setPen(Qt::NoPen);
     painter->setOpacity(0.7);
     QColor Color1, Color2;
-    setX(1000);
-    setY(1000);
-    painter->setBrush(Qt::darkGray);
+    painter->setBrush(Qt::white);
     QRadialGradient radialGrad(QPointF(width / 2, height / 2), min(width, height));
     radialGrad.setColorAt(0, QColor(Qt::lightGray).light(300));
     radialGrad.setColorAt(1, QColor(Qt::lightGray).light(120));
-    QPixmap pixmap(iconfilename);
+    qDebug() << QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object->GetType())->IconFileName());
+    QPixmap pixmap(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object->GetType())->IconFileName()));
     QRectF rect = QRectF(boundingRect().left()*0 + 0.05*boundingRect().width(), boundingRect().top()*0+0.05*boundingRect().width(), boundingRect().width()*0.9, boundingRect().height()*0.9);
-    QRectF source(0.0, 0.0, 512, 512);
+    QRectF source(0, 0, pixmap.size().width(), pixmap.size().height());
     painter->drawPixmap(rect, pixmap, source);
 
     if (isSelected())
@@ -61,8 +63,9 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     }
 
 
-    painter->setPen(QPen(Qt::black, (bold) ? 2 : 0));
+    painter->setPen(QPen(Qt::white, (bold) ? 2 : 0));
     painter->drawEllipse(0, 0, width, height);
+    painter->setPen(QPen(Qt::black, (bold) ? 2 : 0));
     qreal factor = parent->transform().scale(1, 1).mapRect(QRectF(0, 0, 1, 1)).width();
     int size = int(4 + 6 / factor);
     QFont QF = painter->font(); QF.setPointSize(size);// QF.pointSize() + 2);

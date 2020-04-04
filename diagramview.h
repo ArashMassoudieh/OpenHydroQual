@@ -14,6 +14,7 @@ class DiagramView : public QGraphicsView
 public:
     explicit DiagramView(QWidget* parent, MainWindow *_mainwindow);
     QGraphicsScene *MainGraphicsScene;
+    MainWindow *mainWindow() {return  mainwindow;}
 private:
     MainWindow *mainwindow;
     QList<Node*> nodes;
