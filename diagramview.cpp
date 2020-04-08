@@ -254,7 +254,6 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
 }
 void DiagramView::mouseReleaseEvent(QMouseEvent *event)
 {
-//	//qDebug() << "Mouse RELEASE, button: " << event->button() << ", modifier: " << event->modifiers() << ", buttons: " << event->buttons()<<", dragMode: "<< dragMode();
     for (Edge * item : selectedEdges())
         //qDebug() << item->Name();
     if (event->button() == Qt::LeftButton && Operation_Mode == Operation_Modes::NormalMode && dragMode() == DragMode::RubberBandDrag)

@@ -41,7 +41,7 @@ private:
     QList<Edge*> edges(const QList<QGraphicsItem*>items) const;
 
 signals:
-
+    void Mouse_Pos(int, int, QString);
 public slots:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;

@@ -34,6 +34,16 @@ public:
     int Height() {return height;}
     corners corner(const int _x, const int _y);
     edgesides edge(const int x, const int y);
+    QString Name() {return QString::fromStdString(object()->GetName());}
+    int minH = 30, minW = 40;
+    void setWidth(const int &Width)
+    {
+        width = Width; update();
+    }
+    void setHeight(const int &Height) {
+        height = Height; update();
+    }
+    QList<Edge *> edges() const { return edgeList; }
 private:
     DiagramView *parent;
     System *system;
