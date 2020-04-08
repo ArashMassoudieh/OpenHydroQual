@@ -38,6 +38,7 @@ private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);
     void onaddblock();
+    void onaddlink();
     void onaddsource();
     void onaddparameter();
     void onaddentity();

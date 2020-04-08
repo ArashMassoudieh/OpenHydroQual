@@ -147,6 +147,20 @@ void MainWindow::onaddblock()
     RefreshTreeView();
  }
 
+void MainWindow::onaddlink()
+{
+    QObject* obj = sender();
+    dView->setconnectfeature(obj->objectName());
+    foreach (QAction* action, ui->mainToolBar->actions())
+    {
+        if (action->objectName()!=obj->objectName())
+            action->setChecked(false);
+        else
+            action->setChecked(true);
+    }
+
+}
+
 void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type)
 {
     QObject* obj = sender();
