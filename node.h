@@ -12,8 +12,6 @@ class QuanSet;
 class Object;
 class Edge;
 
-enum Object_Types {BlockType, EdgeType};
-
 using namespace std;
 class Node : public QGraphicsItem
 {
@@ -44,6 +42,7 @@ public:
         height = Height; update();
     }
     QList<Edge *> edges() const { return edgeList; }
+    void addEdge(Edge *edge);
 private:
     DiagramView *parent;
     System *system;
@@ -55,6 +54,7 @@ private:
     bool bold = false;
     string objectPrimaryKey;
     QList<Edge *> edgeList;
+
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;

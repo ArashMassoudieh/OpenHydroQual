@@ -13,6 +13,48 @@ Edge::Edge(DiagramView *_parent)
     parent = _parent;
 }
 
+Edge::Edge(Node *sourceNode, Node *destNode, DiagramView *_parent)
+{
+    parent = _parent;
+    system = _parent->mainWindow()->GetSystem();
+    setAcceptedMouseButtons(nullptr);
+
+    source = sourceNode;
+    dest = destNode;
+
+    QList<Node*> list;
+    foreach (Edge *e , source->edges())
+    {
+        if (e->sourceNode() == source) list.append(e->destNode());
+        if (e->destNode() == source) list.append(e->sourceNode());
+    }
+    if (list.contains(dest))
+    {
+        //_parent->log(QString("Duplicate connector from %1 to %2.").arg(source->Name()).arg(dest->Name()));
+        delete this;
+        return;
+    }
+    source->addEdge(this);
+    dest->addEdge(this);
+    adjust();
+
+//	sourceID = source->ID;
+//	destID = dest->ID;
+
+    setFlag(ItemIsSelectable);
+    setFlag(ItemSendsGeometryChanges);
+
+    setCacheMode(DeviceCoordinateCache);
+    setZValue(1);
+
+    parent->MainGraphicsScene->addItem(this);
+    name = QString("%1 - %2").arg(sourceNode->Name()).arg(destNode->Name());
+    setName(name);
+    if (parent->treeModel)
+        parent->treeModel->add(this);
+    parent->log(QString("One %3 connector from %1 to %2 created.").arg(sourceNode->Name()).arg(destNode->Name()).arg(objectType.SubType));
+    changed();
+}
 void Edge::adjust()
 {
     if (!source || !dest)

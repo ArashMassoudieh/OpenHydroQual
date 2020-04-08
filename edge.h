@@ -17,6 +17,7 @@ class Edge : public QGraphicsItem
 {
 public:
     Edge(DiagramView *parent);
+    Edge(Node *sourceNode, Node *destNode, DiagramView *_parent = nullptr);
     void adjust();
     QPointF sourcePoint;
     QPointF destPoint;
@@ -30,6 +31,8 @@ public:
     bool avoidCrossObjects = true;
     void SetObject(Object *_object) {objectPrimaryKey = _object->GetPrimaryKey() ;}
     Object *object();
+    Node* sourceNode() {return source;}
+    Node* destNode() {return dest;}
 
 private:
     QMap<QString, QString> warnings, errors;

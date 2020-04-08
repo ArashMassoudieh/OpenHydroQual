@@ -39,7 +39,13 @@ private:
     int _x, _y;
     QList<Node*> nodes(const QList<QGraphicsItem*> items) const;
     QList<Edge*> edges(const QList<QGraphicsItem*>items) const;
-
+    QList<Node*> selectedNodes() const;
+    QList<Edge*> selectedEdges() const;
+    QList<Node*> Nodes() const;
+    QList<Edge *> Edges() const;
+    Operation_Modes setMode(int i);
+    QMap<QString, QMap<QString, QString>> specs;
+    void updateNodeCoordinates();
 signals:
     void Mouse_Pos(int, int, QString);
 public slots:

@@ -254,8 +254,6 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
 }
 void DiagramView::mouseReleaseEvent(QMouseEvent *event)
 {
-    for (Edge * item : selectedEdges())
-        //qDebug() << item->Name();
     if (event->button() == Qt::LeftButton && Operation_Mode == Operation_Modes::NormalMode && dragMode() == DragMode::RubberBandDrag)
     {
         for (Node* item : Nodes())
@@ -345,10 +343,10 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             specs[n->Name()]["y"] = QString::number(n->y());
             specs[n->Name()]["w"] = QString::number(n->Width());
             specs[n->Name()]["h"] = QString::number(n->Height());
-            n->setProp("x",n->x());
-            n->setProp("y", n->y());
-            n->setProp("Superficial width", n->Width());
-            n->setProp("Superficial height", n->Height());
+            n->object()->SetVal("x",n->x());
+            n->object()->SetVal("y",n->x());
+            n->object()->SetVal("Width", n->Width());
+            n->object()->SetVal("Height", n->Height());
         }
     }
     if (changed)
@@ -391,4 +389,56 @@ QList<Edge*> DiagramView::edges(const QList<QGraphicsItem*>items) const
             edges << edge;
     }
     return edges;
+}
+
+QList<Node*> DiagramView::selectedNodes() const
+{
+    QList<Node *> nodes;
+    for(QGraphicsItem *item : scene()->items())
+    {
+        if (Node *node = qgraphicsitem_cast<Node *>(item))
+            if (node->isSelected())
+                nodes << node;
+    }
+    return nodes;
+}
+
+QList<Edge*> DiagramView::selectedEdges() const
+{
+    QList<Edge *> edges;
+    for(QGraphicsItem *item : scene()->items())
+    {
+        if (Edge *edge = qgraphicsitem_cast<Edge *>(item))
+            if (edge->isSelected())
+                edges << edge;
+    }
+    return edges;
+}
+
+QList<Node*> DiagramView::Nodes() const
+{
+    QList<Node *> nodes;
+    foreach(QGraphicsItem *item, scene()->items()) {
+        if (Node *node = qgraphicsitem_cast<Node *>(item))
+        {
+            nodes << node;
+        }
+    }
+    return(nodes);
+}
+
+QList<Edge *> DiagramView::Edges() const
+{
+    QList<Edge *> edges;
+    for(QGraphicsItem *item : scene()->items())
+    {
+        if (Edge *edge = qgraphicsitem_cast<Edge *>(item))
+            edges << edge;
+    }
+    return(edges);
+}
+
+Operation_Modes DiagramView::setMode(int i)
+{
+    return(setMode(Operation_Modes::NormalMode, true));
 }
