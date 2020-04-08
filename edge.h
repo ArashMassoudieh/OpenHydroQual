@@ -17,7 +17,7 @@ class Edge : public QGraphicsItem
 {
 public:
     Edge(DiagramView *parent);
-    Edge(Node *sourceNode, Node *destNode, DiagramView *_parent = nullptr);
+    Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramView *_parent = nullptr);
     void adjust();
     QPointF sourcePoint;
     QPointF destPoint;
@@ -33,7 +33,7 @@ public:
     Object *object();
     Node* sourceNode() {return source;}
     Node* destNode() {return dest;}
-
+    int dist(const QPointF point);
 private:
     QMap<QString, QString> warnings, errors;
     DiagramView *parent;
@@ -41,6 +41,7 @@ private:
     Node *dest;
     System *system;
     string objectPrimaryKey;
+    QString name;
 
 public slots:
     void hoverMoveEvent(QGraphicsSceneHoverEvent * event) override;

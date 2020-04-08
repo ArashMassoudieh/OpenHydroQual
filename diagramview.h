@@ -26,6 +26,7 @@ public:
     QString getselectedconnectfeature() {return connect_feature;} //returns the type of connector to be added.
     void setconnectfeature(QString cf) {connect_feature = cf;} //sets the type of connector to be used
     Operation_Modes setMode(Operation_Modes OMode = Operation_Modes::NormalMode, bool back = false);
+    Operation_Modes setModeCursor();
 private:
     MainWindow *mainwindow;
     QList<Node*> nodes();

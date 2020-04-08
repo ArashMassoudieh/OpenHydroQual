@@ -21,6 +21,7 @@ public:
     PropModel *propModel() {return propmodel;}
     void resetPropModel() { propmodel = nullptr ;}
     System *GetSystem() {return &system;}
+    void AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type );
 private:
     Ui::MainWindow *ui;
     System system;
@@ -37,7 +38,6 @@ private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);
     void onaddblock();
-    void onaddlink();
     void onaddsource();
     void onaddparameter();
     void onaddentity();

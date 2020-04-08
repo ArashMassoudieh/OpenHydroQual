@@ -147,17 +147,14 @@ void MainWindow::onaddblock()
     RefreshTreeView();
  }
 
-void MainWindow::onaddlink()
+void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type)
 {
     QObject* obj = sender();
-    dView->setconnectfeature(obj->objectName());
-    foreach (QAction* action, ui->mainToolBar->actions())
-    {
-        if (action->objectName()!=obj->objectName())
-            action->setChecked(false);
-        else
-            action->setChecked(true);
-    }
+    Link link;
+    link.SetName(LinkName.toStdString());
+    system.AddLink(link,sourceblock.toStdString(),targetblock.toStdString());
+    system.object(LinkName.toStdString())->AssignRandomPrimaryKey();
+
 
 }
 

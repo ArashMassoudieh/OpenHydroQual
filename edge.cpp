@@ -13,7 +13,7 @@ Edge::Edge(DiagramView *_parent)
     parent = _parent;
 }
 
-Edge::Edge(Node *sourceNode, Node *destNode, DiagramView *_parent)
+Edge::Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramView *_parent)
 {
     parent = _parent;
     system = _parent->mainWindow()->GetSystem();
@@ -49,11 +49,8 @@ Edge::Edge(Node *sourceNode, Node *destNode, DiagramView *_parent)
 
     parent->MainGraphicsScene->addItem(this);
     name = QString("%1 - %2").arg(sourceNode->Name()).arg(destNode->Name());
-    setName(name);
-    if (parent->treeModel)
-        parent->treeModel->add(this);
-    parent->log(QString("One %3 connector from %1 to %2 created.").arg(sourceNode->Name()).arg(destNode->Name()).arg(objectType.SubType));
-    changed();
+    parent->mainWindow()->AddLink(name, sourceNode->Name(),destNode->Name(),edgeType);
+    //changed();
 }
 void Edge::adjust()
 {
@@ -183,4 +180,16 @@ void Edge::hoverMoveEvent(QGraphicsSceneHoverEvent * event)
 {
     bold = true;
     update();
+}
+
+int Edge::dist(const QPointF point)
+{
+    int x1 = int(sourcePoint.x());
+    int y1 = int(sourcePoint.y());
+    int x2 = int(destPoint.x());
+    int y2 = int(destPoint.y());
+    int x0 = int(point.x());
+    int y0 = int(point.y());
+    int dist = int(abs(x0*(y2 - y1) - y0*(x2 - x1) + x2*y1 - y2*x1) / sqrt((y2 - y1) ^ 2 + (x2 - x1) ^ 2));
+    return dist;
 }

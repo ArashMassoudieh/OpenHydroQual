@@ -6,6 +6,7 @@
 #include <qdebug.h>
 #include "qgraphicssceneevent.h"
 #include "edge.h"
+#include "enums.h"
 
 Node::Node(DiagramView *_parent, System *_system)
 {
@@ -19,7 +20,7 @@ Node::Node(DiagramView *_parent, System *_system)
     setCacheMode(DeviceCoordinateCache);
     setZValue(1);
 
-    itemType = Object_Types::BlockType;
+    itemType = Object_Types::Block;
     //setX(x);
     //setY(y);
     setX(1000-width/2);
@@ -129,5 +130,17 @@ void Node::addEdge(Edge *edge)
 {
     edgeList << edge;
     edge->adjust();
+}
+
+edgesides Node::edge(const int _x, const int _y)
+{
+    int hBorder = (height > 60) ? 15 : height / 4;
+    int vBorder = (width > 60) ? 15 : width / 4;
+    if (corner(_x, _y)) return edgesides::noside;
+    if (abs(_x - x()) < vBorder) return edgesides::leftside;
+    if (abs(_y - y()) < hBorder) return edgesides::topside;
+    if (abs(_y - y() - height) < hBorder) return edgesides::bottomside;
+    if (abs(_x - x() - width) < vBorder) return edgesides::rightside;
+    return edgesides::noside;
 }
 

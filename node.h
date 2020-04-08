@@ -43,6 +43,7 @@ public:
     }
     QList<Edge *> edges() const { return edgeList; }
     void addEdge(Edge *edge);
+
 private:
     DiagramView *parent;
     System *system;

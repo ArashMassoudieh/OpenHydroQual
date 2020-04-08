@@ -349,8 +349,8 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             n->object()->SetVal("Height", n->Height());
         }
     }
-    if (changed)
-        gwChanged();
+    //if (changed)
+        //gwChanged();
 
 }
 void DiagramView::updateNodeCoordinates()
@@ -442,3 +442,91 @@ Operation_Modes DiagramView::setMode(int i)
 {
     return(setMode(Operation_Modes::NormalMode, true));
 }
+
+Operation_Modes DiagramView::setMode(Operation_Modes OMode, bool back)
+{
+    static QList<Operation_Modes> Modes;
+    bool select, move;
+    if (!back)
+    {
+        Operation_Mode = OMode;
+        Modes.push_back(OMode);
+    }
+    else
+    {
+        if (Modes.size() < 2)
+        {
+            Operation_Mode = Operation_Modes::NormalMode;
+            setModeCursor();
+            return(Operation_Mode);
+        }
+        Modes.pop_back();
+        Operation_Mode = Modes[Modes.size()-1];
+    }
+    switch (Operation_Mode) {
+    case Operation_Modes::Draw_Connector:
+        setModeCursor();
+        setDragMode(QGraphicsView::NoDrag);
+        move = false;
+        select = false;
+        break;
+    case Operation_Modes::Pan:
+        setModeCursor();
+        setDragMode(QGraphicsView::ScrollHandDrag);
+        move = true;
+        select = false;
+        break;
+/*	case Operation_Modes::Pan_Started:
+        setCursor(Qt::ClosedHandCursor);
+        break;*/
+    case Operation_Modes::Node1_selected:
+        setModeCursor();
+        setDragMode(QGraphicsView::NoDrag);
+        move = false;
+        select = false;
+        break;
+    case Operation_Modes::resizeNode:
+        //setCursor(Qt::CrossCursor);
+        move = false;
+        select = false;
+        break;
+    case Operation_Modes::NormalMode:
+        setModeCursor();
+        setDragMode(QGraphicsView::RubberBandDrag);
+        select = true;
+        move = false;
+        break;
+    }
+    foreach(Node *node, Nodes())
+    {
+        node->setFlag(QGraphicsItem::ItemIsMovable, move);
+        node->setFlag(QGraphicsItem::ItemIsSelectable, select);
+    }
+    foreach(Edge *edge, Edges())
+        edge->setFlag(QGraphicsItem::ItemIsSelectable, select);
+    return (Operation_Mode);
+}
+
+Operation_Modes DiagramView::setModeCursor()
+{
+    switch (Operation_Mode) {
+    case Operation_Modes::Draw_Connector:
+        setCursor(Qt::CrossCursor);
+        break;
+    case Operation_Modes::Pan:
+        setCursor(Qt::OpenHandCursor);
+        break;
+    case Operation_Modes::Node1_selected:
+        setCursor(Qt::CrossCursor);
+        break;
+    case Operation_Modes::resizeNode:
+        break;
+    case Operation_Modes::NormalMode:
+        setCursor(Qt::ArrowCursor);
+        break;
+    }
+    return (Operation_Mode);
+}
+
+
+
