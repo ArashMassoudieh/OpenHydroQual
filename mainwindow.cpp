@@ -142,12 +142,25 @@ void MainWindow::onaddblock()
     system.object(name)->SetName(name);
     Node *node = new Node(dView,&system);
     dView->repaint();
+    system.object(name)->AssignRandomPrimaryKey();
     node->SetObject(system.object(name));
     RefreshTreeView();
-    //Node* item = new Node(diagramview,obj->objectName(),obj->objectName() + QString::number(counts[obj->objectName()]),int(diagramview->scene()->width()/2), int(diagramview->scene()->height()/2));
+ }
 
+void MainWindow::onaddlink()
+{
+    QObject* obj = sender();
+    dView->setconnectfeature(obj->objectName());
+    foreach (QAction* action, ui->mainToolBar->actions())
+    {
+        if (action->objectName()!=obj->objectName())
+            action->setChecked(false);
+        else
+            action->setChecked(true);
+    }
 
 }
+
 
 void MainWindow::onaddsource()
 {

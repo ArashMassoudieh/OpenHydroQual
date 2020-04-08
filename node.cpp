@@ -4,6 +4,8 @@
 #include "mainwindow.h"
 #include "qapplication.h"
 #include <qdebug.h>
+#include "qgraphicssceneevent.h"
+#include "edge.h"
 
 Node::Node(DiagramView *_parent, System *_system)
 {
@@ -50,8 +52,8 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     QRadialGradient radialGrad(QPointF(width / 2, height / 2), min(width, height));
     radialGrad.setColorAt(0, QColor(Qt::lightGray).light(300));
     radialGrad.setColorAt(1, QColor(Qt::lightGray).light(120));
-    qDebug() << QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object->GetType())->IconFileName());
-    QPixmap pixmap(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object->GetType())->IconFileName()));
+    qDebug() << QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object()->GetType())->IconFileName());
+    QPixmap pixmap(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object()->GetType())->IconFileName()));
     QRectF rect = QRectF(boundingRect().left()*0 + 0.05*boundingRect().width(), boundingRect().top()*0+0.05*boundingRect().width(), boundingRect().width()*0.9, boundingRect().height()*0.9);
     QRectF source(0, 0, pixmap.size().width(), pixmap.size().height());
     painter->drawPixmap(rect, pixmap, source);
@@ -72,7 +74,37 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     QF.setBold(bold);
     painter->setFont(QF);
 
-    painter->drawText(10, height - 10, QString("%1: %2").arg(QString::fromStdString(object->GetType())).arg(QString::fromStdString(object->GetName())));
+    painter->drawText(10, height - 10, QString("%1: %2").arg(QString::fromStdString(object()->GetType())).arg(QString::fromStdString(object()->GetName())));
 
 }
 
+Object *Node::object()
+{
+    return system->GetObjectBasedOnPrimaryKey(objectPrimaryKey);
+}
+
+void Node::hoverMoveEvent(QGraphicsSceneHoverEvent * event)
+{
+    bold = true;
+    update();
+}
+
+void Node::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+    QPointF p = QPointF(x() + event->pos().x(), y() + event->pos().y());
+    //parent->nodeContextMenuRequested(this, p);
+
+}
+
+QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    switch (change) {
+    case ItemPositionHasChanged:
+        foreach (Edge *edge, edgeList)
+            edge->adjust();
+        break;
+    default:
+        break;
+    };
+    return QGraphicsItem::itemChange(change, value);
+}

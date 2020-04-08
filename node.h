@@ -3,14 +3,18 @@
 
 #include "enums.h"
 #include <QGraphicsItem>
+#include <string>
+#include "Object.h"
 
 class DiagramView;
 class System;
 class QuanSet;
 class Object;
+class Edge;
 
 enum Object_Types {BlockType, EdgeType};
 
+using namespace std;
 class Node : public QGraphicsItem
 {
 public:
@@ -21,12 +25,13 @@ public:
     Node operator=(const Node &);
     enum { Type = UserType + 1 };
     int type() const Q_DECL_OVERRIDE { return Type; }
-    void SetObject(Object *_object) {object = _object;}
+    void SetObject(Object *_object) {objectPrimaryKey = _object->GetPrimaryKey() ;}
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-
-
+    Object *object();
+    int Width() {return  width;}
+    int Height() {return height;}
 private:
     DiagramView *parent;
     System *system;
@@ -36,7 +41,15 @@ private:
     QString iconfilename;
     QPointF newPos;
     bool bold = false;
-    Object* object;
+    string objectPrimaryKey;
+    QList<Edge *> edgeList;
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+
+signals:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent * event) override;
+
 };
 
 #endif // NODE_H

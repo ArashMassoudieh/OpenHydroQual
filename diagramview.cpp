@@ -1,5 +1,7 @@
 #include "diagramview.h"
 #include "mainwindow.h"
+#include "node.h"
+#include "QMouseEvent"
 
 DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsView(parent)
 {
@@ -15,3 +17,358 @@ DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsVi
     QObject::connect(MainGraphicsScene, SIGNAL(changed(const QList<QRectF>)), this, SLOT(sceneChanged()));
 
 }
+
+void DiagramView::mousePressEvent(QMouseEvent *event)
+{
+    if (mainWindow()->propModel())
+        mainWindow()->resetPropModel();
+    Node *node = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
+    if (node)
+    {	//qDebug() << "Name: "<< node->Name()<<" Flag:" << node->flags() << "enabled:" << node->isEnabled() << "active:" << node->isActive();
+    }
+    Edge *edge = qgraphicsitem_cast<Edge*> (itemAt(event->pos())); //Get the item at the position
+    if (edge)
+    {	//qDebug() << "Name: " << edge->Name() << " Flag:" << edge->flags() << "enabled:" << edge->isEnabled() << "active:" << edge->isActive();
+    }
+
+    if (event->buttons() == Qt::MiddleButton && Operation_Mode == Operation_Modes::NormalMode)
+    {
+        setMode(Operation_Modes::Pan);
+        QMouseEvent *newEvent = new QMouseEvent(event->type(), event->localPos(), Qt::LeftButton, Qt::MouseButtons(1), event->modifiers());
+        QGraphicsView::mousePressEvent(newEvent);
+        delete newEvent;
+        return;
+    }
+    QGraphicsView::mousePressEvent(event); //Call the ancestor
+    if (Operation_Mode == Operation_Modes::NormalMode)
+    {
+        setDragMode((node || edge) ? QGraphicsView::NoDrag : QGraphicsView::RubberBandDrag);
+
+        if (node)
+            if (node->itemType == Object_Types::Block)
+            {
+                int xx = mapToScene(event->pos()).x();	int yy = int(mapToScene(event->pos()).y());
+                if (event->buttons() == Qt::LeftButton)
+                {
+                    if (event->modifiers() && Qt::ControlModifier) {
+//						node->setFlag(QGraphicsItem::ItemIsMovable, false);
+//						node->setSelected(true);
+                    }
+                    else if (node->corner(xx, yy)) {
+                        setDragMode(QGraphicsView::NoDrag);
+                        setMode(Operation_Modes::resizeNode);
+                        resizenode = node;
+                        resizecorner = node->corner(xx, yy);
+                        node->setFlag(QGraphicsItem::ItemIsMovable, false);
+                    }
+                    else if (node->edge(xx, yy) && getselectedconnectfeature()!="") {
+                        node->setFlag(QGraphicsItem::ItemIsMovable, false);
+                        Node1 = node;
+                        tempRay = new Ray();
+                        MainGraphicsScene->addItem(tempRay);
+                        setMode(Operation_Modes::Node1_selected);
+                    }
+                    else
+                        node->setFlag(QGraphicsItem::ItemIsMovable, true);
+                }
+            }
+        if (event->buttons() == Qt::LeftButton && Operation_Mode == Operation_Modes::Draw_Connector)
+        {
+            if (node) {
+                if (node->itemType == Object_Types::Block) {
+                    node->setFlag(QGraphicsItem::ItemIsMovable, false);
+                    Node1 = node;
+                    tempRay = new Ray();
+                    MainGraphicsScene->addItem(tempRay);
+                    setMode(Operation_Modes::Node1_selected);
+                }
+            }
+        }
+    }
+
+    //QGraphicsView::mousePressEvent(event);
+}
+void DiagramView::mouseMoveEvent(QMouseEvent *event)
+{
+    //	//qDebug() << "Mouse MOVE, button: " << event->button() << ", modifier: " << event->modifiers() << ", buttons: " << event->buttons();
+    _x = mapToScene(event->pos()).x();
+    _y = mapToScene(event->pos()).y();
+    int xx = _x;// mapToScene(event->pos()).x();
+    int yy = _y;// mapToScene(event->pos()).y();
+
+    if (event->buttons() == Qt::MiddleButton && Operation_Mode == Operation_Modes::Pan)
+    {
+        QMouseEvent *newEvent = new QMouseEvent(event->type(), event->localPos(), Qt::LeftButton, Qt::MouseButtons(1), event->modifiers());
+        //		QGraphicsView::mousePressEvent(newEvent);
+        QGraphicsView::mouseMoveEvent(newEvent);
+        delete newEvent;
+        return;
+    }
+
+    if (event->buttons() == Qt::LeftButton && Operation_Mode == Operation_Modes::NormalMode && dragMode() == DragMode::RubberBandDrag)
+    {
+        QGraphicsView::mouseMoveEvent(event);
+        //qDebug() << event->x() << rubberBandRect().x();
+        if (event->x() > rubberBandRect().x()) //Dragging to the right
+        {
+            for (Edge* item : edges(items(rubberBandRect())))
+                item->setFlag(QGraphicsItem::ItemIsSelectable, false);
+        }
+        else
+        {
+            for (Node* item : nodes(items(rubberBandRect())))
+                item->setFlag(QGraphicsItem::ItemIsSelectable, false);
+
+        }
+        return;
+    }
+
+    bool cursorModeNormal = true;
+    setToolTip("");
+    QGraphicsView::mouseMoveEvent(event);
+    QString txt;
+    Node *n1 = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
+    if (n1) //itemType == Object_Types::Block)
+    {
+        txt = QString("%1, %2: %3").arg(n1->ObjectType().GuiObject).arg(n1->ObjectType().ObjectType).arg(n1->Name());
+        QString toolTip = QString("Type: %1\nName: %2").arg(n1->ObjectType().ObjectType).arg(n1->Name());
+        toolTip.append(QString("\nBottom Elevation: %1").arg(n1->val("z0").toStringUnit()));
+        if (n1->errors.count()) toolTip.append(QString("\n%1 Error(s)").arg(n1->errors.count()));
+        if (n1->warnings.count()) toolTip.append(QString("\n%1 Warning(s)").arg(n1->warnings.count()));
+        setToolTip(toolTip);
+    }
+    //for (Node* n in Nodes())
+    //	if (n!=n1) n->setBold(false);
+    Edge *e1 = qgraphicsitem_cast<Edge*> (itemAt(event->pos())); //Get the item at the position
+    if (e1)
+        //	if (c2 && c2->itemType == Object_Types::Connector && c2->dist(mapToScene(event->pos())) < 120) //GUI == "Connector"
+    {
+        //		e1->setBold(true);
+        //		e1->update();
+        //txt = QString("%1, %2: %3").arg(c2->ObjectType().GuiObject).arg(c2->ObjectType().ObjectType).arg(c2->Name());
+        QString toolTip = QString("%1, %2").arg(e1->ObjectType().GuiObject).arg(e1->ObjectType().ObjectType);
+        //QString toolTip = QString("Type: %1\nName: %2").arg(c1->ObjectType().ObjectType).arg(c1->Name());
+        //toolTip.append(QString("\nBottom Elevation: %1").arg(c1->val("z0").toStringUnit()));
+        //if (c1->errors.count()) toolTip.append(QString("\n%1 Error(s)").arg(c1->errors.count()));
+        //if (c1->warnings.count()) toolTip.append(QString("\n%1 Warning(s)").arg(c1->warnings.count()));
+        setToolTip(toolTip);
+
+    }
+    //for (Edge*e in Edges())
+    //	if (e!=e1) e->setBold(false);
+    //update();
+    emit Mouse_Pos(_x, _y, txt);
+    if (Operation_Mode == Operation_Modes::Node1_selected)
+    {
+        Node *child = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
+        if (child)
+            if ((child->itemType == Object_Types::Block) && (Node1->Name() != child->Name()))
+            {
+                tempRay->setValidation(true);
+                tempRay->adjust(Node1, child);
+            }
+        if (!child)
+        {
+            tempRay->setValidation(false);
+            QPointF p = QPointF(mapToScene(event->pos()));
+            tempRay->adjust(Node1, &p);
+        }
+    }
+    if (Operation_Mode == Operation_Modes::NormalMode && dragMode()==DragMode::NoDrag)
+    {
+        Node *node = qgraphicsitem_cast<Node*> (itemAt(event->pos()));
+
+        if (node)
+            if (node->itemType == Object_Types::Block)
+            {
+                if ((node->corner(xx, yy) == topleft) || (node->corner(xx, yy) == bottomright))
+                {
+                    setCursor(Qt::SizeFDiagCursor);
+                    cursorModeNormal = false;
+                }
+                if ((node->corner(xx, yy) == topright) || (node->corner(xx, yy) == bottomleft))
+                {
+                    setCursor(Qt::SizeBDiagCursor);
+                    cursorModeNormal = false;
+                }
+
+                if (node->corner(xx, yy) == none)
+                {	if (node->edge(xx, yy) != noside)
+                    {
+                        setCursor(Qt::CrossCursor);
+                        cursorModeNormal = false;
+                    }
+                    else
+                    {
+                        setCursor(Qt::ArrowCursor);
+                        cursorModeNormal = false;
+                    }
+                }
+            }
+    }
+    if ((Operation_Mode == Operation_Modes::resizeNode) && (event->buttons() == Qt::LeftButton))
+    {
+        int xx = mapToScene(event->pos()).x();
+        int yy = mapToScene(event->pos()).y();
+        int px = resizenode->x();
+        int py = resizenode->y();
+        int pw = resizenode->Width();
+        int ph = resizenode->Height();
+        int minH = resizenode->minH, minW = resizenode->minW;
+
+        if (resizecorner == topleft && (px - xx + pw) > minW && (py - yy + ph) > minH)
+        {
+            resizenode->setX(xx);
+            resizenode->setWidth(px - xx + pw);
+            resizenode->setY(yy);
+            resizenode->setHeight(py - yy + ph);
+        }
+        if (resizecorner == bottomleft && (px - xx + pw) > minW && (yy - py) > minH)
+        {
+            resizenode->setX(xx);
+            resizenode->setWidth(px - xx + pw);
+            //resizenode->setY(yy);
+            resizenode->setHeight(yy - py);
+        }
+        if (resizecorner == topright && (xx - px) > minW && (py - yy + ph) > minH)
+        {
+            //resizenode->setX(xx);
+            resizenode->setWidth(xx - px);
+            resizenode->setY(yy);
+            resizenode->setHeight(py - yy + ph);
+        }
+        if (resizecorner == bottomright && (xx - px) > minW && (yy - py) > minH)
+        {
+            //resizenode->setX(xx);
+            resizenode->setWidth(xx - px);
+            //resizenode->setY(yy);
+            resizenode->setHeight(yy - py);
+        }
+        resizenode->update();
+        for(Edge *edge : resizenode->edges())
+            edge->adjust();
+    }
+    if (cursorModeNormal)
+        setCursor(Qt::ArrowCursor);
+}
+void DiagramView::mouseReleaseEvent(QMouseEvent *event)
+{
+//	//qDebug() << "Mouse RELEASE, button: " << event->button() << ", modifier: " << event->modifiers() << ", buttons: " << event->buttons()<<", dragMode: "<< dragMode();
+    for (Edge * item : selectedEdges())
+        //qDebug() << item->Name();
+    if (event->button() == Qt::LeftButton && Operation_Mode == Operation_Modes::NormalMode && dragMode() == DragMode::RubberBandDrag)
+    {
+        for (Node* item : Nodes())
+            item->setFlag(QGraphicsItem::ItemIsSelectable, true);
+        for (Edge* item : Edges())
+            item->setFlag(QGraphicsItem::ItemIsSelectable, true);
+    }
+    if (event->button() == Qt::MiddleButton && Operation_Mode == Operation_Modes::Pan)
+    {
+        setMode(Operation_Modes::NormalMode);
+        QMouseEvent *newEvent = new QMouseEvent(event->type(), event->localPos(), Qt::LeftButton, Qt::MouseButtons(1), event->modifiers());
+        QGraphicsView::mouseReleaseEvent(newEvent);
+        delete newEvent;
+        return;
+
+    }
+    QGraphicsView::mouseReleaseEvent(event); //Call the ancestor
+
+    switch (Operation_Mode) {
+    case Operation_Modes::resizeNode:
+    {
+        setMode(NormalMode, true);
+        break;
+    }
+    case Operation_Modes::NormalMode:
+    {
+        if (dragMode() != DragMode::RubberBandDrag)
+        {
+
+        }
+        Node *node = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
+        Edge *edge = qgraphicsitem_cast<Edge*> (itemAt(event->pos())); //Get the item at the position
+        if (event->button() == Qt::LeftButton && dragMode()!=DragMode::RubberBandDrag)
+            if (event->modifiers() && Qt::ControlModifier) {
+                if (node)
+                {
+                    if (selectedNodes().contains(node))
+                        node->setSelected(true);
+                    else
+                        node->setSelected(false);
+                }
+                if (edge)
+                {
+                    if (selectedEdges().contains(edge))
+                        edge->setSelected(false);
+                    else
+                        edge->setSelected(true);
+                }
+            }
+            else {
+                if (node)
+                    for (Node * node : Nodes())
+                            node->setFlag(QGraphicsItem::ItemIsMovable, false);
+                if (edge)
+                {
+                    if (edge->dist(mapToScene(event->pos())) < 120)
+                        edge->setSelected(true);
+                }
+                //if (!node && !edge) deselectAll();
+            }
+            break;
+    }
+    case Operation_Modes::Node1_selected:
+    {
+        Node1->setFlag(QGraphicsItem::ItemIsMovable);
+        setMode(1);
+        MainGraphicsScene->removeItem(tempRay);
+        delete tempRay;
+        Node *child = static_cast<Node*> (itemAt(event->pos())); //Get the item at the position
+        if (!child)	break;
+        if (child->itemType != Object_Types::Block) break;
+        if (Node1 != child) new Edge(Node1, child, connect_feature, this);
+        break;
+    }
+    //	default:
+    }
+    bool changed = false;
+    for (Node *n : Nodes())
+    {
+        if (specs[n->Name()]["x"].toFloat() != n->x() ||
+            specs[n->Name()]["y"].toFloat() != n->y() ||
+            specs[n->Name()]["w"].toInt() != n->Width() ||
+            specs[n->Name()]["h"].toInt() != n->Height())
+        {
+            changed = true;
+            specs[n->Name()]["x"] = QString::number(n->x());
+            specs[n->Name()]["y"] = QString::number(n->y());
+            specs[n->Name()]["w"] = QString::number(n->Width());
+            specs[n->Name()]["h"] = QString::number(n->Height());
+            n->setProp("x",n->x());
+            n->setProp("y", n->y());
+            n->setProp("Superficial width", n->Width());
+            n->setProp("Superficial height", n->Height());
+        }
+    }
+    if (changed)
+        gwChanged();
+
+}
+void DiagramView::updateNodeCoordinates()
+{
+    for (Node *n : Nodes())
+    {
+        if (specs[n->Name()]["x"].toFloat() != n->x() ||
+            specs[n->Name()]["y"].toFloat() != n->y() ||
+            specs[n->Name()]["w"].toFloat() != n->Width() ||
+            specs[n->Name()]["h"].toFloat() != n->Height())
+        {
+            specs[n->Name()]["x"] = QString::number(n->x());
+            specs[n->Name()]["y"] = QString::number(n->y());
+            specs[n->Name()]["w"] = QString::number(n->Width());
+            specs[n->Name()]["h"] = QString::number(n->Height());
+        }
+    }
+}
+
