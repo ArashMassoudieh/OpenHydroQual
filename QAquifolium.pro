@@ -65,6 +65,7 @@ SOURCES += \
     node.cpp \
     propmodel.cpp \
     delegate.cpp \
+    ray.cpp \
     utilityfuncs.cpp
 
 HEADERS += \
@@ -106,6 +107,7 @@ HEADERS += \
     node.h \
     propmodel.h \
     delegate.h \
+    ray.h \
     utilityfuncs.h \
     ../Aquifolium/include/Parameter.h \
     ../Aquifolium/include/Parameter_Set.h

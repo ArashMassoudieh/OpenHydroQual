@@ -1,6 +1,7 @@
 #include "diagramview.h"
 #include "mainwindow.h"
 #include "node.h"
+#include "edge.h"
 #include "QMouseEvent"
 
 DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsView(parent)
@@ -130,11 +131,11 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
     Node *n1 = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
     if (n1) //itemType == Object_Types::Block)
     {
-        txt = QString("%1, %2: %3").arg(n1->ObjectType().GuiObject).arg(n1->ObjectType().ObjectType).arg(n1->Name());
-        QString toolTip = QString("Type: %1\nName: %2").arg(n1->ObjectType().ObjectType).arg(n1->Name());
-        toolTip.append(QString("\nBottom Elevation: %1").arg(n1->val("z0").toStringUnit()));
-        if (n1->errors.count()) toolTip.append(QString("\n%1 Error(s)").arg(n1->errors.count()));
-        if (n1->warnings.count()) toolTip.append(QString("\n%1 Warning(s)").arg(n1->warnings.count()));
+        txt = QString("%1: %2").arg(QString::fromStdString(n1->object()->GetType())).arg(QString::fromStdString(n1->object()->GetName()));
+        QString toolTip = QString("Type: %1\nName: %2").arg(QString::fromStdString(n1->object()->GetType())).arg(QString::fromStdString(n1->object()->GetName()));
+
+        //if (n1->errors.count()) toolTip.append(QString("\n%1 Error(s)").arg(n1->errors.count()));
+        //if (n1->warnings.count()) toolTip.append(QString("\n%1 Warning(s)").arg(n1->warnings.count()));
         setToolTip(toolTip);
     }
     //for (Node* n in Nodes())
@@ -146,7 +147,7 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
         //		e1->setBold(true);
         //		e1->update();
         //txt = QString("%1, %2: %3").arg(c2->ObjectType().GuiObject).arg(c2->ObjectType().ObjectType).arg(c2->Name());
-        QString toolTip = QString("%1, %2").arg(e1->ObjectType().GuiObject).arg(e1->ObjectType().ObjectType);
+        QString toolTip = QString("%1, %2").arg(QString::fromStdString(n1->object()->GetType())).arg(QString::fromStdString(n1->object()->GetName()));
         //QString toolTip = QString("Type: %1\nName: %2").arg(c1->ObjectType().ObjectType).arg(c1->Name());
         //toolTip.append(QString("\nBottom Elevation: %1").arg(c1->val("z0").toStringUnit()));
         //if (c1->errors.count()) toolTip.append(QString("\n%1 Error(s)").arg(c1->errors.count()));
@@ -372,3 +373,23 @@ void DiagramView::updateNodeCoordinates()
     }
 }
 
+QList<Node*> DiagramView::nodes(const QList<QGraphicsItem*> items) const
+{
+    QList<Node *> nodes;
+    for(QGraphicsItem *item : items)
+    {
+        if (Node *node = qgraphicsitem_cast<Node *>(item))
+            nodes << node;
+    }
+    return nodes;
+}
+QList<Edge*> DiagramView::edges(const QList<QGraphicsItem*>items) const
+{
+    QList<Edge *> edges;
+    for(QGraphicsItem *item : items)
+    {
+        if (Edge *edge = qgraphicsitem_cast<Edge *>(item))
+            edges << edge;
+    }
+    return edges;
+}

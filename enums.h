@@ -2,6 +2,13 @@
 #define ENUMS_H
 #include "qcolor.h"
 
+enum Operation_Modes{ Draw_Connector, Node1_selected, Pan, NormalMode, resizeNode };
+enum class Object_Types { Void, Block, Connector, RayLine };
+enum mListReadStatus{fileNotValid, readSuccessfully, readBefore, errorInContents};
+enum corners{ none, topleft, topright, bottomleft, bottomright };
+enum edgesides{ noside, topside, leftside, bottomside, rightside };
+
+
 namespace CustomRoleCodes {
     enum Role {
         TypeRole =							2700,

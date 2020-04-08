@@ -108,3 +108,20 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
     };
     return QGraphicsItem::itemChange(change, value);
 }
+
+corners Node::corner(const int _x, const int _y)
+{
+    int border = 15;
+    if (abs(_x - x()) < border)
+    {
+        if (abs(_y - y()) < border) return (topleft);
+        if (abs(_y - y() - height) < border) return (bottomleft);
+    }
+    if (abs(_x - x()-width) < border)
+    {
+        if (abs(_y - y()) < border) return (topright);
+        if (abs(_y - y() - height) < border) return (bottomright);
+    }
+    return (corners::none);
+}
+

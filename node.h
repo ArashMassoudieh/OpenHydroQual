@@ -32,6 +32,8 @@ public:
     Object *object();
     int Width() {return  width;}
     int Height() {return height;}
+    corners corner(const int _x, const int _y);
+    edgesides edge(const int x, const int y);
 private:
     DiagramView *parent;
     System *system;
