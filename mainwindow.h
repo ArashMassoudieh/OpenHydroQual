@@ -32,7 +32,7 @@ private:
     string CreateNewName(string type);
     void PopulatePropertyTable(QuanSet* quanset);
     PropModel *propmodel = nullptr;
-
+    void Populate_General_ToolBar();
 
 private slots:
     void on_check_object_browser();
@@ -44,6 +44,9 @@ private slots:
     void onaddentity();
     void preparetreeviewMenu(const QPoint &pos);
     void onTreeSelectionChanged(QTreeWidgetItem *current);
+    void onzoomin();
+    void onzoomout();
+    void onzoomall();
 
 };
 

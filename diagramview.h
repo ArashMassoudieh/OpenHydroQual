@@ -31,7 +31,7 @@ public:
     void edgeContextMenuRequested(Edge*, QPointF pos, QMenu *menu=nullptr);
     Node* node(const QString &name) const;
     Edge* edge(const QString &name) const;
-
+    void scaleView(qreal scaleFactor);
 
 private:
     MainWindow *mainwindow;
@@ -53,12 +53,15 @@ private:
     Operation_Modes setMode(int i);
     QMap<QString, QMap<QString, QString>> specs;
     void updateNodeCoordinates();
+    void sceneChanged();
 signals:
     void Mouse_Pos(int, int, QString);
+    void changed();
 public slots:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+
 
 };
 

@@ -59,8 +59,8 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
                 if (event->buttons() == Qt::LeftButton)
                 {
                     if (event->modifiers() && Qt::ControlModifier) {
-//						node->setFlag(QGraphicsItem::ItemIsMovable, false);
-//						node->setSelected(true);
+                        //node->setFlag(QGraphicsItem::ItemIsMovable, false);
+                        //node->setSelected(true);
                     }
                     else if (node->corner(xx, yy)) {
                         setDragMode(QGraphicsView::NoDrag);
@@ -280,6 +280,14 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
     QGraphicsView::mouseReleaseEvent(event); //Call the ancestor
 
     switch (Operation_Mode) {
+    case Operation_Modes::Pan:
+    {
+        break;
+    }
+    case Operation_Modes::Draw_Connector:
+    {
+        break;
+    }
     case Operation_Modes::resizeNode:
     {
         setMode(NormalMode, true);
@@ -335,12 +343,14 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         if (!child)	break;
         if (child->itemType != Object_Types::Block) break;
         if (Node1 != child) new Edge(Node1, child, connect_feature, this);
+        Node1=nullptr;
         setMode(1);
+        emit changed();
         break;
     }
     //	default:
     }
-    bool changed = false;
+    bool _changed = false;
     for (Node *n : Nodes())
     {
         if (specs[n->Name()]["x"].toFloat() != n->x() ||
@@ -348,7 +358,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             specs[n->Name()]["w"].toInt() != n->Width() ||
             specs[n->Name()]["h"].toInt() != n->Height())
         {
-            changed = true;
+            _changed = true;
             specs[n->Name()]["x"] = QString::number(n->x());
             specs[n->Name()]["y"] = QString::number(n->y());
             specs[n->Name()]["w"] = QString::number(n->Width());
@@ -359,8 +369,10 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             n->object()->SetVal("Height", n->Height());
         }
     }
-    //if (changed)
+    if (_changed)
+        emit changed();
         //gwChanged();
+
 
 }
 void DiagramView::updateNodeCoordinates()
@@ -609,6 +621,35 @@ Edge* DiagramView::edge(const QString &name) const
     for (Edge* i : Edges())
         if (i->Name() == name) return i;
     return nullptr;
+}
+
+void DiagramView::scaleView(qreal scaleFactor)
+{
+    qreal factor = transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
+    if (factor < 0.07 || factor > 100)
+        return;
+
+    scale(scaleFactor, scaleFactor);
+}
+
+void DiagramView::sceneChanged()
+{
+    QRectF rect = MainGraphicsScene->sceneRect();
+    QRectF newRect = MainGraphicsScene->itemsBoundingRect();
+    float width = float(newRect.width());
+    float height = float(newRect.height());
+    float scale = float(1.1);
+    newRect.setLeft(newRect.left() - int((scale-1)/2*width));
+    newRect.setTop(newRect.top() - int((scale-1)/2*height));
+    newRect.setWidth(int(width * scale));
+    newRect.setHeight(int(height * scale));
+
+    newRect.setLeft(min(rect.left(), newRect.left()));
+    newRect.setTop(min(rect.top(), newRect.top()));
+    newRect.setWidth(max(rect.width(), newRect.width()));
+    newRect.setHeight(max(rect.height(), newRect.height()));
+
+    MainGraphicsScene->setSceneRect(newRect);
 }
 
 

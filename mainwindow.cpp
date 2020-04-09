@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->treeWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(preparetreeviewMenu(const QPoint&)));
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
     ui->tableView->setItemDelegateForColumn(1,new Delegate(this,this));
+    Populate_General_ToolBar();
 }
 
 MainWindow::~MainWindow()
@@ -363,4 +364,78 @@ void MainWindow::PopulatePropertyTable(QuanSet* quanset)
     else
         propmodel = nullptr;
     ui->tableView->setModel(propmodel);
+}
+
+void MainWindow::Populate_General_ToolBar()
+{
+    // Save //
+    QAction* actionsave = new QAction(this);
+    actionsave->setObjectName("Save");
+    QIcon iconsave;
+    iconsave.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/Save.png"), QSize(), QIcon::Normal, QIcon::Off);
+    actionsave->setIcon(iconsave);
+    ui->GeneraltoolBar->addAction(actionsave);
+    actionsave->setText("Save");
+    connect(actionsave, SIGNAL(triggered()), this, SLOT(onsave()));
+    // Open //
+    QAction* actionopen = new QAction(this);
+    actionopen->setObjectName("Open");
+    QIcon iconopen;
+    iconopen.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/open.png"), QSize(), QIcon::Normal, QIcon::Off);
+    actionopen->setIcon(iconopen);
+    ui->GeneraltoolBar->addAction(actionopen);
+    actionopen->setText("Save");
+    connect(actionopen, SIGNAL(triggered()), this, SLOT(onopen()));
+    // ZoomAll //
+    QAction* actionzoomall = new QAction(this);
+    actionzoomall->setObjectName("Open");
+    QIcon iconzoomall;
+    iconzoomall.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/Full_screen_view.png"), QSize(), QIcon::Normal, QIcon::Off);
+    actionzoomall->setIcon(iconzoomall);
+    ui->GeneraltoolBar->addAction(actionzoomall);
+    actionzoomall->setText("Zoom Extends");
+    connect(actionzoomall, SIGNAL(triggered()), this, SLOT(onzoomall()));
+    // ZoomIn //
+    QAction* actionzoomin = new QAction(this);
+    actionzoomin->setObjectName("Zoom_In");
+    QIcon iconzoomin;
+    iconzoomin.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
+    actionzoomin->setIcon(iconzoomin);
+    ui->GeneraltoolBar->addAction(actionzoomin);
+    actionzoomin->setText("Zoom In");
+    connect(actionzoomin, SIGNAL(triggered()), this, SLOT(onzoomin()));
+    // ZoomOut //
+    QAction* actionzoomout = new QAction(this);
+    actionzoomall->setObjectName("Zoom_Out");
+    QIcon iconzoomout;
+    iconzoomout.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
+    actionzoomout->setIcon(iconzoomout);
+    ui->GeneraltoolBar->addAction(actionzoomout);
+    actionzoomout->setText("Zoom Out");
+    connect(actionzoomout, SIGNAL(triggered()), this, SLOT(onzoomout()));
+
+}
+
+void MainWindow::onzoomin()
+{
+    dView->scaleView(1.25);
+}
+
+void MainWindow::onzoomout()
+{
+    dView->scaleView(1 / 1.25);
+}
+
+void MainWindow::onzoomall()
+{
+    QRectF newRect = dView->MainGraphicsScene->itemsBoundingRect();
+    float width = float(newRect.width());
+    float height = float(newRect.height());
+    float scale = float(1.1);
+    newRect.setLeft(newRect.left() - float(scale - 1) / 2 * float(width));
+    newRect.setTop(newRect.top() - (scale - 1) / 2 * height);
+    newRect.setWidth(qreal(width * scale));
+    newRect.setHeight(qreal(height * scale));
+
+    dView->fitInView(newRect,Qt::KeepAspectRatio);
 }
