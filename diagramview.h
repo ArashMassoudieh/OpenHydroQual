@@ -29,6 +29,8 @@ public:
     Operation_Modes setModeCursor();
     void nodeContextMenuRequested(Node* ,QPointF pos, QMenu *menu=nullptr);
     void edgeContextMenuRequested(Edge*, QPointF pos, QMenu *menu=nullptr);
+    Node* node(const QString &name) const;
+    Edge* edge(const QString &name) const;
 
 
 private:

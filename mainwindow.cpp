@@ -163,13 +163,13 @@ void MainWindow::onaddlink()
 
 void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type)
 {
-    QObject* obj = sender();
     Link link;
-    link.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
-    link.SetType(obj->objectName().toStdString());
+    link.SetQuantities(system.GetMetaModel(),type.toStdString());
+    link.SetType(type.toStdString());
     link.SetName(LinkName.toStdString());
     system.AddLink(link,sourceblock.toStdString(),targetblock.toStdString());
     system.object(LinkName.toStdString())->AssignRandomPrimaryKey();
+    dView->node ->SetObject(system.object(LinkName.toStdString()));
 
 
 }

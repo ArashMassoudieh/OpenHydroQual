@@ -154,7 +154,7 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
         //		e1->setBold(true);
         //		e1->update();
         //txt = QString("%1, %2: %3").arg(c2->ObjectType().GuiObject).arg(c2->ObjectType().ObjectType).arg(c2->Name());
-        QString toolTip = QString("%1, %2").arg(QString::fromStdString(n1->object()->GetType())).arg(QString::fromStdString(n1->object()->GetName()));
+        QString toolTip = QString("%1, %2").arg(QString::fromStdString(e1->object()->GetType())).arg(QString::fromStdString(e1->object()->GetName()));
         //QString toolTip = QString("Type: %1\nName: %2").arg(c1->ObjectType().ObjectType).arg(c1->Name());
         //toolTip.append(QString("\nBottom Elevation: %1").arg(c1->val("z0").toStringUnit()));
         //if (c1->errors.count()) toolTip.append(QString("\n%1 Error(s)").arg(c1->errors.count()));
@@ -594,4 +594,20 @@ void DiagramView::edgeContextMenuRequested(Edge* e, QPointF pos, QMenu *menu)
 
 
 }
+
+Node* DiagramView::node(const QString &name) const
+{
+    for (Node* i : Nodes())
+        if (i->Name() == name)
+            return i;
+    return nullptr;
+}
+
+Edge* DiagramView::edge(const QString &name) const
+{
+    for (Edge* i : Edges())
+        if (i->Name() == name) return i;
+    return nullptr;
+}
+
 
