@@ -5,6 +5,7 @@
 #include "QMouseEvent"
 #include "QDebug"
 #include "QMenu"
+#include "QStatusBar"
 
 DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsView(parent)
 {
@@ -101,6 +102,7 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
     //	//qDebug() << "Mouse MOVE, button: " << event->button() << ", modifier: " << event->modifiers() << ", buttons: " << event->buttons();
     _x = mapToScene(event->pos()).x();
     _y = mapToScene(event->pos()).y();
+    mainWindow()->statusBar()->showMessage(QString::number(_x)+"," + QString::number(_y));
     int xx = _x;// mapToScene(event->pos()).x();
     int yy = _y;// mapToScene(event->pos()).y();
 
@@ -149,7 +151,6 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
     //	if (n!=n1) n->setBold(false);
     Edge *e1 = qgraphicsitem_cast<Edge*> (itemAt(event->pos())); //Get the item at the position
     if (e1)
-        //	if (c2 && c2->itemType == Object_Types::Connector && c2->dist(mapToScene(event->pos())) < 120) //GUI == "Connector"
     {
         //		e1->setBold(true);
         //		e1->update();
@@ -216,10 +217,10 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
     }
     if ((Operation_Mode == Operation_Modes::resizeNode) && (event->buttons() == Qt::LeftButton))
     {
-        int xx = mapToScene(event->pos()).x();
-        int yy = mapToScene(event->pos()).y();
-        int px = resizenode->x();
-        int py = resizenode->y();
+        int xx = int(mapToScene(event->pos()).x());
+        int yy = int(mapToScene(event->pos()).y());
+        int px = int(resizenode->x());
+        int py = int(resizenode->y());
         int pw = resizenode->Width();
         int ph = resizenode->Height();
         int minH = resizenode->minH, minW = resizenode->minW;

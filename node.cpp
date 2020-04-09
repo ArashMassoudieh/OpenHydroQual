@@ -10,6 +10,7 @@
 
 Node::Node(DiagramView *_parent, System *_system)
 {
+    color.color1 = Qt::yellow;
     parent = _parent;
     system = _system;
 
@@ -35,17 +36,18 @@ Node::Node(DiagramView *_parent, System *_system)
 
 QRectF Node::boundingRect() const
 {
-    qreal adjust = 20;
+    qreal adjust = 0;
     return QRectF( 0 - adjust, 0 - adjust, width + adjust, height + adjust);
 }
 QPainterPath Node::shape() const
 {
     QPainterPath path;
-    path.addEllipse(boundingRect());
+    path.addRect(boundingRect());
     return path;
 }
 void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    qreal iconmargin = 0;
     painter->setPen(Qt::NoPen);
     painter->setOpacity(0.7);
     QColor Color1, Color2;
@@ -53,9 +55,8 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     QRadialGradient radialGrad(QPointF(width / 2, height / 2), min(width, height));
     radialGrad.setColorAt(0, QColor(Qt::lightGray).light(300));
     radialGrad.setColorAt(1, QColor(Qt::lightGray).light(120));
-    qDebug() << QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object()->GetType())->IconFileName());
     QPixmap pixmap(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object()->GetType())->IconFileName()));
-    QRectF rect = QRectF(boundingRect().left()*0 + 0.05*boundingRect().width(), boundingRect().top()*0+0.05*boundingRect().width(), boundingRect().width()*0.9, boundingRect().height()*0.9);
+    QRectF rect = QRectF(boundingRect().left()*0 + iconmargin*boundingRect().width(), boundingRect().top()*0+iconmargin*boundingRect().width(), boundingRect().width()*(1-iconmargin), boundingRect().height()*(1-iconmargin));
     QRectF source(0, 0, pixmap.size().width(), pixmap.size().height());
     painter->drawPixmap(rect, pixmap, source);
 
@@ -71,7 +72,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         painter->setBrush(radialGrad);
 
     painter->setPen(QPen(Qt::white, (bold) ? 2 : 0));
-    painter->drawEllipse(0, 0, width, height);
+    painter->drawRoundRect(0, 0, width, height,10,10);
     painter->setPen(QPen(Qt::black, (bold) ? 2 : 0));
     qreal factor = parent->transform().scale(1, 1).mapRect(QRectF(0, 0, 1, 1)).width();
     int size = int(4 + 6 / factor);
@@ -117,15 +118,22 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
 corners Node::corner(const int _x, const int _y)
 {
     int border = 15;
+    qDebug()<<x()<<","<<y();
+    qDebug()<<_x<<","<<_y;
     if (abs(_x - x()) < border)
     {
-        if (abs(_y - y()) < border) return (topleft);
-        if (abs(_y - y() - height) < border) return (bottomleft);
+
+        if (abs(_y - y()) < border)
+            return (topleft);
+        if (abs(_y - y() - height) < border)
+            return (bottomleft);
     }
     if (abs(_x - x()-width) < border)
     {
-        if (abs(_y - y()) < border) return (topright);
-        if (abs(_y - y() - height) < border) return (bottomright);
+        if (abs(_y - y()) < border)
+            return (topright);
+        if (abs(_y - y() - height) < border)
+            return (bottomright);
     }
     return (corners::none);
 }
