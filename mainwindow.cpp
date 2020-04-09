@@ -6,6 +6,7 @@
 #include "propmodel.h"
 #include "delegate.h"
 #include "node.h"
+#include "edge.h"
 
 using namespace std;
 
@@ -161,7 +162,7 @@ void MainWindow::onaddlink()
 
 }
 
-void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type)
+void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type,  Edge* edge)
 {
     Link link;
     link.SetQuantities(system.GetMetaModel(),type.toStdString());
@@ -169,8 +170,12 @@ void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
     link.SetName(LinkName.toStdString());
     system.AddLink(link,sourceblock.toStdString(),targetblock.toStdString());
     system.object(LinkName.toStdString())->AssignRandomPrimaryKey();
-    dView->node ->SetObject(system.object(LinkName.toStdString()));
-
+    edge->SetObject(system.object(LinkName.toStdString()));
+    foreach (QAction* action, ui->mainToolBar->actions())
+    {
+        action->setChecked(false);
+    }
+    RefreshTreeView();
 
 }
 
@@ -229,6 +234,23 @@ void MainWindow::RefreshTreeView()
             QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
             treechlditem->setData(0,Qt::UserRole,"child");
             treechlditem->setText(0,QString::fromStdString(system.block(i)->GetName()));
+            treeitem->addChild(treechlditem);
+        }
+    }
+
+    for (int i=0; i<system.LinksCount(); i++)
+    {
+        QString TypeCategory = QString::fromStdString(system.link(i)->TypeCategory());
+        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.link(i)->TypeCategory()),Qt::MatchExactly);
+        if (MatchedItems.size()==0)
+            qDebug() << "No category called '" + TypeCategory + "' was found!";
+        else if (MatchedItems.size()>1)
+            qDebug() << "More than one category called '" + TypeCategory + "' was found!";
+        else {
+            QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
+            QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setText(0,QString::fromStdString(system.link(i)->GetName()));
             treeitem->addChild(treechlditem);
         }
     }

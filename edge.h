@@ -22,7 +22,7 @@ public:
     void adjust();
     QPointF sourcePoint;
     QPointF destPoint;
-    qreal arrowSize;
+    qreal arrowSize = 10;
     Object_Types itemType = Object_Types::Connector;
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;

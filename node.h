@@ -28,7 +28,7 @@ public:
     QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
     Object *object();
-    int Width() const {return  width;};
+    int Width() const {return  width;}
     int Height() const {return height;}
     corners corner(const int _x, const int _y);
     edgesides edge(const int x, const int y);

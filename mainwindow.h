@@ -21,7 +21,7 @@ public:
     PropModel *propModel() {return propmodel;}
     void resetPropModel() { propmodel = nullptr ;}
     System *GetSystem() {return &system;}
-    void AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type );
+    void AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type, Edge* edge);
 private:
     Ui::MainWindow *ui;
     System system;

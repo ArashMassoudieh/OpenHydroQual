@@ -335,6 +335,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         if (!child)	break;
         if (child->itemType != Object_Types::Block) break;
         if (Node1 != child) new Edge(Node1, child, connect_feature, this);
+        setMode(1);
         break;
     }
     //	default:
