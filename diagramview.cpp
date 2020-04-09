@@ -3,6 +3,8 @@
 #include "node.h"
 #include "edge.h"
 #include "QMouseEvent"
+#include "QDebug"
+#include "QMenu"
 
 DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsView(parent)
 {
@@ -15,6 +17,7 @@ DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsVi
     setViewportUpdateMode(BoundingRectViewportUpdate);
     setRenderHint(QPainter::Antialiasing);
     setTransformationAnchor(AnchorUnderMouse);
+    setMode(0);
     QObject::connect(MainGraphicsScene, SIGNAL(changed(const QList<QRectF>)), this, SLOT(sceneChanged()));
 
 }
@@ -25,12 +28,16 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
         mainWindow()->resetPropModel();
     Node *node = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
     if (node)
-    {	//qDebug() << "Name: "<< node->Name()<<" Flag:" << node->flags() << "enabled:" << node->isEnabled() << "active:" << node->isActive();
-    }
+        if (node->itemType==Object_Types::Block)
+        {
+            qDebug() << "Name: "<< node->Name()<<" Flag:" << node->flags() << "enabled:" << node->isEnabled() << "active:" << node->isActive();
+        }
     Edge *edge = qgraphicsitem_cast<Edge*> (itemAt(event->pos())); //Get the item at the position
     if (edge)
-    {	//qDebug() << "Name: " << edge->Name() << " Flag:" << edge->flags() << "enabled:" << edge->isEnabled() << "active:" << edge->isActive();
-    }
+        if (edge->itemType==Object_Types::Connector)
+        {
+            qDebug() << "Name: " << edge->Name() << " Flag:" << edge->flags() << "enabled:" << edge->isEnabled() << "active:" << edge->isActive();
+        }
 
     if (event->buttons() == Qt::MiddleButton && Operation_Mode == Operation_Modes::NormalMode)
     {
@@ -287,8 +294,9 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         Node *node = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
         Edge *edge = qgraphicsitem_cast<Edge*> (itemAt(event->pos())); //Get the item at the position
         if (event->button() == Qt::LeftButton && dragMode()!=DragMode::RubberBandDrag)
-            if (event->modifiers() && Qt::ControlModifier) {
+            if (event->modifiers()) {
                 if (node)
+                if (node->itemType==Object_Types::Block)
                 {
                     if (selectedNodes().contains(node))
                         node->setSelected(true);
@@ -296,6 +304,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
                         node->setSelected(false);
                 }
                 if (edge)
+                if (edge->itemType==Object_Types::Connector)
                 {
                     if (selectedEdges().contains(edge))
                         edge->setSelected(false);
@@ -529,4 +538,60 @@ Operation_Modes DiagramView::setModeCursor()
 }
 
 
+void DiagramView::nodeContextMenuRequested(Node* n, QPointF pos, QMenu *menu)
+{
+    bool called_by_clicking_on_graphical_object = false;
+    if (!menu) {
+        menu = new QMenu;
+        menu->addAction("Delete");
+        called_by_clicking_on_graphical_object = true;
+    }
+    menu->addAction("Select");
+    QMap < QAction *, QStringList> menuKey;
+
+    QAction *selectedAction;
+    if (called_by_clicking_on_graphical_object)
+        selectedAction = menu->exec(mapToGlobal(mapFromScene(pos.toPoint())));
+    else
+        selectedAction = menu->exec(pos.toPoint());
+
+    if (selectedAction != nullptr)
+    {
+        if (selectedAction->text() == "Select")
+            n->setSelected(true);
+        qDebug()<<selectedAction->text();
+        if (selectedAction->text().left(6) == "Delete")
+        {
+        qDebug()<<"Here we have to delete the object";
+        // Need work
+        };
+
+
+        if (menuKey.keys().contains(selectedAction))
+        {
+
+        }
+    }
+
+}
+
+void DiagramView::edgeContextMenuRequested(Edge* e, QPointF pos, QMenu *menu)
+{
+    QAction *deleteAction;
+    bool called_by_clicking_on_graphical_object = false;
+    if (!menu) {
+        menu = new QMenu();
+        deleteAction = menu->addAction("Delete");
+        called_by_clicking_on_graphical_object = true;
+    }
+    QAction *markAction = menu->addAction("Select");
+
+    QAction *selectedAction;
+    if (called_by_clicking_on_graphical_object)
+        selectedAction = menu->exec(mapToGlobal(mapFromScene(pos.toPoint())));
+    else
+        selectedAction = menu->exec(pos.toPoint());
+
+
+}
 

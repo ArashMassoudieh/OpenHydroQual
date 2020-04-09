@@ -165,6 +165,8 @@ void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
 {
     QObject* obj = sender();
     Link link;
+    link.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
+    link.SetType(obj->objectName().toStdString());
     link.SetName(LinkName.toStdString());
     system.AddLink(link,sourceblock.toStdString(),targetblock.toStdString());
     system.object(LinkName.toStdString())->AssignRandomPrimaryKey();

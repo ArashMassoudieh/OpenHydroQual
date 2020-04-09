@@ -3,6 +3,7 @@
 #include "qpainter.h"
 #include "diagramview.h"
 #include "mainwindow.h"
+#include "QGraphicsSceneContextMenuEvent"
 
 static const double Pi = 3.14159265358979323846264338327950288419717;
 static double TwoPi = 2.0 * Pi;
@@ -52,6 +53,20 @@ Edge::Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramVie
     parent->mainWindow()->AddLink(name, sourceNode->Name(),destNode->Name(),edgeType);
     //changed();
 }
+
+Edge::Edge(Edge &E)
+{
+    source = E.source;
+    dest = E.dest;
+    sourcePoint = E.sourcePoint;
+    destPoint = E.destPoint;
+    arrowSize = E.arrowSize;
+    parent = E.parent;
+    avoidCrossObjects = E.avoidCrossObjects;
+    itemType = E.itemType;
+}
+
+
 void Edge::adjust()
 {
     if (!source || !dest)
@@ -193,3 +208,11 @@ int Edge::dist(const QPointF point)
     int dist = int(abs(x0*(y2 - y1) - y0*(x2 - x1) + x2*y1 - y2*x1) / sqrt((y2 - y1) ^ 2 + (x2 - x1) ^ 2));
     return dist;
 }
+
+void Edge::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+    QPointF p = QPointF(x() + event->pos().x(), y() + event->pos().y());
+    parent->edgeContextMenuRequested(this, p);
+
+}
+

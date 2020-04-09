@@ -65,6 +65,10 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         radialGrad.setColorAt(1, Qt::darkGreen);
     }
 
+    if (parent->colorCode.nodes)
+        painter->setBrush(color.color1);
+    else
+        painter->setBrush(radialGrad);
 
     painter->setPen(QPen(Qt::white, (bold) ? 2 : 0));
     painter->drawEllipse(0, 0, width, height);
@@ -144,3 +148,21 @@ edgesides Node::edge(const int _x, const int _y)
     return edgesides::noside;
 }
 
+Node::Node(const Node &E)
+{
+    setFlags(E.flags());
+    setAcceptHoverEvents(true);
+    setCacheMode(DeviceCoordinateCache);
+    setZValue(E.zValue());
+    setPos(E.pos());
+    setFlag(ItemSendsGeometryChanges);
+    edgeList = E.edgeList;
+    newPos = E.newPos;
+    name = E.name;
+    width = E.Width();
+    height = E.Height();
+    parent = E.parent;
+    itemType = E.itemType;
+    objectPrimaryKey = E.objectPrimaryKey;
+
+}
