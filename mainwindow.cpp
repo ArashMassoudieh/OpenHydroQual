@@ -440,3 +440,15 @@ void MainWindow::onzoomall()
 
     dView->fitInView(newRect,Qt::KeepAspectRatio);
 }
+
+void MainWindow::onsave()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+            tr("Save"), "",
+            tr("script files (*.scr)"));
+    if (fileName!="")
+    {
+        system.SavetoScriptFile(fileName.toStdString());
+    }
+
+}

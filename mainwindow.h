@@ -47,6 +47,7 @@ private slots:
     void onzoomin();
     void onzoomout();
     void onzoomall();
+    void onsave();
 
 };
 
