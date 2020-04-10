@@ -6,6 +6,7 @@
 
 QT       += core gui opengl printsupport
 INCLUDEPATH += ../Aquifolium/include
+INCLUDEPATH += ../Aquifolium/include/GA
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
 
@@ -26,6 +27,8 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_version Aquifolium DEBUG
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 CONFIG += c++14
+QMAKE_LFLAGS += -fopenmp
+QMAKE_CXXFLAGS += -fopenmp
 
 SOURCES += \
     diagramview.cpp \
@@ -61,12 +64,17 @@ SOURCES += \
     ../Aquifolium/src/Parameter.cpp \
     ../Aquifolium/src/ErrorHandler.cpp \
     ../Aquifolium/src/Link.cpp \
-    ../Aquifolium/src/GA/DistributionNUnif.cpp \
     node.cpp \
     propmodel.cpp \
     delegate.cpp \
     ray.cpp \
-    utilityfuncs.cpp
+    utilityfuncs.cpp \
+    ../Aquifolium/src/Command.cpp \
+    ../Aquifolium/src/Script.cpp \
+    ../Aquifolium/src/GA/Binary.cpp \
+    ../Aquifolium/src/GA/Individual.cpp \
+    ../Aquifolium/src/GA/DistributionNUnif.cpp \
+    ../Aquifolium/src/GA/Distribution.cpp
 
 HEADERS += \
     ../Aquifolium/include/Precipitation.h \
@@ -110,7 +118,14 @@ HEADERS += \
     ray.h \
     utilityfuncs.h \
     ../Aquifolium/include/Parameter.h \
-    ../Aquifolium/include/Parameter_Set.h
+    ../Aquifolium/include/Parameter_Set.h \
+    ../Aquifolium/include/Command.h \
+    ../Aquifolium/include/Script.h \
+    ../Aquifolium/src/GA/GA.hpp \
+    ../Aquifolium/include/GA/Binary.h \
+    ../Aquifolium/include/GA/Distribution.h \
+    ../Aquifolium/include/GA/DistributionNUnif.h \
+    ../Aquifolium/include/GA/Individual.h
 
 FORMS += \
         mainwindow.ui

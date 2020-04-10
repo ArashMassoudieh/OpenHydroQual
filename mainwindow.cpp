@@ -7,6 +7,8 @@
 #include "delegate.h"
 #include "node.h"
 #include "edge.h"
+#include "Script.h"
+#include "QFileDialog"
 
 using namespace std;
 
@@ -449,6 +451,20 @@ void MainWindow::onsave()
     if (fileName!="")
     {
         system.SavetoScriptFile(fileName.toStdString());
+    }
+
+}
+
+
+void MainWindow::onopen()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+            tr("Open"), "",
+            tr("script files (*.scr)"));
+    if (fileName!="")
+    {
+        Script scr(fileName.toStdString(),&system);
+        system.CreateFromScript(scr);
     }
 
 }
