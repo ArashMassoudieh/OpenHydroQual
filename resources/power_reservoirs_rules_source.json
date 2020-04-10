@@ -36,6 +36,18 @@
       "delegate": "UnitBox",
       "unit": "m~^2"
     },
+    "x": {
+      "type": "value",
+      "description": "x",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "y": {
+      "type": "value",
+      "description": "x",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
     "Slope": {
       "type": "value",
       "description": "Catchment slope in the direction of flow",
@@ -91,6 +103,18 @@
       "ask_user": "true",
       "delegate": "String"
     },
+    "x": {
+      "type": "value",
+      "description": "x",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "y": {
+      "type": "value",
+      "description": "x",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
     "Storage": {
       "type": "balance",
       "massbalance": "true",
@@ -134,6 +158,18 @@
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
+    },
+    "x": {
+      "type": "value",
+      "description": "x",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "y": {
+      "type": "value",
+      "description": "x",
+      "ask_user": "true",
+      "delegate": "UnitBox"
     },
     "Storage": {
       "type": "balance",
@@ -265,6 +301,18 @@
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
+    },
+    "x": {
+      "type": "value",
+      "description": "x",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "y": {
+      "type": "value",
+      "description": "x",
+      "ask_user": "true",
+      "delegate": "UnitBox"
     },
     "Storage": {
       "type": "balance",

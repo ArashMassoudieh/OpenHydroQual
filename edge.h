@@ -52,6 +52,7 @@ private:
 public slots:
     void hoverMoveEvent(QGraphicsSceneHoverEvent * event) override;
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 };
 
 

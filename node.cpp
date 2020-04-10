@@ -109,9 +109,13 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
         foreach (Edge *edge, edgeList)
             edge->adjust();
         break;
+    case QGraphicsItem::ItemSelectedChange:
+        if (value==true)
+            parent->mainWindow()->PopulatePropertyTable(object()->GetVars());
+        break;
     default:
         break;
-    };
+    }
     return QGraphicsItem::itemChange(change, value);
 }
 
@@ -174,3 +178,4 @@ Node::Node(const Node &E)
     objectPrimaryKey = E.objectPrimaryKey;
 
 }
+

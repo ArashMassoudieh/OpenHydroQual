@@ -216,3 +216,15 @@ void Edge::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 }
 
+QVariant Edge::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    switch (change) {
+    case QGraphicsItem::ItemSelectedChange:
+        if (value==true)
+            parent->mainWindow()->PopulatePropertyTable(object()->GetVars());
+        break;
+    default:
+        break;
+    }
+    return QGraphicsItem::itemChange(change, value);
+}

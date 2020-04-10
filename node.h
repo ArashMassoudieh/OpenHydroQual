@@ -60,6 +60,7 @@ protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
 
+
 signals:
     void hoverMoveEvent(QGraphicsSceneHoverEvent * event) override;
 

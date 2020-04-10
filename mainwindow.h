@@ -22,6 +22,7 @@ public:
     void resetPropModel() { propmodel = nullptr ;}
     System *GetSystem() {return &system;}
     void AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type, Edge* edge);
+    void PopulatePropertyTable(QuanSet* quanset);
 private:
     Ui::MainWindow *ui;
     System system;
@@ -30,7 +31,6 @@ private:
     bool BuildObjectsToolBar();
     void RefreshTreeView();
     string CreateNewName(string type);
-    void PopulatePropertyTable(QuanSet* quanset);
     PropModel *propmodel = nullptr;
     void Populate_General_ToolBar();
 

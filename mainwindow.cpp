@@ -170,6 +170,7 @@ void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
     link.SetType(type.toStdString());
     link.SetName(LinkName.toStdString());
     system.AddLink(link,sourceblock.toStdString(),targetblock.toStdString());
+    system.object(LinkName.toStdString())->SetName(LinkName.toStdString());
     system.object(LinkName.toStdString())->AssignRandomPrimaryKey();
     edge->SetObject(system.object(LinkName.toStdString()));
     foreach (QAction* action, ui->mainToolBar->actions())
