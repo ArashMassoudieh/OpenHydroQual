@@ -41,8 +41,8 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
 
    switch (role) {
    case Qt::DisplayRole:
-       if (col == 0) return QString::fromStdString(quanset->GetVar(index.row())->GetName());
-       if (col == 1) return QString::fromStdString(quanset->GetVar(index.row())->GetProperty());
+       if (col == 0) return QString::fromStdString(quanset->GetVarAskable(index.row())->GetName());
+       if (col == 1) return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty());
        break;
    case Qt::FontRole:
        if (col == 1) {
@@ -60,10 +60,10 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
        //    return Qt::Checked;
        break;
    case CustomRoleCodes::TypeRole:
-       return QString::fromStdString(quanset->GetVar(index.row())->Delegate());
+       return QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate());
        break;
    case CustomRoleCodes::Role::DefaultValuesListRole:
-       if (QString::fromStdString(quanset->GetVar(index.row())->Delegate()).contains("Sources"))
+       if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).contains("Sources"))
        {
 
            return toQSringList(mainwindow->GetSystem()->GetAllSourceNames());
