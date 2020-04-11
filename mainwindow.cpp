@@ -460,7 +460,7 @@ void MainWindow::onopen()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
             tr("Open"), "",
-            tr("script files (*.scr)"));
+            tr("Script files (*.scr);; All files (*.*)"));
     if (fileName!="")
     {
         Script scr(fileName.toStdString(),&system);
