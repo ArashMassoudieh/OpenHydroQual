@@ -33,7 +33,7 @@ private:
     string CreateNewName(string type);
     PropModel *propmodel = nullptr;
     void Populate_General_ToolBar();
-
+    void RecreateGraphicItemsFromSystem();
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);

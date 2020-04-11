@@ -653,4 +653,9 @@ void DiagramView::sceneChanged()
     MainGraphicsScene->setSceneRect(newRect);
 }
 
+void DiagramView::DeleteAllItems()
+{
+    scene()->clear();
+}
+
 

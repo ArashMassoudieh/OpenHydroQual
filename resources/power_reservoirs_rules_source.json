@@ -6,7 +6,7 @@
     "icon": {
       "filename": "catchment.png"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -73,7 +73,7 @@
     "icon": {
       "filename": "cloud.jpg"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true",
       "delegate": "String"
@@ -98,7 +98,7 @@
     "icon": {
       "filename": "reservoir.png"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true",
       "delegate": "String"
@@ -154,7 +154,7 @@
     "icon": {
       "filename": "reservoir.png"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -210,7 +210,7 @@
     "icon": {
       "filename": "reservoir_link.png"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -230,7 +230,7 @@
     "icon": {
       "filename": "reservoir_link.png"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -250,7 +250,7 @@
     "icon": {
       "filename": "reservoir_link.png"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -297,7 +297,7 @@
     "icon": {
       "filename": "farm.png"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -330,7 +330,7 @@
     "icon": {
       "filename": "farm_link.png"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true"
     },
@@ -349,7 +349,7 @@
     "icon": {
       "filename": "parameter.png"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -375,7 +375,7 @@
     "icon": {
       "filename": "objective.png"
     },
-    "Name": {
+    "name": {
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 

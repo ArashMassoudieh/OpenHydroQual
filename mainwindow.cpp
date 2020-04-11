@@ -464,7 +464,33 @@ void MainWindow::onopen()
     if (fileName!="")
     {
         Script scr(fileName.toStdString(),&system);
+        system.clear();
         system.CreateFromScript(scr);
+    }
+    RecreateGraphicItemsFromSystem();
+    RefreshTreeView();
+}
+
+void MainWindow::RecreateGraphicItemsFromSystem()
+{
+    dView->DeleteAllItems();
+    for (int i=0; i<system.BlockCount(); i++)
+    {
+        Node *node = new Node(dView,&system);
+        dView->repaint();
+        system.block(i)->AssignRandomPrimaryKey();
+        node->SetObject(system.block(i));
+    }
+    for (int i=0; i<system.LinksCount(); i++)
+    {
+        Node *s_node = dView->node(QString::fromStdString(system.block(system.link(i)->s_Block_No())->GetName()));
+        Node *e_node = dView->node(QString::fromStdString(system.block(system.link(i)->e_Block_No())->GetName()));
+        if (s_node && e_node);
+        {
+            Edge *edge = new Edge(s_node,e_node,dView );
+            system.link(i)->AssignRandomPrimaryKey();
+            edge->SetObject(system.link(i));
+        }
     }
 
 }

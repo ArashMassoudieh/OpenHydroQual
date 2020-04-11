@@ -32,6 +32,7 @@ public:
     Node* node(const QString &name) const;
     Edge* edge(const QString &name) const;
     void scaleView(qreal scaleFactor);
+    void DeleteAllItems();
 
 private:
     MainWindow *mainwindow;

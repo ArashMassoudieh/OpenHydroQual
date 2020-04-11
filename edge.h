@@ -18,6 +18,7 @@ class Edge : public QGraphicsItem
 public:
     Edge(DiagramView *parent);
     Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramView *_parent = nullptr);
+    Edge(Node *sourceNode, Node *destNode, DiagramView *_parent=nullptr);
     Edge(Edge &E);
     void adjust();
     QPointF sourcePoint;
