@@ -1,0 +1,82 @@
+{
+  "solver_settings": {
+    "description": "Solver Settings",
+    "type": "setting",
+    "typecategory": "Settings",
+      "c_n_weight": {
+      "type": "value",
+      "default": "1",
+      "description": "Crank-Nicholson Time Weight",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "code": "cn_weight"
+    },
+    "name": {
+      "description": "Name",
+      "setvalue": "Solver Settings",
+      "type": "string",
+      "ask_user": "false",
+      "delegate": "String" 
+    },
+    "nr_tolerance": {
+      "type": "value",
+      "default": "0.001",
+      "description": "Newton-Raphson Tolerance",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "code": "nr_tolerance"
+    },
+    "nr_timestep_reduction_factor": {
+      "type": "value",
+      "default": "0.75",
+      "description": "Newton-Raphson Time-step reduction factor",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "code": "nr_timestep_reduction_factor"
+    },
+    "nr_timestep_reduction_factor_fail": {
+      "type": "value",
+      "default": "0.2",
+      "description": "Newton-Raphson Time-step reduction factor when fail",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "code": "nr_timestep_reduction_factor_fail"
+    },
+    "minimum_timestep": {
+      "type": "value",
+      "default": "1e-6",
+      "description": "Minimum time-step",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "code": "minimum_timestep"
+    }
+  },
+  "general_parameters": {
+    "type": "setting",
+    "typecategory": "Settings",
+    "name": {
+      "description": "Name",
+      "setvalue": "General Settings",      
+      "type": "string",
+      "ask_user": "false",
+      "delegate": "String" 
+    },
+    "description": "General Parameters",
+    "simulation_start_time": {
+      "default": "0",
+      "description": "Simulation start time",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "DateTime",
+      "code": "time_min"
+    },
+    "simulation_end_time": {
+      "default": "1",
+      "description": "Simulation end time",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "DateTime",
+      "code": "time_max"
+    }
+  }
+}

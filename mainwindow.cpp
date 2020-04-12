@@ -22,13 +22,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->horizontalLayout->addWidget(dView);
 #ifndef Win_Version
     string modelfilename = qApp->applicationDirPath().toStdString() + "/../../resources/power_reservoirs_rules_source.json";
-    string entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/entities.json";
+    string entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
 #else
     string modelfilename = qApp->applicationDirPath().toStdString() + "/resources/power_reservoirs_rules_source.json";
-    string entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/entities.json";
+    string entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
 #endif // !Win_Version
     system.GetQuanTemplate(modelfilename);
-    Populate_TreeWidget();
+    system.ReadSystemSettingsTemplate(entitiesfilename);
+    RefreshTreeView();
     //connect(ui->treeWidget, SIGNAL(closeEvent()),ui->actionObject_Browser, SLOT())
 
     connect(ui->actionObject_Browser,SIGNAL(triggered()),this,SLOT(on_check_object_browser()));
@@ -225,6 +226,24 @@ void MainWindow::onaddentity()
 void MainWindow::RefreshTreeView()
 {
     Populate_TreeWidget();
+
+    for (int i=0; i<system.SettingsCount(); i++)
+    {
+        QString TypeCategory = QString::fromStdString(system.Setting(i)->TypeCategory());
+        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.Setting(i)->TypeCategory()),Qt::MatchExactly);
+        if (MatchedItems.size()==0)
+            qDebug() << "No category called '" + TypeCategory + "' was found!";
+        else if (MatchedItems.size()>1)
+            qDebug() << "More than one category called '" + TypeCategory + "' was found!";
+        else {
+            QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
+            QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setText(0,QString::fromStdString(system.Setting(i)->GetName()));
+            treeitem->addChild(treechlditem);
+        }
+    }
+
     for (int i=0; i<system.BlockCount(); i++)
     {
         QString TypeCategory = QString::fromStdString(system.block(i)->TypeCategory());
