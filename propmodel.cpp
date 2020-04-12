@@ -41,7 +41,7 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
 
    switch (role) {
    case Qt::DisplayRole:
-       if (col == 0) return QString::fromStdString(quanset->GetVarAskable(index.row())->GetName());
+       if (col == 0) return QString::fromStdString(quanset->GetVarAskable(index.row())->Description());
        if (col == 1) return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty());
        break;
    case Qt::FontRole:
@@ -61,6 +61,10 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
        break;
    case CustomRoleCodes::TypeRole:
        return QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate());
+       break;
+
+   case CustomRoleCodes::VariableNameRole:
+       return QString::fromStdString(quanset->GetVarAskable(index.row())->GetName());
        break;
    case CustomRoleCodes::Role::DefaultValuesListRole:
        if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).contains("Sources"))
@@ -99,10 +103,11 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
     if (role == CustomRoleCodes::Role::loadIndex) {
         QModelIndex idx = load();
         role = Qt::EditRole;
-        VariableName = idx.sibling(idx.row(), 0).data().toString();
+        //VariableName = idx.sibling(idx.row(), 0).data().toString();
+        VariableName = idx.data(CustomRoleCodes::VariableNameRole).toString();
     }
     else
-        VariableName = index.sibling(row, 0).data().toString();
+        VariableName = index.data(CustomRoleCodes::VariableNameRole).toString();
 
     bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString());
 

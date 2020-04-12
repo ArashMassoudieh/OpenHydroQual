@@ -44,7 +44,7 @@
     },
     "y": {
       "type": "value",
-      "description": "x",
+      "description": "y",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
@@ -111,7 +111,7 @@
     },
     "y": {
       "type": "value",
-      "description": "x",
+      "description": "y",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
@@ -167,7 +167,7 @@
     },
     "y": {
       "type": "value",
-      "description": "x",
+      "description": "y",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
@@ -310,7 +310,7 @@
     },
     "y": {
       "type": "value",
-      "description": "x",
+      "description": "y",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
