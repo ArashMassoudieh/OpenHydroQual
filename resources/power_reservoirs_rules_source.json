@@ -7,6 +7,7 @@
       "filename": "catchment.png"
     },
     "name": {
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -74,6 +75,7 @@
       "filename": "cloud.jpg"
     },
     "name": {
+      "description": "Name",      
       "type": "string",
       "ask_user": "true",
       "delegate": "String"
@@ -99,6 +101,7 @@
       "filename": "reservoir.png"
     },
     "name": {
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String"
@@ -155,6 +158,7 @@
       "filename": "reservoir.png"
     },
     "name": {
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -211,6 +215,7 @@
       "filename": "reservoir_link.png"
     },
     "name": {
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -231,6 +236,7 @@
       "filename": "reservoir_link.png"
     },
     "name": {
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -251,6 +257,7 @@
       "filename": "reservoir_link.png"
     },
     "name": {
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -298,6 +305,7 @@
       "filename": "farm.png"
     },
     "name": {
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -331,8 +339,10 @@
       "filename": "farm_link.png"
     },
     "name": {
+      "description": "Name",
       "type": "string",
-      "ask_user": "true"
+      "ask_user": "true",
+      "delegate": "String" 
     },
     "flow": {
       "type": "timeseries",
@@ -350,6 +360,7 @@
       "filename": "parameter.png"
     },
     "name": {
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
@@ -376,6 +387,7 @@
       "filename": "objective.png"
     },
     "name": {
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String" 
