@@ -34,6 +34,8 @@ private:
     PropModel *propmodel = nullptr;
     void Populate_General_ToolBar();
     void RecreateGraphicItemsFromSystem();
+    string modelfilename;
+    string entitiesfilename;
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);

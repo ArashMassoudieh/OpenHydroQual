@@ -21,15 +21,14 @@ MainWindow::MainWindow(QWidget *parent) :
     dView->setObjectName(QStringLiteral("graphicsView"));
     ui->horizontalLayout->addWidget(dView);
 #ifndef Win_Version
-    string modelfilename = qApp->applicationDirPath().toStdString() + "/../../resources/power_reservoirs_rules_source.json";
-    string entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
+    modelfilename = qApp->applicationDirPath().toStdString() + "/../../resources/power_reservoirs_rules_source.json";
+    entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
 #else
-    string modelfilename = qApp->applicationDirPath().toStdString() + "/resources/power_reservoirs_rules_source.json";
-    string entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
+    modelfilename = qApp->applicationDirPath().toStdString() + "/resources/power_reservoirs_rules_source.json";
+    entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
 #endif // !Win_Version
-    system.
-    system.GetQuanTemplate(modelfilename);
-    system.ReadSystemSettingsTemplate(entitiesfilename);
+    system.GetQuanTemplate(modelfilename);  //Read the template from modelfilename
+    system.ReadSystemSettingsTemplate(entitiesfilename); //Read the system settings
     RefreshTreeView();
     //connect(ui->treeWidget, SIGNAL(closeEvent()),ui->actionObject_Browser, SLOT())
 
@@ -486,6 +485,7 @@ void MainWindow::onopen()
     {
         Script scr(fileName.toStdString(),&system);
         system.clear();
+        system.ReadSystemSettingsTemplate(entitiesfilename);
         system.CreateFromScript(scr);
     }
     RecreateGraphicItemsFromSystem();
@@ -501,6 +501,8 @@ void MainWindow::RecreateGraphicItemsFromSystem()
         dView->repaint();
         system.block(i)->AssignRandomPrimaryKey();
         node->SetObject(system.block(i));
+        node->setX(system.block(i)->GetVal("x"));
+        node->setY(system.block(i)->GetVal("y"));
     }
     for (int i=0; i<system.LinksCount(); i++)
     {
