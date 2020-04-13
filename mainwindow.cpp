@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     string modelfilename = qApp->applicationDirPath().toStdString() + "/resources/power_reservoirs_rules_source.json";
     string entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
 #endif // !Win_Version
+    system.
     system.GetQuanTemplate(modelfilename);
     system.ReadSystemSettingsTemplate(entitiesfilename);
     RefreshTreeView();
@@ -514,3 +515,6 @@ void MainWindow::RecreateGraphicItemsFromSystem()
     }
 
 }
+
+
+
