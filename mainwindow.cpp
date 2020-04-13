@@ -9,6 +9,7 @@
 #include "edge.h"
 #include "Script.h"
 #include "QFileDialog"
+#include "runtimewindow.h"
 
 using namespace std;
 
@@ -38,6 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
     BuildObjectsToolBar();
     connect(ui->treeWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(preparetreeviewMenu(const QPoint&)));
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
+    connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
+    connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
+    connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnew()));
     ui->tableView->setItemDelegateForColumn(1,new Delegate(this,this));
     Populate_General_ToolBar();
 }
@@ -399,6 +403,7 @@ void MainWindow::Populate_General_ToolBar()
     actionsave->setIcon(iconsave);
     ui->GeneraltoolBar->addAction(actionsave);
     actionsave->setText("Save");
+    actionsave->setToolTip("Save");
     connect(actionsave, SIGNAL(triggered()), this, SLOT(onsave()));
     // Open //
     QAction* actionopen = new QAction(this);
@@ -407,7 +412,8 @@ void MainWindow::Populate_General_ToolBar()
     iconopen.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/open.png"), QSize(), QIcon::Normal, QIcon::Off);
     actionopen->setIcon(iconopen);
     ui->GeneraltoolBar->addAction(actionopen);
-    actionopen->setText("Save");
+    actionopen->setText("Open");
+    actionopen->setToolTip("Open");
     connect(actionopen, SIGNAL(triggered()), this, SLOT(onopen()));
     // ZoomAll //
     QAction* actionzoomall = new QAction(this);
@@ -417,6 +423,7 @@ void MainWindow::Populate_General_ToolBar()
     actionzoomall->setIcon(iconzoomall);
     ui->GeneraltoolBar->addAction(actionzoomall);
     actionzoomall->setText("Zoom Extends");
+    actionzoomall->setToolTip("Zoom All");
     connect(actionzoomall, SIGNAL(triggered()), this, SLOT(onzoomall()));
     // ZoomIn //
     QAction* actionzoomin = new QAction(this);
@@ -426,6 +433,7 @@ void MainWindow::Populate_General_ToolBar()
     actionzoomin->setIcon(iconzoomin);
     ui->GeneraltoolBar->addAction(actionzoomin);
     actionzoomin->setText("Zoom In");
+    actionzoomin->setToolTip("Zoom In");
     connect(actionzoomin, SIGNAL(triggered()), this, SLOT(onzoomin()));
     // ZoomOut //
     QAction* actionzoomout = new QAction(this);
@@ -435,7 +443,20 @@ void MainWindow::Populate_General_ToolBar()
     actionzoomout->setIcon(iconzoomout);
     ui->GeneraltoolBar->addAction(actionzoomout);
     actionzoomout->setText("Zoom Out");
+    actionzoomout->setToolTip("Zoom Out");
     connect(actionzoomout, SIGNAL(triggered()), this, SLOT(onzoomout()));
+    QAction* actionrun = new QAction(this);
+    QAction* seperator = new QAction();
+    seperator->setSeparator(true);
+    ui->GeneraltoolBar->addAction(seperator);
+    actionzoomall->setObjectName("Run Model");
+    QIcon iconrun;
+    iconrun.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/runmodel.png"), QSize(), QIcon::Normal, QIcon::Off);
+    actionrun->setIcon(iconrun);
+    ui->GeneraltoolBar->addAction(actionrun);
+    actionrun->setText("Run Model");
+    actionrun->setToolTip("Run Model");
+    connect(actionrun, SIGNAL(triggered()), this, SLOT(onrunmodel()));
 
 }
 
@@ -516,6 +537,15 @@ void MainWindow::RecreateGraphicItemsFromSystem()
         }
     }
 
+}
+
+void MainWindow::onrunmodel()
+{
+    system.SetSystemSettings();
+    rtw = new RunTimeWindow();
+    rtw->show();
+    system.SetRunTimeWindow(rtw);
+    system.Solve(true);
 }
 
 

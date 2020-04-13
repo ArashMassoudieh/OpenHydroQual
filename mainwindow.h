@@ -6,6 +6,7 @@
 #include <QTreeWidget>
 #include "propmodel.h"
 #include "diagramview.h"
+#include "runtimewindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -36,6 +37,8 @@ private:
     void RecreateGraphicItemsFromSystem();
     string modelfilename;
     string entitiesfilename;
+    RunTimeWindow *rtw = nullptr;
+
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);
@@ -51,6 +54,7 @@ private slots:
     void onzoomall();
     void onsave();
     void onopen();
+    void onrunmodel();
 
 };
 

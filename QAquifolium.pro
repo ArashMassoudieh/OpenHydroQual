@@ -9,6 +9,7 @@ INCLUDEPATH += ../Aquifolium/include
 INCLUDEPATH += ../Aquifolium/include/GA
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
+INCLUDEPATH += ../qcustomplot/
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -76,7 +77,9 @@ SOURCES += \
     ../Aquifolium/src/GA/Binary.cpp \
     ../Aquifolium/src/GA/Individual.cpp \
     ../Aquifolium/src/GA/DistributionNUnif.cpp \
-    ../Aquifolium/src/GA/Distribution.cpp
+    ../Aquifolium/src/GA/Distribution.cpp \
+    runtimewindow.cpp \
+    ../qcustomplot/qcustomplot.cpp
 
 HEADERS += \
     ../Aquifolium/include/Precipitation.h \
@@ -127,10 +130,13 @@ HEADERS += \
     ../Aquifolium/include/GA/Binary.h \
     ../Aquifolium/include/GA/Distribution.h \
     ../Aquifolium/include/GA/DistributionNUnif.h \
-    ../Aquifolium/include/GA/Individual.h
+    ../Aquifolium/include/GA/Individual.h \
+    runtimewindow.h \
+    ../qcustomplot/qcustomplot.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    runtimewindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
