@@ -38,3 +38,15 @@ bin/Debug/
 include/
 
 libs/lapack-blas_lib_win64/
+
+.vs/QAquifolium/v16/
+
+debug/qmake/
+
+release/qmake/
+
+*.tlog
+
+x64/Debug/qmake/
+
+x64/Release/qmake/
