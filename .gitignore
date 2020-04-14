@@ -34,3 +34,7 @@ Makefile*
 *.qmlproject.user.*
 
 bin/Debug/
+
+include/
+
+libs/lapack-blas_lib_win64/

@@ -64,7 +64,7 @@ bool MainWindow::Populate_TreeWidget()
         Item->setData(0,Qt::UserRole,"main");
         ui->treeWidget->addTopLevelItem(Item);
     }
-
+    return true;
 }
 
 void MainWindow::on_check_object_browser()
@@ -447,7 +447,7 @@ void MainWindow::Populate_General_ToolBar()
     actionzoomout->setToolTip("Zoom Out");
     connect(actionzoomout, SIGNAL(triggered()), this, SLOT(onzoomout()));
     QAction* actionrun = new QAction(this);
-    QAction* seperator = new QAction();
+    QAction* seperator = new QAction(this);
     seperator->setSeparator(true);
     ui->GeneraltoolBar->addAction(seperator);
     actionzoomall->setObjectName("Run Model");
