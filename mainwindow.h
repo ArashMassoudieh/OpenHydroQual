@@ -38,7 +38,8 @@ private:
     string modelfilename;
     string entitiesfilename;
     RunTimeWindow *rtw = nullptr;
-
+    void closeEvent (QCloseEvent *event) override;
+    QString workingfolder;
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);

@@ -39,6 +39,14 @@ void RunTimeWindow::AppendText(const QString &s)
 {
     ui->textBrowser->append(s);
 }
+
+void RunTimeWindow::AppendErrorMessage(const QString &s)
+{
+    ui->textBrowser->setTextColor(Qt::red);
+    ui->textBrowser->append(s);
+    ui->textBrowser->setTextColor(Qt::black);
+}
+
 void RunTimeWindow::AddDataPoint(const double &t, const double value)
 {
     plot->graph(0)->addData(t,value);

@@ -21,7 +21,7 @@ public:
     void SetProgress(const double &val);
     void SetXRange(const double &tstart, const double &tend);
     void SetYRange(const double &ymin, const double &ymax);
-
+    void AppendErrorMessage(const QString &s);
 private:
     Ui::RunTimeWindow *ui;
 };

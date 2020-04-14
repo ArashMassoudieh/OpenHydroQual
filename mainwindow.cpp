@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnew()));
+    connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
     ui->tableView->setItemDelegateForColumn(1,new Delegate(this,this));
     Populate_General_ToolBar();
 }
@@ -492,6 +493,7 @@ void MainWindow::onsave()
     if (fileName!="")
     {
         system.SavetoScriptFile(fileName.toStdString());
+        workingfolder = QFileInfo(fileName).canonicalPath();
     }
 
 }
@@ -502,12 +504,15 @@ void MainWindow::onopen()
     QString fileName = QFileDialog::getOpenFileName(this,
             tr("Open"), "",
             tr("Script files (*.scr);; All files (*.*)"));
+
+
     if (fileName!="")
     {
         Script scr(fileName.toStdString(),&system);
         system.clear();
         system.ReadSystemSettingsTemplate(entitiesfilename);
         system.CreateFromScript(scr);
+        workingfolder = QFileInfo(fileName).canonicalPath();
     }
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();
@@ -546,6 +551,23 @@ void MainWindow::onrunmodel()
     rtw->show();
     system.SetRunTimeWindow(rtw);
     system.Solve(true);
+    system.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
+    system.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
+}
+
+void MainWindow::closeEvent (QCloseEvent *event)
+{
+    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "QAquifolium",
+                                                                tr("Are you sure?\n"),
+                                                                QMessageBox::Cancel | QMessageBox::Yes,
+                                                                QMessageBox::Yes);
+    if (resBtn != QMessageBox::Yes) {
+        event->ignore();
+    } else {
+        if (rtw) rtw->close();
+        event->accept();
+    }
+
 }
 
 
