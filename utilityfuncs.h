@@ -16,7 +16,7 @@ int dayOfYear(const qint64 xldate);
 double xldate2julian(const double xldate);
 double julian2xldate(const double juliandate);
 double timetodayfraction(int hh = 0, int mm = 0, int ss = 0);
-double QDate2Xldate(QDateTime &x);
+double QDate2Xldate(const QDateTime &x);
 QList<int> dayfractiontotime(double dayFraction = 0);
 QString float2date(const double d, QString format = "MMM dd yyyy", bool ignorefirst50years = true);
 QString float2datetime(const double d, QString format = "MM/dd/yyyy hh:mm:ss", bool ignorefirst50years = true);

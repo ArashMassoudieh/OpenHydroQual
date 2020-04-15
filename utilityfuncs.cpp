@@ -208,7 +208,7 @@ QStringList specialSplit(QString s)
     return r;
 }
 
-double QDate2Xldate(QDateTime &x)
+double QDate2Xldate(const QDateTime &x)
 {
     QDateTime base_time1 = QDateTime::fromString("1-1-1900 00:00", "M-d-yyyy hh:mm");
     double xxx = (x.toMSecsSinceEpoch() - base_time1.toMSecsSinceEpoch())/(1000.00*24.0*60.0*60.0)+2;

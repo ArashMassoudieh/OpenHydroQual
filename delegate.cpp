@@ -29,7 +29,10 @@ QWidget *Delegate::createEditor(QWidget *parent,
     if (delegateType.toLower().contains("date"))
     {
         QDateEdit *editor = new QDateEdit(nullptr);
-        //(option.rect.left());
+        editor->setDisplayFormat("MM.dd.yyyy");
+        QVariant var = index.data(Qt::DisplayRole);
+        QDateTime text = index.data(Qt::DisplayRole).toDateTime();
+        editor->setDate(text.date());
         return editor;
     }
     if (delegateType.contains("PushButton"))
@@ -236,7 +239,8 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     QString delegateType = index.data(CustomRoleCodes::Role::TypeRole).toString();
     if (delegateType.toLower().contains("date"))
     {
-        return;
+        QDateEdit *textBox = static_cast<QDateEdit*>(editor);
+        model->setData(index, QDate2Xldate(textBox->dateTime()) );
     }
 
     if (delegateType.contains("UnitBox"))
@@ -330,7 +334,14 @@ void Delegate::updateEditorGeometry(QWidget *editor,
     QString delegateType = index.data(CustomRoleCodes::Role::TypeRole).toString();
 
     if (delegateType.toLower().contains("date"))
+    {
+        QRect tallerRect = option.rect;
+        tallerRect.setHeight(option.rect.height());
+        tallerRect.setTop(option.rect.top());
+//		tallerRect.setTop(option.rect.top() + option.rect.height());
+        editor->setGeometry(tallerRect);
         return;
+    }
     if (delegateType.toLower().contains("multicombobox"))
     {
         QRect tallerRect = option.rect;
