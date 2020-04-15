@@ -10,7 +10,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "Storage": {
       "type": "balance",
@@ -46,6 +46,18 @@
     "y": {
       "type": "value",
       "description": "y",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_width": {
+      "type": "value",
+      "description": "_width",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_height": {
+      "type": "value",
+      "description": "_height",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
@@ -118,6 +130,18 @@
       "ask_user": "true",
       "delegate": "UnitBox"
     },
+    "_width": {
+      "type": "value",
+      "description": "_width",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_height": {
+      "type": "value",
+      "description": "_height",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
     "Storage": {
       "type": "balance",
       "massbalance": "true",
@@ -126,21 +150,21 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "UnitBox"
     },
     "reservoir_power": {
       "type": "value",
       "default": "2",
       "description": "Reservoir rating curve power",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "UnitBox"
     },
     "reservoir_coeff": {
       "type": "value",
       "default": "10",
       "description": "Reservoir rating curve coefficient",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "UnitBox"
     },
     "inflow": {
       "type": "timeseries",
@@ -148,7 +172,7 @@
       "applylimit": "true",
       "description": "Flow rate time series",
       "ask_user": "true",
-      "delegate": "Browser" 
+      "delegate": "Browser"
     }
   },
   "Special_Reservoir": {
@@ -161,7 +185,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "x": {
       "type": "value",
@@ -175,6 +199,18 @@
       "ask_user": "true",
       "delegate": "UnitBox"
     },
+    "_width": {
+      "type": "value",
+      "description": "_width",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_height": {
+      "type": "value",
+      "description": "_height",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
     "Storage": {
       "type": "balance",
       "massbalance": "true",
@@ -183,21 +219,21 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "UnitBox"
     },
     "reservoir_power": {
       "type": "value",
       "default": "2",
       "description": "Reservoir rating curve power",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "UnitBox"
     },
     "reservoir_coeff": {
       "type": "value",
       "default": "10",
       "description": "Reservoir rating curve coefficient",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "UnitBox"
     },
     "inflow": {
       "type": "timeseries",
@@ -205,7 +241,7 @@
       "applylimit": "true",
       "description": "Flow rate time series",
       "ask_user": "true",
-      "delegate": "Browser" 
+      "delegate": "Browser"
     }
   },
   "Reservoir_link": {
@@ -308,7 +344,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "x": {
       "type": "value",
@@ -322,6 +358,18 @@
       "ask_user": "true",
       "delegate": "UnitBox"
     },
+    "_width": {
+      "type": "value",
+      "description": "_width",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_height": {
+      "type": "value",
+      "description": "_height",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
     "Storage": {
       "type": "balance",
       "massbalance": "true",
@@ -329,7 +377,7 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "UnitBox"
     }
   },
   "User_flow": {

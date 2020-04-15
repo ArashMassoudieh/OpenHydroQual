@@ -42,7 +42,14 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
    switch (role) {
    case Qt::DisplayRole:
        if (col == 0) return QString::fromStdString(quanset->GetVarAskable(index.row())->Description());
-       if (col == 1) return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty());
+       if (col == 1)
+       {
+           if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).toLower().contains("date") == false)
+               return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty());
+           else
+               return float2date(quanset->GetVarAskable(index.row())->GetVal());
+
+       }
        break;
    case Qt::FontRole:
        if (col == 1) {

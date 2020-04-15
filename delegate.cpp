@@ -28,7 +28,7 @@ QWidget *Delegate::createEditor(QWidget *parent,
     QString delegateType = index.data(CustomRoleCodes::Role::TypeRole).toString();
     if (delegateType.toLower().contains("date"))
     {
-        QDateEdit *editor = new QDateEdit(nullptr);
+        QDateEdit *editor = new QDateEdit(parent);
         editor->setDisplayFormat("MM.dd.yyyy");
         QVariant var = index.data(Qt::DisplayRole);
         QDateTime text = index.data(Qt::DisplayRole).toDateTime();
@@ -241,6 +241,7 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     {
         QDateEdit *textBox = static_cast<QDateEdit*>(editor);
         model->setData(index, QDate2Xldate(textBox->dateTime()) );
+        return;
     }
 
     if (delegateType.contains("UnitBox"))

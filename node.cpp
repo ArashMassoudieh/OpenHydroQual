@@ -98,7 +98,7 @@ void Node::hoverMoveEvent(QGraphicsSceneHoverEvent * event)
 void Node::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     QPointF p = QPointF(x() + event->pos().x(), y() + event->pos().y());
-    //parent->nodeContextMenuRequested(this, p);
+    parent->nodeContextMenuRequested(this, p);
 
 }
 
