@@ -137,9 +137,11 @@ void Delegate::setEditorData(QWidget *editor,
     QString delegateType = index.data(CustomRoleCodes::Role::TypeRole).toString();
     if (delegateType.toLower().contains("date"))
     {
-        qint64 selectedDate = index.model()->data(index, Qt::DisplayRole).toDouble();
-        qint64 julianDate = xldate2julian(selectedDate);// currentDate += 2415020;// QDate(1900, 1, 1).toJulianDay();
-        QDate date = QDate::fromJulianDay(julianDate);
+        QString thisdate = index.model()->data(index, Qt::DisplayRole).toString();
+        QDate date = QDate::fromString(thisdate, "MMM dd yyyy");
+        //qint64 selectedDate = index.model()->data(index, Qt::DisplayRole).toDouble();
+        //qint64 julianDate = xldate2julian(selectedDate);// currentDate += 2415020;// QDate(1900, 1, 1).toJulianDay();
+        //QDate date = QDate::fromJulianDay(julianDate);
 
         QDateEdit *textBox = static_cast<QDateEdit*>(editor);
         textBox->setDate(date);

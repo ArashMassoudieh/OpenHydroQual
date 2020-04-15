@@ -56,6 +56,7 @@ private:
     void updateNodeCoordinates();
     void sceneChanged();
     QString nodenametobedeleted = ""; 
+    QString timeseriestobeshown = ""; 
 signals:
     void Mouse_Pos(int, int, QString);
     void changed();
@@ -64,6 +65,7 @@ public slots:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void deleteselectednode();
+    void showgraph(); 
 
 
 };

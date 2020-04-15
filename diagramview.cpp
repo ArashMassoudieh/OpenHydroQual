@@ -383,6 +383,10 @@ void DiagramView::deleteselectednode()
     mainWindow()->RefreshTreeView(); 
     mainWindow()->PopulatePropertyTable(nullptr);
 }
+void DiagramView::showgraph()
+{
+
+}
 void DiagramView::updateNodeCoordinates()
 {
     for (Node *n : Nodes())
@@ -570,6 +574,16 @@ void DiagramView::nodeContextMenuRequested(Node* n, QPointF pos, QMenu *menu)
         connect(deleteaction, SIGNAL(triggered()), this, SLOT(deleteselectednode()));
     }
     menu->addAction("Select");
+    menu->addSeparator();
+    QMenu* results = menu->addMenu("Results");
+    for (unsigned int i = 0; i < n->object()->ItemswithOutput().size(); i++)
+    {
+        timeseriestobeshown = QString::fromStdString(n->object()->ItemswithOutput()[i]);
+        QAction* graphaction = results->addAction(timeseriestobeshown);
+        called_by_clicking_on_graphical_object = true;
+        connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+    }
+
     QMap < QAction *, QStringList> menuKey;
 
     QAction *selectedAction;
