@@ -55,6 +55,7 @@ private:
     QMap<QString, QMap<QString, QString>> specs;
     void updateNodeCoordinates();
     void sceneChanged();
+    QString nodenametobedeleted = ""; 
 signals:
     void Mouse_Pos(int, int, QString);
     void changed();
@@ -62,6 +63,7 @@ public slots:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+    void deleteselectednode();
 
 
 };

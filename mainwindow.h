@@ -24,17 +24,17 @@ public:
     System *GetSystem() {return &system;}
     void AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type, Edge* edge);
     void PopulatePropertyTable(QuanSet* quanset);
+    void RecreateGraphicItemsFromSystem();
+    void RefreshTreeView();
 private:
     Ui::MainWindow *ui;
     System system;
     DiagramView* dView;
     bool Populate_TreeWidget();
     bool BuildObjectsToolBar();
-    void RefreshTreeView();
     string CreateNewName(string type);
     PropModel *propmodel = nullptr;
     void Populate_General_ToolBar();
-    void RecreateGraphicItemsFromSystem();
     string modelfilename;
     string entitiesfilename;
     RunTimeWindow *rtw = nullptr;
