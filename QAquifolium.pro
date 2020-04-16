@@ -79,7 +79,8 @@ SOURCES += \
     ../Aquifolium/src/GA/DistributionNUnif.cpp \
     ../Aquifolium/src/GA/Distribution.cpp \
     runtimewindow.cpp \
-    ../qcustomplot/qcustomplot.cpp
+    ../qcustomplot/qcustomplot.cpp \
+    plotter.cpp
 
 HEADERS += \
     ../Aquifolium/include/Precipitation.h \
@@ -132,11 +133,13 @@ HEADERS += \
     ../Aquifolium/include/GA/DistributionNUnif.h \
     ../Aquifolium/include/GA/Individual.h \
     runtimewindow.h \
-    ../qcustomplot/qcustomplot.h
+    ../qcustomplot/qcustomplot.h \
+    plotter.h
 
 FORMS += \
         mainwindow.ui \
-    runtimewindow.ui
+    runtimewindow.ui \
+    plotter.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
