@@ -10,6 +10,7 @@
 #include "Script.h"
 #include "QFileDialog"
 #include "runtimewindow.h"
+#include "plotter.h"
 
 using namespace std;
 
@@ -568,6 +569,14 @@ void MainWindow::closeEvent (QCloseEvent *event)
         event->accept();
     }
 
+}
+
+Plotter* MainWindow::Plot(CTimeSeries& plotitem)
+{
+    Plotter* plotter = new Plotter(this);
+    plotter->PlotData(plotitem);
+    plotter->show();
+    return plotter;
 }
 
 

@@ -385,7 +385,11 @@ void DiagramView::deleteselectednode()
 }
 void DiagramView::showgraph()
 {
-
+    QAction* act = qobject_cast<QAction*>(sender());
+    QString item = act->data().toString();
+    Plotter *plot = mainwindow->Plot(mainwindow->GetSystem()->GetOutputs()[item.toStdString()]);
+    plot->SetYAxisTitle(act->text());
+    
 }
 void DiagramView::updateNodeCoordinates()
 {
@@ -580,6 +584,8 @@ void DiagramView::nodeContextMenuRequested(Node* n, QPointF pos, QMenu *menu)
     {
         timeseriestobeshown = QString::fromStdString(n->object()->ItemswithOutput()[i]);
         QAction* graphaction = results->addAction(timeseriestobeshown);
+        QVariant v = QVariant::fromValue(QString::fromStdString(n->object()->Variable(timeseriestobeshown.toStdString())->GetOutputItem()));
+        graphaction->setData(v);
         called_by_clicking_on_graphical_object = true;
         connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
     }

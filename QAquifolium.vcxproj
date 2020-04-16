@@ -395,6 +395,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="node.cpp" />
+    <ClCompile Include="plotter.cpp" />
     <ClCompile Include="propmodel.cpp" />
     <ClCompile Include="..\qcustomplot\qcustomplot.cpp" />
     <ClCompile Include="ray.cpp" />
@@ -450,6 +451,7 @@
     </QtMoc>
     <QtMoc Include="..\qcustomplot\qcustomplot.h">
     </QtMoc>
+    <QtMoc Include="plotter.h" />
     <ClInclude Include="ray.h" />
     <ClInclude Include="..\jsoncpp\include\json\reader.h" />
     <QtMoc Include="runtimewindow.h">
@@ -465,6 +467,7 @@
   <ItemGroup>
     <QtUic Include="mainwindow.ui">
     </QtUic>
+    <QtUic Include="plotter.ui" />
     <QtUic Include="runtimewindow.ui">
     </QtUic>
   </ItemGroup>

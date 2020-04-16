@@ -7,6 +7,7 @@
 #include "propmodel.h"
 #include "diagramview.h"
 #include "runtimewindow.h"
+#include "plotter.h"
 
 namespace Ui {
 class MainWindow;
@@ -26,6 +27,7 @@ public:
     void PopulatePropertyTable(QuanSet* quanset);
     void RecreateGraphicItemsFromSystem();
     void RefreshTreeView();
+    Plotter* Plot(CTimeSeries& plotitem);
 private:
     Ui::MainWindow *ui;
     System system;
