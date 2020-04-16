@@ -530,6 +530,9 @@ void MainWindow::RecreateGraphicItemsFromSystem()
         node->SetObject(system.block(i));
         node->setX(system.block(i)->GetVal("x"));
         node->setY(system.block(i)->GetVal("y"));
+        node->setWidth(system.block(i)->GetVal("_width"));
+        node->setHeight(system.block(i)->GetVal("_height"));
+
     }
     for (int i=0; i<system.LinksCount(); i++)
     {
@@ -542,7 +545,7 @@ void MainWindow::RecreateGraphicItemsFromSystem()
             edge->SetObject(system.link(i));
         }
     }
-
+    onzoomall();
 }
 
 void MainWindow::onrunmodel()

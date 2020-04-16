@@ -629,6 +629,19 @@ void DiagramView::edgeContextMenuRequested(Edge* e, QPointF pos, QMenu *menu)
     }
     QAction *markAction = menu->addAction("Select");
 
+    menu->addSeparator();
+    QMenu* results = menu->addMenu("Results");
+    for (unsigned int i = 0; i < e->object()->ItemswithOutput().size(); i++)
+    {
+        timeseriestobeshown = QString::fromStdString(e->object()->ItemswithOutput()[i]);
+        QAction* graphaction = results->addAction(timeseriestobeshown);
+        QVariant v = QVariant::fromValue(QString::fromStdString(e->object()->Variable(timeseriestobeshown.toStdString())->GetOutputItem()));
+        graphaction->setData(v);
+        called_by_clicking_on_graphical_object = true;
+        connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+    }
+
+
     QAction *selectedAction;
     if (called_by_clicking_on_graphical_object)
         selectedAction = menu->exec(mapToGlobal(mapFromScene(pos.toPoint())));
