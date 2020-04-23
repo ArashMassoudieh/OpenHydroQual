@@ -441,6 +441,7 @@
       "delegate": "String" 
     },
     "object": {
+      "delegate": "ComboBox;BlockLinks",
       "type": "string",
       "includeinoutput": "true",
       "description": "Object",

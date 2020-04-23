@@ -76,9 +76,15 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
    case CustomRoleCodes::Role::DefaultValuesListRole:
        if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).contains("Sources"))
        {
-
            return toQSringList(mainwindow->GetSystem()->GetAllSourceNames());
        }
+       if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).contains("BlockLinks"))
+       {
+           QStringList items = toQSringList(mainwindow->GetSystem()->GetAllBlockNames());
+           items.append(toQSringList(mainwindow->GetSystem()->GetAllLinkNames()));
+           return items;
+       }
+
    }
    return QVariant();
 }
