@@ -134,7 +134,9 @@ HEADERS += \
     ../Aquifolium/include/GA/Individual.h \
     runtimewindow.h \
     ../qcustomplot/qcustomplot.h \
-    plotter.h
+    plotter.h \
+    ../Aquifolium/include/Objective_Function.h \
+    ../Aquifolium/include/Objective_Function_Set.h
 
 FORMS += \
         mainwindow.ui \

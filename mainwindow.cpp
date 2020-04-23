@@ -132,6 +132,8 @@ bool MainWindow::BuildObjectsToolBar()
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddsource()));
                 else if (typecategory == "Parameters")
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddparameter()));
+                else if (typecategory == "Objective Functions")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddobjectivefunction()));
                 else
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
             }
@@ -218,6 +220,21 @@ void MainWindow::onaddparameter()
     qDebug() << "parameter added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
+}
+
+void MainWindow::onaddobjectivefunction()
+{
+    QObject* obj = sender();
+    Objective_Function objective_function;
+    objective_function.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
+    objective_function.SetType(obj->objectName().toStdString());
+    string name = CreateNewName(obj->objectName().toStdString());
+    objective_function.SetName(name);
+    system.AppendObjectiveFunction(name,objective_function);
+    qDebug() << "objective function added! " << obj->objectName();
+    //system.object(name)->SetName(name);
+    RefreshTreeView();
+
 }
 
 
@@ -318,6 +335,23 @@ void MainWindow::RefreshTreeView()
             treeitem->addChild(treechlditem);
         }
     }
+
+    for (int i=0; i<system.ObjectiveFunctionsCount(); i++)
+    {
+        QString TypeCategory = QString::fromStdString(system.Parameters()[i]->TypeCategory());
+        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.Parameters()[i]->TypeCategory()),Qt::MatchExactly);
+        if (MatchedItems.size()==0)
+            qDebug() << "No category called '" + TypeCategory + "' was found!";
+        else if (MatchedItems.size()>1)
+            qDebug() << "More than one category called '" + TypeCategory + "' was found!";
+        else {
+            QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
+            QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setText(0,QString::fromStdString(system.Parameters()[i]->GetName()));
+            treeitem->addChild(treechlditem);
+        }
+    }
 }
 
 string MainWindow::CreateNewName(string type)
@@ -344,14 +378,18 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
 
     if (nd->data(0,Qt::UserRole)=="main")
     {
-        QAction *AddAct = new QAction(QIcon(":/Resource/warning32.ico"), "Add " + nd->text(0), this);
-        AddAct->setStatusTip("Append " + nd->text(0));
-        connect(AddAct, SIGNAL(triggered()), this, SLOT(onAddItem()));
-        QMenu menu(this);
-        menu.addAction(AddAct);
+        if (nd->text(0)=="Parameters" || nd->text(0)=="Objective Functions")
+        {
+            QAction *AddAct = new QAction(QIcon(":/Resource/warning32.ico"), "Add " + nd->text(0), this);
 
-        QPoint pt(pos);
-        menu.exec( tree->mapToGlobal(pos) );
+            AddAct->setProperty("group",nd->text(0));
+            AddAct->setStatusTip("Append " + nd->text(0));
+            connect(AddAct, SIGNAL(triggered()), this, SLOT(onAddItemThroughTreeViewRightClick()));
+            QMenu menu(this);
+            menu.addAction(AddAct);
+            QPoint pt(pos);
+            menu.exec( tree->mapToGlobal(pos) );
+        }
 
     }
 
@@ -582,5 +620,19 @@ Plotter* MainWindow::Plot(CTimeSeries& plotitem)
     return plotter;
 }
 
+void MainWindow::onAddItemThroughTreeViewRightClick()
+{
+    QObject* obj = sender();
+    if (obj->property("group")=="Parameters")
+        onaddparameter();
+    if (obj->property("group")=="Objective Functions")
+        onaddobjectivefunction();
+
+    //counts[obj->objectName()] = counts[obj->objectName()] + 1;
+        //qDebug() << "entity added! " << obj->objectName();
+        //Entity* item = new Entity(obj->objectName(), obj->objectName() + QString::number(counts[obj->objectName()]), diagramview, QString::fromStdString(system.GetMetaModel()->GetItem(obj->objectName().toStdString())->CategoryType()));
+
+
+}
 
 
