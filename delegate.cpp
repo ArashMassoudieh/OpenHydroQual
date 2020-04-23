@@ -11,6 +11,7 @@
 #include "QLineEdit"
 #include "mainwindow.h"
 #include "QMessageBox"
+#include "expEditor.h"
 
 Delegate::Delegate(QObject *parent, MainWindow *_mainwindow) : QStyledItemDelegate(parent)
 {
@@ -116,14 +117,14 @@ QWidget *Delegate::createEditor(QWidget *parent,
         return editor;
     }
 
-    //if (delegateType.contains("expressionEditor"))
-    //{
-    //    QStringList words = index.data(allowableWordsRole).toStringList();
+    if (delegateType.contains("expressionEditor"))
+    {
+        QStringList words = index.data(CustomRoleCodes::Role::allowableWordsRole).toStringList();
         //adding possible terms in expressions
-    //    words << this->parent->EntityNames("Constituent");
-    //    words << this->parent->EntityNames("Reaction parameter");
-    //    words << this->parent->PhysicalCharacteristicsList;
-    //    words << this->parent->functionList;
+        words << "x" << "y" << "z";
+        expEditor* editor = new expEditor(words, nullptr, parent);
+        return editor;
+    }
 
     return QStyledItemDelegate::createEditor(parent, option, index);
 }
@@ -225,6 +226,8 @@ void Delegate::setEditorData(QWidget *editor,
     }
     if (delegateType.contains("expressionEditor"))
     {
+        expEditor* expressionEditor = static_cast<expEditor*>(editor);
+        expressionEditor->setText(index.model()->data(index, Qt::EditRole).toString());
         return;
     }
 
@@ -314,6 +317,9 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     }
     if (delegateType.contains("expressionEditor"))
     {
+        expEditor* expression = static_cast<expEditor*>(editor);
+        if (index.model()->data(index, Qt::EditRole).toString() != expression->text())
+            model->setData(index, expression->text(), Qt::EditRole);
         return;
     }
     if (delegateType.toLower().contains("String"))

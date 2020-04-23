@@ -454,6 +454,7 @@
       "ask_user": "true"
     },
     "expression": {
+      "delegate": "expressionEditor",
       "type": "expression",
       "includeinoutput": "true",
       "description": "Expression",

@@ -80,7 +80,10 @@ SOURCES += \
     ../Aquifolium/src/GA/Distribution.cpp \
     runtimewindow.cpp \
     ../qcustomplot/qcustomplot.cpp \
-    plotter.cpp
+    plotter.cpp \
+    expEditor.cpp \
+    statusviewer.cpp \
+    expressioneditor.cpp
 
 HEADERS += \
     ../Aquifolium/include/Objective_Function.h \
@@ -138,7 +141,10 @@ HEADERS += \
     ../qcustomplot/qcustomplot.h \
     plotter.h \
     ../Aquifolium/include/Objective_Function.h \
-    ../Aquifolium/include/Objective_Function_Set.h
+    ../Aquifolium/include/Objective_Function_Set.h \
+    expEditor.h \
+    statusviewer.h \
+    expressioneditor.h
 
 FORMS += \
         mainwindow.ui \
