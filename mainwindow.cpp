@@ -338,8 +338,8 @@ void MainWindow::RefreshTreeView()
 
     for (int i=0; i<system.ObjectiveFunctionsCount(); i++)
     {
-        QString TypeCategory = QString::fromStdString(system.Parameters()[i]->TypeCategory());
-        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.Parameters()[i]->TypeCategory()),Qt::MatchExactly);
+        QString TypeCategory = QString::fromStdString(system.ObjectiveFunctions()[i]->TypeCategory());
+        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.ObjectiveFunctions()[i]->TypeCategory()),Qt::MatchExactly);
         if (MatchedItems.size()==0)
             qDebug() << "No category called '" + TypeCategory + "' was found!";
         else if (MatchedItems.size()>1)
@@ -348,7 +348,7 @@ void MainWindow::RefreshTreeView()
             QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
             QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
             treechlditem->setData(0,Qt::UserRole,"child");
-            treechlditem->setText(0,QString::fromStdString(system.Parameters()[i]->GetName()));
+            treechlditem->setText(0,QString::fromStdString(system.ObjectiveFunctions()[i]->GetName()));
             treeitem->addChild(treechlditem);
         }
     }
@@ -410,7 +410,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
 void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
 {
     qDebug()<<current->data(0,Qt::UserRole);
-    current->text(0);
+    qDebug()<< current->text(0);
 
     if (current->data(0,Qt::UserRole)=="child")
     {   if (system.object(current->text(0).toStdString())==nullptr)

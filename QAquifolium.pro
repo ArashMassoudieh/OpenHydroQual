@@ -83,6 +83,8 @@ SOURCES += \
     plotter.cpp
 
 HEADERS += \
+    ../Aquifolium/include/Objective_Function.h \
+    ../Aquifolium/include/Objective_Function_Set.h \
     ../Aquifolium/include/Precipitation.h \
     diagramview.h \
     edge.h \

@@ -457,6 +457,13 @@
       "includeinoutput": "true",
       "description": "Expression",
       "ask_user": "true"
+    },
+    "Weight": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Weight",
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     }
   }
 }
