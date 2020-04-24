@@ -250,7 +250,9 @@ void MainWindow::onaddentity()
 void MainWindow::RefreshTreeView()
 {
     Populate_TreeWidget();
-
+    if (propmodel != nullptr)
+        delete  propmodel;
+    propmodel = nullptr;
     for (int i=0; i<system.SettingsCount(); i++)
     {
         QString TypeCategory = QString::fromStdString(system.Setting(i)->TypeCategory());

@@ -6,6 +6,8 @@
 #include <QScrollBar>
 #include <QMessageBox>
 #include "statusviewer.h"
+#include "Object.h"
+#include "utilityfuncs.h"
 
 
 
@@ -20,20 +22,21 @@
 
 
 struct expEditorPri{
-    //ReactionTableModel* Model;
+    Object* obj;
     QCompleter* Comp;
     QStringList Words;
-    expEditorPri() : Comp(0), Editing(false){}
+    expEditorPri() : Comp(nullptr), Editing(false){}
     StatusViewer* Statusbar;
     bool Editing;
     QString OldExpression;
 };
 
-expEditor::expEditor(QStringList keywords, StatusViewer* statusbar, QWidget* p) : QLineEdit(p), d(new expEditorPri)
+expEditor::expEditor(Object *obj, QStringList keywords, StatusViewer* statusbar, QWidget* p) : QLineEdit(p), d(new expEditorPri)
 {
-    //d->Model = model;
+    d->obj = obj;
 	d->Words = keywords;
     d->Statusbar = statusbar;
+
     setupCompleter();
     //connect(this, SIGNAL(returnPressed()), SLOT(onReturnPressed()));
     //connect(this, SIGNAL(editingFinished()), SLOT(onEditingFinished()));
@@ -49,7 +52,8 @@ void expEditor::setupCompleter()
         d->Comp = nullptr;
     }
 
-	//d->Words << d->Model->constituents() << d->Model->parameters() << d->Model->physicals() << d->Model->functions();
+    if (d->obj!=nullptr)
+        d->Words << toQStringList(*d->obj->functions()) << toQStringList(d->obj->quantitative_variable_list());
     d->Comp = new QCompleter(d->Words, this);
     d->Comp->setWidget(this);
     d->Comp->setCompletionMode(QCompleter::PopupCompletion);

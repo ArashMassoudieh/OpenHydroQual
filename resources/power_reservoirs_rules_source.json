@@ -449,6 +449,7 @@
     },
     "method": {
       "type": "string",
+      "delegate": "ComboBox;items:integrate,value",
       "includeinoutput": "true",
       "description": "Calculation method",
       "ask_user": "true"

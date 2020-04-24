@@ -268,7 +268,7 @@ QString string2QString_qt(string s)
     return QString::fromStdString(s);
 }
 
-QStringList toQSringList(const vector<string> &s)
+QStringList toQStringList(const vector<string> &s)
 {
     QStringList out;
     for (int i=0; i<s.size(); i++)

@@ -5,13 +5,13 @@
 
 struct expEditorPri;
 class StatusViewer;
-class ReactionTableModel;
+class Object;
 
 class expEditor : public QLineEdit
 {
 	Q_OBJECT
 public:
-    explicit expEditor(QStringList keywords, StatusViewer* statusbar, QWidget* p = nullptr);
+    explicit expEditor(Object *obj, QStringList keywords, StatusViewer* statusbar, QWidget* p = nullptr);
     ~expEditor();
 
 protected:

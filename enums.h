@@ -39,6 +39,7 @@ namespace CustomRoleCodes {
         loadIndexandDefaultValuesListRole = 3104,
         loadIndexandVariableTypeRole =		3105,
         allowableWordsRole =				3201,
+        referedObjectRole =                 3301,
 
     };
 };

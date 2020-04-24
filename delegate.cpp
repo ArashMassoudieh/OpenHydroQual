@@ -120,9 +120,13 @@ QWidget *Delegate::createEditor(QWidget *parent,
     if (delegateType.contains("expressionEditor"))
     {
         QStringList words = index.data(CustomRoleCodes::Role::allowableWordsRole).toStringList();
-        //adding possible terms in expressions
-        words << "x" << "y" << "z";
-        expEditor* editor = new expEditor(words, nullptr, parent);
+        QString referedObjectName = index.data(CustomRoleCodes::Role::referedObjectRole).toString();
+        Object *obj = nullptr;
+        if (referedObjectName!="")
+            obj = mainwindow->GetSystem()->object(referedObjectName.toStdString());
+
+        //QTextEdit* editor = new QTextEdit(parent);
+        expEditor* editor = new expEditor(obj, words, nullptr, parent);
         return editor;
     }
 

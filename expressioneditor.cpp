@@ -52,7 +52,7 @@ void ExpressionEditor::setupCompleter()
     }
 
     if (d->object)
-    d->Words << toQSringList(d->object->quantitative_variable_list()) << toQSringList(*d->object->functions()) << toQSringList(*d->object->operators());
+    d->Words << toQStringList(d->object->quantitative_variable_list()) << toQStringList(*d->object->functions()) << toQStringList(*d->object->operators());
     d->Comp = new QCompleter(d->Words, this);
     d->Comp->setWidget(this);
     d->Comp->setCompletionMode(QCompleter::PopupCompletion);
@@ -120,7 +120,7 @@ void ExpressionEditor::keyPressEvent(QKeyEvent *e)
 
     QChar ck (e->key());
 
-    QStringList operators = toQSringList(*d->object->operators());
+    QStringList operators = toQStringList(*d->object->operators());
 
     QList<int> escapeKeys; escapeKeys << Qt::Key_Backspace << Qt::Key_Delete << Qt::Key_Enter << Qt::Key_Return
                                       <<Qt::Key_Left << Qt::Key_Right << Qt::Key_Up << Qt::Key_Down

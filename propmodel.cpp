@@ -76,16 +76,31 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
    case CustomRoleCodes::Role::DefaultValuesListRole:
        if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).contains("Sources"))
        {
-           return toQSringList(mainwindow->GetSystem()->GetAllSourceNames());
+           return toQStringList(mainwindow->GetSystem()->GetAllSourceNames());
        }
        if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).contains("BlockLinks"))
        {
-           QStringList items = toQSringList(mainwindow->GetSystem()->GetAllBlockNames());
-           items.append(toQSringList(mainwindow->GetSystem()->GetAllLinkNames()));
+           QStringList items = toQStringList(mainwindow->GetSystem()->GetAllBlockNames());
+           items.append(toQStringList(mainwindow->GetSystem()->GetAllLinkNames()));
            return items;
        }
+       if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).contains("items"))
+       {
+           QStringList items = QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).split(":")[1].split(",");
+           items.append(toQStringList(mainwindow->GetSystem()->GetAllLinkNames()));
+           return items;
+       }
+       break;
+   case CustomRoleCodes::Role::referedObjectRole:
+       {
+            if (quanset->Count("object")>0)
+                return QString::fromStdString(quanset->GetVar("object").GetProperty());
+            else
+               return "";
 
+       }
    }
+
    return QVariant();
 }
 
