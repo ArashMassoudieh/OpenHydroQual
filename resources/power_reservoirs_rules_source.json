@@ -20,7 +20,8 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     },
     "Precipitation": {
       "type": "source",
@@ -35,7 +36,8 @@
       "description": "Catchment area",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^2"
+      "unit": "m~^2",
+      "estimate": "true"
     },
     "x": {
       "type": "value",
@@ -65,19 +67,22 @@
       "type": "value",
       "description": "Catchment slope in the direction of flow",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     },
     "ManningCoeff": {
       "type": "value",
       "description": "Manning's Roughness Coefficient",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     },
     "Width": {
       "type": "value",
       "description": "The width of the catchment",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     }
   },
   "Precipitation": {
@@ -150,21 +155,24 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     },
     "reservoir_power": {
       "type": "value",
       "default": "2",
       "description": "Reservoir rating curve power",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     },
     "reservoir_coeff": {
       "type": "value",
       "default": "10",
       "description": "Reservoir rating curve coefficient",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     },
     "inflow": {
       "type": "timeseries",
@@ -219,21 +227,24 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     },
     "reservoir_power": {
       "type": "value",
       "default": "2",
       "description": "Reservoir rating curve power",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     },
     "reservoir_coeff": {
       "type": "value",
       "default": "10",
       "description": "Reservoir rating curve coefficient",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     },
     "inflow": {
       "type": "timeseries",
@@ -261,7 +272,7 @@
       "expression": "reservoir_coeff.s*Storage.s^reservoir_power.s",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "true",
+      "ask_user": "false",
       "delegate": "Browser" 
     }
   },
@@ -313,25 +324,29 @@
       "type": "value",
       "default": "10",
       "description": "Minimum flow",
-      "ask_user": "true"
+      "ask_user": "true",
+      "estimate": "true"
     },
     "Q_max": {
       "type": "value",
       "default": "100",
       "description": "Maximum flow",
-      "ask_user": "true"
+      "ask_user": "true",
+      "estimate": "true"
     },
     "S_min": {
       "type": "value",
       "default": "10",
       "description": "Minimum storage",
-      "ask_user": "true"
+      "ask_user": "true",
+      "estimate": "true"
     },
     "S_max": {
       "type": "value",
       "default": "100",
       "description": "Maximum storage",
-      "ask_user": "true"
+      "ask_user": "true",
+      "estimate": "true"
     }
   },
   "User": {
@@ -377,7 +392,8 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     }
   },
   "User_flow": {

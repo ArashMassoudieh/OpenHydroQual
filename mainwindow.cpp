@@ -40,10 +40,16 @@ MainWindow::MainWindow(QWidget *parent) :
     BuildObjectsToolBar();
     connect(ui->treeWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(preparetreeviewMenu(const QPoint&)));
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
+    connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
+
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnew()));
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
+    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
+
     ui->tableView->setItemDelegateForColumn(1,new Delegate(this,this));
     Populate_General_ToolBar();
 }
@@ -52,6 +58,50 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::tablePropShowContextMenu(const QPoint&pos)
+{
+    QModelIndex i1 = ui->tableView->indexAt(pos);
+    int row = i1.row();
+    QModelIndex i2 = i1.sibling(row, 1);
+
+    if (i1.column() == 0)
+    {
+        QMenu *menu = new QMenu;
+        int code = i1.data(CustomRoleCodes::Role::DescriptionCodeRole).toInt();
+        QString variableName = i1.data(CustomRoleCodes::Role::VariableNameRole).toString();
+
+        QMenu *estimatesMenu = new QMenu("Parameters");
+        menu->addMenu(estimatesMenu);
+        estimatesMenu->setEnabled(false);
+        if (i2.data(CustomRoleCodes::Role::EstimateCode).toBool())
+        {
+            for (int i=0 ; i< GetSystem()->ParametersCount(); i++)
+                estimatesMenu->addAction(QString::fromStdString(GetSystem()->Parameters()[i]->GetName()));// , this, SLOT(addParameter()));
+            //addParameterIndex(i1); // tableProp->indexAt(pos));
+            connect(estimatesMenu, SIGNAL(triggered(QAction*)), this, SLOT(addParameter(QAction*)));
+            estimatesMenu->setEnabled(true);
+        }
+
+        menu->exec(ui->tableView->mapToGlobal(pos));
+    }
+
+}
+
+void MainWindow::addParameter(QAction* item)
+{
+    QString parameter = item->text();
+    ui->tableView->model()->setData(addParameterIndex(), parameter, CustomRoleCodes::setParamRole);
+}
+
+QModelIndex MainWindow::addParameterIndex(const QModelIndex &index)
+{
+    static QModelIndex parameterIndex;
+    if (index != QModelIndex()) parameterIndex = index;
+    return parameterIndex;
+}
+
+
 
 bool MainWindow::Populate_TreeWidget()
 {

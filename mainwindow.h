@@ -42,6 +42,7 @@ private:
     RunTimeWindow *rtw = nullptr;
     void closeEvent (QCloseEvent *event) override;
     QString workingfolder;
+    QModelIndex addParameterIndex(const QModelIndex &index = QModelIndex());
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);
@@ -60,7 +61,8 @@ private slots:
     void onopen();
     void onrunmodel();
     void onAddItemThroughTreeViewRightClick();
-
+    void tablePropShowContextMenu(const QPoint&);
+    void addParameter(QAction* item);
 };
 
 #endif // MAINWINDOW_H

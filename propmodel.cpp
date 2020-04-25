@@ -70,6 +70,10 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
        return QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate());
        break;
 
+   case CustomRoleCodes::EstimateCode:
+       return quanset->GetVarAskable(index.row())->Estimable();
+       break;
+
    case CustomRoleCodes::VariableNameRole:
        return QString::fromStdString(quanset->GetVarAskable(index.row())->GetName());
        break;

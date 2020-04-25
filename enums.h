@@ -40,7 +40,7 @@ namespace CustomRoleCodes {
         loadIndexandVariableTypeRole =		3105,
         allowableWordsRole =				3201,
         referedObjectRole =                 3301,
-
+        EstimateCode =                      3401,
     };
 };
 
