@@ -43,6 +43,8 @@ private:
     void closeEvent (QCloseEvent *event) override;
     QString workingfolder;
     QModelIndex addParameterIndex(const QModelIndex &index = QModelIndex());
+    QModelIndex tableitemrightckicked;
+    QMenu *menu;
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);

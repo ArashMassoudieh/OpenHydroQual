@@ -64,10 +64,10 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
     QModelIndex i1 = ui->tableView->indexAt(pos);
     int row = i1.row();
     QModelIndex i2 = i1.sibling(row, 1);
-
+    tableitemrightckicked = i2;
     if (i1.column() == 0)
     {
-        QMenu *menu = new QMenu;
+        menu = new QMenu;
         int code = i1.data(CustomRoleCodes::Role::DescriptionCodeRole).toInt();
         QString variableName = i1.data(CustomRoleCodes::Role::VariableNameRole).toString();
 
@@ -84,6 +84,8 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
         }
 
         menu->exec(ui->tableView->mapToGlobal(pos));
+
+
     }
 
 }
@@ -91,7 +93,10 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
 void MainWindow::addParameter(QAction* item)
 {
     QString parameter = item->text();
-    ui->tableView->model()->setData(addParameterIndex(), parameter, CustomRoleCodes::setParamRole);
+    ui->tableView->model()->setData(tableitemrightckicked, parameter, CustomRoleCodes::setParamRole);
+    menu->hide();
+    menu->setVisible(false);
+
 }
 
 QModelIndex MainWindow::addParameterIndex(const QModelIndex &index)

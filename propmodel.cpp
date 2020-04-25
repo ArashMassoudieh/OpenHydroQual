@@ -44,11 +44,17 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
        if (col == 0) return QString::fromStdString(quanset->GetVarAskable(index.row())->Description());
        if (col == 1)
        {
-           if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).toLower().contains("date") == false)
-               return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty());
+           if (quanset->GetVarAskable(index.row())->GetParameterAssignedTo()=="")
+           {
+                if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).toLower().contains("date") == false)
+                    return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty());
+                else
+                    return float2date(quanset->GetVarAskable(index.row())->GetVal());
+            }
            else
-               return float2date(quanset->GetVarAskable(index.row())->GetVal());
-
+           {
+               return  QString::fromStdString(quanset->GetVarAskable(index.row())->GetParameterAssignedTo());
+           }
        }
        break;
    case Qt::FontRole:
@@ -141,12 +147,20 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
     else
         VariableName = index.data(CustomRoleCodes::VariableNameRole).toString();
 
-    bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString());
-
-    if (!r && (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries || quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries))
+    if (role!=CustomRoleCodes::setParamRole)
     {
-        QMessageBox::question(mainwindow, "File does not have the right format!", "File does not have the right format!", QMessageBox::Ok);
+        bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString());
 
+        if (!r && (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries || quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries))
+        {
+            QMessageBox::question(mainwindow, "File does not have the right format!", "File does not have the right format!", QMessageBox::Ok);
+
+        }
+    }
+    else
+    {
+        quanset->GetVar(VariableName.toStdString()).SetParameterAssignedTo(value.toString().toStdString());
+        mainwindow->GetSystem()->SetAsParameter(quanset->Parent()->GetName(),VariableName.toStdString(),value.toString().toStdString());
     }
 
     QString result = value.toString();
