@@ -8,6 +8,7 @@
 #include "diagramview.h"
 #include "runtimewindow.h"
 #include "plotter.h"
+#include "GA.hpp"
 
 namespace Ui {
 class MainWindow;
@@ -45,6 +46,7 @@ private:
     QModelIndex addParameterIndex(const QModelIndex &index = QModelIndex());
     QModelIndex tableitemrightckicked;
     QMenu *menu;
+    CGA<System> *optimizer;
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);

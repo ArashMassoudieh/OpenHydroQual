@@ -132,7 +132,6 @@ HEADERS += \
     ../Aquifolium/include/Parameter_Set.h \
     ../Aquifolium/include/Command.h \
     ../Aquifolium/include/Script.h \
-    ../Aquifolium/src/GA/GA.hpp \
     ../Aquifolium/include/GA/Binary.h \
     ../Aquifolium/include/GA/Distribution.h \
     ../Aquifolium/include/GA/DistributionNUnif.h \

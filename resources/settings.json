@@ -78,5 +78,33 @@
       "delegate": "DateTime",
       "code": "time_max"
     }
+  },
+  "optimizer": {
+    "type": "setting",
+    "typecategory": "Settings",
+    "name": {
+      "description": "Name",
+      "setvalue": "Optimizer",      
+      "type": "string",
+      "ask_user": "false",
+      "delegate": "String" 
+    },
+    "description": "Optimizer Parameters",
+    "simulation_start_time": {
+      "default": "0",
+      "description": "Simulation start time",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "DateTime",
+      "code": "time_min"
+    },
+    "simulation_end_time": {
+      "default": "1",
+      "description": "Simulation end time",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "DateTime",
+      "code": "time_max"
+    }
   }
 }
