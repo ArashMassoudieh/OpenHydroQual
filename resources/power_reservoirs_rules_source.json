@@ -442,6 +442,13 @@
       "description": "Upper Limit",
       "ask_user": "true",
       "delegate": "UnitBox" 
+    },
+    "value": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Value",
+      "ask_user": "true",
+      "delegate": "UnitBox" 
     }
   },
   "Objective_Function": {

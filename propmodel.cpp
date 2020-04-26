@@ -149,6 +149,11 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
 
     if (role!=CustomRoleCodes::setParamRole)
     {
+        if (quanset->GetVar(VariableName.toStdString()).GetParameterAssignedTo()!="")
+        {
+            mainwindow->GetSystem()->RemoveAsParameter(quanset->Parent()->GetName(),VariableName.toStdString(),quanset->GetVar(VariableName.toStdString()).GetParameterAssignedTo());
+            quanset->GetVar(VariableName.toStdString()).SetParameterAssignedTo("");
+        }
         bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString());
 
         if (!r && (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries || quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries))

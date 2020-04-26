@@ -554,6 +554,14 @@ void MainWindow::Populate_General_ToolBar()
     actionrun->setText("Run Model");
     actionrun->setToolTip("Run Model");
     connect(actionrun, SIGNAL(triggered()), this, SLOT(onrunmodel()));
+    QIcon iconoptimize;
+    iconoptimize.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/optimize.png"), QSize(), QIcon::Normal, QIcon::Off);
+    QAction* actionoptimize = new QAction(this);
+    actionoptimize->setIcon(iconoptimize);
+    ui->GeneraltoolBar->addAction(actionoptimize);
+    actionoptimize->setText("Optimize");
+    actionoptimize->setToolTip("Optimize");
+    connect(actionoptimize, SIGNAL(triggered()), this, SLOT(onoptimize()));
 
 }
 
