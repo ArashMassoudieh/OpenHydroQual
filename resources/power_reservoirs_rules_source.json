@@ -28,8 +28,7 @@
       "includeinoutput": "true",
       "description": "precipitation time series",
       "ask_user": "true",
-      "delegate": "ComboBox;Sources",
-      "default": "components;Sources"
+      "delegate": "ComboBox;Sources"
     },
     "Area": {
       "type": "value",

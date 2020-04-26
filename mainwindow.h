@@ -8,7 +8,7 @@
 #include "diagramview.h"
 #include "runtimewindow.h"
 #include "plotter.h"
-#include "GA.hpp"
+#include "GA.h"
 
 namespace Ui {
 class MainWindow;
@@ -64,6 +64,7 @@ private slots:
     void onsave();
     void onopen();
     void onrunmodel();
+    void onoptimize();
     void onAddItemThroughTreeViewRightClick();
     void tablePropShowContextMenu(const QPoint&);
     void addParameter(QAction* item);

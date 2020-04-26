@@ -677,6 +677,13 @@ void MainWindow::closeEvent (QCloseEvent *event)
 
 }
 
+void MainWindow::onoptimize()
+{
+    system.SetSystemSettings();
+    optimizer = new CGA<System>(&system);
+    optimizer->SetParameters(system.object("Optimizer"));
+}
+
 Plotter* MainWindow::Plot(CTimeSeries& plotitem)
 {
     Plotter* plotter = new Plotter(this);

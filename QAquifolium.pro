@@ -143,7 +143,8 @@ HEADERS += \
     ../Aquifolium/include/Objective_Function_Set.h \
     expEditor.h \
     statusviewer.h \
-    expressioneditor.h
+    expressioneditor.h \
+    ../Aquifolium/include/GA/GA.hpp
 
 FORMS += \
         mainwindow.ui \

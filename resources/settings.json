@@ -90,21 +90,61 @@
       "delegate": "String" 
     },
     "description": "Optimizer Parameters",
-    "simulation_start_time": {
-      "default": "0",
-      "description": "Simulation start time",
+    "maxpop": {
+      "default": "40",
+      "description": "Genetic Algorithm Population",
       "ask_user": "true",
       "type": "value",
-      "delegate": "DateTime",
-      "code": "time_min"
+      "delegate": "UnitBox",
+      "code": "maxpop"
     },
-    "simulation_end_time": {
-      "default": "1",
-      "description": "Simulation end time",
+    "ngen": {
+      "default": "40",
+      "description": "Number of generations",
       "ask_user": "true",
       "type": "value",
-      "delegate": "DateTime",
-      "code": "time_max"
+      "delegate": "UnitBox",
+      "code": "ngen"
+    },
+    "pcross": {
+      "default": "1",
+      "description": "Cross over probability",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "UnitBox",
+      "code": "pcross"
+    },
+    "pmute": {
+      "default": "0.02",
+      "description": "Mutation Probability",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "UnitBox",
+      "code": "pmute"
+    },
+    "shakescale": {
+      "default": "0.05",
+      "description": "Shaking Scale",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "UnitBox",
+      "code": "shakescale"
+    },
+    "shakescalered": {
+      "default": "0.75",
+      "description": "Shake Scale Reduction Factor",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "UnitBox",
+      "code": "shakescalered"
+    },
+    "outputfile": {
+      "default": "GA_output.txt",
+      "description": "GA Output File Name",
+      "ask_user": "true",
+      "type": "string",
+      "delegate": "Browser",
+      "code": "outputfile"
     }
   }
 }
