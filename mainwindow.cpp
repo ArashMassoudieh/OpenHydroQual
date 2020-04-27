@@ -269,7 +269,11 @@ void MainWindow::onaddparameter()
     Parameter parameter;
     parameter.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
     parameter.SetType(obj->objectName().toStdString());
-    string name = CreateNewName(obj->objectName().toStdString());
+    string name;
+    if (obj->objectName()!="")
+        name = CreateNewName(obj->objectName().toStdString());
+    else
+        name = CreateNewName("Parameter");
     parameter.SetName(name);
     system.Parameters().Append(name,parameter);
     qDebug() << "parameter added! " << obj->objectName();
@@ -283,7 +287,12 @@ void MainWindow::onaddobjectivefunction()
     Objective_Function objective_function;
     objective_function.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
     objective_function.SetType(obj->objectName().toStdString());
-    string name = CreateNewName(obj->objectName().toStdString());
+    string name;
+    if (obj->objectName()!="")
+        name = CreateNewName(obj->objectName().toStdString());
+    else
+        name = CreateNewName("Objective Function");
+
     objective_function.SetName(name);
     system.AppendObjectiveFunction(name,objective_function);
     qDebug() << "objective function added! " << obj->objectName();
@@ -447,6 +456,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
             QPoint pt(pos);
             menu.exec( tree->mapToGlobal(pos) );
         }
+    return;
 
     }
 
