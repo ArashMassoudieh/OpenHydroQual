@@ -65,3 +65,8 @@ void RunTimeWindow::SetYRange(const double &ymin, const double &ymax)
 {
      plot->yAxis->setRange(ymin,ymax);
 }
+
+void RunTimeWindow::SetUpForForwardRun()
+{
+    ui->optprogressBar->setVisible(false);
+}

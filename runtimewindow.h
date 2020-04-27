@@ -22,6 +22,7 @@ public:
     void SetXRange(const double &tstart, const double &tend);
     void SetYRange(const double &ymin, const double &ymax);
     void AppendErrorMessage(const QString &s);
+    void SetUpForForwardRun();
 private:
     Ui::RunTimeWindow *ui;
 };

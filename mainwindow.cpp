@@ -651,17 +651,12 @@ void MainWindow::RecreateGraphicItemsFromSystem()
     onzoomall();
 }
 
-void MainWindow::onoptimize()
-{
-
-}
-
-
 void MainWindow::onrunmodel()
 {
     system.SetSystemSettings();
     rtw = new RunTimeWindow();
     rtw->show();
+    rtw->SetUpForForwardRun();
     system.SetRunTimeWindow(rtw);
     system.Solve(true);
     system.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
@@ -689,6 +684,11 @@ void MainWindow::onoptimize()
     optimizer = new CGA<System>(&system);
     optimizer->SetParameters(system.object("Optimizer"));
     system.SetAllParents();
+    rtw = new RunTimeWindow();
+    rtw->show();
+    rtw->SetXRange(0,optimizer->GA_params.nGen);
+    system.SetRunTimeWindow(nullptr);
+    optimizer->SetRunTimeWindow(rtw);
     optimizer->optimize();
 }
 
