@@ -651,6 +651,12 @@ void MainWindow::RecreateGraphicItemsFromSystem()
     onzoomall();
 }
 
+void MainWindow::onoptimize()
+{
+
+}
+
+
 void MainWindow::onrunmodel()
 {
     system.SetSystemSettings();
