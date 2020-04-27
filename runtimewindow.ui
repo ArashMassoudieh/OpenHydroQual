@@ -28,6 +28,13 @@
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QProgressBar" name="optprogressBar">
+     <property name="value">
+      <number>0</number>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

@@ -682,6 +682,8 @@ void MainWindow::onoptimize()
     system.SetSystemSettings();
     optimizer = new CGA<System>(&system);
     optimizer->SetParameters(system.object("Optimizer"));
+    system.SetAllParents();
+    optimizer->optimize();
 }
 
 Plotter* MainWindow::Plot(CTimeSeries& plotitem)
