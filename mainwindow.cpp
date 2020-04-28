@@ -724,6 +724,7 @@ void MainWindow::onrunmodel()
     copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     system.TransferResultsFrom(&copiedsystem);
+    system.SetOutputItems();
 }
 
 void MainWindow::closeEvent (QCloseEvent *event)
@@ -749,10 +750,15 @@ void MainWindow::onoptimize()
     system.SetAllParents();
     rtw = new RunTimeWindow();
     rtw->show();
+    rtw->AppendText("Optimization Started ...");
     rtw->SetXRange(0,optimizer->GA_params.nGen);
     system.SetRunTimeWindow(nullptr);
     optimizer->SetRunTimeWindow(rtw);
     optimizer->optimize();
+    system.TransferResultsFrom(&optimizer->Model_out);
+    system.Parameters() = optimizer->Model_out.Parameters();
+    system.SetOutputItems();
+    rtw->AppendText("Optimization Finished!");
 }
 
 Plotter* MainWindow::Plot(CTimeSeries& plotitem)
