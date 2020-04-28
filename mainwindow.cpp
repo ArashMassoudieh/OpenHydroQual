@@ -698,7 +698,7 @@ void MainWindow::RecreateGraphicItemsFromSystem()
         node->setHeight(system.block(i)->GetVal("_height"));
 
     }
-    for (int i=0; i<system.LinksCount(); i++)
+    for (unsigned int i=0; i<system.LinksCount(); i++)
     {
         Node *s_node = dView->node(QString::fromStdString(system.block(system.link(i)->s_Block_No())->GetName()));
         Node *e_node = dView->node(QString::fromStdString(system.block(system.link(i)->e_Block_No())->GetName()));
@@ -714,14 +714,16 @@ void MainWindow::RecreateGraphicItemsFromSystem()
 
 void MainWindow::onrunmodel()
 {
-    system.SetSystemSettings();
+    System copiedsystem(system);
+    copiedsystem.SetSystemSettings();
     rtw = new RunTimeWindow();
     rtw->show();
     rtw->SetUpForForwardRun();
-    system.SetRunTimeWindow(rtw);
-    system.Solve(true);
-    system.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
-    system.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
+    copiedsystem.SetRunTimeWindow(rtw);
+    copiedsystem.Solve(true);
+    copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
+    copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
+    system.TransferResultsFrom(&copiedsystem);
 }
 
 void MainWindow::closeEvent (QCloseEvent *event)
