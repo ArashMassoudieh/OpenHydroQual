@@ -483,7 +483,7 @@
       "description": "Expression",
       "ask_user": "true"
     },
-    "Weight": {
+    "weight": {
       "type": "value",
       "includeinoutput": "false",
       "description": "Weight",

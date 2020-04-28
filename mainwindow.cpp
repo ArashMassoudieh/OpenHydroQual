@@ -40,12 +40,12 @@ MainWindow::MainWindow(QWidget *parent) :
     BuildObjectsToolBar();
     connect(ui->treeWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(preparetreeviewMenu(const QPoint&)));
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
-    connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
 
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnew()));
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
+    connect(ui->actionLoad_a_new_template,SIGNAL(triggered()),this,SLOT(loadnewtemplate()));
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
@@ -267,13 +267,18 @@ void MainWindow::onaddparameter()
 {
     QObject* obj = sender();
     Parameter parameter;
-    parameter.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
-    parameter.SetType(obj->objectName().toStdString());
     string name;
+    string objectname;
     if (obj->objectName()!="")
-        name = CreateNewName(obj->objectName().toStdString());
+    {   name = CreateNewName(obj->objectName().toStdString());
+        objectname = obj->objectName().toStdString();
+    }
     else
-        name = CreateNewName("Parameter");
+    {   name = CreateNewName("Parameter");
+        objectname = "Parameter";
+    }
+    parameter.SetQuantities(system.GetMetaModel(),objectname);
+    parameter.SetType(objectname);
     parameter.SetName(name);
     system.Parameters().Append(name,parameter);
     qDebug() << "parameter added! " << obj->objectName();
@@ -285,13 +290,21 @@ void MainWindow::onaddobjectivefunction()
 {
     QObject* obj = sender();
     Objective_Function objective_function;
-    objective_function.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
-    objective_function.SetType(obj->objectName().toStdString());
+
     string name;
+    string objectname;
     if (obj->objectName()!="")
-        name = CreateNewName(obj->objectName().toStdString());
+    {   name = CreateNewName(obj->objectName().toStdString());
+        objectname = obj->objectName().toStdString();
+    }
     else
+    {
         name = CreateNewName("Objective Function");
+        objectname = "Objective_Function";
+    }
+
+    objective_function.SetQuantities(system.GetMetaModel(),objectname);
+    objective_function.SetType(objectname);
 
     objective_function.SetName(name);
     system.AppendObjectiveFunction(name,objective_function);
@@ -329,6 +342,7 @@ void MainWindow::RefreshTreeView()
             QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
             QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
             treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
             treechlditem->setText(0,QString::fromStdString(system.Setting(i)->GetName()));
             treeitem->addChild(treechlditem);
         }
@@ -346,6 +360,7 @@ void MainWindow::RefreshTreeView()
             QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
             QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
             treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
             treechlditem->setText(0,QString::fromStdString(system.block(i)->GetName()));
             treeitem->addChild(treechlditem);
         }
@@ -363,6 +378,7 @@ void MainWindow::RefreshTreeView()
             QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
             QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
             treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
             treechlditem->setText(0,QString::fromStdString(system.link(i)->GetName()));
             treeitem->addChild(treechlditem);
         }
@@ -378,7 +394,9 @@ void MainWindow::RefreshTreeView()
             qDebug() << "More than one category called '" + TypeCategory + "' was found!";
         else {
             QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
+
             QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
             treechlditem->setData(0,Qt::UserRole,"child");
             treechlditem->setText(0,QString::fromStdString(system.source(i)->GetName()));
             treeitem->addChild(treechlditem);
@@ -397,12 +415,13 @@ void MainWindow::RefreshTreeView()
             QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
             QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
             treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
             treechlditem->setText(0,QString::fromStdString(system.Parameters()[i]->GetName()));
             treeitem->addChild(treechlditem);
         }
     }
 
-    for (int i=0; i<system.ObjectiveFunctionsCount(); i++)
+    for (unsigned int i=0; i<system.ObjectiveFunctionsCount(); i++)
     {
         QString TypeCategory = QString::fromStdString(system.ObjectiveFunctions()[i]->TypeCategory());
         QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.ObjectiveFunctions()[i]->TypeCategory()),Qt::MatchExactly);
@@ -413,6 +432,7 @@ void MainWindow::RefreshTreeView()
         else {
             QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
             QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
             treechlditem->setData(0,Qt::UserRole,"child");
             treechlditem->setText(0,QString::fromStdString(system.ObjectiveFunctions()[i]->GetName()));
             treeitem->addChild(treechlditem);
@@ -467,11 +487,41 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         connect(DeleteAct, SIGNAL(triggered()), this, SLOT(onDeleteItem()));
         QMenu menu(this);
         menu.addAction(DeleteAct);
+        QMenu* results = menu.addMenu("Results");
+        for (unsigned int i = 0; i < system.object(nd->text(0).toStdString())->ItemswithOutput().size(); i++)
+        {
+            timeseriestobeshown = QString::fromStdString(system.object(nd->text(0).toStdString())->ItemswithOutput()[i]);
+            QAction* graphaction = results->addAction(timeseriestobeshown);
+            QVariant v = QVariant::fromValue(QString::fromStdString(system.object(nd->text(0).toStdString())->Variable(timeseriestobeshown.toStdString())->GetOutputItem()));
+            graphaction->setData(v);
+            //called_by_clicking_on_graphical_object = true;
+            connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+        }
+        qDebug() << nd->data(0,CustomRoleCodes::Role::TypeRole).toString();
+        if (nd->data(0,CustomRoleCodes::Role::TypeRole).toString() == "Objective Functions")
+        {
+            timeseriestobeshown = "Time Series";
+            QAction* graphaction = results->addAction(timeseriestobeshown);
+            QVariant v = QVariant::fromValue(QString::fromStdString(system.objectivefunction(nd->text(0).toStdString())->GetOutputItem()));
+            graphaction->setData(v);
+            //called_by_clicking_on_graphical_object = true;
+            connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
 
+
+        }
         QPoint pt(pos);
         menu.exec( tree->mapToGlobal(pos) );
 
     }
+}
+
+void MainWindow::showgraph()
+{
+    QAction* act = qobject_cast<QAction*>(sender());
+    QString item = act->data().toString();
+    Plotter *plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
+    plot->SetYAxisTitle(act->text());
+
 }
 
 void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
@@ -606,7 +656,7 @@ void MainWindow::onsave()
             tr("script files (*.scr)"));
     if (fileName!="")
     {
-        system.SavetoScriptFile(fileName.toStdString());
+        system.SavetoScriptFile(fileName.toStdString(),modelfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
     }
 
@@ -626,6 +676,7 @@ void MainWindow::onopen()
         system.clear();
         system.ReadSystemSettingsTemplate(entitiesfilename);
         system.CreateFromScript(scr);
+        system.ReadSystemSettingsTemplate(entitiesfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
     }
     RecreateGraphicItemsFromSystem();
@@ -722,6 +773,26 @@ void MainWindow::onAddItemThroughTreeViewRightClick()
         //qDebug() << "entity added! " << obj->objectName();
         //Entity* item = new Entity(obj->objectName(), obj->objectName() + QString::number(counts[obj->objectName()]), diagramview, QString::fromStdString(system.GetMetaModel()->GetItem(obj->objectName().toStdString())->CategoryType()));
 
+
+}
+
+void MainWindow::loadnewtemplate()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+            tr("Open"), "",
+            tr("Script files (*.json);; All files (*.*)"));
+
+
+    if (fileName!="")
+    {
+        system.clear();
+        system.GetMetaModel()->Clear();
+        system.GetQuanTemplate(fileName.toStdString());
+        ui->mainToolBar->clear();
+        BuildObjectsToolBar();
+        RefreshTreeView();
+        modelfilename = fileName.toStdString();
+    }
 
 }
 

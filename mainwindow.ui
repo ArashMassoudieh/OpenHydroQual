@@ -34,17 +34,25 @@
      <x>0</x>
      <y>0</y>
      <width>775</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFilw">
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuPreferences">
+     <property name="title">
+      <string>Preferences</string>
+     </property>
+     <addaction name="actionLoad_a_new_template"/>
+    </widget>
     <addaction name="actionNew_Project"/>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
+    <addaction name="separator"/>
+    <addaction name="menuPreferences"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -160,6 +168,11 @@
   <action name="actionRun">
    <property name="text">
     <string>Run</string>
+   </property>
+  </action>
+  <action name="actionLoad_a_new_template">
+   <property name="text">
+    <string>Load a new template</string>
    </property>
   </action>
  </widget>

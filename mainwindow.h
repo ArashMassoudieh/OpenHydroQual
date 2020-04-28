@@ -47,6 +47,7 @@ private:
     QModelIndex tableitemrightckicked;
     QMenu *menu;
     CGA<System> *optimizer;
+    QString timeseriestobeshown;
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);
@@ -68,6 +69,8 @@ private slots:
     void onAddItemThroughTreeViewRightClick();
     void tablePropShowContextMenu(const QPoint&);
     void addParameter(QAction* item);
+    void loadnewtemplate();
+    void showgraph();
 };
 
 #endif // MAINWINDOW_H
