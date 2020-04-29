@@ -175,6 +175,12 @@
     <ClCompile Include="plotter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="expEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="expressioneditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Aquifolium\include\BTC.h">
@@ -344,6 +350,12 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="plotter.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="expEditor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="expressioneditor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

@@ -392,6 +392,8 @@
     <ClCompile Include="..\jsoncpp\src\lib_json\json_reader.cpp" />
     <ClCompile Include="..\jsoncpp\src\lib_json\json_value.cpp" />
     <ClCompile Include="..\jsoncpp\src\lib_json\json_writer.cpp" />
+    <ClCompile Include="expEditor.cpp" />
+    <ClCompile Include="expressioneditor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="node.cpp" />
@@ -446,6 +448,8 @@
     <ClInclude Include="..\jsoncpp\src\lib_json\json_tool.h" />
     <QtMoc Include="mainwindow.h">
     </QtMoc>
+    <QtMoc Include="expEditor.h" />
+    <QtMoc Include="expressioneditor.h" />
     <ClInclude Include="node.h" />
     <QtMoc Include="propmodel.h">
     </QtMoc>
