@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    QIcon mainicon(qApp->applicationDirPath() + "/../../resources/Icons/Aquifolium.png");
+    setWindowIcon(mainicon);
     dView = new DiagramView(ui->centralWidget,this);
     dView->setObjectName(QStringLiteral("graphicsView"));
     ui->horizontalLayout->addWidget(dView);
@@ -43,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
+    connect(ui->actionSave_as,SIGNAL(triggered()),this,SLOT(onsaveas()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnew()));
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
     connect(ui->actionLoad_a_new_template,SIGNAL(triggered()),this,SLOT(loadnewtemplate()));
@@ -484,6 +487,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
     {
         QAction *DeleteAct = new QAction(QIcon(":/Resource/warning32.ico"), "Delete" , this);
         DeleteAct->setStatusTip("Delete");
+        DeleteAct->setData(nd->text(0));
         connect(DeleteAct, SIGNAL(triggered()), this, SLOT(onDeleteItem()));
         QMenu menu(this);
         menu.addAction(DeleteAct);
@@ -522,6 +526,13 @@ void MainWindow::showgraph()
     Plotter *plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
     plot->SetYAxisTitle(act->text());
 
+}
+
+void MainWindow::onDeleteItem()
+{
+    QAction* act = qobject_cast<QAction*>(sender());
+    QString item = act->data().toString();
+    dView->deleteselectednode(item);
 }
 
 void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
@@ -649,7 +660,7 @@ void MainWindow::onzoomall()
     dView->fitInView(newRect,Qt::KeepAspectRatio);
 }
 
-void MainWindow::onsave()
+void MainWindow::onsaveas()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
             tr("Save"), "",
@@ -658,7 +669,17 @@ void MainWindow::onsave()
     {
         system.SavetoScriptFile(fileName.toStdString(),modelfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
+        filename = fileName;
     }
+
+}
+
+void MainWindow::onsave()
+{
+    if (filename!="")
+        system.SavetoScriptFile(filename.toStdString(),modelfilename);
+    else
+        onsaveas();
 
 }
 
@@ -678,6 +699,7 @@ void MainWindow::onopen()
         system.CreateFromScript(scr);
         system.ReadSystemSettingsTemplate(entitiesfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
+        filename = fileName;
     }
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();

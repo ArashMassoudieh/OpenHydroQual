@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>QAquifolium</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>resources/Icons/Aquifolium.png</normaloff>resources/Icons/Aquifolium.png</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">

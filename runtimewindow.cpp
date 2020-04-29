@@ -6,6 +6,9 @@ RunTimeWindow::RunTimeWindow(QWidget *parent) :
     ui(new Ui::RunTimeWindow)
 {
     ui->setupUi(this);
+    QIcon mainicon(qApp->applicationDirPath() + "/../../resources/Icons/Aquifolium.png");
+    setWindowIcon(mainicon);
+
     plot = new QCustomPlot(this);
     plot->setObjectName(QStringLiteral("RunProgressPlot"));
     ui->horizontalLayout->addWidget(plot);
@@ -56,6 +59,12 @@ void RunTimeWindow::SetProgress(const double &val)
 {
     ui->progressBar->setValue(int(val*100));
 }
+
+void RunTimeWindow::SetProgress2(const double &val)
+{
+    ui->optprogressBar->setValue(int(val*100));
+}
+
 
 void RunTimeWindow::SetXRange(const double &tstart, const double &tend)
 {

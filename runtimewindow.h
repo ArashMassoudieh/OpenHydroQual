@@ -19,6 +19,7 @@ public:
     void AppendText(const QString &s);
     void AddDataPoint(const double &t, const double value);
     void SetProgress(const double &val);
+    void SetProgress2(const double &val);
     void SetXRange(const double &tstart, const double &tend);
     void SetYRange(const double &ymin, const double &ymax);
     void AppendErrorMessage(const QString &s);

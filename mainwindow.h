@@ -48,6 +48,7 @@ private:
     QMenu *menu;
     CGA<System> *optimizer;
     QString timeseriestobeshown;
+    QString filename="";
 private slots:
     void on_check_object_browser();
     void on_object_browser_closed(bool visible);
@@ -63,6 +64,7 @@ private slots:
     void onzoomout();
     void onzoomall();
     void onsave();
+    void onsaveas();
     void onopen();
     void onrunmodel();
     void onoptimize();
@@ -71,6 +73,7 @@ private slots:
     void addParameter(QAction* item);
     void loadnewtemplate();
     void showgraph();
+    void onDeleteItem();
 };
 
 #endif // MAINWINDOW_H

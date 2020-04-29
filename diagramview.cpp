@@ -376,13 +376,18 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
 
 
 }
-void DiagramView::deleteselectednode()
+void DiagramView::deleteselectednode(QString nodename)
 {
-    mainWindow()->GetSystem()->Delete(nodenametobedeleted.toStdString());
+    if (nodename=="")
+        mainWindow()->GetSystem()->Delete(nodenametobedeleted.toStdString());
+    else
+        mainWindow()->GetSystem()->Delete(nodename.toStdString());
     mainWindow()->RecreateGraphicItemsFromSystem();
     mainWindow()->RefreshTreeView(); 
     mainWindow()->PopulatePropertyTable(nullptr);
 }
+
+
 void DiagramView::showgraph()
 {
     QAction* act = qobject_cast<QAction*>(sender());
@@ -626,6 +631,9 @@ void DiagramView::edgeContextMenuRequested(Edge* e, QPointF pos, QMenu *menu)
         menu = new QMenu();
         deleteAction = menu->addAction("Delete");
         called_by_clicking_on_graphical_object = true;
+        nodenametobedeleted = e->Name();
+        connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteselectednode()));
+
     }
     QAction *markAction = menu->addAction("Select");
 
