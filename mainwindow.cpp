@@ -506,12 +506,23 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         {
             timeseriestobeshown = "Time Series";
             QAction* graphaction = results->addAction(timeseriestobeshown);
-            QVariant v = QVariant::fromValue(QString::fromStdString(system.objectivefunction(nd->text(0).toStdString())->GetOutputItem()));
+            QVariant v = QVariant::fromValue(nd->text(0));
             graphaction->setData(v);
             //called_by_clicking_on_graphical_object = true;
             connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
 
 
+        }
+        if (nd->data(0, CustomRoleCodes::Role::TypeRole).toString() == "Sources")
+        {
+            timeseriestobeshown = "Precipitation";
+            if (GetSystem()->source(nd->text(0).toStdString())->Variable("timeseries")->GetTimeSeries()!=nullptr)
+            {   QAction* graphaction = menu.addAction(timeseriestobeshown);
+                QVariant v = QVariant::fromValue(nd->text(0));
+                graphaction->setData(v);
+                //called_by_clicking_on_graphical_object = true;
+                connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+            }
         }
         QPoint pt(pos);
         menu.exec( tree->mapToGlobal(pos) );
@@ -523,8 +534,19 @@ void MainWindow::showgraph()
 {
     QAction* act = qobject_cast<QAction*>(sender());
     QString item = act->data().toString();
-    Plotter *plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
-    plot->SetYAxisTitle(act->text());
+    if (timeseriestobeshown == "Precipitation")
+    {
+        if (GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries() != nullptr)
+        {
+            Plotter* plot = Plot(*GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries());
+            plot->SetYAxisTitle(act->text());
+        }
+    }
+    else
+    {    
+        Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
+        plot->SetYAxisTitle(act->text());
+    }
 
 }
 
@@ -695,9 +717,7 @@ void MainWindow::onopen()
     {
         Script scr(fileName.toStdString(),&system);
         system.clear();
-        system.ReadSystemSettingsTemplate(entitiesfilename);
-        system.CreateFromScript(scr);
-        system.ReadSystemSettingsTemplate(entitiesfilename);
+        system.CreateFromScript(scr,entitiesfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
         filename = fileName;
     }

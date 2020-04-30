@@ -413,7 +413,7 @@
     <ClInclude Include="..\Aquifolium\include\GA\Distribution.h" />
     <ClInclude Include="..\Aquifolium\include\GA\DistributionNUnif.h" />
     <ClInclude Include="..\Aquifolium\include\Expression.h" />
-    <ClInclude Include="..\Aquifolium\src\GA\GA.hpp" />
+    <ClInclude Include="..\Aquifolium\include\GA\GA.hpp" />
     <ClInclude Include="..\Aquifolium\include\GA\Individual.h" />
     <ClInclude Include="..\Aquifolium\include\Link.h" />
     <ClInclude Include="..\Aquifolium\include\Matrix.h" />

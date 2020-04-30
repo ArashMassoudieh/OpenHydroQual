@@ -207,9 +207,6 @@
     <ClInclude Include="..\Aquifolium\include\Expression.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Aquifolium\src\GA\GA.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Aquifolium\include\GA\Individual.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -334,6 +331,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\jsoncpp\include\json\writer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Aquifolium\include\GA\GA.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
