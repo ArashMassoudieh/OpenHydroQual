@@ -4,7 +4,7 @@
     "type": "block",
     "typecategory": "Blocks",
     "icon": {
-      "filename": "catchment.png"
+      "filename": "rainwater-catchment.png"
     },
     "name": {
       "description": "Name",
@@ -84,7 +84,7 @@
       "estimate": "true"
     }
   },
-"Trapezoidal Channel Segment": {
+  "Trapezoidal Channel Segment": {
     "type": "block",
     "typecategory": "Blocks",
     "icon": {
@@ -185,6 +185,27 @@
       "estimate": "true"
     }
   },
+  "Trapezoidal_Channel_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "Trapezoidal_Channel_Link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(Storage.s/Area.s^(1.666667))*86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "delegate": "TimeSeries" 
+    }
+  },
   "Precipitation": {
     "type": "source",
     "typecategory": "Sources",
@@ -215,7 +236,7 @@
     "type": "block",
     "typecategory": "Blocks",
     "icon": {
-      "filename": "reservoir.png"
+      "filename": "Reservoir_Rating_Curve.png"
     },
     "name": {
       "description": "Name",
@@ -287,7 +308,7 @@
     "type": "block",
     "typecategory": "Blocks",
     "icon": {
-      "filename": "reservoir.png"
+      "filename": "Reservoid_Control.png"
     },
     "name": {
       "description": "Name",
@@ -359,7 +380,7 @@
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
-      "filename": "reservoir_link.png"
+      "filename": "Reservoir_Link_Arrow.png"
     },
     "name": {
       "description": "Name",
