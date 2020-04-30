@@ -78,8 +78,8 @@
   <widget class="QToolBar" name="mainToolBar">
    <property name="iconSize">
     <size>
-     <width>48</width>
-     <height>48</height>
+     <width>32</width>
+     <height>32</height>
     </size>
    </property>
    <attribute name="toolBarArea">
@@ -133,8 +133,8 @@
    </property>
    <property name="iconSize">
     <size>
-     <width>48</width>
-     <height>48</height>
+     <width>32</width>
+     <height>32</height>
     </size>
    </property>
    <attribute name="toolBarArea">

@@ -161,6 +161,14 @@
       "delegate": "UnitBox",
       "estimate": "true"
     },
+    "depth": {
+      "type": "expression",
+      "expression": "(-base_width+_sqr(base_width^2+4*side_slope*Storage/length))/(2*side_slope)",
+      "description": "Water Depth",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "includeinoutput": "true"
+    },
     "head": {
       "type": "expression",
       "expression": "depth+bottom_elevation",      
@@ -169,20 +177,28 @@
       "delegate": "UnitBox",
       "includeinoutput": "true"
     },
-    "depth": {
+    "length": {
+      "type": "value",
+      "description": "Segment length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
+    "area": {
       "type": "expression",
-      "expression": "(-base_width+_sqr(base_width^2+side_slope*Storage/lenght))/(2*side_slope)",
-      "description": "Water Depth",
+      "expression": "(base_width+side_slope*depth)*depth",
+      "description": "Cross-sectional area",
       "ask_user": "false",
       "delegate": "UnitBox",
       "includeinoutput": "true"
     },
-    "lenght": {
-      "type": "value",
-      "description": "Segment Lenght",
-      "ask_user": "true",
+    "perimeter": {
+      "type": "expression",
+      "expression": "(base_width+2*_sqr(1+side_slope^2)*depth)*depth",
+      "description": "Wetted Perimeter",
+      "ask_user": "false",
       "delegate": "UnitBox",
-      "estimate": "true"
+      "includeinoutput": "true"
     }
   },
   "Trapezoidal_Channel_link": {
@@ -197,13 +213,47 @@
       "ask_user": "true",
       "delegate": "String" 
     },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "(area.s+area.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "(perimeter.s+perimeter.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
     "flow": {
       "type": "expression",
-      "expression": "(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(Storage.s/Area.s^(1.666667))*86400",
+      "expression": "(_sqr((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false",
-      "delegate": "TimeSeries" 
+      "ask_user": "false"
     }
   },
   "Precipitation": {
