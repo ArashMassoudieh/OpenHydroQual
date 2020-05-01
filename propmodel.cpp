@@ -40,6 +40,9 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
 
 
    switch (role) {
+   case Qt::ToolTipRole:
+       return QString::fromStdString(quanset->GetVarAskable(index.row())->Description());
+       break;
    case Qt::DisplayRole:
        if (col == 0) return QString::fromStdString(quanset->GetVarAskable(index.row())->Description());
        if (col == 1)
