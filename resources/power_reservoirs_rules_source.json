@@ -36,7 +36,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^2",
-      "estimate": "true"
+      "estimate": "true",
+	   "criteria": "Area>0",
+	  "warningmessage": "Area must be greater than zero"
     },
     "x": {
       "type": "value",

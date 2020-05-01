@@ -336,6 +336,12 @@
     <ClInclude Include="..\Aquifolium\include\GA\GA.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Aquifolium\include\Condition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Aquifolium\include\Rule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="mainwindow.ui">

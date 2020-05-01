@@ -407,6 +407,7 @@
   <ItemGroup>
     <ClInclude Include="..\Aquifolium\include\BTC.h" />
     <ClInclude Include="..\Aquifolium\include\BTCSet.h" />
+    <ClInclude Include="..\Aquifolium\include\Condition.h" />
     <ClInclude Include="..\Aquifolium\include\GA\Binary.h" />
     <ClInclude Include="..\Aquifolium\include\Block.h" />
     <ClInclude Include="..\Aquifolium\include\Command.h" />
@@ -427,6 +428,7 @@
     <ClInclude Include="..\Aquifolium\include\Quan.h" />
     <ClInclude Include="..\Aquifolium\include\QuanSet.h" />
     <ClInclude Include="..\Aquifolium\include\QuickSort.h" />
+    <ClInclude Include="..\Aquifolium\include\Rule.h" />
     <ClInclude Include="..\Aquifolium\include\Script.h" />
     <ClInclude Include="..\Aquifolium\include\StringOP.h" />
     <ClInclude Include="..\Aquifolium\include\System.h" />
