@@ -7,6 +7,7 @@
 #include "QMenu"
 #include "QStatusBar"
 
+
 DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsView(parent)
 {
     mainwindow = _mainwindow;
@@ -70,7 +71,7 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
                         resizecorner = node->corner(xx, yy);
                         node->setFlag(QGraphicsItem::ItemIsMovable, false);
                     }
-                    else if (node->edge(xx, yy) && getselectedconnectfeature()!="") {
+                    else if (node->edge(xx, yy) && getselectedconnectfeature() != "") {
                         node->setFlag(QGraphicsItem::ItemIsMovable, false);
                         Node1 = node;
                         tempRay = new Ray();
@@ -93,7 +94,20 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
                 }
             }
         }
+        if (event->buttons() == Qt::RightButton && !node && !edge)
+        {
+            if (nodenametobecopied != "")
+            {
+                QMenu* menu = new QMenu;
+                QAction* pasteaction = menu->addAction("Paste");
+                connect(pasteaction, SIGNAL(triggered()), this, SLOT(pastecopieddnode()));
+                QAction* selectedAction = menu->exec(mapToGlobal(event->pos()));
+                qDebug() << mapToGlobal(event->pos());
+            }
+        }
+
     }
+    
 
     //QGraphicsView::mousePressEvent(event);
 }
@@ -387,6 +401,24 @@ void DiagramView::deleteselectednode(QString nodename)
     mainWindow()->PopulatePropertyTable(nullptr);
 }
 
+void DiagramView::copyselectednode(QString nodename)
+{
+    
+    if (nodename == "")
+    {
+        copied_block = Block(*(mainWindow()->GetSystem()->block(nodenametobedeleted.toStdString())));
+        copied_block.SetVal("x", mainWindow()->GetSystem()->block(nodenametobedeleted.toStdString())->GetProperty("x") + 300);
+        copied_block.SetVal("y", mainWindow()->GetSystem()->block(nodenametobedeleted.toStdString())->GetProperty("y") + 300);
+    }
+    else
+    {
+        copied_block = Block(*(mainWindow()->GetSystem()->block(nodename.toStdString())));
+        copied_block.SetVal("x", mainWindow()->GetSystem()->block(nodename.toStdString())->GetProperty("x") + 300);
+        copied_block.SetVal("y", mainWindow()->GetSystem()->block(nodename.toStdString())->GetProperty("y") + 300);
+    }
+    copied_block.AssignRandomPrimaryKey();
+}
+
 
 void DiagramView::showgraph()
 {
@@ -582,6 +614,11 @@ void DiagramView::nodeContextMenuRequested(Node* n, QPointF pos, QMenu *menu)
         nodenametobedeleted = n->Name(); 
         connect(deleteaction, SIGNAL(triggered()), this, SLOT(deleteselectednode()));
     }
+    
+    QAction* copyaction = menu->addAction("Copy");
+    nodenametobecopied = n->Name();
+    connect(copyaction, SIGNAL(triggered()), this, SLOT(copyselectednode()));
+    
     menu->addAction("Select");
     menu->addSeparator();
     QMenu* results = menu->addMenu("Results");

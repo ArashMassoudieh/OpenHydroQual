@@ -5,6 +5,7 @@
 #include <QGraphicsView>
 #include "enums.h"
 #include "ray.h"
+#include "Block.h"
 
 class MainWindow;
 class Node;
@@ -57,6 +58,8 @@ private:
     void sceneChanged();
     QString nodenametobedeleted = ""; 
     QString timeseriestobeshown = ""; 
+    QString nodenametobecopied = "";
+    Block copied_block; 
 signals:
     void Mouse_Pos(int, int, QString);
     void changed();
@@ -65,6 +68,7 @@ public slots:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void deleteselectednode(QString nodename="");
+    void copyselectednode(QString nodename = "");
     void showgraph();
 
 
