@@ -245,6 +245,11 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
             resizenode->setWidth(px - xx + pw);
             resizenode->setY(yy);
             resizenode->setHeight(py - yy + ph);
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("x", aquiutils::numbertostring(xx));
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("y", aquiutils::numbertostring(yy));
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_width", aquiutils::numbertostring(px - xx + pw));
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_height", aquiutils::numbertostring(py - yy + ph));
+            
         }
         if (resizecorner == bottomleft && (px - xx + pw) > minW && (yy - py) > minH)
         {
@@ -252,6 +257,9 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
             resizenode->setWidth(px - xx + pw);
             //resizenode->setY(yy);
             resizenode->setHeight(yy - py);
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("x", aquiutils::numbertostring(xx));
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_width", aquiutils::numbertostring(px - xx + pw));
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_height", aquiutils::numbertostring(py - yy + ph));
         }
         if (resizecorner == topright && (xx - px) > minW && (py - yy + ph) > minH)
         {
@@ -259,6 +267,12 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
             resizenode->setWidth(xx - px);
             resizenode->setY(yy);
             resizenode->setHeight(py - yy + ph);
+            
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("y", aquiutils::numbertostring(yy));
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_width", aquiutils::numbertostring(xx-px));
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_height", aquiutils::numbertostring(py - yy + ph));
+            
+
         }
         if (resizecorner == bottomright && (xx - px) > minW && (yy - py) > minH)
         {
@@ -266,6 +280,9 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
             resizenode->setWidth(xx - px);
             //resizenode->setY(yy);
             resizenode->setHeight(yy - py);
+            
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_width", aquiutils::numbertostring(xx-px));
+            mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_height", aquiutils::numbertostring(yy-py));
         }
         resizenode->update();
         for(Edge *edge : resizenode->edges())
@@ -407,18 +424,36 @@ void DiagramView::copyselectednode(QString nodename)
     if (nodename == "")
     {
         copied_block = Block(*(mainWindow()->GetSystem()->block(nodenametobedeleted.toStdString())));
-        copied_block.SetVal("x", mainWindow()->GetSystem()->block(nodenametobedeleted.toStdString())->GetProperty("x") + 300);
-        copied_block.SetVal("y", mainWindow()->GetSystem()->block(nodenametobedeleted.toStdString())->GetProperty("y") + 300);
+        copied_block.SetVal("x", mainWindow()->GetSystem()->block(nodenametobedeleted.toStdString())->GetProperty("x") + 210);
+        copied_block.SetVal("y", mainWindow()->GetSystem()->block(nodenametobedeleted.toStdString())->GetProperty("y") + 210);
+        copied_block.deletelinkstofrom();
     }
     else
     {
         copied_block = Block(*(mainWindow()->GetSystem()->block(nodename.toStdString())));
-        copied_block.SetVal("x", mainWindow()->GetSystem()->block(nodename.toStdString())->GetProperty("x") + 300);
-        copied_block.SetVal("y", mainWindow()->GetSystem()->block(nodename.toStdString())->GetProperty("y") + 300);
+        copied_block.SetVal("x", mainWindow()->GetSystem()->block(nodename.toStdString())->GetProperty("x") + 210);
+        copied_block.SetVal("y", mainWindow()->GetSystem()->block(nodename.toStdString())->GetProperty("y") + 210);
+        copied_block.deletelinkstofrom();
     }
     copied_block.AssignRandomPrimaryKey();
+    copied_block.SetName(mainWindow()->CreateNewName(copied_block.GetType()));
 }
 
+void DiagramView::pastecopieddnode()
+{
+    mainWindow()->GetSystem()->AddBlock(copied_block, false);
+    qDebug() << QString::fromStdString(copied_block.GetName()); 
+    qDebug() << copied_block.GetProperty("x");
+    Node* node = new Node(this, mainWindow()->GetSystem());
+    qDebug() << copied_block.GetProperty("x");
+    repaint();
+    node->SetObject(mainWindow()->GetSystem()->object(copied_block.GetName()));
+    mainWindow()->resetPropModel(); 
+    mainWindow()->PopulatePropertyTable(nullptr); 
+    mainWindow()->RefreshTreeView();
+    nodenametobecopied = "";
+    
+}
 
 void DiagramView::showgraph()
 {

@@ -70,6 +70,7 @@ public slots:
     void deleteselectednode(QString nodename="");
     void copyselectednode(QString nodename = "");
     void showgraph();
+    void pastecopieddnode(); 
 
 
 };

@@ -29,13 +29,14 @@ public:
     void RecreateGraphicItemsFromSystem();
     void RefreshTreeView();
     Plotter* Plot(CTimeSeries& plotitem);
+    string CreateNewName(string type);
+    DiagramView* GetDiagramView() { return dView; }
 private:
     Ui::MainWindow *ui;
     System system;
     DiagramView* dView;
     bool Populate_TreeWidget();
     bool BuildObjectsToolBar();
-    string CreateNewName(string type);
     PropModel *propmodel = nullptr;
     void Populate_General_ToolBar();
     string modelfilename;

@@ -6,6 +6,8 @@
 #include "qmessagebox.h"
 #include "mainwindow.h"
 #include "utilityfuncs.h"
+#include "diagramview.h"
+#include "node.h"
 
 PropModel::PropModel(QuanSet* _quanset, QObject *parent, MainWindow *_mainwindow)
     : QAbstractTableModel(parent)
@@ -158,6 +160,22 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
             quanset->GetVar(VariableName.toStdString()).SetParameterAssignedTo("");
         }
         bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString());
+        if (VariableName == "x")
+        {
+            mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setX(value.toInt());
+        }
+        if (VariableName == "y")
+        {
+            mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setY(value.toInt());
+        }
+        if (VariableName == "_width")
+        {
+            mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setWidth(value.toInt());
+        }
+        if (VariableName == "_height")
+        {
+            mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setHeight(value.toInt());
+        }
 
         if (!r && (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries || quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries))
         {

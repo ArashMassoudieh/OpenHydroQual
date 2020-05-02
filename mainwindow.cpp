@@ -506,7 +506,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         {
             timeseriestobeshown = "Time Series";
             QAction* graphaction = results->addAction(timeseriestobeshown);
-            QVariant v = QVariant::fromValue(nd->text(0));
+            QVariant v = QVariant::fromValue(QString::fromStdString(system.objectivefunction(nd->text(0).toStdString())->GetOutputItem()));
             graphaction->setData(v);
             //called_by_clicking_on_graphical_object = true;
             connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
@@ -789,6 +789,7 @@ void MainWindow::onoptimize()
     system.SetSystemSettings();
     optimizer = new CGA<System>(&system);
     optimizer->SetParameters(system.object("Optimizer"));
+    optimizer->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
     rtw = new RunTimeWindow();
     rtw->show();

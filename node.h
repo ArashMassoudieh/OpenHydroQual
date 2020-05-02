@@ -4,7 +4,7 @@
 #include "enums.h"
 #include <QGraphicsItem>
 #include <string>
-#include "Object.h"
+
 
 class DiagramView;
 class System;
@@ -23,7 +23,7 @@ public:
     Node operator=(const Node &);
     enum { Type = UserType + 1 };
     int type() const Q_DECL_OVERRIDE { return Type; }
-    void SetObject(Object *_object) {objectPrimaryKey = _object->GetPrimaryKey() ;}
+    void SetObject(Object* _object);
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -32,15 +32,13 @@ public:
     int Height() const {return height;}
     corners corner(const int _x, const int _y);
     edgesides edge(const int x, const int y);
-    QString Name() {return QString::fromStdString(object()->GetName());}
+    QString Name();
     int minH = 30, minW = 40;
-    void setWidth(const int &Width)
-    {
-        width = Width; update();
-    }
-    void setHeight(const int &Height) {
-        height = Height; update();
-    }
+    void setWidth(const int& Width);
+    void setHeight(const int& Height);
+    void setX(const int& x);
+    void setY(const int& y);
+   
     QList<Edge *> edges() const { return edgeList; }
     void addEdge(Edge *edge);
 

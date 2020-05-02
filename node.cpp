@@ -7,6 +7,7 @@
 #include "qgraphicssceneevent.h"
 #include "edge.h"
 #include "enums.h"
+#include "Object.h"
 
 Node::Node(DiagramView *_parent, System *_system)
 {
@@ -179,3 +180,29 @@ Node::Node(const Node &E)
 
 }
 
+void Node::setWidth(const int& Width)
+{
+    width = Width; update();
+}
+void Node::setHeight(const int& Height) {
+    height = Height; update();
+}
+
+void Node::setX(const int& x)
+{
+    QGraphicsItem::setX(x);
+}
+void Node::setY(const int& y)
+{
+    QGraphicsItem::setY(y);
+}
+
+void Node::SetObject(Object* _object) {
+    objectPrimaryKey = _object->GetPrimaryKey();
+    setX(_object->GetProperty("x"));
+    setY(_object->GetProperty("y"));
+    setWidth(_object->GetProperty("_width"));
+    setWidth(_object->GetProperty("_height"));
+}
+
+QString Node::Name() { return QString::fromStdString(object()->GetName()); }
