@@ -181,6 +181,9 @@
     <ClCompile Include="expressioneditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="logwindow.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Aquifolium\include\BTC.h">
@@ -353,6 +356,9 @@
     <QtUic Include="plotter.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="logwindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="plotter.h">
@@ -363,6 +369,9 @@
     </QtMoc>
     <QtMoc Include="expressioneditor.h">
       <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="logwindow.h">
+      <Filter>Generated Files</Filter>
     </QtMoc>
   </ItemGroup>
 </Project>

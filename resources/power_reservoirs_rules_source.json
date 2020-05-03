@@ -665,7 +665,7 @@
     },
     "method": {
       "type": "string",
-      "delegate": "ComboBox;items:integrate,value",
+      "delegate": "ComboBox;items:integrate,value,maximum,variance",
       "includeinoutput": "true",
       "description": "Calculation method",
       "ask_user": "true"

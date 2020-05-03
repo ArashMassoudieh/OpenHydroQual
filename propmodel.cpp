@@ -102,7 +102,6 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
        if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).contains("items"))
        {
            QStringList items = QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).split(":")[1].split(",");
-           items.append(toQStringList(mainwindow->GetSystem()->GetAllLinkNames()));
            return items;
        }
        break;

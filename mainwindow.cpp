@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dView = new DiagramView(ui->centralWidget,this);
     dView->setObjectName(QStringLiteral("graphicsView"));
     ui->horizontalLayout->addWidget(dView);
-    LogWindow = new logwindow();
+    LogWindow = new logwindow(this);
     LogWindow->show();
 #ifndef Win_Version
     modelfilename = qApp->applicationDirPath().toStdString() + "/../../resources/power_reservoirs_rules_source.json";
@@ -798,7 +798,7 @@ void MainWindow::onrunmodel()
 {
     System copiedsystem(system);
     copiedsystem.SetSystemSettings();
-    rtw = new RunTimeWindow();
+    rtw = new RunTimeWindow(this);
     rtw->show();
     rtw->SetUpForForwardRun();
     copiedsystem.SetRunTimeWindow(rtw);
@@ -831,7 +831,7 @@ void MainWindow::onoptimize()
     optimizer->SetParameters(system.object("Optimizer"));
     optimizer->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
-    rtw = new RunTimeWindow();
+    rtw = new RunTimeWindow(this);
     rtw->show();
     rtw->AppendText("Optimization Started ...");
     rtw->SetXRange(0,optimizer->GA_params.nGen);
