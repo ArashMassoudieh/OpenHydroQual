@@ -83,7 +83,8 @@ SOURCES += \
     plotter.cpp \
     expEditor.cpp \
     statusviewer.cpp \
-    expressioneditor.cpp
+    expressioneditor.cpp \
+    logwindow.cpp
 
 HEADERS += \
     ../Aquifolium/include/Objective_Function.h \
@@ -144,12 +145,14 @@ HEADERS += \
     expEditor.h \
     statusviewer.h \
     expressioneditor.h \
-    ../Aquifolium/include/GA/GA.hpp
+    ../Aquifolium/include/GA/GA.hpp \
+    logwindow.h
 
 FORMS += \
         mainwindow.ui \
     runtimewindow.ui \
-    plotter.ui
+    plotter.ui \
+    logwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

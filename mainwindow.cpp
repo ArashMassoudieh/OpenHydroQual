@@ -24,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
     dView = new DiagramView(ui->centralWidget,this);
     dView->setObjectName(QStringLiteral("graphicsView"));
     ui->horizontalLayout->addWidget(dView);
+    LogWindow = new logwindow();
+    LogWindow->show();
 #ifndef Win_Version
     modelfilename = qApp->applicationDirPath().toStdString() + "/../../resources/power_reservoirs_rules_source.json";
     entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
@@ -31,12 +33,27 @@ MainWindow::MainWindow(QWidget *parent) :
     modelfilename = qApp->applicationDirPath().toStdString() + "/resources/power_reservoirs_rules_source.json";
     entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
 #endif // !Win_Version
-    system.GetQuanTemplate(modelfilename);  //Read the template from modelfilename
-    system.ReadSystemSettingsTemplate(entitiesfilename); //Read the system settings
+
+    if (system.GetQuanTemplate(modelfilename)) //Read the template from modelfilename
+    {
+        Log("Template was successfully loaded from '" + QString::fromStdString(modelfilename) + "'");
+    }
+    else {
+        LogError("Template" + QString::fromStdString(modelfilename) + "' was not loaded properly");
+    }
+    if (system.ReadSystemSettingsTemplate(entitiesfilename)) //Read the system settings
+    {
+        Log("Setting was successfully loaded from '" + QString::fromStdString(entitiesfilename) + "'");
+    }
+    else
+    {
+        LogError("Failed to load the setting file '" + QString::fromStdString(entitiesfilename) + "'");
+    }
     RefreshTreeView();
     //connect(ui->treeWidget, SIGNAL(closeEvent()),ui->actionObject_Browser, SLOT())
 
     connect(ui->actionObject_Browser,SIGNAL(triggered()),this,SLOT(on_check_object_browser()));
+    connect(ui->actionLog_Window,SIGNAL(triggered()),this,SLOT(on_check_showlogwindow()));
     connect(ui->dockWidget_3,SIGNAL(visibilityChanged(bool)),this,SLOT(on_object_browser_closed(bool)));
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     BuildObjectsToolBar();
@@ -55,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->tableView->setItemDelegateForColumn(1,new Delegate(this,this));
     Populate_General_ToolBar();
+
 }
 
 MainWindow::~MainWindow()
@@ -87,8 +105,6 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
         }
 
         menu->exec(ui->tableView->mapToGlobal(pos));
-
-
     }
 
 }
@@ -133,6 +149,16 @@ void MainWindow::on_check_object_browser()
         ui->dockWidget_3->show();
     else
         ui->dockWidget_3->hide();
+
+}
+
+void MainWindow::on_check_showlogwindow()
+{
+    //ui->actionObject_Browser->setChecked(!ui->actionObject_Browser->isChecked());
+    if (ui->actionLog_Window->isChecked())
+        LogWindow->show();
+    else
+        LogWindow->hide();
 
 }
 
@@ -206,7 +232,12 @@ void MainWindow::onaddblock()
 {
     QObject* obj = sender();
     Block block;
-    block.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString());
+    if (!block.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString()))
+    {
+        LogError(QString::fromStdString(block.lasterror()));
+        return;
+    }
+
     block.SetType(obj->objectName().toStdString());
     string name = CreateNewName(obj->objectName().toStdString());
     block.SetName(name);
@@ -217,6 +248,8 @@ void MainWindow::onaddblock()
     system.object(name)->AssignRandomPrimaryKey();
     node->SetObject(system.object(name));
     RefreshTreeView();
+    LogAddDelete("Block '" + QString::fromStdString(name) + "' was added!");
+
  }
 
 void MainWindow::onaddlink()
@@ -236,7 +269,11 @@ void MainWindow::onaddlink()
 void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type,  Edge* edge)
 {
     Link link;
-    link.SetQuantities(system.GetMetaModel(),type.toStdString());
+    if (!link.SetQuantities(system.GetMetaModel(),type.toStdString()))
+    {
+        LogError(QString::fromStdString(link.lasterror()));
+        return;
+    }
     link.SetType(type.toStdString());
     link.SetName(LinkName.toStdString());
     system.AddLink(link,sourceblock.toStdString(),targetblock.toStdString());
@@ -248,7 +285,7 @@ void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
         action->setChecked(false);
     }
     RefreshTreeView();
-
+    LogAddDelete("Link '" + LinkName + "' was added!");
 }
 
 
@@ -264,6 +301,7 @@ void MainWindow::onaddsource()
     qDebug() << "source added! " << obj->objectName();
     system.object(name)->SetName(name);
     RefreshTreeView();
+    LogAddDelete("Source '" + QString::fromStdString(name) + "' was added!");
 }
 
 void MainWindow::onaddparameter()
@@ -287,6 +325,7 @@ void MainWindow::onaddparameter()
     qDebug() << "parameter added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
+    LogAddDelete("Parameter '" + QString::fromStdString(name) + "' was added!");
 }
 
 void MainWindow::onaddobjectivefunction()
@@ -314,6 +353,7 @@ void MainWindow::onaddobjectivefunction()
     qDebug() << "objective function added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
+    LogAddDelete("Objective Function '" + QString::fromStdString(name) + "' was added!");
 
 }
 
@@ -847,4 +887,22 @@ void MainWindow::loadnewtemplate()
 
 }
 
+bool MainWindow::Log(const QString &s)
+{
+    LogWindow->AppendText(s);
+    return true;
+}
 
+bool MainWindow::LogError(const QString &s)
+{
+    LogWindow->AppendError(s);
+    ui->actionLog_Window->setChecked(true);
+    LogWindow->show();
+    return true;
+}
+
+bool MainWindow::LogAddDelete(const QString &s)
+{
+    LogWindow->AppendBlue(s);
+    return true;
+}

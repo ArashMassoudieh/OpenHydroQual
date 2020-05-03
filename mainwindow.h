@@ -9,6 +9,7 @@
 #include "runtimewindow.h"
 #include "plotter.h"
 #include "GA.h"
+#include "logwindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -31,7 +32,11 @@ public:
     Plotter* Plot(CTimeSeries& plotitem);
     string CreateNewName(string type);
     DiagramView* GetDiagramView() { return dView; }
+    bool Log(const QString &s);
+    bool LogError(const QString &s);
+    bool LogAddDelete(const QString &s);
 private:
+    logwindow *LogWindow;
     Ui::MainWindow *ui;
     System system;
     DiagramView* dView;
@@ -52,6 +57,7 @@ private:
     QString filename="";
 private slots:
     void on_check_object_browser();
+    void on_check_showlogwindow();
     void on_object_browser_closed(bool visible);
     void onaddblock();
     void onaddlink();
