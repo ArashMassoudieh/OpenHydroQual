@@ -25,7 +25,7 @@ public:
     PropModel *propModel() {return propmodel;}
     void resetPropModel() { propmodel = nullptr ;}
     System *GetSystem() {return &system;}
-    void AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type, Edge* edge);
+    bool AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type, Edge* edge);
     void PopulatePropertyTable(QuanSet* quanset);
     void RecreateGraphicItemsFromSystem();
     void RefreshTreeView();

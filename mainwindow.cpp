@@ -177,6 +177,7 @@ bool MainWindow::BuildObjectsToolBar()
         QIcon icon;
         icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
         action->setIcon(icon);
+        action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
         ui->mainToolBar->addAction(action);
         action->setText(QString::fromStdString(system.GetAllBlockTypes()[i]));
         connect(action, SIGNAL(triggered()), this, SLOT(onaddblock()));
@@ -191,6 +192,7 @@ bool MainWindow::BuildObjectsToolBar()
         QIcon icon;
         icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
         action->setIcon(icon);
+        action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
         ui->mainToolBar->addAction(action);
         action->setText(QString::fromStdString(system.GetAllLinkTypes()[i]));
         connect(action, SIGNAL(triggered()), this, SLOT(onaddlink()));
@@ -210,6 +212,7 @@ bool MainWindow::BuildObjectsToolBar()
                 QIcon icon;
                 icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
                 action->setIcon(icon);
+                action->setToolTip(QString::fromStdString(system.GetModel(type)->Description()));
                 ui->mainToolBar->addAction(action);
                 action->setText(QString::fromStdString(type));
                 if (typecategory=="Sources")
@@ -266,17 +269,26 @@ void MainWindow::onaddlink()
 
 }
 
-void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type,  Edge* edge)
+bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type,  Edge* edge)
 {
     Link link;
     if (!link.SetQuantities(system.GetMetaModel(),type.toStdString()))
     {
         LogError(QString::fromStdString(link.lasterror()));
-        return;
+        LogError(QString::fromStdString(system.lasterror()));
+        //RecreateGraphicItemsFromSystem();
+        return false;
     }
     link.SetType(type.toStdString());
     link.SetName(LinkName.toStdString());
-    system.AddLink(link,sourceblock.toStdString(),targetblock.toStdString());
+    if (!system.AddLink(link, sourceblock.toStdString(), targetblock.toStdString()))
+    {
+        qDebug() << QString::fromStdString(system.lasterror());
+        QMessageBox::question(this, "Link does not match the connected block!", QString::fromStdString(system.lasterror()), QMessageBox::Ok);
+        LogError(QString::fromStdString(system.lasterror()));
+        //RecreateGraphicItemsFromSystem();
+        return false; 
+    }
     system.object(LinkName.toStdString())->SetName(LinkName.toStdString());
     system.object(LinkName.toStdString())->AssignRandomPrimaryKey();
     edge->SetObject(system.object(LinkName.toStdString()));
@@ -286,6 +298,7 @@ void MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
     }
     RefreshTreeView();
     LogAddDelete("Link '" + LinkName + "' was added!");
+    return true; 
 }
 
 

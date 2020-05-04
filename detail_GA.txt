@@ -1,0 +1,1064 @@
+Assigning fitnesses ...
+0, 8.138371e+00, 
+0, fitness=1.327350e+03, time=3.920000e-01, epochs=0
+1, 4.663228e-01, 
+1, fitness=1.078171e+02, time=1.520000e-01, epochs=0
+2, 8.142033e+00, 
+2, fitness=1.327715e+03, time=3.690000e-01, epochs=0
+3, 2.399976e+00, 
+3, fitness=5.634677e+02, time=1.800000e-01, epochs=0
+4, 8.978851e+00, 
+4, fitness=1.404836e+03, time=3.800000e-01, epochs=0
+5, 2.565081e+00, 
+5, fitness=5.947196e+02, time=2.110000e-01, epochs=0
+6, 2.693564e+00, 
+6, fitness=6.184371e+02, time=1.950000e-01, epochs=0
+7, 2.080142e+00, 
+7, fitness=5.005275e+02, time=1.840000e-01, epochs=0
+8, 2.293771e+00, 
+8, fitness=5.428854e+02, time=1.820000e-01, epochs=0
+9, 8.461562e+00, 
+9, fitness=1.358475e+03, time=3.300000e-01, epochs=0
+10, 8.748436e+00, 
+10, fitness=1.383420e+03, time=3.590000e-01, epochs=0
+11, 8.876919e+00, 
+11, fitness=1.395424e+03, time=3.570000e-01, epochs=0
+12, 8.447829e+00, 
+12, fitness=1.357138e+03, time=3.440000e-01, epochs=0
+13, 6.092715e+00, 
+13, fitness=1.111127e+03, time=1.930000e-01, epochs=0
+14, 4.089480e-01, 
+14, fitness=9.134685e+01, time=1.550000e-01, epochs=0
+15, 1.735282e+00, 
+15, fitness=4.278611e+02, time=1.880000e-01, epochs=0
+16, 1.837519e+00, 
+16, fitness=4.500089e+02, time=1.710000e-01, epochs=0
+17, 3.559069e+00, 
+17, fitness=7.639345e+02, time=2.260000e-01, epochs=0
+18, 4.492630e+00, 
+18, fitness=9.042474e+02, time=2.360000e-01, epochs=0
+19, 1.850642e+00, 
+19, fitness=4.528187e+02, time=1.700000e-01, epochs=0
+20, 8.944670e+00, 
+20, fitness=1.401720e+03, time=3.510000e-01, epochs=0
+21, 6.230354e+00, 
+21, fitness=1.126303e+03, time=1.840000e-01, epochs=0
+22, 5.463424e+00, 
+22, fitness=1.032975e+03, time=2.670000e-01, epochs=0
+23, 9.116794e+00, 
+23, fitness=1.418051e+03, time=3.070000e-01, epochs=0
+24, 5.225990e+00, 
+24, fitness=1.002552e+03, time=2.800000e-01, epochs=0
+25, 7.306436e+00, 
+25, fitness=1.246330e+03, time=1.360000e-01, epochs=0
+26, 9.993286e+00, 
+26, fitness=1.496141e+03, time=1.950000e-01, epochs=0
+27, 9.693289e+00, 
+27, fitness=1.469997e+03, time=2.260000e-01, epochs=0
+28, 8.674276e+00, 
+28, fitness=1.376425e+03, time=3.390000e-01, epochs=0
+29, 8.402051e+00, 
+29, fitness=1.352671e+03, time=3.510000e-01, epochs=0
+30, 1.466720e+00, 
+30, fitness=3.674315e+02, time=1.620000e-01, epochs=0
+31, 3.744011e+00, 
+31, fitness=7.932043e+02, time=2.230000e-01, epochs=0
+32, 2.843715e+00, 
+32, fitness=6.455190e+02, time=1.880000e-01, epochs=0
+33, 1.709647e+00, 
+33, fitness=4.222366e+02, time=1.790000e-01, epochs=0
+34, 9.737541e+00, 
+34, fitness=1.473883e+03, time=2.220000e-01, epochs=0
+35, 7.418134e+00, 
+35, fitness=1.257868e+03, time=1.270000e-01, epochs=0
+36, 7.166051e+00, 
+36, fitness=1.231346e+03, time=1.340000e-01, epochs=0
+37, 3.088473e-01, 
+37, fitness=6.261865e+01, time=1.460000e-01, epochs=0
+38, 6.450392e+00, 
+38, fitness=1.151759e+03, time=1.730000e-01, epochs=0
+39, 8.127079e+00, 
+39, fitness=1.326221e+03, time=3.470000e-01, epochs=0
+Assigning fitnesses done!
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Generation: 0
+Cross-over ...
+Cross-over done! 
+Mutation ...
+Mutation done!
+Shake...!
+Shake done!
+Assigning fitnesses ...
+0, 3.088473e-01, 
+0, fitness=6.261865e+01, time=1.440000e-01, epochs=0
+1, 3.178935e-01, 
+1, fitness=6.520420e+01, time=1.560000e-01, epochs=0
+2, 1.980516e+00, 
+2, fitness=4.799774e+02, time=1.930000e-01, epochs=0
+3, 1.988538e-01, 
+3, fitness=3.193064e+01, time=1.460000e-01, epochs=0
+4, 8.115625e+00, 
+4, fitness=1.325075e+03, time=3.210000e-01, epochs=0
+5, 9.310148e+00, 
+5, fitness=1.435694e+03, time=2.550000e-01, epochs=0
+6, 1.136113e+00, 
+6, fitness=2.879942e+02, time=1.740000e-01, epochs=0
+7, 6.636880e-01, 
+7, fitness=1.635549e+02, time=1.570000e-01, epochs=0
+8, 7.017265e+00, 
+8, fitness=1.214820e+03, time=1.570000e-01, epochs=0
+9, 3.529338e-01, 
+9, fitness=7.524018e+01, time=1.450000e-01, epochs=0
+10, 9.961959e+00, 
+10, fitness=1.493436e+03, time=1.960000e-01, epochs=0
+11, 2.722736e+00, 
+11, fitness=6.237529e+02, time=1.860000e-01, epochs=0
+12, 1.120763e+00, 
+12, fitness=2.841594e+02, time=1.670000e-01, epochs=0
+13, 9.050562e+00, 
+13, fitness=1.411940e+03, time=3.190000e-01, epochs=0
+14, 2.150907e+00, 
+14, fitness=5.145790e+02, time=1.850000e-01, epochs=0
+15, 1.972327e+00, 
+15, fitness=4.782702e+02, time=1.710000e-01, epochs=0
+16, 2.590815e+00, 
+16, fitness=5.995124e+02, time=1.840000e-01, epochs=0
+17, 1.681639e+00, 
+17, fitness=4.160559e+02, time=1.650000e-01, epochs=0
+18, 9.106707e+00, 
+18, fitness=1.417326e+03, time=3.230000e-01, epochs=0
+19, 2.010852e-01, 
+19, fitness=3.252975e+01, time=1.430000e-01, epochs=0
+20, 3.044047e-01, 
+20, fitness=6.135137e+01, time=1.470000e-01, epochs=0
+21, 1.757792e+00, 
+21, fitness=4.327749e+02, time=1.680000e-01, epochs=0
+22, 3.559586e-01, 
+22, fitness=7.610897e+01, time=1.480000e-01, epochs=0
+23, 2.792405e+00, 
+23, fitness=6.363418e+02, time=1.950000e-01, epochs=0
+24, 9.533310e+00, 
+24, fitness=1.455843e+03, time=2.370000e-01, epochs=0
+25, 4.711317e-01, 
+25, fitness=1.092006e+02, time=1.450000e-01, epochs=0
+26, 1.108319e+00, 
+26, fitness=2.810415e+02, time=1.520000e-01, epochs=0
+27, 4.771129e+00, 
+27, fitness=9.430424e+02, time=2.370000e-01, epochs=0
+28, 5.366435e+00, 
+28, fitness=1.020640e+03, time=2.480000e-01, epochs=0
+29, 6.408083e-01, 
+29, fitness=1.571925e+02, time=1.640000e-01, epochs=0
+30, 6.956689e+00, 
+30, fitness=1.208202e+03, time=1.380000e-01, epochs=0
+31, 1.103165e+00, 
+31, fitness=2.797481e+02, time=1.530000e-01, epochs=0
+32, 1.132440e+00, 
+32, fitness=2.870786e+02, time=1.610000e-01, epochs=0
+33, 1.499089e+00, 
+33, fitness=3.748860e+02, time=1.630000e-01, epochs=0
+34, 1.126474e+00, 
+34, fitness=2.855875e+02, time=1.560000e-01, epochs=0
+35, 1.935851e+00, 
+35, fitness=4.706334e+02, time=1.800000e-01, epochs=0
+36, 2.940197e-01, 
+36, fitness=5.839396e+01, time=1.550000e-01, epochs=0
+37, 3.060373e-01, 
+37, fitness=6.181682e+01, time=1.410000e-01, epochs=0
+38, 4.999389e+00, 
+38, fitness=9.727832e+02, time=2.430000e-01, epochs=0
+39, 2.373585e-01, 
+39, fitness=4.245278e+01, time=1.410000e-01, epochs=0
+Assigning fitnesses done!
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Generation: 1
+Cross-over ...
+Cross-over done! 
+Mutation ...
+Mutation done!
+Shake...!
+Shake done!
+Assigning fitnesses ...
+0, 1.988538e-01, 
+0, fitness=3.193064e+01, time=1.450000e-01, epochs=0
+1, 2.019874e-01, 
+1, fitness=3.277240e+01, time=1.410000e-01, epochs=0
+2, 7.242249e+00, 
+2, fitness=1.239488e+03, time=1.320000e-01, epochs=0
+3, 1.053859e+00, 
+3, fitness=2.672864e+02, time=1.520000e-01, epochs=0
+4, 1.924473e-01, 
+4, fitness=3.021863e+01, time=1.430000e-01, epochs=0
+5, 1.065657e+00, 
+5, fitness=2.702816e+02, time=1.610000e-01, epochs=0
+6, 1.376409e-01, 
+6, fitness=1.628315e+01, time=1.420000e-01, epochs=0
+7, 3.741074e-01, 
+7, fitness=8.132454e+01, time=1.450000e-01, epochs=0
+8, 3.363164e-01, 
+8, fitness=7.048059e+01, time=1.520000e-01, epochs=0
+9, 3.514634e-01, 
+9, fitness=7.481778e+01, time=1.450000e-01, epochs=0
+10, 8.517464e+00, 
+10, fitness=1.361511e+03, time=3.360000e-01, epochs=0
+11, 3.246166e-01, 
+11, fitness=6.712818e+01, time=1.550000e-01, epochs=0
+12, 4.110158e-01, 
+12, fitness=9.194143e+01, time=1.640000e-01, epochs=0
+13, 2.805305e+00, 
+13, fitness=6.386570e+02, time=2.080000e-01, epochs=0
+14, 3.708362e-01, 
+14, fitness=8.038414e+01, time=1.490000e-01, epochs=0
+15, 4.888962e-01, 
+15, fitness=1.142815e+02, time=1.520000e-01, epochs=0
+16, 6.888044e+00, 
+16, fitness=1.200929e+03, time=1.550000e-01, epochs=0
+17, 2.902623e-01, 
+17, fitness=5.732583e+01, time=1.530000e-01, epochs=0
+18, 2.431775e-01, 
+18, fitness=4.407065e+01, time=1.410000e-01, epochs=0
+19, 7.272846e-01, 
+19, fitness=1.810840e+02, time=1.600000e-01, epochs=0
+20, 2.142015e+00, 
+20, fitness=5.127898e+02, time=1.990000e-01, epochs=0
+21, 8.399316e-01, 
+21, fitness=2.115446e+02, time=1.640000e-01, epochs=0
+22, 9.314863e+00, 
+22, fitness=1.436119e+03, time=2.690000e-01, epochs=0
+23, 3.411708e-01, 
+23, fitness=7.186398e+01, time=1.700000e-01, epochs=0
+24, 4.047020e-01, 
+24, fitness=9.012598e+01, time=1.700000e-01, epochs=0
+25, 9.966317e-02, 
+25, fitness=7.895230e+00, time=1.610000e-01, epochs=0
+26, 3.295883e+00, 
+26, fitness=7.239284e+02, time=2.000000e-01, epochs=0
+27, 7.024095e+00, 
+27, fitness=1.215563e+03, time=1.400000e-01, epochs=0
+28, 3.514795e-01, 
+28, fitness=7.482266e+01, time=1.450000e-01, epochs=0
+29, 1.846206e+00, 
+29, fitness=4.518708e+02, time=1.850000e-01, epochs=0
+30, 3.039457e-01, 
+30, fitness=6.122049e+01, time=1.460000e-01, epochs=0
+31, 3.083542e-01, 
+31, fitness=6.247793e+01, time=1.640000e-01, epochs=0
+32, 1.053853e+00, 
+32, fitness=2.672839e+02, time=1.650000e-01, epochs=0
+33, 8.379551e+00, 
+33, fitness=1.350470e+03, time=3.500000e-01, epochs=0
+34, 3.216532e-01, 
+34, fitness=6.627980e+01, time=1.510000e-01, epochs=0
+35, 3.239933e-01, 
+35, fitness=6.694954e+01, time=1.450000e-01, epochs=0
+36, 7.224734e+00, 
+36, fitness=1.237642e+03, time=1.370000e-01, epochs=0
+37, 1.506532e-01, 
+37, fitness=1.944608e+01, time=1.480000e-01, epochs=0
+38, 7.194185e+00, 
+38, fitness=1.234369e+03, time=1.330000e-01, epochs=0
+39, 8.064379e-01, 
+39, fitness=2.025667e+02, time=1.520000e-01, epochs=0
+Assigning fitnesses done!
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Generation: 2
+Cross-over ...
+Cross-over done! 
+Mutation ...
+Mutation done!
+Shake...!
+Shake done!
+Assigning fitnesses ...
+0, 9.966317e-02, 
+0, fitness=7.895230e+00, time=1.430000e-01, epochs=0
+1, 1.039653e-01, 
+1, fitness=8.763003e+00, time=1.440000e-01, epochs=0
+2, 1.440708e-01, 
+2, fitness=1.783195e+01, time=1.460000e-01, epochs=0
+3, 3.881460e-01, 
+3, fitness=8.536153e+01, time=1.510000e-01, epochs=0
+4, 1.435948e-01, 
+4, fitness=1.771631e+01, time=1.570000e-01, epochs=0
+5, 1.437865e-01, 
+5, fitness=1.776294e+01, time=1.470000e-01, epochs=0
+6, 1.017442e-01, 
+6, fitness=8.311865e+00, time=1.420000e-01, epochs=0
+7, 9.712305e-02, 
+7, fitness=7.395602e+00, time=1.540000e-01, epochs=0
+8, 3.120478e-01, 
+8, fitness=6.353367e+01, time=1.500000e-01, epochs=0
+9, 3.240542e-01, 
+9, fitness=6.696700e+01, time=1.410000e-01, epochs=0
+10, 9.571395e-02, 
+10, fitness=7.122714e+00, time=1.450000e-01, epochs=0
+11, 1.042900e+00, 
+11, fitness=2.644972e+02, time=1.590000e-01, epochs=0
+12, 1.953851e-01, 
+12, fitness=3.100207e+01, time=1.470000e-01, epochs=0
+13, 2.299913e+00, 
+13, fitness=5.440715e+02, time=1.830000e-01, epochs=0
+14, 3.714249e-01, 
+14, fitness=8.055346e+01, time=1.510000e-01, epochs=0
+15, 1.741935e-01, 
+15, fitness=2.541985e+01, time=1.450000e-01, epochs=0
+16, 1.889250e-01, 
+16, fitness=2.928321e+01, time=1.400000e-01, epochs=0
+17, 3.192735e+00, 
+17, fitness=7.059336e+02, time=1.920000e-01, epochs=0
+18, 3.997137e-01, 
+18, fitness=8.869162e+01, time=1.510000e-01, epochs=0
+19, 7.020007e-02, 
+19, fitness=2.836614e+00, time=1.450000e-01, epochs=0
+20, 2.544630e-01, 
+20, fitness=4.722172e+01, time=1.470000e-01, epochs=0
+21, 1.675623e-01, 
+21, fitness=2.370975e+01, time=1.420000e-01, epochs=0
+22, 2.308910e-01, 
+22, fitness=4.066294e+01, time=1.420000e-01, epochs=0
+23, 2.021153e-01, 
+23, fitness=3.280685e+01, time=1.460000e-01, epochs=0
+24, 3.270304e-02, 
+24, fitness=5.279484e-01, time=1.470000e-01, epochs=0
+25, 3.797905e+00, 
+25, fitness=8.015989e+02, time=2.280000e-01, epochs=0
+26, 1.722271e-01, 
+26, fitness=2.491061e+01, time=1.620000e-01, epochs=0
+27, 6.793406e+00, 
+27, fitness=1.190461e+03, time=1.430000e-01, epochs=0
+28, 2.049608e-01, 
+28, fitness=3.357407e+01, time=1.420000e-01, epochs=0
+29, 3.595998e-02, 
+29, fitness=4.107914e-01, time=1.480000e-01, epochs=0
+30, 8.431596e-02, 
+30, fitness=5.040012e+00, time=1.490000e-01, epochs=0
+31, 7.302939e-01, 
+31, fitness=1.819075e+02, time=1.560000e-01, epochs=0
+32, 3.418212e-01, 
+32, fitness=7.205046e+01, time=1.560000e-01, epochs=0
+33, 1.635490e+00, 
+33, fitness=4.057945e+02, time=1.710000e-01, epochs=0
+34, 1.965934e-01, 
+34, fitness=3.132500e+01, time=1.420000e-01, epochs=0
+35, 3.603855e-02, 
+35, fitness=4.090055e-01, time=1.560000e-01, epochs=0
+36, 6.934992e+00, 
+36, fitness=1.205823e+03, time=1.310000e-01, epochs=0
+37, 1.968028e-01, 
+37, fitness=3.138119e+01, time=1.540000e-01, epochs=0
+38, 1.162683e+00, 
+38, fitness=2.946003e+02, time=1.740000e-01, epochs=0
+39, 8.197140e+00, 
+39, fitness=1.332605e+03, time=3.160000e-01, epochs=0
+Assigning fitnesses done!
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Generation: 3
+Cross-over ...
+Cross-over done! 
+Mutation ...
+Mutation done!
+Shake...!
+Shake done!
+Assigning fitnesses ...
+0, 3.603855e-02, 
+0, fitness=4.090055e-01, time=1.460000e-01, epochs=0
+1, 3.570051e-02, 
+1, fitness=4.170393e-01, time=1.470000e-01, epochs=0
+2, 1.959894e-01, 
+2, fitness=3.116348e+01, time=1.420000e-01, epochs=0
+3, 2.406500e-01, 
+3, fitness=4.336641e+01, time=1.420000e-01, epochs=0
+4, 3.567979e-01, 
+4, fitness=7.634997e+01, time=1.440000e-01, epochs=0
+5, 3.912494e-01, 
+5, fitness=8.625391e+01, time=1.440000e-01, epochs=0
+6, 2.057566e-01, 
+6, fitness=3.378906e+01, time=1.530000e-01, epochs=0
+7, 8.940414e-02, 
+7, fitness=5.940824e+00, time=1.450000e-01, epochs=0
+8, 6.706330e-02, 
+8, fitness=2.417217e+00, time=1.430000e-01, epochs=0
+9, 1.030142e-01, 
+9, fitness=8.569001e+00, time=1.450000e-01, epochs=0
+10, 1.123670e+00, 
+10, fitness=2.848874e+02, time=1.560000e-01, epochs=0
+11, 2.229148e+00, 
+11, fitness=5.301977e+02, time=1.860000e-01, epochs=0
+12, 3.164591e-02, 
+12, fitness=5.849705e-01, time=1.550000e-01, epochs=0
+13, 3.756831e-02, 
+13, fitness=3.834070e-01, time=1.520000e-01, epochs=0
+14, 3.616754e-02, 
+14, fitness=4.061727e-01, time=1.470000e-01, epochs=0
+15, 3.501163e-02, 
+15, fitness=4.361392e-01, time=1.510000e-01, epochs=0
+16, 5.055648e-02, 
+16, fitness=7.712803e-01, time=1.470000e-01, epochs=0
+17, 6.706560e+00, 
+17, fitness=1.181050e+03, time=1.620000e-01, epochs=0
+18, 4.196341e-03, 
+18, fitness=7.127734e+00, time=1.520000e-01, epochs=0
+19, 2.380962e-01, 
+19, fitness=4.265722e+01, time=1.510000e-01, epochs=0
+20, 1.016534e-01, 
+20, fitness=8.293527e+00, time=1.460000e-01, epochs=0
+21, 7.553192e-02, 
+21, fitness=3.612166e+00, time=1.540000e-01, epochs=0
+22, 4.603872e-02, 
+22, fitness=5.261271e-01, time=1.560000e-01, epochs=0
+23, 1.932275e-01, 
+23, fitness=3.042635e+01, time=1.410000e-01, epochs=0
+24, 1.950327e-01, 
+24, fitness=3.090806e+01, time=1.430000e-01, epochs=0
+25, 1.034848e+00, 
+25, fitness=2.624440e+02, time=1.530000e-01, epochs=0
+26, 1.799994e-01, 
+26, fitness=2.693217e+01, time=1.470000e-01, epochs=0
+27, 9.850090e-02, 
+27, fitness=7.665414e+00, time=1.560000e-01, epochs=0
+28, 3.256518e-02, 
+28, fitness=5.348310e-01, time=1.540000e-01, epochs=0
+29, 8.980530e-01, 
+29, fitness=2.269621e+02, time=1.500000e-01, epochs=0
+30, 5.155289e-01, 
+30, fitness=1.218786e+02, time=1.460000e-01, epochs=0
+31, 3.901958e-02, 
+31, fitness=3.747685e-01, time=1.480000e-01, epochs=0
+32, 1.791308e-01, 
+32, fitness=2.670517e+01, time=1.420000e-01, epochs=0
+33, 1.725188e-01, 
+33, fitness=2.498610e+01, time=1.610000e-01, epochs=0
+34, 1.727659e+00, 
+34, fitness=4.261919e+02, time=1.730000e-01, epochs=0
+35, 3.651714e-02, 
+35, fitness=3.991279e-01, time=1.450000e-01, epochs=0
+36, 3.670140e-02, 
+36, fitness=3.957831e-01, time=1.470000e-01, epochs=0
+37, 3.639613e-02, 
+37, fitness=4.014620e-01, time=1.510000e-01, epochs=0
+38, 7.170860e-02, 
+38, fitness=3.048335e+00, time=1.440000e-01, epochs=0
+39, 2.047786e-01, 
+39, fitness=3.352494e+01, time=1.430000e-01, epochs=0
+Assigning fitnesses done!
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Generation: 4
+Cross-over ...
+Cross-over done! 
+Mutation ...
+Mutation done!
+Shake...!
+Shake done!
+Assigning fitnesses ...
+0, 3.901958e-02, 
+0, fitness=3.747685e-01, time=1.510000e-01, epochs=0
+1, 3.852104e-02, 
+1, fitness=3.760668e-01, time=1.450000e-01, epochs=0
+2, 3.863158e-02, 
+2, fitness=3.756244e-01, time=1.760000e-01, epochs=0
+3, 3.351421e+00, 
+3, fitness=7.328085e+02, time=1.670000e-01, epochs=0
+4, 2.254290e-01, 
+4, fitness=3.915478e+01, time=1.480000e-01, epochs=0
+5, 4.529927e-02, 
+5, fitness=4.963050e-01, time=1.520000e-01, epochs=0
+6, 1.024037e-01, 
+6, fitness=8.445215e+00, time=1.480000e-01, epochs=0
+7, 3.103883e-03, 
+7, fitness=7.693485e+00, time=1.500000e-01, epochs=0
+8, 3.838674e-02, 
+8, fitness=3.767110e-01, time=1.610000e-01, epochs=0
+9, 4.060779e-02, 
+9, fitness=3.819260e-01, time=1.490000e-01, epochs=0
+10, 3.702021e-02, 
+10, fitness=3.905850e-01, time=1.530000e-01, epochs=0
+11, 3.511518e-02, 
+11, fitness=4.330216e-01, time=1.500000e-01, epochs=0
+12, 4.373112e-02, 
+12, fitness=4.433362e-01, time=1.470000e-01, epochs=0
+13, 3.039117e-02, 
+13, fitness=6.655784e-01, time=1.460000e-01, epochs=0
+14, 9.944447e-02, 
+14, fitness=7.851834e+00, time=1.790000e-01, epochs=0
+15, 4.876327e-02, 
+15, fitness=6.614756e-01, time=1.610000e-01, epochs=0
+16, 6.837415e+00, 
+16, fitness=1.195339e+03, time=1.420000e-01, epochs=0
+17, 8.207737e-02, 
+17, fitness=4.659976e+00, time=1.420000e-01, epochs=0
+18, 3.065637e-02, 
+18, fitness=6.473392e-01, time=1.680000e-01, epochs=0
+19, 4.747208e-02, 
+19, fitness=5.924499e-01, time=1.520000e-01, epochs=0
+20, 1.119495e+00, 
+20, fitness=2.838439e+02, time=1.700000e-01, epochs=0
+21, 8.569959e-01, 
+21, fitness=2.160923e+02, time=1.780000e-01, epochs=0
+22, 1.724537e+00, 
+22, fitness=4.255078e+02, time=1.910000e-01, epochs=0
+23, 7.049168e-02, 
+23, fitness=2.877047e+00, time=1.530000e-01, epochs=0
+24, 1.012842e-01, 
+24, fitness=8.219286e+00, time=1.460000e-01, epochs=0
+25, 3.097322e-02, 
+25, fitness=6.264154e-01, time=1.650000e-01, epochs=0
+26, 3.903862e-02, 
+26, fitness=3.747534e-01, time=1.490000e-01, epochs=0
+27, 6.536676e+00, 
+27, fitness=1.161343e+03, time=1.590000e-01, epochs=0
+28, 3.144363e+00, 
+28, fitness=6.978156e+02, time=2.040000e-01, epochs=0
+29, 4.681687e-02, 
+29, fitness=5.607631e-01, time=1.470000e-01, epochs=0
+30, 3.496960e-02, 
+30, fitness=4.374232e-01, time=1.550000e-01, epochs=0
+31, 1.195911e-01, 
+31, fitness=1.211081e+01, time=1.450000e-01, epochs=0
+32, 4.083860e-02, 
+32, fitness=3.843597e-01, time=1.510000e-01, epochs=0
+33, 3.844066e-02, 
+33, fitness=3.764368e-01, time=1.590000e-01, epochs=0
+34, 1.434212e-01, 
+34, fitness=1.767408e+01, time=1.490000e-01, epochs=0
+35, 9.638973e-02, 
+35, fitness=7.253202e+00, time=1.450000e-01, epochs=0
+36, 3.698579e-02, 
+36, fitness=3.911089e-01, time=1.440000e-01, epochs=0
+37, 3.705078e-02, 
+37, fitness=3.901264e-01, time=1.570000e-01, epochs=0
+38, 1.404018e-01, 
+38, fitness=1.694461e+01, time=1.540000e-01, epochs=0
+39, 2.024001e-02, 
+39, fitness=1.920375e+00, time=1.600000e-01, epochs=0
+Assigning fitnesses done!
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Generation: 5
+Cross-over ...
+Cross-over done! 
+Mutation ...
+Mutation done!
+Shake...!
+Shake done!
+Assigning fitnesses ...
+0, 3.903862e-02, 
+0, fitness=3.747534e-01, time=1.440000e-01, epochs=0
+1, 3.950988e-02, 
+1, fitness=3.751682e-01, time=1.440000e-01, epochs=0
+2, 3.052490e-02, 
+2, fitness=6.562948e-01, time=1.770000e-01, epochs=0
+3, 6.708698e+00, 
+3, fitness=1.181289e+03, time=1.530000e-01, epochs=0
+4, 8.789750e-01, 
+4, fitness=2.219240e+02, time=1.490000e-01, epochs=0
+5, 3.885500e-02, 
+5, fitness=3.750042e-01, time=1.510000e-01, epochs=0
+6, 2.660743e-02, 
+6, fitness=9.999280e-01, time=1.500000e-01, epochs=0
+7, 4.948368e-02, 
+7, fitness=7.036789e-01, time=1.590000e-01, epochs=0
+8, 3.980477e-02, 
+8, fitness=3.761888e-01, time=1.470000e-01, epochs=0
+9, 3.829331e-02, 
+9, fitness=3.772338e-01, time=1.710000e-01, epochs=0
+10, 4.037906e-02, 
+10, fitness=3.798579e-01, time=1.470000e-01, epochs=0
+11, 3.964244e-02, 
+11, fitness=3.755569e-01, time=1.460000e-01, epochs=0
+12, 8.655705e-01, 
+12, fitness=2.183708e+02, time=1.640000e-01, epochs=0
+13, 1.157624e-01, 
+13, fitness=1.126488e+01, time=1.510000e-01, epochs=0
+14, 3.750616e-02, 
+14, fitness=3.841105e-01, time=1.460000e-01, epochs=0
+15, 4.015658e-02, 
+15, fitness=3.781764e-01, time=1.480000e-01, epochs=0
+16, 4.629458e-02, 
+16, fitness=5.371527e-01, time=1.460000e-01, epochs=0
+17, 3.509204e-02, 
+17, fitness=4.337102e-01, time=1.460000e-01, epochs=0
+18, 4.585565e-01, 
+18, fitness=1.055916e+02, time=1.590000e-01, epochs=0
+19, 3.984024e-02, 
+19, fitness=3.763514e-01, time=1.540000e-01, epochs=0
+20, 5.246940e-01, 
+20, fitness=1.244867e+02, time=1.460000e-01, epochs=0
+21, 4.670095e-02, 
+21, fitness=5.553919e-01, time=1.430000e-01, epochs=0
+22, 4.490628e-02, 
+22, fitness=4.817053e-01, time=1.500000e-01, epochs=0
+23, 2.824027e-02, 
+23, fitness=8.381346e-01, time=1.530000e-01, epochs=0
+24, 3.991594e-02, 
+24, fitness=3.767272e-01, time=1.590000e-01, epochs=0
+25, 3.958374e-02, 
+25, fitness=3.753700e-01, time=1.480000e-01, epochs=0
+26, 4.002234e-02, 
+26, fitness=3.773202e-01, time=1.440000e-01, epochs=0
+27, 2.452260e-01, 
+27, fitness=4.464103e+01, time=1.460000e-01, epochs=0
+28, 3.726655e-02, 
+28, fitness=3.870882e-01, time=1.540000e-01, epochs=0
+29, 3.977932e-02, 
+29, fitness=3.760769e-01, time=1.520000e-01, epochs=0
+30, 4.399520e-02, 
+30, fitness=4.512579e-01, time=1.490000e-01, epochs=0
+31, 9.640620e-02, 
+31, fitness=7.256397e+00, time=1.560000e-01, epochs=0
+32, 3.923640e-02, 
+32, fitness=3.747427e-01, time=1.420000e-01, epochs=0
+33, 3.691010e-02, 
+33, fitness=3.922924e-01, time=1.480000e-01, epochs=0
+34, 3.163134e-02, 
+34, fitness=5.858265e-01, time=1.470000e-01, epochs=0
+35, 2.528748e-01, 
+35, fitness=4.677714e+01, time=1.410000e-01, epochs=0
+36, 3.181690e-02, 
+36, fitness=5.750860e-01, time=1.560000e-01, epochs=0
+37, 8.876402e-02, 
+37, fitness=5.824806e+00, time=1.510000e-01, epochs=0
+38, 4.112130e-02, 
+38, fitness=3.878063e-01, time=1.480000e-01, epochs=0
+39, 6.565825e+00, 
+39, fitness=1.164650e+03, time=1.580000e-01, epochs=0
+Assigning fitnesses done!
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Generation: 6
+Cross-over ...
+Cross-over done! 
+Mutation ...
+Mutation done!
+Shake...!
+Shake done!
+Assigning fitnesses ...
+0, 3.923640e-02, 
+0, fitness=3.747427e-01, time=1.430000e-01, epochs=0
+1, 3.901158e-02, 
+1, fitness=3.747757e-01, time=1.500000e-01, epochs=0
+2, 3.898263e-02, 
+2, fitness=3.748052e-01, time=1.520000e-01, epochs=0
+3, 2.680461e-02, 
+3, fitness=9.789118e-01, time=1.480000e-01, epochs=0
+4, 2.983227e-02, 
+4, fitness=7.061467e-01, time=1.460000e-01, epochs=0
+5, 4.137151e-02, 
+5, fitness=3.912899e-01, time=1.590000e-01, epochs=0
+6, 2.981569e-02, 
+6, fitness=7.073962e-01, time=1.510000e-01, epochs=0
+7, 4.889916e-02, 
+7, fitness=6.692376e-01, time=1.440000e-01, epochs=0
+8, 3.998033e-02, 
+8, fitness=3.770771e-01, time=1.540000e-01, epochs=0
+9, 4.155509e-02, 
+9, fitness=3.941004e-01, time=1.530000e-01, epochs=0
+10, 7.698945e-02, 
+10, fitness=3.836855e+00, time=1.450000e-01, epochs=0
+11, 4.987960e-02, 
+11, fitness=7.279713e-01, time=1.460000e-01, epochs=0
+12, 4.023793e-02, 
+12, fitness=3.787528e-01, time=1.480000e-01, epochs=0
+13, 3.999622e-02, 
+13, fitness=3.771678e-01, time=1.500000e-01, epochs=0
+14, 2.907800e-02, 
+14, fitness=7.655964e-01, time=1.470000e-01, epochs=0
+15, 4.268501e-02, 
+15, fitness=4.160490e-01, time=1.540000e-01, epochs=0
+16, 4.152658e-02, 
+16, fitness=3.936501e-01, time=1.450000e-01, epochs=0
+17, 4.222359e-02, 
+17, fitness=4.061254e-01, time=1.550000e-01, epochs=0
+18, 3.429618e+00, 
+18, fitness=7.460560e+02, time=1.720000e-01, epochs=0
+19, 4.593781e-02, 
+19, fitness=5.218787e-01, time=1.630000e-01, epochs=0
+20, 3.865336e-02, 
+20, fitness=3.755485e-01, time=1.450000e-01, epochs=0
+21, 6.902308e+00, 
+21, fitness=1.202500e+03, time=1.450000e-01, epochs=0
+22, 3.926587e-02, 
+22, fitness=3.747640e-01, time=1.550000e-01, epochs=0
+23, 3.030831e-02, 
+23, fitness=6.714090e-01, time=1.480000e-01, epochs=0
+24, 3.412421e+00, 
+24, fitness=7.432482e+02, time=1.740000e-01, epochs=0
+25, 4.104261e-02, 
+25, fitness=3.867936e-01, time=1.470000e-01, epochs=0
+26, 2.566404e-02, 
+26, fitness=1.106266e+00, time=1.790000e-01, epochs=0
+27, 2.633986e-02, 
+27, fitness=1.029100e+00, time=1.850000e-01, epochs=0
+28, 4.118179e-02, 
+28, fitness=3.886119e-01, time=1.570000e-01, epochs=0
+29, 3.962484e-02, 
+29, fitness=3.754984e-01, time=1.580000e-01, epochs=0
+30, 2.474607e-01, 
+30, fitness=4.526426e+01, time=1.800000e-01, epochs=0
+31, 4.691698e-02, 
+31, fitness=5.654547e-01, time=1.570000e-01, epochs=0
+32, 4.049232e-02, 
+32, fitness=3.808387e-01, time=1.750000e-01, epochs=0
+33, 3.331101e+00, 
+33, fitness=7.297678e+02, time=1.840000e-01, epochs=0
+34, 3.760025e-02, 
+34, fitness=3.830554e-01, time=1.920000e-01, epochs=0
+35, 4.016610e-02, 
+35, fitness=3.782415e-01, time=1.500000e-01, epochs=0
+36, 8.447651e-01, 
+36, fitness=2.128344e+02, time=2.110000e-01, epochs=0
+37, 4.099074e-02, 
+37, fitness=3.861476e-01, time=1.470000e-01, epochs=0
+38, 4.112278e-02, 
+38, fitness=3.878260e-01, time=1.560000e-01, epochs=0
+39, 2.955507e-02, 
+39, fitness=7.273541e-01, time=1.660000e-01, epochs=0
+Assigning fitnesses done!
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Generation: 7
+Cross-over ...
+Cross-over done! 
+Mutation ...
+Mutation done!
+Shake...!
+Shake done!
+Assigning fitnesses ...
+0, 3.923640e-02, 
+0, fitness=3.747427e-01, time=1.710000e-01, epochs=0
+1, 3.974333e-02, 
+1, fitness=3.759264e-01, time=1.620000e-01, epochs=0
+2, 4.094335e-02, 
+2, fitness=3.855728e-01, time=1.720000e-01, epochs=0
+3, 3.945709e-02, 
+3, fitness=3.750464e-01, time=1.660000e-01, epochs=0
+4, 3.411082e+00, 
+4, fitness=7.430291e+02, time=1.830000e-01, epochs=0
+5, 1.507235e-02, 
+5, fitness=3.071324e+00, time=1.800000e-01, epochs=0
+6, 1.486063e-01, 
+6, fitness=1.894115e+01, time=2.010000e-01, epochs=0
+7, 1.346748e-02, 
+7, fitness=3.516728e+00, time=1.640000e-01, epochs=0
+8, 3.038451e-02, 
+8, fitness=6.660473e-01, time=1.550000e-01, epochs=0
+9, 1.391207e-01, 
+9, fitness=1.663703e+01, time=1.470000e-01, epochs=0
+10, 4.374965e-02, 
+10, fitness=4.438807e-01, time=1.520000e-01, epochs=0
+11, 3.836193e-02, 
+11, fitness=3.768439e-01, time=1.530000e-01, epochs=0
+12, 4.068219e-02, 
+12, fitness=3.826726e-01, time=1.530000e-01, epochs=0
+13, 2.910620e-02, 
+13, fitness=7.632757e-01, time=1.460000e-01, epochs=0
+14, 3.231726e+00, 
+14, fitness=7.125527e+02, time=1.840000e-01, epochs=0
+15, 3.753980e-02, 
+15, fitness=3.837264e-01, time=1.430000e-01, epochs=0
+16, 3.781526e-02, 
+16, fitness=3.808768e-01, time=1.520000e-01, epochs=0
+17, 3.961024e-02, 
+17, fitness=3.754515e-01, time=1.580000e-01, epochs=0
+18, 1.433811e-01, 
+18, fitness=1.766437e+01, time=1.490000e-01, epochs=0
+19, 3.999271e-02, 
