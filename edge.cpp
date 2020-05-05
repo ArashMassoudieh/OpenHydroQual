@@ -35,9 +35,7 @@ Edge::Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramVie
         delete this;
         return;
     }
-    source->addEdge(this);
-    dest->addEdge(this);
-    adjust();
+    
 
 //	sourceID = source->ID;
 //	destID = dest->ID;
@@ -50,8 +48,15 @@ Edge::Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramVie
 
     parent->MainGraphicsScene->addItem(this);
     name = QString("%1 - %2").arg(sourceNode->Name()).arg(destNode->Name());
-    if (!parent->mainWindow()->AddLink(name, sourceNode->Name(),destNode->Name(),edgeType, this))
+    if (!parent->mainWindow()->AddLink(name, sourceNode->Name(), destNode->Name(), edgeType, this))
+    {
         parent->MainGraphicsScene->removeItem(this);
+        return; 
+    }
+    
+    source->addEdge(this);
+    dest->addEdge(this);
+    adjust();
     //changed();
 }
 

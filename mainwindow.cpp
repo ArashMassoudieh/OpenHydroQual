@@ -235,19 +235,23 @@ void MainWindow::onaddblock()
 {
     QObject* obj = sender();
     Block block;
+    //qDebug() << "Setting Quantities";
     if (!block.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString()))
     {
         LogError(QString::fromStdString(block.lasterror()));
         return;
     }
-
+    //qDebug() << "Quantities Set";
     block.SetType(obj->objectName().toStdString());
     string name = CreateNewName(obj->objectName().toStdString());
     block.SetName(name);
+    //qDebug() << "Adding Block to the system";
     system.AddBlock(block);
     system.object(name)->SetName(name);
     Node *node = new Node(dView,&system);
+    //qDebug() << "Node Created!";
     dView->repaint();
+    //qDebug() << "DiagramView Repainted!";
     system.object(name)->AssignRandomPrimaryKey();
     node->SetObject(system.object(name));
     RefreshTreeView();

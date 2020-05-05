@@ -48,6 +48,7 @@ QPainterPath Node::shape() const
 }
 void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    //qDebug() << "Painting Node!"; 
     qreal iconmargin = 0;
     painter->setPen(Qt::NoPen);
     painter->setOpacity(0.7);
@@ -82,7 +83,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     painter->setFont(QF);
 
     painter->drawText(10, height - 10, QString("%1: %2").arg(QString::fromStdString(object()->GetType())).arg(QString::fromStdString(object()->GetName())));
-
+    //qDebug() << "Node Paint Complete!";
 }
 
 Object *Node::object()
@@ -123,8 +124,8 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
 corners Node::corner(const int _x, const int _y)
 {
     int border = 15;
-    qDebug()<<x()<<","<<y();
-    qDebug()<<_x<<","<<_y;
+    //qDebug()<<x()<<","<<y();
+    //qDebug()<<_x<<","<<_y;
     if (abs(_x - x()) < border)
     {
 
@@ -180,12 +181,12 @@ Node::Node(const Node &E)
 
 }
 
-void Node::setWidth(const int& Width)
+void Node::setWidth(const int& _width)
 {
-    width = Width; update();
+    width = _width; update();
 }
-void Node::setHeight(const int& Height) {
-    height = Height; update();
+void Node::setHeight(const int& _height) {
+    height = _height; update();
 }
 
 void Node::setX(const int& x)
@@ -201,8 +202,10 @@ void Node::SetObject(Object* _object) {
     objectPrimaryKey = _object->GetPrimaryKey();
     setX(_object->GetProperty("x"));
     setY(_object->GetProperty("y"));
-    setWidth(_object->GetProperty("_width"));
-    setWidth(_object->GetProperty("_height"));
+    setWidth(max(_object->GetProperty("_width"),double(minW)));
+    setWidth(max(_object->GetProperty("_height"),double(minH)));
+    //qDebug() << "Node Position: " << x() << "," << y() << "," << width << "," << height; 
+    //qDebug() << "Node Position: " << _object->GetProperty("x") << "," << _object->GetProperty("y") << "," << width << "," << height;
 }
 
 QString Node::Name() { return QString::fromStdString(object()->GetName()); }
