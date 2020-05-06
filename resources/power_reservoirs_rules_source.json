@@ -214,7 +214,7 @@
   "Soil": {
     "type": "block",
     "typecategory": "Blocks",
-	"description": "Variably Saturated Soil Block",
+    "description": "Variably Saturated Soil Block",
     "icon": {
       "filename": "Soil.png"
     },
@@ -376,6 +376,69 @@
       "includeinoutput": "true"
     }
   },
+  "soil_to_soil_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "Soil2Soil.png"
+    },
+    "description": "Soil to soil connector",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "(area.s+area.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "lenght",
+      "expression": "(Depth.s+Depth.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "Se": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "_min(_max(Se.s;Se.e);0.999)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "m": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "0.5*(m.s+m.e)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_sat": {
+      "type": "expression",
+      "description": "Saturated Hydraulic Conductivity",
+      "expression": "0.5*(K_sat.s+K_sat.e)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "(head.s-head.e)*K_eff/length*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
   "Trapezoidal_Channel_link": {
     "type": "link",
     "typecategory": "Connectors",
@@ -418,7 +481,7 @@
     },
     "length": {
       "type": "expression",
-      "description": "Manning's roughness coefficient",
+      "description": "Connector length",
       "expression": "(length.s+length.e)/2",
       "includeinoutput": "true",
       "ask_user": "false"
