@@ -1,0 +1,230 @@
+{
+  "Soil": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Variably Saturated Soil Block",
+    "icon": {
+      "filename": "Soil.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation",
+      "includeinoutput": "true",
+      "description": "Initial Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3",
+	  "estimate": "true"
+    },
+    "Depth": {
+      "type": "value",
+      "description": "Depth of the soil block",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true"
+    },
+    "theta_sat": {
+      "type": "value",
+      "description": "Saturated Moisture Content",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+	  "criteria": "theta_res<theta_sat<1",
+	  "default": "0.4",
+	  "warningmessage": "Saturated Moisture Content must be between 0 and 1 and larger than the residual moisture content"
+    },
+	"theta_res": {
+      "type": "value",
+      "description": "Residual Moisture Content",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+	  "default": "0.05",
+	  "criteria": "0<theta_res<theta_sat",
+	  "warningmessage": "Residual Moisture Content must be between 0 and saturated  moisture content"
+    },
+	"K_sat": {
+      "type": "value",
+      "description": "Saturated Hydraulc Conductivity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day",
+      "estimate": "true",
+	  "default": "1",
+	  "criteria": "K_sat>0",
+	  "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero"
+    },
+	"bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation of the soil block",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
+	"area": {
+      "type": "value",
+      "description": "Bottom Area of the soil block",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2",
+      "estimate": "true",
+	  "default": "1",
+	  "criteria": "area>0",
+	  "warningmessage": "Area must be greater than zero"
+    },
+	"alpha": {
+      "type": "value",
+      "description": "Van Genuchten's alpha parameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^-1",
+      "estimate": "true",
+	  "default": "1",
+	  "criteria": "alpha>0",
+	  "warningmessage": "Van Genuchten's alpha must be greater than zero"
+    },
+	"n": {
+      "type": "value",
+      "description": "Van Genuchten's n parameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "",
+      "estimate": "true",
+	  "default": "1.41",
+	  "criteria": "n>0",
+	  "warningmessage": "Van Genuchten's n must be greater than zero"
+    },
+	"m": {
+      "type": "expression",
+      "expression" : "1-(1/n)",
+	  "description": "Van Genuchten's m parameter",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "unit": ""
+    },
+	"theta": {
+      "type": "expression",
+      "expression" : "Storage/(area*Depth)",
+	  "description": "Moisture Content",
+      "ask_user": "false",
+	  "includeinoutput": "true"
+    },
+	"Se": {
+      "type": "expression",
+      "expression" : "(theta-theta_res)/(theta_sat-theta_res)",
+	  "description": "Effective Moisture content",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "unit": "",
+	  "includeinoutput": "true"
+    },
+    "x": {
+      "type": "value",
+      "description": "x",
+	  "default": "900",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "y": {
+      "type": "value",
+      "description": "y",
+	  "default": "900",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_width": {
+      "type": "value",
+      "description": "_width",
+	  "default": "200",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_height": {
+      "type": "value",
+      "description": "_height",
+	  "default": "200",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "Depth+bottom_elevation-(1/alpha)*(Se^(-1/m)-1)^(1/n)",
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "includeinoutput": "true"
+    }
+  },
+  "soil_to_soil_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "Soil2Soil.png"
+    },
+    "description": "Soil to soil connector",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "(area.s+area.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "lenght",
+      "expression": "(Depth.s+Depth.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "Se": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "_min(_max(Se.s;Se.e);0.999)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "m": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "0.5*(m.s+m.e)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_sat": {
+      "type": "expression",
+      "description": "Saturated Hydraulic Conductivity",
+      "expression": "0.5*(K_sat.s+K_sat.e)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "(head.s-head.e)*K_eff/length*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  }
+}

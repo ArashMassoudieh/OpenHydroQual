@@ -27,19 +27,19 @@ MainWindow::MainWindow(QWidget *parent) :
     LogWindow = new logwindow(this);
     LogWindow->show();
 #ifndef Win_Version
-    modelfilename = qApp->applicationDirPath().toStdString() + "/../../resources/power_reservoirs_rules_source.json";
+    maintemplatefilename = qApp->applicationDirPath().toStdString() + "/../../resources/main_components.json";
     entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
 #else
-    modelfilename = qApp->applicationDirPath().toStdString() + "/resources/power_reservoirs_rules_source.json";
+    maintemplatefilename = qApp->applicationDirPath().toStdString() + "/resources/main_components.json";
     entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
 #endif // !Win_Version
 
-    if (system.GetQuanTemplate(modelfilename)) //Read the template from modelfilename
+    if (system.GetQuanTemplate(maintemplatefilename)) //Read the template from modelfilename
     {
-        Log("Template was successfully loaded from '" + QString::fromStdString(modelfilename) + "'");
+        Log("Template was successfully loaded from '" + QString::fromStdString(maintemplatefilename) + "'");
     }
     else {
-        LogError("Template" + QString::fromStdString(modelfilename) + "' was not loaded properly");
+        LogError("Template" + QString::fromStdString(maintemplatefilename) + "' was not loaded properly");
     }
     if (system.ReadSystemSettingsTemplate(entitiesfilename)) //Read the system settings
     {
@@ -66,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnew()));
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
     connect(ui->actionLoad_a_new_template,SIGNAL(triggered()),this,SLOT(loadnewtemplate()));
+    connect(ui->actionAddPlugin,SIGNAL(triggered()),this,SLOT(addplugin()));
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
@@ -169,6 +170,7 @@ void MainWindow::on_object_browser_closed(bool visible)
 
 bool MainWindow::BuildObjectsToolBar()
 {
+    ui->mainToolBar->clear();
     for (unsigned int i = 0; i < system.GetAllBlockTypes().size(); i++)
     {
         qDebug() << QString::fromStdString(system.GetAllBlockTypes()[i]);
@@ -750,7 +752,7 @@ void MainWindow::onsaveas()
             fileName = fileName + ".scr";
         else if (fileName.split('.')[filename.split('.').count()-1]!="scr" )
             fileName = fileName + ".scr";
-        system.SavetoScriptFile(fileName.toStdString(),modelfilename);
+        system.SavetoScriptFile(fileName.toStdString(),maintemplatefilename, addedtemplatefilenames);
         workingfolder = QFileInfo(fileName).canonicalPath();
         filename = fileName;
     }
@@ -760,7 +762,7 @@ void MainWindow::onsaveas()
 void MainWindow::onsave()
 {
     if (filename!="")
-        system.SavetoScriptFile(filename.toStdString(),modelfilename);
+        system.SavetoScriptFile(filename.toStdString(),maintemplatefilename, addedtemplatefilenames);
     else
         onsaveas();
 
@@ -784,6 +786,16 @@ void MainWindow::onopen()
     }
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();
+    BuildObjectsToolBar();
+    LogAllSystemErrors();
+
+}
+
+void MainWindow::LogAllSystemErrors()
+{
+    for (int i=0; i<system.GetErrorHandler()->Count(); i++)
+        LogError(QString::fromStdString(system.GetErrorHandler()->at(i)->description));
+    system.GetErrorHandler()->clear();
 }
 
 void MainWindow::RecreateGraphicItemsFromSystem()
@@ -903,7 +915,25 @@ void MainWindow::loadnewtemplate()
         ui->mainToolBar->clear();
         BuildObjectsToolBar();
         RefreshTreeView();
-        modelfilename = fileName.toStdString();
+        maintemplatefilename = fileName.toStdString();
+    }
+
+}
+
+void MainWindow::addplugin()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+            tr("Open"), "",
+            tr("Script files (*.json);; All files (*.*)"));
+
+
+    if (fileName!="")
+    {
+        system.AppendQuanTemplate(fileName.toStdString());
+        ui->mainToolBar->clear();
+        BuildObjectsToolBar();
+        RefreshTreeView();
+        addedtemplatefilenames.push_back(fileName.toStdString());
     }
 
 }

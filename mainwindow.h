@@ -35,6 +35,7 @@ public:
     bool Log(const QString &s);
     bool LogError(const QString &s);
     bool LogAddDelete(const QString &s);
+    void LogAllSystemErrors();
 private:
     logwindow *LogWindow;
     Ui::MainWindow *ui;
@@ -44,7 +45,8 @@ private:
     bool BuildObjectsToolBar();
     PropModel *propmodel = nullptr;
     void Populate_General_ToolBar();
-    string modelfilename;
+    string maintemplatefilename;
+    vector<string> addedtemplatefilenames;
     string entitiesfilename;
     RunTimeWindow *rtw = nullptr;
     void closeEvent (QCloseEvent *event) override;
@@ -79,6 +81,7 @@ private slots:
     void tablePropShowContextMenu(const QPoint&);
     void addParameter(QAction* item);
     void loadnewtemplate();
+    void addplugin();
     void showgraph();
     void onDeleteItem();
 };

@@ -50,6 +50,7 @@
       <string>Preferences</string>
      </property>
      <addaction name="actionLoad_a_new_template"/>
+     <addaction name="actionAddPlugin"/>
     </widget>
     <addaction name="actionNew_Project"/>
     <addaction name="actionOpen"/>
@@ -201,6 +202,16 @@
    </property>
    <property name="text">
     <string>Log Window</string>
+   </property>
+  </action>
+  <action name="actionAdd_Plugin">
+   <property name="text">
+    <string>Add Plugin</string>
+   </property>
+  </action>
+  <action name="actionAddPlugin">
+   <property name="text">
+    <string>Add Plugin</string>
    </property>
   </action>
  </widget>
