@@ -57,6 +57,7 @@ private:
     CGA<System> *optimizer;
     QString timeseriestobeshown;
     QString filename="";
+    void SetFileName(const QString &_filename);
 private slots:
     void on_check_object_browser();
     void on_check_showlogwindow();

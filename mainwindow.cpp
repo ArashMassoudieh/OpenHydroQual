@@ -748,13 +748,17 @@ void MainWindow::onsaveas()
             tr("script files (*.scr)"));
     if (fileName!="")
     {
+        qDebug() << fileName.split('.');
+
         if (!fileName.contains("."))
             fileName = fileName + ".scr";
-        else if (fileName.split('.')[filename.split('.').count()-1]!="scr" )
+        else if (fileName.split('.')[fileName.split('.').size()-1]!="scr" )
+        {
             fileName = fileName + ".scr";
+        }
         system.SavetoScriptFile(fileName.toStdString(),maintemplatefilename, addedtemplatefilenames);
         workingfolder = QFileInfo(fileName).canonicalPath();
-        filename = fileName;
+        SetFileName(fileName);
     }
 
 }
@@ -782,7 +786,7 @@ void MainWindow::onopen()
         system.clear();
         system.CreateFromScript(scr,entitiesfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
-        filename = fileName;
+        SetFileName(fileName);
     }
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();
@@ -956,4 +960,12 @@ bool MainWindow::LogAddDelete(const QString &s)
 {
     LogWindow->AppendBlue(s);
     return true;
+}
+
+void MainWindow::SetFileName(const QString &_filename)
+{
+    filename = _filename;
+    if (filename.split('/').size()>0)
+        setWindowTitle("QAquifolium: " + filename.split('/')[filename.split('/').size()-1]);
+
 }
