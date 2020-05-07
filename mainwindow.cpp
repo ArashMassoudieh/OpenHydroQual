@@ -746,6 +746,10 @@ void MainWindow::onsaveas()
             tr("script files (*.scr)"));
     if (fileName!="")
     {
+        if (!fileName.contains("."))
+            fileName = fileName + ".scr";
+        else if (fileName.split('.')[filename.split('.').count()-1]!="scr" )
+            fileName = fileName + ".scr";
         system.SavetoScriptFile(fileName.toStdString(),modelfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
         filename = fileName;
