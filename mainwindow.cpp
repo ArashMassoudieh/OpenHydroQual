@@ -916,6 +916,7 @@ void MainWindow::loadnewtemplate()
         system.clear();
         system.GetMetaModel()->Clear();
         system.GetQuanTemplate(fileName.toStdString());
+        system.ReadSystemSettingsTemplate(entitiesfilename);
         ui->mainToolBar->clear();
         BuildObjectsToolBar();
         RefreshTreeView();
