@@ -52,7 +52,7 @@
 	  "criteria": "0<theta_res<theta_sat",
 	  "warningmessage": "Residual Moisture Content must be between 0 and saturated  moisture content"
     },
-	"K_sat": {
+    "K_sat": {
       "type": "value",
       "description": "Saturated Hydraulc Conductivity",
       "ask_user": "true",
@@ -63,7 +63,7 @@
 	  "criteria": "K_sat>0",
 	  "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero"
     },
-	"bottom_elevation": {
+    "bottom_elevation": {
       "type": "value",
       "description": "Bottom Elevation of the soil block",
       "ask_user": "true",
@@ -81,7 +81,7 @@
 	  "criteria": "area>0",
 	  "warningmessage": "Area must be greater than zero"
     },
-	"alpha": {
+    "alpha": {
       "type": "value",
       "description": "Van Genuchten's alpha parameter",
       "ask_user": "true",
@@ -92,7 +92,7 @@
 	  "criteria": "alpha>0",
 	  "warningmessage": "Van Genuchten's alpha must be greater than zero"
     },
-	"n": {
+    "n": {
       "type": "value",
       "description": "Van Genuchten's n parameter",
       "ask_user": "true",
@@ -103,7 +103,7 @@
 	  "criteria": "n>0",
 	  "warningmessage": "Van Genuchten's n must be greater than zero"
     },
-	"m": {
+    "m": {
       "type": "expression",
       "expression" : "1-(1/n)",
 	  "description": "Van Genuchten's m parameter",
@@ -111,14 +111,14 @@
       "delegate": "UnitBox",
       "unit": ""
     },
-	"theta": {
+    "theta": {
       "type": "expression",
       "expression" : "Storage/(area*Depth)",
 	  "description": "Moisture Content",
       "ask_user": "false",
 	  "includeinoutput": "true"
     },
-	"Se": {
+    "Se": {
       "type": "expression",
       "expression" : "(theta-theta_res)/(theta_sat-theta_res)",
 	  "description": "Effective Moisture content",
@@ -179,7 +179,7 @@
     },
     "area": {
       "type": "expression",
-      "description": "Cross-sectional area",
+      "description": "Interface area",
       "expression": "(area.s+area.e)/2",
       "includeinoutput": "true",
       "ask_user": "false"
@@ -216,6 +216,48 @@
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "(head.s-head.e)*K_eff/length*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
+"surfacewater_to_soil_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "surface2soil.png"
+    },
+    "description": "Surfacewater to soil connector",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "area": {
+      "type": "expression",
+      "description": "Interface area",
+      "expression": "(area.s+area.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "lenght",
+      "expression": "Depth.e/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat",
       "includeinoutput": "true",
       "ask_user": "false"
     },

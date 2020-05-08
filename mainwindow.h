@@ -35,7 +35,7 @@ public:
     bool Log(const QString &s);
     bool LogError(const QString &s);
     bool LogAddDelete(const QString &s);
-    void LogAllSystemErrors();
+    void LogAllSystemErrors(ErrorHandler *errs=nullptr);
 private:
     logwindow *LogWindow;
     Ui::MainWindow *ui;

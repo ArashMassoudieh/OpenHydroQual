@@ -795,11 +795,17 @@ void MainWindow::onopen()
 
 }
 
-void MainWindow::LogAllSystemErrors()
+void MainWindow::LogAllSystemErrors(ErrorHandler *errs)
 {
-    for (int i=0; i<system.GetErrorHandler()->Count(); i++)
-        LogError(QString::fromStdString(system.GetErrorHandler()->at(i)->description));
-    system.GetErrorHandler()->clear();
+    if (errs==nullptr)
+    {   for (int i=0; i<system.GetErrorHandler()->Count(); i++)
+            LogError(QString::fromStdString(system.GetErrorHandler()->at(i)->description));
+        system.GetErrorHandler()->clear();
+    }
+    else
+        for (int i=0; i<errs->Count(); i++)
+             LogError(QString::fromStdString(errs->at(i)->description));
+
 }
 
 void MainWindow::RecreateGraphicItemsFromSystem()
@@ -821,7 +827,7 @@ void MainWindow::RecreateGraphicItemsFromSystem()
     {
         Node *s_node = dView->node(QString::fromStdString(system.block(system.link(i)->s_Block_No())->GetName()));
         Node *e_node = dView->node(QString::fromStdString(system.block(system.link(i)->e_Block_No())->GetName()));
-        if (s_node && e_node);
+        if (s_node && e_node)
         {
             Edge *edge = new Edge(s_node,e_node,dView );
             system.link(i)->AssignRandomPrimaryKey();
@@ -833,6 +839,13 @@ void MainWindow::RecreateGraphicItemsFromSystem()
 
 void MainWindow::onrunmodel()
 {
+    ErrorHandler errs = system.VerifyAllQuantities();
+    if (errs.Count()!=0)
+    {
+        LogAllSystemErrors(&errs);
+        QMessageBox::question(this, "Errors!", "There are errors in the values assigned to some of the variables. Check the log window for more details.", QMessageBox::Ok);
+        return;
+    }
     System copiedsystem(system);
     copiedsystem.SetSystemSettings();
     rtw = new RunTimeWindow(this);
@@ -863,6 +876,13 @@ void MainWindow::closeEvent (QCloseEvent *event)
 
 void MainWindow::onoptimize()
 {
+    ErrorHandler errs = system.VerifyAllQuantities();
+    if (errs.Count()!=0)
+    {
+        LogAllSystemErrors(&errs);
+        QMessageBox::question(this, "Errors!", "There are errors in the values assigned to some of the variables. Check the log window for more details.", QMessageBox::Ok);
+        return;
+    }
     system.SetSystemSettings();
     optimizer = new CGA<System>(&system);
     optimizer->SetParameters(system.object("Optimizer"));

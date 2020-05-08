@@ -30,15 +30,15 @@
       "ask_user": "true",
       "delegate": "ComboBox;Sources"
     },
-    "Area": {
+    "area": {
       "type": "value",
       "description": "Catchment area",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^2",
       "estimate": "true",
-	   "criteria": "Area>0",
-	  "warningmessage": "Area must be greater than zero"
+      "criteria": "area>0",
+      "warningmessage": "Area must be greater than zero"
     },
     "x": {
       "type": "value",
@@ -80,7 +80,9 @@
       "description": "Manning's Roughness Coefficient",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness coefficient must be greater than zero"
     },
     "Width": {
       "type": "value",
@@ -88,6 +90,26 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "estimate": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "Storage/area",
+      "description": "Average water depth",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "elevation": {
+      "type": "value",
+      "description": "Mean elevation of the catchment",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "elevation+depth",
+      "description": "Average water head",
+      "ask_user": "false",
+      "includeinoutput": "true"
     }
   },
   "Trapezoidal Channel Segment": {
@@ -280,7 +302,7 @@
     },
     "coefficient": {
       "type": "expression",
-      "expression": "Area",
+      "expression": "area",
       "ask_user": "false",
       "delegate": "UnitBox"
     },
@@ -479,7 +501,7 @@
     },
     "flow": {
       "type": "expression",
-      "expression": "(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(Storage.s/Area.s^(1.666667))*86400",
+      "expression": "(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(Storage.s/area.s^(1.666667))*86400",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",
