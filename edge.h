@@ -49,7 +49,7 @@ private:
     System *system;
     string objectPrimaryKey;
     QString name;
-
+    QColor GetColor(const string &clrstring);
 public slots:
     void hoverMoveEvent(QGraphicsSceneHoverEvent * event) override;
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;

@@ -168,6 +168,7 @@ QRectF Edge::boundingRect() const
 
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
+    QColor objectcolor;
     if (!source || !dest)
         return;
 
@@ -184,7 +185,13 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
         painter->setPen(QPen(color.color1, 4, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     //		painter->setPen(QPen(QColor::fromRgb(color.color1), (bold) ? 3 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     else
-        painter->setPen(QPen(Qt::black, (bold) ? 3 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    {
+        if (object()->HasQuantity("color"))
+            objectcolor = GetColor(object()->Variable("color")->GetProperty());
+        else
+            objectcolor = Qt::black;
+        painter->setPen(QPen(objectcolor, (bold) ? 3 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    }
     if (!avoidCrossObjects)
     {
 
@@ -203,7 +210,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
         else if (parent->colorCode.edges)
             painter->setBrush(color.color1);
         else
-            painter->setBrush(Qt::black);
+            painter->setBrush(objectcolor);
         painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
     }
     if (avoidCrossObjects)
@@ -223,7 +230,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
         if (isSelected())
             painter->setBrush(Qt::green);
         else
-            painter->setBrush(Qt::black);
+            painter->setBrush(objectcolor);
         painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
     }
     //if (isSelected() && parent->mainWindow()->Table) Need to fix
@@ -274,4 +281,20 @@ QVariant Edge::itemChange(GraphicsItemChange change, const QVariant &value)
         break;
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+QColor Edge::GetColor(const string &clrstring)
+{
+    vector<double> clrrgb=aquiutils::ATOF(aquiutils::split(clrstring,','));
+    QColor clr;
+    if (clrrgb.size()==3)
+        clr = QColor(clrrgb[0],clrrgb[1],clrrgb[2]);
+    else if (clrrgb.size()==2)
+        clr = QColor(clrrgb[0],clrrgb[1],0);
+    else if (clrrgb.size()==1)
+        clr = QColor(clrrgb[0],0,0);
+    else
+        clr = QColor(0,0,0);
+
+    return clr;
 }

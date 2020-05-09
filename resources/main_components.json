@@ -506,6 +506,12 @@
       "applylimit": "true",
       "ask_user": "false",
       "delegate": "TimeSeries" 
+    },
+    "color": {
+      "type": "string",
+      "description": "_height",
+      "default": "200,0,100",
+      "ask_user": "false"
     }
   },
   "Reservoir_link_rule": {
