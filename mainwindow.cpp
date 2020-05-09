@@ -255,6 +255,7 @@ void MainWindow::onaddblock()
     dView->repaint();
     //qDebug() << "DiagramView Repainted!";
     system.object(name)->AssignRandomPrimaryKey();
+    system.SetVariableParents();
     node->SetObject(system.object(name));
     RefreshTreeView();
     LogAddDelete("Block '" + QString::fromStdString(name) + "' was added!");
@@ -303,6 +304,7 @@ bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
         action->setChecked(false);
     }
     RefreshTreeView();
+    system.SetVariableParents();
     LogAddDelete("Link '" + LinkName + "' was added!");
     return true; 
 }

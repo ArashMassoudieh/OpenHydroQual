@@ -509,7 +509,7 @@
     },
     "color": {
       "type": "string",
-      "description": "_height",
+      "description": "color",
       "default": "200,0,100",
       "ask_user": "false"
     }

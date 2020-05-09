@@ -225,6 +225,10 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "120,120,0"
     }
   },
 "surfacewater_to_soil_link": {
@@ -267,6 +271,10 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,180"
     }
   }
 }
