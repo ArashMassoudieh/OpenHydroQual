@@ -790,6 +790,7 @@ void MainWindow::onopen()
         workingfolder = QFileInfo(fileName).canonicalPath();
         SetFileName(fileName);
     }
+    addedtemplatefilenames = system.addedtemplates; 
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();
     BuildObjectsToolBar();

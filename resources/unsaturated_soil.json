@@ -120,7 +120,7 @@
     },
     "Se": {
       "type": "expression",
-      "expression" : "(theta-theta_res)/(theta_sat-theta_res)",
+      "expression" : "_min((theta-theta_res)/(theta_sat-theta_res);0.9999)",
 	  "description": "Effective Moisture content",
       "ask_user": "false",
       "delegate": "UnitBox",
@@ -155,9 +155,20 @@
       "ask_user": "true",
       "delegate": "UnitBox"
     },
-    "head": {
+    "specific_storage" : {
+	  "type": "value",
+      "description": "Specific storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "",
+      "estimate": "true",
+	  "default": "0.01",
+	  "criteria": "specific_storage>0",
+	  "warningmessage": "Specific storage must be non-zero and positive"
+	},
+	"head": {
       "type": "expression",
-      "expression": "Depth+bottom_elevation-(1/alpha)*(Se^(-1/m)-1)^(1/n)",
+      "expression": "Depth+bottom_elevation-(1/alpha)*(Se^(-1/m)-1)^(1/n) + _pos(theta-theta_sat)/specific_storage",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "delegate": "UnitBox",
@@ -275,6 +286,73 @@
     "color": {
       "type": "string",
       "default": "0,0,180"
+    }
+  },
+  "soil_to_fixedhead_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "soil2fixedhead.png"
+    },
+    "description": "Soil to fixed head connector",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "area": {
+      "type": "expression",
+      "description": "Interface area",
+      "expression": "area.s",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "lenght",
+      "expression": "Depth.s/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "Se": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "Se.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "m": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "m.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_sat": {
+      "type": "expression",
+      "description": "Saturated Hydraulic Conductivity",
+      "expression": "K_sat.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "(head.s-head.e)*K_eff/length*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "120,120,120"
     }
   }
 }
