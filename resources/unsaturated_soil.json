@@ -166,14 +166,6 @@
 	  "criteria": "specific_storage>0",
 	  "warningmessage": "Specific storage must be non-zero and positive"
 	},
-	"head_ss": {
-      "type": "expression",
-      "expression": "_pos(Storage/(area*Depth)-theta_sat)/specific_storage",
-      "description": "Hydraulc Head",
-      "ask_user": "false",
-      "delegate": "UnitBox",
-      "includeinoutput": "true"
-    },
 	"head": {
       "type": "expression",
       "expression": "Depth+bottom_elevation-(1/alpha)*(Se^(-1/m)-1)^(1/n) + _pos(theta-theta_sat)/specific_storage",
