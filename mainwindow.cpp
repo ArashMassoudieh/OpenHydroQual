@@ -78,6 +78,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    rtw->close();
+    LogWindow->close();
     delete ui;
 }
 
@@ -871,7 +873,9 @@ void MainWindow::closeEvent (QCloseEvent *event)
     if (resBtn != QMessageBox::Yes) {
         event->ignore();
     } else {
+        system.stop_triggered = true;
         if (rtw) rtw->close();
+        if (LogWindow) LogWindow->close();
         event->accept();
     }
 

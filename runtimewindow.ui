@@ -35,6 +35,27 @@
      </property>
     </widget>
    </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="pushButtonStop">
+       <property name="text">
+        <string>Stop Simulation</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="ShowDetails">
+       <property name="text">
+        <string>Show details</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTextBrowser" name="textBrowserdetails"/>
+   </item>
   </layout>
  </widget>
  <resources/>

@@ -17,6 +17,7 @@ public:
     ~RunTimeWindow();
     QCustomPlot *plot;
     void AppendText(const QString &s);
+    void AppendtoDetails(const QString &s);
     void AddDataPoint(const double &t, const double value);
     void SetProgress(const double &val);
     void SetProgress2(const double &val);
@@ -24,8 +25,14 @@ public:
     void SetYRange(const double &ymin, const double &ymax);
     void AppendErrorMessage(const QString &s);
     void SetUpForForwardRun();
+    bool detailson = false;
+    bool stoptriggered = false;
 private:
     Ui::RunTimeWindow *ui;
+
+public slots:
+    void showdetails();
+    void stop_triggered();
 };
 
 #endif // RUNTIMEWINDOW_H

@@ -30,7 +30,9 @@ RunTimeWindow::RunTimeWindow(QWidget *parent) :
     plot->replot();
     ui->progressBar->setRange(0,100);
     ui->progressBar->setValue(0);
-
+    ui->textBrowserdetails->setVisible(false);
+    connect(ui->ShowDetails,SIGNAL(clicked()),this,SLOT(showdetails()));
+    connect(ui->pushButtonStop,SIGNAL(clicked()),this,SLOT(stop_triggered()));
 }
 
 RunTimeWindow::~RunTimeWindow()
@@ -42,6 +44,12 @@ void RunTimeWindow::AppendText(const QString &s)
 {
     ui->textBrowser->append(s);
 }
+
+void RunTimeWindow::AppendtoDetails(const QString &s)
+{
+    ui->textBrowserdetails->append(s);
+}
+
 
 void RunTimeWindow::AppendErrorMessage(const QString &s)
 {
@@ -79,4 +87,25 @@ void RunTimeWindow::SetYRange(const double &ymin, const double &ymax)
 void RunTimeWindow::SetUpForForwardRun()
 {
     ui->optprogressBar->setVisible(false);
+}
+
+void RunTimeWindow::showdetails()
+{
+    if (!ui->textBrowserdetails->isVisible())
+    {
+        ui->ShowDetails->setText("Hide details");
+        ui->textBrowserdetails->setVisible(true);
+        detailson = true;
+    }
+    else
+    {
+        ui->ShowDetails->setText("Shows details");
+        ui->textBrowserdetails->setVisible(false);
+        detailson = false;
+    }
+}
+
+void RunTimeWindow::stop_triggered() {
+    stoptriggered = true;
+    qDebug() << "Stop Triggered!";
 }

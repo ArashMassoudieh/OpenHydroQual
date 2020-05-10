@@ -396,7 +396,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             specs[n->Name()]["w"] = QString::number(n->Width());
             specs[n->Name()]["h"] = QString::number(n->Height());
             n->object()->SetVal("x",n->x());
-            n->object()->SetVal("y",n->x());
+            n->object()->SetVal("y",n->y());
             n->object()->SetVal("_width", n->Width());
             n->object()->SetVal("_height", n->Height());
         }
@@ -442,10 +442,7 @@ void DiagramView::copyselectednode(QString nodename)
 void DiagramView::pastecopieddnode()
 {
     mainWindow()->GetSystem()->AddBlock(copied_block, false);
-    qDebug() << QString::fromStdString(copied_block.GetName()); 
-    qDebug() << copied_block.GetProperty("x");
     Node* node = new Node(this, mainWindow()->GetSystem());
-    qDebug() << copied_block.GetProperty("x");
     repaint();
     node->SetObject(mainWindow()->GetSystem()->object(copied_block.GetName()));
     mainWindow()->resetPropModel(); 
