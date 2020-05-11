@@ -57,9 +57,44 @@ bool Plotter::PlotData(CBTC& BTC)
     plot->legend->setVisible(showlegend);
     plot->clearGraphs();
     QVector<double> x, y; // initialize with entries 0..100
+    plotformat format;
+    if (format.xAxisTimeFormat && ((BTC.t[BTC.n - 1] - BTC.t[0]) < 5 || BTC.t[BTC.n - 1]< 18264))
+        format.xAxisTimeFormat = false;
+
+    /*	QVector<qreal> y1(y.count());
+    for (int i = 0; i < y.count(); i++)
+        y1[i] = y[i] + .05;
+    customPlot->graph(0)->setData(t, y1);
+*/
+    //	customPlot->graph(3)->setDataValueError(x1, y1, y1err);
+    //	customPlot->graph(3)->rescaleAxes(true);
+    // setup look of bottom tick labels:
+
+    if (format.xAxisTimeFormat)
+    {
+        QDateTime start = QDateTime::fromTime_t(xtoTime(BTC.t[0]), QTimeZone(0));
+        QDateTime end = QDateTime::fromTime_t(xtoTime(BTC.t[BTC.n - 1]), QTimeZone(0));
+        QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+        dateTicker->setTickCount(10);
+        dateTicker->setTickStepStrategy( QCPAxisTicker::TickStepStrategy::tssReadability);
+        QString dformat;
+        if (start.secsTo(end) < 600) dformat = "mm:ss:zzz";
+        if (start.secsTo(end) > 3600) dformat = "hh:mm:ss";
+        if (start.daysTo(end) > 1) dformat = "MMM dd\nhh:mm:ss";
+        if (start.daysTo(end) > 5) dformat = "MM.dd.yyyy\nhh:mm";
+        if (start.daysTo(end) > 180) dformat = "MM.dd.yyyy\nhAP";
+        if (start.daysTo(end) > 2 * 365) dformat = "MMMM\nyyyy";
+        dateTicker->setDateTimeFormat(dformat);
+        plot->xAxis->setTicker(dateTicker);
+    }
+
+
     for (int i=0; i<BTC.n; ++i)
     {
-      x.push_back(BTC.t[i]);
+      if (!format.xAxisTimeFormat)
+        x.push_back(BTC.t[i]);
+      else
+        x.push_back(xtoTime(BTC.t[i]));
       y.push_back(BTC.C[i]);
     }
     // create graph and assign data to it:
@@ -71,7 +106,10 @@ bool Plotter::PlotData(CBTC& BTC)
     plot->xAxis->setLabel("t");
     plot->yAxis->setLabel("value");
     // set axes ranges, so we see all data:
-    plot->xAxis->setRange(BTC.t[0], BTC.t[BTC.n-1]);
+    if (!format.xAxisTimeFormat)
+        plot->xAxis->setRange(BTC.t[0], BTC.t[BTC.n-1]);
+    else
+        plot->xAxis->setRange(xtoTime(BTC.t[0]), xtoTime(BTC.t[BTC.n-1]));
     plot->yAxis->setRange(BTC.minC()-0.001, BTC.maxC()+0.001);
     plot->replot();
 

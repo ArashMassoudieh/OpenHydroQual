@@ -203,7 +203,7 @@ void Node::SetObject(Object* _object) {
     setX(_object->GetProperty("x"));
     setY(_object->GetProperty("y"));
     setWidth(max(_object->GetProperty("_width"),double(minW)));
-    setWidth(max(_object->GetProperty("_height"),double(minH)));
+    setHeight(max(_object->GetProperty("_height"),double(minH)));
     //qDebug() << "Node Position: " << x() << "," << y() << "," << width << "," << height; 
     //qDebug() << "Node Position: " << _object->GetProperty("x") << "," << _object->GetProperty("y") << "," << width << "," << height;
 }

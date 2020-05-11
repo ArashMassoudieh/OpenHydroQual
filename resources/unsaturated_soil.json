@@ -272,7 +272,7 @@
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
-      "expression": "K_sat",
+      "expression": "K_sat.e",
       "includeinoutput": "true",
       "ask_user": "false"
     },

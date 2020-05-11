@@ -11,6 +11,7 @@ RunTimeWindow::RunTimeWindow(QWidget *parent) :
 
     plot = new QCustomPlot(this);
     plot->setObjectName(QStringLiteral("RunProgressPlot"));
+
     ui->horizontalLayout->addWidget(plot);
     QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Preferred);
     sizePolicy2.setHorizontalStretch(2);
@@ -22,7 +23,7 @@ RunTimeWindow::RunTimeWindow(QWidget *parent) :
     plot->graph(0)->setName("Time step size");
 
     plot->graph(0)->setPen(QPen(Qt::blue));
-
+    plot->graph(0)->setBrush(QBrush(QColor(240, 255, 200)));
     plot->xAxis->setLabel("t");
     plot->yAxis->setLabel("Time-step size");
     // set axes ranges, so we see all data:
