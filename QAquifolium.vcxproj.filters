@@ -345,6 +345,12 @@
     <ClInclude Include="..\Aquifolium\include\Rule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Aquifolium\include\ordered_map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Aquifolium\include\ordered_hash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="mainwindow.ui">

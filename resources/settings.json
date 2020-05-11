@@ -49,6 +49,14 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "code": "minimum_timestep"
+    },
+	"initial_time_step": {
+      "type": "value",
+      "default": "1e-2",
+      "description": "Initial time-time-step",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "code": "dt"
     }
   },
   "general_parameters": {

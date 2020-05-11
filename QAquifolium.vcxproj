@@ -423,6 +423,8 @@
     <ClInclude Include="..\Aquifolium\include\MetaModel.h" />
     <ClInclude Include="..\Aquifolium\include\NormalDist.h" />
     <ClInclude Include="..\Aquifolium\include\Object.h" />
+    <ClInclude Include="..\Aquifolium\include\ordered_hash.h" />
+    <ClInclude Include="..\Aquifolium\include\ordered_map.h" />
     <ClInclude Include="..\Aquifolium\include\Parameter.h" />
     <ClInclude Include="..\Aquifolium\include\Parameter_Set.h" />
     <ClInclude Include="..\Aquifolium\include\Precipitation.h" />

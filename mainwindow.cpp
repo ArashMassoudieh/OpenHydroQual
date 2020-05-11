@@ -78,9 +78,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    rtw->close();
+    if (rtw)
+        rtw->close();
     LogWindow->close();
     delete ui;
+    exit; 
 }
 
 void MainWindow::tablePropShowContextMenu(const QPoint&pos)
@@ -878,7 +880,7 @@ void MainWindow::closeEvent (QCloseEvent *event)
         if (LogWindow) LogWindow->close();
         event->accept();
     }
-
+    exit; 
 }
 
 void MainWindow::onoptimize()
