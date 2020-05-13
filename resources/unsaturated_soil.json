@@ -120,7 +120,7 @@
     },
     "Se": {
       "type": "expression",
-      "expression" : "_min((theta-theta_res)/(theta_sat-theta_res);0.9999)",
+      "expression" : "_max(_min((theta-theta_res)/(theta_sat-theta_res);0.9999);0.0001)",
 	  "description": "Effective Moisture content",
       "ask_user": "false",
       "delegate": "UnitBox",
@@ -168,7 +168,7 @@
 	},
 	"head": {
       "type": "expression",
-      "expression": "Depth+bottom_elevation-(1/alpha)*(Se^(-1/m)-1)^(1/n) + _pos(theta-theta_sat)/specific_storage",
+      "expression": "Depth+bottom_elevation-(1/alpha)*(Se^(-1/m)-1)^(1/n) + theta_sat*_pos(Se-0.9999)/specific_storage",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "delegate": "UnitBox",

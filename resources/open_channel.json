@@ -136,7 +136,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "(area.s+area.e)/2",
+      "expression": "_max((area.s+area.e)/2;0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -192,7 +192,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "area.e",
+      "expression": "_max(area.e;0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -248,7 +248,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "area.s",
+      "expression": "_max(area.s;0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
