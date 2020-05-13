@@ -81,6 +81,7 @@ private slots:
     void onAddItemThroughTreeViewRightClick();
     void tablePropShowContextMenu(const QPoint&);
     void addParameter(QAction* item);
+    void clearcombobox();
     void loadnewtemplate();
     void addplugin();
     void showgraph();

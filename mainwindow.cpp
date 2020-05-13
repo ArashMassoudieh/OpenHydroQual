@@ -111,7 +111,23 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
 
         menu->exec(ui->tableView->mapToGlobal(pos));
     }
+    if (i1.column() == 1)
+    {
+        menu = new QMenu;
+        int code = i1.data(CustomRoleCodes::Role::DescriptionCodeRole).toInt();
+        QString variableName = i1.data(CustomRoleCodes::Role::VariableNameRole).toString();
+        if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("ComboBox"))
+        {
+            QAction* action = menu->addAction("Clear");
+            connect(action,SIGNAL(triggered()),this, SLOT(clearcombobox()));
+            menu->exec(ui->tableView->mapToGlobal(pos));
+        }
+    }
+}
 
+void MainWindow::clearcombobox()
+{
+    ui->tableView->model()->setData(tableitemrightckicked, "");
 }
 
 void MainWindow::addParameter(QAction* item)

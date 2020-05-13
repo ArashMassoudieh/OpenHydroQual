@@ -43,7 +43,14 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
 
    switch (role) {
    case Qt::ToolTipRole:
-       return QString::fromStdString(quanset->GetVarAskable(index.row())->Description());
+       if (col == 0) return QString::fromStdString(quanset->GetVarAskable(index.row())->Description());
+       if (col == 1)
+       {
+           if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).toLower().contains("date") == false)
+               return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty());
+           else
+               return float2date(quanset->GetVarAskable(index.row())->GetVal());
+       }
        break;
    case Qt::DisplayRole:
        if (col == 0) return QString::fromStdString(quanset->GetVarAskable(index.row())->Description());
@@ -55,7 +62,7 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                     return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty());
                 else
                     return float2date(quanset->GetVarAskable(index.row())->GetVal());
-            }
+           }
            else
            {
                return  QString::fromStdString(quanset->GetVarAskable(index.row())->GetParameterAssignedTo());
