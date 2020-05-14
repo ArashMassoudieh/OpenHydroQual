@@ -1,6 +1,8 @@
 #ifndef PLOTTER_H
 #define PLOTTER_H
 
+class MainWindow;
+
 #include <QMainWindow>
 #include <QMap>
 #include <QStringList>
@@ -49,7 +51,7 @@ class Plotter : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit Plotter(QWidget *parent = nullptr);
+    explicit Plotter(MainWindow *parent = nullptr);
     ~Plotter();
     bool PlotData(CBTC& BTC);
     bool AddData(CBTC& BTC);
@@ -74,8 +76,11 @@ private:
                           QColor("green"), QColor("darkGreen"), QColor("yellow"),
                           QColor("blue")};
     bool showlegend = true;
-
-
+    MainWindow *parent = nullptr;
+    vector<plotformat> format, previousFormat;
+    QList<QAction *> subActions(const QMap<QString, int> &list, const int &value, QMenu * menuItem, int graphIndex, QVariant val, bool enabled = true);
+    void refreshFormat();
+    QCPGraph* addScatterPlot(QCPGraph *g, plotformat format);
 private slots:
     bool On_Legend_Clicked();
     void axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -89,7 +94,7 @@ private slots:
     void selectionChanged();
     void turnSelectedtoSymbols();
     void Deselect();
-
+    void contextMenuEvent(QContextMenuEvent *event);
 };
 
 

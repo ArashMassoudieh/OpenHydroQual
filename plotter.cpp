@@ -4,13 +4,14 @@
 #include "qdebug.h"
 #include "qfileinfo.h"
 #include "qaction.h"
+#include "mainwindow.h"
 
 
-
-Plotter::Plotter(QWidget *parent) :
-    QMainWindow(parent),
+Plotter::Plotter(MainWindow *_parent) :
+    QMainWindow(_parent),
     ui(new Ui::Plotter)
 {
+    parent = _parent;
     ui->setupUi(this);
     plot = new QCustomPlot(ui->centralWidget);
     plot->setObjectName(QStringLiteral("customPlot"));
@@ -57,9 +58,9 @@ bool Plotter::PlotData(CBTC& BTC)
     plot->legend->setVisible(showlegend);
     plot->clearGraphs();
     QVector<double> x, y; // initialize with entries 0..100
-    plotformat format;
-    if (format.xAxisTimeFormat && ((BTC.t[BTC.n - 1] - BTC.t[0]) < 5 || BTC.t[BTC.n - 1]< 18264))
-        format.xAxisTimeFormat = false;
+    format.push_back(plotformat());
+    if (format[format.size()-1].xAxisTimeFormat && ((BTC.t[BTC.n - 1] - BTC.t[0]) < 5 || BTC.t[BTC.n - 1]< 18264))
+        format[format.size()-1].xAxisTimeFormat = false;
 
     /*	QVector<qreal> y1(y.count());
     for (int i = 0; i < y.count(); i++)
@@ -70,7 +71,7 @@ bool Plotter::PlotData(CBTC& BTC)
     //	customPlot->graph(3)->rescaleAxes(true);
     // setup look of bottom tick labels:
 
-    if (format.xAxisTimeFormat)
+    if (format[format.size()-1].xAxisTimeFormat)
     {
         QDateTime start = QDateTime::fromTime_t(xtoTime(BTC.t[0]), QTimeZone(0));
         QDateTime end = QDateTime::fromTime_t(xtoTime(BTC.t[BTC.n - 1]), QTimeZone(0));
@@ -91,7 +92,7 @@ bool Plotter::PlotData(CBTC& BTC)
 
     for (int i=0; i<BTC.n; ++i)
     {
-      if (!format.xAxisTimeFormat)
+      if (!format[format.size()-1].xAxisTimeFormat)
         x.push_back(BTC.t[i]);
       else
         x.push_back(xtoTime(BTC.t[i]));
@@ -106,7 +107,7 @@ bool Plotter::PlotData(CBTC& BTC)
     plot->xAxis->setLabel("t");
     plot->yAxis->setLabel("value");
     // set axes ranges, so we see all data:
-    if (!format.xAxisTimeFormat)
+    if (!format[format.size()-1].xAxisTimeFormat)
         plot->xAxis->setRange(BTC.t[0], BTC.t[BTC.n-1]);
     else
         plot->xAxis->setRange(xtoTime(BTC.t[0]), xtoTime(BTC.t[BTC.n-1]));
@@ -116,6 +117,213 @@ bool Plotter::PlotData(CBTC& BTC)
     return true;
 
 }
+
+QList<QAction *> Plotter::subActions(const QMap<QString, int> &list, const int &value, QMenu * menuItem, int graphIndex, QVariant val, bool enabled)
+{
+    QList <QAction *> r;
+    for (int i = 0; i < list.keys().count(); i++)
+    {
+        QAction *a = menuItem->addAction(list.keys()[i]);
+        a->setEnabled(enabled);
+        r.append(a);
+        r[i]->setProperty("Graph", graphIndex);
+        r[i]->setProperty("Prop", val);
+        r[i]->setCheckable(true);
+        if (list[list.keys()[i]] == value)
+            r[i]->setChecked(true);
+    }
+    return r;
+}
+
+
+void Plotter::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu menu(this);
+    if (plot->graphCount())
+    {
+        if (plot->graphCount() == 1)
+            menu.addAction("Copy Curve");
+        else
+            menu.addAction("Copy Curves");
+
+        if (parent->graphsClipboard.size() == 1)
+            menu.addAction("Paste Curve");
+        if (parent->graphsClipboard.size() > 1)
+            menu.addAction("Paste Curves");
+        menu.addSeparator();
+        QMenu *prop = menu.addMenu("Graph Properties");
+        QMenu *xAxis = prop->addMenu("X-Axis");
+
+        menu.addSeparator();
+        QList<QMenu *>graphs;
+        for (int i = 0; i < plot->graphCount(); i++)
+        {
+            graphs.push_back(menu.addMenu(plot->graph(i)->name()));
+            graphs[i]->setProperty("Graph", i);
+            QMenu* lineStyle = graphs[i]->addMenu("Line Style");
+            lineStyle->addActions(subActions(format[i].lineStyles, format[i].lineStyle, lineStyle, i, "Line Style"));
+
+            QMenu* scatterStyle = graphs[i]->addMenu("Point Style");
+            scatterStyle->addActions(subActions(format[i].scatterStyles, format[i].scatterStyle, scatterStyle, i, "Scatter Style"));
+
+            QMenu* lineType = graphs[i]->addMenu("Line Type");
+            lineType->addActions(subActions(format[i].penStyles, format[i].penStyle, lineType, i, "Line Type"));
+
+            QMenu* width = graphs[i]->addMenu("Width");
+            width->addActions(subActions(format[i].penWidths, format[i].penWidth, width, i, "Width"));
+
+            QMenu* color = graphs[i]->addMenu("Color");
+            color->addActions(subActions(format[i].colors, format[i].color, color, i, "Color"));
+
+        }
+
+
+        QAction *selectedAction = menu.exec(event->globalPos());
+
+        if (selectedAction != nullptr)
+        {
+            QString graph = selectedAction->property("Graph").toString();
+            QString prop = selectedAction->property("Prop").toString();
+            QString text = selectedAction->text();
+            if (!graph.isNull())
+            {
+                int i = graph.toInt();
+                            previousFormat = format;
+                if (prop == "xAxisType")
+                    format[i].xAxisType = QCPAxis::ScaleType(format[i].axisTypes[text]);
+                /*if (prop == "xAxisTimeFormat")
+                {
+                    bool newTimeFormat = text.toLower().contains("time");
+                    if (format[i].xAxisTimeFormat != newTimeFormat)
+                    {
+                        format[i].xAxisTimeFormat = newTimeFormat;
+                        int n = plot->graph(i)->data()->;
+                        QVector<double> x(n), y(n);
+                        QCPData data;
+                        QList<qreal> oldX = ui->customPlot->graph(i)->data()->keys();
+                        QList<QCPData> oldY = ui->customPlot->graph(i)->data()->values();
+                        for (int c = 0; c < n; ++c)
+                        {
+                            qDebug() << c;
+                            if (newTimeFormat)
+                                x[c] = xtoTime(oldX[c]);
+                            else
+                                x[c] = timetoX(oldX[c]);
+                            y[c] = oldY[c].value;
+                        }
+                        ui->customPlot->graph(i)->setData(x, y);
+
+                        if (format[i].xAxisTimeFormat)
+                        {
+                            QDateTime start = QDateTime::fromTime_t(x[0], QTimeZone(0));
+                            QDateTime end = QDateTime::fromTime_t(x[x.count() - 1], QTimeZone(0));
+                            ui->customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
+                            QString format;
+                            if (start.secsTo(end) < 600) format = "mm:ss:zzz";
+                            if (start.secsTo(end) > 3600) format = "hh:mm:ss";
+                            if (start.daysTo(end) > 1) format = "MMM dd\nhh:mm:ss";
+                            if (start.daysTo(end) > 5) format = "MMM dd, yyyy\nhh:mm";
+                            if (start.daysTo(end) > 180)format = "MMM dd, yyyy\nhAP";
+                            if (start.daysTo(end) > 2 * 365)format = "MMMM\nyyyy";
+                            ui->customPlot->xAxis->setDateTimeFormat(format);
+                        }
+                        else
+                            ui->customPlot->xAxis->setTickLabelType(QCPAxis::ltNumber);
+
+                    }
+                }*/
+
+                if (prop == "yAxisType")
+                    format[i].yAxisType = QCPAxis::ScaleType(format[i].axisTypes[text]);
+                if (prop == "legend")
+                    format[i].legend = format[i].legends[text];
+                if (prop == "Line Style")
+                    format[i].lineStyle = QCPGraph::LineStyle(format[i].lineStyles[text]);
+                if (prop == "Scatter Style")
+                    format[i].scatterStyle = QCPScatterStyle::ScatterShape(format[i].scatterStyles[text]);
+                if (prop == "Line Type")
+                    format[i].penStyle = Qt::PenStyle(format[i].penStyles[text]);
+                if (prop == "Width")
+                    format[i].penWidth = text.toInt();
+                if (prop == "Color")
+                    format[i].color = Qt::GlobalColor(format[i].colors[text]);
+                //		if (format != previousFormat)
+                refreshFormat();
+            }
+            if (selectedAction->text().contains("Copy"))
+            {
+                parent->graphsClipboard.clear();
+                for (int i = 0; i < plot->graphCount(); i++)
+                    parent->graphsClipboard.insert(plot->graph(i), format[i]);
+                // Set the clilpboard image
+                QClipboard * clipboard = QApplication::clipboard();
+                QPalette mypalette = this->palette();
+                mypalette.setColor(QPalette::Window, Qt::white);
+                plot->setPalette(mypalette);
+                QPixmap pixmap = QPixmap::grabWidget(this);
+                clipboard->setPixmap(pixmap);
+            }
+
+            if (selectedAction->text().contains("Paste"))
+                foreach (QCPGraph *g , parent->graphsClipboard.keys())
+                {
+                    addScatterPlot(g, parent->graphsClipboard[g]);
+                }
+        }
+
+    }
+}
+
+QCPGraph* Plotter::addScatterPlot(QCPGraph *g, plotformat format)
+{
+    QCustomPlot *customPlot = plot;
+    QPen pen;
+    QCPGraph* graph = customPlot->addGraph();
+    pen.setStyle(Qt::DashLine);
+    pen.setWidth(1);
+    pen.setColor(Qt::black);
+    graph->setPen(pen); //g->pen());
+    graph->setName(g->name());
+    //graph->addData(g->data()); Need to work on here
+    customPlot->axisRect()->setupFullAxesBox();
+    customPlot->rescaleAxes();
+    customPlot->replot();
+    this->format.push_back(format);
+    return graph;
+}
+
+
+
+
+void Plotter::refreshFormat()
+{
+    QCustomPlot *plot1 = plot;
+    plot1->xAxis->setScaleType(format[0].xAxisType);
+    if (format[0].xAxisType == QCPAxis::stLogarithmic)
+        plot1->xAxis->setScaleType(QCPAxis::ScaleType::stLogarithmic);
+    plot1->yAxis->setScaleType(format[0].yAxisType);
+    plot1->legend->setVisible(format[0].legend);
+    plot1->xAxis->setLabel(format[0].xAxisLabel);
+    plot1->yAxis->setLabel(format[0].yAxisLabel);
+
+    for (int i = 0; i < format.size(); i++)
+    {
+        format[i].xAxisType = format[0].xAxisType;
+        format[i].yAxisType = format[0].yAxisType;
+        format[i].legend = format[0].legend;
+        plot1->graph(i)->setLineStyle(format[i].lineStyle);
+        plot1->graph(i)->setScatterStyle(format[i].scatterStyle);
+        QPen pen = plot->graph(i)->pen();
+        pen.setColor(format[i].color);
+        pen.setWidth(format[i].penWidth);
+        pen.setStyle(format[i].penStyle);
+        plot1->graph(i)->setPen(pen);
+    }
+    plot1->rescaleAxes();
+    plot1->replot();
+}
+
+
 
 bool Plotter::AddData(CBTC& BTC)
 {
@@ -214,8 +422,140 @@ void Plotter::contextMenuRequest(QPoint pos)
     if (plot->graphCount() > 0)
       menu->addAction("Remove all graphs", this, SLOT(removeAllGraphs()));
   }
+  if (plot->graphCount())
+  {
+      if (plot->graphCount() == 1)
+          menu->addAction("Copy Curve");
+      else
+          menu->addAction("Copy Curves");
 
-  menu->popup(plot->mapToGlobal(pos));
+      if (parent->graphsClipboard.size() == 1)
+          menu->addAction("Paste Curve");
+      if (parent->graphsClipboard.size() > 1)
+          menu->addAction("Paste Curves");
+      menu->addSeparator();
+      QMenu *prop = menu->addMenu("Graph Properties");
+      QMenu *xAxis = prop->addMenu("X-Axis");
+
+      menu->addSeparator();
+      QList<QMenu *>graphs;
+      for (int i = 0; i < plot->graphCount(); i++)
+      {
+          graphs.push_back(menu->addMenu(plot->graph(i)->name()));
+          graphs[i]->setProperty("Graph", i);
+          QMenu* lineStyle = graphs[i]->addMenu("Line Style");
+          lineStyle->addActions(subActions(format[i].lineStyles, format[i].lineStyle, lineStyle, i, "Line Style"));
+
+          QMenu* scatterStyle = graphs[i]->addMenu("Point Style");
+          scatterStyle->addActions(subActions(format[i].scatterStyles, format[i].scatterStyle, scatterStyle, i, "Scatter Style"));
+
+          QMenu* lineType = graphs[i]->addMenu("Line Type");
+          lineType->addActions(subActions(format[i].penStyles, format[i].penStyle, lineType, i, "Line Type"));
+
+          QMenu* width = graphs[i]->addMenu("Width");
+          width->addActions(subActions(format[i].penWidths, format[i].penWidth, width, i, "Width"));
+
+          QMenu* color = graphs[i]->addMenu("Color");
+          color->addActions(subActions(format[i].colors, format[i].color, color, i, "Color"));
+
+      }
+
+
+      QAction *selectedAction = menu->exec(plot->mapToGlobal(pos));
+
+      if (selectedAction != nullptr)
+      {
+          QString graph = selectedAction->property("Graph").toString();
+          QString prop = selectedAction->property("Prop").toString();
+          QString text = selectedAction->text();
+          if (!graph.isNull())
+          {
+              int i = graph.toInt();
+                          previousFormat = format;
+              if (prop == "xAxisType")
+                  format[i].xAxisType = QCPAxis::ScaleType(format[i].axisTypes[text]);
+              /*if (prop == "xAxisTimeFormat")
+              {
+                  bool newTimeFormat = text.toLower().contains("time");
+                  if (format[i].xAxisTimeFormat != newTimeFormat)
+                  {
+                      format[i].xAxisTimeFormat = newTimeFormat;
+                      int n = plot->graph(i)->data()->;
+                      QVector<double> x(n), y(n);
+                      QCPData data;
+                      QList<qreal> oldX = ui->customPlot->graph(i)->data()->keys();
+                      QList<QCPData> oldY = ui->customPlot->graph(i)->data()->values();
+                      for (int c = 0; c < n; ++c)
+                      {
+                          qDebug() << c;
+                          if (newTimeFormat)
+                              x[c] = xtoTime(oldX[c]);
+                          else
+                              x[c] = timetoX(oldX[c]);
+                          y[c] = oldY[c].value;
+                      }
+                      ui->customPlot->graph(i)->setData(x, y);
+
+                      if (format[i].xAxisTimeFormat)
+                      {
+                          QDateTime start = QDateTime::fromTime_t(x[0], QTimeZone(0));
+                          QDateTime end = QDateTime::fromTime_t(x[x.count() - 1], QTimeZone(0));
+                          ui->customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
+                          QString format;
+                          if (start.secsTo(end) < 600) format = "mm:ss:zzz";
+                          if (start.secsTo(end) > 3600) format = "hh:mm:ss";
+                          if (start.daysTo(end) > 1) format = "MMM dd\nhh:mm:ss";
+                          if (start.daysTo(end) > 5) format = "MMM dd, yyyy\nhh:mm";
+                          if (start.daysTo(end) > 180)format = "MMM dd, yyyy\nhAP";
+                          if (start.daysTo(end) > 2 * 365)format = "MMMM\nyyyy";
+                          ui->customPlot->xAxis->setDateTimeFormat(format);
+                      }
+                      else
+                          ui->customPlot->xAxis->setTickLabelType(QCPAxis::ltNumber);
+
+                  }
+              }*/
+
+              if (prop == "yAxisType")
+                  format[i].yAxisType = QCPAxis::ScaleType(format[i].axisTypes[text]);
+              if (prop == "legend")
+                  format[i].legend = format[i].legends[text];
+              if (prop == "Line Style")
+                  format[i].lineStyle = QCPGraph::LineStyle(format[i].lineStyles[text]);
+              if (prop == "Scatter Style")
+                  format[i].scatterStyle = QCPScatterStyle::ScatterShape(format[i].scatterStyles[text]);
+              if (prop == "Line Type")
+                  format[i].penStyle = Qt::PenStyle(format[i].penStyles[text]);
+              if (prop == "Width")
+                  format[i].penWidth = text.toInt();
+              if (prop == "Color")
+                  format[i].color = Qt::GlobalColor(format[i].colors[text]);
+              //		if (format != previousFormat)
+              refreshFormat();
+          }
+          if (selectedAction->text().contains("Copy"))
+          {
+              parent->graphsClipboard.clear();
+              for (int i = 0; i < plot->graphCount(); i++)
+                  parent->graphsClipboard.insert(plot->graph(i), format[i]);
+              // Set the clilpboard image
+              QClipboard * clipboard = QApplication::clipboard();
+              QPalette mypalette = this->palette();
+              mypalette.setColor(QPalette::Window, Qt::white);
+              plot->setPalette(mypalette);
+              QPixmap pixmap = QPixmap::grabWidget(this);
+              clipboard->setPixmap(pixmap);
+          }
+
+          if (selectedAction->text().contains("Paste"))
+              foreach (QCPGraph *g , parent->graphsClipboard.keys())
+              {
+                  addScatterPlot(g, parent->graphsClipboard[g]);
+              }
+      }
+
+  }
+
 }
 
 void Plotter::moveLegend()
