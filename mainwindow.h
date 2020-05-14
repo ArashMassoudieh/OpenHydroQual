@@ -82,6 +82,7 @@ private slots:
     void tablePropShowContextMenu(const QPoint&);
     void addParameter(QAction* item);
     void clearcombobox();
+    void insertnumberasdate();
     void loadnewtemplate();
     void addplugin();
     void showgraph();

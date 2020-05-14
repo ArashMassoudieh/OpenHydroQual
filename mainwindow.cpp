@@ -11,6 +11,7 @@
 #include "QFileDialog"
 #include "runtimewindow.h"
 #include "plotter.h"
+#include <QInputDialog>
 
 using namespace std;
 
@@ -122,12 +123,24 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
             connect(action,SIGNAL(triggered()),this, SLOT(clearcombobox()));
             menu->exec(ui->tableView->mapToGlobal(pos));
         }
+        if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("DateTime"))
+        {
+            QAction* action = menu->addAction("Insert in numeric format");
+            connect(action,SIGNAL(triggered()),this, SLOT(insertnumberasdate()));
+            menu->exec(ui->tableView->mapToGlobal(pos));
+        }
     }
 }
 
 void MainWindow::clearcombobox()
 {
     ui->tableView->model()->setData(tableitemrightckicked, "");
+}
+
+void MainWindow::insertnumberasdate()
+{
+    double x = QInputDialog::getDouble(this,"Date/Time Value: ","Date/Time value", ui->tableView->model()->data(tableitemrightckicked).toDouble(),0,20000,2);
+    ui->tableView->model()->setData(tableitemrightckicked, QString::number(x));
 }
 
 void MainWindow::addParameter(QAction* item)
