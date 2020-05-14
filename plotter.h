@@ -66,10 +66,10 @@ private:
     double maxy=-1e12;
     double xtoTime(const double &x) {
         return x * 86400 - 2209161600;
-    };
+    }
     double timetoX(const double &time) {
         return (time + 2209161600) / 86400;
-    };
+    }
 
     QVector<QColor> colours = {QColor("cyan"), QColor("magenta"), QColor("red"),
                           QColor("darkRed"), QColor("darkCyan"), QColor("darkMagenta"),
@@ -81,6 +81,8 @@ private:
     QList<QAction *> subActions(const QMap<QString, int> &list, const int &value, QMenu * menuItem, int graphIndex, QVariant val, bool enabled = true);
     void refreshFormat();
     QCPGraph* addScatterPlot(QCPGraph *g, plotformat format);
+    CTimeSeries QCPDatatoTimeSeries(QCPGraphDataContainer &_data);
+    QVector<QVector<double>> QCPDatatoQVector(QCPGraph *_g);
 private slots:
     bool On_Legend_Clicked();
     void axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part);

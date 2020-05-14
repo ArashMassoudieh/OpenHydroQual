@@ -284,7 +284,8 @@ QCPGraph* Plotter::addScatterPlot(QCPGraph *g, plotformat format)
     pen.setColor(Qt::black);
     graph->setPen(pen); //g->pen());
     graph->setName(g->name());
-    //graph->addData(g->data()); Need to work on here
+    QVector<QVector<double>> timeseriesdata = QCPDatatoQVector(g);
+    graph->addData(timeseriesdata[0],timeseriesdata[1]);
     customPlot->axisRect()->setupFullAxesBox();
     customPlot->rescaleAxes();
     customPlot->replot();
@@ -293,6 +294,26 @@ QCPGraph* Plotter::addScatterPlot(QCPGraph *g, plotformat format)
 }
 
 
+CTimeSeries Plotter::QCPDatatoTimeSeries(QCPGraphDataContainer &_data)
+{
+    CTimeSeries out;
+    for (QCPGraphDataContainer::const_iterator it=_data.begin(); it!=_data.end(); ++it)
+    {
+        out.append(it->key, it->value);
+    }
+    return out;
+}
+
+QVector<QVector<double>> Plotter::QCPDatatoQVector(QCPGraph *g)
+{
+    QVector<QVector<double>> out(2);
+    for (QCPGraphDataContainer::const_iterator it=g->data()->begin(); it!=g->data()->end(); ++it)
+    {
+        out[0].append(it->key);
+        out[1].append(it->value);
+    }
+    return out;
+}
 
 
 void Plotter::refreshFormat()
@@ -306,7 +327,7 @@ void Plotter::refreshFormat()
     plot1->xAxis->setLabel(format[0].xAxisLabel);
     plot1->yAxis->setLabel(format[0].yAxisLabel);
 
-    for (int i = 0; i < format.size(); i++)
+    for (unsigned int i = 0; i < format.size(); i++)
     {
         format[i].xAxisType = format[0].xAxisType;
         format[i].yAxisType = format[0].yAxisType;
