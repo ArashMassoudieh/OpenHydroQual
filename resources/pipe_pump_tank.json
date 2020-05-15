@@ -142,6 +142,10 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
     }
   },
   "junction": {
@@ -163,7 +167,7 @@
       "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Storage",
-      "default": "1000000000000"
+      "default": "100000000"
     },
     "x": {
       "type": "value",
@@ -182,14 +186,14 @@
     "_width": {
       "type": "value",
       "description": "_width",
-	  "default": "200",
+	  "default": "100",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
     "_height": {
       "type": "value",
       "description": "_height",
-	  "default": "200",
+	  "default": "100",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
@@ -202,11 +206,76 @@
     },
     "head": {
       "type": "expression",
-      "expression": "elevation+30*(Storage-1000000000000)",
+      "expression": "elevation+100*(Storage-100000000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "delegate": "UnitBox",
       "includeinoutput": "true"
+    }
+  },
+  "pump": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Pump with a quadratic head-flow relationship",
+    "icon": {
+      "filename": "pump.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "head_0": {
+      "type": "value",
+      "description": "pump head at a zero flow (h0)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "criteria": "head_0>0",
+      "warningmessage": "pump head must be positive"
+    },
+    "alpha": {
+      "type": "value",
+      "description": "The coefficient alpha in h=h0-alpha*Q^beta",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "criteria": "alpha>0",
+      "warningmessage": "The coefficient must be positive"
+    },
+    "beta": {
+      "type": "value",
+      "description": "The exponent beta in h=h0-alpha*Q^beta",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "default": "2",
+      "criteria": "beta>0",
+      "warningmessage": "The exponent must be positive"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m/day)",
+      "expression": "(_pos(head.s-head.e+head_0)/alpha)^(1/beta)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "power": {
+      "type": "expression",
+      "description": "Power (Watts)",
+      "expression": "(9810/86400)*_pos(head.s-head.e+head_0)*flow",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,0"
     }
   }
 }
