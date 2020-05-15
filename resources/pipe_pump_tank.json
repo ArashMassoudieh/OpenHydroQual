@@ -1,0 +1,212 @@
+{
+  "Tank": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "watertank.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation",
+      "includeinoutput": "true",
+      "description": "Initial Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
+    "area": {
+      "type": "value",
+      "description": "Base Area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "Base area must be positive"
+    },
+    "x": {
+      "type": "value",
+      "description": "x",
+	  "default": "900",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "y": {
+      "type": "value",
+      "description": "y",
+	  "default": "900",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_width": {
+      "type": "value",
+      "description": "_width",
+	  "default": "200",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_height": {
+      "type": "value",
+      "description": "_height",
+	  "default": "200",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "Storage/area",
+      "description": "Water Depth",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "includeinoutput": "true"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation",      
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "includeinoutput": "true"
+    }
+  },
+  "pipe": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Pipe (Hazen-Williams Equation)",
+    "icon": {
+      "filename": "pipe.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "criteria": "diameter>0",
+      "warningmessage": "diameter must be positive"
+    },
+    "hz_coeff": {
+      "type": "value",
+      "description": "Hazen-Williams Coefficient (SI)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "default": "100",
+      "criteria": "hz_coeff>0",
+      "warningmessage": "diameter must be positive"
+    },
+    "length": {
+      "type": "value",
+      "description": "Pipe length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "lenght must be positive"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic Gradient",
+      "expression": "(head.e-head.s)/length",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m/day)",
+      "expression": "24055.44*hz_coeff*diameter^2.63*_pos((head.s-head.e)/length)^0.54",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
+  "junction": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "junction.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "default": "1000000000000"
+    },
+    "x": {
+      "type": "value",
+      "description": "x",
+	  "default": "900",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "y": {
+      "type": "value",
+      "description": "y",
+	  "default": "900",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_width": {
+      "type": "value",
+      "description": "_width",
+	  "default": "200",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_height": {
+      "type": "value",
+      "description": "_height",
+	  "default": "200",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "elevation": {
+      "type": "value",
+      "description": "Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "elevation+30*(Storage-1000000000000)",
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "includeinoutput": "true"
+    }
+  }
+}
