@@ -560,13 +560,6 @@
       "delegate": "UnitBox",
       "estimate": "true"
     },
-    "Precipitation": {
-      "type": "source",
-      "includeinoutput": "true",
-      "description": "precipitation time series",
-      "ask_user": "false",
-      "delegate": "ComboBox;Sources"
-    },
     "x": {
       "type": "value",
       "description": "x",

@@ -210,7 +210,21 @@ bool MainWindow::BuildObjectsToolBar()
         QAction* action = new QAction(this);
         action->setObjectName(QString::fromStdString(system.GetAllBlockTypes()[i]));
         QIcon icon;
-        icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+        if (QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()).contains("/"))
+        {
+            if (!QFile::exists(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+        }
+        else
+        {
+            if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+
+        }
         action->setIcon(icon);
         action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
         ui->mainToolBar->addAction(action);
@@ -225,7 +239,21 @@ bool MainWindow::BuildObjectsToolBar()
         action->setCheckable(true);
         action->setObjectName(QString::fromStdString(system.GetAllLinkTypes()[i]));
         QIcon icon;
-        icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+        if (QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()).contains("/"))
+        {
+            if (!QFile::exists(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+        }
+        else
+        {
+            if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+
+        }
         action->setIcon(icon);
         action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
         ui->mainToolBar->addAction(action);
@@ -246,6 +274,22 @@ bool MainWindow::BuildObjectsToolBar()
                 action->setObjectName(QString::fromStdString(type));
                 QIcon icon;
                 icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                if (QString::fromStdString(system.GetModel(type)->IconFileName()).contains("/"))
+                {
+                    if (!QFile::exists(QString::fromStdString(system.GetModel(type)->IconFileName())))
+                        LogError("Icon file '" + QString::fromStdString(system.GetModel(type)->IconFileName()) + "' was not found!");
+                    else
+                        icon.addFile(QString::fromStdString(system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                }
+                else
+                {
+                    if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName())))
+                        LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()) + "' was not found!");
+                    else
+                        icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                }
+
+
                 action->setIcon(icon);
                 action->setToolTip(QString::fromStdString(system.GetModel(type)->Description()));
                 ui->mainToolBar->addAction(action);
@@ -992,11 +1036,16 @@ void MainWindow::addplugin()
 
     if (fileName!="")
     {
-        system.AppendQuanTemplate(fileName.toStdString());
-        ui->mainToolBar->clear();
-        BuildObjectsToolBar();
-        RefreshTreeView();
-        addedtemplatefilenames.push_back(fileName.toStdString());
+        if (system.AppendQuanTemplate(fileName.toStdString()))
+        {   ui->mainToolBar->clear();
+            BuildObjectsToolBar();
+            RefreshTreeView();
+            addedtemplatefilenames.push_back(fileName.toStdString());
+        }
+        else
+        {
+            LogError("Error in file '" + filename + "' :" +  QString::fromStdString(system.GetMetaModel()->GetLastError()));
+        }
     }
 
 }

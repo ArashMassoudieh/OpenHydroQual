@@ -57,7 +57,12 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     QRadialGradient radialGrad(QPointF(width / 2, height / 2), min(width, height));
     radialGrad.setColorAt(0, QColor(Qt::lightGray).light(300));
     radialGrad.setColorAt(1, QColor(Qt::lightGray).light(120));
-    QPixmap pixmap(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object()->GetType())->IconFileName()));
+    QPixmap pixmap;
+    if (QString::fromStdString(system->GetModel(object()->GetType())->IconFileName()).contains("/"))
+        pixmap = QPixmap(QString::fromStdString(system->GetModel(object()->GetType())->IconFileName()));
+    else
+        pixmap = QPixmap(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object()->GetType())->IconFileName()));
+
     QRectF rect = QRectF(boundingRect().left()*0 + iconmargin*boundingRect().width(), boundingRect().top()*0+iconmargin*boundingRect().width(), boundingRect().width()*(1-iconmargin), boundingRect().height()*(1-iconmargin));
     QRectF source(0, 0, pixmap.size().width(), pixmap.size().height());
     painter->drawPixmap(rect, pixmap, source);
