@@ -596,5 +596,18 @@
 	  "default": "0",
 	  "delegate": "UnitBox"
     }
+  },
+  "Constituent": {
+    "type": "constituent",
+    "typecategory": "Constituents",
+    "icon": {
+      "filename": "constituent.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    }
   }
 }

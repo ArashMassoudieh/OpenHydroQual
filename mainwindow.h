@@ -72,6 +72,7 @@ private slots:
     void onaddparameter();
     void onaddentity();
     void onaddobjectivefunction();
+    void onaddconstituent();
     void preparetreeviewMenu(const QPoint &pos);
     void onTreeSelectionChanged(QTreeWidgetItem *current);
     void onzoomin();

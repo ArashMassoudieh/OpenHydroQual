@@ -300,6 +300,8 @@ bool MainWindow::BuildObjectsToolBar()
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddparameter()));
                 else if (typecategory == "Objective Functions")
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddobjectivefunction()));
+                else if (typecategory == "Constituents")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddconstituent()));
                 else
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
             }
@@ -427,6 +429,35 @@ void MainWindow::onaddparameter()
 }
 
 void MainWindow::onaddobjectivefunction()
+{
+    QObject* obj = sender();
+    Objective_Function objective_function;
+
+    string name;
+    string objectname;
+    if (obj->objectName()!="")
+    {   name = CreateNewName(obj->objectName().toStdString());
+        objectname = obj->objectName().toStdString();
+    }
+    else
+    {
+        name = CreateNewName("Objective Function");
+        objectname = "Objective_Function";
+    }
+
+    objective_function.SetQuantities(system.GetMetaModel(),objectname);
+    objective_function.SetType(objectname);
+
+    objective_function.SetName(name);
+    system.AppendObjectiveFunction(name,objective_function);
+    qDebug() << "objective function added! " << obj->objectName();
+    //system.object(name)->SetName(name);
+    RefreshTreeView();
+    LogAddDelete("Objective Function '" + QString::fromStdString(name) + "' was added!");
+
+}
+
+void MainWindow::onaddconstituent()
 {
     QObject* obj = sender();
     Objective_Function objective_function;

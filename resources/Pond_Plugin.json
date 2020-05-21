@@ -1,0 +1,149 @@
+{
+	"Pond": {
+		"type": "block",
+		"typecategory": "Blocks",
+                "description": "Stormwater pond",
+		"icon": {
+			"filename": "stormwaterpond.png"		
+		},
+		"name": {
+		      "description": "Name",
+		      "type": "string",
+		      "ask_user": "true",
+		      "delegate": "String"
+    		},
+                "Storage": {
+			"description": "Initial Storage",
+                        "type": "balance",
+                        "massbalance": "true",
+                        "flow": "flow",
+                        "inflow": "Precipitation",
+                        "ask_user": "true",
+                        "delegate": "UnitBox",
+                        "estimate": "true",
+                        "includeinoutput" : "true",
+                        "criteria": "Storage>-0.0000001",
+			"warningmessage": "Storage can not be a negaive number!" 
+		},
+		"alpha": {
+			 "type": "value",
+			 "description": "The coefficient (alpha) in the rating curve S = alpha*d^beta",
+			 "ask_user": "true",
+			 "delegate": "UnitBox",
+			 "estimate": "true",
+			 "criteria": "alpha>0",
+			 "warningmessage": "alpha coefficient must be positive!"
+		},
+                "beta": {
+			 "type": "value",
+			 "description": "The exponent (beta) in the rating curve S = alpha*d^beta",
+			 "ask_user": "true",
+			 "delegate": "UnitBox",
+			 "estimate": "true",
+                         "default": "2", 
+			 "criteria": "beta>0",
+			 "warningmessage": "beta exponent must be positive!"
+		},
+                "depth": {
+                         "type": "expression",
+                         "expression" : "(Storage/alpha)^(1/beta)",
+                         "description": "Water depth",
+                         "ask_user": "false",
+                         "includeinoutput": "true"  
+                },
+                "bottom_elevation": {
+                         "type": "value",
+			 "description": "Bottom elevation of pond",
+			 "ask_user": "true",
+			 "delegate": "UnitBox",
+			 "estimate": "true"
+                },
+                "head": {
+                	"type": "expression",
+                        "expression": "depth+bottom_elevation",
+                        "description" : "Hydraulic head",
+                        "ask_user": "user",
+                        "includeinoutput" : "true"
+                },
+                "x": {
+		      "type": "value",
+		      "description": "x",
+		      "default": "900",
+		      "ask_user": "true",
+		      "delegate": "UnitBox"
+		    },
+		"y": {
+		      "type": "value",
+		      "description": "y",
+		      "default": "900",
+		      "ask_user": "true",
+		      "delegate": "UnitBox"
+		    },
+		    "_width": {
+		      "type": "value",
+		      "description": "_width",
+		      "default": "200",
+		      "ask_user": "true",
+		      "delegate": "UnitBox"
+		    },
+		    "_height": {
+		      "type": "value",
+		      "description": "_height",
+		      "default": "200",
+		      "ask_user": "true",
+		      "delegate": "UnitBox"
+                    }
+	},
+        "wier":{
+		"type": "link",
+		"typecategory": "Connectors",
+                "description": "V-notch weir based on a power-law rating curve",
+		"icon": {
+			"filename": "vnotchweir.png"
+		},
+		"name": {
+		      "description": "Name",
+		      "type": "string",
+		      "ask_user": "true",
+		      "delegate": "String" 
+		},
+                "color": {
+      			"type": "string",
+      			"default": "0,200,200"
+    		},
+                "crest_elevation" : {
+			"type": "value",
+			"description": "Crest Elevation",
+			"ask_user" : "true",
+			"delegate" : "UnitBox",
+			"estimate" : "true"
+		},
+		"alpha": {
+		      "type": "value",
+		      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta",
+		      "ask_user": "true",
+		      "delegate": "UnitBox",
+		      "estimate": "true",
+		      "default": "1",
+		      "criteria": "alpha>0",
+		      "warningmessage": "alpha must be positive"
+    		},
+    		"beta": {
+		      "type": "value",
+		      "description": "Exponent beta in Q=alpha*(h-z_0)^beta",
+		      "ask_user": "true",
+		      "delegate": "UnitBox",
+		      "estimate": "true",
+		      "default": "2.5",
+		      "criteria": "beta>0",
+		      "warningmessage": "beta must be positive"
+   		},	
+	        "flow" : {
+		      	"type": "expression",
+			"description": "Flow rate",
+                        "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
+			"includeinoutput" : "true",
+			"applylimit": "true"	
+		}  	
+	}
+}
