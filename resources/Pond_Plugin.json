@@ -46,7 +46,7 @@
 		},
                 "depth": {
                          "type": "expression",
-                         "expression" : "(Storage/alpha)^(1/beta)",
+                         "expression" : "_pos(Storage/alpha)^(1/beta)",
                          "description": "Water depth",
                          "ask_user": "false",
                          "includeinoutput": "true"  

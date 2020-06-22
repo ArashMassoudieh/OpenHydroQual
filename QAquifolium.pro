@@ -66,7 +66,6 @@ SOURCES += \
     ../Aquifolium/src/Parameter_Set.cpp \
     ../Aquifolium/src/Parameter.cpp \
     ../Aquifolium/src/ErrorHandler.cpp \
-    ../Aquifolium/src/Link.cpp \
     node.cpp \
     propmodel.cpp \
     delegate.cpp \
@@ -84,7 +83,8 @@ SOURCES += \
     expEditor.cpp \
     statusviewer.cpp \
     expressioneditor.cpp \
-    logwindow.cpp
+    logwindow.cpp \
+    ../Aquifolium/src/Link.cpp
 
 HEADERS += \
     ../Aquifolium/include/Objective_Function.h \
