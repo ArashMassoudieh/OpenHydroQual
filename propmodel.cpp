@@ -18,7 +18,10 @@ PropModel::PropModel(QuanSet* _quanset, QObject *parent, MainWindow *_mainwindow
 
 int PropModel::rowCount(const QModelIndex &i) const
 {
-   return int (quanset->AskableSize());
+    if (quanset != nullptr)
+        return int(quanset->AskableSize());
+    else
+        return 0; 
 }
 
 int PropModel::columnCount(const QModelIndex &i) const

@@ -34,7 +34,7 @@
 			 "criteria": "alpha>0",
 			 "warningmessage": "alpha coefficient must be positive!"
 		},
-                "beta": {
+             "beta": {
 			 "type": "value",
 			 "description": "The exponent (beta) in the rating curve S = alpha*d^beta",
 			 "ask_user": "true",
@@ -44,15 +44,15 @@
 			 "criteria": "beta>0",
 			 "warningmessage": "beta exponent must be positive!"
 		},
-                "depth": {
-                         "type": "expression",
-                         "expression" : "_pos(Storage/alpha)^(1/beta)",
-                         "description": "Water depth",
-                         "ask_user": "false",
-                         "includeinoutput": "true"  
-                },
-                "bottom_elevation": {
-                         "type": "value",
+        "depth": {
+			 "type": "expression",
+			 "expression" : "_pos(Storage^2/(alpha*(Storage+0.1)))^(1/beta)",
+			 "description": "Water depth",
+			 "ask_user": "false",
+			 "includeinoutput": "true"  
+        },
+        "bottom_elevation": {
+             "type": "value",
 			 "description": "Bottom elevation of pond",
 			 "ask_user": "true",
 			 "delegate": "UnitBox",
@@ -65,7 +65,7 @@
                         "ask_user": "user",
                         "includeinoutput" : "true"
                 },
-                "x": {
+              "x": {
 		      "type": "value",
 		      "description": "x",
 		      "default": "900",

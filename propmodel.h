@@ -8,7 +8,7 @@ class PropModel: public QAbstractTableModel
 {
 private:
     Q_OBJECT
-    QuanSet *quanset;
+    QuanSet *quanset = nullptr;
     MainWindow *mainwindow;
 public:
     PropModel(QuanSet*, QObject *parent = nullptr, MainWindow *_mainwindow = nullptr);

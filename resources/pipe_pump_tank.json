@@ -84,12 +84,76 @@
       "includeinoutput": "true"
     }
   },
-  "pipe": {
+  "pipe_2w": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Pipe (Hazen-Williams Equation)",
+    "description": "Pipe (Hazen-Williams Equation, 2 way)",
     "icon": {
       "filename": "pipe.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "criteria": "diameter>0",
+      "warningmessage": "diameter must be positive"
+    },
+    "hz_coeff": {
+      "type": "value",
+      "description": "Hazen-Williams Coefficient (SI)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "default": "100",
+      "criteria": "hz_coeff>0",
+      "warningmessage": "diameter must be positive"
+    },
+    "length": {
+      "type": "value",
+      "description": "Pipe length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "lenght must be positive"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic Gradient",
+      "expression": "(head.e-head.s)/length",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m/day)",
+      "expression": "24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_abs((head.s-head.e)/length)^0.54",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    }
+  },
+  "pipe_1w": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Pipe (Hazen-Williams Equation, 1 way)",
+    "icon": {
+      "filename": "pipe_1w.png"
     },
     "name": {
       "description": "Name",
@@ -167,7 +231,7 @@
       "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Storage",
-      "default": "100000000"
+      "default": "100000"
     },
     "x": {
       "type": "value",
@@ -204,9 +268,17 @@
       "delegate": "UnitBox",
       "estimate": "true"
     },
+	"elasticity": {
+      "type": "value",
+      "description": "Elasticity",
+      "default": "100",
+	  "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
     "head": {
       "type": "expression",
-      "expression": "elevation+100*(Storage-100000000)",
+      "expression": "elevation+elasticity*(_abs(Storage-100000)+0.1)*(Storage-100000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "delegate": "UnitBox",

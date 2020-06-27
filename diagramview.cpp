@@ -185,11 +185,12 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
     {
         Node *child = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
         if (child)
-            if ((child->itemType == Object_Types::Block) && (Node1->Name() != child->Name()))
-            {
-                tempRay->setValidation(true);
-                tempRay->adjust(Node1, child);
-            }
+            if (Node1!=nullptr)
+                if ((child->itemType == Object_Types::Block) && (Node1->Name() != child->Name()))
+                {
+                    tempRay->setValidation(true);
+                    tempRay->adjust(Node1, child);
+                }
         if (!child)
         {
             tempRay->setValidation(false);
@@ -367,6 +368,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
     }
     case Operation_Modes::Node1_selected:
     {
+        if (Node1 == nullptr) return; 
         Node1->setFlag(QGraphicsItem::ItemIsMovable);
         setMode(1);
         MainGraphicsScene->removeItem(tempRay);
@@ -413,10 +415,11 @@ void DiagramView::deleteselectednode(QString nodename)
         mainWindow()->GetSystem()->Delete(nodenametobedeleted.toStdString());
     else
         mainWindow()->GetSystem()->Delete(nodename.toStdString());
+    mainWindow()->PopulatePropertyTable(nullptr);
     mainWindow()->GetSystem()->SetVariableParents();
     mainWindow()->RecreateGraphicItemsFromSystem();
     mainWindow()->RefreshTreeView(); 
-    mainWindow()->PopulatePropertyTable(nullptr);
+    
 }
 
 void DiagramView::copyselectednode(QString nodename)

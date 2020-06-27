@@ -899,6 +899,7 @@ void MainWindow::onopen()
         SetFileName(fileName);
     }
     addedtemplatefilenames = system.addedtemplates; 
+    PopulatePropertyTable(nullptr);
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();
     BuildObjectsToolBar();
