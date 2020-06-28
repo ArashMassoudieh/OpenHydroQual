@@ -138,7 +138,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow rate (m/day)",
-      "expression": "24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_abs((head.s-head.e)/length)^0.54",
+      "expression": "24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs((head.s-head.e)/length;0.00001)*_abs((head.s-head.e)/length)^0.54",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
@@ -212,9 +212,10 @@
       "default": "0,0,200"
     }
   },
-  "junction": {
+  "junction_elastic": {
     "type": "block",
     "typecategory": "Blocks",
+	"description": "Elastic Junction",
     "icon": {
       "filename": "junction.png"
     },
@@ -279,6 +280,73 @@
     "head": {
       "type": "expression",
       "expression": "elevation+elasticity*(_abs(Storage-100000)+0.1)*(Storage-100000)",
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "includeinoutput": "true"
+    }
+  },
+  "junction": {
+    "type": "block",
+    "typecategory": "Blocks",
+	"description": "Rigid Junction",
+    "icon": {
+      "filename": "junction.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "default": "1000",
+	  "rigid": "true"
+    },
+    "x": {
+      "type": "value",
+      "description": "x",
+	  "default": "900",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "y": {
+      "type": "value",
+      "description": "y",
+	  "default": "900",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_width": {
+      "type": "value",
+      "description": "_width",
+	  "default": "100",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_height": {
+      "type": "value",
+      "description": "_height",
+	  "default": "100",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "elevation": {
+      "type": "value",
+      "description": "Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "elevation+1*(Storage-1000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "delegate": "UnitBox",
