@@ -30,9 +30,11 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifndef Win_Version
     maintemplatefilename = qApp->applicationDirPath().toStdString() + "/../../resources/main_components.json";
     entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
+	system.DefaultTemplatePath() = qApp->applicationDirPath().toStdString() + "/../../resources/";
 #else
     maintemplatefilename = qApp->applicationDirPath().toStdString() + "/resources/main_components.json";
     entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
+	system.DefaultTemplatePath() = qApp->applicationDirPath().toStdString() + "/resources/";
 #endif // !Win_Version
 
     if (system.GetQuanTemplate(maintemplatefilename)) //Read the template from modelfilename
