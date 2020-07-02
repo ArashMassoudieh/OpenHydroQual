@@ -52,3 +52,7 @@ x64/Debug/qmake/
 x64/Release/qmake/
 
 bin/Release/
+
+QAquifolium.vcxproj.filters
+
+x64/Debug/
