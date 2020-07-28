@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
 	system.DefaultTemplatePath() = qApp->applicationDirPath().toStdString() + "/resources/";
 #endif // !Win_Version
-
+    //qDebug()<<QString::fromStdString(maintemplatefilename);
     if (system.GetQuanTemplate(maintemplatefilename)) //Read the template from modelfilename
     {
         Log("Template was successfully loaded from '" + QString::fromStdString(maintemplatefilename) + "'");
@@ -208,7 +208,7 @@ bool MainWindow::BuildObjectsToolBar()
     ui->mainToolBar->clear();
     for (unsigned int i = 0; i < system.GetAllBlockTypes().size(); i++)
     {
-        qDebug() << QString::fromStdString(system.GetAllBlockTypes()[i]);
+        //qDebug() << QString::fromStdString(system.GetAllBlockTypes()[i]);
         QAction* action = new QAction(this);
         action->setObjectName(QString::fromStdString(system.GetAllBlockTypes()[i]));
         QIcon icon;
@@ -236,7 +236,7 @@ bool MainWindow::BuildObjectsToolBar()
     ui->mainToolBar->addSeparator();
     for (unsigned int i = 0; i < system.GetAllLinkTypes().size(); i++)
     {
-        qDebug() << QString::fromStdString(system.GetAllLinkTypes()[i]);
+        //qDebug() << QString::fromStdString(system.GetAllLinkTypes()[i]);
         QAction* action = new QAction(this);
         action->setCheckable(true);
         action->setObjectName(QString::fromStdString(system.GetAllLinkTypes()[i]));

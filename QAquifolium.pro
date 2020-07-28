@@ -34,6 +34,9 @@ QMAKE_LFLAGS += -fopenmp
 # QMAKE_CXXFLAGS += -fopenmp
 
 SOURCES += \
+    ../jsoncpp/src/lib_json/json_reader.cpp \
+    ../jsoncpp/src/lib_json/json_value.cpp \
+    ../jsoncpp/src/lib_json/json_writer.cpp \
     diagramview.cpp \
     edge.cpp \
         main.cpp \
@@ -53,10 +56,6 @@ SOURCES += \
     ../Aquifolium/src/System.cpp \
     ../Aquifolium/src/Vector.cpp \
     ../Aquifolium/src/Vector_arma.cpp \
-    ../jsoncpp/src/lib_json/json_reader.cpp \
-    ../jsoncpp/src/lib_json/json_value.cpp \
-    ../jsoncpp/src/lib_json/json_valueiterator.inl \
-    ../jsoncpp/src/lib_json/json_writer.cpp \
     ../Aquifolium/src/Source.cpp \
     ../Aquifolium/src/Rule.cpp \
     ../Aquifolium/src/Objective_Function_Set.cpp \
