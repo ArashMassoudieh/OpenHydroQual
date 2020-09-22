@@ -462,7 +462,7 @@ void MainWindow::onaddobjectivefunction()
 void MainWindow::onaddconstituent()
 {
     QObject* obj = sender();
-    Objective_Function objective_function;
+    Constituent constituent;
 
     string name;
     string objectname;
@@ -472,19 +472,20 @@ void MainWindow::onaddconstituent()
     }
     else
     {
-        name = CreateNewName("Objective Function");
-        objectname = "Objective_Function";
+        name = CreateNewName("Constituent");
+        objectname = "Constituent";
     }
 
-    objective_function.SetQuantities(system.GetMetaModel(),objectname);
-    objective_function.SetType(objectname);
+    constituent.SetQuantities(system.GetMetaModel(),objectname);
+    constituent.SetType(objectname);
 
-    objective_function.SetName(name);
-    system.AppendObjectiveFunction(name,objective_function);
+    constituent.SetName(name);
+    system.AddConstituent(constituent);
+    system.object(name)->SetName(name);
     qDebug() << "objective function added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
-    LogAddDelete("Objective Function '" + QString::fromStdString(name) + "' was added!");
+    LogAddDelete("Constituent '" + QString::fromStdString(name) + "' was added!");
 
 }
 
@@ -609,6 +610,24 @@ void MainWindow::RefreshTreeView()
             treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
             treechlditem->setData(0,Qt::UserRole,"child");
             treechlditem->setText(0,QString::fromStdString(system.ObjectiveFunctions()[i]->GetName()));
+            treeitem->addChild(treechlditem);
+        }
+    }
+
+    for (unsigned int i=0; i<system.ConstituentsCount(); i++)
+    {
+        QString TypeCategory = QString::fromStdString(system.constituent(i)->TypeCategory());
+        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.constituent(i)->TypeCategory()),Qt::MatchExactly);
+        if (MatchedItems.size()==0)
+            qDebug() << "No category called '" + TypeCategory + "' was found!";
+        else if (MatchedItems.size()>1)
+            qDebug() << "More than one category called '" + TypeCategory + "' was found!";
+        else {
+            QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
+            QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
+            treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setText(0,QString::fromStdString(system.constituent(i)->GetName()));
             treeitem->addChild(treechlditem);
         }
     }

@@ -34,6 +34,7 @@ QMAKE_LFLAGS += -fopenmp
 # QMAKE_CXXFLAGS += -fopenmp
 
 SOURCES += \
+    ../Aquifolium/src/constituent.cpp \
     ../jsoncpp/src/lib_json/json_reader.cpp \
     ../jsoncpp/src/lib_json/json_value.cpp \
     ../jsoncpp/src/lib_json/json_writer.cpp \
@@ -89,6 +90,7 @@ HEADERS += \
     ../Aquifolium/include/Objective_Function.h \
     ../Aquifolium/include/Objective_Function_Set.h \
     ../Aquifolium/include/Precipitation.h \
+    ../Aquifolium/include/constituent.h \
     diagramview.h \
     edge.h \
         mainwindow.h \
