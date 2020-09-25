@@ -90,6 +90,13 @@ void RunTimeWindow::SetUpForForwardRun()
     ui->optprogressBar->setVisible(false);
 }
 
+void RunTimeWindow::SetUpForInverseRun()
+{
+    plot->graph(0)->setName("Fitness");
+    plot->xAxis->setLabel("Generation");
+    plot->yAxis->setLabel("Fitness");
+}
+
 void RunTimeWindow::showdetails()
 {
     if (!ui->textBrowserdetails->isVisible())

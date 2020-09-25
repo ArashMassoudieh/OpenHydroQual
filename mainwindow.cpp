@@ -35,8 +35,9 @@ MainWindow::MainWindow(QWidget *parent) :
     maintemplatefilename = qApp->applicationDirPath().toStdString() + "/resources/main_components.json";
     entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
 	system.DefaultTemplatePath() = qApp->applicationDirPath().toStdString() + "/resources/";
+
 #endif // !Win_Version
-    //qDebug()<<QString::fromStdString(maintemplatefilename);
+    Log("Default Template Location is set to '" + QString::fromStdString(system.DefaultTemplatePath()) + "'");
     if (system.GetQuanTemplate(maintemplatefilename)) //Read the template from modelfilename
     {
         Log("Template was successfully loaded from '" + QString::fromStdString(maintemplatefilename) + "'");
@@ -1027,6 +1028,7 @@ void MainWindow::onoptimize()
     rtw->show();
     rtw->AppendText("Optimization Started ...");
     rtw->SetXRange(0,optimizer->GA_params.nGen);
+    rtw->SetUpForInverseRun(); 
     system.SetRunTimeWindow(nullptr);
     optimizer->SetRunTimeWindow(rtw);
     optimizer->optimize();

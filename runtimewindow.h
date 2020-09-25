@@ -25,6 +25,7 @@ public:
     void SetYRange(const double &ymin, const double &ymax);
     void AppendErrorMessage(const QString &s);
     void SetUpForForwardRun();
+	void SetUpForInverseRun();
     bool detailson = false;
     bool stoptriggered = false;
 private:
