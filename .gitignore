@@ -56,3 +56,9 @@ bin/Release/
 QAquifolium.vcxproj.filters
 
 x64/Debug/
+
+*.obj
+
+*.exe
+
+*.log

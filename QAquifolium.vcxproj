@@ -357,6 +357,7 @@
   <ItemGroup>
     <ClCompile Include="..\Aquifolium\src\BTC.cpp" />
     <ClCompile Include="..\Aquifolium\src\BTCSet.cpp" />
+    <ClCompile Include="..\Aquifolium\src\constituent.cpp" />
     <ClCompile Include="..\Aquifolium\src\GA\Binary.cpp" />
     <ClCompile Include="..\Aquifolium\src\Block.cpp" />
     <ClCompile Include="..\Aquifolium\src\Command.cpp" />
@@ -409,6 +410,7 @@
     <ClInclude Include="..\Aquifolium\include\BTC.h" />
     <ClInclude Include="..\Aquifolium\include\BTCSet.h" />
     <ClInclude Include="..\Aquifolium\include\Condition.h" />
+    <ClInclude Include="..\Aquifolium\include\constituent.h" />
     <ClInclude Include="..\Aquifolium\include\GA\Binary.h" />
     <ClInclude Include="..\Aquifolium\include\Block.h" />
     <ClInclude Include="..\Aquifolium\include\Command.h" />
