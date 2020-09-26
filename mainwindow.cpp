@@ -337,6 +337,7 @@ void MainWindow::onaddblock()
     dView->repaint();
     //qDebug() << "DiagramView Repainted!";
     system.object(name)->AssignRandomPrimaryKey();
+    system.AddAllConstituentRelateProperties(system.block(name));
     system.SetVariableParents();
     node->SetObject(system.object(name));
     RefreshTreeView();
@@ -386,7 +387,9 @@ bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
         action->setChecked(false);
     }
     RefreshTreeView();
+    system.AddAllConstituentRelateProperties(system.link(LinkName.toStdString()));
     system.SetVariableParents();
+
     LogAddDelete("Link '" + LinkName + "' was added!");
     return true; 
 }
@@ -483,8 +486,9 @@ void MainWindow::onaddconstituent()
     constituent.SetName(name);
     system.AddConstituent(constituent);
     system.object(name)->SetName(name);
-    qDebug() << "objective function added! " << obj->objectName();
+    qDebug() << "Constituent added! " << obj->objectName();
     //system.object(name)->SetName(name);
+    system.AddConstituentRelateProperties(system.constituent(name));
     RefreshTreeView();
     LogAddDelete("Constituent '" + QString::fromStdString(name) + "' was added!");
 
