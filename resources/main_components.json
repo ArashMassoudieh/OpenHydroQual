@@ -612,7 +612,8 @@
     "concentration": {
       "description": "Concentration",
       "type": "value",
-      "ask_user": "when_copied",
+      "ask_user": "true",
+      "role": "copytoblocklinks",
       "delegate": "UnitBox"
     }
   }
