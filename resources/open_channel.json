@@ -28,7 +28,7 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m",
-      "estimate": "true"
+      "estimate": "true",
     },
     "side_slope": {
       "type": "value",
@@ -41,7 +41,7 @@
     "x": {
       "type": "value",
       "description": "x",
-	  "default": "900",
+	    "default": "900",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
@@ -101,7 +101,9 @@
       "description": "Segment length",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
     },
     "area": {
       "type": "expression",
