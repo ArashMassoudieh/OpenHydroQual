@@ -315,7 +315,7 @@
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
-      "filename": "reservoir_link.png"
+      "filename": "Catchment_outlet.png"
     },
     "name": {
       "description": "Name",
