@@ -28,7 +28,7 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m",
-      "estimate": "true",
+      "estimate": "true"
     },
     "side_slope": {
       "type": "value",
