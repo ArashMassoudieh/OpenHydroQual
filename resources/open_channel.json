@@ -115,7 +115,7 @@
     },
     "perimeter": {
       "type": "expression",
-      "expression": "(base_width+2*_sqt(1+side_slope^2)*depth)*depth",
+      "expression": "base_width+2*_sqt(1+side_slope^2)*depth",
       "description": "Wetted Perimeter",
       "ask_user": "false",
       "delegate": "UnitBox",
