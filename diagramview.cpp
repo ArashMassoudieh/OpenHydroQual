@@ -411,14 +411,19 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
 }
 void DiagramView::deleteselectednode(QString nodename)
 {
-    if (nodename=="")
-        mainWindow()->GetSystem()->Delete(nodenametobedeleted.toStdString());
-    else
-        mainWindow()->GetSystem()->Delete(nodename.toStdString());
-    mainWindow()->PopulatePropertyTable(nullptr);
-    mainWindow()->GetSystem()->SetVariableParents();
-    mainWindow()->RecreateGraphicItemsFromSystem();
-    mainWindow()->RefreshTreeView(); 
+    if (QMessageBox::question(this, tr("Delete"),
+        "Are you sure you want to delete Block/Edge '" + nodename + "'", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+    {
+
+        if (nodename=="")
+            mainWindow()->GetSystem()->Delete(nodenametobedeleted.toStdString());
+        else
+            mainWindow()->GetSystem()->Delete(nodename.toStdString());
+        mainWindow()->PopulatePropertyTable(nullptr);
+        mainWindow()->GetSystem()->SetVariableParents();
+        mainWindow()->RecreateGraphicItemsFromSystem();
+        mainWindow()->RefreshTreeView();
+    }
     
 }
 

@@ -38,6 +38,7 @@ SOURCES += \
     ../jsoncpp/src/lib_json/json_reader.cpp \
     ../jsoncpp/src/lib_json/json_value.cpp \
     ../jsoncpp/src/lib_json/json_writer.cpp \
+    CustomPlotZoom.cpp \
     diagramview.cpp \
     edge.cpp \
         main.cpp \
@@ -91,6 +92,7 @@ HEADERS += \
     ../Aquifolium/include/Objective_Function_Set.h \
     ../Aquifolium/include/Precipitation.h \
     ../Aquifolium/include/constituent.h \
+    CustomPlotZoom.h \
     diagramview.h \
     edge.h \
         mainwindow.h \

@@ -8,6 +8,7 @@ class MainWindow;
 #include <QStringList>
 #include <BTCSet.h>
 #include "qcustomplot.h"
+#include "CustomPlotZoom.h"
 
 struct plotformat{
     Qt::GlobalColor color = Qt::red;
@@ -59,7 +60,7 @@ public:
 private:
     Ui::Plotter *ui;
     QMap<QString, _timeseries> BTCs;
-    QCustomPlot *plot;
+    CustomPlotZoom *plot;
     double minx=1e12;
     double maxx=-1e12;
     double miny=1e12;
@@ -91,8 +92,8 @@ private slots:
     void moveLegend();
     void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
     void removeSelectedGraph();
-    void mousePress();
-    void mouseWheel();
+    //void mousePress();
+    //void mouseWheel();
     void selectionChanged();
     void turnSelectedtoSymbols();
     void Deselect();

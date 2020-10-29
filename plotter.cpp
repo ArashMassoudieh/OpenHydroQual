@@ -7,13 +7,14 @@
 #include "mainwindow.h"
 
 
+
 Plotter::Plotter(MainWindow *_parent) :
     QMainWindow(_parent),
     ui(new Ui::Plotter)
 {
     parent = _parent;
     ui->setupUi(this);
-    plot = new QCustomPlot(ui->centralWidget);
+    plot = new CustomPlotZoom(ui->centralWidget);
     plot->setObjectName(QStringLiteral("customPlot"));
     ui->horizontalLayout->addWidget(plot);
     QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -77,7 +78,8 @@ bool Plotter::PlotData(CBTC& BTC)
         QDateTime end = QDateTime::fromTime_t(xtoTime(BTC.t[BTC.n - 1]), QTimeZone(0));
         QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
         dateTicker->setTickCount(10);
-        dateTicker->setTickStepStrategy( QCPAxisTicker::TickStepStrategy::tssReadability);
+
+        //dateTicker->setTickStepStrategy( QCPAxisTickerDateTime::TickStepStrategy::tssMeetTickCount);
         QString dformat;
         if (start.secsTo(end) < 600) dformat = "mm:ss:zzz";
         if (start.secsTo(end) > 3600) dformat = "hh:mm:ss";
@@ -86,8 +88,10 @@ bool Plotter::PlotData(CBTC& BTC)
         if (start.daysTo(end) > 180) dformat = "MM.dd.yyyy\nhAP";
         if (start.daysTo(end) > 2 * 365) dformat = "MMMM\nyyyy";
         dateTicker->setDateTimeFormat(dformat);
+
         plot->xAxis->setTicker(dateTicker);
-    }
+        plot->xAxis->setTickLabelRotation(90);
+       }
 
 
     for (int i=0; i<BTC.n; ++i)
@@ -107,11 +111,18 @@ bool Plotter::PlotData(CBTC& BTC)
     plot->xAxis->setLabel("t");
     plot->yAxis->setLabel("value");
     // set axes ranges, so we see all data:
+    double tickstep=0;
     if (!format[format.size()-1].xAxisTimeFormat)
-        plot->xAxis->setRange(BTC.t[0], BTC.t[BTC.n-1]);
+    {   plot->xAxis->setRange(BTC.t[0], BTC.t[BTC.n-1]);
+        tickstep = (BTC.t[BTC.n-1] - BTC.t[0])/10;
+    }
     else
-        plot->xAxis->setRange(xtoTime(BTC.t[0]), xtoTime(BTC.t[BTC.n-1]));
+    {   plot->xAxis->setRange(xtoTime(BTC.t[0]), xtoTime(BTC.t[BTC.n-1]));
+        tickstep = (xtoTime(BTC.t[BTC.n-1]) - xtoTime(BTC.t[0]))/10;
+    }
     plot->yAxis->setRange(BTC.minC()-0.001, BTC.maxC()+0.001);
+
+
     plot->replot();
 
     return true;
@@ -450,6 +461,7 @@ void Plotter::contextMenuRequest(QPoint pos)
       else
           menu->addAction("Copy Curves");
 
+      menu->addAction("Zoom Extends");
       if (parent->graphsClipboard.size() == 1)
           menu->addAction("Paste Curve");
       if (parent->graphsClipboard.size() > 1)
@@ -567,7 +579,20 @@ void Plotter::contextMenuRequest(QPoint pos)
               QPixmap pixmap = QPixmap::grabWidget(this);
               clipboard->setPixmap(pixmap);
           }
+          if (selectedAction->text().contains("Zoom Extends"))
+          {
+              if (!format[format.size()-1].xAxisTimeFormat)
+              {
+                  plot->xAxis->setRange(minx, maxx);
+              }
+              else
+              {
+                  plot->xAxis->setRange(xtoTime(minx), xtoTime(maxx));
+              }
+              plot->yAxis->setRange(miny-0.001, maxy+0.001);
+              plot->replot();
 
+          }
           if (selectedAction->text().contains("Paste"))
               foreach (QCPGraph *g , parent->graphsClipboard.keys())
               {
@@ -612,7 +637,7 @@ void Plotter::removeSelectedGraph()
   }
 }
 
-void Plotter::mousePress()
+/*void Plotter::mousePress()
 {
   // if an axis is selected, only allow the direction of that axis to be dragged
   // if no axis is selected, both directions may be dragged
@@ -636,7 +661,7 @@ void Plotter::mouseWheel()
     plot->axisRect()->setRangeZoom(plot->yAxis->orientation());
   else
     plot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
-}
+}*/
 
 void Plotter::selectionChanged()
 {
