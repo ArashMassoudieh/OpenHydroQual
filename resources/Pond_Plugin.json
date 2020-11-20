@@ -51,20 +51,35 @@
 			 "ask_user": "false",
 			 "includeinoutput": "true"  
         },
+        "Precipitation": {
+			"type": "source",
+			"includeinoutput": "true",
+			"description": "precipitation time series",
+			"ask_user": "true",
+			"delegate": "ComboBox;Sources"
+    	},
         "bottom_elevation": {
              "type": "value",
-			 "description": "Bottom elevation of pond",
-			 "ask_user": "true",
-			 "delegate": "UnitBox",
-			 "estimate": "true"
-                },
-                "head": {
-                	"type": "expression",
-                        "expression": "depth+bottom_elevation",
-                        "description" : "Hydraulic head",
-                        "ask_user": "user",
-                        "includeinoutput" : "true"
-                },
+	      "description": "Bottom elevation of pond",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+	      "estimate": "true"
+        },
+        "head": {
+         	"type": "expression",
+                "expression": "depth+bottom_elevation",
+                "description" : "Hydraulic head",
+                "ask_user": "false",
+                "includeinoutput" : "true"
+        },
+        "area": {
+         	"type": "expression",
+                "expression": "alpha*beta*(depth^(beta-1))",
+                "description" : "Surface area",
+                "ask_user": "false",
+                "includeinoutput" : "true"
+        },
+        
               "x": {
 		      "type": "value",
 		      "description": "x",
