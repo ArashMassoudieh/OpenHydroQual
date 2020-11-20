@@ -564,14 +564,14 @@
     "x": {
       "type": "value",
       "description": "x",
-	  "default": "900",
+      "default": "900",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
     "y": {
       "type": "value",
       "description": "y",
-	  "default": "900",
+      "default": "900",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
@@ -614,7 +614,22 @@
       "description": "Concentration",
       "type": "value",
       "ask_user": "true",
-      "role": "copytoblocklinks",
+      "role": "copytoblocks",
+      "delegate": "UnitBox"
+    },
+    "mass": {
+      "description": "Mass",
+      "type": "expression",
+      "expression": "concentration*storage",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytoblocks"
+    },
+    "masstransfer": {
+      "description": "Mass transfer rate",
+      "type": "value",
+      "ask_user": "true",
+      "role": "copytolinks",
       "delegate": "UnitBox"
     }
   }
