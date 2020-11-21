@@ -95,7 +95,7 @@
     },
     "moisture_content": {
       "type": "expression",
-      "expression": "Storage/(depth*area*porosity)",      
+      "expression": "Storage/(depth*area)",      
       "description": "Moisture content",
       "ask_user": "false",
       "delegate": "UnitBox",
@@ -133,17 +133,74 @@
       "delegate": "String" 
     },
     "length": {
-      "type": "expression",
+      "type": "value",
       "description": "Length",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "true",
       "delegate": "UnitBox",
       "criteria": "length>0",
       "warningmessage": "Length must be greater than zero"
     },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero"
+    },
     "flow": {
       "type": "expression",
-      "expression": "0.5*(hydraulic_conductivity.s+hydraulic_conductivity.e)*(head.s-head.e)/length",
+      "expression": "0.5*area*(hydraulic_conductivity.s+hydraulic_conductivity.e)*(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
+  "surface2groundwater_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Surface water to groundwater link",
+    "icon": {
+      "filename": "Surface2GW_link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
+    },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero"
+    },
+    "hydraulic_conductivity": {
+      "type": "value",
+      "description": "Hydraulic conductivity",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "criteria": "hydraulic_conductivity>0",
+      "warningmessage": "Hydraulic conductivity must be greater than zero"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "0.5*area*hydraulic_conductivity*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
