@@ -9,7 +9,7 @@ class QWidget;
  
 class CustomPlotZoom : public QCustomPlot
 {
-    Q_OBJECT
+   
  
 public:
     CustomPlotZoom(QWidget * parent = 0);
