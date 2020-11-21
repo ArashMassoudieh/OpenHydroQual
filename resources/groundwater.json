@@ -1,0 +1,152 @@
+{
+  "Groundwater cell": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "Groundwater.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation",
+      "includeinoutput": "true",
+      "description": "Initial Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
+    "x": {
+      "type": "value",
+      "description": "x",
+	    "default": "900",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "y": {
+      "type": "value",
+      "description": "y",
+	  "default": "900",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_width": {
+      "type": "value",
+      "description": "_width",
+	  "default": "200",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "_height": {
+      "type": "value",
+      "description": "_height",
+	  "default": "200",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "hydraulic_conductivity": {
+      "type": "value",
+      "description": "Hydraulic Conductivity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "hydraulic_conductivity>0",
+      "warningmessage": "Hydraulic conductivity must be greater than zero"
+    },
+    "porosity": {
+      "type": "value",
+      "description": "Porosity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
+    "specific_storage": {
+      "type": "value",
+      "description": "Specific Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "default": "0.01",
+      "criteria": "specific_storage>0",
+      "warningmessage": "Specific Storage must be greater than zero"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "value",
+      "description": "Cell Depth",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "includeinoutput": "false",
+      "criteria": "depth>0",
+      "warningmessage": "Cell depth must be greater than zero"
+    },
+    "moisture_content": {
+      "type": "expression",
+      "expression": "Storage/(depth*area*porosity)",      
+      "description": "Moisture content",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "includeinoutput": "true"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation+(moisture_content-porosity)/specific_storage",      
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "includeinoutput": "true"
+    },
+    "area": {
+      "type": "value",
+      "description": "Cell area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "includeinoutput": "false",
+      "criteria": "area>0",
+      "warningmessage": "Cell area must be greater than zero"
+    }
+  },
+  "groundwater_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Groundwater link",
+    "icon": {
+      "filename": "Groundwater_link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "length": {
+      "type": "expression",
+      "description": "Length",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "0.5*(hydraulic_conductivity.s+hydraulic_conductivity.e)*(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  }
+}
