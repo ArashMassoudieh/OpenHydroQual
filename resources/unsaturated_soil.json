@@ -19,10 +19,11 @@
       "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Initial Storage",
-      "ask_user": "true",
+      "ask_user": "false",
+      "initial_value_expression": "area*Depth*theta",
       "delegate": "UnitBox",
       "unit": "m~^3",
-	  "estimate": "true"
+      "estimate": "true"
     },
     "Depth": {
       "type": "value",
@@ -115,9 +116,9 @@
     "theta": {
       "type": "expression",
       "expression" : "Storage/(area*Depth)",
-	  "description": "Moisture Content",
-      "ask_user": "false",
-	  "includeinoutput": "true"
+      "description": "Moisture Content",
+      "ask_user": "true",
+      "includeinoutput": "true"
     },
     "Se": {
       "type": "expression",

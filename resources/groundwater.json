@@ -18,7 +18,8 @@
       "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Initial Storage",
-      "ask_user": "true",
+      "initial_value_expression": "area*depth*moisture_content",
+      "ask_user": "false",
       "delegate": "UnitBox",
       "estimate": "true"
     },
@@ -64,6 +65,7 @@
       "type": "value",
       "description": "Porosity",
       "ask_user": "true",
+      "default": "0.4",
       "delegate": "UnitBox",
       "estimate": "true"
     },
@@ -97,7 +99,7 @@
       "type": "expression",
       "expression": "Storage/(depth*area)",      
       "description": "Moisture content",
-      "ask_user": "false",
+      "ask_user": "true",
       "delegate": "UnitBox",
       "includeinoutput": "true"
     },

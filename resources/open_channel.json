@@ -18,7 +18,8 @@
       "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Initial Storage",
-      "ask_user": "true",
+      "initial_value_expression": "length*(base_width+side_slope*depth)*depth",
+      "ask_user": "false",
       "delegate": "UnitBox",
       "estimate": "true"
     },
@@ -84,9 +85,11 @@
       "type": "expression",
       "expression": "(-base_width+_sqt(base_width^2+4*side_slope*Storage/length))/(2*side_slope)",
       "description": "Water Depth",
-      "ask_user": "false",
+      "ask_user": "true",
       "delegate": "UnitBox",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "criteria": "depth>-0.0000001",
+      "warningmessage": "Depth must be non-negative"
     },
     "head": {
       "type": "expression",

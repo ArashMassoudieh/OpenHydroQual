@@ -58,14 +58,14 @@
     "_width": {
       "type": "value",
       "description": "_width",
-	  "default": "200",
+      "default": "200",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
     "_height": {
       "type": "value",
       "description": "_height",
-	  "default": "200",
+      "default": "200",
       "ask_user": "true",
       "delegate": "UnitBox"
     },

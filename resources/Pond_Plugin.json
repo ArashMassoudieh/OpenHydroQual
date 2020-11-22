@@ -23,7 +23,7 @@
                         "estimate": "true",
                         "includeinoutput" : "true",
                         "criteria": "Storage>-0.0000001",
-			"warningmessage": "Storage can not be a negaive number!" 
+			 "warningmessage": "Storage can not be a negaive number!" 
 		},
 		"alpha": {
 			 "type": "value",
@@ -34,7 +34,7 @@
 			 "criteria": "alpha>0",
 			 "warningmessage": "alpha coefficient must be positive!"
 		},
-             "beta": {
+               "beta": {
 			 "type": "value",
 			 "description": "The exponent (beta) in the rating curve S = alpha*d^beta",
 			 "ask_user": "true",
