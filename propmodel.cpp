@@ -62,7 +62,7 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
            if (quanset->GetVarAskable(index.row())->GetParameterAssignedTo()=="")
            {
                 if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).toLower().contains("date") == false)
-                    return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty());
+                    return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
                 else
                     return float2date(quanset->GetVarAskable(index.row())->GetVal());
            }
@@ -168,7 +168,8 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
             mainwindow->GetSystem()->RemoveAsParameter(quanset->Parent()->GetName(),VariableName.toStdString(),quanset->GetVar(VariableName.toStdString()).GetParameterAssignedTo());
             quanset->GetVar(VariableName.toStdString()).SetParameterAssignedTo("");
         }
-        bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString());
+
+        bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),true);
         if (VariableName == "x")
         {
             mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setX(value.toInt());

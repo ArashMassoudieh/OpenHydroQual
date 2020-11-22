@@ -19,7 +19,8 @@
       "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Initial Storage",
-      "ask_user": "true",
+      "ask_user": "false",
+      "initial_value_expression": "area*depth",
       "delegate": "UnitBox",
       "estimate": "true"
     },
@@ -93,9 +94,11 @@
     },
     "depth": {
       "type": "expression",
+      "description": "Water depth",	
       "expression": "Storage/area",
       "description": "Average water depth",
-      "ask_user": "false",
+      "delegate": "UnitBox",
+      "ask_user": "true",
       "includeinoutput": "true"
     },
     "elevation": {
