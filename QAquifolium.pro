@@ -85,7 +85,8 @@ SOURCES += \
     statusviewer.cpp \
     expressioneditor.cpp \
     logwindow.cpp \
-    ../Aquifolium/src/Link.cpp
+    ../Aquifolium/src/Link.cpp \
+    ../Aquifolium/src/reaction.cpp
 
 HEADERS += \
     ../Aquifolium/include/Objective_Function.h \
@@ -149,7 +150,8 @@ HEADERS += \
     statusviewer.h \
     expressioneditor.h \
     ../Aquifolium/include/GA/GA.hpp \
-    logwindow.h
+    logwindow.h \
+    ../Aquifolium/include/reaction.h
 
 FORMS += \
         mainwindow.ui \
