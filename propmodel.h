@@ -3,7 +3,7 @@
 #include <QAbstractTableModel>
 #include <QuanSet.h>
 class MainWindow;
-
+class System;
 class PropModel: public QAbstractTableModel
 {
 private:
@@ -18,6 +18,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex & index) const override;
+    System* GetSystem();
 private:
     int rows(const QModelIndex & index = QModelIndex()) const{
 

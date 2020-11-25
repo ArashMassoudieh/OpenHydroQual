@@ -8,6 +8,7 @@
 #include "utilityfuncs.h"
 #include "diagramview.h"
 #include "node.h"
+#include "System.h"
 
 PropModel::PropModel(QuanSet* _quanset, QObject *parent, MainWindow *_mainwindow)
     : QAbstractTableModel(parent)
@@ -127,9 +128,10 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
    case CustomRoleCodes::Role::allowableWordsRole:
        {
            QStringList words;
-           words << "C" << "B" << "A";
+           for (unsigned int i=0; i<quanset->AllConstituents().size(); i++)
+                words << QString::fromStdString(quanset->AllConstituents()[i]);
 
-   return words;
+            return words;
        }
    }
 
@@ -176,8 +178,11 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
             mainwindow->GetSystem()->RemoveAsParameter(quanset->Parent()->GetName(),VariableName.toStdString(),quanset->GetVar(VariableName.toStdString()).GetParameterAssignedTo());
             quanset->GetVar(VariableName.toStdString()).SetParameterAssignedTo("");
         }
-
-        bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),true);
+        bool r;
+        if (quanset->GetVar(VariableName.toStdString()).Delegate()=="expressionEditor")
+            r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),false);
+        else
+            r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),true);
         if (VariableName == "x")
         {
             mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setX(value.toInt());
@@ -219,5 +224,14 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
 Qt::ItemFlags PropModel::flags(const QModelIndex & /*index*/) const
 {
     return Qt::ItemIsSelectable |  Qt::ItemIsEditable | Qt::ItemIsEnabled ;
+}
+
+System* PropModel::GetSystem()
+{
+    if (quanset!=nullptr)
+        if (quanset->Parent()!=nullptr)
+            if (quanset->Parent()->Parent()!=nullptr)
+                return quanset->Parent()->Parent();
+    return nullptr;
 }
 
