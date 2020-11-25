@@ -34,6 +34,7 @@ QMAKE_LFLAGS += -fopenmp
 # QMAKE_CXXFLAGS += -fopenmp
 
 SOURCES += \
+    ../Aquifolium/src/RxnParameter.cpp \
     ../Aquifolium/src/constituent.cpp \
     ../jsoncpp/src/lib_json/json_reader.cpp \
     ../jsoncpp/src/lib_json/json_value.cpp \
@@ -92,6 +93,7 @@ HEADERS += \
     ../Aquifolium/include/Objective_Function.h \
     ../Aquifolium/include/Objective_Function_Set.h \
     ../Aquifolium/include/Precipitation.h \
+    ../Aquifolium/include/RxnParameter.h \
     ../Aquifolium/include/constituent.h \
     CustomPlotZoom.h \
     diagramview.h \

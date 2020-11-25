@@ -307,6 +307,8 @@ bool MainWindow::BuildObjectsToolBar()
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddconstituent()));
                 else if (typecategory == "Reactions")
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddreaction()));
+                else if (typecategory == "Reaction Parameters")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddreactionparameter()));
                 else
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
             }
@@ -526,6 +528,36 @@ void MainWindow::onaddreaction()
 
 }
 
+void MainWindow::onaddreactionparameter()
+{
+    QObject* obj = sender();
+    RxnParameter reactionparameter;
+
+    string name;
+    string objectname;
+    if (obj->objectName()!="")
+    {   name = CreateNewName(obj->objectName().toStdString());
+        objectname = obj->objectName().toStdString();
+    }
+    else
+    {
+        name = CreateNewName("Reaction Parameter");
+        objectname = "Reaction";
+    }
+
+    reactionparameter.SetQuantities(system.GetMetaModel(),objectname);
+    reactionparameter.SetType(objectname);
+
+    reactionparameter.SetName(name);
+    system.AddReactionParameter(reactionparameter);
+    system.object(name)->SetName(name);
+    qDebug() << "Reaction Parameter added! " << obj->objectName();
+    //system.object(name)->SetName(name);
+    RefreshTreeView();
+    LogAddDelete("Reaction '" + QString::fromStdString(name) + "' was added!");
+
+}
+
 
 void MainWindow::onaddentity()
 {
@@ -665,6 +697,24 @@ void MainWindow::RefreshTreeView()
             treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
             treechlditem->setData(0,Qt::UserRole,"child");
             treechlditem->setText(0,QString::fromStdString(system.constituent(i)->GetName()));
+            treeitem->addChild(treechlditem);
+        }
+    }
+
+    for (unsigned int i=0; i<system.ReactionParametersCount(); i++)
+    {
+        QString TypeCategory = QString::fromStdString(system.reactionparameter(i)->TypeCategory());
+        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.reactionparameter(i)->TypeCategory()),Qt::MatchExactly);
+        if (MatchedItems.size()==0)
+            qDebug() << "No category called '" + TypeCategory + "' was found!";
+        else if (MatchedItems.size()>1)
+            qDebug() << "More than one category called '" + TypeCategory + "' was found!";
+        else {
+            QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
+            QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
+            treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setText(0,QString::fromStdString(system.reactionparameter(i)->GetName()));
             treeitem->addChild(treechlditem);
         }
     }

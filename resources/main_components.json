@@ -654,5 +654,24 @@
       "ask_user": "true",
       "delegate": "expressionEditor"
     }
+  },
+  "ReactionParameter": {
+    "type": "reactionparameter",
+    "typecategory": "Reaction Parameters",
+    "icon": {
+      "filename": "reactionparameter.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "value": {
+      "description": "Value",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    }
   }
 }

@@ -170,7 +170,10 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
            for (unsigned int i=0; i<quanset->AllConstituents().size(); i++)
                 words << QString::fromStdString(quanset->AllConstituents()[i]);
 
-            return words;
+           for (unsigned int i=0; i<quanset->AllReactionParameters().size(); i++)
+                words << QString::fromStdString(quanset->AllReactionParameters()[i]);
+
+           return words;
        }
    }
 
