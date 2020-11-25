@@ -64,7 +64,46 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
            if (quanset->GetVarAskable(index.row())->GetParameterAssignedTo()=="")
            {
                 if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).toLower().contains("date") == false)
-                    return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
+                {
+                    if (quanset->GetVarAskable(index.row())->Delegate()=="expressionEditor")
+                    {
+                        qDebug()<<"In propmodel: " << QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
+                        return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
+                    }
+                        else
+                    {
+                        return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
+                    }
+
+                }
+                else
+                    return float2date(quanset->GetVarAskable(index.row())->GetVal());
+           }
+           else
+           {
+               return  QString::fromStdString(quanset->GetVarAskable(index.row())->GetParameterAssignedTo());
+           }
+       }
+       break;
+   case Qt::EditRole:
+       if (col == 0) return QString::fromStdString(quanset->GetVarAskable(index.row())->Description());
+       if (col == 1)
+       {
+           if (quanset->GetVarAskable(index.row())->GetParameterAssignedTo()=="")
+           {
+                if (QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate()).toLower().contains("date") == false)
+                {
+                    if (quanset->GetVarAskable(index.row())->Delegate()=="expressionEditor")
+                    {
+                        qDebug()<<"In propmodel: " << QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
+                        return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
+                    }
+                        else
+                    {
+                        return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
+                    }
+
+                }
                 else
                     return float2date(quanset->GetVarAskable(index.row())->GetVal());
            }

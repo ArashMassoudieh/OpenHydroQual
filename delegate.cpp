@@ -127,6 +127,8 @@ QWidget *Delegate::createEditor(QWidget *parent,
 
         //QTextEdit* editor = new QTextEdit(parent);
         expEditor* editor = new expEditor(obj, words, nullptr, parent);
+        qDebug()<<index.data(Qt::DisplayRole).toString();
+        editor->setText(index.data(Qt::DisplayRole).toString());
         return editor;
     }
 
