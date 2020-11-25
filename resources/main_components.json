@@ -635,5 +635,24 @@
       "role": "copytolinks",
       "delegate": "UnitBox"
     }
+  },
+  "Reaction": {
+    "type": "reaction",
+    "typecategory": "Reactions",
+    "icon": {
+      "filename": "reaction.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "rate_expression": {
+      "description": "Rate Expression",
+      "type": "expression",
+      "ask_user": "true",
+      "delegate": "expressionEditor"
+    }
   }
 }

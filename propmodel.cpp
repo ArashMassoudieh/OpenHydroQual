@@ -44,6 +44,7 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
     }
 
 
+
    switch (role) {
    case Qt::ToolTipRole:
        if (col == 0) return QString::fromStdString(quanset->GetVarAskable(index.row())->Description());
@@ -122,6 +123,13 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
             else
                return "";
 
+       }
+   case CustomRoleCodes::Role::allowableWordsRole:
+       {
+           QStringList words;
+           words << "C" << "B" << "A";
+
+   return words;
        }
    }
 
