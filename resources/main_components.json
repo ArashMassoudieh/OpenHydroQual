@@ -615,18 +615,22 @@
     },
     "concentration": {
       "description": "Concentration",
-      "type": "value",
+      "type": "expression",
+      "expression": "mass/Storage",
       "ask_user": "true",
       "role": "copytoblocks",
+      "includeinoutput": "true",
       "delegate": "UnitBox"
     },
     "mass": {
       "description": "Mass",
-      "type": "expression",
-      "expression": "concentration*storage",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "masstransfer",
       "includeinoutput": "true",
       "ask_user": "false",
-      "role": "copytoblocks"
+      "role": "copytoblocks",
+      "initial_value_expression": "concentration*Storage"
     },
     "masstransfer": {
       "description": "Mass transfer rate",
