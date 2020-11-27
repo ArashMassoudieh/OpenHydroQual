@@ -381,7 +381,9 @@
     <ClCompile Include="..\Aquifolium\src\Quan.cpp" />
     <ClCompile Include="..\Aquifolium\src\QuanSet.cpp" />
     <ClCompile Include="..\Aquifolium\src\QuickSort.cpp" />
+    <ClCompile Include="..\Aquifolium\src\reaction.cpp" />
     <ClCompile Include="..\Aquifolium\src\Rule.cpp" />
+    <ClCompile Include="..\Aquifolium\src\RxnParameter.cpp" />
     <ClCompile Include="..\Aquifolium\src\Script.cpp" />
     <ClCompile Include="..\Aquifolium\src\Source.cpp" />
     <ClCompile Include="..\Aquifolium\src\System.cpp" />
@@ -434,7 +436,9 @@
     <ClInclude Include="..\Aquifolium\include\Quan.h" />
     <ClInclude Include="..\Aquifolium\include\QuanSet.h" />
     <ClInclude Include="..\Aquifolium\include\QuickSort.h" />
+    <ClInclude Include="..\Aquifolium\include\reaction.h" />
     <ClInclude Include="..\Aquifolium\include\Rule.h" />
+    <ClInclude Include="..\Aquifolium\include\RxnParameter.h" />
     <ClInclude Include="..\Aquifolium\include\Script.h" />
     <ClInclude Include="..\Aquifolium\include\StringOP.h" />
     <ClInclude Include="..\Aquifolium\include\System.h" />

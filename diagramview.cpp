@@ -421,8 +421,9 @@ void DiagramView::deleteselectednode(QString nodename)
             mainWindow()->GetSystem()->Delete(nodename.toStdString());
         mainWindow()->PopulatePropertyTable(nullptr);
         mainWindow()->GetSystem()->SetVariableParents();
-        mainWindow()->RecreateGraphicItemsFromSystem();
         mainWindow()->RefreshTreeView();
+        mainWindow()->RecreateGraphicItemsFromSystem();
+        
     }
     
 }

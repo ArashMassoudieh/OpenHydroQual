@@ -321,6 +321,7 @@ bool MainWindow::BuildObjectsToolBar()
 
 void MainWindow::onaddblock()
 {
+    
     QObject* obj = sender();
     Block block;
     //qDebug() << "Setting Quantities";
@@ -850,6 +851,7 @@ void MainWindow::onDeleteItem()
     QAction* act = qobject_cast<QAction*>(sender());
     QString item = act->data().toString();
     dView->deleteselectednode(item);
+    
 }
 
 void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
@@ -1052,7 +1054,6 @@ void MainWindow::RecreateGraphicItemsFromSystem()
     for (int i=0; i<system.BlockCount(); i++)
     {
         Node *node = new Node(dView,&system);
-        dView->repaint();
         system.block(i)->AssignRandomPrimaryKey();
         node->SetObject(system.block(i));
         node->setX(system.block(i)->GetVal("x"));
@@ -1072,6 +1073,7 @@ void MainWindow::RecreateGraphicItemsFromSystem()
             edge->SetObject(system.link(i));
         }
     }
+    dView->repaint();
     onzoomall();
 }
 
