@@ -788,6 +788,11 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         QMenu menu(this);
         menu.addAction(DeleteAct);
         QMenu* results = menu.addMenu("Results");
+        if (system.object(nd->text(0).toStdString())==nullptr)
+        {
+            RefreshTreeView();
+            return;
+        }
         for (unsigned int i = 0; i < system.object(nd->text(0).toStdString())->ItemswithOutput().size(); i++)
         {
             timeseriestobeshown = QString::fromStdString(system.object(nd->text(0).toStdString())->ItemswithOutput()[i]);
