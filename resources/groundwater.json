@@ -160,6 +160,43 @@
       "ask_user": "false"
     }
   },
+  "soil2groundwater_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Soil to groundwater link",
+    "icon": {
+      "filename": "soil2gw_link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "length": {
+      "type": "expression",
+	  "expression": "(Depth.s+depth.e)/2",
+	  "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "0.5*area*(K_sat.s+hydraulic_conductivity.e)*(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
   "surface2groundwater_link": {
     "type": "link",
     "typecategory": "Connectors",
