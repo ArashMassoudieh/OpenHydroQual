@@ -40,7 +40,11 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
         {
             qDebug() << "Name: " << edge->Name() << " Flag:" << edge->flags() << "enabled:" << edge->isEnabled() << "active:" << edge->isActive();
         }
-
+    if (!node && !edge)
+    {
+        qDebug()<<"Mode set to normal";
+        setMode(Operation_Modes::NormalMode);
+    }
     if (event->buttons() == Qt::MiddleButton && Operation_Mode == Operation_Modes::NormalMode)
     {
         setMode(Operation_Modes::Pan);
