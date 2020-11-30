@@ -28,6 +28,7 @@ public:
     void setconnectfeature(QString cf) {connect_feature = cf;} //sets the type of connector to be used
     Operation_Modes setMode(Operation_Modes OMode = Operation_Modes::NormalMode, bool back = false);
     Operation_Modes setModeCursor();
+    Operation_Modes GetOperationMode() {return Operation_Mode;}
     void nodeContextMenuRequested(Node* ,QPointF pos, QMenu *menu=nullptr);
     void edgeContextMenuRequested(Edge*, QPointF pos, QMenu *menu=nullptr);
     Node* node(const QString &name) const;

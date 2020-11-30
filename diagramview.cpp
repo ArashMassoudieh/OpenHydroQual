@@ -40,7 +40,7 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
         {
             qDebug() << "Name: " << edge->Name() << " Flag:" << edge->flags() << "enabled:" << edge->isEnabled() << "active:" << edge->isActive();
         }
-    if (!node && !edge)
+    if (!node && !edge && Operation_Mode!=Operation_Modes::Pan)
     {
         qDebug()<<"Mode set to normal";
         setMode(Operation_Modes::NormalMode);
@@ -319,6 +319,9 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
     switch (Operation_Mode) {
     case Operation_Modes::Pan:
     {
+        Operation_Mode = Operation_Modes::NormalMode;
+        mainWindow()->SetPan(false);
+        setModeCursor();
         break;
     }
     case Operation_Modes::Draw_Connector:

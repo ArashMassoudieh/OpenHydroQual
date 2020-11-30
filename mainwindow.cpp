@@ -909,7 +909,8 @@ void MainWindow::Populate_General_ToolBar()
     connect(actionopen, SIGNAL(triggered()), this, SLOT(onopen()));
     // ZoomAll //
     QAction* actionzoomall = new QAction(this);
-    actionzoomall->setObjectName("Open");
+    actionzoomall->setObjectName("Zoom All");
+    actionopen->setToolTip("Zoom All");
     QIcon iconzoomall;
     iconzoomall.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/Full_screen_view.png"), QSize(), QIcon::Normal, QIcon::Off);
     actionzoomall->setIcon(iconzoomall);
@@ -939,6 +940,18 @@ void MainWindow::Populate_General_ToolBar()
     connect(actionzoomout, SIGNAL(triggered()), this, SLOT(onzoomout()));
     QAction* actionrun = new QAction(this);
     QAction* seperator = new QAction(this);
+    // Pan //
+    actionpan = new QAction(this);
+    actionpan->setObjectName("Pan");
+    actionpan->setToolTip("Pan");
+    QIcon iconpan;
+    iconpan.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/pan2.png"), QSize(), QIcon::Normal, QIcon::Off);
+    actionpan->setCheckable(true);
+    actionpan->setIcon(iconpan);
+    ui->GeneraltoolBar->addAction(actionpan);
+    actionpan->setText("Pan");
+    actionpan->setToolTip("Pan");
+    connect(actionpan, SIGNAL(triggered()), this, SLOT(onpantriggered()));
     seperator->setSeparator(true);
     ui->GeneraltoolBar->addAction(seperator);
     actionzoomall->setObjectName("Run Model");
@@ -982,6 +995,21 @@ void MainWindow::onzoomall()
     newRect.setHeight(qreal(height * scale));
 
     dView->fitInView(newRect,Qt::KeepAspectRatio);
+}
+
+void MainWindow::onpantriggered()
+{
+    if (actionpan->isChecked())
+    {
+        dView->setMode(Operation_Modes::Pan);
+    }
+    else
+    {
+        dView->setMode(Operation_Modes::NormalMode);
+    }
+
+
+    dView->setModeCursor();
 }
 
 void MainWindow::onsaveas()
