@@ -20,12 +20,12 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "false",
-      "initial_value_expression": "area*Depth*theta",
+      "initial_value_expression": "area*depth*theta",
       "delegate": "UnitBox",
       "unit": "m~^3",
       "estimate": "true"
     },
-    "Depth": {
+    "depth": {
       "type": "value",
       "description": "Depth of the soil block",
       "ask_user": "true",
@@ -115,7 +115,7 @@
     },
     "theta": {
       "type": "expression",
-      "expression" : "Storage/(area*Depth)",
+      "expression" : "Storage/(area*depth)",
       "description": "Moisture Content",
       "ask_user": "true",
       "includeinoutput": "true"
@@ -170,7 +170,7 @@
 	},
 	"head": {
       "type": "expression",
-      "expression": "Depth+bottom_elevation-(1/alpha)*(Se^(-1/m)-1)^(1/n) + theta_sat*_pos((theta-theta_res)/(theta_sat-theta_res)-0.9999)/specific_storage",
+      "expression": "depth+bottom_elevation-(1/alpha)*(Se^(-1/m)-1)^(1/n) + theta_sat*_pos((theta-theta_res)/(theta_sat-theta_res)-0.9999)/specific_storage",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "delegate": "UnitBox",
@@ -200,7 +200,7 @@
     "length": {
       "type": "expression",
       "description": "lenght",
-      "expression": "(Depth.s+Depth.e)/2",
+      "expression": "(depth.s+depth.e)/2",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -267,7 +267,7 @@
     "length": {
       "type": "expression",
       "description": "lenght",
-      "expression": "Depth.e/2",
+      "expression": "depth.e/2",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -313,7 +313,7 @@
     "length": {
       "type": "expression",
       "description": "lenght",
-      "expression": "Depth.s/2",
+      "expression": "depth.s/2",
       "includeinoutput": "true",
       "ask_user": "false"
     },

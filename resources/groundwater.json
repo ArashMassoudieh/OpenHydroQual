@@ -175,7 +175,7 @@
     },
     "length": {
       "type": "expression",
-	  "expression": "(Depth.s+depth.e)/2",
+	  "expression": "(depth.s+depth.e)/2",
 	  "description": "Length",
       "includeinoutput": "false",
       "ask_user": "false"
