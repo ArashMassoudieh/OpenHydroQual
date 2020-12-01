@@ -70,7 +70,7 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                         qDebug()<<"In propmodel: " << QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                     }
-                        else
+                    else
                     {
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
                     }
