@@ -50,13 +50,21 @@
       "delegate": "UnitBox",
       "code": "minimum_timestep"
     },
-	"initial_time_step": {
+      "initial_time_step": {
       "type": "value",
       "default": "1e-2",
       "description": "Initial time-time-step",
       "ask_user": "true",
       "delegate": "UnitBox",
       "code": "dt"
+    },
+      "write_solution_details": {
+      "type": "string",
+      "default": "No",
+      "description": "Write Solution Details",
+      "ask_user": "true",
+      "delegate": "ComboBox, items: Yes, No",
+      "code": "write_solution_details"
     }
   },
   "general_parameters": {
