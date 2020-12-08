@@ -1130,7 +1130,8 @@ void MainWindow::onrunmodel()
     copiedsystem.Solve(true);
     copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
-    copiedsystem.GetSolutionLogger()->Close();
+    if (copiedsystem.GetSolutionLogger())
+        copiedsystem.GetSolutionLogger()->Close();
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
 
