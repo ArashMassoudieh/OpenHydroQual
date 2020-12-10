@@ -28,10 +28,18 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_version Aquifolium #DEBUG
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 CONFIG += c++14
-DEFINES += NO_OPENMP
 
-QMAKE_LFLAGS += -fopenmp
-# QMAKE_CXXFLAGS += -fopenmp
+CONFIG(debug, debug|release) {
+    message(Building in debug mode)
+    DEFINES += NO_OPENMP
+} else {
+    message(Building in release mode)
+    QMAKE_CXXFLAGS+= -fopenmp
+    QMAKE_LFLAGS +=  -fopenmp
+    LIBS += -lgomp -lpthread
+}
+
+
 
 SOURCES += \
     ../Aquifolium/src/RxnParameter.cpp \
