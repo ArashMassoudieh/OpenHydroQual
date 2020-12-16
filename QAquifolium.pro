@@ -45,6 +45,7 @@ CONFIG(debug, debug|release) {
 SOURCES += \
     ../Aquifolium/src/RxnParameter.cpp \
     ../Aquifolium/src/constituent.cpp \
+    ../Aquifolium/src/precalculatedfunction.cpp \
     ../Aquifolium/src/solutionlogger.cpp \
     ../jsoncpp/src/lib_json/json_reader.cpp \
     ../jsoncpp/src/lib_json/json_value.cpp \
@@ -105,6 +106,7 @@ HEADERS += \
     ../Aquifolium/include/Precipitation.h \
     ../Aquifolium/include/RxnParameter.h \
     ../Aquifolium/include/constituent.h \
+    ../Aquifolium/include/precalculatedfunction.h \
     ../Aquifolium/include/solutionlogger.h \
     CustomPlotZoom.h \
     diagramview.h \
