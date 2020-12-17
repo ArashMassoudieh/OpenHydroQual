@@ -37,7 +37,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "side_slope>0",
+      "warningmessage": "Side slope must be greater than zero"
     },
     "x": {
       "type": "value",
@@ -49,14 +51,14 @@
     "y": {
       "type": "value",
       "description": "y",
-	  "default": "900",
+      "default": "900",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
     "_width": {
       "type": "value",
       "description": "_width",
-	  "default": "200",
+      "default": "200",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
