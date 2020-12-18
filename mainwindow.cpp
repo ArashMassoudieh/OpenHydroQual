@@ -1121,6 +1121,8 @@ void MainWindow::onrunmodel()
     }
     System copiedsystem(system);
     copiedsystem.SetSystemSettings();
+    if (copiedsystem.GetSolverSettings().write_solution_details)
+        copiedsystem.SetSolutionLogger(workingfolder.toStdString() + "/solution_details.txt");
     rtw = new RunTimeWindow(this);
     rtw->show();
     rtw->SetUpForForwardRun();
@@ -1128,8 +1130,11 @@ void MainWindow::onrunmodel()
     copiedsystem.Solve(true);
     copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
+    if (copiedsystem.GetSolutionLogger())
+        copiedsystem.GetSolutionLogger()->Close();
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
+
 }
 
 void MainWindow::closeEvent (QCloseEvent *event)

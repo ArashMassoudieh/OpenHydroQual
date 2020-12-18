@@ -37,7 +37,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "side_slope>0",
+      "warningmessage": "Side slope must be greater than zero"
     },
     "x": {
       "type": "value",
@@ -49,14 +51,14 @@
     "y": {
       "type": "value",
       "description": "y",
-	  "default": "900",
+      "default": "900",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
     "_width": {
       "type": "value",
       "description": "_width",
-	  "default": "200",
+      "default": "200",
       "ask_user": "true",
       "delegate": "UnitBox"
     },
@@ -84,6 +86,7 @@
     "depth": {
       "type": "expression",
       "expression": "(-base_width+_sqt(base_width^2+4*side_slope*Storage/length))/(2*side_slope)",
+      "precalcbasedon": "Storage:log:0.000001:1000000",
       "description": "Water Depth",
       "ask_user": "true",
       "delegate": "UnitBox",
