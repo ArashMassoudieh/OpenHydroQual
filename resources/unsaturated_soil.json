@@ -118,13 +118,8 @@
       "expression" : "Storage/(area*depth)",
       "description": "Moisture Content",
       "ask_user": "true",
-<<<<<<< HEAD
-      "includeinoutput": "true",
-	  "delegate": "UnitBox"
-=======
       "delegate": "UnitBox",
       "includeinoutput": "true"
->>>>>>> master
     },
     "Se": {
       "type": "expression",
