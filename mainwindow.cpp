@@ -522,6 +522,7 @@ void MainWindow::onaddreaction()
     reaction.SetName(name);
     system.AddReaction(reaction);
     system.object(name)->SetName(name);
+    system.AddAllConstituentRelateProperties(system.reaction(name));
     qDebug() << "Reaction added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
