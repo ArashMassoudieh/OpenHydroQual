@@ -642,10 +642,10 @@
     },
     "masstransfer": {
       "description": "Mass transfer rate",
-      "type": "value",
-      "ask_user": "true",
-      "role": "copytolinks",
-      "delegate": "UnitBox"
+      "type": "expression",
+      "expression": "_ups(flow:concentration)",
+      "ask_user": "false",
+      "role": "copytolinks"
     }
   },
   "Reaction": {
