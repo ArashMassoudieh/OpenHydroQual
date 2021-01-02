@@ -411,6 +411,7 @@ void MainWindow::onaddsource()
     system.AddSource(source);
     qDebug() << "source added! " << obj->objectName();
     system.object(name)->SetName(name);
+    system.AddAllConstituentRelateProperties(system.source(name));
     RefreshTreeView();
     LogAddDelete("Source '" + QString::fromStdString(name) + "' was added!");
 }
