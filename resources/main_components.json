@@ -622,6 +622,14 @@
       "includeinoutput": "true",
       "delegate": "UnitBox"
     },
+    "stoichiometric_constant": {
+      "description": "Stoichiometric Constant",
+      "type": "expression",
+      "ask_user": "true",
+      "role": "copytoreactions",
+      "includeinoutput": "false",
+      "delegate": "expressionEditor"
+    },
     "mass": {
       "description": "Mass",
       "type": "balance",
@@ -634,10 +642,10 @@
     },
     "masstransfer": {
       "description": "Mass transfer rate",
-      "type": "value",
-      "ask_user": "true",
-      "role": "copytolinks",
-      "delegate": "UnitBox"
+      "type": "expression",
+      "expression": "_ups(flow:concentration)",
+      "ask_user": "false",
+      "role": "copytolinks"
     }
   },
   "Reaction": {
