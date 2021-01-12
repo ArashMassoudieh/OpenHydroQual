@@ -160,5 +160,65 @@
 			"includeinoutput" : "true",
 			"applylimit": "true"	
 		}  	
+	},
+	"wide_channel":{
+		"type": "link",
+		"typecategory": "Connectors",
+                "description": "Wide Channel",
+		"icon": {
+			"filename": "wide_channel.png"
+		},
+		"name": {
+		      "description": "Name",
+		      "type": "string",
+		      "ask_user": "true",
+		      "delegate": "String" 
+		},
+                "color": {
+      			"type": "string",
+      			"default": "0,100,200"
+    		},
+                "width" : {
+			"type": "value",
+			"description": "Width",
+			"ask_user" : "true",
+			"delegate" : "UnitBox",
+			"estimate" : "true"
+		},
+		"depth": {
+			"type": "expression",
+			"description": "Water depth",
+			"expression": "_max((depth.s+depth.e)/2;0)",
+			"includeinoutput": "true",
+			"ask_user": "false"
+		},
+		"area": {
+			"type": "expression",
+			"description": "Cross-sectional area",
+			"expression": "_max(depth*width;0)",
+			"includeinoutput": "true",
+			"ask_user": "false"
+		},
+		"ManningCoeff": {
+			"type": "value",
+			"description": "Manning's roughness coefficient",
+			"ask_user" : "true",
+			"delegate" : "UnitBox",
+			"includeinoutput": "false"
+		},
+		"length": {
+			"type": "value",
+			"description": "Channel length",
+			"delegate" : "UnitBox",
+			"includeinoutput": "false",
+			"ask_user": "true"
+		},
+		"flow": {
+			"type": "expression",
+			"expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*width*depth^1.6667",
+			"includeinoutput": "true",
+			"applylimit": "true",
+			"ask_user": "false"
+		}  	
 	}
 }
