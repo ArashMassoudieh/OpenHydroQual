@@ -165,7 +165,7 @@
     "typecategory": "Connectors",
     "description": "Groundwater to fixed head",
     "icon": {
-      "filename": "Groundwater_link.png"
+      "filename": "gw_2_fixed_head.png"
     },
     "name": {
       "description": "Name",
