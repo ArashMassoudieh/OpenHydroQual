@@ -644,6 +644,7 @@
       "description": "Mass transfer rate",
       "type": "expression",
       "expression": "_ups(flow;concentration)",
+      "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"
     }
