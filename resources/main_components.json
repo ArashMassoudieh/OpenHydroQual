@@ -644,12 +644,13 @@
       "description": "Mass transfer rate",
       "type": "expression",
       "expression": "_ups(flow;concentration)",
+      "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"
     }
   },
   "Reaction": {
-    "type": "reaction",
+    "type": "Reaction",
     "typecategory": "Reactions",
     "icon": {
       "filename": "reaction.png"
@@ -668,7 +669,7 @@
     }
   },
   "ReactionParameter": {
-    "type": "reactionparameter",
+    "type": "ReactionParameter",
     "typecategory": "Reaction Parameters",
     "icon": {
       "filename": "reactionparameter.png"

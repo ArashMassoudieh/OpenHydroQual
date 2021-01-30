@@ -160,6 +160,45 @@
       "ask_user": "false"
     }
   },
+  "groundwater_to_fixedhead": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Groundwater to fixed head",
+    "icon": {
+      "filename": "gw_2_fixed_head.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
+    },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "0.5*area*hydraulic_conductivity.s*(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
   "soil2groundwater_link": {
     "type": "link",
     "typecategory": "Connectors",
