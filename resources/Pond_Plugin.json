@@ -161,6 +161,57 @@
 			"applylimit": "true"	
 		}  	
 	},
+	"drain_pipe":{
+		"type": "link",
+		"typecategory": "Connectors",
+                "description": "Drain pipe from a reservoir",
+		"icon": {
+			"filename": "vnotchweir.png"
+		},
+		"name": {
+		      "description": "Name",
+		      "type": "string",
+		      "ask_user": "true",
+		      "delegate": "String" 
+		},
+                "color": {
+      			"type": "string",
+      			"default": "0,70,200"
+    		},
+                "crest_elevation" : {
+			"type": "value",
+			"description": "Crest Elevation",
+			"ask_user" : "true",
+			"delegate" : "UnitBox",
+			"estimate" : "true"
+		},
+		"head_loss_coefficient": {
+		      "type": "value",
+		      "description": "Head-loss coefficient",
+		      "ask_user": "true",
+		      "delegate": "UnitBox",
+		      "estimate": "true",
+		      "default": "0.6",
+		      "criteria": "head_loss_coefficient>0",
+		      "warningmessage": "Head-loss coefficient must be positive"
+    		},
+    		"pipe_diameter": {
+		      "type": "value",
+		      "description": "Pipe Diameter",
+		      "ask_user": "true",
+		      "delegate": "UnitBox",
+		      "estimate": "true",
+		      "criteria": "pipe_diameter>0",
+		      "warningmessage": "pipe diameter must be positive"
+   		},	
+	        "flow" : {
+		      	"type": "expression",
+			"description": "Flow rate",
+                        "expression" : "86400*1.962*_pos(head.s-crest_elevation)^(0.5)/((head_loss_coefficient+1)^0.5)",
+			"includeinoutput" : "true",
+			"applylimit": "true"	
+		}  	
+	},
 	"wide_channel":{
 		"type": "link",
 		"typecategory": "Connectors",
