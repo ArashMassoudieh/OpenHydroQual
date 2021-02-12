@@ -193,7 +193,7 @@
     },
     "flow": {
       "type": "expression",
-      "expression": "0.5*area*hydraulic_conductivity.s*(head.s-head.e)/length",
+      "expression": "area*hydraulic_conductivity.s*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
