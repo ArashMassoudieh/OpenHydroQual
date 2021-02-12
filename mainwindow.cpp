@@ -106,7 +106,7 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
         estimatesMenu->setEnabled(false);
         if (i2.data(CustomRoleCodes::Role::EstimateCode).toBool())
         {
-            for (int i=0 ; i< GetSystem()->ParametersCount(); i++)
+            for (unsigned int i=0 ; i< GetSystem()->ParametersCount(); i++)
                 estimatesMenu->addAction(QString::fromStdString(GetSystem()->Parameters()[i]->GetName()));// , this, SLOT(addParameter()));
             //addParameterIndex(i1); // tableProp->indexAt(pos));
             connect(estimatesMenu, SIGNAL(triggered(QAction*)), this, SLOT(addParameter(QAction*)));
@@ -577,7 +577,7 @@ void MainWindow::RefreshTreeView()
     if (propmodel != nullptr)
         delete  propmodel;
     propmodel = nullptr;
-    for (int i=0; i<system.SettingsCount(); i++)
+    for (unsigned int i=0; i<system.SettingsCount(); i++)
     {
         QString TypeCategory = QString::fromStdString(system.Setting(i)->TypeCategory());
         QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.Setting(i)->TypeCategory()),Qt::MatchExactly);
@@ -595,7 +595,7 @@ void MainWindow::RefreshTreeView()
         }
     }
 
-    for (int i=0; i<system.BlockCount(); i++)
+    for (unsigned int i=0; i<system.BlockCount(); i++)
     {
         QString TypeCategory = QString::fromStdString(system.block(i)->TypeCategory());
         QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.block(i)->TypeCategory()),Qt::MatchExactly);
@@ -613,7 +613,7 @@ void MainWindow::RefreshTreeView()
         }
     }
 
-    for (int i=0; i<system.LinksCount(); i++)
+    for (unsigned int i=0; i<system.LinksCount(); i++)
     {
         QString TypeCategory = QString::fromStdString(system.link(i)->TypeCategory());
         QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.link(i)->TypeCategory()),Qt::MatchExactly);
@@ -631,7 +631,7 @@ void MainWindow::RefreshTreeView()
         }
     }
 
-    for (int i=0; i<system.SourcesCount(); i++)
+    for (unsigned int i=0; i<system.SourcesCount(); i++)
     {
         QString TypeCategory = QString::fromStdString(system.source(i)->TypeCategory());
         QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.source(i)->TypeCategory()),Qt::MatchExactly);
@@ -650,7 +650,7 @@ void MainWindow::RefreshTreeView()
         }
     }
 
-    for (int i=0; i<system.ParametersCount(); i++)
+    for (unsigned int i=0; i<system.ParametersCount(); i++)
     {
         QString TypeCategory = QString::fromStdString(system.Parameters()[i]->TypeCategory());
         QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.Parameters()[i]->TypeCategory()),Qt::MatchExactly);
