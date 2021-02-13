@@ -310,8 +310,7 @@
       "expression": "reservoir_coeff.s*Storage.s^reservoir_power.s",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false",
-      "delegate": "Browser" 
+      "ask_user": "false"
     }
   },
   "Catchment_link": {
@@ -331,8 +330,7 @@
       "expression": "86400*(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(_pos(depth.s)^1.666667)",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false",
-      "delegate": "TimeSeries" 
+      "ask_user": "false"
     },
     "color": {
       "type": "string",
@@ -538,6 +536,40 @@
       "description": "Weight",
       "ask_user": "true",
       "delegate": "UnitBox" 
+    }
+  },
+  "Observation": {
+    "type": "observation",
+    "typecategory": "Observations",
+    "icon": {
+      "filename": "observation.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "object": {
+      "delegate": "ComboBox;BlockLinks",
+      "type": "string",
+      "includeinoutput": "true",
+      "description": "Object",
+      "ask_user": "true"
+    },
+    "expression": {
+      "delegate": "expressionEditor",
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Expression",
+      "ask_user": "true"
+    },
+    "observed_data": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Observed data time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     }
   },
   "fixed_head": {

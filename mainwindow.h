@@ -74,6 +74,7 @@ private slots:
     void onaddparameter();
     void onaddentity();
     void onaddobjectivefunction();
+    void onaddobservation();
     void onaddconstituent();
     void onaddreaction();
     void onaddreactionparameter();

@@ -164,9 +164,9 @@
 	"drain_pipe":{
 		"type": "link",
 		"typecategory": "Connectors",
-                "description": "Drain pipe from a reservoir",
+                "description": "Drain pipe",
 		"icon": {
-			"filename": "vnotchweir.png"
+			"filename": "drain_pipe.png"
 		},
 		"name": {
 		      "description": "Name",

@@ -303,6 +303,8 @@ bool MainWindow::BuildObjectsToolBar()
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddparameter()));
                 else if (typecategory == "Objective Functions")
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddobjectivefunction()));
+                else if (typecategory == "Observations")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddobservation()));
                 else if (typecategory == "Constituents")
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddconstituent()));
                 else if (typecategory == "Reactions")
@@ -466,6 +468,36 @@ void MainWindow::onaddobjectivefunction()
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Objective Function '" + QString::fromStdString(name) + "' was added!");
+
+}
+
+void MainWindow::onaddobservation()
+{
+    QObject* obj = sender();
+    Observation observation;
+
+    string name;
+    string objectname;
+    if (obj->objectName()!="")
+    {   name = CreateNewName(obj->objectName().toStdString());
+        objectname = obj->objectName().toStdString();
+    }
+    else
+    {
+        name = CreateNewName("Observation");
+        objectname = "Observation";
+    }
+
+    observation.SetQuantities(system.GetMetaModel(),objectname);
+    observation.SetType(objectname);
+
+    observation.SetName(name);
+    system.AddObservation(observation);
+    system.object(name)->SetName(name);
+    qDebug() << "observation added! " << obj->objectName();
+    //system.object(name)->SetName(name);
+    RefreshTreeView();
+    LogAddDelete("Observation '" + QString::fromStdString(name) + "' was added!");
 
 }
 
@@ -682,6 +714,24 @@ void MainWindow::RefreshTreeView()
             treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
             treechlditem->setData(0,Qt::UserRole,"child");
             treechlditem->setText(0,QString::fromStdString(system.ObjectiveFunctions()[i]->GetName()));
+            treeitem->addChild(treechlditem);
+        }
+    }
+
+    for (unsigned int i=0; i<system.ObservationsCount(); i++)
+    {
+        QString TypeCategory = QString::fromStdString(system.observation(i)->TypeCategory());
+        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.observation(i)->TypeCategory()),Qt::MatchExactly);
+        if (MatchedItems.size()==0)
+            qDebug() << "No category called '" + TypeCategory + "' was found!";
+        else if (MatchedItems.size()>1)
+            qDebug() << "More than one category called '" + TypeCategory + "' was found!";
+        else {
+            QTreeWidgetItem *treeitem = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly)[0];
+            QTreeWidgetItem *treechlditem = new QTreeWidgetItem(treeitem);
+            treechlditem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
+            treechlditem->setData(0,Qt::UserRole,"child");
+            treechlditem->setText(0,QString::fromStdString(system.observation(i)->GetName()));
             treeitem->addChild(treechlditem);
         }
     }
