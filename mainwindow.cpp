@@ -1181,6 +1181,7 @@ void MainWindow::onrunmodel()
     copiedsystem.SetRunTimeWindow(rtw);
     copiedsystem.Solve(true);
     copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
+    copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/observedoutputs.txt");
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();
