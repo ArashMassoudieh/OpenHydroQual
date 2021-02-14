@@ -32,6 +32,7 @@ public:
     void RecreateGraphicItemsFromSystem();
     void RefreshTreeView();
     Plotter* Plot(CTimeSeries& plotitem);
+    Plotter* Plot(CTimeSeries& plotmodeled, CTimeSeries& plotobserved);
     string CreateNewName(string type);
     DiagramView* GetDiagramView() { return dView; }
     bool Log(const QString &s);

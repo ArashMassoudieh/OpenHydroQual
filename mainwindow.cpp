@@ -577,7 +577,7 @@ void MainWindow::onaddreactionparameter()
     else
     {
         name = CreateNewName("Reaction Parameter");
-        objectname = "Reaction";
+        objectname = "ReactionParameter";
     }
 
     reactionparameter.SetQuantities(system.GetMetaModel(),objectname);
@@ -815,7 +815,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
 
     if (nd->data(0,Qt::UserRole)=="main")
     {
-        if (nd->text(0)=="Parameters" || nd->text(0)=="Objective Functions")
+        if (nd->text(0)=="Parameters" || nd->text(0)=="Objective Functions" || nd->text(0)=="Reactions" || nd->text(0)=="Reaction Parameters" || nd->text(0)=="Constituents" || nd->text(0)=="Observations")
         {
             QAction *AddAct = new QAction(QIcon(":/Resource/warning32.ico"), "Add " + nd->text(0), this);
 
@@ -863,8 +863,16 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
             graphaction->setData(v);
             //called_by_clicking_on_graphical_object = true;
             connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
-
-
+        }
+        if (nd->data(0,CustomRoleCodes::Role::TypeRole).toString() == "Observations")
+        {
+            timeseriestobeshown = "Modeled vs Measured";
+            QAction* graphaction = results->addAction(timeseriestobeshown);
+            QVariant v = QVariant::fromValue(QString::fromStdString(system.observation(nd->text(0).toStdString())->GetOutputItem()));
+            graphaction->setData(v);
+            graphaction->setProperty("object",QString::fromStdString(system.observation(nd->text(0).toStdString())->GetName()));
+            //called_by_clicking_on_graphical_object = true;
+            connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
         }
         if (nd->data(0, CustomRoleCodes::Role::TypeRole).toString() == "Sources")
         {
@@ -892,6 +900,20 @@ void MainWindow::showgraph()
         if (GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries() != nullptr)
         {
             Plotter* plot = Plot(*GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries());
+            plot->SetYAxisTitle(act->text());
+        }
+    }
+    if (timeseriestobeshown == "Modeled vs Measured")
+    {
+        QString object = act->property("object").toString();
+        if (GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries() != nullptr)
+        {
+            Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()],*GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries());
+            plot->SetYAxisTitle(act->text());
+        }
+        else
+        {
+            Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
             plot->SetYAxisTitle(act->text());
         }
     }
@@ -1243,6 +1265,15 @@ Plotter* MainWindow::Plot(CTimeSeries& plotitem)
     return plotter;
 }
 
+Plotter* MainWindow::Plot(CTimeSeries& plotmodeled, CTimeSeries& plotobserved)
+{
+    Plotter* plotter = new Plotter(this);
+    plotter->PlotData(plotmodeled);
+    plotter->AddData(plotobserved);
+    plotter->show();
+    return plotter;
+}
+
 void MainWindow::onAddItemThroughTreeViewRightClick()
 {
     QObject* obj = sender();
@@ -1250,6 +1281,15 @@ void MainWindow::onAddItemThroughTreeViewRightClick()
         onaddparameter();
     if (obj->property("group")=="Objective Functions")
         onaddobjectivefunction();
+    if (obj->property("group")=="Reactions")
+        onaddreaction();
+    if (obj->property("group")=="Reaction Parameters")
+        onaddreactionparameter();
+    if (obj->property("group")=="Constituents")
+        onaddconstituent();
+    if (obj->property("group")=="Observations")
+        onaddobservation();
+
 
     //counts[obj->objectName()] = counts[obj->objectName()] + 1;
         //qDebug() << "entity added! " << obj->objectName();
