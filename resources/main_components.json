@@ -480,14 +480,18 @@
       "includeinoutput": "true",
       "description": "Lower Limit",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "UnitBox",
+      "criteria": "low<high",
+      "warningmessage": "Upper Limit must be greater than lower limit" 
     },
     "high": {
       "type": "value",
       "includeinoutput": "true",
       "description": "Upper Limit",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "UnitBox",
+      "criteria": "high>low",
+      "warningmessage": "Upper Limit must be greater than lower limit" 
     },
     "value": {
       "type": "value",

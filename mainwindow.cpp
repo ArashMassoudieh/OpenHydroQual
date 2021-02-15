@@ -906,10 +906,18 @@ void MainWindow::showgraph()
         QString object = act->property("object").toString();
         if (GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries() != nullptr)
         {
-            Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()],*GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries());
-            plot->SetYAxisTitle(act->text());
+            if (GetSystem()->GetOutputs().Contains(item.toStdString()))
+            {
+                Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()],*GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries());
+                plot->SetYAxisTitle(act->text());
+            }
+            else
+            {
+                Plotter* plot = Plot(*GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries());
+                plot->SetYAxisTitle(act->text());
+            }
         }
-        else
+        else if (GetSystem()->GetOutputs().Contains(item.toStdString()))
         {
             Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
             plot->SetYAxisTitle(act->text());
@@ -1238,6 +1246,12 @@ void MainWindow::closeEvent (QCloseEvent *event)
 void MainWindow::onoptimize()
 {
     ErrorHandler errs = system.VerifyAllQuantities();
+    if (system.ParametersCount()==0)
+    {
+        LogAllSystemErrors(&errs);
+        QMessageBox::question(this, "Errors!", "No parameters have been defined!", QMessageBox::Ok);
+        return;
+    }
     if (errs.Count()!=0)
     {
         LogAllSystemErrors(&errs);
@@ -1268,6 +1282,12 @@ void MainWindow::onoptimize()
 void MainWindow::oninverserun()
 {
     ErrorHandler errs = system.VerifyAllQuantities();
+    if (system.ParametersCount()==0)
+    {
+        LogAllSystemErrors(&errs);
+        QMessageBox::question(this, "Errors!", "No parameters have been defined!", QMessageBox::Ok);
+        return;
+    }
     if (errs.Count()!=0)
     {
         LogAllSystemErrors(&errs);
@@ -1307,7 +1327,9 @@ Plotter* MainWindow::Plot(CTimeSeries& plotitem)
 Plotter* MainWindow::Plot(CTimeSeries& plotmodeled, CTimeSeries& plotobserved)
 {
     Plotter* plotter = new Plotter(this);
-    plotter->PlotData(plotmodeled);
+    if (plotmodeled.n>0)
+        plotter->PlotData(plotmodeled);
+    if (plotobserved.n>0)
     plotter->AddData(plotobserved);
     plotter->show();
     return plotter;
