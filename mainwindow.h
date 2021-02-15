@@ -90,6 +90,7 @@ private slots:
     void onopen();
     void onrunmodel();
     void onoptimize();
+    void oninverserun();
     void onAddItemThroughTreeViewRightClick();
     void tablePropShowContextMenu(const QPoint&);
     void addParameter(QAction* item);

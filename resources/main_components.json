@@ -570,6 +570,21 @@
       "description": "Observed data time series",
       "ask_user": "true",
       "delegate": "Browser"
+    },
+    "error_structure": {
+      "type": "string",
+      "delegate": "ComboBox;items:normal,log-normal",
+      "description": "Error probability distribution",
+      "default": "normal",
+      "includeinoutput": "true",
+      "ask_user": "true"
+    },
+    "error_standard_deviation": {
+      "type": "value",
+      "description": "Error standard deviation",
+      "default": "1",
+      "ask_user": "true",
+      "delegate": "UnitBox"
     }
   },
   "fixed_head": {

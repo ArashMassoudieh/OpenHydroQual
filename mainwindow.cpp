@@ -98,7 +98,6 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
     if (i1.column() == 0)
     {
         menu = new QMenu;
-        int code = i1.data(CustomRoleCodes::Role::DescriptionCodeRole).toInt();
         QString variableName = i1.data(CustomRoleCodes::Role::VariableNameRole).toString();
 
         QMenu *estimatesMenu = new QMenu("Parameters");
@@ -118,7 +117,6 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
     if (i1.column() == 1)
     {
         menu = new QMenu;
-        int code = i1.data(CustomRoleCodes::Role::DescriptionCodeRole).toInt();
         QString variableName = i1.data(CustomRoleCodes::Role::VariableNameRole).toString();
         if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("ComboBox"))
         {
@@ -1044,6 +1042,14 @@ void MainWindow::Populate_General_ToolBar()
     actionoptimize->setText("Optimize");
     actionoptimize->setToolTip("Optimize");
     connect(actionoptimize, SIGNAL(triggered()), this, SLOT(onoptimize()));
+    QIcon iconinverserun;
+    iconinverserun.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/inverserun.png"), QSize(), QIcon::Normal, QIcon::Off);
+    QAction* actioninverse = new QAction(this);
+    actioninverse->setIcon(iconinverserun);
+    ui->GeneraltoolBar->addAction(actioninverse);
+    actioninverse->setText("Invese Run");
+    actioninverse->setToolTip("Inverse Run");
+    connect(actioninverse, SIGNAL(triggered()), this, SLOT(oninverserun()));
 
 }
 
@@ -1250,12 +1256,45 @@ void MainWindow::onoptimize()
     rtw->SetUpForInverseRun(); 
     system.SetRunTimeWindow(nullptr);
     optimizer->SetRunTimeWindow(rtw);
+    system.SetParameterEstimationMode(parameter_estimation_options::optimize);
     optimizer->optimize();
     system.TransferResultsFrom(&optimizer->Model_out);
     system.Parameters() = optimizer->Model_out.Parameters();
     system.SetOutputItems();
+    system.SetParameterEstimationMode();
     rtw->AppendText("Optimization Finished!");
 }
+
+void MainWindow::oninverserun()
+{
+    ErrorHandler errs = system.VerifyAllQuantities();
+    if (errs.Count()!=0)
+    {
+        LogAllSystemErrors(&errs);
+        QMessageBox::question(this, "Errors!", "There are errors in the values assigned to some of the variables. Check the log window for more details.", QMessageBox::Ok);
+        return;
+    }
+    system.SetSystemSettings();
+    optimizer = new CGA<System>(&system);
+    optimizer->SetParameters(system.object("Optimizer"));
+    optimizer->filenames.pathname = workingfolder.toStdString() + "/";
+    system.SetAllParents();
+    rtw = new RunTimeWindow(this);
+    rtw->show();
+    rtw->AppendText("Parameter Estimation Started ...");
+    rtw->SetXRange(0,optimizer->GA_params.nGen);
+    rtw->SetUpForInverseRun();
+    system.SetRunTimeWindow(nullptr);
+    system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
+    optimizer->SetRunTimeWindow(rtw);
+    optimizer->optimize();
+    system.TransferResultsFrom(&optimizer->Model_out);
+    system.Parameters() = optimizer->Model_out.Parameters();
+    system.SetParameterEstimationMode();
+    system.SetOutputItems();
+    rtw->AppendText("Parameter Estimation Finished!");
+}
+
 
 Plotter* MainWindow::Plot(CTimeSeries& plotitem)
 {
