@@ -588,7 +588,8 @@
       "description": "Error standard deviation",
       "default": "1",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "UnitBox",
+      "estimate": "true"
     }
   },
   "fixed_head": {

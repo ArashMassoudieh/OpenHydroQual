@@ -54,8 +54,8 @@ class Plotter : public QMainWindow
 public:
     explicit Plotter(MainWindow *parent = nullptr);
     ~Plotter();
-    bool PlotData(CBTC& BTC);
-    bool AddData(CBTC& BTC);
+    bool PlotData(CBTC& BTC, string style="line");
+    bool AddData(CBTC& BTC,string style="line");
     void SetYAxisTitle(const QString& s);
 private:
     Ui::Plotter *ui;

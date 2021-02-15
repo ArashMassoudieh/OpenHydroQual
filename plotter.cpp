@@ -46,7 +46,7 @@ Plotter::~Plotter()
 
 
 
-bool Plotter::PlotData(CBTC& BTC)
+bool Plotter::PlotData(CBTC& BTC, string style)
 {
     minx=1e12;
     maxx=-1e12;
@@ -107,6 +107,11 @@ bool Plotter::PlotData(CBTC& BTC)
     plot->graph(0)->setName(QString::fromStdString(BTC.name));
     plot->graph(0)->setData(x, y);
     plot->graph(0)->setPen(QPen(colours[plot->graphCount()%10]));
+    if (style=="dots")
+    {
+        plot->graph(format.size()-1)->setLineStyle(QCPGraph::LineStyle::lsNone);
+        plot->graph(format.size()-1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+    }
     // give the axes some labels:
     plot->xAxis->setLabel("t");
     plot->yAxis->setLabel("value");
@@ -357,33 +362,75 @@ void Plotter::refreshFormat()
 
 
 
-bool Plotter::AddData(CBTC& BTC)
+bool Plotter::AddData(CBTC& BTC, string style)
 {
-    plot->legend->setVisible(showlegend);
+    minx=1e12;
+    maxx=-1e12;
+    miny=1e12;
+    maxy=-1e12;
     maxx = max(BTC.t[0],maxx);
     maxy = max(BTC.maxC(),maxy);
     minx = min(BTC.t[BTC.n-1],minx);
     miny = min(BTC.minC(),miny);
-    qDebug() << maxx << "," << minx << "," << miny << "," << maxy;
+    plot->legend->setVisible(showlegend);
     QVector<double> x, y; // initialize with entries 0..100
+    format.push_back(plotformat());
+    if (format[format.size()-1].xAxisTimeFormat && ((BTC.t[BTC.n - 1] - BTC.t[0]) < 5 || BTC.t[BTC.n - 1]< 18264))
+        format[format.size()-1].xAxisTimeFormat = false;
+
+    if (format[format.size()-1].xAxisTimeFormat)
+    {
+        QDateTime start = QDateTime::fromTime_t(xtoTime(BTC.t[0]), QTimeZone(0));
+        QDateTime end = QDateTime::fromTime_t(xtoTime(BTC.t[BTC.n - 1]), QTimeZone(0));
+        QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+        dateTicker->setTickCount(10);
+
+        QString dformat;
+        if (start.secsTo(end) < 600) dformat = "mm:ss:zzz";
+        if (start.secsTo(end) > 3600) dformat = "hh:mm:ss";
+        if (start.daysTo(end) > 1) dformat = "MMM dd\nhh:mm:ss";
+        if (start.daysTo(end) > 5) dformat = "MM.dd.yyyy\nhh:mm";
+        if (start.daysTo(end) > 180) dformat = "MM.dd.yyyy\nhAP";
+        if (start.daysTo(end) > 2 * 365) dformat = "MMMM\nyyyy";
+        dateTicker->setDateTimeFormat(dformat);
+
+        plot->xAxis->setTicker(dateTicker);
+        plot->xAxis->setTickLabelRotation(90);
+       }
+
+
     for (int i=0; i<BTC.n; ++i)
     {
-      x.push_back(BTC.t[i]);
+      if (!format[format.size()-1].xAxisTimeFormat)
+        x.push_back(BTC.t[i]);
+      else
+        x.push_back(xtoTime(BTC.t[i]));
       y.push_back(BTC.C[i]);
     }
     // create graph and assign data to it:
     plot->addGraph();
-    plot->graph(plot->graphCount()-1)->setName(QString::fromStdString(BTC.name));
-    plot->graph(plot->graphCount()-1)->setData(x, y);
-    plot->graph(plot->graphCount()-1)->setPen(QPen(colours[plot->graphCount()%10]));
+    plot->graph(format.size()-1)->setName(QString::fromStdString(BTC.name));
+    plot->graph(format.size()-1)->setData(x, y);
+    plot->graph(format.size()-1)->setPen(QPen(colours[plot->graphCount()%10]));
+    if (style=="dots")
+    {
+        plot->graph(format.size()-1)->setLineStyle(QCPGraph::LineStyle::lsNone);
+        plot->graph(format.size()-1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+    }
     // give the axes some labels:
     plot->xAxis->setLabel("t");
     plot->yAxis->setLabel("value");
     // set axes ranges, so we see all data:
-    plot->xAxis->setRange(minx, maxx);
-    plot->yAxis->setRange(miny, maxy);
-    plot->replot();
-
+    double tickstep=0;
+    if (!format[format.size()-1].xAxisTimeFormat)
+    {   plot->xAxis->setRange(BTC.t[0], BTC.t[BTC.n-1]);
+        tickstep = (BTC.t[BTC.n-1] - BTC.t[0])/10;
+    }
+    else
+    {   plot->xAxis->setRange(xtoTime(BTC.t[0]), xtoTime(BTC.t[BTC.n-1]));
+        tickstep = (xtoTime(BTC.t[BTC.n-1]) - xtoTime(BTC.t[0]))/10;
+    }
+    plot->yAxis->setRange(BTC.minC()-0.001, BTC.maxC()+0.001);
     return true;
 
 }

@@ -1328,9 +1328,9 @@ Plotter* MainWindow::Plot(CTimeSeries& plotmodeled, CTimeSeries& plotobserved)
 {
     Plotter* plotter = new Plotter(this);
     if (plotmodeled.n>0)
-        plotter->PlotData(plotmodeled);
+        plotter->PlotData(plotmodeled,"line");
     if (plotobserved.n>0)
-    plotter->AddData(plotobserved);
+    plotter->AddData(plotobserved,"dots");
     plotter->show();
     return plotter;
 }
