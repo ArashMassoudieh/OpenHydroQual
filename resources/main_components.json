@@ -499,6 +499,14 @@
       "description": "Value",
       "ask_user": "true",
       "delegate": "UnitBox" 
+    },
+    "prior_distribution": {
+      "type": "string",
+      "delegate": "ComboBox;items:normal,log-normal",
+      "description": "Prior distribution",
+      "default": "normal",
+      "includeinoutput": "false",
+      "ask_user": "true"
     }
   },
   "Objective_Function": {
@@ -580,7 +588,7 @@
       "delegate": "ComboBox;items:normal,log-normal",
       "description": "Error probability distribution",
       "default": "normal",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "true"
     },
     "error_standard_deviation": {
