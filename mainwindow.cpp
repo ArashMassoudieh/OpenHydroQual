@@ -1081,7 +1081,8 @@ void MainWindow::onzoomall()
     newRect.setTop(newRect.top() - (scale - 1) / 2 * height);
     newRect.setWidth(qreal(width * scale));
     newRect.setHeight(qreal(height * scale));
-
+    if (width>dView->MainGraphicsScene->sceneRect().width())
+        dView->MainGraphicsScene->setSceneRect(0, 0, width, height);
     dView->fitInView(newRect,Qt::KeepAspectRatio);
 }
 
@@ -1172,7 +1173,7 @@ void MainWindow::LogAllSystemErrors(ErrorHandler *errs)
 void MainWindow::RecreateGraphicItemsFromSystem()
 {
     dView->DeleteAllItems();
-    for (int i=0; i<system.BlockCount(); i++)
+    for (unsigned int i=0; i<system.BlockCount(); i++)
     {
         Node *node = new Node(dView,&system);
         system.block(i)->AssignRandomPrimaryKey();

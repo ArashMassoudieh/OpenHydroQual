@@ -1,0 +1,164 @@
+{
+	"catchment-distributed": {
+	    "type": "block",
+	    "typecategory": "Blocks",
+	    "icon": {
+	      "filename": "catchment.png"
+	    },
+	    "name": {
+	      "description": "Name",
+	      "type": "string",
+	      "ask_user": "true",
+	      "delegate": "String"
+	    },
+	    "Storage": {
+	      "type": "balance",
+	      "massbalance": "true",
+	      "flow": "flow",
+	      "inflow": "Precipitation",
+	      "includeinoutput": "true",
+	      "description": "Initial Storage",
+	      "ask_user": "false",
+	      "initial_value_expression": "area*depth",
+	      "delegate": "UnitBox",
+	      "estimate": "true"
+	    },
+	    "Precipitation": {
+	      "type": "source",
+	      "includeinoutput": "true",
+	      "description": "precipitation time series",
+	      "ask_user": "true",
+	      "delegate": "ComboBox;Sources"
+	    },
+	    "area": {
+	      "type": "value",
+	      "description": "Catchment area",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+	      "unit": "m~^2",
+	      "estimate": "true",
+	      "criteria": "area>0",
+	      "warningmessage": "Area must be greater than zero"
+	    },
+	    "x": {
+	      "type": "value",
+	      "description": "x",
+		  "default": "900",
+	      "ask_user": "true",
+	      "delegate": "UnitBox"
+	    },
+	    "y": {
+	      "type": "value",
+	      "description": "y",
+		  "default": "900",
+	      "ask_user": "true",
+	      "delegate": "UnitBox"
+	    },
+	    "_width": {
+	      "type": "value",
+	      "description": "_width",
+	      "default": "200",
+	      "ask_user": "true",
+	      "delegate": "UnitBox"
+	    },
+	    "_height": {
+	      "type": "value",
+	      "description": "_height",
+	      "default": "200",
+	      "ask_user": "true",
+	      "delegate": "UnitBox"
+	    },
+	    "ManningCoeff": {
+	      "type": "value",
+	      "description": "Manning's Roughness Coefficient",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+	      "estimate": "true",
+	      "criteria": "ManningCoeff>0",
+	      "warningmessage": "Manning's roughness coefficient must be greater than zero"
+	    },
+	    "depth": {
+	      "type": "expression",
+	      "description": "Water depth",	
+	      "expression": "Storage/area",
+	      "description": "Average water depth",
+	      "delegate": "UnitBox",
+	      "ask_user": "true",
+	      "includeinoutput": "true"
+	    },
+	    "elevation": {
+	      "type": "value",
+	      "description": "Mean elevation of the catchment",
+	      "ask_user": "true",
+	      "delegate": "UnitBox"
+	    },
+	    "head": {
+	      "type": "expression",
+	      "expression": "elevation+depth",
+	      "description": "Average water head",
+	      "ask_user": "false",
+	      "includeinoutput": "true"
+	    }
+	  },
+	  "distributed_catchment_link": {
+	    "type": "link",
+	    "typecategory": "Connectors",
+	    "icon": {
+	      "filename": "dcatchment-catchment-link.png"
+	    },
+	    "name": {
+	      "description": "Name",
+	      "type": "string",
+	      "ask_user": "true",
+	      "delegate": "String" 
+	    },
+	    "Width": {
+	      "type": "value",
+	      "description": "The width of flow",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+	      "estimate": "true"
+	     },
+	     "Length": {
+	      "type": "value",
+	      "description": "Centroid to centroid distance of the catchments",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+	      "estimate": "true"
+	     },
+	     "depth": {
+	      "type": "expression",
+	      "expression": "(depth.s+depth.e)/2",
+	      "description": "Flow depth",
+	      "includeinoutput": "true"
+	     },
+	     "ManningCoeff": {
+	      "type": "expression",
+	      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+	      "description": "Manning's coefficient",
+	      "includeinoutput": "true"
+	     },
+	    "hydraulic_gradient": {
+	      "type": "expression",
+	      "expression": "(head.s-head.e)/Length",
+	      "includeinoutput": "true",
+	      "applylimit": "true",
+	      "ask_user": "false"
+	    }, 
+	    "flow": {
+	      "type": "expression",
+	      "expression": "86400*(Width/ManningCoeff)*(_pos(hydraulic_gradient)^0.5)*(_pos(depth)^1.666667)",
+	      "includeinoutput": "true",
+	      "applylimit": "true",
+	      "ask_user": "false"
+	    },
+	    "color": {
+	      "type": "string",
+	      "description": "color",
+	      "default": "200,0,100",
+	      "ask_user": "false"
+	    }
+	  }
+}
+	  
+}

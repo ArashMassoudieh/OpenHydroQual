@@ -763,7 +763,7 @@ Edge* DiagramView::edge(const QString &name) const
 void DiagramView::scaleView(qreal scaleFactor)
 {
     qreal factor = transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
-    if (factor < 0.07 || factor > 100)
+    if ((factor < 0.03 && scaleFactor<1) || (factor > 100 && scaleFactor>1))
         return;
 
     scale(scaleFactor, scaleFactor);
