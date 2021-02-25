@@ -375,6 +375,7 @@
     <ClCompile Include="..\Aquifolium\src\Object.cpp" />
     <ClCompile Include="..\Aquifolium\src\Objective_Function.cpp" />
     <ClCompile Include="..\Aquifolium\src\Objective_Function_Set.cpp" />
+    <ClCompile Include="..\Aquifolium\src\observation.cpp" />
     <ClCompile Include="..\Aquifolium\src\Parameter.cpp" />
     <ClCompile Include="..\Aquifolium\src\Parameter_Set.cpp" />
     <ClCompile Include="..\Aquifolium\src\precalculatedfunction.cpp" />
@@ -430,6 +431,7 @@
     <ClInclude Include="..\Aquifolium\include\MetaModel.h" />
     <ClInclude Include="..\Aquifolium\include\NormalDist.h" />
     <ClInclude Include="..\Aquifolium\include\Object.h" />
+    <ClInclude Include="..\Aquifolium\include\observation.h" />
     <ClInclude Include="..\Aquifolium\include\ordered_hash.h" />
     <ClInclude Include="..\Aquifolium\include\ordered_map.h" />
     <ClInclude Include="..\Aquifolium\include\Parameter.h" />
