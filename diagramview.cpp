@@ -342,7 +342,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         Node *node = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
         Edge *edge = qgraphicsitem_cast<Edge*> (itemAt(event->pos())); //Get the item at the position
         if (event->button() == Qt::LeftButton && dragMode()!=DragMode::RubberBandDrag)
-            if (event->modifiers()) {
+        {   if (event->modifiers()) {
                 if (node)
                 if (node->itemType==Object_Types::Block)
                 {
@@ -362,8 +362,9 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             }
             else {
                 if (node)
-                    for (Node * node : Nodes())
+                {   for (Node * node : Nodes())
                             node->setFlag(QGraphicsItem::ItemIsMovable, false);
+                }
                 if (edge)
                 {
                     if (edge->dist(mapToScene(event->pos())) < 120)
@@ -371,7 +372,8 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
                 }
                 //if (!node && !edge) deselectAll();
             }
-            break;
+        }
+        break;
     }
     case Operation_Modes::Node1_selected:
     {
@@ -435,6 +437,26 @@ void DiagramView::deleteselectednode(QString nodename)
     
 }
 
+void DiagramView::wheelEvent(QWheelEvent* pWheelEvent)
+{
+    //if (pWheelEvent->modifiers() & Qt::ControlModifier)
+    {
+        // Do a wheel-based zoom about the cursor position
+        double angle = pWheelEvent->angleDelta().y();
+        double factor = qPow(1.0015, angle);
+
+        auto targetViewportPos = pWheelEvent->pos();
+        auto targetScenePos = mapToScene(pWheelEvent->pos());
+
+        scale(factor, factor);
+        centerOn(targetScenePos);
+        QPointF deltaViewportPos = targetViewportPos - QPointF(viewport()->width() / 2.0, viewport()->height() / 2.0);
+        QPointF viewportCenter = mapFromScene(targetScenePos) - deltaViewportPos;
+        centerOn(mapToScene(viewportCenter.toPoint()));
+
+        return;
+    }
+}
 void DiagramView::copyselectednode(QString nodename)
 {
     
