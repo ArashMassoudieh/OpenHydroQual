@@ -35,6 +35,7 @@ public:
     Edge* edge(const QString &name) const;
     void scaleView(qreal scaleFactor);
     void DeleteAllItems();
+    void wheelEvent(QWheelEvent* pWheelEvent) override;
 
 private:
     MainWindow *mainwindow;
