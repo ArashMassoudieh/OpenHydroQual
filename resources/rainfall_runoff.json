@@ -128,7 +128,7 @@
 	     },
 	     "depth": {
 	      "type": "expression",
-	      "expression": "(depth.s+depth.e)/2",
+	      "expression": "_hsd(head.s-head.e)*depth.s+_hsd(head.e-head.s)*depth.e",
 	      "description": "Flow depth",
 	      "includeinoutput": "true"
 	     },
@@ -142,7 +142,6 @@
 	      "type": "expression",
 	      "expression": "(head.s-head.e)/Length",
 	      "includeinoutput": "true",
-	      "applylimit": "true",
 	      "ask_user": "false"
 	    }, 
 	    "flow": {
@@ -161,4 +160,4 @@
 	  }
 }
 	  
-}
+
