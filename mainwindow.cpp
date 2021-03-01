@@ -997,6 +997,7 @@ void MainWindow::Populate_General_ToolBar()
     ui->GeneraltoolBar->addAction(actionzoomall);
     actionzoomall->setText("Zoom Extends");
     actionzoomall->setToolTip("Zoom All");
+    actionzoomall->setObjectName("Zoom All");
     connect(actionzoomall, SIGNAL(triggered()), this, SLOT(onzoomall()));
     // ZoomIn //
     QAction* actionzoomin = new QAction(this);
@@ -1018,8 +1019,22 @@ void MainWindow::Populate_General_ToolBar()
     actionzoomout->setText("Zoom Out");
     actionzoomout->setToolTip("Zoom Out");
     connect(actionzoomout, SIGNAL(triggered()), this, SLOT(onzoomout()));
-    QAction* actionrun = new QAction(this);
+    actionzoomwindow = new QAction(this);
+    actionzoomwindow->setObjectName("Zoom Window");
+    actionzoomwindow->setToolTip("Zoom Window");
+    QIcon iconzoomwindow;
+    iconzoomwindow.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/WindowZoom.png"), QSize(), QIcon::Normal, QIcon::Off);
+    actionzoomwindow->setCheckable(true);
+    actionzoomwindow->setIcon(iconzoomwindow);
+    ui->GeneraltoolBar->addAction(actionzoomwindow);
+    actionzoomwindow->setText("Zoom Window");
+    connect(actionzoomwindow, SIGNAL(triggered()), this, SLOT(onzoomwindowtriggered()));
     QAction* seperator = new QAction(this);
+    seperator->setSeparator(true);
+    ui->GeneraltoolBar->addAction(seperator);
+
+
+
     // Pan //
     actionpan = new QAction(this);
     actionpan->setObjectName("Pan");
@@ -1030,17 +1045,20 @@ void MainWindow::Populate_General_ToolBar()
     actionpan->setIcon(iconpan);
     ui->GeneraltoolBar->addAction(actionpan);
     actionpan->setText("Pan");
-    actionpan->setToolTip("Pan");
     connect(actionpan, SIGNAL(triggered()), this, SLOT(onpantriggered()));
     seperator->setSeparator(true);
     ui->GeneraltoolBar->addAction(seperator);
-    actionzoomall->setObjectName("Run Model");
+
+
+    // Run
     QIcon iconrun;
     iconrun.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/runmodel.png"), QSize(), QIcon::Normal, QIcon::Off);
+    QAction* actionrun = new QAction(this);
     actionrun->setIcon(iconrun);
     ui->GeneraltoolBar->addAction(actionrun);
     actionrun->setText("Run Model");
     actionrun->setToolTip("Run Model");
+    actionrun->setObjectName("Run Model");
     connect(actionrun, SIGNAL(triggered()), this, SLOT(onrunmodel()));
     QIcon iconoptimize;
     iconoptimize.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/optimize.png"), QSize(), QIcon::Normal, QIcon::Off);
@@ -1097,6 +1115,20 @@ void MainWindow::onpantriggered()
         dView->setMode(Operation_Modes::NormalMode);
     }
 
+
+    dView->setModeCursor();
+}
+
+void MainWindow::onzoomwindowtriggered()
+{
+    if (actionzoomwindow->isChecked())
+    {
+        dView->setMode(Operation_Modes::ZoomWindow);
+    }
+    else
+    {
+        dView->setMode(Operation_Modes::NormalMode);
+    }
 
     dView->setModeCursor();
 }

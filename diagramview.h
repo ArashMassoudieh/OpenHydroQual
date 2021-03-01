@@ -48,6 +48,7 @@ private:
     Node *Node1; // , *Node2;
     Ray *tempRay;
     int _x, _y;
+    int x_ini, y_ini;
     QList<Node*> nodes(const QList<QGraphicsItem*> items) const;
     QList<Edge*> edges(const QList<QGraphicsItem*>items) const;
     QList<Node*> selectedNodes() const;

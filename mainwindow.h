@@ -41,12 +41,14 @@ public:
     void LogAllSystemErrors(ErrorHandler *errs=nullptr);
     QMap<QCPGraph *, plotformat> graphsClipboard;
     void SetPan(bool panmode) {actionpan->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
+    void SetZoomWindow(bool panmode) {actionzoomwindow->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
 private:
     logwindow *LogWindow;
     Ui::MainWindow *ui;
     System system;
     DiagramView* dView;
     QAction* actionpan = nullptr;
+    QAction* actionzoomwindow = nullptr;
     bool Populate_TreeWidget();
     bool BuildObjectsToolBar();
     PropModel *propmodel = nullptr;
@@ -85,6 +87,7 @@ private slots:
     void onzoomout();
     void onzoomall();
     void onpantriggered();
+    void onzoomwindowtriggered();
     void onsave();
     void onsaveas();
     void onopen();
