@@ -47,8 +47,8 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
     }
     if (event->buttons() == Qt::LeftButton && Operation_Mode == Operation_Modes::ZoomWindow)
     {
-        x_ini = mapToGlobal(event->pos()).x();
-        y_ini = mapToGlobal(event->pos()).y();
+        x_ini = mapToScene(event->pos()).x();
+        y_ini = mapToScene(event->pos()).y();
         qDebug()<<event->pos().x()<<","<<event->pos().y()<<","<<x_ini<<","<<y_ini;
     }
     if (event->buttons() == Qt::MiddleButton && Operation_Mode == Operation_Modes::NormalMode)
@@ -323,19 +323,19 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton && Operation_Mode == Operation_Modes::ZoomWindow)
     {
         QRectF rect = MainGraphicsScene->sceneRect();
-        int x_new = mapToGlobal(event->pos()).x();
-        int y_new = mapToGlobal(event->pos()).y();
+        int x_new = mapToScene(event->pos()).x();
+        int y_new = mapToScene(event->pos()).y();
         qDebug()<<event->pos().x()<<","<<event->pos().y()<<","<<x_new<<","<<y_new;
         setMode(Operation_Modes::NormalMode);
-        QRectF newRect = QRectF(x_ini,y_ini,x_new-x_ini,y_new-y_ini);
+        QRectF newRect = QRectF(min(x_ini,x_new),min(y_ini,y_new),abs(x_new-x_ini),abs(y_new-y_ini));
 
-        newRect.setLeft(newRect.left());
-        newRect.setTop(newRect.top());
-        newRect.setWidth(newRect.width());
-        newRect.setHeight(newRect.height());
+        float f = min(float(rect.width())/float(newRect.width()),float(rect.height())/float(newRect.height()));
+        qDebug()<<f;
+//        MainGraphicsScene->setSceneRect(newRect);
+//        scale(f,f);
 
-        MainGraphicsScene->setSceneRect(newRect);
         rect = MainGraphicsScene->sceneRect();
+        fitInView(newRect,Qt::KeepAspectRatio);
         mainWindow()->SetZoomWindow(false);
         setModeCursor();
         return;
