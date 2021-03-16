@@ -1100,7 +1100,7 @@ void MainWindow::onzoomall()
     newRect.setWidth(qreal(width * scale));
     newRect.setHeight(qreal(height * scale));
     qDebug()<<newRect;
-    if (width>dView->MainGraphicsScene->sceneRect().width())
+    if (width>dView->MainGraphicsScene->sceneRect().width() || height>dView->MainGraphicsScene->sceneRect().height() )
         dView->MainGraphicsScene->setSceneRect(newRect);
     dView->fitInView(newRect,Qt::KeepAspectRatio);
 }
