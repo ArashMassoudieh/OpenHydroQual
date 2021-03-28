@@ -31,6 +31,13 @@
       "ask_user": "true",
       "delegate": "ComboBox;Sources"
     },
+    "Evapotranspiration": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources"
+    },
     "area": {
       "type": "value",
       "description": "Catchment area",
