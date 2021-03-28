@@ -40,10 +40,16 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
         {
             qDebug() << "Name: " << edge->Name() << " Flag:" << edge->flags() << "enabled:" << edge->isEnabled() << "active:" << edge->isActive();
         }
-    if (!node && !edge && Operation_Mode!=Operation_Modes::Pan)
+    if (!node && !edge && Operation_Mode!=Operation_Modes::Pan && Operation_Mode!=Operation_Modes::ZoomWindow)
     {
         qDebug()<<"Mode set to normal";
         setMode(Operation_Modes::NormalMode);
+    }
+    if (event->buttons() == Qt::LeftButton && Operation_Mode == Operation_Modes::ZoomWindow)
+    {
+        x_ini = mapToScene(event->pos()).x();
+        y_ini = mapToScene(event->pos()).y();
+        qDebug()<<event->pos().x()<<","<<event->pos().y()<<","<<x_ini<<","<<y_ini;
     }
     if (event->buttons() == Qt::MiddleButton && Operation_Mode == Operation_Modes::NormalMode)
     {
@@ -314,6 +320,27 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         return;
 
     }
+    if (event->button() == Qt::LeftButton && Operation_Mode == Operation_Modes::ZoomWindow)
+    {
+        QRectF rect = MainGraphicsScene->sceneRect();
+        int x_new = mapToScene(event->pos()).x();
+        int y_new = mapToScene(event->pos()).y();
+        qDebug()<<event->pos().x()<<","<<event->pos().y()<<","<<x_new<<","<<y_new;
+        setMode(Operation_Modes::NormalMode);
+        QRectF newRect = QRectF(min(x_ini,x_new),min(y_ini,y_new),abs(x_new-x_ini),abs(y_new-y_ini));
+
+        float f = min(float(rect.width())/float(newRect.width()),float(rect.height())/float(newRect.height()));
+        qDebug()<<f;
+//        MainGraphicsScene->setSceneRect(newRect);
+//        scale(f,f);
+
+        rect = MainGraphicsScene->sceneRect();
+        fitInView(newRect,Qt::KeepAspectRatio);
+        mainWindow()->SetZoomWindow(false);
+        setModeCursor();
+        return;
+
+    }
     QGraphicsView::mouseReleaseEvent(event); //Call the ancestor
 
     switch (Operation_Mode) {
@@ -321,6 +348,14 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
     {
         Operation_Mode = Operation_Modes::NormalMode;
         mainWindow()->SetPan(false);
+        setModeCursor();
+        break;
+    }
+    case Operation_Modes::ZoomWindow:
+    {
+        Operation_Mode = Operation_Modes::NormalMode;
+
+        mainWindow()->SetZoomWindow(false);
         setModeCursor();
         break;
     }
@@ -661,6 +696,9 @@ Operation_Modes DiagramView::setModeCursor()
         break;
     case Operation_Modes::Pan:
         setCursor(Qt::OpenHandCursor);
+        break;
+    case Operation_Modes::ZoomWindow:
+        setCursor(Qt::CrossCursor);
         break;
     case Operation_Modes::Node1_selected:
         setCursor(Qt::CrossCursor);
