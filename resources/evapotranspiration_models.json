@@ -51,6 +51,8 @@
 	"includeinoutput": "false",
     	"description": "Wind measurement elevation",
     	"default": "2",
+    	"criteria": "z2>0",
+        "warningmessage": "Wind reference height must be greater than zero",
     	"delegate": "UnitBox"
     },
     "z0" : {
@@ -59,6 +61,8 @@
 	"includeinoutput": "false",
     	"description": "Roughness height",
     	"default": "0.05",
+    	"criteria": "z0>0",
+       "warningmessage": "Roughness height must be greater than zero",
     	"delegate": "UnitBox"
     },
     "e_as": {
