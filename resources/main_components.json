@@ -16,7 +16,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
+      "inflow": "Precipitation,Evapotranspiration",
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "false",

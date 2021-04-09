@@ -17,13 +17,6 @@
       "ask_user": "false",
       "delegate": "UnitBox"
     },
-    "rate": {
-      "type": "expression",
-      "includeinoutput": "true",
-      "description": "Evapotranspiration rate",
-      "ask_user": "false",
-      "expression": "B*e_as*(R_h-1)"
-    },
     "wind_speed":{
     	"type": "timeseries",
 	"includeinoutput": "true",
@@ -37,13 +30,6 @@
 	"description": "Temperature time series",
     	"ask_user": "true",
 	"delegate": "Browser"
-    },
-    "B": {
-    	"type": "expression",
-	"includeinoutput": "false",
-	"description": "B coefficient",
-	"ask_user": "false",
-	"expression": "0.102*wind_speed/(_log(z2/z0))^2"
     },
     "z2" : {
     	"type": "value",
@@ -65,6 +51,13 @@
        "warningmessage": "Roughness height must be greater than zero",
     	"delegate": "UnitBox"
     },
+    "B": {
+    	"type": "expression",
+	"includeinoutput": "false",
+	"description": "B coefficient",
+	"ask_user": "false",
+	"expression": "0.102*wind_speed/(_log(z2/z0))^2"
+    },
     "e_as": {
     	"type": "expression",
     	"expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
@@ -77,6 +70,14 @@
 	"description": "Relative humidity timeseries",
     	"ask_user": "true",
 	"delegate": "Browser"
+    },
+    "rate": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration rate",
+      "ask_user": "false",
+      "expressionaa": "B*e_as*(R_h-1)",
+      "expression": "0.01*(R_h-1)"
     }
   }
 }
