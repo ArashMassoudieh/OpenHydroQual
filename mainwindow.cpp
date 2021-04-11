@@ -130,6 +130,12 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
             connect(action,SIGNAL(triggered()),this, SLOT(insertnumberasdate()));
             menu->exec(ui->tableView->mapToGlobal(pos));
         }
+        if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("Browser"))
+        {
+            QAction* action = menu->addAction("Plot");
+            connect(action,SIGNAL(triggered()),this, SLOT(PlotTimeSeries()));
+            menu->exec(ui->tableView->mapToGlobal(pos));
+        }
     }
 }
 
@@ -142,6 +148,22 @@ void MainWindow::insertnumberasdate()
 {
     double x = QInputDialog::getDouble(this,"Date/Time Value: ","Date/Time value", ui->tableView->model()->data(tableitemrightckicked).toDouble(),0,20000,2);
     ui->tableView->model()->setData(tableitemrightckicked, QString::number(x));
+}
+
+void MainWindow::PlotTimeSeries()
+{
+    QString timeseriesfilename = ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::fullFileNameRole).toString();
+    QString objectname = ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::ObjectName).toString();
+    QString varname = ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::VariableName).toString();
+
+    if (GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries() != nullptr)
+    {
+        Plotter* plot = Plot(*GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries());
+        plot->SetYAxisTitle(varname);
+    }
+
+
+
 }
 
 void MainWindow::addParameter(QAction* item)
@@ -900,6 +922,7 @@ void MainWindow::showgraph()
             Plotter* plot = Plot(*GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries());
             plot->SetYAxisTitle(act->text());
         }
+    return;
     }
     if (timeseriestobeshown == "Modeled vs Measured")
     {

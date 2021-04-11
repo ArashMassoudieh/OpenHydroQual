@@ -132,6 +132,18 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
        return QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate());
        break;
 
+   case CustomRoleCodes::fullFileNameRole:
+       return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty());
+       break;
+
+   case CustomRoleCodes::ObjectName:
+       return QString::fromStdString(quanset->Parent()->GetName());
+       break;
+
+   case CustomRoleCodes::VariableName:
+       return QString::fromStdString(quanset->GetVarAskable(index.row())->GetName());
+       break;
+
    case CustomRoleCodes::EstimateCode:
        return quanset->GetVarAskable(index.row())->Estimable();
        break;

@@ -41,6 +41,8 @@ namespace CustomRoleCodes {
         allowableWordsRole =				3201,
         referedObjectRole =                 3301,
         EstimateCode =                      3401,
+        ObjectName =                        3402,
+        VariableName =                      3403,
     };
 };
 

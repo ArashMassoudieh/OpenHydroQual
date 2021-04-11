@@ -99,6 +99,7 @@ private slots:
     void addParameter(QAction* item);
     void clearcombobox();
     void insertnumberasdate();
+    void PlotTimeSeries();
     void loadnewtemplate();
     void addplugin();
     void showgraph();
