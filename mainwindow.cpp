@@ -847,6 +847,40 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
             QPoint pt(pos);
             menu.exec( tree->mapToGlobal(pos) );
         }
+        QMenu* results = menu->addMenu("Results");
+        if (nd->data(0,CustomRoleCodes::Role::TypeRole).toString() == "Objective Functions")
+        {
+            timeseriestobeshown = "Time Series";
+            QAction* graphaction = results->addAction(timeseriestobeshown);
+            QVariant v = QVariant::fromValue(QString::fromStdString(system.objectivefunction(nd->text(0).toStdString())->GetOutputItem()));
+            graphaction->setData(v);
+            //called_by_clicking_on_graphical_object = true;
+            connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+        }
+        if (nd->data(0,CustomRoleCodes::Role::TypeRole).toString() == "Observations")
+        {
+            timeseriestobeshown = "Modeled vs Measured";
+            QAction* graphaction = results->addAction(timeseriestobeshown);
+            QVariant v = QVariant::fromValue(QString::fromStdString(system.observation(nd->text(0).toStdString())->GetOutputItem()));
+            graphaction->setData(v);
+            graphaction->setProperty("object",QString::fromStdString(system.observation(nd->text(0).toStdString())->GetName()));
+            //called_by_clicking_on_graphical_object = true;
+            connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+        }
+        if (nd->data(0, CustomRoleCodes::Role::TypeRole).toString() == "Sources")
+        {
+            timeseriestobeshown = "Precipitation";
+            if (GetSystem()->source(nd->text(0).toStdString())->Variable("timeseries")!=nullptr)
+            {
+                if (GetSystem()->source(nd->text(0).toStdString())->Variable("timeseries")->GetTimeSeries()!=nullptr)
+                {   QAction* graphaction = menu->addAction(timeseriestobeshown);
+                    QVariant v = QVariant::fromValue(nd->text(0));
+                    graphaction->setData(v);
+                    //called_by_clicking_on_graphical_object = true;
+                    connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+                }
+            }
+        }
     return;
 
     }
@@ -874,38 +908,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
             //called_by_clicking_on_graphical_object = true;
             connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
         }
-        qDebug() << nd->data(0,CustomRoleCodes::Role::TypeRole).toString();
-        if (nd->data(0,CustomRoleCodes::Role::TypeRole).toString() == "Objective Functions")
-        {
-            timeseriestobeshown = "Time Series";
-            QAction* graphaction = results->addAction(timeseriestobeshown);
-            QVariant v = QVariant::fromValue(QString::fromStdString(system.objectivefunction(nd->text(0).toStdString())->GetOutputItem()));
-            graphaction->setData(v);
-            //called_by_clicking_on_graphical_object = true;
-            connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
-        }
-        if (nd->data(0,CustomRoleCodes::Role::TypeRole).toString() == "Observations")
-        {
-            timeseriestobeshown = "Modeled vs Measured";
-            QAction* graphaction = results->addAction(timeseriestobeshown);
-            QVariant v = QVariant::fromValue(QString::fromStdString(system.observation(nd->text(0).toStdString())->GetOutputItem()));
-            graphaction->setData(v);
-            graphaction->setProperty("object",QString::fromStdString(system.observation(nd->text(0).toStdString())->GetName()));
-            //called_by_clicking_on_graphical_object = true;
-            connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
-        }
-        if (nd->data(0, CustomRoleCodes::Role::TypeRole).toString() == "Sources")
-        {
-            timeseriestobeshown = "Precipitation";
-            if (GetSystem()->source(nd->text(0).toStdString())->Variable("timeseries")->GetTimeSeries()!=nullptr)
-            {   QAction* graphaction = menu.addAction(timeseriestobeshown);
-                QVariant v = QVariant::fromValue(nd->text(0));
-                graphaction->setData(v);
-                //called_by_clicking_on_graphical_object = true;
-                connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
-            }
-        }
-        QPoint pt(pos);
+
         menu.exec( tree->mapToGlobal(pos) );
 
     }
@@ -948,6 +951,11 @@ void MainWindow::showgraph()
     }
     else
     {    
+        if (GetSystem()->GetOutputs()[item.toStdString()].n==0)
+        {
+            QMessageBox::question(this, "Time Series is empty!", "The result for this quantity is empty!", QMessageBox::Ok);
+            return;
+        }
         Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
         plot->SetYAxisTitle(act->text());
     }
