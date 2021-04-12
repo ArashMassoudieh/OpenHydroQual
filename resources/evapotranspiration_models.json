@@ -45,7 +45,7 @@
     	"ask_user": "true",
 	"includeinoutput": "false",
     	"description": "Roughness height",
-    	"default": "0.05",
+    	"default": "0.0003",
     	"criteria": "z0>0",
        "warningmessage": "Roughness height must be greater than zero",
     	"delegate": "UnitBox"
@@ -55,7 +55,7 @@
 	"includeinoutput": "true",
 	"description": "B coefficient",
 	"ask_user": "false",
-	"expression": "0.102*wind_speed/(_log(z2/z0))^2"
+	"expression": "0.000102*wind_speed/(_log(z2/z0))^2"
     },
     "e_as": {
     	"type": "expression",
@@ -122,6 +122,130 @@
       "description": "Evapotranspiration rate",
       "ask_user": "false",
       "expression": "-solar_radiation/(l_v*1000)*86400"
+    }
+  },
+  "Evapotranspiration_Priestly_Taylor (S)": {
+    "type": "source",
+    "typecategory": "Sources",
+    "icon": {
+      "filename": "Evapotranspiration_Priestly_Taylor.png"
+    },
+    "name": {
+      "description": "Name",      
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*(depth/(depth+0.001))",
+      "ask_user": "false"
+    },
+    "solar_radiation":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Solar Radiation (W/m^2)",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "Temperature":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Temperature time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "wind_speed":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "wind time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "R_h" : {
+    	"type": "timeseries",
+    	"includeinoutput": "true",
+	"description": "Relative humidity timeseries",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "z2" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Wind measurement elevation",
+    	"default": "2",
+    	"criteria": "z2>0",
+        "warningmessage": "Wind reference height must be greater than zero",
+    	"delegate": "UnitBox"
+    },
+    "z0" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Roughness height",
+    	"default": "0.0003",
+    	"criteria": "z0>0",
+       "warningmessage": "Roughness height must be greater than zero",
+    	"delegate": "UnitBox"
+    },
+    "gamma" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "psychrometric constant (Pa/C)",
+    	"default": "66.8",
+    	"criteria": "gamma>0",
+       "warningmessage": "psychrometric constant must be greater than zero",
+    	"delegate": "UnitBox"
+    },
+    "B": {
+    	"type": "expression",
+	"includeinoutput": "true",
+	"description": "B coefficient",
+	"ask_user": "false",
+	"expression": "0.000102*wind_speed/(_log(z2/z0))^2"
+    },
+    "e_as": {
+    	"type": "expression",
+    	"expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
+	"includeinoutput": "true",
+	"description": "Saturated humidity"
+    },
+    "Ea": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Aerodynamic Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "B*e_as*(R_h-1)/1000"
+    },
+    "l_v" :
+    {
+	"type": "expression",
+	"description": "Latent Heat of Evaporation (J/kg)",
+      	"expression": "2501000-2370*Temperature",
+	"ask_user": "false"
+    },
+    "Er": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Radiation-based Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "-solar_radiation/(l_v*1000)*86400"
+    },
+    "Delta": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Gradient of e_as vs T",
+      "ask_user": "false",
+      "expression": "4098*e_as/(237.3+Temperature)"
+    },
+    "rate": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "(Delta*Er/(Delta+gamma))+(gamma*Ea/(Delta+gamma))"
     }
   }
 }
