@@ -1,5 +1,5 @@
 {
-  "Evapotranspiration_Aerodynamic": {
+  "Evapotranspiration_Aerodynamic (S)": {
     "type": "source",
     "typecategory": "Sources",
     "icon": {
@@ -14,8 +14,7 @@
     "coefficient": {
       "type": "expression",
       "expression": "area*(depth/(depth+0.001))",
-      "ask_user": "false",
-      "delegate": "UnitBox"
+      "ask_user": "false"
     },
     "wind_speed":{
     	"type": "timeseries",
@@ -77,6 +76,52 @@
       "description": "Evapotranspiration rate",
       "ask_user": "false",
       "expression": "B*e_as*(R_h-1)/1000"
+    }
+  },
+  "Evapotranspiration_Energy_Balance (S)": {
+    "type": "source",
+    "typecategory": "Sources",
+    "icon": {
+      "filename": "Evapotranspiration_energy_balance.png"
+    },
+    "name": {
+      "description": "Name",      
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*(depth/(depth+0.001))",
+      "ask_user": "false"
+    },
+    "solar_radiation":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Solar Radiation (W/m^2)",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "Temperature":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Temperature time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "l_v" :
+    {
+	"type": "expression",
+	"description": "Latent Heat of Evaporation (J/kg)",
+      	"expression": "2501000-2370*Temperature",
+	"ask_user": "false"
+    },
+    "rate": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "-solar_radiation/(l_v*1000)*86400"
     }
   }
 }
