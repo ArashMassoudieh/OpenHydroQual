@@ -1,9 +1,9 @@
 {
-  "Evapotranspiration_Aerodynamic (S)": {
+  "Evapotranspiration_Aerodynamic (Soil)": {
     "type": "source",
     "typecategory": "Sources",
     "icon": {
-      "filename": "Evapotranspiration_Aerodynamic.png"
+      "filename": "Evapotranspiration_Aerodynamic_soil.png"
     },
     "name": {
       "description": "Name",      
@@ -13,7 +13,7 @@
     },
     "coefficient": {
       "type": "expression",
-      "expression": "area*(depth/(depth+0.001))",
+      "expression": "area*(Se/(Se+0.001))",
       "ask_user": "false"
     },
     "wind_speed":{
@@ -86,11 +86,11 @@
       "expression": "B*e_as*(R_h-1)/1000"
     }
   },
-  "Evapotranspiration_Time_Series (S)": {
+  "Evapotranspiration_Time_Series (Soil)": {
     "type": "source",
     "typecategory": "Sources",
     "icon": {
-      "filename": "Evapotranspiration_timeseries.png"
+      "filename": "Evapotranspiration_timeseries_soil.png"
     },
     "name": {
       "description": "Name",      
@@ -100,7 +100,7 @@
     },
     "coefficient": {
       "type": "expression",
-      "expression": "area*(depth/(depth+0.001))",
+      "expression": "area*(Se/(Se+0.001))",
       "ask_user": "false"
     },
     "corr_fact" : {
@@ -126,11 +126,11 @@
       "expression": "corr_fact*timeseries"
     }
   },
-  "Evapotranspiration_Energy_Balance (S)": {
+  "Evapotranspiration_Energy_Balance (Soil)": {
     "type": "source",
     "typecategory": "Sources",
     "icon": {
-      "filename": "Evapotranspiration_energy_balance.png"
+      "filename": "Evapotranspiration_energy_balance_soil.png"
     },
     "name": {
       "description": "Name",      
@@ -140,7 +140,7 @@
     },
     "coefficient": {
       "type": "expression",
-      "expression": "area*(depth/(depth+0.001))",
+      "expression": "area*(Se/(Se+0.001))",
       "ask_user": "false"
     },
     "solar_radiation":{
@@ -180,11 +180,11 @@
       "expression": "-corr_fact*solar_radiation/(l_v*1000)*86400"
     }
   },
-  "Evapotranspiration_Priestly_Taylor (S)": {
+  "Evapotranspiration_Priestly_Taylor (Soil)": {
     "type": "source",
     "typecategory": "Sources",
     "icon": {
-      "filename": "Evapotranspiration_Priestly_Taylor.png"
+      "filename": "Evapotranspiration_Priestly_Taylor_soil.png"
     },
     "name": {
       "description": "Name",      
@@ -194,7 +194,7 @@
     },
     "coefficient": {
       "type": "expression",
-      "expression": "area*(depth/(depth+0.001))",
+      "expression": "area*(Se/(Se+0.001))",
       "ask_user": "false"
     },
     "solar_radiation":{

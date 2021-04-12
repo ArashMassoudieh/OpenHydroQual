@@ -16,7 +16,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
+      "inflow": "Precipitation,Evapotranspiration",
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "false",
@@ -24,6 +24,13 @@
       "delegate": "UnitBox",
       "unit": "m~^3",
       "estimate": "true"
+    },
+    "Evapotranspiration": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources"
     },
     "depth": {
       "type": "value",
@@ -101,9 +108,9 @@
       "delegate": "UnitBox",
       "unit": "",
       "estimate": "true",
-	  "default": "1.41",
-	  "criteria": "n>0",
-	  "warningmessage": "Van Genuchten's n must be greater than zero"
+      "default": "1.41",
+      "criteria": "n>0",
+      "warningmessage": "Van Genuchten's n must be greater than zero"
     },
     "m": {
       "type": "expression",
@@ -124,11 +131,11 @@
     "Se": {
       "type": "expression",
       "expression" : "_max(_min((theta-theta_res)/(theta_sat-theta_res);0.9999);0.0001)",
-	  "description": "Effective Moisture content",
+      "description": "Effective Moisture content",
       "ask_user": "false",
       "delegate": "UnitBox",
       "unit": "",
-	  "includeinoutput": "true"
+      "includeinoutput": "true"
     },
     "x": {
       "type": "value",
