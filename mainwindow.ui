@@ -49,11 +49,16 @@
      <property name="title">
       <string>Preferences</string>
      </property>
-     <addaction name="actionLoad_a_new_template"/>
      <addaction name="actionAddPlugin"/>
+    </widget>
+    <widget class="QMenu" name="menuRecent">
+     <property name="title">
+      <string>Recent Files</string>
+     </property>
     </widget>
     <addaction name="actionNew_Project"/>
     <addaction name="actionOpen"/>
+    <addaction name="menuRecent"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
     <addaction name="separator"/>
@@ -73,9 +78,16 @@
     <addaction name="actionValidate"/>
     <addaction name="actionRun"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuFilw"/>
    <addaction name="menuView"/>
    <addaction name="menuModel"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="iconSize">
@@ -212,6 +224,16 @@
   <action name="actionAddPlugin">
    <property name="text">
     <string>Add Plugin</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actiondddd">
+   <property name="text">
+    <string>dddd</string>
    </property>
   </action>
  </widget>
