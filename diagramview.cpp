@@ -28,18 +28,24 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
 {
     if (mainWindow()->propModel())
         mainWindow()->resetPropModel();
-    Node *node = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
-    if (node)
-        if (node->itemType==Object_Types::Block)
-        {
-            qDebug() << "Name: "<< node->Name()<<" Flag:" << node->flags() << "enabled:" << node->isEnabled() << "active:" << node->isActive();
+    QList<QGraphicsItem*> nodeedges = items(event->pos());
+    QList<Edge*> edgelist;
+    QList<Node*> nodelist;
+
+    Edge *edge=nullptr;
+    Node *node=nullptr;
+    if (nodeedges.size()>0)
+    {   int i=qrand()%nodeedges.size();
+        if (nodeedges[i]->type()==65537)
+        {   node = qgraphicsitem_cast<Node*> (nodeedges[i]); //Get the item at the position
+            qDebug()<<i<<nodeedges[i]->type()<<node->Name();
         }
-    Edge *edge = qgraphicsitem_cast<Edge*> (itemAt(event->pos())); //Get the item at the position
-    if (edge)
-        if (edge->itemType==Object_Types::Connector)
-        {
-            qDebug() << "Name: " << edge->Name() << " Flag:" << edge->flags() << "enabled:" << edge->isEnabled() << "active:" << edge->isActive();
+        else if (nodeedges[i]->type()==65538)
+        {   edge = qgraphicsitem_cast<Edge*> (nodeedges[i]); //Get the item at the position
+            qDebug()<<i<<nodeedges[i]->type()<<edge->Name();
         }
+    }
+
     if (!node && !edge && Operation_Mode!=Operation_Modes::Pan && Operation_Mode!=Operation_Modes::ZoomWindow)
     {
         qDebug()<<"Mode set to normal";
@@ -374,8 +380,27 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         {
 
         }
-        Node *node = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
-        Edge *edge = qgraphicsitem_cast<Edge*> (itemAt(event->pos())); //Get the item at the position
+        QList<QGraphicsItem*> nodeedges = items(event->pos());
+        QList<Edge*> edgelist;
+        QList<Node*> nodelist;
+
+        Edge *edge=nullptr;
+        Node *node=nullptr;
+        if (nodeedges.size()>0)
+        {
+            for (unsigned int i=0; i<nodeedges.size(); i++) nodeedges[i]->setSelected(false);
+            int i=qrand()%nodeedges.size();
+            if (nodeedges[i]->type()==65537)
+            {   node = qgraphicsitem_cast<Node*> (nodeedges[i]); //Get the item at the position
+                qDebug()<<i<<nodeedges[i]->type()<<node->Name();
+                node->setSelected(true);
+            }
+            else if (nodeedges[i]->type()==65538)
+            {   edge = qgraphicsitem_cast<Edge*> (nodeedges[i]); //Get the item at the position
+                qDebug()<<i<<nodeedges[i]->type()<<edge->Name();
+                edge->setSelected(true);
+            }
+        }
         if (event->button() == Qt::LeftButton && dragMode()!=DragMode::RubberBandDrag)
         {   if (event->modifiers()) {
                 if (node)
