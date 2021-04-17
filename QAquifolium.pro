@@ -52,6 +52,7 @@ SOURCES += \
     ../jsoncpp/src/lib_json/json_value.cpp \
     ../jsoncpp/src/lib_json/json_writer.cpp \
     CustomPlotZoom.cpp \
+    aboutdialog.cpp \
     diagramview.cpp \
     edge.cpp \
         main.cpp \
@@ -111,6 +112,7 @@ HEADERS += \
     ../Aquifolium/include/precalculatedfunction.h \
     ../Aquifolium/include/solutionlogger.h \
     CustomPlotZoom.h \
+    aboutdialog.h \
     diagramview.h \
     edge.h \
         mainwindow.h \
@@ -171,6 +173,7 @@ HEADERS += \
     ../Aquifolium/include/reaction.h
 
 FORMS += \
+    aboutdialog.ui \
         mainwindow.ui \
     runtimewindow.ui \
     plotter.ui \

@@ -1,3 +1,12 @@
+#define qaquifolium_version "1.0.2"
+#define last_modified "April 15, 2021"
+
+#define RECENT "recentFiles.txt"
+
+#ifndef max_num_recent_files
+#define max_num_recent_files 15
+#endif
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <string>
@@ -68,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
     connect(ui->actionSave_as,SIGNAL(triggered()),this,SLOT(onsaveas()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnew()));
+    connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(onabout()));
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
     connect(ui->actionLoad_a_new_template,SIGNAL(triggered()),this,SLOT(loadnewtemplate()));
     connect(ui->actionAddPlugin,SIGNAL(triggered()),this,SLOT(addplugin()));
@@ -1136,6 +1146,18 @@ void MainWindow::onzoomall()
     dView->fitInView(newRect,Qt::KeepAspectRatio);
 }
 
+void MainWindow::onabout()
+{
+    AboutDialog* abtdlg = new AboutDialog(this);
+    abtdlg->AppendText(QString("QAquifolium - version: ") + QString(qaquifolium_version));
+    abtdlg->AppendText(QString("Last modified: ") + QString(last_modified));
+    abtdlg->AppendText("EnviroInformatics, LLC");
+    abtdlg->AppendText("Plugins added:");
+    for (unsigned int i=0; i<addedtemplatefilenames.size(); i++)
+        abtdlg->AppendText(QString::fromStdString("    ") + QString::fromStdString(addedtemplatefilenames[i]));
+    abtdlg->show();
+}
+
 void MainWindow::onpantriggered()
 {
     if (actionpan->isChecked())
@@ -1181,8 +1203,10 @@ void MainWindow::onsaveas()
             fileName = fileName + ".scr";
         }
         system.SavetoScriptFile(fileName.toStdString(),maintemplatefilename, addedtemplatefilenames);
+
         workingfolder = QFileInfo(fileName).canonicalPath();
         SetFileName(fileName);
+        addToRecentFiles(fileName,true);
     }
 
 }
@@ -1190,7 +1214,9 @@ void MainWindow::onsaveas()
 void MainWindow::onsave()
 {
     if (filename!="")
-        system.SavetoScriptFile(filename.toStdString(),maintemplatefilename, addedtemplatefilenames);
+    {   system.SavetoScriptFile(filename.toStdString(),maintemplatefilename, addedtemplatefilenames);
+        addToRecentFiles(filename,true);
+    }
     else
         onsaveas();
 
@@ -1211,6 +1237,7 @@ void MainWindow::onopen()
         system.CreateFromScript(scr,entitiesfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
         SetFileName(fileName);
+        addToRecentFiles(fileName,true);
     }
     addedtemplatefilenames = system.addedtemplates; 
     PopulatePropertyTable(nullptr);
@@ -1220,6 +1247,28 @@ void MainWindow::onopen()
     LogAllSystemErrors();
 
 }
+
+bool MainWindow::LoadModel(QString fileName)
+{
+    bool success = true;
+    if (fileName!="")
+    {
+        Script scr(fileName.toStdString(),&system);
+        system.clear();
+        success = system.CreateFromScript(scr,entitiesfilename);
+        workingfolder = QFileInfo(fileName).canonicalPath();
+        SetFileName(fileName);
+        addToRecentFiles(fileName,true);
+    }
+    addedtemplatefilenames = system.addedtemplates;
+    PopulatePropertyTable(nullptr);
+    RecreateGraphicItemsFromSystem();
+    RefreshTreeView();
+    BuildObjectsToolBar();
+    LogAllSystemErrors();
+
+}
+
 
 void MainWindow::LogAllSystemErrors(ErrorHandler *errs)
 {
@@ -1494,4 +1543,123 @@ void MainWindow::SetFileName(const QString &_filename)
     if (filename.split('/').size()>0)
         setWindowTitle("QAquifolium: " + filename.split('/')[filename.split('/').size()-1]);
 
+}
+
+void MainWindow::readRecentFilesList()
+{
+//	//qDebug() << localAppFolderAddress();
+//	QString add = localAppFolderAddress();
+    ifstream file(localAppFolderAddress().toStdString()+RECENT);
+    int count = 0;
+    if (file.good())
+    {
+        string line;
+        while (!file.eof())
+        {
+            getline(file, line);
+            count++;
+        }
+        file.close();
+    }
+
+    file.open(localAppFolderAddress().toStdString() + RECENT);
+    int n = 0;
+    if (file.good())
+    {
+        string line;
+        while (!file.eof())
+        {
+            getline(file, line);
+            n++;
+            QString fileName = QString::fromStdString(line);
+            //qDebug() << fileName; QString::fromStdString(line);
+            if (n>count-max_num_recent_files)
+                addToRecentFiles(fileName, false);
+
+        }
+        file.close();
+
+    }
+}
+void MainWindow::addToRecentFiles(QString fileName, bool addToFile)
+{
+    bool rewriteFile = false;
+    if (recentFiles.contains(fileName) && fileName.trimmed() != "")
+        if (recentFiles.indexOf(fileName) != recentFiles.count()-1)
+        {
+            ui->menuRecent->removeAction(ui->menuRecent->actions()[recentFiles.size() - 1 - recentFiles.indexOf(fileName)]);
+            recentFiles.removeOne(fileName);
+            addToFile = false;
+            rewriteFile = true;
+        }
+
+    if (!recentFiles.contains(fileName) && fileName.trimmed() != "")
+    {
+        recentFiles.append(fileName);
+        //		QAction * a = ui->menuRecent->addAction(fileName);// , this, SLOT(recentItem()));
+        QAction * fileNameAction = new QAction(fileName, nullptr);
+        if (ui->menuRecent->actions().size())
+            ui->menuRecent->insertAction(ui->menuRecent->actions()[0], fileNameAction);
+        else
+            ui->menuRecent->addAction(fileNameAction);
+        QObject::connect(fileNameAction, SIGNAL(triggered()), this, SLOT(on_actionRecent_triggered()));
+
+        if (addToFile)
+        {
+            ofstream file(localAppFolderAddress().toStdString() + RECENT, fstream::app);
+            if (file.good())
+                file << fileName.toStdString() << std::endl;
+            file.close();
+        }
+        if (rewriteFile)
+            writeRecentFilesList();
+    }
+}
+
+void MainWindow::writeRecentFilesList()
+{
+    ofstream file(localAppFolderAddress().toStdString() + RECENT);
+    if (file.good())
+    {
+        foreach (QString fileName , recentFiles)
+            file << fileName.toStdString() << std::endl;
+    }
+    file.close();
+}
+
+QString localAppFolderAddress() {
+    #ifdef _WIN32
+    TCHAR szPath[MAX_PATH];
+
+    if (SUCCEEDED(SHGetFolderPath(NULL,
+        CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE,
+        NULL,
+        0,
+        szPath)))
+    {
+        return QString("%1/").arg(QString::fromStdWString(szPath));
+        //PathAppend(szPath, TEXT("New Doc.txt"));
+        //HANDLE hFile = CreateFile(szPath, ...);
+    }
+#else
+    return QString();
+#endif
+}
+
+void MainWindow::on_actionRecent_triggered()
+{
+    QAction* a = static_cast<QAction*> (QObject::sender());
+    QString fileName = a->text();
+    if (LoadModel(fileName))
+    {
+        addToRecentFiles(fileName, false);
+    }
+
+}
+
+void MainWindow::removeFromRecentList(QAction* selectedFileAction)
+{
+    recentFiles.removeAll(selectedFileAction->text());
+    ui->menuRecent->removeAction(selectedFileAction);
+    writeRecentFilesList();
 }

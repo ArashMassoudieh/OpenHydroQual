@@ -10,6 +10,7 @@
 #include "plotter.h"
 #include "GA.h"
 #include "logwindow.h"
+#include "aboutdialog.h"
 
 
 
@@ -66,7 +67,12 @@ private:
     QString timeseriestobeshown;
     QString filename="";
     void SetFileName(const QString &_filename);
-
+    void readRecentFilesList();
+    void addToRecentFiles(QString fileName, bool addToFile);
+    void writeRecentFilesList();
+    QStringList recentFiles;
+    void removeFromRecentList(QAction* selectedFileAction);
+    bool LoadModel(QString fileName);
 private slots:
     void on_check_object_browser();
     void on_check_showlogwindow();
@@ -86,6 +92,7 @@ private slots:
     void onzoomin();
     void onzoomout();
     void onzoomall();
+    void onabout();
     void onpantriggered();
     void onzoomwindowtriggered();
     void onsave();
@@ -104,6 +111,9 @@ private slots:
     void addplugin();
     void showgraph();
     void onDeleteItem();
+    void on_actionRecent_triggered();
 };
+
+QString localAppFolderAddress();
 
 #endif // MAINWINDOW_H
