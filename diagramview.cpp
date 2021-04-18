@@ -743,6 +743,14 @@ void DiagramView::nodeContextMenuRequested(Node* n, QPointF pos, QMenu *menu)
     bool called_by_clicking_on_graphical_object = false;
     if (!menu) {
         menu = new QMenu;
+        // label
+        QLabel *text = new QLabel(n->Name(), this);
+        text->setStyleSheet("color: blue");
+        // init widget action
+        QWidgetAction *widAct= new QWidgetAction(this);
+        widAct->setDefaultWidget(text);
+        menu->addAction(widAct);
+        menu->addSeparator();
         QAction *deleteaction = menu->addAction("Delete");
         called_by_clicking_on_graphical_object = true;
         nodenametobedeleted = n->Name(); 
@@ -800,6 +808,13 @@ void DiagramView::edgeContextMenuRequested(Edge* e, QPointF pos, QMenu *menu)
     bool called_by_clicking_on_graphical_object = false;
     if (!menu) {
         menu = new QMenu();
+        QLabel *text = new QLabel(e->Name(), this);
+        text->setStyleSheet("color: blue");
+        // init widget action
+        QWidgetAction *widAct= new QWidgetAction(this);
+        widAct->setDefaultWidget(text);
+        menu->addAction(widAct);
+        menu->addSeparator();
         deleteAction = menu->addAction("Delete");
         called_by_clicking_on_graphical_object = true;
         nodenametobedeleted = e->Name();
