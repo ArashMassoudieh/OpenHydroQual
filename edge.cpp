@@ -267,6 +267,7 @@ void Edge::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     QPointF p = QPointF(x() + event->pos().x(), y() + event->pos().y());
     parent->edgeContextMenuRequested(this, p);
+    this->setZValue(qrand()%100-50);
 
 }
 

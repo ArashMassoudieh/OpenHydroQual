@@ -388,17 +388,19 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         Node *node=nullptr;
         if (nodeedges.size()>0)
         {
-            for (unsigned int i=0; i<nodeedges.size(); i++) nodeedges[i]->setSelected(false);
+            for (unsigned int i=0; i<nodeedges.size(); i++) {nodeedges[i]->setSelected(false);nodeedges[i]->setZValue(-2);}
             int i=qrand()%nodeedges.size();
             if (nodeedges[i]->type()==65537)
             {   node = qgraphicsitem_cast<Node*> (nodeedges[i]); //Get the item at the position
                 qDebug()<<i<<nodeedges[i]->type()<<node->Name();
                 node->setSelected(true);
+                node->setZValue(100);
             }
             else if (nodeedges[i]->type()==65538)
             {   edge = qgraphicsitem_cast<Edge*> (nodeedges[i]); //Get the item at the position
                 qDebug()<<i<<nodeedges[i]->type()<<edge->Name();
                 edge->setSelected(true);
+                node->setZValue(100);
             }
         }
         if (event->button() == Qt::LeftButton && dragMode()!=DragMode::RubberBandDrag)
