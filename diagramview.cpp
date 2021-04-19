@@ -400,7 +400,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             {   edge = qgraphicsitem_cast<Edge*> (nodeedges[i]); //Get the item at the position
                 qDebug()<<i<<nodeedges[i]->type()<<edge->Name();
                 edge->setSelected(true);
-                node->setZValue(100);
+                edge->setZValue(100);
             }
         }
         if (event->button() == Qt::LeftButton && dragMode()!=DragMode::RubberBandDrag)
