@@ -392,6 +392,7 @@
     <ClCompile Include="..\Aquifolium\src\System.cpp" />
     <ClCompile Include="..\Aquifolium\src\Vector.cpp" />
     <ClCompile Include="..\Aquifolium\src\Vector_arma.cpp" />
+    <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="CustomPlotZoom.cpp" />
     <ClCompile Include="delegate.cpp" />
     <ClCompile Include="diagramview.cpp" />
@@ -458,6 +459,7 @@
     </QtMoc>
     <QtMoc Include="diagramview.h">
     </QtMoc>
+    <QtMoc Include="aboutdialog.h" />
     <ClInclude Include="CustomPlotZoom.h" />
     <ClInclude Include="edge.h" />
     <ClInclude Include="enums.h" />
@@ -489,6 +491,7 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
+    <QtUic Include="aboutdialog.ui" />
     <QtUic Include="logwindow.ui" />
     <QtUic Include="mainwindow.ui">
     </QtUic>

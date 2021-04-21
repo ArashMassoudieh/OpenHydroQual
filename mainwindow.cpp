@@ -1,6 +1,12 @@
 #define qaquifolium_version "1.0.2"
 #define last_modified "April 15, 2021"
 
+#ifdef _WIN32
+#include <windows.h>
+#include <shlobj.h>
+#pragma comment(lib, "shell32.lib")
+#endif
+
 #define RECENT "recentFiles.txt"
 
 #ifndef max_num_recent_files
