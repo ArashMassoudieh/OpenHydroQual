@@ -100,7 +100,8 @@ SOURCES += \
     expressioneditor.cpp \
     logwindow.cpp \
     ../Aquifolium/src/Link.cpp \
-    ../Aquifolium/src/reaction.cpp
+    ../Aquifolium/src/reaction.cpp \
+    wizard_select_dialog.cpp
 
 HEADERS += \
     ../Aquifolium/include/Objective_Function.h \
@@ -170,14 +171,16 @@ HEADERS += \
     expressioneditor.h \
     ../Aquifolium/include/GA/GA.hpp \
     logwindow.h \
-    ../Aquifolium/include/reaction.h
+    ../Aquifolium/include/reaction.h \
+    wizard_select_dialog.h
 
 FORMS += \
     aboutdialog.ui \
         mainwindow.ui \
     runtimewindow.ui \
     plotter.ui \
-    logwindow.ui
+    logwindow.ui \
+    wizard_select_dialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
