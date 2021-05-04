@@ -1,6 +1,5 @@
 #include "wizard_select_dialog.h"
 #include "qdir.h"
-#include "Wizard/Wizard_Script_Reader.h"
 #include "mainwindow.h"
 
 Wizard_select_dialog::Wizard_select_dialog(QString *template_selected, MainWindow *parent)
