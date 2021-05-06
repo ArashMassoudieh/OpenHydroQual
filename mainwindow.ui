@@ -50,6 +50,7 @@
       <string>Preferences</string>
      </property>
      <addaction name="actionAddPlugin"/>
+     <addaction name="actionAdd_plugin"/>
     </widget>
     <widget class="QMenu" name="menuRecent">
      <property name="title">
@@ -223,7 +224,7 @@
   </action>
   <action name="actionAddPlugin">
    <property name="text">
-    <string>Add Plugin</string>
+    <string>Add plugin from file</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -234,6 +235,11 @@
   <action name="actiondddd">
    <property name="text">
     <string>dddd</string>
+   </property>
+  </action>
+  <action name="actionAdd_plugin">
+   <property name="text">
+    <string>Add plugin</string>
    </property>
   </action>
  </widget>

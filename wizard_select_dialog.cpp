@@ -1,28 +1,26 @@
 #include "wizard_select_dialog.h"
-#include "qdir.h"
 #include "mainwindow.h"
 
-Wizard_select_dialog::Wizard_select_dialog(QString *template_selected, MainWindow *parent)
+Wizard_select_dialog::Wizard_select_dialog(MainWindow *parent)
 	: QDialog(parent)
 {
 	ui.setupUi(this);
 	ui.listWidget->clear(); 
-	ui.listWidget->setIconSize(QSize(200, 200));
+    QString path = qApp->applicationDirPath() + "/../../resources/";
+    ui.listWidget->setIconSize(QSize(100, 100));
 	
-	QString path = QApplication::applicationDirPath() + "/templates";
-	QMap<QString, QString> template_list = get_icons(path);
-	QMap<QString, QString> descriptions = get_descriptions(path);
-	template_filenames = get_templates(path);
+    if (!get_templates(path + "default_templates.list"))
+         this->close();
 
-	for (QString name : template_list.keys())
+
+    for (int i=0; i<DefaultPlugins.size(); i++ )
 	{
-		QIcon icon(path + "/" + template_list[name]);
-		QListWidgetItem *list_item = new QListWidgetItem(icon, name);
-		list_item->setToolTip(descriptions[name]);
+        QIcon icon(path + "Icons/" + DefaultPlugins[i].IconFileName);
+        QListWidgetItem *list_item = new QListWidgetItem(icon, DefaultPlugins[i].Description);
+        list_item->setToolTip(DefaultPlugins[i].Description);
 		
 		ui.listWidget->addItem(list_item);
 	}
-	selected_template = template_selected;
 
 	connect(ui.buttonBox, SIGNAL(accepted()), this, SLOT(on_ok_clicked()));
 	connect(ui.buttonBox, SIGNAL(rejected()), this, SLOT(on_cancel_clicked()));
@@ -35,63 +33,40 @@ Wizard_select_dialog::~Wizard_select_dialog()
 	
 }
 
-QMap<QString, QString> get_templates(QString & path)
+bool Wizard_select_dialog::get_templates(const QString & TemplateListFileName)
 {
-	QDir dir(path);
-	QMap<QString, QString> out; 
-	foreach(QFileInfo item, dir.entryInfoList())
-	{
-		if (item.isFile() && item.fileName().right(3).toLower() == "wiz")
-		{
-			Wizard_Script_Reader W(item.absoluteFilePath());
-			out[W.get_script_name()] = item.absoluteFilePath();
-		}
-	}
-	return out; 
+    QFile inputFile(TemplateListFileName);
+    if (!inputFile.open(QIODevice::ReadOnly))
+        return false;
+
+    QTextStream line(&inputFile);
+    while (!line.atEnd())
+    {
+        QString content = line.readLine();
+        QStringList contentlist = content.split(",");
+        plugin_information plugin_info;
+        if (contentlist.size()>=3)
+        {
+            plugin_info.Filename = contentlist[1].trimmed();
+            plugin_info.Description = contentlist[0].trimmed();
+            plugin_info.IconFileName = contentlist[2].trimmed();
+        }
+        DefaultPlugins.append(plugin_info);
+    }
+
+    return true;
 }
 
-QMap<QString, QString> get_icons(QString & path)
-{
-	QDir dir(path);
-	QMap<QString, QString> out;
-	foreach(QFileInfo item, dir.entryInfoList())
-	{
-		if (item.isFile() && item.fileName().right(3).toLower() == "wiz")
-		{
-			Wizard_Script_Reader W(item.absoluteFilePath());
-			out[W.get_script_name()] = W.get_script_icon();
-		}
-	}
-	return out;
-}
 
-QMap<QString, QString> get_descriptions(QString & path)
-{
-	QDir dir(path);
-	QMap<QString, QString> out;
-	foreach(QFileInfo item, dir.entryInfoList())
-	{
-		if (item.isFile() && item.fileName().right(3).toLower() == "wiz")
-		{
-			Wizard_Script_Reader W(item.absoluteFilePath());
-			out[W.get_script_name()] = W.get_description(); 
-		}
-	}
-	return out;
-}
 
 void Wizard_select_dialog::on_ok_clicked()
 {
-	selected_template->clear(); 
-	if (ui.listWidget->selectedItems().size())
-	{
-		selected_template->append(template_filenames[ui.listWidget->selectedItems()[0]->text()]);
-		this->close();
-	}
+    selected_template = DefaultPlugins[ui.listWidget->currentRow()].Filename;
+    this->close();
 }
 
 void Wizard_select_dialog::on_cancel_clicked()
 {
-	selected_template->clear();
+    selected_template = "";
 	this->close();
 }
