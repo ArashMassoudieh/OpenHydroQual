@@ -21,7 +21,7 @@ class Wizard_select_dialog : public QDialog
 	Q_OBJECT
 
 public:
-    Wizard_select_dialog(MainWindow *parent = 0);
+    Wizard_select_dialog(MainWindow *parent);
 	~Wizard_select_dialog();
 
 private:
@@ -29,6 +29,7 @@ private:
     QString selected_template;
     QVector<plugin_information> DefaultPlugins;
     bool get_templates(const QString &TemplateList);
+    MainWindow *parent = nullptr;
 
 
 private slots:

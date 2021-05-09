@@ -1,10 +1,12 @@
 #include "wizard_select_dialog.h"
 #include "mainwindow.h"
+#include "utilityfuncs.h"
 
-Wizard_select_dialog::Wizard_select_dialog(MainWindow *parent)
-	: QDialog(parent)
+Wizard_select_dialog::Wizard_select_dialog(MainWindow *_parent)
+    : QDialog(_parent)
 {
-	ui.setupUi(this);
+    parent = _parent;
+    ui.setupUi(this);
 	ui.listWidget->clear(); 
     QString path = qApp->applicationDirPath() + "/../../resources/";
     ui.listWidget->setIconSize(QSize(100, 100));
@@ -38,16 +40,16 @@ bool Wizard_select_dialog::get_templates(const QString & TemplateListFileName)
     QFile inputFile(TemplateListFileName);
     if (!inputFile.open(QIODevice::ReadOnly))
         return false;
-
+    QString path = qApp->applicationDirPath() + "/../../resources/";
     QTextStream line(&inputFile);
     while (!line.atEnd())
     {
         QString content = line.readLine();
         QStringList contentlist = content.split(",");
         plugin_information plugin_info;
-        if (contentlist.size()>=3)
+        if (contentlist.size()>=3 && fileExists(path+contentlist[1].trimmed()))
         {
-            plugin_info.Filename = contentlist[1].trimmed();
+            plugin_info.Filename = path + contentlist[1].trimmed();
             plugin_info.Description = contentlist[0].trimmed();
             plugin_info.IconFileName = contentlist[2].trimmed();
         }
@@ -62,6 +64,10 @@ bool Wizard_select_dialog::get_templates(const QString & TemplateListFileName)
 void Wizard_select_dialog::on_ok_clicked()
 {
     selected_template = DefaultPlugins[ui.listWidget->currentRow()].Filename;
+    if (parent)
+    {
+        parent->addplugin(DefaultPlugins[ui.listWidget->currentRow()].Filename);
+    }
     this->close();
 }
 

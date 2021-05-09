@@ -43,6 +43,7 @@ public:
     QMap<QCPGraph *, plotformat> graphsClipboard;
     void SetPan(bool panmode) {actionpan->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
     void SetZoomWindow(bool panmode) {actionzoomwindow->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
+    void addplugin(const QString &fileName);
 private:
     logwindow *LogWindow;
     Ui::MainWindow *ui;
@@ -73,6 +74,7 @@ private:
     QStringList recentFiles;
     void removeFromRecentList(QAction* selectedFileAction);
     bool LoadModel(QString fileName);
+
 private slots:
     void on_check_object_browser();
     void on_check_showlogwindow();

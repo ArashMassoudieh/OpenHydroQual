@@ -1,5 +1,5 @@
-#define qaquifolium_version "1.0.2"
-#define last_modified "April 15, 2021"
+#define openhydroqual_version "1.0.3"
+#define last_modified "May 9, 2021"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -1157,7 +1157,7 @@ void MainWindow::onzoomall()
 void MainWindow::onabout()
 {
     AboutDialog* abtdlg = new AboutDialog(this);
-    abtdlg->AppendText(QString("QAquifolium - version: ") + QString(qaquifolium_version));
+    abtdlg->AppendText(QString("OpenHydroQual - version: ") + QString(openhydroqual_version));
     abtdlg->AppendText(QString("Last modified: ") + QString(last_modified));
     abtdlg->AppendText("EnviroInformatics, LLC");
     abtdlg->AppendText("Plugins added:");
@@ -1350,7 +1350,7 @@ void MainWindow::onrunmodel()
 
 void MainWindow::closeEvent (QCloseEvent *event)
 {
-    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "QAquifolium",
+    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "OpenHydroQual",
                                                                 tr("Are you sure?\n"),
                                                                 QMessageBox::Cancel | QMessageBox::Yes,
                                                                 QMessageBox::Yes);
@@ -1525,6 +1525,25 @@ void MainWindow::addplugin()
 
 }
 
+void MainWindow::addplugin(const QString &fileName)
+{
+
+    if (fileName!="")
+    {
+        if (system.AppendQuanTemplate(fileName.toStdString()))
+        {   ui->mainToolBar->clear();
+            BuildObjectsToolBar();
+            RefreshTreeView();
+            addedtemplatefilenames.push_back(fileName.toStdString());
+        }
+        else
+        {
+            LogError("Error in file '" + filename + "' :" +  QString::fromStdString(system.GetMetaModel()->GetLastError()));
+        }
+    }
+
+}
+
 void MainWindow::adddefaultpluging()
 {
     Wizard_select_dialog *Wizard_Select_Form = new Wizard_select_dialog(this);
@@ -1556,7 +1575,7 @@ void MainWindow::SetFileName(const QString &_filename)
 {
     filename = _filename;
     if (filename.split('/').size()>0)
-        setWindowTitle("QAquifolium: " + filename.split('/')[filename.split('/').size()-1]);
+        setWindowTitle("OpenHydroQual: " + filename.split('/')[filename.split('/').size()-1]);
 
 }
 

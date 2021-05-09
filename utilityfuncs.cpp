@@ -6,6 +6,7 @@
 #include <qdatetime.h>
 #include <qstringlist.h>
 #include <qdebug.h>
+#include <qfileinfo.h>
 #endif // Q_version
 #include "math.h"
 
@@ -164,7 +165,6 @@ double timetodayfraction(int hh, int mm, int ss)
 #ifdef Q_version
 QList<int> dayfractiontotime(double dayFraction)
 {
-    QTime qtime;
     dayFraction = fmod(dayFraction, 1.0);
     int hh = dayFraction * 24;
     dayFraction = dayFraction * 24.0 - hh;
@@ -268,10 +268,21 @@ QString string2QString_qt(string s)
     return QString::fromStdString(s);
 }
 
+bool fileExists(QString path) {
+    QFileInfo check_file(path);
+    // check if file exists and if yes: Is it really a file and no directory?
+    if (check_file.exists() && check_file.isFile()) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
 QStringList toQStringList(const vector<string> &s)
 {
     QStringList out;
-    for (int i=0; i<s.size(); i++)
+    for (unsigned int i=0; i<s.size(); i++)
         out<<QString::fromStdString(s[i]);
     return out;
 
