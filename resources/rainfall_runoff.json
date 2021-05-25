@@ -203,6 +203,52 @@
 	      "default": "200,0,100",
 	      "ask_user": "false"
 	    }
+	  },
+	  "distributed_catchment_to_stream_link": {
+	    "type": "link",
+	    "typecategory": "Connectors",
+	    "icon": {
+	      "filename": "dcatchment-stream-link.png"
+	    },
+	    "name": {
+	      "description": "Name",
+	      "type": "string",
+	      "ask_user": "true",
+	      "delegate": "String" 
+	    },
+	    "Width": {
+	      "type": "value",
+	      "description": "The width of flow",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+	      "estimate": "true"
+	     },
+	     "Length": {
+	      "type": "value",
+	      "description": "Centroid to centroid distance of the catchments",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+	      "estimate": "true"
+	     },
+	     "hydraulic_gradient": {
+	      "type": "expression",
+	      "expression": "(head.s-head.e)/Length",
+	      "includeinoutput": "true",
+	      "ask_user": "false"
+	    }, 
+	    "flow": {
+	      "type": "expression",
+	      "expression": "86400*(Width/ManningCoeff.s)*_sqr(hydraulic_gradient)*(_pos(depth.s)^1.666667)",
+	      "includeinoutput": "true",
+	      "applylimit": "true",
+	      "ask_user": "false"
+	    },
+	    "color": {
+	      "type": "string",
+	      "description": "color",
+	      "default": "200,0,100",
+	      "ask_user": "false"
+	    }
 	  }
 }
 	  

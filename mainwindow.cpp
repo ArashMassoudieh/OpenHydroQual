@@ -1263,7 +1263,7 @@ bool MainWindow::LoadModel(QString fileName)
     {
         Script scr(fileName.toStdString(),&system);
         system.clear();
-        success = system.CreateFromScript(scr,entitiesfilename);
+        system.CreateFromScript(scr,entitiesfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
         SetFileName(fileName);
         addToRecentFiles(fileName,true);
