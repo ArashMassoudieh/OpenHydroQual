@@ -1,0 +1,18 @@
+
+To add armadillo header to new project:
+
+Befor starting be sure that these two folders: "armadillo-header" & "lapack-blas_lib_win64" exist in project directory.
+
+Step 1: Right click on project name on Solution Explorer, click on "properties" or " Refrences"
+Step 2: Properties>Configuration Properties>C/C++>General>Additonal Include Directories : add folder "armadillo-header"
+Step 3: Properties>Configuration Properties>C/C++>Preprocessor>Preprocessor Definitions : Copy two below lines:
+ARMA_USE_LAPACK
+ARMA_USE_BLAS
+Step 4: Properties>Configuration Properties>Linker>General>Additonal Library Directories : add folder "lapack-blas_lib_win64"
+Step 5: Properties>Configuration Properties>Linker>Input>Additonal Dependencies : Copy two below lines:
+lapack_win64_MT.lib
+blas_win64_MT.lib
+Step 6: Properties>Configuration Properties>Build Events>Post-Build Event>Command Line : Copy the below line:
+copy lapack-blas_lib_win64\*.dll $(OutDir)
+Step 7: Properties>Configuration Properties>Build Events>Post-Build Event>Description : Copy the below line:
+Copy .DLL to output directory

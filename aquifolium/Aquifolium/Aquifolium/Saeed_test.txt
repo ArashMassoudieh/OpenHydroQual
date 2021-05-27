@@ -1,0 +1,33 @@
+loadtemplate; filename = power_reservoirs_rules.qnt
+setvalue; object=system, quantity=outputpath, value = E:\Projects\Aquifolium_test_cases\Output\
+setvalue; object=system, quantity=inputpath, value = E:\Projects\Aquifolium_test_cases\
+create block; name = Reservoir1, type = Reservoir, Storage=1
+setvalue; object=Reservoir1, quantity=inflow, value=inflow.txt
+create block; name = Reservoir2, type = Reservoir, Storage=0
+create link; name =  Water_Transfer_Pipe, from=Reservoir1, to=Reservoir2, type = Reservoir_link_rule1, Q_max=20, Q_min=0.5, S_min=10, S_max=100
+create block; name = StorageTank, type = User, Storage=0
+create link; name =  User_link, from=Reservoir2, to=StorageTank, type = User_flow, flow=user_flow.txt
+setvalue; object=system, quantity=tend, value=10
+setvalue; object=system, quantity=dt, value=0.01
+setvalue; object=system, quantity=silent, value=1
+create objectivefunction; name=shortage, object=User_link, type = integrate, expression=-_pos(6-flow)
+create parameter; name=Q_max_param, low=20, high=80, value = 20
+create parameter; name=Q_min_param, low=5, high=15, value = 0.5
+create parameter; name=S_min_param, low=5, high=15, value = 10
+create parameter; name=S_max_param, low=20, high=80, value = 100
+setasparameter; object=Water_Transfer_Pipe, parametername=Q_max_param,quantity=Q_max
+setasparameter; object=Water_Transfer_Pipe, parametername=Q_min_param,quantity=Q_min 
+setasparameter; object=Water_Transfer_Pipe, parametername=S_max_param,quantity=S_max 
+setasparameter; object=Water_Transfer_Pipe, parametername=S_min_param,quantity=S_min 
+solve; 
+write errors; filename = errors.txt
+write outputs; filename = output.txt
+setvalue; object=optimizer, quantity = maxpop, value=60
+setvalue; object=optimizer, quantity = ngen, value=100
+setvalue; object=optimizer, quantity = pcross, value=1
+setvalue; object=optimizer, quantity = pmute, value=0.08
+setvalue; object=optimizer, quantity = shakescale, value=0.05
+setvalue; object=optimizer, quantity = shakescalered, value=0.75
+setvalue; object=optimizer, quantity = outputfile, value=GA_out.txt
+optimize;
+

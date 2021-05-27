@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Aquifolium" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Option virtualFolders="Aquifolium/include/;Aquifolium/src/;" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/Aquifolium" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DDebug_mode" />
+					<Add directory="Aquifolium/include" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/Aquifolium" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add directory="include" />
+					<Add directory="Aquifolium/include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-std=c++0x" />
+			<Add option="-fexceptions" />
+			<Add option="-DUSE_ARMA_LAPACK" />
+			<Add option="-DUSE_ARMA_BLAS" />
+			<Add directory="/home/arash/Projects/jsoncpp/include" />
+			<Add directory="include/GA" />
+			<Add directory="include" />
+			<Add directory="Aquifolium/include" />
+		</Compiler>
+		<Linker>
+			<Add option="-larmadillo" />
+			<Add option="-llapack" />
+			<Add option="-lblas" />
+			<Add option="-lomp" />
+		</Linker>
+		<Unit filename="../jsoncpp/src/lib_json/json_reader.cpp" />
+		<Unit filename="../jsoncpp/src/lib_json/json_value.cpp" />
+		<Unit filename="../jsoncpp/src/lib_json/json_writer.cpp" />
+		<Unit filename="include/BTC.h" />
+		<Unit filename="include/BTCSet.h" />
+		<Unit filename="include/Block.h" />
+		<Unit filename="include/Command.h" />
+		<Unit filename="include/Condition.h" />
+		<Unit filename="include/DistributionNUnif.h" />
+		<Unit filename="include/ErrorHandler.h" />
+		<Unit filename="include/Expression.h" />
+		<Unit filename="include/GA/Binary.h" />
+		<Unit filename="include/GA/Distribution.h" />
+		<Unit filename="include/GA/DistributionNUnif.h" />
+		<Unit filename="include/GA/GA.h" />
+		<Unit filename="include/GA/Individual.h" />
+		<Unit filename="include/Link.h" />
+		<Unit filename="include/Matrix.h" />
+		<Unit filename="include/Matrix_arma.h" />
+		<Unit filename="include/MetaModel.h" />
+		<Unit filename="include/NormalDist.h" />
+		<Unit filename="include/Object.h" />
+		<Unit filename="include/Objective_Function.h" />
+		<Unit filename="include/Objective_Function_Set.h" />
+		<Unit filename="include/Parameter.h" />
+		<Unit filename="include/Parameter_Set.h" />
+		<Unit filename="include/Quan.h" />
+		<Unit filename="include/QuanSet.h" />
+		<Unit filename="include/QuickSort.h" />
+		<Unit filename="include/Rule.h" />
+		<Unit filename="include/Script.h" />
+		<Unit filename="include/Source.h" />
+		<Unit filename="include/System.h" />
+		<Unit filename="include/Vector.h" />
+		<Unit filename="include/Vector_arma.h" />
+		<Unit filename="main.cpp" />
+		<Unit filename="src/BTC.cpp" />
+		<Unit filename="src/BTCSet.cpp" />
+		<Unit filename="src/Block.cpp" />
+		<Unit filename="src/Command.cpp" />
+		<Unit filename="src/Condition.cpp" />
+		<Unit filename="src/DistributionNUnif.cpp" />
+		<Unit filename="src/ErrorHandler.cpp" />
+		<Unit filename="src/Expression.cpp" />
+		<Unit filename="src/GA/Binary.cpp" />
+		<Unit filename="src/GA/Distribution.cpp" />
+		<Unit filename="src/GA/GA.hpp" />
+		<Unit filename="src/GA/Individual.cpp" />
+		<Unit filename="src/Link.cpp" />
+		<Unit filename="src/Matrix.cpp" />
+		<Unit filename="src/Matrix_arma.cpp" />
+		<Unit filename="src/MetaModel.cpp" />
+		<Unit filename="src/NormalDist.cpp" />
+		<Unit filename="src/Object.cpp" />
+		<Unit filename="src/Objective_Function.cpp" />
+		<Unit filename="src/Objective_Function_Set.cpp" />
+		<Unit filename="src/Parameter.cpp" />
+		<Unit filename="src/Parameter_Set.cpp" />
+		<Unit filename="src/Quan.cpp" />
+		<Unit filename="src/QuanSet.cpp" />
+		<Unit filename="src/QuickSort.cpp" />
+		<Unit filename="src/Rule.cpp" />
+		<Unit filename="src/Script.cpp" />
+		<Unit filename="src/Source.cpp" />
+		<Unit filename="src/System.cpp" />
+		<Unit filename="src/Vector.cpp">
+			<Option virtualFolder="Aquifolium/src/" />
+		</Unit>
+		<Unit filename="src/Vector_arma.cpp" />
+		<Unit filename="version.h" />
+		<Extensions>
+			<AutoVersioning>
+				<Scheme minor_max="10" build_max="0" rev_max="0" rev_rand_max="10" build_times_to_increment_minor="100" />
+				<Settings autoincrement="1" date_declarations="1" use_define="0" update_manifest="0" do_auto_increment="0" ask_to_increment="0" language="C++" svn="0" svn_directory="" header_path="version.h" />
+				<Changes_Log show_changes_editor="0" app_title="released version %M.%m.%b of %p" changeslog_path="ChangesLog.txt" />
+				<Code header_guard="VERSION_H" namespace="AutoVersion" prefix="" />
+			</AutoVersioning>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

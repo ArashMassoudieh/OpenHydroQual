@@ -162,7 +162,7 @@ HEADERS += \
     ./Aquifolium/include/GA/DistributionNUnif.h \
     ./Aquifolium/include/GA/Individual.h \
     runtimewindow.h \
-    ./qcustomplot/qcustomplot.h \
+    ../qcustomplot/qcustomplot.h \
     plotter.h \
     ./Aquifolium/include/Objective_Function.h \
     ./Aquifolium/include/Objective_Function_Set.h \

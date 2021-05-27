@@ -1,0 +1,12 @@
+loadtemplate; filename = power_catchment.qnt
+setvalue; object=system, quantity=outputpath, value = /home/arash/Projects/Aquifolium_test/outputs/
+setvalue; object=system, quantity=inputpath, value = /home/arash/Projects/Aquifolium_test/
+create source; name = Precipitation, timeseries=rain.txt, type=Precipitation
+create block; name = Catchment, type = Catchment, Precipitation=Precipitation, Area=100, Width=10, ManningCoeff=0.011, Slope=0.002
+//setvalue; object = Catchment, quantity=inflow, value=Inflow.txt
+setvalue; object=system, quantity=tstart, value=38179
+setvalue; object=system, quantity=tend, value=40200
+setvalue; object=system, quantity=dt, value=0.01
+//setvalue; object=system, quantity=silent, value=1
+solve; 
+ 
