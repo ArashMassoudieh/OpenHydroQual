@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.0.3"
-#define last_modified "May 9, 2021"
+#define openhydroqual_version "1.0.5"
+#define last_modified "May 27, 2021"
 
 #ifdef _WIN32
 #include <windows.h>
