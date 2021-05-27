@@ -5,8 +5,8 @@
 #-------------------------------------------------
 
 QT       += core gui opengl printsupport
-INCLUDEPATH += ./Aquifolium/include
-INCLUDEPATH += ./Aquifolium/include/GA
+INCLUDEPATH += ./aquifolium/include
+INCLUDEPATH += ./aquifolium/include/GA
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
 INCLUDEPATH += ../qcustomplot/
@@ -43,11 +43,11 @@ CONFIG(debug, debug|release) {
 
 
 SOURCES += \
-    ./Aquifolium/src/RxnParameter.cpp \
-    ./Aquifolium/src/constituent.cpp \
-    ./Aquifolium/src/observation.cpp \
-    ./Aquifolium/src/precalculatedfunction.cpp \
-    ./Aquifolium/src/solutionlogger.cpp \
+    ./aquifolium/src/RxnParameter.cpp \
+    ./aquifolium/src/constituent.cpp \
+    ./aquifolium/src/observation.cpp \
+    ./aquifolium/src/precalculatedfunction.cpp \
+    ./aquifolium/src/solutionlogger.cpp \
     ../jsoncpp/src/lib_json/json_reader.cpp \
     ../jsoncpp/src/lib_json/json_value.cpp \
     ../jsoncpp/src/lib_json/json_writer.cpp \
@@ -57,41 +57,41 @@ SOURCES += \
     edge.cpp \
         main.cpp \
         mainwindow.cpp \
-    ./Aquifolium/src/Block.cpp \
-    ./Aquifolium/src/BTC.cpp \
-    ./Aquifolium/src/BTCSet.cpp \
-    ./Aquifolium/src/Expression.cpp \
-    ./Aquifolium/src/Matrix.cpp \
-    ./Aquifolium/src/Matrix_arma.cpp \
-    ./Aquifolium/src/MetaModel.cpp \
-    ./Aquifolium/src/NormalDist.cpp \
-    ./Aquifolium/src/Object.cpp \
-    ./Aquifolium/src/Quan.cpp \
-    ./Aquifolium/src/QuanSet.cpp \
-    ./Aquifolium/src/QuickSort.cpp \
-    ./Aquifolium/src/System.cpp \
-    ./Aquifolium/src/Vector.cpp \
-    ./Aquifolium/src/Vector_arma.cpp \
-    ./Aquifolium/src/Source.cpp \
-    ./Aquifolium/src/Rule.cpp \
-    ./Aquifolium/src/Objective_Function_Set.cpp \
-    ./Aquifolium/src/Objective_Function.cpp \
-    ./Aquifolium/src/Precipitation.cpp \
-    ./Aquifolium/src/Condition.cpp \
-    ./Aquifolium/src/Parameter_Set.cpp \
-    ./Aquifolium/src/Parameter.cpp \
-    ./Aquifolium/src/ErrorHandler.cpp \
+    ./aquifolium/src/Block.cpp \
+    ./aquifolium/src/BTC.cpp \
+    ./aquifolium/src/BTCSet.cpp \
+    ./aquifolium/src/Expression.cpp \
+    ./aquifolium/src/Matrix.cpp \
+    ./aquifolium/src/Matrix_arma.cpp \
+    ./aquifolium/src/MetaModel.cpp \
+    ./aquifolium/src/NormalDist.cpp \
+    ./aquifolium/src/Object.cpp \
+    ./aquifolium/src/Quan.cpp \
+    ./aquifolium/src/QuanSet.cpp \
+    ./aquifolium/src/QuickSort.cpp \
+    ./aquifolium/src/System.cpp \
+    ./aquifolium/src/Vector.cpp \
+    ./aquifolium/src/Vector_arma.cpp \
+    ./aquifolium/src/Source.cpp \
+    ./aquifolium/src/Rule.cpp \
+    ./aquifolium/src/Objective_Function_Set.cpp \
+    ./aquifolium/src/Objective_Function.cpp \
+    ./aquifolium/src/Precipitation.cpp \
+    ./aquifolium/src/Condition.cpp \
+    ./aquifolium/src/Parameter_Set.cpp \
+    ./aquifolium/src/Parameter.cpp \
+    ./aquifolium/src/ErrorHandler.cpp \
     node.cpp \
     propmodel.cpp \
     delegate.cpp \
     ray.cpp \
     utilityfuncs.cpp \
-    ./Aquifolium/src/Command.cpp \
-    ./Aquifolium/src/Script.cpp \
-    ./Aquifolium/src/GA/Binary.cpp \
-    ./Aquifolium/src/GA/Individual.cpp \
-    ./Aquifolium/src/GA/DistributionNUnif.cpp \
-    ./Aquifolium/src/GA/Distribution.cpp \
+    ./aquifolium/src/Command.cpp \
+    ./aquifolium/src/Script.cpp \
+    ./aquifolium/src/GA/Binary.cpp \
+    ./aquifolium/src/GA/Individual.cpp \
+    ./aquifolium/src/GA/DistributionNUnif.cpp \
+    ./aquifolium/src/GA/Distribution.cpp \
     runtimewindow.cpp \
     ../qcustomplot/qcustomplot.cpp \
     plotter.cpp \
@@ -99,41 +99,41 @@ SOURCES += \
     statusviewer.cpp \
     expressioneditor.cpp \
     logwindow.cpp \
-    ./Aquifolium/src/Link.cpp \
-    ./Aquifolium/src/reaction.cpp \
+    ./aquifolium/src/Link.cpp \
+    ./aquifolium/src/reaction.cpp \
     wizard_select_dialog.cpp
 
 HEADERS += \
-    ./Aquifolium/include/Objective_Function.h \
-    ./Aquifolium/include/Objective_Function_Set.h \
-    ./Aquifolium/include/Precipitation.h \
-    ./Aquifolium/include/RxnParameter.h \
-    ./Aquifolium/include/constituent.h \
-    ./Aquifolium/include/observation.h \
-    ./Aquifolium/include/precalculatedfunction.h \
-    ./Aquifolium/include/solutionlogger.h \
+    ./aquifolium/include/Objective_Function.h \
+    ./aquifolium/include/Objective_Function_Set.h \
+    ./aquifolium/include/Precipitation.h \
+    ./aquifolium/include/RxnParameter.h \
+    ./aquifolium/include/constituent.h \
+    ./aquifolium/include/observation.h \
+    ./aquifolium/include/precalculatedfunction.h \
+    ./aquifolium/include/solutionlogger.h \
     CustomPlotZoom.h \
     aboutdialog.h \
     diagramview.h \
     edge.h \
         mainwindow.h \
-    ./Aquifolium/include/Block.h \
-    ./Aquifolium/include/BTC.h \
-    ./Aquifolium/include/BTCSet.h \
-    ./Aquifolium/include/Expression.h \
-    ./Aquifolium/include/Link.h \
-    ./Aquifolium/include/Matrix.h \
-    ./Aquifolium/include/Matrix_arma.h \
-    ./Aquifolium/include/MetaModel.h \
-    ./Aquifolium/include/NormalDist.h \
-    ./Aquifolium/include/Object.h \
-    ./Aquifolium/include/Quan.h \
-    ./Aquifolium/include/QuanSet.h \
-    ./Aquifolium/include/QuickSort.h \
-    ./Aquifolium/include/StringOP.h \
-    ./Aquifolium/include/System.h \
-    ./Aquifolium/include/Vector.h \
-    ./Aquifolium/include/Vector_arma.h \
+    ./aquifolium/include/Block.h \
+    ./aquifolium/include/BTC.h \
+    ./aquifolium/include/BTCSet.h \
+    ./aquifolium/include/Expression.h \
+    ./aquifolium/include/Link.h \
+    ./aquifolium/include/Matrix.h \
+    ./aquifolium/include/Matrix_arma.h \
+    ./aquifolium/include/MetaModel.h \
+    ./aquifolium/include/NormalDist.h \
+    ./aquifolium/include/Object.h \
+    ./aquifolium/include/Quan.h \
+    ./aquifolium/include/QuanSet.h \
+    ./aquifolium/include/QuickSort.h \
+    ./aquifolium/include/StringOP.h \
+    ./aquifolium/include/System.h \
+    ./aquifolium/include/Vector.h \
+    ./aquifolium/include/Vector_arma.h \
     ../jsoncpp/include/json/allocator.h \
     ../jsoncpp/include/json/assertions.h \
     ../jsoncpp/include/json/autolink.h \
@@ -153,25 +153,25 @@ HEADERS += \
     delegate.h \
     ray.h \
     utilityfuncs.h \
-    ./Aquifolium/include/Parameter.h \
-    ./Aquifolium/include/Parameter_Set.h \
-    ./Aquifolium/include/Command.h \
-    ./Aquifolium/include/Script.h \
-    ./Aquifolium/include/GA/Binary.h \
-    ./Aquifolium/include/GA/Distribution.h \
-    ./Aquifolium/include/GA/DistributionNUnif.h \
-    ./Aquifolium/include/GA/Individual.h \
+    ./aquifolium/include/Parameter.h \
+    ./aquifolium/include/Parameter_Set.h \
+    ./aquifolium/include/Command.h \
+    ./aquifolium/include/Script.h \
+    ./aquifolium/include/GA/Binary.h \
+    ./aquifolium/include/GA/Distribution.h \
+    ./aquifolium/include/GA/DistributionNUnif.h \
+    ./aquifolium/include/GA/Individual.h \
     runtimewindow.h \
     ../qcustomplot/qcustomplot.h \
     plotter.h \
-    ./Aquifolium/include/Objective_Function.h \
-    ./Aquifolium/include/Objective_Function_Set.h \
+    ./aquifolium/include/Objective_Function.h \
+    ./aquifolium/include/Objective_Function_Set.h \
     expEditor.h \
     statusviewer.h \
     expressioneditor.h \
-    ./Aquifolium/include/GA/GA.hpp \
+    ./aquifolium/include/GA/GA.hpp \
     logwindow.h \
-    ./Aquifolium/include/reaction.h \
+    ./aquifolium/include/reaction.h \
     wizard_select_dialog.h
 
 FORMS += \
