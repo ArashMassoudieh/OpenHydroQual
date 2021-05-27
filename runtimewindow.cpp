@@ -62,6 +62,10 @@ void RunTimeWindow::AppendErrorMessage(const QString &s)
 void RunTimeWindow::AddDataPoint(const double &t, const double value)
 {
     plot->graph(0)->addData(t,value);
+}
+
+void RunTimeWindow::Replot()
+{
     plot->replot();
 }
 void RunTimeWindow::SetProgress(const double &val)
