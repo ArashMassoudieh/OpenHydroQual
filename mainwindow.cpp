@@ -1275,6 +1275,7 @@ bool MainWindow::LoadModel(QString fileName)
     BuildObjectsToolBar();
     LogAllSystemErrors();
 
+    return success; 
 }
 
 
