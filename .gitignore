@@ -35,8 +35,6 @@ Makefile*
 
 bin/Debug/
 
-include/
-
 libs/lapack-blas_lib_win64/
 
 .vs/QAquifolium/v16/
