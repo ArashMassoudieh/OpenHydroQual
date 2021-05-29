@@ -144,7 +144,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "_max(_min(area.s;area.e);0)",
+      "expression": "_max(_bkw(head;area);0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },

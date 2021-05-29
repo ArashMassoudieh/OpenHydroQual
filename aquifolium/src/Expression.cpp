@@ -27,6 +27,7 @@ Expression::Expression(void)
     funcs.push_back("_pos");
     funcs.push_back("_hsd");
     funcs.push_back("_ups");
+    funcs.push_back("_bkw");
     funcs.push_back("_mon");
     funcs.push_back("_mbs");
     opts.push_back("+");
@@ -56,6 +57,7 @@ Expression::Expression(string S)
 	funcs.push_back("_pos");
 	funcs.push_back("_hsd");
 	funcs.push_back("_ups");
+    funcs.push_back("_bkw");
 	funcs.push_back("_mon");
 	funcs.push_back("_mbs");
 	opts.push_back("+");
@@ -320,6 +322,32 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
         }
 	}
 
+    if (function=="bkw")
+    {
+        if (terms.size()!=2)
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Function 'bkw' requiers two arguments", 7001);
+            return 0;
+        }
+        else if ((W->GetConnectedBlock(Expression::loc::source)==nullptr) || (W->GetConnectedBlock(Expression::loc::destination)==nullptr))
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","When function 'bkw' is used the object must have source and destination", 7002);
+            return 0;
+        }
+        else
+        {
+            double slope = terms[0].calc(W->GetConnectedBlock(Expression::loc::source),tmg,limit) - terms[0].calc(W->GetConnectedBlock(Expression::loc::destination),tmg,limit);
+            if (slope>0)
+            {
+                return terms[1].calc(W->GetConnectedBlock(Expression::loc::source),tmg,limit);
+            }
+            else
+            {
+                return terms[1].calc(W->GetConnectedBlock(Expression::loc::destination),tmg,limit);
+            }
+        }
+    }
+
 	if (param_constant_expression == "constant")
 		return constant;
 	if (param_constant_expression == "parameter")
@@ -463,6 +491,13 @@ double Expression::func(string &f, double cond, double val1, double val2)
         else
             return val2;
 	}
+    else if (f=="bkw")
+    {
+        if (cond>=0)
+            return val1;
+        else
+            return val2;
+    }
 
 	return val1;
 }

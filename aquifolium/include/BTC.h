@@ -102,6 +102,9 @@ public:
 	CTimeSeries(const vector<double> &t, const vector<double> &C);
 	CTimeSeries(vector<double>&, int writeInterval = 1);
 	bool error = false;
+    double GetLastItemValue();
+    double GetLastItemTime();
+
 
 #ifdef QT_version
 	CTimeSeries(QList <QMap <QVariant, QVariant>> data);

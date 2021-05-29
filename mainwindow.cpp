@@ -116,7 +116,6 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
     if (i1.column() == 0)
     {
         menu = new QMenu;
-        QString variableName = i1.data(CustomRoleCodes::Role::VariableNameRole).toString();
 
         QMenu *estimatesMenu = new QMenu("Parameters");
         menu->addMenu(estimatesMenu);
@@ -135,7 +134,7 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
     if (i1.column() == 1)
     {
         menu = new QMenu;
-        QString variableName = i1.data(CustomRoleCodes::Role::VariableNameRole).toString();
+
         if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("ComboBox"))
         {
             QAction* action = menu->addAction("Clear");
@@ -855,19 +854,17 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
     {
         if (nd->text(0)=="Parameters" || nd->text(0)=="Objective Functions" || nd->text(0)=="Reactions" || nd->text(0)=="Reaction Parameters" || nd->text(0)=="Constituents" || nd->text(0)=="Observations")
         {
+            menu = new QMenu(this);
             QAction *AddAct = new QAction(QIcon(":/Resource/warning32.ico"), "Add " + nd->text(0), this);
-
             AddAct->setProperty("group",nd->text(0));
             AddAct->setStatusTip("Append " + nd->text(0));
             connect(AddAct, SIGNAL(triggered()), this, SLOT(onAddItemThroughTreeViewRightClick()));
-            QMenu menu(this);
-            menu.addAction(AddAct);
+            menu->addAction(AddAct);
             QPoint pt(pos);
-            menu.exec( tree->mapToGlobal(pos) );
         }
-        QMenu* results = menu->addMenu("Results");
         if (nd->data(0,CustomRoleCodes::Role::TypeRole).toString() == "Objective Functions")
         {
+            QMenu* results = menu->addMenu("Results");
             timeseriestobeshown = "Time Series";
             QAction* graphaction = results->addAction(timeseriestobeshown);
             QVariant v = QVariant::fromValue(QString::fromStdString(system.objectivefunction(nd->text(0).toStdString())->GetOutputItem()));
@@ -877,6 +874,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         }
         if (nd->data(0,CustomRoleCodes::Role::TypeRole).toString() == "Observations")
         {
+            QMenu* results = menu->addMenu("Results");
             timeseriestobeshown = "Modeled vs Measured";
             QAction* graphaction = results->addAction(timeseriestobeshown);
             QVariant v = QVariant::fromValue(QString::fromStdString(system.observation(nd->text(0).toStdString())->GetOutputItem()));
@@ -887,6 +885,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         }
         if (nd->data(0, CustomRoleCodes::Role::TypeRole).toString() == "Sources")
         {
+            menu = new QMenu(this);
             timeseriestobeshown = "Precipitation";
             if (GetSystem()->source(nd->text(0).toStdString())->Variable("timeseries")!=nullptr)
             {
@@ -899,7 +898,11 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
                 }
             }
         }
-    return;
+        if (menu)
+            menu->exec( tree->mapToGlobal(pos) );
+        if (menu)
+            delete(menu);
+        return;
 
     }
 

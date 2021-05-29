@@ -1100,8 +1100,11 @@ CTimeSeries CTimeSeries::make_uniform(double increment)
 				double x = j*increment + t[0];
 				double CC = (x - t[i]) / (t[i + 1] - t[i])*(C[i + 1] - C[i]) + C[i];
 				double DD = (x - t[i]) / (t[i + 1] - t[i])*(D[i + 1] - D[i]) + D[i];
-				out.append(x, CC);
-				out.D.push_back(DD);
+                if (x>out.GetLastItemTime())
+                {
+                    out.append(x, CC);
+                    out.D.push_back(DD);
+                }
 
 			}
 		}
@@ -1110,6 +1113,17 @@ CTimeSeries CTimeSeries::make_uniform(double increment)
 
 	return out;
 }
+
+double CTimeSeries::GetLastItemValue()
+{
+    return C[n-1];
+}
+
+double CTimeSeries::GetLastItemTime()
+{
+    return t[n-1];
+}
+
 
 double prcntl(vector<double> C, double x)
 {

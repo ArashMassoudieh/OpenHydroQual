@@ -63,7 +63,7 @@ private:
     QString workingfolder;
     QModelIndex addParameterIndex(const QModelIndex &index = QModelIndex());
     QModelIndex tableitemrightckicked;
-    QMenu *menu;
+    QMenu *menu = nullptr;
     CGA<System> *optimizer;
     QString timeseriestobeshown;
     QString filename="";

@@ -530,8 +530,12 @@ bool System::Solve(bool applyparameters)
     Update();
     int counter = 0;
     int fail_counter = 0;
+    double progress = 0;
+    double progress_p = 0;
     while (SolverTempVars.t<SimulationParameters.tend+SolverTempVars.dt && !stop_triggered)
     {
+        progress_p = progress;
+        progress = (SolverTempVars.t - SimulationParameters.tstart) / (SimulationParameters.tend - SimulationParameters.tstart);
         counter++;
         //cout << "\r Simulation Time: " + aquiutils::numbertostring(SolverTempVars.t);
 		if (counter%50==0)
@@ -597,8 +601,10 @@ bool System::Solve(bool applyparameters)
 #ifdef Q_version
             if (rtw)
             {
-                rtw->SetProgress((SolverTempVars.t - SimulationParameters.tstart) / (SimulationParameters.tend - SimulationParameters.tstart));
+                rtw->SetProgress(progress);
                 rtw->AddDataPoint(SolverTempVars.t, SolverTempVars.dt);
+                if (int(progress/0.01)>int(progress_p/0.01) || rtw->detailson)
+                    rtw->Replot();
                 if (rtw->detailson) rtw->AppendtoDetails("Number of iterations:" + QString::number(SolverTempVars.MaxNumberOfIterations()) + ",dt = " + QString::number(SolverTempVars.dt) + ",t = " + QString::number(SolverTempVars.t, 'f', 6) + ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
                 if (rtw->stoptriggered) stop_triggered = true;
                 QCoreApplication::processEvents();
@@ -980,6 +986,25 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 		CVector_arma X_past = X;
         CVector_arma F = GetResiduals(variable, X, transport);
 
+        if (!F.is_finite())
+        {
+            SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
+            GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite, dt = " + aquiutils::numbertostring(SolverTempVars.dt));
+            GetSolutionLogger()->WriteString("Block states - present: ");
+            WriteBlocksStates(variable, Expression::timing::present);
+            GetSolutionLogger()->WriteString("Block states - past: ");
+            WriteBlocksStates(variable, Expression::timing::past);
+            GetSolutionLogger()->WriteString("Link states - present: ");
+            WriteLinksStates(variable, Expression::timing::present);
+            GetSolutionLogger()->WriteString("Links states - past: ");
+            WriteLinksStates(variable, Expression::timing::past);
+
+            GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "X=" + X.toString());
+            GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "F=" + F.toString());
+            GetSolutionLogger()->Flush();
+            SetOutflowLimitedVector(outflowlimitstatus_old);
+            return false;
+        }
 
         double error_increase_counter = 0;
 		double err_ini = F.norm2();
@@ -1123,9 +1148,11 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 }
             }
 #endif
-			if (!X.is_finite())
+
+
+            if (!X.is_finite())
 			{
-                SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": X is infinite");
+                SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": X is infinite, X=" + X.toString() + ", F = " + F.toString());
                 SetOutflowLimitedVector(outflowlimitstatus_old);
                 return false;
 			}
@@ -1447,7 +1474,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 
 {
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (unsigned int i=0; i<links.size(); i++)
         LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
 
@@ -1498,6 +1525,8 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
         }
 
     }
+    if (!F.is_finite())
+        cout<<"xxx"<<endl;
     return F;
 }
 
