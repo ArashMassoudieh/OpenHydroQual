@@ -45,12 +45,20 @@ class Expression
 		vector<string> GetAllRequieredEndingBlockProperties();
         Expression ReviseConstituent(const string &constituent_name, const string &quantity);
         bool RenameQuantity(const string &oldname, const string &newname);
+        void ResetTermsSources();
+        void ClearTermSources()
+        {
+            term_sources_determined = false;
+            term_sources.clear();
+        }
     protected:
 
     private:
         vector<double> term_vals;
         vector<bool> terms_calculated;
-        vector<vector<int> > sources;
+        vector<vector<int> > term_sources;
+        bool term_sources_determined = false;
+        vector<unsigned int> terms_source_counter;
         loc location = loc::self; //0: self, 1: start, 2: end
 
 };

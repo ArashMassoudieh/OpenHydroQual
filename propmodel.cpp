@@ -67,7 +67,7 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                 {
                     if (quanset->GetVarAskable(index.row())->Delegate()=="expressionEditor")
                     {
-                        qDebug()<<"In propmodel: " << QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
+                        //qDebug()<<"In propmodel: " << QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                     }
                     else
@@ -95,7 +95,7 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                 {
                     if (quanset->GetVarAskable(index.row())->Delegate()=="expressionEditor")
                     {
-                        qDebug()<<"In propmodel: " << QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
+                        //qDebug()<<"In propmodel: " << QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                     }
                         else

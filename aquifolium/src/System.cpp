@@ -5,6 +5,9 @@
 #include <json/json.h>
 #include <Script.h>
 #include <omp.h>
+#ifdef VALGRIND
+#include <valgrind/callgrind.h>
+#endif
 //#define NormalizeByDiagonal
 
 #ifdef Q_version
@@ -497,7 +500,12 @@ bool System::Solve(bool applyparameters)
     InitiateOutputs();
     //qDebug()<<"Writing objects to logger";
     WriteObjectsToLogger();
+    QCoreApplication::processEvents();
+    //qDebug()<<"Processes Events...";
     MakeTimeSeriesUniform(SimulationParameters.dt0);
+    QCoreApplication::processEvents();
+    //qDebug()<<"Made uniform done!...";
+
     SolverTempVars.dt_base = SimulationParameters.dt0;
     SolverTempVars.dt = SolverTempVars.dt_base;
     SolverTempVars.t = SimulationParameters.tstart;
@@ -524,6 +532,7 @@ bool System::Solve(bool applyparameters)
         rtw->AppendText("Simulation Started at " + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
         rtw->SetXRange(SimulationParameters.tstart,SimulationParameters.tend);
         rtw->SetYRange(0,SimulationParameters.dt0*timestepmaxfactor);
+        QCoreApplication::processEvents();
     }
 #endif
 
@@ -532,6 +541,11 @@ bool System::Solve(bool applyparameters)
     int fail_counter = 0;
     double progress = 0;
     double progress_p = 0;
+#ifdef VALGRIND
+    CALLGRIND_START_INSTRUMENTATION;
+    CALLGRIND_TOGGLE_COLLECT;
+#endif
+    //qDebug()<<"Loop started...";
     while (SolverTempVars.t<SimulationParameters.tend+SolverTempVars.dt && !stop_triggered)
     {
         progress_p = progress;
@@ -540,14 +554,16 @@ bool System::Solve(bool applyparameters)
         //cout << "\r Simulation Time: " + aquiutils::numbertostring(SolverTempVars.t);
 		if (counter%50==0)
             SolverTempVars.SetUpdateJacobian(true);
+        //qDebug()<<"First Jacobian update...";
         SolverTempVars.dt = min(SolverTempVars.dt_base,GetMinimumNextTimeStepSize());
         if (SolverTempVars.dt<SimulationParameters.dt0/ timestepminfactor) SolverTempVars.dt=SimulationParameters.dt0/ timestepminfactor;
         #ifdef Debug_mode
         ShowMessage(string("t = ") + aquiutils::numbertostring(SolverTempVars.t) + ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt) + ", SolverTempVars.numiterations =" + aquiutils::numbertostring(SolverTempVars.numiterations));
         #endif // Debug_mode
 
-
+        //qDebug()<<"Trying to solve...";
         vector<bool> _success = OneStepSolve();
+        //qDebug()<<"Solved...";
 		success = aquiutils::And(_success);
 		if (!success)
         {
@@ -565,6 +581,7 @@ bool System::Solve(bool applyparameters)
 
                 }
                 QCoreApplication::processEvents();
+                //qDebug()<<"Processes Events...";
             }
 #else
             cout<<SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1] << ", dt = " << SolverTempVars.dt<<endl;
@@ -608,6 +625,7 @@ bool System::Solve(bool applyparameters)
                 if (rtw->detailson) rtw->AppendtoDetails("Number of iterations:" + QString::number(SolverTempVars.MaxNumberOfIterations()) + ",dt = " + QString::number(SolverTempVars.dt) + ",t = " + QString::number(SolverTempVars.t, 'f', 6) + ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
                 if (rtw->stoptriggered) stop_triggered = true;
                 QCoreApplication::processEvents();
+                //cout<<"Processes Events...";
             }
 #endif
             fail_counter = 0;
@@ -660,6 +678,11 @@ bool System::Solve(bool applyparameters)
     if (GetSolutionLogger())
         GetSolutionLogger()->Flush();
     #endif
+#ifdef VALGRIND
+    CALLGRIND_TOGGLE_COLLECT;
+    CALLGRIND_STOP_INSTRUMENTATION;
+#endif
+
     return true;
 }
 
@@ -701,7 +724,7 @@ bool System::SetSystemSettingsObjectProperties(const string &s, const string &va
 {
     for (unsigned int i=0; i<Settings.size(); i++)
     {
-        for (map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
+        for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
         {   if (j->first==s)
             {   j->second.SetProperty(val);
                 return true;
@@ -779,7 +802,7 @@ void System::InitiateOutputs()
     Outputs.ObservedOutputs.clear();
     for (unsigned int i=0; i<blocks.size(); i++)
     {
-        for (map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
                 Outputs.AllOutputs.append(CBTC(), blocks[i].GetName() + "_" + it->first);
@@ -789,7 +812,7 @@ void System::InitiateOutputs()
 
     for (unsigned int i=0; i<links.size(); i++)
     {
-        for (map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
                 Outputs.AllOutputs.append(CBTC(), links[i].GetName() + "_" + it->first);
@@ -812,7 +835,7 @@ void System::InitiateOutputs()
 
     for (unsigned int i=0; i<sources.size(); i++)
     {
-        for (map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
         {
             if (it->second.IncludeInOutput())
             {
@@ -833,7 +856,7 @@ void System::SetOutputItems()
 {
     for (unsigned int i=0; i<blocks.size(); i++)
     {
-        for (map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
                 it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
@@ -842,7 +865,7 @@ void System::SetOutputItems()
 
     for (unsigned int i=0; i<links.size(); i++)
     {
-        for (map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
                 it->second.SetOutputItem(links[i].GetName() + "_" + it->first);
@@ -851,7 +874,7 @@ void System::SetOutputItems()
 
     for (unsigned int i=0; i<sources.size(); i++)
     {
-        for (map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
                 it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
@@ -891,7 +914,7 @@ void System::PopulateOutputs()
 
     for (unsigned int i=0; i<blocks.size(); i++)
     {
-        for (map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
 			if (it->second.IncludeInOutput())
                 Outputs.AllOutputs[blocks[i].GetName() + "_" + it->first].append(SolverTempVars.t, blocks[i].GetVal(it->first, Expression::timing::present));
 
@@ -900,7 +923,7 @@ void System::PopulateOutputs()
 
     for (unsigned int i=0; i<links.size(); i++)
     {
-        for (map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
 				Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(SolverTempVars.t,links[i].GetVal(it->first,Expression::timing::present,true));
@@ -909,7 +932,7 @@ void System::PopulateOutputs()
 
     for (unsigned int i=0; i<sources.size(); i++)
     {
-        for (map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
                 //sources[i].CalcExpressions(Expression::timing::present);
@@ -1407,7 +1430,10 @@ void System::CalculateAllExpressions(Expression::timing tmg)
         for (unsigned int j = 0; j < blocks[i].QuantitOrder().size(); j++)
         {
             if (blocks[i].Variable(blocks[i].QuantitOrder()[j])->GetType() == Quan::_type::expression)
+            {
+                blocks[i].Variable(blocks[i].QuantitOrder()[j])->GetExpression()->ClearTermSources();
                 blocks[i].Variable(blocks[i].QuantitOrder()[j])->SetVal(blocks[i].Variable(blocks[i].QuantitOrder()[j])->CalcVal(tmg), tmg);
+            }
         }
     }
 
@@ -1416,7 +1442,10 @@ void System::CalculateAllExpressions(Expression::timing tmg)
         for (unsigned int j = 0; j < links[i].QuantitOrder().size(); j++)
         {
             if (links[i].Variable(links[i].QuantitOrder()[j])->GetType() == Quan::_type::expression)
+            {   links[i].Variable(links[i].QuantitOrder()[j])->GetExpression()->ClearTermSources();
                 links[i].Variable(links[i].QuantitOrder()[j])->SetVal(links[i].Variable(links[i].QuantitOrder()[j])->CalcVal(tmg), tmg);
+
+            }
         }
     }
 
@@ -1476,13 +1505,13 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 
 //#pragma omp parallel for
     for (unsigned int i=0; i<links.size(); i++)
-        LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+    {   LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+        //qDebug()<<i;
+
+    }
 
     for (unsigned int i=0; i<links.size(); i++)
     {
-        //#ifndef NO_OPENMP
-        //cout<<"Thread: " << i << "," << omp_get_thread_num()<<endl;
-        //#endif
         F[links[i].s_Block_No()] += LinkFlow[i];
         F[links[i].e_Block_No()] -= LinkFlow[i];
     }
@@ -1525,8 +1554,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
         }
 
     }
-    if (!F.is_finite())
-        cout<<"xxx"<<endl;
+
     return F;
 }
 
@@ -2238,7 +2266,7 @@ bool System::SavetoScriptFile(const string &filename, const string &templatefile
     }
 
     for (unsigned int i=0; i<Settings.size(); i++)
-        for (map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
+        for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
             if (j->second.AskFromUser())
                 file << "setvalue; object=system, quantity=" + j->first + ", value=" << j->second.GetProperty() << std::endl;
 
@@ -2378,7 +2406,7 @@ void System::SetSystemSettings()
 {
     for (unsigned int i=0; i<Settings.size(); i++)
     {
-        for (map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
+        for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
             SetProperty(j->first,j->second.GetProperty());
 
     }

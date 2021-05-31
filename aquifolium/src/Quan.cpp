@@ -482,10 +482,14 @@ double Quan::GetVal(const Expression::timing &tmg)
             return _val_star;
         else
         {
+
             if (type == _type::expression)
             {
-                _val_star = CalcVal(tmg);
-                value_star_updated = true;
+                //#pragma omp critical
+                {
+                    _val_star = CalcVal(tmg);
+                    value_star_updated = true;
+                }
             }
             if (type == _type::timeseries)
             {
@@ -493,6 +497,7 @@ double Quan::GetVal(const Expression::timing &tmg)
                 value_star_updated = true;
             }
             return _val_star;
+
         }
     }
 }
@@ -629,6 +634,7 @@ Expression* Quan::GetExpression()
 {
     return &_expression;
 }
+
 
 Rule* Quan::GetRule()
 {

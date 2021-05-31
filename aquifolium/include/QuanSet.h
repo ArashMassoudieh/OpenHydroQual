@@ -7,6 +7,7 @@
 #endif
 
 #include <map>
+#include <unordered_map>
 #include <Quan.h>
 
 class Object;
@@ -29,9 +30,9 @@ class QuanSet
         Quan* GetVar(int i);
         Quan* GetVarAskable(int i);
         void UnUpdateAllValues();
-        std::map<string,Quan>::iterator find(const string &name) {return quans.find(name);}
-        std::map<string,Quan>::iterator end() {return quans.end();}
-        std::map<string,Quan>::iterator begin() {return quans.begin();}
+        std::unordered_map<string,Quan>::iterator find(const string &name) {return quans.find(name);}
+        std::unordered_map<string,Quan>::iterator end() {return quans.end();}
+        std::unordered_map<string,Quan>::iterator begin() {return quans.begin();}
         unsigned long size() {return quans.size();}
         unsigned long AskableSize();
         string &Description() {return description;}
@@ -71,7 +72,7 @@ class QuanSet
     private:
         Object* parent = nullptr;
         string name = "";
-        map<string, Quan> quans;
+        unordered_map<string, Quan> quans;
         string last_error = "";
         string description = "";
         string iconfilename = "";

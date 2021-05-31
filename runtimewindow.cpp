@@ -119,5 +119,5 @@ void RunTimeWindow::showdetails()
 
 void RunTimeWindow::stop_triggered() {
     stoptriggered = true;
-    qDebug() << "Stop Triggered!";
+    //qDebug() << "Stop Triggered!";
 }

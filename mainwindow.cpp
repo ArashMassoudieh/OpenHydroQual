@@ -448,7 +448,7 @@ void MainWindow::onaddsource()
     string name = CreateNewName(obj->objectName().toStdString());
     source.SetName(name);
     system.AddSource(source);
-    qDebug() << "source added! " << obj->objectName();
+    //qDebug() << "source added! " << obj->objectName();
     system.object(name)->SetName(name);
     system.AddAllConstituentRelateProperties(system.source(name));
     RefreshTreeView();
@@ -473,7 +473,7 @@ void MainWindow::onaddparameter()
     parameter.SetType(objectname);
     parameter.SetName(name);
     system.Parameters().Append(name,parameter);
-    qDebug() << "parameter added! " << obj->objectName();
+    //qDebug() << "parameter added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Parameter '" + QString::fromStdString(name) + "' was added!");
@@ -501,7 +501,7 @@ void MainWindow::onaddobjectivefunction()
 
     objective_function.SetName(name);
     system.AppendObjectiveFunction(name,objective_function);
-    qDebug() << "objective function added! " << obj->objectName();
+    //qDebug() << "objective function added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Objective Function '" + QString::fromStdString(name) + "' was added!");
@@ -531,7 +531,7 @@ void MainWindow::onaddobservation()
     observation.SetName(name);
     system.AddObservation(observation);
     system.object(name)->SetName(name);
-    qDebug() << "observation added! " << obj->objectName();
+    //qDebug() << "observation added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Observation '" + QString::fromStdString(name) + "' was added!");
@@ -561,7 +561,7 @@ void MainWindow::onaddconstituent()
     constituent.SetName(name);
     system.AddConstituent(constituent);
     system.object(name)->SetName(name);
-    qDebug() << "Constituent added! " << obj->objectName();
+    //qDebug() << "Constituent added! " << obj->objectName();
     //system.object(name)->SetName(name);
     system.AddConstituentRelateProperties(system.constituent(name));
     RefreshTreeView();
@@ -593,7 +593,7 @@ void MainWindow::onaddreaction()
     system.AddReaction(reaction);
     system.object(name)->SetName(name);
     system.AddAllConstituentRelateProperties(system.reaction(name));
-    qDebug() << "Reaction added! " << obj->objectName();
+    //qDebug() << "Reaction added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Reaction '" + QString::fromStdString(name) + "' was added!");
@@ -623,7 +623,7 @@ void MainWindow::onaddreactionparameter()
     reactionparameter.SetName(name);
     system.AddReactionParameter(reactionparameter);
     system.object(name)->SetName(name);
-    qDebug() << "Reaction Parameter added! " << obj->objectName();
+    //qDebug() << "Reaction Parameter added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Reaction '" + QString::fromStdString(name) + "' was added!");
@@ -846,9 +846,9 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
 
     QTreeWidgetItem *nd = tree->itemAt( pos );
 
-    qDebug()<<nd->data(0,Qt::UserRole);
+    //qDebug()<<nd->data(0,Qt::UserRole);
 
-    qDebug()<<pos<<nd->text(0);
+    //qDebug()<<pos<<nd->text(0);
 
     if (nd->data(0,Qt::UserRole)=="main")
     {
@@ -993,8 +993,8 @@ void MainWindow::onDeleteItem()
 
 void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
 {
-    qDebug()<<current->data(0,Qt::UserRole);
-    qDebug()<< current->text(0);
+    //qDebug()<<current->data(0,Qt::UserRole);
+    //qDebug()<< current->text(0);
 
     if (current->data(0,Qt::UserRole)=="child")
     {   if (system.object(current->text(0).toStdString())==nullptr)
@@ -1151,7 +1151,7 @@ void MainWindow::onzoomall()
     newRect.setTop(newRect.top() - (scale - 1) / 2 * height);
     newRect.setWidth(qreal(width * scale));
     newRect.setHeight(qreal(height * scale));
-    qDebug()<<newRect;
+    //qDebug()<<newRect;
     if (width>dView->MainGraphicsScene->sceneRect().width() || height>dView->MainGraphicsScene->sceneRect().height() )
         dView->MainGraphicsScene->setSceneRect(newRect);
     dView->fitInView(newRect,Qt::KeepAspectRatio);
@@ -1205,7 +1205,7 @@ void MainWindow::onsaveas()
             tr("script files (*.scr)"));
     if (fileName!="")
     {
-        qDebug() << fileName.split('.');
+        //qDebug() << fileName.split('.');
 
         if (!fileName.contains("."))
             fileName = fileName + ".scr";

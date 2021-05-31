@@ -159,7 +159,7 @@ bool Object::SetQuantities(MetaModel &m, const string& typ )
     else
         var = *m[typ];
     SetDefaults();
-    for (map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
         var[s->first].SetParent(this);
 
     return true;
@@ -177,14 +177,14 @@ bool Object::SetQuantities(MetaModel *m, const string& typ )
     else
         var = *(m->GetItem(typ));
     SetDefaults();
-    for (map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
         var[s->first].SetParent(this);
     return true;
 }
 
 void Object::SetDefaults()
 {
-    for (map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
     {
         //qDebug() << "Setting Defults for variable " << QString::fromStdString(s->first);
         if (var[s->first].Default() != "")
@@ -334,7 +334,7 @@ Quan* Object::Variable(const string &variable, const string &constituent)
 
 void Object::VerifyQuans(ErrorHandler *errorhandler)
 {
-    for (map<string,Quan>::iterator it = var.begin(); it!=var.end(); it++)
+    for (unordered_map<string,Quan>::iterator it = var.begin(); it!=var.end(); it++)
     {
         if (!it->second.Validate())
         {
@@ -346,7 +346,7 @@ void Object::VerifyQuans(ErrorHandler *errorhandler)
 vector<Quan> Object::GetCopyofAllQuans()
 {
 	vector<Quan> out;
-    for (map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)
+    for (unordered_map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)
     {
         out.push_back(it->second);
     }
@@ -390,7 +390,7 @@ bool Object::Update(const string & variable)
 
 bool Object::CalcExpressions(const Expression::timing &tmg)
 {
-	for (map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
 		if (var[s->first].GetType() == Quan::_type::expression)
 			Variable(s->first)->SetVal(Variable(s->first)->CalcVal(tmg),tmg);
 	return true; 
@@ -399,7 +399,7 @@ bool Object::CalcExpressions(const Expression::timing &tmg)
 void Object::SetVariableParents()
 {
 	var.SetParent(this);
-	for (map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
 	{
 		var[s->first].SetParent(this);
 		if (var[s->first].GetType() == Quan::_type::source)
@@ -487,7 +487,7 @@ string Object::toCommandSetAsParam()
 vector<string> Object::ItemswithOutput()
 {
     vector<string> items;
-    for (map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)
+    for (unordered_map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)
         if (it->second.IncludeInOutput())
         {
             if (it->second.GetOutputItem() != "") items.push_back(it->first);
@@ -517,7 +517,7 @@ bool Object::RenameConstituents(const string &oldname, const string &newname)
 {
     vector<string> oldfullname;
     vector<string> newfullname;
-    for (map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)
+    for (unordered_map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)
     {
         if (aquiutils::split(it->first,':').size()==2)
         {   if (aquiutils::split(it->first,':')[0]==oldname)
@@ -529,7 +529,7 @@ bool Object::RenameConstituents(const string &oldname, const string &newname)
     }
     if (GetConnectedBlock(Expression::loc::source) != nullptr)
     {
-        for (map<string, Quan>::iterator it = GetConnectedBlock(Expression::loc::source)->GetVars()->begin(); it != GetConnectedBlock(Expression::loc::source)->GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = GetConnectedBlock(Expression::loc::source)->GetVars()->begin(); it != GetConnectedBlock(Expression::loc::source)->GetVars()->end(); it++)
         {
             if (aquiutils::split(it->first, ':').size() == 2)
             {
@@ -601,7 +601,7 @@ bool Object::InitializePrecalcFunctions()
 
 void Object::MakeTimeSeriesUniform(const double &increment)
 {
-    for (map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
         if (var[s->first].GetType() == Quan::_type::timeseries || var[s->first].GetType() == Quan::_type::prec_timeseries)
         {
             *(var[s->first].TimeSeries()) = var[s->first].TimeSeries()->make_uniform(increment);

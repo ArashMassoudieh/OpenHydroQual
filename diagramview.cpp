@@ -38,24 +38,24 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
     {   int i=qrand()%nodeedges.size();
         if (nodeedges[i]->type()==65537)
         {   node = qgraphicsitem_cast<Node*> (nodeedges[i]); //Get the item at the position
-            qDebug()<<i<<nodeedges[i]->type()<<node->Name();
+            //qDebug()<<i<<nodeedges[i]->type()<<node->Name();
         }
         else if (nodeedges[i]->type()==65538)
         {   edge = qgraphicsitem_cast<Edge*> (nodeedges[i]); //Get the item at the position
-            qDebug()<<i<<nodeedges[i]->type()<<edge->Name();
+            //qDebug()<<i<<nodeedges[i]->type()<<edge->Name();
         }
     }
 
     if (!node && !edge && Operation_Mode!=Operation_Modes::Pan && Operation_Mode!=Operation_Modes::ZoomWindow)
     {
-        qDebug()<<"Mode set to normal";
+        //qDebug()<<"Mode set to normal";
         setMode(Operation_Modes::NormalMode);
     }
     if (event->buttons() == Qt::LeftButton && Operation_Mode == Operation_Modes::ZoomWindow)
     {
         x_ini = mapToScene(event->pos()).x();
         y_ini = mapToScene(event->pos()).y();
-        qDebug()<<event->pos().x()<<","<<event->pos().y()<<","<<x_ini<<","<<y_ini;
+        //qDebug()<<event->pos().x()<<","<<event->pos().y()<<","<<x_ini<<","<<y_ini;
     }
     if (event->buttons() == Qt::MiddleButton && Operation_Mode == Operation_Modes::NormalMode)
     {
@@ -331,12 +331,12 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         QRectF rect = MainGraphicsScene->sceneRect();
         int x_new = mapToScene(event->pos()).x();
         int y_new = mapToScene(event->pos()).y();
-        qDebug()<<event->pos().x()<<","<<event->pos().y()<<","<<x_new<<","<<y_new;
+        //qDebug()<<event->pos().x()<<","<<event->pos().y()<<","<<x_new<<","<<y_new;
         setMode(Operation_Modes::NormalMode);
         QRectF newRect = QRectF(min(x_ini,x_new),min(y_ini,y_new),abs(x_new-x_ini),abs(y_new-y_ini));
 
         float f = min(float(rect.width())/float(newRect.width()),float(rect.height())/float(newRect.height()));
-        qDebug()<<f;
+        //qDebug()<<f;
 //        MainGraphicsScene->setSceneRect(newRect);
 //        scale(f,f);
 
@@ -392,13 +392,13 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             int i=qrand()%nodeedges.size();
             if (nodeedges[i]->type()==65537)
             {   node = qgraphicsitem_cast<Node*> (nodeedges[i]); //Get the item at the position
-                qDebug()<<i<<nodeedges[i]->type()<<node->Name();
+                //qDebug()<<i<<nodeedges[i]->type()<<node->Name();
                 node->setSelected(true);
                 node->setZValue(100);
             }
             else if (nodeedges[i]->type()==65538)
             {   edge = qgraphicsitem_cast<Edge*> (nodeedges[i]); //Get the item at the position
-                qDebug()<<i<<nodeedges[i]->type()<<edge->Name();
+                //qDebug()<<i<<nodeedges[i]->type()<<edge->Name();
                 edge->setSelected(true);
                 edge->setZValue(100);
             }
@@ -788,10 +788,10 @@ void DiagramView::nodeContextMenuRequested(Node* n, QPointF pos, QMenu *menu)
     {
         if (selectedAction->text() == "Select")
             n->setSelected(true);
-        qDebug()<<selectedAction->text();
+        //qDebug()<<selectedAction->text();
         if (selectedAction->text().left(6) == "Delete")
         {
-        qDebug()<<"Here we have to delete the object";
+        //qDebug()<<"Here we have to delete the object";
         // Need work
         };
 

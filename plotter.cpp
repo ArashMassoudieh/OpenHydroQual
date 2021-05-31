@@ -676,7 +676,7 @@ void Plotter::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 
 void Plotter::removeSelectedGraph()
 {
-  qDebug()<<"Removing Selected Graph ...";
+  //qDebug()<<"Removing Selected Graph ...";
   if (plot->selectedGraphs().size() > 0)
   {
     plot->removeGraph(plot->selectedGraphs().first());
@@ -742,7 +742,7 @@ void Plotter::selectionChanged()
 
 void Plotter::turnSelectedtoSymbols()
 {
-  qDebug()<<"Removing Selected Graph ...";
+  //qDebug()<<"Removing Selected Graph ...";
   if (plot->selectedGraphs().size() > 0)
   {
     plot->selectedGraphs().first()->setLineStyle(QCPGraph::lsNone);

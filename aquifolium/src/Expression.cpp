@@ -10,6 +10,7 @@
 #include <sstream>
 #include <cctype>
 #include "System.h"
+//#include "QDebug"
 
 #define SMALLNUMBER 1e-23
 using namespace std;
@@ -194,6 +195,8 @@ Expression::Expression(const Expression & S)
 	unit = S.unit;
 	text = S.text;
 	location = S.location;
+    term_sources.clear();
+    term_sources_determined = false;
 }
 
 Expression & Expression::operator=(const Expression &S)
@@ -210,6 +213,8 @@ Expression & Expression::operator=(const Expression &S)
 	unit = S.unit;
 	text = S.text;
     location = S.location;
+    term_sources.clear();
+    term_sources_determined = false;
 	return *this;
 }
 
@@ -284,6 +289,22 @@ int aquiutils::lookup(const vector<vector<int> > &s, const vector<int> &s1)
 }
 
 
+void Expression::ResetTermsSources()
+{
+    if (!term_sources_determined)
+    {
+        term_sources.resize(terms.size());
+        for (unsigned int j=0; j<terms.size(); j++)
+            term_sources[j].resize(terms.size());
+        terms_source_counter.resize(terms.size());
+    }
+    for (unsigned int i=0; i<term_sources.size(); i++)
+    {   for (unsigned int j=0; j<term_sources[i].size(); j++)
+            term_sources[i][j] = -1;
+        terms_source_counter[i]=0;
+    }
+}
+
 double Expression::calc(Object *W, const timing &tmg, bool limit)
 {
 	if (!W)
@@ -292,9 +313,14 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 		return 0;
 	}
 
-	term_vals.clear();
-    terms_calculated.clear();
-    sources.clear();
+    if (!term_sources_determined)
+    {   term_vals.resize(terms.size());
+        terms_calculated.resize(terms.size());
+    }
+
+    ResetTermsSources();
+
+
 
 	if (function=="ups")
 	{
@@ -370,13 +396,18 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 	if (param_constant_expression == "expression")
 	{
 
-		for (unsigned int i = 0; i < terms.size(); i++)
-		{
-			sources.push_back(vector<int>());
-			sources[i].push_back(i);
-		}
-		term_vals.resize(terms.size());
-		for (unsigned int i = 0; i < terms.size(); i++) terms_calculated.push_back(false);
+        //qDebug()<<QString::fromStdString(this->ToString())<<":"<<term_sources_determined;
+
+        for (unsigned int i = 0; i < terms.size(); i++)
+        {
+            term_sources[i][0]=i;
+            terms_source_counter[i]++;
+        }
+        if (!term_sources_determined)
+            terms_source_counter.resize(terms.size());
+
+
+        for (unsigned int i = 0; i < terms.size(); i++) terms_calculated[i]=false;
 
         for (int i = operators.size() - 1; i >= 0; i--)
 		{
@@ -426,7 +457,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 
             }
         }
-
+        term_sources_determined = true;
 		if (function == "")
 			return term_vals[0];
 		else if (count_operators(";")==0)
@@ -435,7 +466,8 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
             return func(function, term_vals[seploc], term_vals[seploc+1]);
         else if (count_operators(";")==2)
             return func(function, term_vals[0], term_vals[1], term_vals[2]);
-	}
+
+    }
 
     return 0;
 }
@@ -524,29 +556,39 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
 	#ifdef Debug_mode
 	//cout<<i1<<","<<i2<<endl;
 	#endif // Debug_mode
-	for (unsigned int j = 0; j < sources[i1].size(); j++)
-	{
-		if (sources.size() > i2)
-			for (unsigned int k=0; k<sources[i2].size(); k++)
-				if (aquiutils::lookup(sources[sources[i2][k]],sources[i1][j])==-1) sources[sources[i2][k]].push_back(sources[i1][j]);
 
-	}
-	if (sources.size() > i2)
-	for (unsigned int j = 0; j < sources[i2].size(); j++)
-	{
-		for (unsigned int k = 0; k<sources[i1].size(); k++)
-			if (aquiutils::lookup(sources[sources[i1][k]],sources[i2][j])==-1) sources[sources[i1][k]].push_back(sources[i2][j]);
+    for (unsigned int j = 0; j < terms_source_counter[i1]; j++)
+    {
+        if (term_sources.size() > i2)
+            for (unsigned int k=0; k<terms_source_counter[i2]; k++)
+                if (aquiutils::lookup(term_sources[term_sources[i2][k]],term_sources[i1][j])==-1)
+                {   term_sources[term_sources[i2][k]][terms_source_counter[term_sources[i2][k]]]=term_sources[i1][j];
+                    terms_source_counter[term_sources[i2][k]]++;
+                }
 
-	}
+    }
+    if (term_sources.size() > i2)
+        for (unsigned int j = 0; j < terms_source_counter[i2]; j++)
+        {
+            for (unsigned int k = 0; k<terms_source_counter[i1]; k++)
+                if (aquiutils::lookup(term_sources[term_sources[i1][k]],term_sources[i2][j])==-1)
+                {   term_sources[term_sources[i1][k]][terms_source_counter[term_sources[i1][k]]] = term_sources[i2][j];
+                    terms_source_counter[term_sources[i1][k]]++;
 
-	double val1;
+                }
+
+        }
+
+
+
+    double val1;
 	double val2;
 	if (terms_calculated[i1]) val1 = term_vals[i1]; else val1 = terms[i1].calc(W, tmg, limit);
 	if (!(i1>0 && terms_calculated[i1]))
         if (terms[i1].sign == "/")
             val1 = 1/(val1+1e-23);
 	if (terms[i1].sign == "-") val1 = -val1;
-	if (sources.size() > i2)
+    if (term_sources.size() > i2)
 		if (terms_calculated[i2]) val2 = term_vals[i2]; else
 		{
 			val2 = terms[i2].calc(W, tmg, limit);
@@ -565,17 +607,17 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
 		else if (terms[i2].unit != "") unit = terms[i2].unit;
 	}
 
-	for (unsigned int j = 0; j<sources[i1].size(); j++)
+    for (unsigned int j = 0; j<terms_source_counter[i1]; j++)
     {
         if (f=="^" && terms[i1].sign == "-")
-            term_vals[sources[i1][j]] = -oprt(f, -val1, val2);
+            term_vals[term_sources[i1][j]] = -oprt(f, -val1, val2);
         else
-            term_vals[sources[i1][j]] = oprt(f, val1, val2);
+            term_vals[term_sources[i1][j]] = oprt(f, val1, val2);
     }
 	terms_calculated[i1] = true;
 	terms_calculated[i2] = true;
 
-	return term_vals[sources[i1][0]];
+    return term_vals[term_sources[i1][0]];
 }
 
 int aquiutils::corresponding_parenthesis(string S, int i)

@@ -462,7 +462,7 @@ void CGA<T>::write_to_detailed_GA(string s)
 template<class T>
 void CGA<T>::SetParameters(Object *obj)
 {
-    for (map<string,Quan>::iterator it=obj->GetVars()->begin(); it!=obj->GetVars()->end(); it++)
+    for (unordered_map<string,Quan>::iterator it=obj->GetVars()->begin(); it!=obj->GetVars()->end(); it++)
     {
         SetProperty(it->first,it->second.GetProperty());
     }
