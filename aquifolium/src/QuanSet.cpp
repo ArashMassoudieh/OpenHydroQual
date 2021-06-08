@@ -111,7 +111,7 @@ QuanSet& QuanSet::operator=(const QuanSet& rhs)
 
 bool QuanSet::Append(const string &s, const Quan &q)
 {
-    if (quans.count(s)>0)
+    if (Find(s))
     {
         AppendError(Name(),"QuanSet","Append","In " + Name() + ": Quantity " + s + " Already exists!",2001);
         return false;
@@ -143,22 +143,22 @@ void QuanSet::Append(QuanSet &qset)
 
 Quan& QuanSet::operator[] (const string &s)
 {
-    if (quans.count(s)==0)
+    if (!Find((s)))
     {
         last_error = "Variable " + s + " does not exist!";
     }
     else
-        return quans[s];
+        return quans.at(s);
 }
 
 Quan& QuanSet::GetVar(const string &s)
 {
-    if (quans.count(s)==0)
+    if (!Find(s))
     {
         AppendError(Name(),"QuanSet","GetVar","Variable " + s + " does not exist!",2001);
     }
     else
-        return quans[s];
+        return quans.at(s);
 }
 
 Quan* QuanSet::GetVar(int i)

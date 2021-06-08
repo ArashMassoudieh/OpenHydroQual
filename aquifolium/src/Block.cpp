@@ -38,14 +38,17 @@ void Block::AppendLink(int i, const Expression::loc &loc)
 double Block::GetInflowValue(const string &variable, const Expression::timing &tmg)
 {
     double inflow = 0;
-    for (unsigned int i=0; i<Variable(variable)->GetCorrespondingInflowVar().size(); i++)
+    corresponding_inflow_var = Variable(variable)->GetCorrespondingInflowVar();
+
+
+    for (unsigned int i=0; i<corresponding_inflow_var.size(); i++)
     {
-        if (Variable(variable)->GetCorrespondingInflowVar()[i] != "")
+        if (corresponding_inflow_var[i] != "")
         {
-            if (Variable(Variable(variable)->GetCorrespondingInflowVar()[i]))
+            if (Variable(corresponding_inflow_var[i]))
             {
-                double inflow1 = CalcVal(Variable(variable)->GetCorrespondingInflowVar()[i]);
-                Variable(Variable(variable)->GetCorrespondingInflowVar()[i])->SetVal(inflow1, tmg);
+                double inflow1 = CalcVal(corresponding_inflow_var[i]);
+                Variable(corresponding_inflow_var[i])->SetVal(inflow1, tmg);
                 inflow += inflow1;
             }
         }

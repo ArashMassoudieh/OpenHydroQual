@@ -55,6 +55,13 @@ class QuanSet
         vector<string> AllConstituents();
         vector<string> AllReactionParameters();
         bool RenameQuantity(const string &oldname, const string &newname);
+        bool Find(const string &s)
+        {
+            if (quans.find(s)!=quans.end())
+                return true;
+            else
+                return false;
+        }
 #ifdef QT_version
         QStringList QQuanNames();
 		QuanSet(QJsonObject& object_types);

@@ -51,7 +51,7 @@ Object& Object::operator=(const Object& rhs)
 
 double Object::CalcVal(const string& s,const Expression::timing &tmg)
 {
-    if (var.Count(s)==1)
+    if (var.Find(s))
     {
         #ifdef Debug_mode
         //ShowMessage(string("Object: ") + name + " Variable: " + s + " Value: " + numbertostring(var[s].CalcVal(tmg)));
@@ -70,7 +70,7 @@ double Object::CalcVal(const string& s,const Expression::timing &tmg)
 
 double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
 {
-    if (var.Count(s)==1)
+    if (var.Find(s))
     {
         if (!limit || !var[s].ApplyLimit())
             return var[s].GetVal(tmg);
@@ -97,7 +97,7 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
 double Object::GetVal(const string& variable, const string& consttnt, const Expression::timing &tmg, bool limit)
 {
     string fullname = consttnt+":"+variable;
-    if (var.Count(fullname)==1)
+    if (var.Find(fullname))
     {
         if (!limit)
             return var[fullname].GetVal(tmg);
@@ -292,7 +292,7 @@ void Object::SetParent(System *s)
 
 Quan* Object::CorrespondingFlowVariable(const string &s)
 {
-    if (var.Count(Variable(s)->GetCorrespondingFlowVar())==0)
+    if (!var.Find(Variable(s)->GetCorrespondingFlowVar()))
     {
         Parent()->errorhandler.Append(GetName(),"Object","CorrespondingFlowVariable","Variable '" + s +"' does not exist!",1009);
         return nullptr;
@@ -303,7 +303,7 @@ Quan* Object::CorrespondingFlowVariable(const string &s)
 
 Quan* Object::Variable(const string &s)
 {
-    if (var.Count(s)==0)
+    if (!var.Find(s))
     {
         //qDebug() << QString::fromStdString("In '" + name + "': " + "Variable '" + s + "' does not exist!"); 
 #ifdef Debug_mode
@@ -319,7 +319,7 @@ Quan* Object::Variable(const string &s)
 Quan* Object::Variable(const string &variable, const string &constituent)
 {
     string variablefullname = constituent+":"+variable;
-    if (var.Count(variablefullname)==0)
+    if (!var.Find(variablefullname))
     {
         //qDebug() << QString::fromStdString("In '" + name + "': " + "Variable '" + variablefullname + "' does not exist!");
 #ifdef Debug_mode

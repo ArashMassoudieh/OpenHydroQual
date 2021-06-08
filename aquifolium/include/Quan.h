@@ -58,7 +58,7 @@ class Quan
             return corresponding_flow_quan;
         }
         void SetCorrespondingInflowVar(const string &s);
-        vector<string> GetCorrespondingInflowVar() {return corresponding_inflow_quan;}
+        vector<string>& GetCorrespondingInflowVar() {return corresponding_inflow_quan;}
         void SetMassBalance(bool on);
         void SetParent(Object *);
         Quan *Corresponding_flow_variable = nullptr;

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl printsupport
+QT       += core gui opengl printsupport svg
 INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/include/GA
 INCLUDEPATH += ../jsoncpp/include/

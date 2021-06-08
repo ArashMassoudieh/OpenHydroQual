@@ -269,7 +269,7 @@
     "area": {
       "type": "expression",
       "description": "Interface area",
-      "expression": "(area.s+area.e)/2",
+      "expression": "area.s",
       "includeinoutput": "true",
       "ask_user": "false"
     },

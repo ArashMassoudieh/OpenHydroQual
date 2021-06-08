@@ -42,6 +42,8 @@ class Block: public Object
     private:
         vector<int> links_from_ids;
         vector<int> links_to_ids;
+        vector<string> corresponding_inflow_var;
+        bool corresponding_inflow_var_extracted = false;
 };
 
 #endif // BLOCK_H

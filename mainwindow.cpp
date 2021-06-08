@@ -28,6 +28,9 @@
 #include "plotter.h"
 #include <QInputDialog>
 #include "wizard_select_dialog.h"
+#include <QtSvg/QGraphicsSvgItem>
+#include <QtSvg/QSvgGenerator>
+#include <QtSvg/QSvgRenderer>
 
 using namespace std;
 
@@ -83,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
     connect(ui->actionSave_as,SIGNAL(triggered()),this,SLOT(onsaveas()));
+    connect(ui->actionExport_to_SVG,SIGNAL(triggered()),this,SLOT(onexporttosvg()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnew()));
     connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(onabout()));
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
@@ -1222,6 +1226,29 @@ void MainWindow::onsaveas()
 
 }
 
+void MainWindow::onexporttosvg()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+            tr("Save"), "",
+            tr("svg files (*.svg)"));
+    QString svgfileName;
+    if (fileName!="")
+    {
+        //qDebug() << fileName.split('.');
+
+        if (!fileName.contains("."))
+            svgfileName = fileName + ".svg";
+        else if (fileName.split('.')[fileName.split('.').size()-1]!="svg" )
+        {
+            svgfileName = fileName + ".svg";
+        }
+        else
+            svgfileName = fileName;
+        saveSceneToSvg(svgfileName);
+    }
+
+}
+
 void MainWindow::onsave()
 {
     if (filename!="")
@@ -1700,4 +1727,22 @@ void MainWindow::removeFromRecentList(QAction* selectedFileAction)
     recentFiles.removeAll(selectedFileAction->text());
     ui->menuRecent->removeAction(selectedFileAction);
     writeRecentFilesList();
+}
+
+void MainWindow::saveSceneToSvg(const QString &filename) {
+
+    QSize sceneSize = GetDiagramView()->MainGraphicsScene->sceneRect().size().toSize();
+
+    QSvgGenerator generator;
+    generator.setFileName(filename);
+    generator.setSize(sceneSize);
+    generator.setViewBox(QRect(0, 0, sceneSize.width(), sceneSize.height()));
+    generator.setDescription(QObject::tr("My canvas exported to Svg"));
+    generator.setTitle(filename);
+    QPainter painter;
+    painter.begin(&generator);
+    GetDiagramView()->MainGraphicsScene->render(&painter);
+    painter.end();
+
+
 }

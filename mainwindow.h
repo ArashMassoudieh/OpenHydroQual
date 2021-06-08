@@ -74,6 +74,7 @@ private:
     QStringList recentFiles;
     void removeFromRecentList(QAction* selectedFileAction);
     bool LoadModel(QString fileName);
+    void saveSceneToSvg(const QString &filename);
 
 private slots:
     void on_check_object_browser();
@@ -99,6 +100,7 @@ private slots:
     void onzoomwindowtriggered();
     void onsave();
     void onsaveas();
+    void onexporttosvg();
     void onopen();
     void onrunmodel();
     void onoptimize();
