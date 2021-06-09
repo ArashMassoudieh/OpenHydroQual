@@ -82,7 +82,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     painter->drawRoundRect(0, 0, width, height,10,10);
     painter->setPen(QPen(Qt::black, (bold) ? 2 : 0));
     qreal factor = parent->transform().scale(1, 1).mapRect(QRectF(0, 0, 1, 1)).width();
-    int size = int(4 + 6 / factor);
+    int size = int(4 + 6 / factor)*fontfactor();
     QFont QF = painter->font(); QF.setPointSize(size);// QF.pointSize() + 2);
     QF.setBold(bold);
     painter->setFont(QF);
@@ -215,3 +215,10 @@ void Node::SetObject(Object* _object) {
 }
 
 QString Node::Name() { return QString::fromStdString(object()->GetName()); }
+
+double Node::fontfactor(){
+    if (parent)
+        return parent->fontfactor;
+    else
+        return 1;
+}

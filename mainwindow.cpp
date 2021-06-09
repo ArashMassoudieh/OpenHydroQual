@@ -31,6 +31,7 @@
 #include <QtSvg/QGraphicsSvgItem>
 #include <QtSvg/QSvgGenerator>
 #include <QtSvg/QSvgRenderer>
+#include "options.h"
 
 using namespace std;
 
@@ -93,6 +94,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionLoad_a_new_template,SIGNAL(triggered()),this,SLOT(loadnewtemplate()));
     connect(ui->actionAddPlugin,SIGNAL(triggered()),this,SLOT(addplugin()));
     connect(ui->actionAdd_plugin,SIGNAL(triggered()),this,SLOT(adddefaultpluging()));
+    connect(ui->actionOptions,SIGNAL(triggered()),this,SLOT(optionsdialog()));
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
@@ -1579,6 +1581,13 @@ void MainWindow::adddefaultpluging()
 {
     Wizard_select_dialog *Wizard_Select_Form = new Wizard_select_dialog(this);
     Wizard_Select_Form->show();
+
+}
+
+void MainWindow::optionsdialog()
+{
+    OptionsDialog *Options_Dialog = new OptionsDialog(this);
+    Options_Dialog->show();
 
 }
 

@@ -36,7 +36,8 @@ public:
     void scaleView(qreal scaleFactor);
     void DeleteAllItems();
     void wheelEvent(QWheelEvent* pWheelEvent) override;
-
+    double fontfactor=1;
+    QList<Node*> Nodes() const;
 private:
     MainWindow *mainwindow;
     QList<Node*> nodes();
@@ -53,7 +54,6 @@ private:
     QList<Edge*> edges(const QList<QGraphicsItem*>items) const;
     QList<Node*> selectedNodes() const;
     QList<Edge*> selectedEdges() const;
-    QList<Node*> Nodes() const;
     QList<Edge *> Edges() const;
     Operation_Modes setMode(int i);
     QMap<QString, QMap<QString, QString>> specs;

@@ -38,7 +38,7 @@ public:
     void setHeight(const int& Height);
     void setX(const int& x);
     void setY(const int& y);
-   
+    double fontfactor();
     QList<Edge *> edges() const { return edgeList; }
     void addEdge(Edge *edge);
 

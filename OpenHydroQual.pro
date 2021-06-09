@@ -82,6 +82,7 @@ SOURCES += \
     ./aquifolium/src/Parameter.cpp \
     ./aquifolium/src/ErrorHandler.cpp \
     node.cpp \
+    options.cpp \
     propmodel.cpp \
     delegate.cpp \
     ray.cpp \
@@ -149,6 +150,7 @@ HEADERS += \
     ../jsoncpp/src/lib_json/version.h.in \
     enums.h \
     node.h \
+    options.h \
     propmodel.h \
     delegate.h \
     ray.h \
@@ -175,6 +177,7 @@ HEADERS += \
     wizard_select_dialog.h
 
 FORMS += \
+    Options.ui \
     aboutdialog.ui \
         mainwindow.ui \
     runtimewindow.ui \

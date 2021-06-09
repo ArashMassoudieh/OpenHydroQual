@@ -65,6 +65,7 @@
     <addaction name="separator"/>
     <addaction name="menuPreferences"/>
     <addaction name="actionExport_to_SVG"/>
+    <addaction name="actionOptions"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -246,6 +247,11 @@
   <action name="actionExport_to_SVG">
    <property name="text">
     <string>Export to SVG</string>
+   </property>
+  </action>
+  <action name="actionOptions">
+   <property name="text">
+    <string>Options</string>
    </property>
   </action>
  </widget>
