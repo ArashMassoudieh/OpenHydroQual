@@ -45,6 +45,7 @@ struct solversettings
 {
     double C_N_weight; //Crank-Nicholson Weight
     double NRtolerance = 1e-6; //Newton Raphson Tolerance
+    int n_threads = 4; //Number of threads
     double NR_coeff_reduction_factor = 0.8; //The coefficient to reduce the Newton-Raphson coefficient
     double NR_timestep_reduction_factor = 0.75;
     double NR_timestep_reduction_factor_fail = 0.3;
@@ -332,7 +333,7 @@ class System: public Object
         SolutionLogger *GetSolutionLogger();
         bool GetSolutionFailed() {return SolverTempVars.SolutionFailed;}
         void SetParameterEstimationMode(parameter_estimation_options mode = parameter_estimation_options::none);
-
+        void SetQuanPointers();
     protected:
 
     private:

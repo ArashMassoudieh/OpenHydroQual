@@ -7,6 +7,7 @@
 using namespace std;
 
 class Object;
+class Quan;
 
 class Expression
 {
@@ -18,6 +19,7 @@ class Expression
         Expression& operator=(const Expression&);
         vector<string> operators;
         vector<Expression> terms;
+        Quan* quan = nullptr;
         string sign;
         string function;
         string parameter;
@@ -51,6 +53,7 @@ class Expression
             term_sources_determined = false;
             term_sources.clear();
         }
+        bool SetQuanPointers(Object *W);
     protected:
 
     private:

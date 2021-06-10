@@ -492,6 +492,14 @@ bool QuanSet::RenameQuantity(const string &oldname, const string &newname)
     return true;
 }
 
+void QuanSet::SetQuanPointers()
+{
+    if (parent!=nullptr)
+    {
+        for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+            it->second.SetQuanPointers(parent);
+    }
+}
 bool QuanSet::InitializePrecalcFunctions()
 {
     bool out = true;

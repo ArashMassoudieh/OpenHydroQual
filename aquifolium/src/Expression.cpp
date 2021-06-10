@@ -178,7 +178,6 @@ Expression::Expression(string S)
 	}
 
 
-
 }
 
 Expression::Expression(const Expression & S)
@@ -197,6 +196,7 @@ Expression::Expression(const Expression & S)
 	location = S.location;
     term_sources.clear();
     term_sources_determined = false;
+
 }
 
 Expression & Expression::operator=(const Expression &S)
@@ -215,6 +215,7 @@ Expression & Expression::operator=(const Expression &S)
     location = S.location;
     term_sources.clear();
     term_sources_determined = false;
+
 	return *this;
 }
 
@@ -305,6 +306,26 @@ void Expression::ResetTermsSources()
     }
 }
 
+bool Expression::SetQuanPointers(Object *W)
+{
+    if (param_constant_expression=="parameter")
+    {   if (location==Expression::loc::self)
+            quan = W->Variable(parameter);
+        else
+            quan = W->GetConnectedBlock(location)->Variable(parameter);
+        return true;
+    }
+    else if (param_constant_expression == "expression")
+    {
+        for (unsigned int i=0; i<terms.size(); i++)
+            terms[i].SetQuanPointers(W);
+        return true;
+    }
+
+    return false;
+
+}
+
 double Expression::calc(Object *W, const timing &tmg, bool limit)
 {
 	if (!W)
@@ -378,16 +399,31 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 		return constant;
 	if (param_constant_expression == "parameter")
 	{
-        double out=0;
-        if (location == loc::self)
-            out = W->GetVal(parameter, tmg,limit);
+       double out=0;
+
+       if (location == loc::self)
+        {
+            if (quan!=nullptr && quan->GetParent()==W)
+                out = W->GetVal(quan, tmg,limit);
+            else
+                out = W->GetVal(parameter, tmg,limit);
+        }
         else
         {
             if (W->GetConnectedBlock(location)!=nullptr)
-                out = W->GetConnectedBlock(location)->GetVal(parameter, tmg, limit);
+            {    if (quan!=nullptr && quan->GetParent()==W->GetConnectedBlock(location))
+                    out = W->GetConnectedBlock(location)->GetVal(quan, tmg, limit);
+                 else
+                    out = W->GetConnectedBlock(location)->GetVal(parameter, tmg, limit);
+            }
             else
-                out = W->GetVal(parameter, tmg, limit);
+            {   if (quan!=nullptr && quan->GetParent()==W)
+                    out = W->GetVal(quan, tmg, limit);
+                else
+                    out = W->GetVal(parameter, tmg, limit);
+            }
         }
+
         if (function == "")
             return out;
         else if (count_operators(";")==0)

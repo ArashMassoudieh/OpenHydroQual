@@ -25,6 +25,7 @@ class Object
         double CalcVal(const string& s, const Expression::timing &tmg=Expression::timing::past);
         double GetVal(const string& s, const Expression::timing &tmg=Expression::timing::past, bool limit=false);
         double GetVal(const string& var, const string& consttnt, const Expression::timing &tmg, bool limit=false);
+        double GetVal(Quan* quan,const Expression::timing &tmg, bool limit);
         bool AddQnantity(const string &name,const Quan &Q);
         bool SetQuantities(MetaModel &m, const string& typ);
         bool SetQuantities(MetaModel *m, const string& typ );
@@ -130,6 +131,7 @@ class Object
         vector<string> AllReactionParameters();
         bool InitializePrecalcFunctions();
         void MakeTimeSeriesUniform(const double &increment);
+        void SetQuanPointers();
     protected:
 
     private:

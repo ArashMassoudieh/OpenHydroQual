@@ -718,6 +718,12 @@ void Quan::SetParent(Object *o)
     parent = o;
 }
 
+Object* Quan::GetParent()
+{
+    return parent;
+}
+
+
 void Quan::Renew()
 {
 	_val_star = _val;

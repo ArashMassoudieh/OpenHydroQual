@@ -68,6 +68,10 @@ double Object::CalcVal(const string& s,const Expression::timing &tmg)
 
 }
 
+void Object::SetQuanPointers()
+{
+    var.SetQuanPointers();
+}
 double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
 {
     if (var.Find(s))
@@ -112,6 +116,16 @@ double Object::GetVal(const string& variable, const string& consttnt, const Expr
     }
 
 }
+
+double Object::GetVal(Quan* quan,const Expression::timing &tmg, bool limit)
+{
+    if (!limit || !quan->ApplyLimit())
+        return quan->GetVal(tmg);
+    else
+        return quan->GetVal(tmg)*GetOutflowLimitFactor(tmg);
+}
+
+
 
 
 bool Object::AddQnantity(const string &name,const Quan &Q)

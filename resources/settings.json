@@ -18,6 +18,14 @@
       "ask_user": "false",
       "delegate": "String" 
     },
+    "n_threads": {
+      "type": "value",
+      "default": "4",
+      "description": "Number of threads to be used",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "code": "n_threads"
+    },
     "nr_tolerance": {
       "type": "value",
       "default": "0.001",

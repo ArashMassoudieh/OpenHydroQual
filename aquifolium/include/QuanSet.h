@@ -62,6 +62,8 @@ class QuanSet
             else
                 return false;
         }
+        void SetQuanPointers();
+
 #ifdef QT_version
         QStringList QQuanNames();
 		QuanSet(QJsonObject& object_types);

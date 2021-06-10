@@ -25,7 +25,7 @@ System::System():Object::Object()
 void System::PopulateOperatorsFunctions()
 {
 #ifndef NO_OPENMP
-    omp_set_num_threads(8);
+    omp_set_num_threads(SolverSettings.n_threads);
 #endif
 
     operators = new vector<string>;
@@ -484,7 +484,7 @@ bool System::Solve(bool applyparameters)
     double timestepminfactor = 100000;
     double timestepmaxfactor = 50;
     SetAllParents();
-
+    SetQuanPointers();
     if (ConstituentsCount()>0)
         SetNumberOfStateVariables(solvevariableorder.size()+1);
     else
@@ -692,6 +692,10 @@ bool System::SetProp(const string &s, const double &val)
     {   SolverSettings.C_N_weight = val; return true;}
     if (s=="nr_tolerance")
     {   SolverSettings.NRtolerance = val; return true;}
+    if (s=="n_threads")
+    {
+        SolverSettings.n_threads = int(val); return true;
+    }
     if (s=="nr_coeff_reduction_factor")
     {   SolverSettings.NR_coeff_reduction_factor = val; return true;}
     if (s=="nr_timestep_reduction_factor")
@@ -744,6 +748,10 @@ bool System::SetProperty(const string &s, const string &val)
     {   SolverSettings.C_N_weight = aquiutils::atof(val); return true;}
     if (s=="nr_tolerance")
     {   SolverSettings.NRtolerance = aquiutils::atof(val); return true;}
+    if (s=="n_threads")
+    {
+        SolverSettings.n_threads = aquiutils::atoi(val); return true;
+    }
     if (s=="nr_coeff_reduction_factor")
     {   SolverSettings.NR_coeff_reduction_factor = aquiutils::atof(val); return true;}
     if (s=="nr_timestep_reduction_factor")
@@ -1889,6 +1897,18 @@ double System::CalcMisfit()
 void System::SetParameterEstimationMode(parameter_estimation_options mode)
 {
     ParameterEstimationMode = mode;
+}
+
+void System::SetQuanPointers()
+{
+    for (unsigned int i=0; i<BlockCount(); i++)
+    {
+        blocks[i].SetQuanPointers();
+    }
+    for (unsigned int i=0; i<LinksCount(); i++)
+    {
+        links[i].SetQuanPointers();
+    }
 }
 
 bool System::RemoveAsParameter(const string &location, const string &quantity, const string &parametername)

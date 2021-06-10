@@ -61,6 +61,7 @@ class Quan
         vector<string>& GetCorrespondingInflowVar() {return corresponding_inflow_quan;}
         void SetMassBalance(bool on);
         void SetParent(Object *);
+        Object* GetParent();
         Quan *Corresponding_flow_variable = nullptr;
 		void Renew();
 		void Update();
@@ -132,6 +133,15 @@ class Quan
         PreCalculatedFunction* PreCalcFunction() {return &precalcfunction;}
         double InterpolateBasedonPrecalcFunction(const double &val);
         bool InitializePreCalcFunction(int n_inc=100);
+        bool SetQuanPointers(Object *W)
+        {
+            if (type==_type::expression)
+            {   _expression.SetQuanPointers(W);
+                return true;
+            }
+
+            return false;
+        }
     protected:
 
     private:
