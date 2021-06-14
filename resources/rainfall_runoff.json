@@ -238,7 +238,7 @@
 	    }, 
 	    "flow": {
 	      "type": "expression",
-	      "expression": "86400*(Width/ManningCoeff.s)*_sqr(hydraulic_gradient)*(_pos(depth.s)^1.666667)",
+	      "expression": "86400*(Width/ManningCoeff.s)*_sqt(hydraulic_gradient)*(_pos(depth.s)^1.666667)",
 	      "includeinoutput": "true",
 	      "applylimit": "true",
 	      "ask_user": "false"

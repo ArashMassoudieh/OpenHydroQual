@@ -69,6 +69,7 @@ public:
 	friend void write_to_file(vector<CMatrix> M, string filename);
 	friend CMatrix Average(vector<CMatrix> M);
     CVector diag_ratio();
+    CVector diagvector();
     vector<vector<bool> > non_posdef_elems(double tol = 1);
     CMatrix non_posdef_elems_m(double tol = 1);
     CMatrix Preconditioner(double tol = 1);
@@ -85,6 +86,7 @@ public:
 };
 
 double det(CMatrix &);
+double rcond(CMatrix &M);
 CMatrix Log(CMatrix &M1);
 CMatrix Exp(CMatrix &M1);
 CMatrix Sqrt(CMatrix &M1);

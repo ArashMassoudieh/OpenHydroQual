@@ -841,6 +841,20 @@ double det(CMatrix &M)
 	return det(A);
 }
 
+double rcond(CMatrix &M)
+{
+
+    mat A(M.getnumrows(),M.getnumcols());
+
+    for (int i = 0;i<M.getnumrows(); ++i)
+    {
+        for (int j = 0;j<M.getnumcols(); ++j)
+            A(i,j) = M[i][j];
+    }
+
+    return rcond(A);
+}
+
 
 CMatrix& CMatrix::operator=(mat &A)
 {
@@ -901,6 +915,17 @@ CVector CMatrix::diag_ratio()
 		X[i]=maxs[i]/matr[i][i];
 	}
 	return X;
+}
+
+CVector CMatrix::diagvector()
+{
+    CVector X(numcols);
+    CVector maxs(numcols);
+    for (int i=0; i<numcols; i++)
+    {	for (int j=0; j<numrows; j++)
+            X[i]=matr[i][i];
+    }
+    return X;
 }
 
 CMatrix normalize_diag(CMatrix &M1, CMatrix&M2)

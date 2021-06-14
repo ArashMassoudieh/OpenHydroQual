@@ -313,6 +313,12 @@ double CMatrix_arma::det()
 	return arma::det(matr);
 }
 
+double CMatrix_arma::rcond()
+{
+    return arma::rcond(matr);
+}
+
+
 
 CVector_arma diag(const CMatrix_arma &m)
 {
@@ -457,6 +463,11 @@ CMatrix_arma inv(CMatrix_arma &M)
 double det(CMatrix_arma &M)
 {
 	return det(M.matr);
+}
+
+double rcond(CMatrix_arma &M)
+{
+    return rcond(M.matr);
 }
 
 
@@ -712,3 +723,15 @@ void CMatrix_arma::ScaleDiagonal(double x)
 		matr(i, i) *= x;
 	}
 }
+
+CVector CMatrix_arma::diagvector()
+{
+    CVector X(numcols);
+    CVector maxs(numcols);
+    for (int i=0; i<numcols; i++)
+    {	for (int j=0; j<numrows; j++)
+            X[i]=matr(i,i);
+    }
+    return X;
+}
+

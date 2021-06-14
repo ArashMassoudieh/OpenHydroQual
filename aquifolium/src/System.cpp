@@ -1016,19 +1016,19 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 		CVector_arma X_past = X;
         CVector_arma F = GetResiduals(variable, X, transport);
-
+        int ini_max_error_block = F.abs_max_elems();
         if (!F.is_finite())
         {
             SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
             GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite, dt = " + aquiutils::numbertostring(SolverTempVars.dt));
-            GetSolutionLogger()->WriteString("Block states - present: ");
-            WriteBlocksStates(variable, Expression::timing::present);
-            GetSolutionLogger()->WriteString("Block states - past: ");
-            WriteBlocksStates(variable, Expression::timing::past);
-            GetSolutionLogger()->WriteString("Link states - present: ");
-            WriteLinksStates(variable, Expression::timing::present);
-            GetSolutionLogger()->WriteString("Links states - past: ");
-            WriteLinksStates(variable, Expression::timing::past);
+            //GetSolutionLogger()->WriteString("Block states - present: ");
+            //WriteBlocksStates(variable, Expression::timing::present);
+            //GetSolutionLogger()->WriteString("Block states - past: ");
+            //WriteBlocksStates(variable, Expression::timing::past);
+            //GetSolutionLogger()->WriteString("Link states - present: ");
+            //WriteLinksStates(variable, Expression::timing::present);
+            //GetSolutionLogger()->WriteString("Links states - past: ");
+            //WriteLinksStates(variable, Expression::timing::past);
 
             GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "X=" + X.toString());
             GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "F=" + F.toString());
@@ -1044,7 +1044,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 		//if (SolverTempVars.NR_coefficient[statevarno]==0)
             SolverTempVars.NR_coefficient[statevarno] = 1;
-		while ((err>SolverSettings.NRtolerance && err>1e-12) || SolverTempVars.numiterations[statevarno]>SolverSettings.NR_niteration_max)
+        while ((err/(err_ini+1e-8)>SolverSettings.NRtolerance && err>1e-12))
         {
             SolverTempVars.numiterations[statevarno]++;
             if (SolverTempVars.updatejacobian[statevarno])
@@ -1071,7 +1071,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     }
                     if (GetSolutionLogger())
                     {
-                        GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranksed!");
+                        GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
                         GetSolutionLogger()->WriteMatrix(J);
                         GetSolutionLogger()->WriteString("Normalized Jacobian Matrix");
                         GetSolutionLogger()->WriteMatrix(J_normalized);
@@ -1124,24 +1124,36 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 }
             }
 #else
-                if (det(J) == 0)
+                double determinant = det(J);
+                double cond = rcond(J);
+                if (determinant==0)
                 {
                     if (GetSolutionLogger())
                     {
-                        GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranksed!");
-                        GetSolutionLogger()->WriteMatrix(J);
-                        GetSolutionLogger()->WriteString("Residual Vector:");
-                        GetSolutionLogger()->WriteVector(F);
-                        GetSolutionLogger()->WriteString("State variable:");
-                        GetSolutionLogger()->WriteVector(X);
-                        GetSolutionLogger()->WriteString("Block states - present: ");
-                        WriteBlocksStates(variable, Expression::timing::present);
-                        GetSolutionLogger()->WriteString("Block states - past: ");
-                        WriteBlocksStates(variable, Expression::timing::past);
-                        GetSolutionLogger()->WriteString("Link states - present: ");
-                        WriteLinksStates(variable, Expression::timing::present);
-                        GetSolutionLogger()->WriteString("Links states - past: ");
-                        WriteLinksStates(variable, Expression::timing::past);
+                        GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
+                        GetSolutionLogger()->WriteString("Determinant = " + aquiutils::numbertostring(determinant));
+                        GetSolutionLogger()->WriteString("Rcond = " + aquiutils::numbertostring(cond));
+                        GetSolutionLogger()->WriteString("Diagonal vector!");
+                        GetSolutionLogger()->WriteVector(J.diagvector());
+                        if (J.diagvector().lookup(0).size()>0)
+                        {
+                            GetSolutionLogger()->WriteString("Blocks corresponding to the zero diagonal element:");
+                            for (unsigned int j=0; j<J.diagvector().lookup(0).size(); j++)
+                            {
+                                GetSolutionLogger()->WriteString(blocks[J.diagvector().lookup(0)[j]].GetName());
+                            }
+                        }
+                        //GetSolutionLogger()->WriteVector(F);
+                        //GetSolutionLogger()->WriteString("State variable:");
+                        //GetSolutionLogger()->WriteVector(X);
+                        //GetSolutionLogger()->WriteString("Block states - present: ");
+                        //WriteBlocksStates(variable, Expression::timing::present);
+                        //GetSolutionLogger()->WriteString("Block states - past: ");
+                        //WriteBlocksStates(variable, Expression::timing::past);
+                        //GetSolutionLogger()->WriteString("Link states - present: ");
+                        //WriteLinksStates(variable, Expression::timing::present);
+                        //GetSolutionLogger()->WriteString("Links states - past: ");
+                        //WriteLinksStates(variable, Expression::timing::past);
                         GetSolutionLogger()->Flush();
                     }
 
@@ -1197,14 +1209,14 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 			if (!F.is_finite())
 			{
 				SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
-                GetSolutionLogger()->WriteString("Block states - present: ");
-                WriteBlocksStates(variable, Expression::timing::present);
-                GetSolutionLogger()->WriteString("Block states - past: ");
-                WriteBlocksStates(variable, Expression::timing::past);
-                GetSolutionLogger()->WriteString("Link states - present: ");
-                WriteLinksStates(variable, Expression::timing::present);
-                GetSolutionLogger()->WriteString("Links states - past: ");
-                WriteLinksStates(variable, Expression::timing::past);
+                //GetSolutionLogger()->WriteString("Block states - present: ");
+                //WriteBlocksStates(variable, Expression::timing::present);
+                //GetSolutionLogger()->WriteString("Block states - past: ");
+                //WriteBlocksStates(variable, Expression::timing::past);
+                //GetSolutionLogger()->WriteString("Link states - present: ");
+                //WriteLinksStates(variable, Expression::timing::present);
+                //GetSolutionLogger()->WriteString("Links states - past: ");
+                //WriteLinksStates(variable, Expression::timing::past);
                 GetSolutionLogger()->Flush();
                 SetOutflowLimitedVector(outflowlimitstatus_old);
                 return false;
@@ -1257,6 +1269,10 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             if (SolverTempVars.numiterations[statevarno] > SolverSettings.NR_niteration_max)
             {
                 SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": number of iterations exceeded the maximum threshold, state_variable:" + aquiutils::numbertostring(statevarno));
+                GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
+                GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
+                GetSolutionLogger()->WriteVector(F);
+                GetSolutionLogger()->Flush();
                 if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
                 return false;
             }
