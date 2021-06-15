@@ -537,7 +537,7 @@
     },
     "method": {
       "type": "string",
-      "delegate": "ComboBox;items:integrate,value,maximum,variance",
+      "delegate": "ComboBox;items:integrate,value,maximum,variance,exceedance",
       "includeinoutput": "true",
       "description": "Calculation method",
       "ask_user": "true"
@@ -555,6 +555,14 @@
       "description": "Weight",
       "ask_user": "true",
       "delegate": "UnitBox" 
+    },
+    "exceedance_probability": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Weight",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "default": 0.05 
     }
   },
   "Observation": {

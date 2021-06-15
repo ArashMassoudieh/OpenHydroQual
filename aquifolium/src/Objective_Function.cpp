@@ -64,6 +64,7 @@ bool Objective_Function::SetProperty(const string &prop, const string &val)
         if (aquiutils::tolower(val)=="value") {type = objfunctype::Value;}
         if (aquiutils::tolower(val) == "maximum") { type = objfunctype::Maximum; }
         if (aquiutils::tolower(val) == "variance") { type = objfunctype::Variance; }
+        if (aquiutils::tolower(val) == "exceedance") { type = objfunctype::Exceedance; }
         lasterror = "Type '" + val + "' was not recognized!";
     }
     return Object::SetProperty(prop,val);
@@ -119,6 +120,8 @@ double Objective_Function::GetObjective()
         return stored_time_series.maxC();
     else if (type == objfunctype::Variance)
         return stored_time_series.variance(); 
+    else if (type == objfunctype::Exceedance)
+        return stored_time_series.percentile(1-Percentile());
     else
         return 0;
 }
@@ -131,6 +134,16 @@ double Objective_Function::Weight()
     }
     else
         return 1;
+}
+
+double Objective_Function::Percentile()
+{
+    if (GetVars()->Count("exceedance_probability")>0)
+    {
+        return Variable("exceedance_probability")->GetVal();
+    }
+    else
+        return 0.5;
 }
 
 
