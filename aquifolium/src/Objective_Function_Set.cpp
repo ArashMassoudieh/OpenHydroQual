@@ -31,7 +31,7 @@ void Objective_Function_Set::Append(const string &name, const Objective_Function
 }
 Objective_Function* Objective_Function_Set::operator[](string name)
 {
-    for (int i=0; i<objectivefunctions.size(); i++)
+    for (unsigned int i=0; i<objectivefunctions.size(); i++)
         if (objectivefunctions[i].GetName() == name)
             return &objectivefunctions[i];
 

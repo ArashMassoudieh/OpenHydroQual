@@ -36,7 +36,7 @@ CGA<T>::CGA(string filename, const T &model)
 	GA_params.N = 1;
 	GA_params.RCGA = false;
     numberOfThreads = 8;
-	filenames.pathname = Model.OutputPath();
+    filenames.pathname = Model->OutputPath();
 	vector<string> s;
 	while (file.eof() == false)
 	{
@@ -56,27 +56,27 @@ CGA<T>::CGA(string filename, const T &model)
 	}
 
 	file.close();
-	for (int i=0; i<Model.Parameters().size(); i++)
+    for (int i=0; i<Model->Parameters().size(); i++)
 	{
         GA_params.nParam++;
         params.push_back(i);
-        if (Model.Parameters()[i]->GetPriorDistribution() == "lognormal")
-        {	minval.push_back(log10(Model.Parameters()[i]->GetVal("low")));
-            maxval.push_back(log10(Model.Parameters()[i]->GetVal("high")));
+        if (Model->Parameters()[i]->GetPriorDistribution() == "lognormal")
+        {	minval.push_back(log10(Model->Parameters()[i]->GetVal("low")));
+            maxval.push_back(log10(Model->Parameters()[i]->GetVal("high")));
 
         }
         else
         {
-            minval.push_back(Model.Parameters()[i]->GetVal("low"));
-            maxval.push_back(Model.Parameters()[i]->GetVal("high"));
+            minval.push_back(Model->Parameters()[i]->GetVal("low"));
+            maxval.push_back(Model->Parameters()[i]->GetVal("high"));
         }
         apply_to_all.push_back(false);
-        if (Model.Parameters()[i]->GetPriorDistribution() == "lognormal")
+        if (Model->Parameters()[i]->GetPriorDistribution() == "lognormal")
             loged.push_back(1);
         else
             loged.push_back(0);
 
-        paramname.push_back(Model.Parameters().getKeyAtIndex(i));
+        paramname.push_back(Model->Parameters().getKeyAtIndex(i));
 
 	}
 
@@ -102,35 +102,35 @@ CGA<T>::CGA(string filename, const T &model)
 template<class T>
 CGA<T>::CGA(T *model)
 {
-	Model = *model;
+    Model = model;
 	GA_params.nParam = 0;
 	GA_params.pcross = 1;
 	GA_params.N = 1;
 	GA_params.RCGA = false;
     numberOfThreads = 8;
-    filenames.pathname = Model.OutputPath();
+    filenames.pathname = Model->OutputPath();
     GA_params.maxpop = max(1,GA_params.maxpop);
-    for (unsigned int i=0; i<Model.Parameters().size(); i++)
+    for (unsigned int i=0; i<Model->Parameters().size(); i++)
 	{
         GA_params.nParam++;
         params.push_back(i);
-        if (Model.Parameters()[i]->GetPriorDistribution() == "lognormal")
-        {	minval.push_back(log10(Model.Parameters()[i]->GetVal("low")));
-            maxval.push_back(log10(Model.Parameters()[i]->GetVal("high")));
+        if (Model->Parameters()[i]->GetPriorDistribution() == "lognormal")
+        {	minval.push_back(log10(Model->Parameters()[i]->GetVal("low")));
+            maxval.push_back(log10(Model->Parameters()[i]->GetVal("high")));
 
         }
         else
         {
-            minval.push_back(Model.Parameters()[i]->GetVal("low"));
-            maxval.push_back(Model.Parameters()[i]->GetVal("high"));
+            minval.push_back(Model->Parameters()[i]->GetVal("low"));
+            maxval.push_back(Model->Parameters()[i]->GetVal("high"));
         }
         apply_to_all.push_back(false);
-        if (Model.Parameters()[i]->GetPriorDistribution() == "lognormal")
+        if (Model->Parameters()[i]->GetPriorDistribution() == "lognormal")
             loged.push_back(1);
         else
             loged.push_back(0);
 
-        paramname.push_back(Model.Parameters().getKeyAtIndex(i));
+        paramname.push_back(Model->Parameters().getKeyAtIndex(i));
 
 	}
 
@@ -301,7 +301,7 @@ void CGA<T>::assignfitnesses()
 
         Ind[k].actual_fitness = 0;
 
-		Models[k] = Model;
+        Models[k] = *Model;
         Models[k].SetSilent(true);
 		for (int i = 0; i < GA_params.nParam; i++)
 			Models[k].SetParameterValue(i, inp[k][i]);
@@ -642,7 +642,7 @@ double CGA<T>::assignfitnesses(vector<double> inp)
 
 	double likelihood = 0;
     T Model1;
-    Model1 = Model;
+    Model1 = *Model;
 
 	for (int i = 0; i < GA_params.nParam; i++)
         Model1.SetParameterValue(i, inp[i]);

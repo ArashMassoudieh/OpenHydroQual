@@ -76,6 +76,7 @@ System::System(const System& other):Object::Object(other)
     Settings = other.Settings;
     solutionlogger = other.solutionlogger;
     SolverTempVars.SolutionFailed = false;
+    ParameterEstimationMode = other.ParameterEstimationMode;
     SetAllParents();
     Object::AssignRandomPrimaryKey();
 }
@@ -103,6 +104,7 @@ System& System::operator=(const System& rhs)
     observations = rhs.observations;
     solutionlogger = rhs.solutionlogger;
     SolverTempVars.SolutionFailed = false;
+    ParameterEstimationMode = rhs.ParameterEstimationMode;
     SetAllParents();
     PopulateOperatorsFunctions();
     Object::AssignRandomPrimaryKey();
@@ -466,7 +468,8 @@ vector<bool> System::OneStepSolve()
 void System::MakeTimeSeriesUniform(const double &increment)
 {
 
-    rtw->AppendText("Uniformizing of time-series...");
+    if (rtw!=nullptr)
+        rtw->AppendText("Uniformizing of time-series...");
     for (unsigned int i=0; i<sources.size(); i++)
         sources[i].MakeTimeSeriesUniform(increment);
 
@@ -476,7 +479,8 @@ void System::MakeTimeSeriesUniform(const double &increment)
     for (unsigned int i=0; i<blocks.size(); i++)
         blocks[i].MakeTimeSeriesUniform(increment);
 
-    rtw->AppendText("Uniformizing of time-series (done!)");
+    if (rtw!=nullptr)
+        rtw->AppendText("Uniformizing of time-series (done!)");
 
 }
 
@@ -838,7 +842,7 @@ void System::InitiateOutputs()
             {
                 Outputs.AllOutputs.append(CBTC(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
-                qDebug()<<QString::fromStdString(it->second.GetOutputItem());
+                //qDebug()<<QString::fromStdString(it->second.GetOutputItem());
             }
     }
 
