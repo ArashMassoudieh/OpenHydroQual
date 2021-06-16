@@ -395,6 +395,7 @@ Quan::Quan(const Quan& other)
     calculate_initial_value_from_expression = other.calculate_initial_value_from_expression;
     value_star_updated = other.value_star_updated;
     precalcfunction = other.precalcfunction;
+    OutputItem = other.OutputItem;
 	//parent = other.parent;
 }
 
@@ -440,6 +441,7 @@ Quan& Quan::operator=(const Quan& rhs)
     calculate_initial_value_from_expression = rhs.calculate_initial_value_from_expression;
     value_star_updated = rhs.value_star_updated;
     precalcfunction = rhs.precalcfunction;
+    OutputItem = rhs.OutputItem;
     //parent = rhs.parent;
     return *this;
 }

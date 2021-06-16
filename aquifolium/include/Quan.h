@@ -111,7 +111,10 @@ class Quan
 		string SourceName() { return sourcename;}
         bool SetSourceName(const string& s) { sourcename = s; return true;}
         string toCommand();
-        void SetOutputItem(const string& s) { OutputItem = s; }
+        void SetOutputItem(const string& s)
+        {
+            OutputItem = s;
+        }
         string GetOutputItem() { return OutputItem; }
         void SetParameterAssignedTo(const string &s) {_parameterassignedto=s;}
         string GetParameterAssignedTo() {return _parameterassignedto;}

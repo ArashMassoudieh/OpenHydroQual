@@ -531,14 +531,14 @@
     "object": {
       "delegate": "ComboBox;BlockLinks",
       "type": "string",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Object",
       "ask_user": "true"
     },
     "method": {
       "type": "string",
       "delegate": "ComboBox;items:integrate,value,maximum,variance,exceedance",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Calculation method",
       "ask_user": "true"
     },

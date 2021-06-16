@@ -504,7 +504,8 @@ vector<string> Object::ItemswithOutput()
     for (unordered_map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)
         if (it->second.IncludeInOutput())
         {
-            if (it->second.GetOutputItem() != "") items.push_back(it->first);
+            if (it->second.GetOutputItem() != "")
+                items.push_back(it->first);
         }
     return items; 
 }

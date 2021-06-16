@@ -337,7 +337,8 @@ Object *System::object(const string &s)
         if (Parameters()[i]->GetName() == s) return Parameters()[i];
 
     for (unsigned int i=0; i<ObjectiveFunctionsCount(); i++)
-        if (ObjectiveFunctions()[i]->GetName() == s) return ObjectiveFunctions()[i];
+        if (ObjectiveFunctions()[i]->GetName() == s)
+            return ObjectiveFunctions()[i];
 
     //errorhandler.Append(GetName(),"System","object","Object '" + s + "' was not found",105);
 
@@ -832,6 +833,13 @@ void System::InitiateOutputs()
     {
         Outputs.AllOutputs.append(CBTC(), "Obj_" + objective_function_set[i]->GetName());
         objective_function_set[i]->SetOutputItem("Obj_" + objective_function_set[i]->GetName());
+        for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                Outputs.AllOutputs.append(CBTC(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
+                it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
+                qDebug()<<QString::fromStdString(it->second.GetOutputItem());
+            }
     }
 
     for (unsigned int i=0; i<observations.size(); i++)
@@ -892,6 +900,13 @@ void System::SetOutputItems()
     for (unsigned int i=0; i<objective_function_set.size(); i++)
     {
         objective_function_set[i]->SetOutputItem("Obj_" + objective_function_set[i]->GetName());
+        for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                Outputs.AllOutputs.append(CBTC(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
+                it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
+
+            }
     }
 
     for (unsigned int i=0; i<observations.size(); i++)
@@ -952,6 +967,12 @@ void System::PopulateOutputs()
     for (unsigned int i=0; i<objective_function_set.size(); i++)
     {
         Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName()].append(SolverTempVars.t,objectivefunction(objective_function_set[i]->GetName())->Value());
+        for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                //sources[i].CalcExpressions(Expression::timing::present);
+                Outputs.AllOutputs["Obj_"+objective_function_set[i]->GetName() + "_" + it->first].append(SolverTempVars.t,objective_function_set[i]->Variable(it->first)->CalcVal(object(objective_function_set[i]->GetLocation()),Expression::timing::present));
+            }
     }
 
 
