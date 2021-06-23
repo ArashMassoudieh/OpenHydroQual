@@ -850,7 +850,14 @@ void System::InitiateOutputs()
     {
         Outputs.AllOutputs.append(CBTC(), "Obs_" + observations[i].GetName());
         observations[i].SetOutputItem("Obs_" + observations[i].GetName());
-        Outputs.ObservedOutputs.append(CBTC(), observations[i].GetName());
+        for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                Outputs.AllOutputs.append(CBTC(), "Obs_" + observations[i].GetName()+"_"+it->first);
+                it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
+                //qDebug()<<QString::fromStdString(it->second.GetOutputItem());
+            }
+         Outputs.ObservedOutputs.append(CBTC(), observations[i].GetName());
     }
 
     for (unsigned int i=0; i<sources.size(); i++)
@@ -916,6 +923,13 @@ void System::SetOutputItems()
     for (unsigned int i=0; i<observations.size(); i++)
     {
         observations[i].SetOutputItem("Obs_" + observations[i].GetName());
+        for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                Outputs.AllOutputs.append(CBTC(), "Obs_" + observations[i].GetName()+"_"+it->first);
+                it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
+
+            }
     }
 
 }
@@ -982,8 +996,14 @@ void System::PopulateOutputs()
 
     for (unsigned int i=0; i<observations.size(); i++)
     {
-       Outputs.AllOutputs["Obs_" + observations[i].GetName()].append(SolverTempVars.t,observation(observations[i].GetName())->Value());
-       Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t,observation(observations[i].GetName())->Value());
+        Outputs.AllOutputs["Obs_" + observations[i].GetName()].append(SolverTempVars.t,observation(observations[i].GetName())->Value());
+        Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t,observation(observations[i].GetName())->Value());
+        for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                //sources[i].CalcExpressions(Expression::timing::present);
+                Outputs.AllOutputs["Obs_"+observations[i].GetName() + "_" + it->first].append(SolverTempVars.t,observations[i].Variable(it->first)->CalcVal(object(observations[i].GetLocation()),Expression::timing::present));
+            }
     }
 
 }

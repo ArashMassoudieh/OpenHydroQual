@@ -580,7 +580,7 @@
     "object": {
       "delegate": "ComboBox;BlockLinks",
       "type": "string",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Object",
       "ask_user": "true"
     },
