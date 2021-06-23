@@ -1064,8 +1064,8 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
         double error_increase_counter = 0;
 		double err_ini = F.norm2();
-		double err;
-		double err_p = err = err_ini;
+        double err;
+        double err_p = err = err_ini;
 
 		//if (SolverTempVars.NR_coefficient[statevarno]==0)
             SolverTempVars.NR_coefficient[statevarno] = 1;
@@ -1313,6 +1313,14 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     blocks[i].SetLimitedOutflow(true);
                     switchvartonegpos = true;
                     SolverTempVars.updatejacobian[statevarno] = true;
+                    if (attempts==1)
+                    {
+                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts");
+                        GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts , dt = "  + aquiutils::numbertostring(dt()));
+                        GetSolutionLogger()->Flush();
+                        if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+                        return false;
+                    }
                 }
                 else if (X[i]>=1 && blocks[i].GetLimitedOutflow())
                 {
@@ -1322,30 +1330,13 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 }
                 else if (X[i]<0)
                 {
-                    //qDebug()<<"X has negative elements";
                     blocks[i].SetOutflowLimitFactor(0,Expression::timing::present);
                 }
             }
         }
         if (switchvartonegpos) attempts++;
     }
-    //CorrectStoragesBasedonFluxes(variable);
-    /*if (attempts == 2)
-	{
-		SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": attempts > 1");
-        SetOutflowLimitedVector(outflowlimitstatus_old);
-        return false;
-	}
-	if (SolverTempVars.numiterations[statevarno] > SolverSettings.NR_niteration_max)
-	{
-		SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": number of iterations exceeded the limit");
-        SetOutflowLimitedVector(outflowlimitstatus_old);
-		return false;
-	}*/
-	#ifdef Debug_mode
-//	CMatrix_arma M = Jacobian("Storage",X);
-//	M.writetofile("M.txt");
-	#endif // Debug_mode
+
 	return true;
 }
 
