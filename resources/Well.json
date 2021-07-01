@@ -88,10 +88,10 @@
 		      "delegate": "UnitBox"
                     }
 	},
-        "Well horizontal link":{
+        "Well2soil horizontal link":{
 		"type": "link",
 		"typecategory": "Connectors",
-                "description": "Horizontal link from well to soil/GW",
+                "description": "Horizontal link from well to soil",
 		"icon": {
 			"filename": "well-to-soil-H-link.png"
 		},
@@ -117,7 +117,7 @@
 		"interface_area":{
 			"type": "expression",
 			"description":"Interface area between well and soil/gw",
-			"expression":"_max(0;head.s-bottom_elevation.e)*3.14*diameter.s",
+			"expression":"(_max(0;head.s-bottom_elevation.e)+_hsd(pressure_head.e)*_min(depth.e+bottom_elevation.e-head.s;depth.e))*3.14*diameter.s",
 			"includeinoutput" : "true"
 		},
 		"hydraulic_gradient":{
@@ -132,6 +132,94 @@
                         "expression" : "K_sat.e*hydraulic_gradient*interface_area",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
+		}  	
+	},
+        "Well2soil vertical link":{
+		"type": "link",
+		"typecategory": "Connectors",
+                "description": "Vertical link from well to soil",
+		"icon": {
+			"filename": "well-to-soil-V-link.png"
+		},
+		"name": {
+		      "description": "Name",
+		      "type": "string",
+		      "ask_user": "true",
+		      "delegate": "String" 
+		},
+                "color": {
+      			"type": "string",
+      			"default": "60,220,60"
+    		},
+                "length" : {
+			"type": "expression",
+			"description": "Connector length",
+			"expression": "depth.e/2",
+			"ask_user" : "false"
+		},
+		"hydraulic_gradient":{
+			"type": "expression",
+			"description":"Hydraulic Gradient",
+			"expression":"(head.s-head.e)/length",
+			"includeinoutput" : "true"
+		},	
+	        "flow" : {
+		      	"type": "expression",
+			"description": "Flow rate",
+                        "expression" : "K_sat.e*hydraulic_gradient*area.s",
+			"includeinoutput" : "true",
+			"applylimit": "true"	
+		}  	
+	},
+	"Surface water to well":{
+		"type": "link",
+		"typecategory": "Connectors",
+                "description": "Surface water to well link",
+		"icon": {
+			"filename": "surface2well.png"
+		},
+		"name": {
+		      "description": "Name",
+		      "type": "string",
+		      "ask_user": "true",
+		      "delegate": "String" 
+		},
+                "color": {
+      			"type": "string",
+      			"default": "180,120,40"
+    		},
+                "length" : {
+			"type": "value",
+			"description": "Connector length",
+			"ask_user" : "true",
+			"delegate" : "UnitBox",
+			"estimate" : "true",
+			"length": ">0",
+		        "warningmessage": "length must be positive"
+		},
+		"depth": {
+			"type": "expression",
+			"description": "Water depth",
+			"expression": "_max((depth.s+(depth.e-bottom_elevation.s))/2;0)",
+			"includeinoutput": "true",
+			"ask_user": "false"
+		},
+		"ManningCoeff": {
+			"type": "value",
+			"description": "Manning's roughness coefficient",
+			"ask_user" : "true",
+			"delegate" : "UnitBox",
+			"includeinoutput": "false",
+			"default": "0.1",
+			"ManningCoeff": ">0",
+		        "warningmessage": "ManningCoeff must be positive"
+		},
+		"flow": {
+			"type": "expression",
+			"expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*3.14*diameter.e*depth^1.6667",
+			"includeinoutput": "true",
+			"applylimit": "true",
+			"ask_user": "false"
 		}  	
 	}
 }

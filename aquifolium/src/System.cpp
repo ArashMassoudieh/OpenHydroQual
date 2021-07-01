@@ -2584,8 +2584,8 @@ bool System::VerifyAsDestination(Block* blk, Link* lnk)
     {
         if (!blk->HasQuantity(lnk->GetAllRequieredDestinationBlockProperties()[i]))
         {
-            errorhandler.Append(lnk->GetName(), "System", "VerifyAsSource", "The destination block must have a '" + lnk->GetAllRequieredStartingBlockProperties()[i] + "' property", 106);
-            lasterror() = "The destination block must have a '" + lnk->GetAllRequieredStartingBlockProperties()[i] + "' property";
+            errorhandler.Append(lnk->GetName(), "System", "VerifyAsSource", "The destination block must have a '" + lnk->GetAllRequieredDestinationBlockProperties()[i] + "' property", 106);
+            lasterror() = "The destination block must have a '" + lnk->GetAllRequieredDestinationBlockProperties()[i] + "' property";
             return false;
         }
     }

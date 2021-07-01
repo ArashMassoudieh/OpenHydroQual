@@ -61,6 +61,13 @@
       "criteria": "hydraulic_conductivity>0",
       "warningmessage": "Hydraulic conductivity must be greater than zero"
     },
+    "K_eff": {
+      "type": "expression",
+      "expression": "hydraulic_conductivity",      
+      "description": "Hydraulic conductivity",
+      "ask_user": "false",
+      "includeinoutput": "false"
+    },
     "porosity": {
       "type": "value",
       "description": "Porosity",
