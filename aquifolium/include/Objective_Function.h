@@ -5,7 +5,7 @@
 #include "BTC.h"
 #include "Object.h"
 
-enum class objfunctype {Integrate, Value, Maximum, Variance};
+enum class objfunctype {Integrate, Value, Maximum, Variance, Exceedance};
 
 class System;
 
@@ -27,7 +27,9 @@ class Objective_Function: public Object
         void SetLastError(const string &lerror) {lasterror = lerror;}
         CTimeSeries *GetTimeSeries() {return &stored_time_series;}
         double Weight();
+        double Percentile();
         void SetLocation(const string &loc) {location = loc;}
+        string GetLocation() {return location;}
         void SetExpression(const Expression &exp) {expression = exp;}
         bool SetProperty(const string &prop, const string &val);
         double Value() {return current_value;}

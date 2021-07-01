@@ -38,6 +38,7 @@ public:
     void wheelEvent(QWheelEvent* pWheelEvent) override;
     double fontfactor=1;
     QList<Node*> Nodes() const;
+    void UnSelectAll();
 private:
     MainWindow *mainwindow;
     QList<Node*> nodes();

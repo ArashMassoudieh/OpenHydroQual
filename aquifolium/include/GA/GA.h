@@ -99,7 +99,7 @@ public:
     vector<string> paramname;
     vector<T> Models;
     T Model_out;
-    T Model;
+    T *Model;
 
     CGA();
     virtual ~CGA();

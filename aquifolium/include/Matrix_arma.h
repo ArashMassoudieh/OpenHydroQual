@@ -49,6 +49,7 @@ public:
     CMatrix_arma LU_decomposition();
     CMatrix_arma Cholesky_factor();
     double det();
+    double rcond();
     void Print(FILE *FIL);
     void print(string s);
     void setval(double a);
@@ -69,13 +70,14 @@ public:
     void setrow(int i, CVector V);
     void setcol(int i, CVector_arma V);
     void setcol(int i, CVector V);
-
+    CVector diagvector();
 	void ScaleDiagonal(double x);
 
 
 };
 
 double det(CMatrix_arma &);
+double rcond(CMatrix_arma &);
 CMatrix_arma Log(CMatrix_arma &M1);
 CMatrix_arma Exp(CMatrix_arma &M1);
 CMatrix_arma Sqrt(CMatrix_arma &M1);

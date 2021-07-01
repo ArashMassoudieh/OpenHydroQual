@@ -531,14 +531,14 @@
     "object": {
       "delegate": "ComboBox;BlockLinks",
       "type": "string",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Object",
       "ask_user": "true"
     },
     "method": {
       "type": "string",
-      "delegate": "ComboBox;items:integrate,value,maximum,variance",
-      "includeinoutput": "true",
+      "delegate": "ComboBox;items:integrate,value,maximum,variance,exceedance",
+      "includeinoutput": "false",
       "description": "Calculation method",
       "ask_user": "true"
     },
@@ -555,6 +555,14 @@
       "description": "Weight",
       "ask_user": "true",
       "delegate": "UnitBox" 
+    },
+    "exceedance_probability": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Weight",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "default": 0.05 
     }
   },
   "Observation": {
@@ -572,7 +580,7 @@
     "object": {
       "delegate": "ComboBox;BlockLinks",
       "type": "string",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Object",
       "ask_user": "true"
     },

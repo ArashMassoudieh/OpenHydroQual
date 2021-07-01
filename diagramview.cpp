@@ -490,6 +490,8 @@ void DiagramView::deleteselectednode(QString nodename)
             mainWindow()->GetSystem()->Delete(nodenametobedeleted.toStdString());
         else
             mainWindow()->GetSystem()->Delete(nodename.toStdString());
+        UnSelectAll();
+
         mainWindow()->PopulatePropertyTable(nullptr);
         mainWindow()->GetSystem()->SetVariableParents();
         mainWindow()->RefreshTreeView();
@@ -801,6 +803,18 @@ void DiagramView::nodeContextMenuRequested(Node* n, QPointF pos, QMenu *menu)
 
         }
     }
+
+}
+
+void DiagramView::UnSelectAll()
+{
+    mainwindow->PopulatePropertyTable(nullptr);
+    for (int i = 0; i<Edges().count(); i++)
+        Edges()[i]->setSelected(false);
+
+    for (int i = 0; i<Nodes().count(); i++)
+        Nodes()[i]->setSelected(false);
+
 
 }
 
