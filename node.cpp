@@ -58,6 +58,11 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     radialGrad.setColorAt(0, QColor(Qt::lightGray).light(300));
     radialGrad.setColorAt(1, QColor(Qt::lightGray).light(120));
     QPixmap pixmap;
+    if (!object())
+    {
+        //parent->mainWindow()->RecreateGraphicItemsFromSystem();
+        return;
+    }
     if (QString::fromStdString(system->GetModel(object()->GetType())->IconFileName()).contains("/"))
         pixmap = QPixmap(QString::fromStdString(system->GetModel(object()->GetType())->IconFileName()));
     else
@@ -214,7 +219,14 @@ void Node::SetObject(Object* _object) {
     //qDebug() << "Node Position: " << _object->GetProperty("x") << "," << _object->GetProperty("y") << "," << width << "," << height;
 }
 
-QString Node::Name() { return QString::fromStdString(object()->GetName()); }
+QString Node::Name() { 
+    if (!object())
+    {
+        return "";
+    }
+    return QString::fromStdString(object()->GetName());
+
+}
 
 double Node::fontfactor(){
     if (parent)

@@ -30,7 +30,7 @@ public:
     System *GetSystem() {return &system;}
     bool AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type, Edge* edge);
     void PopulatePropertyTable(QuanSet* quanset);
-    void RecreateGraphicItemsFromSystem();
+    void RecreateGraphicItemsFromSystem(bool zoom_all=true);
     void RefreshTreeView();
     Plotter* Plot(CTimeSeries& plotitem);
     Plotter* Plot(CTimeSeries& plotmodeled, CTimeSeries& plotobserved);

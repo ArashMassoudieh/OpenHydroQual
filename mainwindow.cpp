@@ -1324,7 +1324,7 @@ void MainWindow::LogAllSystemErrors(ErrorHandler *errs)
 
 }
 
-void MainWindow::RecreateGraphicItemsFromSystem()
+void MainWindow::RecreateGraphicItemsFromSystem(bool zoom_all)
 {
     dView->DeleteAllItems();
     for (unsigned int i=0; i<system.BlockCount(); i++)
@@ -1350,7 +1350,8 @@ void MainWindow::RecreateGraphicItemsFromSystem()
         }
     }
     dView->repaint();
-    onzoomall();
+    if (zoom_all)
+        onzoomall();
 }
 
 void MainWindow::onrunmodel()

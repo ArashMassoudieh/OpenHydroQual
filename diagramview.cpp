@@ -26,6 +26,12 @@ DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsVi
 
 void DiagramView::mousePressEvent(QMouseEvent *event)
 {
+    if (RecreateGraphics)
+    {
+        mainWindow()->RecreateGraphicItemsFromSystem(false);
+        RecreateGraphics = false;
+        return;
+    }
     if (mainWindow()->propModel())
         mainWindow()->resetPropModel();
     QList<QGraphicsItem*> nodeedges = items(event->pos());
@@ -129,6 +135,12 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
 }
 void DiagramView::mouseMoveEvent(QMouseEvent *event)
 {
+    if (RecreateGraphics)
+    {
+        mainWindow()->RecreateGraphicItemsFromSystem(false); 
+        RecreateGraphics = false; 
+        return; 
+    }
     //	//qDebug() << "Mouse MOVE, button: " << event->button() << ", modifier: " << event->modifiers() << ", buttons: " << event->buttons();
     _x = mapToScene(event->pos()).x();
     _y = mapToScene(event->pos()).y();
@@ -170,6 +182,13 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
     Node *n1 = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
     if (n1) //itemType == Object_Types::Block)
     {
+        if (!n1->object())
+        {
+            mainWindow()->RecreateGraphicItemsFromSystem();
+            return;
+        }
+
+
         txt = QString("%1: %2").arg(QString::fromStdString(n1->object()->GetType())).arg(QString::fromStdString(n1->object()->GetName()));
         QString toolTip = QString("Type: %1\nName: %2").arg(QString::fromStdString(n1->object()->GetType())).arg(QString::fromStdString(n1->object()->GetName()));
 
@@ -310,6 +329,12 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
 }
 void DiagramView::mouseReleaseEvent(QMouseEvent *event)
 {
+    if (RecreateGraphics)
+    {
+        mainWindow()->RecreateGraphicItemsFromSystem(false);
+        RecreateGraphics = false;
+        return;
+    }
     if (event->button() == Qt::LeftButton && Operation_Mode == Operation_Modes::NormalMode && dragMode() == DragMode::RubberBandDrag)
     {
         for (Node* item : Nodes())
@@ -495,7 +520,7 @@ void DiagramView::deleteselectednode(QString nodename)
         mainWindow()->PopulatePropertyTable(nullptr);
         mainWindow()->GetSystem()->SetVariableParents();
         mainWindow()->RefreshTreeView();
-        mainWindow()->RecreateGraphicItemsFromSystem();
+        RecreateGraphics = true; 
         
     }
     
@@ -503,6 +528,12 @@ void DiagramView::deleteselectednode(QString nodename)
 
 void DiagramView::wheelEvent(QWheelEvent* pWheelEvent)
 {
+    if (RecreateGraphics)
+    {
+        mainWindow()->RecreateGraphicItemsFromSystem(false);
+        RecreateGraphics = false;
+        return;
+    }
     //if (pWheelEvent->modifiers() & Qt::ControlModifier)
     {
         // Do a wheel-based zoom about the cursor position

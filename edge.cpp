@@ -168,6 +168,8 @@ QRectF Edge::boundingRect() const
 
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
+    if (!object())
+        return; 
     QColor objectcolor;
     if (!source || !dest)
         return;

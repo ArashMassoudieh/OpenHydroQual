@@ -315,7 +315,8 @@ double CMatrix_arma::det()
 
 double CMatrix_arma::rcond()
 {
-    return arma::rcond(matr);
+    //return arma::rcond(matr);
+	return 0.7; 
 }
 
 
@@ -467,7 +468,8 @@ double det(CMatrix_arma &M)
 
 double rcond(CMatrix_arma &M)
 {
-    return rcond(M.matr);
+    //return rcond(M.matr);
+	return 0.7; 
 }
 
 

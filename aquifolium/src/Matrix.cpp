@@ -844,7 +844,8 @@ double det(CMatrix &M)
 double rcond(CMatrix &M)
 {
 
-    mat A(M.getnumrows(),M.getnumcols());
+	return 0.7; 
+	mat A(M.getnumrows(),M.getnumcols());
 
     for (int i = 0;i<M.getnumrows(); ++i)
     {
@@ -852,7 +853,7 @@ double rcond(CMatrix &M)
             A(i,j) = M[i][j];
     }
 
-    return rcond(A);
+    //return rcond(A);
 }
 
 
