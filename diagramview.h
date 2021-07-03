@@ -64,6 +64,7 @@ private:
     QString timeseriestobeshown = ""; 
     QString nodenametobecopied = "";
     Block copied_block; 
+    bool RecreateGraphics = false; 
 signals:
     void Mouse_Pos(int, int, QString);
     void changed();
