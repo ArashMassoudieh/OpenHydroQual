@@ -81,21 +81,23 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
         else
             return var[s].GetVal(tmg)*GetOutflowLimitFactor(tmg);
     }
-    else if (Parent()->constituent(s)!=nullptr && var.Count(s+":concentration")==1)
-    {
-        return aquiutils::Pos(var[s+":concentration"].GetVal(tmg));
+    if (Parent())
+    {   if (Parent()->constituent(s)!=nullptr && var.Count(s+":concentration")==1)
+        {
+            return aquiutils::Pos(var[s+":concentration"].GetVal(tmg));
+        }
+        else if (Parent()->reactionparameter(s)!=nullptr)
+        {
+            return Parent()->reactionparameter(s)->GetVal("value",tmg);
+        }
+        else
+        {
+            Parent()->errorhandler.Append(GetName(),"Object","GetVal","property '" + s + "' does not exist!",1002);
+            last_operation_success = false;
+            return 0;
+        }
     }
-    else if (Parent()->reactionparameter(s)!=nullptr)
-    {
-        return Parent()->reactionparameter(s)->GetVal("value",tmg);
-    }
-    else
-    {
-        Parent()->errorhandler.Append(GetName(),"Object","GetVal","property '" + s + "' does not exist!",1002);
-        last_operation_success = false;
-        return 0;
-    }
-
+    return 0;
 }
 
 double Object::GetVal(const string& variable, const string& consttnt, const Expression::timing &tmg, bool limit)

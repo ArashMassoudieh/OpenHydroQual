@@ -1065,19 +1065,21 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
         if (!F.is_finite())
         {
             SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
-            GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite, dt = " + aquiutils::numbertostring(SolverTempVars.dt));
-            //GetSolutionLogger()->WriteString("Block states - present: ");
-            //WriteBlocksStates(variable, Expression::timing::present);
-            //GetSolutionLogger()->WriteString("Block states - past: ");
-            //WriteBlocksStates(variable, Expression::timing::past);
-            //GetSolutionLogger()->WriteString("Link states - present: ");
-            //WriteLinksStates(variable, Expression::timing::present);
-            //GetSolutionLogger()->WriteString("Links states - past: ");
-            //WriteLinksStates(variable, Expression::timing::past);
+            if (GetSolutionLogger())
+            {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite, dt = " + aquiutils::numbertostring(SolverTempVars.dt));
+                //GetSolutionLogger()->WriteString("Block states - present: ");
+                //WriteBlocksStates(variable, Expression::timing::present);
+                //GetSolutionLogger()->WriteString("Block states - past: ");
+                //WriteBlocksStates(variable, Expression::timing::past);
+                //GetSolutionLogger()->WriteString("Link states - present: ");
+                //WriteLinksStates(variable, Expression::timing::present);
+                //GetSolutionLogger()->WriteString("Links states - past: ");
+                //WriteLinksStates(variable, Expression::timing::past);
 
-            GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "X=" + X.toString());
-            GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "F=" + F.toString());
-            GetSolutionLogger()->Flush();
+                GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "X=" + X.toString());
+                GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "F=" + F.toString());
+                GetSolutionLogger()->Flush();
+            }
             SetOutflowLimitedVector(outflowlimitstatus_old);
             return false;
         }
@@ -1254,15 +1256,19 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 			if (!F.is_finite())
 			{
 				SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
-                //GetSolutionLogger()->WriteString("Block states - present: ");
-                //WriteBlocksStates(variable, Expression::timing::present);
-                //GetSolutionLogger()->WriteString("Block states - past: ");
-                //WriteBlocksStates(variable, Expression::timing::past);
-                //GetSolutionLogger()->WriteString("Link states - present: ");
-                //WriteLinksStates(variable, Expression::timing::present);
-                //GetSolutionLogger()->WriteString("Links states - past: ");
-                //WriteLinksStates(variable, Expression::timing::past);
-                GetSolutionLogger()->Flush();
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
+                    //GetSolutionLogger()->WriteString("Block states - present: ");
+                    //WriteBlocksStates(variable, Expression::timing::present);
+                    //GetSolutionLogger()->WriteString("Block states - past: ");
+                    //WriteBlocksStates(variable, Expression::timing::past);
+                    //GetSolutionLogger()->WriteString("Link states - present: ");
+                    //WriteLinksStates(variable, Expression::timing::present);
+                    //GetSolutionLogger()->WriteString("Links states - past: ");
+                    //WriteLinksStates(variable, Expression::timing::past);
+                    GetSolutionLogger()->Flush();
+                }
                 SetOutflowLimitedVector(outflowlimitstatus_old);
                 return false;
 			}
@@ -1314,10 +1320,12 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             if (SolverTempVars.numiterations[statevarno] > SolverSettings.NR_niteration_max)
             {
                 SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": number of iterations exceeded the maximum threshold, state_variable:" + aquiutils::numbertostring(statevarno));
-                GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
-                GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
-                GetSolutionLogger()->WriteVector(F);
-                GetSolutionLogger()->Flush();
+                if (GetSolutionLogger())
+                {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
+                    GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
+                    GetSolutionLogger()->WriteVector(F);
+                    GetSolutionLogger()->Flush();
+                }
                 if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
                 return false;
             }
@@ -1336,8 +1344,10 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     if (attempts==1)
                     {
                         SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts");
-                        GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts , dt = "  + aquiutils::numbertostring(dt()));
-                        GetSolutionLogger()->Flush();
+                        if (GetSolutionLogger())
+                        {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts , dt = "  + aquiutils::numbertostring(dt()));
+                            GetSolutionLogger()->Flush();
+                        }
                         if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
                         return false;
                     }

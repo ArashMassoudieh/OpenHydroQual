@@ -117,7 +117,7 @@
 		"interface_area":{
 			"type": "expression",
 			"description":"Interface area between well and soil/gw",
-			"expression":"(_max(0;head.s-bottom_elevation.e)+_hsd(pressure_head.e)*_min(depth.e+bottom_elevation.e-head.s;depth.e))*3.14*diameter.s",
+			"expression":"(_min(_max(0;head.s-bottom_elevation.e);depth.e)+_hsd(pressure_head.e)*_max(_min(depth.e+bottom_elevation.e-head.s;depth.e);0))*3.14*diameter.s",
 			"includeinoutput" : "true"
 		},
 		"hydraulic_gradient":{
@@ -200,7 +200,7 @@
 		"depth": {
 			"type": "expression",
 			"description": "Water depth",
-			"expression": "_max((depth.s+(depth.e-bottom_elevation.s))/2;0)",
+			"expression": "_max((depth.s+(head.e-bottom_elevation.s))/2;0)",
 			"includeinoutput": "true",
 			"ask_user": "false"
 		},
