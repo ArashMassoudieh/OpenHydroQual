@@ -78,6 +78,64 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             }
         }
     }
+    if (this->quans.count("name")==0)
+    {
+        Quan Q;
+        Q.SetName("name");
+        Q.SetType(Quan::_type::string);
+        Q.Description() = "Name";
+        Q.Delegate() = "String";
+        Q.AskFromUser() = true;
+        Append("name",Q);
+    }
+    if (ObjectType == "Block")
+    {
+        if (this->quans.count("x")==0)
+        {
+            Quan Q;
+            Q.SetName("x");
+            Q.SetType(Quan::_type::value);
+            Q.Description() = "x";
+            Q.Default() = "900";
+            Q.AskFromUser() = true;
+            Q.Delegate() = "UnitBox";
+            Append("x",Q);
+        }
+        if (this->quans.count("y")==0)
+        {
+            Quan Q;
+            Q.SetName("y");
+            Q.SetType(Quan::_type::value);
+            Q.Description() = "y";
+            Q.Default() = "900";
+            Q.AskFromUser() = true;
+            Q.Delegate() = "UnitBox";
+            Append("y",Q);
+        }
+        if (this->quans.count("_width")==0)
+        {
+            Quan Q;
+            Q.SetName("_width");
+            Q.SetType(Quan::_type::value);
+            Q.Description() = "_width";
+            Q.Default() = "200";
+            Q.AskFromUser() = true;
+            Q.Delegate() = "UnitBox";
+            Append("_width",Q);
+        }
+        if (this->quans.count("_height")==0)
+        {
+            Quan Q;
+            Q.SetName("_height");
+            Q.SetType(Quan::_type::value);
+            Q.Description() = "_height";
+            Q.Default() = "200";
+            Q.AskFromUser() = true;
+            Q.Delegate() = "UnitBox";
+            Append("_height",Q);
+        }
+
+    }
 }
 
 QuanSet::QuanSet(const QuanSet& other)
