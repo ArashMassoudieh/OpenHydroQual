@@ -1050,7 +1050,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
     while (attempts<2 && switchvartonegpos)
     {
         CVector_arma X = GetStateVariables(variable, Expression::timing::past,transport);
-
+        double X_norm = X.norm2();
         if (!transport)
         {   for (unsigned int i = 0; i < blocks.size(); i++)
             {
@@ -1091,7 +1091,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 		//if (SolverTempVars.NR_coefficient[statevarno]==0)
             SolverTempVars.NR_coefficient[statevarno] = 1;
-        while ((err/(err_ini+1e-8)>SolverSettings.NRtolerance && err>1e-12))
+        while ((err/(err_ini+1e-10*X_norm)>SolverSettings.NRtolerance && err>1e-12))
         {
             SolverTempVars.numiterations[statevarno]++;
             if (SolverTempVars.updatejacobian[statevarno])
@@ -1324,6 +1324,8 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
                     GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
                     GetSolutionLogger()->WriteVector(F);
+                    GetSolutionLogger()->WriteString("Error norm = " + aquiutils::numbertostring(err) + ",Initial Error norm = " + aquiutils::numbertostring(err_ini));
+                    GetSolutionLogger()->WriteMatrix(SolverTempVars.Inverse_Jacobian[statevarno]);
                     GetSolutionLogger()->Flush();
                 }
                 if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);

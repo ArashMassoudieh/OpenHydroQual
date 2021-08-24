@@ -335,12 +335,6 @@
       "filename": "surface2soil.png"
     },
     "description": "Surfacewater to soil connector",
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
-    },
     "area": {
       "type": "expression",
       "description": "Interface area",
