@@ -77,6 +77,7 @@ System::System(const System& other):Object::Object(other)
     solutionlogger = other.solutionlogger;
     SolverTempVars.SolutionFailed = false;
     ParameterEstimationMode = other.ParameterEstimationMode;
+    metamodel = other.metamodel;
     SetAllParents();
     Object::AssignRandomPrimaryKey();
 }
@@ -105,6 +106,7 @@ System& System::operator=(const System& rhs)
     solutionlogger = rhs.solutionlogger;
     SolverTempVars.SolutionFailed = false;
     ParameterEstimationMode = rhs.ParameterEstimationMode;
+    metamodel = rhs.metamodel;
     SetAllParents();
     PopulateOperatorsFunctions();
     Object::AssignRandomPrimaryKey();

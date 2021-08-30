@@ -88,7 +88,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
     connect(ui->actionSave_as,SIGNAL(triggered()),this,SLOT(onsaveas()));
     connect(ui->actionExport_to_SVG,SIGNAL(triggered()),this,SLOT(onexporttosvg()));
-    connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnew()));
     connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(onabout()));
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
     connect(ui->actionLoad_a_new_template,SIGNAL(triggered()),this,SLOT(loadnewtemplate()));
@@ -96,10 +95,48 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAdd_plugin,SIGNAL(triggered()),this,SLOT(adddefaultpluging()));
     connect(ui->actionOptions,SIGNAL(triggered()),this,SLOT(optionsdialog()));
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
-
+    connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
     connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
 
     ui->tableView->setItemDelegateForColumn(1,new Delegate(this,this));
+    Populate_General_ToolBar();
+
+}
+
+void MainWindow::ResetSystem()
+{
+    system = System();
+    system.clear();
+    system.addedtemplates.clear();
+    addedtemplatefilenames = system.addedtemplates;
+#ifndef Win_Version
+    maintemplatefilename = qApp->applicationDirPath().toStdString() + "/../../resources/main_components.json";
+    entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
+    system.DefaultTemplatePath() = qApp->applicationDirPath().toStdString() + "/../../resources/";
+#else
+    maintemplatefilename = qApp->applicationDirPath().toStdString() + "/resources/main_components.json";
+    entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
+    system.DefaultTemplatePath() = qApp->applicationDirPath().toStdString() + "/resources/";
+
+#endif // !Win_Version
+    Log("Default Template Location is set to '" + QString::fromStdString(system.DefaultTemplatePath()) + "'");
+    if (system.GetQuanTemplate(maintemplatefilename)) //Read the template from modelfilename
+    {
+        Log("Template was successfully loaded from '" + QString::fromStdString(maintemplatefilename) + "'");
+    }
+    else {
+        LogError("Template" + QString::fromStdString(maintemplatefilename) + "' was not loaded properly");
+    }
+    if (system.ReadSystemSettingsTemplate(entitiesfilename)) //Read the system settings
+    {
+        Log("Setting was successfully loaded from '" + QString::fromStdString(entitiesfilename) + "'");
+    }
+    else
+    {
+        LogError("Failed to load the setting file '" + QString::fromStdString(entitiesfilename) + "'");
+    }
+
+    RefreshTreeView();
     Populate_General_ToolBar();
 
 }
@@ -276,6 +313,7 @@ bool MainWindow::BuildObjectsToolBar()
         ui->mainToolBar->addAction(action);
         action->setText(QString::fromStdString(system.GetAllBlockTypes()[i]));
         connect(action, SIGNAL(triggered()), this, SLOT(onaddblock()));
+
     }
     ui->mainToolBar->addSeparator();
     for (unsigned int i = 0; i < system.GetAllLinkTypes().size(); i++)
@@ -1272,6 +1310,7 @@ void MainWindow::onopen()
 
     if (fileName!="")
     {
+        ResetSystem();
         Script scr(fileName.toStdString(),&system);
         system.clear();
         system.CreateFromScript(scr,entitiesfilename);
@@ -1288,26 +1327,57 @@ void MainWindow::onopen()
 
 }
 
-bool MainWindow::LoadModel(QString fileName)
+
+void MainWindow::onnewproject()
 {
-    bool success = true;
-    if (fileName!="")
-    {
-        Script scr(fileName.toStdString(),&system);
-        system.clear();
-        system.CreateFromScript(scr,entitiesfilename);
-        workingfolder = QFileInfo(fileName).canonicalPath();
-        SetFileName(fileName);
-        addToRecentFiles(fileName,true);
-    }
-    addedtemplatefilenames = system.addedtemplates;
+    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "OpenHydroQual",
+                                                                tr("Are you sure?\n"),
+                                                                QMessageBox::Cancel | QMessageBox::Yes,
+                                                                QMessageBox::Yes);
+    if (resBtn == QMessageBox::No)
+        return;
+
+    ResetSystem();
+    QString fileName = "unnamed.scr";
+    SetFileName(fileName);
     PopulatePropertyTable(nullptr);
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();
     BuildObjectsToolBar();
     LogAllSystemErrors();
 
-    return success; 
+}
+
+bool MainWindow::LoadModel(QString fileName)
+{
+    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "OpenHydroQual",
+                                                                tr("Are you sure?\n"),
+                                                                QMessageBox::Cancel | QMessageBox::Yes,
+                                                                QMessageBox::Yes);
+    if (resBtn == QMessageBox::No)
+        return false;
+
+    bool success = true;
+    if (fileName!="")
+    {
+        Script scr(fileName.toStdString(),&system);
+        ResetSystem();
+        system.CreateFromScript(scr,entitiesfilename);
+        workingfolder = QFileInfo(fileName).canonicalPath();
+        SetFileName(fileName);
+        addToRecentFiles(fileName,true);
+        addedtemplatefilenames = system.addedtemplates;
+        PopulatePropertyTable(nullptr);
+        RecreateGraphicItemsFromSystem();
+        RefreshTreeView();
+        BuildObjectsToolBar();
+        LogAllSystemErrors();
+        return success;
+    }
+    else
+        return  false;
+
+
 }
 
 

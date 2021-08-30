@@ -44,6 +44,7 @@ public:
     void SetPan(bool panmode) {actionpan->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
     void SetZoomWindow(bool panmode) {actionzoomwindow->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
     void addplugin(const QString &fileName);
+    void ResetSystem();
 private:
     logwindow *LogWindow;
     Ui::MainWindow *ui;
@@ -102,6 +103,7 @@ private slots:
     void onsaveas();
     void onexporttosvg();
     void onopen();
+    void onnewproject();
     void onrunmodel();
     void onoptimize();
     void oninverserun();

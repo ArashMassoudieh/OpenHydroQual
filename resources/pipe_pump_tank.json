@@ -291,7 +291,7 @@
     "typecategory": "Blocks",
 	"description": "Rigid Junction",
     "icon": {
-      "filename": "junction.png"
+      "filename": "junction_rigid.png"
     },
     "name": {
       "description": "Name",
