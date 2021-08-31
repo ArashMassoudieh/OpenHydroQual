@@ -137,7 +137,7 @@ void MainWindow::ResetSystem()
     }
 
     RefreshTreeView();
-    Populate_General_ToolBar();
+
 
 }
 

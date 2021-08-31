@@ -55,7 +55,7 @@ struct solversettings
     int NR_niteration_max=100;
     bool makeresultsuniform = false;
     bool scalediagonal = false;
-    double landtozero_factor = 0.1;
+    double landtozero_factor = 0;
     bool optimize_lambda = true;
     bool direct_jacobian = true;
     bool write_solution_details = false;
@@ -351,6 +351,7 @@ class System: public Object
         MetaModel metamodel;
         CVector_arma GetResiduals(const string &variable, CVector_arma &X, bool transport=false);
         CVector_arma GetResiduals_TR(const string &variable, CVector_arma &X);
+        double Gradient(Object* obj, Object* wrt, const string &dependent_var, const string &independent_var);
 		void CorrectStoragesBasedonFluxes(const string& variable);
         CVector_arma CalcStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past);
         CVector_arma GetStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past, bool transport=false);
@@ -386,6 +387,9 @@ class System: public Object
 		}
         SolutionLogger *solutionlogger = nullptr;
         parameter_estimation_options ParameterEstimationMode = parameter_estimation_options::none;
+        CVector GetBlocksOutflowFactors(const Expression::timing &tmg);
+        CVector GetLinkssOutflowFactors(const Expression::timing &tmg);
+
 #ifdef Q_version
     RunTimeWindow *rtw = nullptr;
 #endif
