@@ -22,7 +22,7 @@
     <ProjectGuid>{5A90F65E-A732-3F51-9E7E-690233E2FA3A}</ProjectGuid>
     <RootNamespace>QAquifolium</RootNamespace>
     <Keyword>QtVS_v302</Keyword>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>OpenHydroQual</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -91,7 +91,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="QtSettings">
-    <QtInstall>5.15.1_msvc2019_64</QtInstall>
+    <QtInstall>5.15.2_msvc2019_64</QtInstall>
     <QtModules>core;gui;opengl;printsupport;svg;widgets</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -99,7 +99,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="QtSettings">
-    <QtInstall>5.15.1_msvc2019_64</QtInstall>
+    <QtInstall>5.15.2_msvc2019_64</QtInstall>
     <QtModules>core;gui;opengl;printsupport;svg;widgets</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
@@ -129,7 +129,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\Aquifolium\include;..\Aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\QT\QT5.6.1\5.6\MSVC2015_64\include;release;C:\QT\QT5.6.1\5.6\MSVC2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\QT\QT5.6.1\5.6\MSVC2015_64\include;release;C:\QT\QT5.6.1\5.6\MSVC2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>release\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -183,7 +183,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\Aquifolium\include;..\Aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;release;C:\Qt\5.15.1\msvc2019_64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;release;C:\Qt\5.15.1\msvc2019_64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>release\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -244,7 +244,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\Aquifolium\include;..\Aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\QT\QT5.6.1\5.6\MSVC2015_64\include;debug;C:\QT\QT5.6.1\5.6\MSVC2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\QT\QT5.6.1\5.6\MSVC2015_64\include;debug;C:\QT\QT5.6.1\5.6\MSVC2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>debug\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -297,7 +297,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\Aquifolium\include;..\Aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\Qt\5.15.1\msvc2019_64\include;debug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\Qt\5.15.1\msvc2019_64\include;debug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>debug\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -356,43 +356,43 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Aquifolium\src\BTC.cpp" />
-    <ClCompile Include="..\Aquifolium\src\BTCSet.cpp" />
-    <ClCompile Include="..\Aquifolium\src\constituent.cpp" />
-    <ClCompile Include="..\Aquifolium\src\GA\Binary.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Block.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Command.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Condition.cpp" />
-    <ClCompile Include="..\Aquifolium\src\GA\Distribution.cpp" />
-    <ClCompile Include="..\Aquifolium\src\GA\DistributionNUnif.cpp" />
-    <ClCompile Include="..\Aquifolium\src\ErrorHandler.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Expression.cpp" />
-    <ClCompile Include="..\Aquifolium\src\GA\Individual.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Link.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Matrix.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Matrix_arma.cpp" />
-    <ClCompile Include="..\Aquifolium\src\MetaModel.cpp" />
-    <ClCompile Include="..\Aquifolium\src\NormalDist.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Object.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Objective_Function.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Objective_Function_Set.cpp" />
-    <ClCompile Include="..\Aquifolium\src\observation.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Parameter.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Parameter_Set.cpp" />
-    <ClCompile Include="..\Aquifolium\src\precalculatedfunction.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Precipitation.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Quan.cpp" />
-    <ClCompile Include="..\Aquifolium\src\QuanSet.cpp" />
-    <ClCompile Include="..\Aquifolium\src\QuickSort.cpp" />
-    <ClCompile Include="..\Aquifolium\src\reaction.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Rule.cpp" />
-    <ClCompile Include="..\Aquifolium\src\RxnParameter.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Script.cpp" />
-    <ClCompile Include="..\Aquifolium\src\solutionlogger.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Source.cpp" />
-    <ClCompile Include="..\Aquifolium\src\System.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Vector.cpp" />
-    <ClCompile Include="..\Aquifolium\src\Vector_arma.cpp" />
+    <ClCompile Include="aquifolium\src\BTC.cpp" />
+    <ClCompile Include="aquifolium\src\BTCSet.cpp" />
+    <ClCompile Include="aquifolium\src\constituent.cpp" />
+    <ClCompile Include="aquifolium\src\GA\Binary.cpp" />
+    <ClCompile Include="aquifolium\src\Block.cpp" />
+    <ClCompile Include="aquifolium\src\Command.cpp" />
+    <ClCompile Include="aquifolium\src\Condition.cpp" />
+    <ClCompile Include="aquifolium\src\GA\Distribution.cpp" />
+    <ClCompile Include="aquifolium\src\GA\DistributionNUnif.cpp" />
+    <ClCompile Include="aquifolium\src\ErrorHandler.cpp" />
+    <ClCompile Include="aquifolium\src\Expression.cpp" />
+    <ClCompile Include="aquifolium\src\GA\Individual.cpp" />
+    <ClCompile Include="aquifolium\src\Link.cpp" />
+    <ClCompile Include="aquifolium\src\Matrix.cpp" />
+    <ClCompile Include="aquifolium\src\Matrix_arma.cpp" />
+    <ClCompile Include="aquifolium\src\MetaModel.cpp" />
+    <ClCompile Include="aquifolium\src\NormalDist.cpp" />
+    <ClCompile Include="aquifolium\src\Object.cpp" />
+    <ClCompile Include="aquifolium\src\Objective_Function.cpp" />
+    <ClCompile Include="aquifolium\src\Objective_Function_Set.cpp" />
+    <ClCompile Include="aquifolium\src\observation.cpp" />
+    <ClCompile Include="aquifolium\src\Parameter.cpp" />
+    <ClCompile Include="aquifolium\src\Parameter_Set.cpp" />
+    <ClCompile Include="aquifolium\src\precalculatedfunction.cpp" />
+    <ClCompile Include="aquifolium\src\Precipitation.cpp" />
+    <ClCompile Include="aquifolium\src\Quan.cpp" />
+    <ClCompile Include="aquifolium\src\QuanSet.cpp" />
+    <ClCompile Include="aquifolium\src\QuickSort.cpp" />
+    <ClCompile Include="aquifolium\src\reaction.cpp" />
+    <ClCompile Include="aquifolium\src\Rule.cpp" />
+    <ClCompile Include="aquifolium\src\RxnParameter.cpp" />
+    <ClCompile Include="aquifolium\src\Script.cpp" />
+    <ClCompile Include="aquifolium\src\solutionlogger.cpp" />
+    <ClCompile Include="aquifolium\src\Source.cpp" />
+    <ClCompile Include="aquifolium\src\System.cpp" />
+    <ClCompile Include="aquifolium\src\Vector.cpp" />
+    <ClCompile Include="aquifolium\src\Vector_arma.cpp" />
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="CustomPlotZoom.cpp" />
     <ClCompile Include="delegate.cpp" />
@@ -417,43 +417,43 @@
     <ClCompile Include="wizard_select_dialog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Aquifolium\include\BTC.h" />
-    <ClInclude Include="..\Aquifolium\include\BTCSet.h" />
-    <ClInclude Include="..\Aquifolium\include\Condition.h" />
-    <ClInclude Include="..\Aquifolium\include\constituent.h" />
-    <ClInclude Include="..\Aquifolium\include\GA\Binary.h" />
-    <ClInclude Include="..\Aquifolium\include\Block.h" />
-    <ClInclude Include="..\Aquifolium\include\Command.h" />
-    <ClInclude Include="..\Aquifolium\include\GA\Distribution.h" />
-    <ClInclude Include="..\Aquifolium\include\GA\DistributionNUnif.h" />
-    <ClInclude Include="..\Aquifolium\include\Expression.h" />
-    <ClInclude Include="..\Aquifolium\include\GA\GA.hpp" />
-    <ClInclude Include="..\Aquifolium\include\GA\Individual.h" />
-    <ClInclude Include="..\Aquifolium\include\Link.h" />
-    <ClInclude Include="..\Aquifolium\include\Matrix.h" />
-    <ClInclude Include="..\Aquifolium\include\Matrix_arma.h" />
-    <ClInclude Include="..\Aquifolium\include\MetaModel.h" />
-    <ClInclude Include="..\Aquifolium\include\NormalDist.h" />
-    <ClInclude Include="..\Aquifolium\include\Object.h" />
-    <ClInclude Include="..\Aquifolium\include\observation.h" />
-    <ClInclude Include="..\Aquifolium\include\ordered_hash.h" />
-    <ClInclude Include="..\Aquifolium\include\ordered_map.h" />
-    <ClInclude Include="..\Aquifolium\include\Parameter.h" />
-    <ClInclude Include="..\Aquifolium\include\Parameter_Set.h" />
-    <ClInclude Include="..\Aquifolium\include\precalculatedfunction.h" />
-    <ClInclude Include="..\Aquifolium\include\Precipitation.h" />
-    <ClInclude Include="..\Aquifolium\include\Quan.h" />
-    <ClInclude Include="..\Aquifolium\include\QuanSet.h" />
-    <ClInclude Include="..\Aquifolium\include\QuickSort.h" />
-    <ClInclude Include="..\Aquifolium\include\reaction.h" />
-    <ClInclude Include="..\Aquifolium\include\Rule.h" />
-    <ClInclude Include="..\Aquifolium\include\RxnParameter.h" />
-    <ClInclude Include="..\Aquifolium\include\Script.h" />
-    <ClInclude Include="..\Aquifolium\include\solutionlogger.h" />
-    <ClInclude Include="..\Aquifolium\include\StringOP.h" />
-    <ClInclude Include="..\Aquifolium\include\System.h" />
-    <ClInclude Include="..\Aquifolium\include\Vector.h" />
-    <ClInclude Include="..\Aquifolium\include\Vector_arma.h" />
+    <ClInclude Include="aquifolium\include\BTC.h" />
+    <ClInclude Include="aquifolium\include\BTCSet.h" />
+    <ClInclude Include="aquifolium\include\Condition.h" />
+    <ClInclude Include="aquifolium\include\constituent.h" />
+    <ClInclude Include="aquifolium\include\GA\Binary.h" />
+    <ClInclude Include="aquifolium\include\Block.h" />
+    <ClInclude Include="aquifolium\include\Command.h" />
+    <ClInclude Include="aquifolium\include\GA\Distribution.h" />
+    <ClInclude Include="aquifolium\include\GA\DistributionNUnif.h" />
+    <ClInclude Include="aquifolium\include\Expression.h" />
+    <ClInclude Include="aquifolium\include\GA\GA.hpp" />
+    <ClInclude Include="aquifolium\include\GA\Individual.h" />
+    <ClInclude Include="aquifolium\include\Link.h" />
+    <ClInclude Include="aquifolium\include\Matrix.h" />
+    <ClInclude Include="aquifolium\include\Matrix_arma.h" />
+    <ClInclude Include="aquifolium\include\MetaModel.h" />
+    <ClInclude Include="aquifolium\include\NormalDist.h" />
+    <ClInclude Include="aquifolium\include\Object.h" />
+    <ClInclude Include="aquifolium\include\observation.h" />
+    <ClInclude Include="aquifolium\include\ordered_hash.h" />
+    <ClInclude Include="aquifolium\include\ordered_map.h" />
+    <ClInclude Include="aquifolium\include\Parameter.h" />
+    <ClInclude Include="aquifolium\include\Parameter_Set.h" />
+    <ClInclude Include="aquifolium\include\precalculatedfunction.h" />
+    <ClInclude Include="aquifolium\include\Precipitation.h" />
+    <ClInclude Include="aquifolium\include\Quan.h" />
+    <ClInclude Include="aquifolium\include\QuanSet.h" />
+    <ClInclude Include="aquifolium\include\QuickSort.h" />
+    <ClInclude Include="aquifolium\include\reaction.h" />
+    <ClInclude Include="aquifolium\include\Rule.h" />
+    <ClInclude Include="aquifolium\include\RxnParameter.h" />
+    <ClInclude Include="aquifolium\include\Script.h" />
+    <ClInclude Include="aquifolium\include\solutionlogger.h" />
+    <ClInclude Include="aquifolium\include\StringOP.h" />
+    <ClInclude Include="aquifolium\include\System.h" />
+    <ClInclude Include="aquifolium\include\Vector.h" />
+    <ClInclude Include="aquifolium\include\Vector_arma.h" />
     <ClInclude Include="..\jsoncpp\include\json\allocator.h" />
     <ClInclude Include="..\jsoncpp\include\json\assertions.h" />
     <ClInclude Include="..\jsoncpp\include\json\autolink.h" />
