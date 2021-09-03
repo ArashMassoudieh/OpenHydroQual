@@ -1333,6 +1333,10 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 if (GetSolutionLogger())
                 {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
                     GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
+                    GetSolutionLogger()->WriteString("Error criteria number: " + aquiutils::numbertostring(err/(err_ini+1e-10*X_norm)));
+                    GetSolutionLogger()->WriteString("X_norm: " + aquiutils::numbertostring(X_norm));
+                    GetSolutionLogger()->WriteString("Block outflow factors: " + GetBlocksOutflowFactors(Expression::timing::present).toString());
+                    GetSolutionLogger()->WriteString("Link outflow factors: " + GetLinkssOutflowFactors(Expression::timing::present).toString());
                     GetSolutionLogger()->WriteVector(F);
                     GetSolutionLogger()->WriteString("Error norm = " + aquiutils::numbertostring(err) + ",Initial Error norm = " + aquiutils::numbertostring(err_ini));
                     GetSolutionLogger()->WriteMatrix(SolverTempVars.Inverse_Jacobian[statevarno]);
@@ -1640,6 +1644,25 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 
     return F;
 }
+
+CVector System::GetBlocksOutflowFactors(const Expression::timing &tmg)
+{
+    CVector out(blocks.size());
+    for (unsigned int i=0; i<blocks.size(); i++)
+        out[i] = blocks[i].GetOutflowLimitFactor(tmg);
+
+    return out;
+}
+
+CVector System::GetLinkssOutflowFactors(const Expression::timing &tmg)
+{
+    CVector out(links.size());
+    for (unsigned int i=0; i<links.size(); i++)
+        out[i] = links[i].GetOutflowLimitFactor(tmg);
+
+    return out;
+}
+
 
 CVector_arma System::GetResiduals_TR(const string &variable, CVector_arma &X)
 {
@@ -2986,4 +3009,10 @@ bool System::InitiatePrecalculatedFunctions()
     }
     return out;
     UnUpdateAllValues();
+}
+
+double System::Gradient(Object* obj, Object* wrt, const string &dependent_var, const string &independent_var)
+{
+
+    return 0;
 }

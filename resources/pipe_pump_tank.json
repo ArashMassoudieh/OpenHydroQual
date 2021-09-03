@@ -215,7 +215,7 @@
   "junction_elastic": {
     "type": "block",
     "typecategory": "Blocks",
-	"description": "Elastic Junction",
+    "description": "Elastic Junction",
     "icon": {
       "filename": "junction.png"
     },
@@ -279,7 +279,7 @@
     },
     "head": {
       "type": "expression",
-      "expression": "elevation+elasticity*(_abs(Storage-100000)+0.1)*(Storage-100000)",
+      "expression": "elevation+elasticity*(Storage-100000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "delegate": "UnitBox",
@@ -307,7 +307,7 @@
       "includeinoutput": "true",
       "description": "Storage",
       "default": "1000",
-	  "rigid": "true"
+      "rigid": "true"
     },
     "x": {
       "type": "value",
