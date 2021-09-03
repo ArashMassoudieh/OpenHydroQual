@@ -47,6 +47,7 @@ void System::PopulateOperatorsFunctions()
     functions->push_back("max");
     functions->push_back("mon");
     functions->push_back("mbs");
+    functions->push_back("lpw");
 }
 
 System::~System()
@@ -1063,6 +1064,9 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 		CVector_arma X_past = X;
         CVector_arma F = GetResiduals(variable, X, transport);
+#ifdef DEBUG
+        CVector_arma F_ini = F;
+#endif // DEBUG
         int ini_max_error_block = F.abs_max_elems();
         if (!F.is_finite())
         {
@@ -1093,7 +1097,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 		//if (SolverTempVars.NR_coefficient[statevarno]==0)
             SolverTempVars.NR_coefficient[statevarno] = 1;
-        while ((err/(err_ini+1e-10*X_norm)>SolverSettings.NRtolerance && err>1e-12))
+        while ((err/(err_ini+1e-8*X_norm)>SolverSettings.NRtolerance && err>1e-12))
         {
             SolverTempVars.numiterations[statevarno]++;
             if (SolverTempVars.updatejacobian[statevarno])
@@ -1230,7 +1234,11 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 if (!SolverSettings.direct_jacobian)
                     X = X - SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
                 else
-                    X -= SolverTempVars.NR_coefficient[statevarno] * (F/ SolverTempVars.Inverse_Jacobian[statevarno]);
+                {
+                    CVector_arma dx = SolverTempVars.NR_coefficient[statevarno] * (F / SolverTempVars.Inverse_Jacobian[statevarno]);
+                    X -= dx; 
+
+                }
                 if (SolverSettings.optimize_lambda)
                 {
                     if (!SolverSettings.direct_jacobian)

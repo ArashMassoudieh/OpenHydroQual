@@ -25,6 +25,7 @@ Expression::Expression(void)
     funcs.push_back("_sgn");
     funcs.push_back("_sqr");
     funcs.push_back("_sqt");
+	funcs.push_back("_lpw");
     funcs.push_back("_pos");
     funcs.push_back("_hsd");
     funcs.push_back("_ups");
@@ -57,6 +58,7 @@ Expression::Expression(string S)
     funcs.push_back("_sqt");
 	funcs.push_back("_pos");
 	funcs.push_back("_hsd");
+	funcs.push_back("_lpw");
 	funcs.push_back("_ups");
     funcs.push_back("_bkw");
 	funcs.push_back("_mon");
@@ -547,6 +549,8 @@ double Expression::func(string &f, double val1, double val2)
 		return val1 / (val1 + val2);
 	if (f == "mbs")
 		return abs(val1) / (abs(val1) + val2);
+	if (f == "lpw")
+		return pow(fabs(val1),1-(1-val2)*val1/(1e-6+val1));
 	return val1;
 }
 
