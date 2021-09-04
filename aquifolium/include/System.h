@@ -57,7 +57,7 @@ struct solversettings
     bool scalediagonal = false;
     double landtozero_factor = 0;
     bool optimize_lambda = true;
-    bool direct_jacobian = true;
+    bool direct_jacobian = false;
     bool write_solution_details = false;
 
 

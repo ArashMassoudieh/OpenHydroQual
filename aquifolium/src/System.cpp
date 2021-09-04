@@ -1232,7 +1232,11 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             else
             {
                 if (!SolverSettings.direct_jacobian)
-                    X = X - SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
+                {
+                    CVector_arma dx = SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
+                    X -= dx; 
+
+                }
                 else
                 {
                     CVector_arma dx = SolverTempVars.NR_coefficient[statevarno] * (F / SolverTempVars.Inverse_Jacobian[statevarno]);

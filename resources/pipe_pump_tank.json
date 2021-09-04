@@ -346,7 +346,7 @@
     },
     "head": {
       "type": "expression",
-      "expression": "elevation+1*(Storage-1000)",
+      "expression": "elevation+1000*(Storage-1000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "delegate": "UnitBox",
