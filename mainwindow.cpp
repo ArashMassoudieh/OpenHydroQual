@@ -32,6 +32,7 @@
 #include <QtSvg/QSvgGenerator>
 #include <QtSvg/QSvgRenderer>
 #include "options.h"
+#include <QFileInfo>
 
 using namespace std;
 
@@ -100,6 +101,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->tableView->setItemDelegateForColumn(1,new Delegate(this,this));
     Populate_General_ToolBar();
+    readRecentFilesList();
 
 }
 
@@ -1751,6 +1753,7 @@ void MainWindow::addToRecentFiles(QString fileName, bool addToFile)
 
         if (addToFile)
         {
+            CreateFileIfDoesNotExist(localAppFolderAddress() + RECENT);
             ofstream file(localAppFolderAddress().toStdString() + RECENT, fstream::app);
             if (file.good())
                 file << fileName.toStdString() << std::endl;
@@ -1825,4 +1828,17 @@ void MainWindow::saveSceneToSvg(const QString &filename) {
     painter.end();
 
 
+}
+
+bool MainWindow::CreateFileIfDoesNotExist(QString fileName)
+{
+    QFileInfo check_file(fileName);
+    bool success = false; 
+    if (!check_file.exists())
+    {
+        QFile filetobecreated(fileName);
+        success = filetobecreated.open(QIODevice::WriteOnly);
+        filetobecreated.close();
+    }
+    return success; 
 }

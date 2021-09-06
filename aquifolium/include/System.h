@@ -368,7 +368,7 @@ class System: public Object
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
         void InitiateOutputs();
-        void PopulateOutputs();
+        void PopulateOutputs(bool links=true);
         void TransferQuantitiesFromMetaModel();
         void AppendQuantitiesFromMetaModel();
         Objective_Function_Set objective_function_set;

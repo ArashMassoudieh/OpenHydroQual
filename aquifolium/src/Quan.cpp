@@ -904,7 +904,25 @@ string Quan::toCommand()
 
 bool Quan::Validate()
 {
+    if (type == _type::timeseries && _timeseries.filename!="")
+    {
+        if (type == _type::timeseries)
+        {
+            if (parent->Parent()->InputPath() != "")
+                return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.filename);
+            else
+                return SetTimeSeries(_timeseries.filename);
+        }
+        if (type == _type::prec_timeseries)
+        {
+            if (parent->Parent()->InputPath() != "")
+                return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.filename, true);
+            else
+                return SetTimeSeries(_timeseries.filename, true);
+        }
+    }
     return Criteria().calc(parent, Expression::timing::both);
+
 }
 
 vector<string> Quan::GetAllRequieredStartingBlockProperties()

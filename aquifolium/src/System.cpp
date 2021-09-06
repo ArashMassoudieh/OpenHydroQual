@@ -353,26 +353,27 @@ Object *System::object(const string &s)
 ErrorHandler System::VerifyAllQuantities()
 {
     ErrorHandler errs;
+    bool allfine = true; 
     for (unsigned int i=0; i<Settings.size(); i++)
-        Settings[i].VerifyQuans(&errs);
+        allfine &= Settings[i].VerifyQuans(&errs);
 
     for (unsigned int i=0; i<links.size(); i++)
-        links[i].VerifyQuans(&errs);
+        allfine &= links[i].VerifyQuans(&errs);
 
     for (unsigned int i=0; i<blocks.size(); i++)
-        blocks[i].VerifyQuans(&errs);
+        allfine &= blocks[i].VerifyQuans(&errs);
 
     for (unsigned int i=0; i<sources.size(); i++)
-        sources[i].VerifyQuans(&errs);
+        allfine &= sources[i].VerifyQuans(&errs);
 
     for (unsigned int i=0; i<observations.size(); i++)
-        observations[i].VerifyQuans(&errs);
+        allfine &= observations[i].VerifyQuans(&errs);
 
     for (unsigned int i=0; i<ParametersCount(); i++)
-        Parameters()[i]->VerifyQuans(&errs);
+        allfine &= Parameters()[i]->VerifyQuans(&errs);
 
     for (unsigned int i=0; i<ObjectiveFunctionsCount(); i++)
-        ObjectiveFunctions()[i]->VerifyQuans(&errs);
+        allfine &= ObjectiveFunctions()[i]->VerifyQuans(&errs);
 
     return errs;
 }
@@ -553,7 +554,7 @@ bool System::Solve(bool applyparameters)
     CALLGRIND_START_INSTRUMENTATION;
     CALLGRIND_TOGGLE_COLLECT;
 #endif
-    //qDebug()<<"Loop started...";
+    PopulateOutputs(false);
     while (SolverTempVars.t<SimulationParameters.tend+SolverTempVars.dt && !stop_triggered)
     {
         progress_p = progress;
@@ -943,7 +944,7 @@ bool System::TransferResultsFrom(System *other)
     return true;
 }
 
-void System::PopulateOutputs()
+void System::PopulateOutputs(bool dolinks)
 {
 
     Outputs.AllOutputs.ResizeIfNeeded(1000);
@@ -953,8 +954,9 @@ void System::PopulateOutputs()
         blocks[i].CalcExpressions(Expression::timing::present);
 
 #pragma omp parallel for
-    for (unsigned int i=0; i<links.size(); i++)
-        links[i].CalcExpressions(Expression::timing::present);
+    if (dolinks)
+        for (unsigned int i=0; i<links.size(); i++)
+            links[i].CalcExpressions(Expression::timing::present);
 
     for (unsigned int i=0; i<blocks.size(); i++)
     {
@@ -964,15 +966,15 @@ void System::PopulateOutputs()
 
     }
 
-
-    for (unsigned int i=0; i<links.size(); i++)
-    {
-        for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
-            if (it->second.IncludeInOutput())
-            {
-				Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(SolverTempVars.t,links[i].GetVal(it->first,Expression::timing::present,true));
-            }
-    }
+    if (dolinks)
+        for (unsigned int i=0; i<links.size(); i++)
+        {
+            for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
+                if (it->second.IncludeInOutput())
+                {
+				    Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(SolverTempVars.t,links[i].GetVal(it->first,Expression::timing::present,true));
+                }
+        }
 
     for (unsigned int i=0; i<sources.size(); i++)
     {
@@ -1054,6 +1056,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
     {
         CVector_arma X = GetStateVariables(variable, Expression::timing::past,transport);
         double X_norm = X.norm2();
+        double dx_norm = X_norm*10; 
         if (!transport)
         {   for (unsigned int i = 0; i < blocks.size(); i++)
             {
@@ -1097,7 +1100,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 		//if (SolverTempVars.NR_coefficient[statevarno]==0)
             SolverTempVars.NR_coefficient[statevarno] = 1;
-        while ((err/(err_ini+1e-8*X_norm)>SolverSettings.NRtolerance && err>1e-12))
+        while ((err/(err_ini+1e-8*X_norm)>SolverSettings.NRtolerance && err>1e-12 && dx_norm/X_norm>1e-10))
         {
             SolverTempVars.numiterations[statevarno]++;
             if (SolverTempVars.updatejacobian[statevarno])
@@ -1222,37 +1225,40 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
             }
             CVector_arma X1;
+            CVector_arma dx; 
             if (SolverSettings.scalediagonal)
             {
                 if (!SolverSettings.direct_jacobian)
-                    X = X - SolverTempVars.Inverse_Jacobian[statevarno] * F;
+                {
+                    dx = SolverTempVars.Inverse_Jacobian[statevarno] * F;
+                    X -= dx; 
+                }
                 else
-                    X = X - F/SolverTempVars.Inverse_Jacobian[statevarno];
+                {
+                    dx = F / SolverTempVars.Inverse_Jacobian[statevarno];
+                    X -= dx; 
+                }
             }
             else
             {
                 if (!SolverSettings.direct_jacobian)
                 {
-                    CVector_arma dx = SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
+                    dx = SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
                     X -= dx; 
-
                 }
                 else
                 {
-                    CVector_arma dx = SolverTempVars.NR_coefficient[statevarno] * (F / SolverTempVars.Inverse_Jacobian[statevarno]);
+                    dx = SolverTempVars.NR_coefficient[statevarno] * (F / SolverTempVars.Inverse_Jacobian[statevarno]);
                     X -= dx; 
 
                 }
                 if (SolverSettings.optimize_lambda)
                 {
-                    if (!SolverSettings.direct_jacobian)
-                        X1 = X + 0.5 * SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
-                    else
-                        X1 = X + 0.5 * SolverTempVars.NR_coefficient[statevarno] * (F/ SolverTempVars.Inverse_Jacobian[statevarno]);
+                    X1 = X + 0.5 * dx;
                 }
             }
 #endif
-
+            dx_norm = dx.norm2(); 
 
             if (!X.is_finite())
 			{
