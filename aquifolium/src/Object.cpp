@@ -629,3 +629,16 @@ void Object::MakeTimeSeriesUniform(const double &increment)
                 *(var[s->first].TimeSeries()) = var[s->first].TimeSeries()->make_uniform(increment);
         }
 }
+
+bool Object::CopyStateVariablesFrom(Object* obj)
+{
+    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    {
+        if (var[s->first].GetType() == Quan::_type::balance && obj->HasQuantity(s->first))
+        {
+            var[s->first].SetVal(obj->GetVal(s->first,Expression::timing::past),Expression::timing::past);
+            var[s->first].SetVal(obj->GetVal(s->first,Expression::timing::present),Expression::timing::present);
+        }
+    }
+    return true;
+}

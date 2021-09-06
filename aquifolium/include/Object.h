@@ -132,6 +132,7 @@ class Object
         bool InitializePrecalcFunctions();
         void MakeTimeSeriesUniform(const double &increment);
         void SetQuanPointers();
+        bool CopyStateVariablesFrom(Object* obj);
     protected:
 
     private:
