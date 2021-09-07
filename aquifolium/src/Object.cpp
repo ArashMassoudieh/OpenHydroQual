@@ -466,7 +466,7 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
     {
         return var[prop].SetProperty(value);
     }
-
+    return false;
 
 }
 

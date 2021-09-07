@@ -3005,6 +3005,31 @@ bool System::InitiatePrecalculatedFunctions()
 
 double System::Gradient(Object* obj, Object* wrt, const string &dependent_var, const string &independent_var)
 {
-
+    double basevalue = obj->GetVal(dependent_var,Expression::timing::present);
+    double original_state = wrt->GetVal(independent_var,Expression::timing::present);
+    double u;
+    if (unitrandom()>0.5) u=1; else u=-1;
+    double epsilon = -1e-6*u*(fabs(original_state)+1);
+    wrt->SetVal(independent_var,original_state+epsilon,Expression::timing::present);
+    wrt->UnUpdateAllValues();
+    obj->UnUpdateAllValues();
+    double permutedvalue = obj->GetVal(dependent_var,Expression::timing::present);
+    double derivative = (permutedvalue - basevalue)/epsilon;
+    wrt->SetVal(independent_var,original_state,Expression::timing::present);
+    wrt->UnUpdateAllValues();
+    obj->UnUpdateAllValues();
+    return derivative;
     return 0;
 }
+
+CVector_arma System::Gradient(Object* obj, Object* wrt, const string &independent_var)
+{
+
+}
+
+CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, bool transport)
+{
+
+}
+
+

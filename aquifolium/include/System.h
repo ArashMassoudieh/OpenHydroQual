@@ -352,6 +352,8 @@ class System: public Object
         CVector_arma GetResiduals(const string &variable, CVector_arma &X, bool transport=false);
         CVector_arma GetResiduals_TR(const string &variable, CVector_arma &X);
         double Gradient(Object* obj, Object* wrt, const string &dependent_var, const string &independent_var);
+        CVector_arma Gradient(Object* obj, Object* wrt, const string &independent_var);
+        CMatrix_arma JacobianDirect(const string &variable, CVector_arma &X, bool transport);
 		void CorrectStoragesBasedonFluxes(const string& variable);
         CVector_arma CalcStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past);
         CVector_arma GetStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past, bool transport=false);
