@@ -76,6 +76,7 @@ private:
     void removeFromRecentList(QAction* selectedFileAction);
     bool LoadModel(QString fileName);
     void saveSceneToSvg(const QString &filename);
+    bool CreateFileIfDoesNotExist(QString fileName);
 
 private slots:
     void on_check_object_browser();

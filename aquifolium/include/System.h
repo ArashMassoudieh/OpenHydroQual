@@ -38,6 +38,7 @@ using namespace std;
 #endif // _DEBUG
 
 class Script;
+class RestorePoint;
 
 enum class parameter_estimation_options {none, optimize, inverse_model};
 
@@ -57,7 +58,7 @@ struct solversettings
     bool scalediagonal = false;
     double landtozero_factor = 0;
     bool optimize_lambda = true;
-    bool direct_jacobian = true;
+    bool direct_jacobian = false;
     bool write_solution_details = false;
 
 
@@ -295,6 +296,7 @@ class System: public Object
         void WriteBlocksStates(const string &variable, const Expression::timing &tmg);
         void WriteLinksStates(const string &variable, const Expression::timing &tmg);
         bool InitiatePrecalculatedFunctions();
+        bool CopyStateVariablesFrom(System *sys);
 #if defined(QT_version)
         logWindow *LogWindow() {return logwindow;}
         void SetLogWindow(logWindow *lgwnd) {logwindow=lgwnd;}
@@ -334,6 +336,7 @@ class System: public Object
         bool GetSolutionFailed() {return SolverTempVars.SolutionFailed;}
         void SetParameterEstimationMode(parameter_estimation_options mode = parameter_estimation_options::none);
         void SetQuanPointers();
+        bool ResetBasedOnRestorePoint(RestorePoint *rp);
     protected:
 
     private:
@@ -370,7 +373,7 @@ class System: public Object
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
         void InitiateOutputs();
-        void PopulateOutputs();
+        void PopulateOutputs(bool links=true);
         void TransferQuantitiesFromMetaModel();
         void AppendQuantitiesFromMetaModel();
         Objective_Function_Set objective_function_set;
@@ -391,6 +394,7 @@ class System: public Object
         parameter_estimation_options ParameterEstimationMode = parameter_estimation_options::none;
         CVector GetBlocksOutflowFactors(const Expression::timing &tmg);
         CVector GetLinkssOutflowFactors(const Expression::timing &tmg);
+        unsigned int restore_interval = 200;
 
 #ifdef Q_version
     RunTimeWindow *rtw = nullptr;

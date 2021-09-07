@@ -5,6 +5,7 @@
 #include <json/json.h>
 #include <Script.h>
 #include <omp.h>
+#include "restorepoint.h"
 #ifdef VALGRIND
 #include <valgrind/callgrind.h>
 #endif
@@ -47,6 +48,7 @@ void System::PopulateOperatorsFunctions()
     functions->push_back("max");
     functions->push_back("mon");
     functions->push_back("mbs");
+    functions->push_back("lpw");
 }
 
 System::~System()
@@ -352,26 +354,27 @@ Object *System::object(const string &s)
 ErrorHandler System::VerifyAllQuantities()
 {
     ErrorHandler errs;
+    bool allfine = true; 
     for (unsigned int i=0; i<Settings.size(); i++)
-        Settings[i].VerifyQuans(&errs);
+        allfine &= Settings[i].VerifyQuans(&errs);
 
     for (unsigned int i=0; i<links.size(); i++)
-        links[i].VerifyQuans(&errs);
+        allfine &= links[i].VerifyQuans(&errs);
 
     for (unsigned int i=0; i<blocks.size(); i++)
-        blocks[i].VerifyQuans(&errs);
+        allfine &= blocks[i].VerifyQuans(&errs);
 
     for (unsigned int i=0; i<sources.size(); i++)
-        sources[i].VerifyQuans(&errs);
+        allfine &= sources[i].VerifyQuans(&errs);
 
     for (unsigned int i=0; i<observations.size(); i++)
-        observations[i].VerifyQuans(&errs);
+        allfine &= observations[i].VerifyQuans(&errs);
 
     for (unsigned int i=0; i<ParametersCount(); i++)
-        Parameters()[i]->VerifyQuans(&errs);
+        allfine &= Parameters()[i]->VerifyQuans(&errs);
 
     for (unsigned int i=0; i<ObjectiveFunctionsCount(); i++)
-        ObjectiveFunctions()[i]->VerifyQuans(&errs);
+        allfine &= ObjectiveFunctions()[i]->VerifyQuans(&errs);
 
     return errs;
 }
@@ -552,7 +555,8 @@ bool System::Solve(bool applyparameters)
     CALLGRIND_START_INSTRUMENTATION;
     CALLGRIND_TOGGLE_COLLECT;
 #endif
-    //qDebug()<<"Loop started...";
+    PopulateOutputs(false);
+    RestorePoint restorepoint(this);
     while (SolverTempVars.t<SimulationParameters.tend+SolverTempVars.dt && !stop_triggered)
     {
         progress_p = progress;
@@ -601,23 +605,32 @@ bool System::Solve(bool applyparameters)
 
             if (fail_counter > 20)
             {
-#ifdef Q_version
-                if (rtw)
+                if (!ResetBasedOnRestorePoint(&restorepoint))
                 {
-                    if (rtw->detailson)
+#ifdef Q_version
+                    if (rtw)
                     {
-                        rtw->AppendtoDetails("The attempt to solve the problem failed");
+                        if (rtw->detailson)
+                            rtw->AppendtoDetails("The attempt to solve the problem failed");
 
+                        rtw->AppendErrorMessage("The attempt to solve the problem failed!");
+                        QCoreApplication::processEvents();
                     }
-                    rtw->AppendErrorMessage("The attempt to solve the problem failed!");
-                    QCoreApplication::processEvents();
+    #endif
+                    if (GetSolutionLogger())
+                        GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
+                    cout<<"The attempt to solve the problem failed!"<<std::endl;
+                    SolverTempVars.SolutionFailed = true;
+                    stop_triggered = true;
                 }
-#endif
-                if (GetSolutionLogger())
-                    GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
-                cout<<"The attempt to solve the problem failed!"<<std::endl;
-                SolverTempVars.SolutionFailed = true;
-                stop_triggered = true;
+                else
+                {
+                    if (GetSolutionLogger())
+                        GetSolutionLogger()->WriteString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t) );
+                    if (rtw->detailson)
+                        rtw->AppendtoDetails(QString::fromStdString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t)));
+
+                }
             }
         }
         else
@@ -635,6 +648,19 @@ bool System::Solve(bool applyparameters)
                 //cout<<"Processes Events...";
             }
 #endif
+            if (counter%restore_interval==0)
+            {
+                restorepoint.GetSystem()->CopyStateVariablesFrom(this);
+                restorepoint.t = SolverTempVars.t;
+                restorepoint.dt = SolverTempVars.dt;
+                if (rtw->detailson)
+                {
+                    rtw->AppendtoDetails("Restore point saved!");
+                }
+                restorepoint.used_counter = 0;
+                if (GetSolutionLogger())
+                    GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
+            }
             fail_counter = 0;
             SolverTempVars.t += SolverTempVars.dt;
             if (SolverTempVars.MaxNumberOfIterations()>SolverSettings.NR_niteration_upper)
@@ -649,8 +675,6 @@ bool System::Solve(bool applyparameters)
                 SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1).vec;
             }
 
-            //for (unsigned int i=0; i<solvevariableorder.size(); i++)
-            //    Update(solvevariableorder[i]);
             Update();
             UpdateObjectiveFunctions(SolverTempVars.t);
             UpdateObservations(SolverTempVars.t);
@@ -942,7 +966,7 @@ bool System::TransferResultsFrom(System *other)
     return true;
 }
 
-void System::PopulateOutputs()
+void System::PopulateOutputs(bool dolinks)
 {
 
     Outputs.AllOutputs.ResizeIfNeeded(1000);
@@ -951,10 +975,12 @@ void System::PopulateOutputs()
     for (unsigned int i=0; i<blocks.size(); i++)
         blocks[i].CalcExpressions(Expression::timing::present);
 
+    if (dolinks)
+{
 #pragma omp parallel for
-    for (unsigned int i=0; i<links.size(); i++)
-        links[i].CalcExpressions(Expression::timing::present);
-
+         for (unsigned int i=0; i<links.size(); i++)
+                links[i].CalcExpressions(Expression::timing::present);
+}
     for (unsigned int i=0; i<blocks.size(); i++)
     {
         for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
@@ -963,15 +989,15 @@ void System::PopulateOutputs()
 
     }
 
-
-    for (unsigned int i=0; i<links.size(); i++)
-    {
-        for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
-            if (it->second.IncludeInOutput())
-            {
-				Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(SolverTempVars.t,links[i].GetVal(it->first,Expression::timing::present,true));
-            }
-    }
+    if (dolinks)
+        for (unsigned int i=0; i<links.size(); i++)
+        {
+            for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
+                if (it->second.IncludeInOutput())
+                {
+				    Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(SolverTempVars.t,links[i].GetVal(it->first,Expression::timing::present,true));
+                }
+        }
 
     for (unsigned int i=0; i<sources.size(); i++)
     {
@@ -1053,6 +1079,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
     {
         CVector_arma X = GetStateVariables(variable, Expression::timing::past,transport);
         double X_norm = X.norm2();
+        double dx_norm = X_norm*10; 
         if (!transport)
         {   for (unsigned int i = 0; i < blocks.size(); i++)
             {
@@ -1063,6 +1090,9 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 		CVector_arma X_past = X;
         CVector_arma F = GetResiduals(variable, X, transport);
+#ifdef DEBUG
+        CVector_arma F_ini = F;
+#endif // DEBUG
         int ini_max_error_block = F.abs_max_elems();
         if (!F.is_finite())
         {
@@ -1093,7 +1123,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 		//if (SolverTempVars.NR_coefficient[statevarno]==0)
             SolverTempVars.NR_coefficient[statevarno] = 1;
-        while ((err/(err_ini+1e-10*X_norm)>SolverSettings.NRtolerance && err>1e-12))
+        while ((err/(err_ini+1e-8*X_norm)>SolverSettings.NRtolerance && err>1e-12 && dx_norm/X_norm>1e-10))
         {
             SolverTempVars.numiterations[statevarno]++;
             if (SolverTempVars.updatejacobian[statevarno])
@@ -1218,29 +1248,40 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
             }
             CVector_arma X1;
+            CVector_arma dx; 
             if (SolverSettings.scalediagonal)
             {
                 if (!SolverSettings.direct_jacobian)
-                    X = X - SolverTempVars.Inverse_Jacobian[statevarno] * F;
+                {
+                    dx = SolverTempVars.Inverse_Jacobian[statevarno] * F;
+                    X -= dx; 
+                }
                 else
-                    X = X - F/SolverTempVars.Inverse_Jacobian[statevarno];
+                {
+                    dx = F / SolverTempVars.Inverse_Jacobian[statevarno];
+                    X -= dx; 
+                }
             }
             else
             {
                 if (!SolverSettings.direct_jacobian)
-                    X = X - SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
+                {
+                    dx = SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
+                    X -= dx; 
+                }
                 else
-                    X -= SolverTempVars.NR_coefficient[statevarno] * (F/ SolverTempVars.Inverse_Jacobian[statevarno]);
+                {
+                    dx = SolverTempVars.NR_coefficient[statevarno] * (F / SolverTempVars.Inverse_Jacobian[statevarno]);
+                    X -= dx; 
+
+                }
                 if (SolverSettings.optimize_lambda)
                 {
-                    if (!SolverSettings.direct_jacobian)
-                        X1 = X + 0.5 * SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
-                    else
-                        X1 = X + 0.5 * SolverTempVars.NR_coefficient[statevarno] * (F/ SolverTempVars.Inverse_Jacobian[statevarno]);
+                    X1 = X + 0.5 * dx;
                 }
             }
 #endif
-
+            dx_norm = dx.norm2(); 
 
             if (!X.is_finite())
 			{
@@ -3020,6 +3061,44 @@ double System::Gradient(Object* obj, Object* wrt, const string &dependent_var, c
     obj->UnUpdateAllValues();
     return derivative;
     return 0;
+}
+
+bool System::CopyStateVariablesFrom(System *sys)
+{
+    bool out = true;
+    for (unsigned int i=0; i<blocks.size(); i++)
+    {
+        if (sys->block(blocks[i].GetName())!=nullptr)
+            blocks[i].CopyStateVariablesFrom(sys->block(blocks[i].GetName()));
+    }
+
+    for (unsigned int i=0; i<links.size(); i++)
+    {
+        if (sys->link(links[i].GetName())!=nullptr)
+            links[i].CopyStateVariablesFrom(sys->link(links[i].GetName()));
+    }
+
+    for (unsigned int i=0; i<sources.size(); i++)
+    {
+        if (sys->source(sources[i].GetName())!=nullptr)
+            sources[i].CopyStateVariablesFrom(sys->source(sources[i].GetName()));
+    }
+    return out;
+    UnUpdateAllValues();
+}
+
+bool System::ResetBasedOnRestorePoint(RestorePoint *rp)
+{
+    if (rp->used_counter>1) return false;
+    CopyStateVariablesFrom(rp->GetSystem());
+    rp->used_counter++;
+    SolverTempVars.t = rp->t;
+    SolverTempVars.dt_base = rp->dt/5;
+    SolverTempVars.dt = rp->dt/5;
+    Outputs.AllOutputs.knockout(SolverTempVars.t);
+    Outputs.ObservedOutputs.knockout(SolverTempVars.t);
+    rp->dt = SolverTempVars.dt;
+    return true;
 }
 
 CVector_arma System::Gradient(Object* obj, Object* wrt, const string &independent_var)

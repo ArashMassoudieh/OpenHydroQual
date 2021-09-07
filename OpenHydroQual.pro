@@ -53,6 +53,7 @@ SOURCES += \
     ../jsoncpp/src/lib_json/json_writer.cpp \
     CustomPlotZoom.cpp \
     aboutdialog.cpp \
+    aquifolium/src/restorepoint.cpp \
     diagramview.cpp \
     edge.cpp \
         main.cpp \
@@ -115,6 +116,7 @@ HEADERS += \
     ./aquifolium/include/solutionlogger.h \
     CustomPlotZoom.h \
     aboutdialog.h \
+    aquifolium/include/restorepoint.h \
     diagramview.h \
     edge.h \
         mainwindow.h \

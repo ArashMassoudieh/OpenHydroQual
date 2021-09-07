@@ -348,15 +348,18 @@ Quan* Object::Variable(const string &variable, const string &constituent)
         return &var[variablefullname];
 }
 
-void Object::VerifyQuans(ErrorHandler *errorhandler)
+bool Object::VerifyQuans(ErrorHandler *errorhandler)
 {
+    bool fine = true; 
     for (unordered_map<string,Quan>::iterator it = var.begin(); it!=var.end(); it++)
     {
         if (!it->second.Validate())
         {
             errorhandler->Append(GetName(),"Object","VerifyQuans","In object '" + GetName() + "', " + it->second.WarningMessage(),14001);
+            fine = false;
         }
     }
+    return fine; 
 }
 
 vector<Quan> Object::GetCopyofAllQuans()
@@ -619,8 +622,23 @@ bool Object::InitializePrecalcFunctions()
 void Object::MakeTimeSeriesUniform(const double &increment)
 {
     for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+        
         if (var[s->first].GetType() == Quan::_type::timeseries || var[s->first].GetType() == Quan::_type::prec_timeseries)
         {
-            *(var[s->first].TimeSeries()) = var[s->first].TimeSeries()->make_uniform(increment);
+            if (var[s->first].TimeSeries()!=nullptr)
+                *(var[s->first].TimeSeries()) = var[s->first].TimeSeries()->make_uniform(increment);
         }
+}
+
+bool Object::CopyStateVariablesFrom(Object* obj)
+{
+    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    {
+        if (var[s->first].GetType() == Quan::_type::balance && obj->HasQuantity(s->first))
+        {
+            var[s->first].SetVal(obj->GetVal(s->first,Expression::timing::past),Expression::timing::past);
+            var[s->first].SetVal(obj->GetVal(s->first,Expression::timing::present),Expression::timing::present);
+        }
+    }
+    return true;
 }
