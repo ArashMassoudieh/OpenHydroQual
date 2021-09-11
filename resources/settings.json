@@ -61,7 +61,7 @@
       "initial_time_step": {
       "type": "value",
       "default": "1e-2",
-      "description": "Initial time-time-step",
+      "description": "Initial time-step",
       "ask_user": "true",
       "delegate": "UnitBox",
       "code": "dt"

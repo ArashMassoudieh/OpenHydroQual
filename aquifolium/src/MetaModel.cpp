@@ -101,7 +101,6 @@ bool MetaModel::GetFromJsonFile(const string &filename)
             {
                 solvevariableorder.push_back(root["solutionorder"][i].asString());
             }
-            break;
         }
         QuanSet quanset(object_types);
         //qDebug()<<QString::fromStdString(object_types.key().asString());

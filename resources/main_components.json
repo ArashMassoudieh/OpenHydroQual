@@ -587,11 +587,32 @@
     "icon": {
       "filename": "fixedhead.png"
     },
-    "name": {
-      "description": "Name",
-      "type": "string",
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation",
+      "default": "100000",
+      "includeinoutput": "true",
+      "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "String"
+      "delegate": "UnitBox",
+      "estimate": "true"
+    },
+    "head": {
+      "type": "value",
+      "description": "Head",
+      "ask_user": "true",
+      "includeinoutput": "true",
+      "default": "0",
+      "delegate": "UnitBox"
+    }
+  },
+  "time_variable_fixed_head": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+    	"filename": "fixedhead_timeseries.png"
     },
     "Storage": {
       "type": "balance",
@@ -605,41 +626,12 @@
       "delegate": "UnitBox",
       "estimate": "true"
     },
-    "x": {
-      "type": "value",
-      "description": "x",
-      "default": "900",
-      "ask_user": "true",
-      "delegate": "UnitBox"
-    },
-    "y": {
-      "type": "value",
-      "description": "y",
-      "default": "900",
-      "ask_user": "true",
-      "delegate": "UnitBox"
-    },
-    "_width": {
-      "type": "value",
-      "description": "_width",
-	  "default": "200",
-      "ask_user": "true",
-      "delegate": "UnitBox"
-    },
-    "_height": {
-      "type": "value",
-      "description": "_height",
-	  "default": "200",
-      "ask_user": "true",
-      "delegate": "UnitBox"
-    },
     "head": {
-      "type": "value",
+      "type": "timeseries",
+      "includeinoutput": "true",
       "description": "Head",
       "ask_user": "true",
-      "includeinoutput": "true",
-	  "default": "0",
-	  "delegate": "UnitBox"
+      "delegate": "Browser" 
     }
   },
   "Constituent": {

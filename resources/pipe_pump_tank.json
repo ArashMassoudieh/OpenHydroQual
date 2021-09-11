@@ -417,5 +417,71 @@
       "type": "string",
       "default": "0,0,0"
     }
+  },
+  "pump_with_timeseries_control": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Pump with time series control",
+    "icon": {
+    "filename": "pump_with_time_series_control.png"
+    },
+    "head_0": {
+      "type": "value",
+      "description": "pump head at a zero flow (h0)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "criteria": "head_0>0",
+      "warningmessage": "pump head must be positive"
+    },
+    "alpha": {
+      "type": "value",
+      "description": "The coefficient alpha in h=h0-alpha*Q^beta",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "criteria": "alpha>0",
+      "warningmessage": "The coefficient must be positive"
+    },
+    "beta": {
+      "type": "value",
+      "description": "The exponent beta in h=h0-alpha*Q^beta",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "default": "2",
+      "criteria": "beta>0",
+      "warningmessage": "The exponent must be positive"
+    },
+    "coefficient_time_series": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Coefficient time-series",
+      "ask_user": "true",
+      "delegate": "Browser" 
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m/day)",
+      "expression": "coefficient_time_series*((_pos(head.s-head.e+head_0)/alpha)^(1/beta))",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "power": {
+      "type": "expression",
+      "description": "Power (Watts)",
+      "expression": "(9810/86400)*_pos(head.s-head.e+head_0)*flow",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,0"
+    }
   }
 }
