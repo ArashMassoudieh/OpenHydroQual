@@ -143,7 +143,7 @@
     "timeseries": {
       "type": "timeseries_prec",
       "includeinoutput": "true",
-      "description": "Predcipitation intensity",
+      "description": "Precipitation intensity",
       "ask_user": "true",
       "delegate": "Browser;time series"
     }

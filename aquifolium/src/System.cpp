@@ -3103,12 +3103,14 @@ bool System::ResetBasedOnRestorePoint(RestorePoint *rp)
 
 CVector_arma System::Gradient(Object* obj, Object* wrt, const string &independent_var)
 {
-
+    CVector_arma grad;
+    return grad;
 }
 
 CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, bool transport)
 {
-
+    CMatrix_arma jacobian;
+    return jacobian;
 }
 
 
