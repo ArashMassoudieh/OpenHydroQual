@@ -495,7 +495,10 @@ double Quan::GetVal(const Expression::timing &tmg)
             }
             if (type == _type::timeseries)
             {
-                _val_star = GetTimeSeries()->interpol(GetSimulationTime());
+                if (GetTimeSeries()!=nullptr)
+                    _val_star = GetTimeSeries()->interpol(GetSimulationTime());
+                else
+                    _val_star = 0;
                 value_star_updated = true;
             }
             return _val_star;

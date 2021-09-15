@@ -15,7 +15,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
+      "inflow": "inflow",
       "includeinoutput": "true",
       "description": "Initial Storage",
       "initial_value_expression": "length*(base_width+side_slope*depth)*depth",
@@ -126,6 +126,14 @@
       "ask_user": "false",
       "delegate": "UnitBox",
       "includeinoutput": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     }
   },
   "Trapezoidal_Channel_link": {
@@ -200,14 +208,14 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "_max(area.e;0)",
+      "expression": "(base_width.e+side_slope.e*_pos(head.s-bottom_elevation.e))*_pos(head.s-bottom_elevation.e)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
     "perimeter": {
       "type": "expression",
       "description": "Wetted Perimeter",
-      "expression": "perimeter.e",
+      "expression": "base_width.e+2*_sqt(1+side_slope.e^2)*_pos(head.s-bottom_elevation.e)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
