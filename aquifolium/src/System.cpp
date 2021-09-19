@@ -2767,6 +2767,7 @@ vector<Quan> System::GetToBeCopiedQuantities(Constituent *consttnt, const object
         {
             quans[j].SetName(consttnt->GetName() + ":" + quans[j].GetName());
             quans[j].Description() = consttnt->GetName() + ":" + quans[j].Description();
+            quans[j].Description(true) = consttnt->GetName() + ":" + quans[j].Description(true);
             if (quans[j].GetType() == Quan::_type::expression )
             {   for (unsigned int i=0; i<original_quans.size(); i++)
                    quans[j].SetExpression(quans[j].GetExpression()->ReviseConstituent(consttnt->GetName(),original_quans[i].GetName()));

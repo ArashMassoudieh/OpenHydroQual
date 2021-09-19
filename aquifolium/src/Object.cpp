@@ -578,7 +578,9 @@ bool Object::RenameConstituents(const string &oldname, const string &newname)
     {
         succeed &= RenameProperty(oldfullname[i],newfullname[i]);
         if (Variable(newfullname[i])!=nullptr)
-            Variable(newfullname[i])->Description() = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+        {   Variable(newfullname[i])->Description() = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+            Variable(newfullname[i])->Description(true) = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+        }
     }
     
     return succeed;
