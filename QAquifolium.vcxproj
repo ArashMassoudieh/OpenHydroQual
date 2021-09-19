@@ -385,6 +385,7 @@
     <ClCompile Include="aquifolium\src\QuanSet.cpp" />
     <ClCompile Include="aquifolium\src\QuickSort.cpp" />
     <ClCompile Include="aquifolium\src\reaction.cpp" />
+    <ClCompile Include="aquifolium\src\restorepoint.cpp" />
     <ClCompile Include="aquifolium\src\Rule.cpp" />
     <ClCompile Include="aquifolium\src\RxnParameter.cpp" />
     <ClCompile Include="aquifolium\src\Script.cpp" />
@@ -446,6 +447,7 @@
     <ClInclude Include="aquifolium\include\QuanSet.h" />
     <ClInclude Include="aquifolium\include\QuickSort.h" />
     <ClInclude Include="aquifolium\include\reaction.h" />
+    <ClInclude Include="aquifolium\include\restorepoint.h" />
     <ClInclude Include="aquifolium\include\Rule.h" />
     <ClInclude Include="aquifolium\include\RxnParameter.h" />
     <ClInclude Include="aquifolium\include\Script.h" />
