@@ -105,7 +105,15 @@ Quan::Quan(Json::ValueIterator &it)
 
     if (it->isMember("description"))
     {
-        Description() = (*it)["description"].asString();
+        if (aquiutils::split((*it)["description"].asString(),';').size()==1)
+        {   Description() = (*it)["description"].asString();
+            Description(true) = (*it)["description"].asString();
+        }
+        else if (aquiutils::split((*it)["description"].asString(),';').size()==2)
+        {
+            Description() = aquiutils::split((*it)["description"].asString(),';')[0];
+            Description(true) = aquiutils::split((*it)["description"].asString(),';')[1];
+        }
     }
 
     if (it->isMember("unit"))
@@ -236,7 +244,15 @@ Quan::Quan(QJsonObject& it)
 		SetIncludeInOutput(false);
 	if (it.keys().contains("description"))
 	{
-		Description() = it.value("description").toString().toStdString();
+        if (aquiutils::split(it.value("description").toString().toStdString(),';').size()==1)
+        {   Description() = it.value("description").toString().toStdString();
+            Description(true) = it.value("description").toString().toStdString();
+        }
+        else if (aquiutils::split(it.value("description").toString().toStdString(),';').size()==2)
+        {
+            Description() = aquiutils::split(it.value("description").toString().toStdString(),';')[0];
+            Description(true) = aquiutils::split(it.value("description").toString().toStdString(),';')[1];
+        }
 	}
 
 	if (it.keys().contains("unit"))
@@ -372,6 +388,7 @@ Quan::Quan(const Quan& other)
 	corresponding_inflow_quan = other.corresponding_inflow_quan;
 	includeinoutput = other.includeinoutput;
 	description = other.description;
+    description_graph = other.description_graph;
     unit = other.unit;
     default_unit = other.default_unit;
     default_val = other.default_val;
@@ -419,7 +436,7 @@ Quan& Quan::operator=(const Quan& rhs)
 	corresponding_inflow_quan = rhs.corresponding_inflow_quan;
 	includeinoutput = rhs.includeinoutput;
 	description = rhs.description;
-    unit = rhs.unit;
+    description_graph = rhs.description_graph;    unit = rhs.unit;
     default_unit = rhs.default_unit;
     default_val = rhs.default_val;
     input_type = rhs.input_type;

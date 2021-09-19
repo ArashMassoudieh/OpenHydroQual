@@ -71,7 +71,13 @@ class Quan
         CTimeSeries* TimeSeries();
         bool IncludeInOutput() {return includeinoutput;}
 		bool SetTimeSeries(const string &filename, bool prec=false);
-		string &Description() {return description;}
+        string &Description(bool graph=false)
+        {
+            if (!graph)
+                return description;
+            else
+                return description_graph;
+        }
         string &Unit() {return unit;}
         string &DefaultUnit() {return default_unit;}
         string &Defaults() {return defaults;}
@@ -167,6 +173,7 @@ class Quan
         bool includeinoutput = false;
         bool estimable = false;
         string description;
+        string description_graph;
         string unit;
         string default_unit;
         string default_val="";

@@ -802,7 +802,7 @@ void DiagramView::nodeContextMenuRequested(Node* n, QPointF pos, QMenu *menu)
     for (unsigned int i = 0; i < n->object()->ItemswithOutput().size(); i++)
     {
         timeseriestobeshown = QString::fromStdString(n->object()->ItemswithOutput()[i]);
-        QAction* graphaction = results->addAction(timeseriestobeshown);
+        QAction* graphaction = results->addAction(QString::fromStdString(n->object()->Variable(timeseriestobeshown.toStdString())->Description(true)));
         QVariant v = QVariant::fromValue(QString::fromStdString(n->object()->Variable(timeseriestobeshown.toStdString())->GetOutputItem()));
         graphaction->setData(v);
         called_by_clicking_on_graphical_object = true;
@@ -875,7 +875,7 @@ void DiagramView::edgeContextMenuRequested(Edge* e, QPointF pos, QMenu *menu)
     for (unsigned int i = 0; i < e->object()->ItemswithOutput().size(); i++)
     {
         timeseriestobeshown = QString::fromStdString(e->object()->ItemswithOutput()[i]);
-        QAction* graphaction = results->addAction(timeseriestobeshown);
+        QAction* graphaction = results->addAction(QString::fromStdString(e->object()->Variable(timeseriestobeshown.toStdString())->Description(true)));
         QVariant v = QVariant::fromValue(QString::fromStdString(e->object()->Variable(timeseriestobeshown.toStdString())->GetOutputItem()));
         graphaction->setData(v);
         called_by_clicking_on_graphical_object = true;

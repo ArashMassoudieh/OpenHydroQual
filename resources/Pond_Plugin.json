@@ -13,7 +13,7 @@
 		      "delegate": "String"
     		},
                 "Storage": {
-			"description": "Initial Storage",
+			"description": "Initial Storage;Storage",
                         "type": "balance",
                         "massbalance": "true",
                         "flow": "flow",

@@ -17,7 +17,7 @@
       "flow": "flow",
       "inflow": "inflow",
       "includeinoutput": "true",
-      "description": "Initial Storage",
+      "description": "Storage",
       "initial_value_expression": "length*(base_width+side_slope*depth)*depth",
       "ask_user": "false",
       "delegate": "UnitBox",

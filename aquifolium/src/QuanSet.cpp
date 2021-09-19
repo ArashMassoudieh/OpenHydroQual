@@ -63,7 +63,9 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
 			}
         }
 		else if (it.key()=="description")
-			description = (*object_types)[it.key().asString()].asString();
+        {
+            description = (*object_types)[it.key().asString()].asString();
+        }
 		else
         {
             if (it->size()!=0)

@@ -2442,7 +2442,7 @@ bool System::SavetoScriptFile(const string &filename, const string &templatefile
     for (unsigned int i = 0; i < ObservationsCount(); i++)
         file << "create observation;" << observation(i)->toCommand() << std::endl;
 
-    for (unsigned int i = 0; i < ReactionsCount(); i++)
+    for (unsigned int i = 0; i < ReactionParametersCount(); i++)
         file << "create reaction_parameter;" << reaction_parameters[i].toCommand() << std::endl;
 
     for (unsigned int i = 0; i < ReactionsCount(); i++)

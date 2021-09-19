@@ -17,7 +17,7 @@
       "flow": "flow",
       "inflow": "Precipitation",
       "includeinoutput": "true",
-      "description": "Initial Storage",
+      "description": "Initial Storage;Storage",
       "ask_user": "true",
       "delegate": "UnitBox",
       "estimate": "true"
