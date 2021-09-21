@@ -1,0 +1,46 @@
+{
+  "solutionorder": [ "Storage" ],
+  "desalination_plant": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "desalination_plant.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "production_rate",
+      "includeinoutput": "true",
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "production_rate": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Production rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "elevation": {
+      "type": "value",
+      "description": "Mean elevation of the catchment",
+      "ask_user": "true",
+      "delegate": "UnitBox"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "elevation",
+      "description": "Hydraulic head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    }
+  }
+}

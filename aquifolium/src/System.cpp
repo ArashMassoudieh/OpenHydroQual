@@ -1079,7 +1079,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
     {
         CVector_arma X = GetStateVariables(variable, Expression::timing::past,transport);
         double X_norm = X.norm2();
-        double dx_norm = X_norm*10; 
+        double dx_norm = X_norm*10+1;
         if (!transport)
         {   for (unsigned int i = 0; i < blocks.size(); i++)
             {
