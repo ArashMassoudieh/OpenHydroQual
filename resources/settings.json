@@ -8,7 +8,7 @@
       "default": "1",
       "description": "Crank-Nicholson Time Weight",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "cn_weight"
     },
     "name": {
@@ -23,7 +23,7 @@
       "default": "4",
       "description": "Number of threads to be used",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "n_threads"
     },
     "nr_tolerance": {
@@ -31,7 +31,7 @@
       "default": "0.001",
       "description": "Newton-Raphson Tolerance",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "nr_tolerance"
     },
     "nr_timestep_reduction_factor": {
@@ -39,7 +39,7 @@
       "default": "0.75",
       "description": "Newton-Raphson Time-step reduction factor",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "nr_timestep_reduction_factor"
     },
     "nr_timestep_reduction_factor_fail": {
@@ -47,7 +47,7 @@
       "default": "0.2",
       "description": "Newton-Raphson Time-step reduction factor when fail",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "nr_timestep_reduction_factor_fail"
     },
     "minimum_timestep": {
@@ -55,7 +55,7 @@
       "default": "1e-6",
       "description": "Minimum time-step",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "minimum_timestep"
     },
       "initial_time_step": {
@@ -63,7 +63,7 @@
       "default": "1e-2",
       "description": "Initial time-step",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "dt"
     },
       "write_solution_details": {
@@ -119,7 +119,7 @@
       "description": "Genetic Algorithm Population",
       "ask_user": "true",
       "type": "value",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "maxpop"
     },
     "ngen": {
@@ -127,7 +127,7 @@
       "description": "Number of generations",
       "ask_user": "true",
       "type": "value",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "ngen"
     },
     "pcross": {
@@ -135,7 +135,7 @@
       "description": "Cross over probability",
       "ask_user": "true",
       "type": "value",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "pcross"
     },
     "pmute": {
@@ -143,7 +143,7 @@
       "description": "Mutation Probability",
       "ask_user": "true",
       "type": "value",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "pmute"
     },
     "shakescale": {
@@ -151,7 +151,7 @@
       "description": "Shaking Scale",
       "ask_user": "true",
       "type": "value",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "shakescale"
     },
     "shakescalered": {
@@ -159,7 +159,7 @@
       "description": "Shake Scale Reduction Factor",
       "ask_user": "true",
       "type": "value",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "code": "shakescalered"
     },
     "outputfile": {

@@ -20,7 +20,7 @@
       "description": "Initial Storage",
       "initial_value_expression": "area*depth*moisture_content",
       "ask_user": "false",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "x": {
@@ -28,34 +28,34 @@
       "description": "x",
 	    "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "y": {
       "type": "value",
       "description": "y",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_width": {
       "type": "value",
       "description": "_width",
 	  "default": "200",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_height": {
       "type": "value",
       "description": "_height",
 	  "default": "200",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "hydraulic_conductivity": {
       "type": "value",
       "description": "Hydraulic Conductivity",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true",
       "default": "1",
       "criteria": "hydraulic_conductivity>0",
@@ -73,14 +73,14 @@
       "description": "Porosity",
       "ask_user": "true",
       "default": "0.4",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "specific_storage": {
       "type": "value",
       "description": "Specific Storage",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true",
       "default": "0.01",
       "criteria": "specific_storage>0",
@@ -90,14 +90,14 @@
       "type": "value",
       "description": "Bottom Elevation",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "depth": {
       "type": "value",
       "description": "Cell Depth",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "includeinoutput": "false",
       "criteria": "depth>0",
       "warningmessage": "Cell depth must be greater than zero"
@@ -107,7 +107,7 @@
       "expression": "Storage/(depth*area)",      
       "description": "Moisture content",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "includeinoutput": "true"
     },
     "head": {
@@ -115,14 +115,14 @@
       "expression": "depth+bottom_elevation+(moisture_content-porosity)/specific_storage",      
       "description": "Hydraulc Head",
       "ask_user": "false",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "includeinoutput": "true"
     },
     "area": {
       "type": "value",
       "description": "Cell area",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "includeinoutput": "false",
       "criteria": "area>0",
       "warningmessage": "Cell area must be greater than zero"
@@ -146,7 +146,7 @@
       "description": "Length",
       "includeinoutput": "false",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "criteria": "length>0",
       "warningmessage": "Length must be greater than zero"
     },
@@ -155,7 +155,7 @@
       "description": "Interface Area",
       "includeinoutput": "false",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "criteria": "area>0",
       "warningmessage": "Interface area must be greater than zero"
     },
@@ -185,7 +185,7 @@
       "description": "Length",
       "includeinoutput": "false",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "criteria": "length>0",
       "warningmessage": "Length must be greater than zero"
     },
@@ -194,7 +194,7 @@
       "description": "Interface Area",
       "includeinoutput": "false",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "criteria": "area>0",
       "warningmessage": "Interface area must be greater than zero"
     },
@@ -231,7 +231,7 @@
       "description": "Interface Area",
       "includeinoutput": "false",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "criteria": "area>0",
       "warningmessage": "Interface area must be greater than zero"
     },
@@ -261,7 +261,7 @@
       "description": "Length",
       "includeinoutput": "false",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "criteria": "length>0",
       "warningmessage": "Length must be greater than zero"
     },
@@ -270,7 +270,7 @@
       "description": "Interface Area",
       "includeinoutput": "false",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "criteria": "area>0",
       "warningmessage": "Interface area must be greater than zero"
     },
@@ -279,7 +279,7 @@
       "description": "Hydraulic conductivity",
       "includeinoutput": "false",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "criteria": "hydraulic_conductivity>0",
       "warningmessage": "Hydraulic conductivity must be greater than zero"
     },

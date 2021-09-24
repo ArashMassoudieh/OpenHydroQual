@@ -79,6 +79,7 @@ class Quan
                 return description_graph;
         }
         string &Unit() {return unit;}
+        string &Units() {return units;}
         string &DefaultUnit() {return default_unit;}
         string &Defaults() {return defaults;}
         string &Delegate() {return delegate;}
@@ -175,6 +176,7 @@ class Quan
         string description;
         string description_graph;
         string unit;
+        string units;
         string default_unit;
         string default_val="";
         string input_type;

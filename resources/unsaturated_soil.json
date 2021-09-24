@@ -21,7 +21,7 @@
       "description": "Storage",
       "ask_user": "false",
       "initial_value_expression": "area*depth*theta",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m~^3",
       "estimate": "true"
     },
@@ -36,7 +36,7 @@
       "type": "value",
       "description": "Depth of the soil block",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true"
     },
@@ -44,7 +44,7 @@
       "type": "value",
       "description": "Saturated Moisture Content",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true",
 	  "criteria": "theta_res<theta_sat<1",
 	  "default": "0.4",
@@ -54,7 +54,7 @@
       "type": "value",
       "description": "Residual Moisture Content",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true",
 	  "default": "0.05",
 	  "criteria": "0<theta_res<theta_sat",
@@ -64,7 +64,7 @@
       "type": "value",
       "description": "Saturated Hydraulc Conductivity",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m/day",
       "includeinoutput": "true",
       "estimate": "true",
@@ -76,14 +76,14 @@
       "type": "value",
       "description": "Bottom Elevation of the soil block",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
       "area": {
       "type": "value",
       "description": "Bottom Area of the soil block",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m~^2",
       "estimate": "true",
 	  "default": "1",
@@ -94,7 +94,7 @@
       "type": "value",
       "description": "Van Genuchten's alpha parameter",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m~^-1",
       "estimate": "true",
 	  "default": "1",
@@ -105,7 +105,7 @@
       "type": "value",
       "description": "Van Genuchten's n parameter",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "",
       "estimate": "true",
       "default": "1.41",
@@ -117,7 +117,7 @@
       "expression" : "1-(1/n)",
 	  "description": "Van Genuchten's m parameter",
       "ask_user": "false",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": ""
     },
     "theta": {
@@ -126,14 +126,14 @@
       "description": "Moisture Content",
       "ask_user": "true",
       "includeinoutput": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "Se": {
       "type": "expression",
       "expression" : "_max(_min((theta-theta_res)/(theta_sat-theta_res);0.9999);0.0001)",
       "description": "Effective Moisture content",
       "ask_user": "false",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "",
       "includeinoutput": "true"
     },
@@ -142,34 +142,34 @@
       "description": "x",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "y": {
       "type": "value",
       "description": "y",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_width": {
       "type": "value",
       "description": "_width",
 	  "default": "200",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_height": {
       "type": "value",
       "description": "_height",
 	  "default": "200",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "specific_storage" : {
 	  "type": "value",
       "description": "Specific storage",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "",
       "estimate": "true",
 	  "default": "0.01",
@@ -190,7 +190,7 @@
       "description": "Hydraulc Head",
       "precalcbasedon": "theta::0:1",
       "ask_user": "false",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "includeinoutput": "true"
     }
   },
@@ -279,14 +279,14 @@
       "description": "Interface area",
       "includeinoutput": "true",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "length": {
       "type": "value",
       "description": "lenght",
       "includeinoutput": "true",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "Se": {
       "type": "expression",

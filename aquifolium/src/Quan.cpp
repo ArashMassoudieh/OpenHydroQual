@@ -117,7 +117,7 @@ Quan::Quan(Json::ValueIterator &it)
     }
 
     if (it->isMember("unit"))
-        Unit() = (*it)["unit"].asString();
+        Units() = (*it)["unit"].asString();
 
     if (it->isMember("default_unit"))
         DefaultUnit() = (*it)["default_unit"].asString();
@@ -256,7 +256,7 @@ Quan::Quan(QJsonObject& it)
 	}
 
 	if (it.keys().contains("unit"))
-		Unit() = it.value("unit").toString().toStdString();
+        Units() = it.value("unit").toString().toStdString();
 
     if (it.keys().contains("precalcbasedon"))
     {
@@ -390,6 +390,7 @@ Quan::Quan(const Quan& other)
 	description = other.description;
     description_graph = other.description_graph;
     unit = other.unit;
+    units = other.units;
     default_unit = other.default_unit;
     default_val = other.default_val;
     input_type = other.input_type;
@@ -436,7 +437,9 @@ Quan& Quan::operator=(const Quan& rhs)
 	corresponding_inflow_quan = rhs.corresponding_inflow_quan;
 	includeinoutput = rhs.includeinoutput;
 	description = rhs.description;
-    description_graph = rhs.description_graph;    unit = rhs.unit;
+    description_graph = rhs.description_graph;
+    unit = rhs.unit;
+    units = rhs.units;
     default_unit = rhs.default_unit;
     default_val = rhs.default_val;
     input_type = rhs.input_type;
@@ -916,6 +919,8 @@ string Quan::toCommand()
 {
     string s;
     if (delegate=="UnitBox")
+        s += GetName() + "=" + GetProperty(true);
+    else if (delegate=="ValueBox")
         s += GetName() + "=" + GetProperty(true);
     else
         s += GetName() + "=" + GetProperty(false);

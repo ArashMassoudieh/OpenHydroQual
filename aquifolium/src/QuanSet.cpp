@@ -100,7 +100,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             Q.Description() = "x";
             Q.Default() = "900";
             Q.AskFromUser() = true;
-            Q.Delegate() = "UnitBox";
+            Q.Delegate() = "ValueBox";
             Append("x",Q);
         }
         if (this->quans.count("y")==0)
@@ -111,7 +111,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             Q.Description() = "y";
             Q.Default() = "900";
             Q.AskFromUser() = true;
-            Q.Delegate() = "UnitBox";
+            Q.Delegate() = "ValueBox";
             Append("y",Q);
         }
         if (this->quans.count("_width")==0)
@@ -122,7 +122,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             Q.Description() = "_width";
             Q.Default() = "200";
             Q.AskFromUser() = true;
-            Q.Delegate() = "UnitBox";
+            Q.Delegate() = "ValueBox";
             Append("_width",Q);
         }
         if (this->quans.count("_height")==0)
@@ -133,7 +133,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             Q.Description() = "_height";
             Q.Default() = "200";
             Q.AskFromUser() = true;
-            Q.Delegate() = "UnitBox";
+            Q.Delegate() = "ValueBox";
             Append("_height",Q);
         }
 

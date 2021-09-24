@@ -442,7 +442,7 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
             Parent()->errorhandler.Append(GetName(),"Object","SetProperty","Object '" + GetName() + "' has no property called '" + prop + "'",1012);
         return false;
     }
-    if (var[prop].GetType() == Quan::_type::value || var[prop].GetType() == Quan::_type::balance || var[prop].GetType() == Quan::_type::constant || (var[prop].GetType() == Quan::_type::expression && var[prop].Delegate()=="UnitBox"))
+    if (var[prop].GetType() == Quan::_type::value || var[prop].GetType() == Quan::_type::balance || var[prop].GetType() == Quan::_type::constant || (var[prop].GetType() == Quan::_type::expression && (var[prop].Delegate()=="UnitBox"||var[prop].Delegate()=="ValueBox" )))
     {
         var[prop].SetVal(aquiutils::atof(value),Expression::timing::both);
         return true;

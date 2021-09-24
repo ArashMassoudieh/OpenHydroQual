@@ -128,6 +128,15 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
        //if (row == 1 && col == 0) //add a checkbox to cell(1,0)
        //    return Qt::Checked;
        break;
+   case CustomRoleCodes::UnitsListRole:
+       return  QString::fromStdString(quanset->GetVarAskable(index.row())->Units()).split(";");
+       break;
+   case CustomRoleCodes::defaultUnitRole:
+       return  QString::fromStdString(quanset->GetVarAskable(index.row())->DefaultUnit());
+       break;
+   case CustomRoleCodes::UnitRole:
+       return  QString::fromStdString(quanset->GetVarAskable(index.row())->Unit());
+       break;
    case CustomRoleCodes::TypeRole:
        return QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate());
        break;

@@ -19,14 +19,14 @@
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "area": {
       "type": "value",
       "description": "Base Area",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "criteria": "area>0",
@@ -37,34 +37,34 @@
       "description": "x",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "y": {
       "type": "value",
       "description": "y",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_width": {
       "type": "value",
       "description": "_width",
 	  "default": "200",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_height": {
       "type": "value",
       "description": "_height",
 	  "default": "200",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "bottom_elevation": {
       "type": "value",
       "description": "Bottom Elevation",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "depth": {
@@ -72,7 +72,7 @@
       "expression": "Storage/area",
       "description": "Water Depth",
       "ask_user": "false",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "includeinoutput": "true"
     },
     "head": {
@@ -80,7 +80,7 @@
       "expression": "depth+bottom_elevation",      
       "description": "Hydraulc Head",
       "ask_user": "false",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "includeinoutput": "true"
     }
   },
@@ -101,7 +101,7 @@
       "type": "value",
       "description": "Diameter",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "criteria": "diameter>0",
@@ -111,7 +111,7 @@
       "type": "value",
       "description": "Hazen-Williams Coefficient (SI)",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "default": "100",
@@ -122,7 +122,7 @@
       "type": "value",
       "description": "Pipe length",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "criteria": "length>0",
@@ -165,7 +165,7 @@
       "type": "value",
       "description": "Diameter",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "criteria": "diameter>0",
@@ -175,7 +175,7 @@
       "type": "value",
       "description": "Hazen-Williams Coefficient (SI)",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "default": "100",
@@ -186,7 +186,7 @@
       "type": "value",
       "description": "Pipe length",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "criteria": "length>0",
@@ -239,34 +239,34 @@
       "description": "x",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "y": {
       "type": "value",
       "description": "y",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_width": {
       "type": "value",
       "description": "_width",
 	  "default": "100",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_height": {
       "type": "value",
       "description": "_height",
 	  "default": "100",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "elevation": {
       "type": "value",
       "description": "Elevation",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
 	"elasticity": {
@@ -274,7 +274,7 @@
       "description": "Elasticity",
       "default": "100",
 	  "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "head": {
@@ -282,7 +282,7 @@
       "expression": "elevation+elasticity*(Storage-100000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "includeinoutput": "true"
     }
   },
@@ -314,34 +314,34 @@
       "description": "x",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "y": {
       "type": "value",
       "description": "y",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_width": {
       "type": "value",
       "description": "_width",
 	  "default": "100",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_height": {
       "type": "value",
       "description": "_height",
 	  "default": "100",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "elevation": {
       "type": "value",
       "description": "Elevation",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "head": {
@@ -349,7 +349,7 @@
       "expression": "elevation+1000*(Storage-1000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "includeinoutput": "true"
     }
   },
@@ -370,7 +370,7 @@
       "type": "value",
       "description": "pump head at a zero flow (h0)",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "criteria": "head_0>0",
@@ -380,7 +380,7 @@
       "type": "value",
       "description": "The coefficient alpha in h=h0-alpha*Q^beta",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "criteria": "alpha>0",
@@ -390,7 +390,7 @@
       "type": "value",
       "description": "The exponent beta in h=h0-alpha*Q^beta",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "default": "2",
@@ -429,7 +429,7 @@
       "type": "value",
       "description": "pump head at a zero flow (h0)",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "criteria": "head_0>0",
@@ -439,7 +439,7 @@
       "type": "value",
       "description": "The coefficient alpha in h=h0-alpha*Q^beta",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "criteria": "alpha>0",
@@ -449,7 +449,7 @@
       "type": "value",
       "description": "The exponent beta in h=h0-alpha*Q^beta",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m",
       "estimate": "true",
       "default": "2",

@@ -12,6 +12,7 @@
 #include "mainwindow.h"
 #include "QMessageBox"
 #include "expEditor.h"
+#include "UnitTextBox.h"
 
 Delegate::Delegate(QObject *parent, MainWindow *_mainwindow) : QStyledItemDelegate(parent)
 {
@@ -50,10 +51,19 @@ QWidget *Delegate::createEditor(QWidget *parent,
         return editor;
     }
 
-    if (delegateType.contains("UnitBox"))
+    if (delegateType.contains("ValueBox"))
     {
         QLineEdit *editor = new QLineEdit(parent);
         QString text = index.data(Qt::DisplayRole).toString();
+        editor->setText(text);
+        return editor;
+    }
+    if (delegateType.contains("UnitBox"))
+    {
+        UnitTextBox *editor = new UnitTextBox(option,parent);
+        QString text = index.data(Qt::DisplayRole).toString();
+        QStringList QL = index.data(CustomRoleCodes::Role::UnitsListRole).toStringList();
+        editor->setUnitsList(index.data(CustomRoleCodes::Role::UnitsListRole).toStringList());
         editor->setText(text);
         return editor;
     }
@@ -163,10 +173,19 @@ void Delegate::setEditorData(QWidget *editor,
         textBox->show();
         return;
     }
-    if (delegateType.contains("UnitBox"))
+    if (delegateType.contains("ValueBox"))
     {
         QLineEdit *textBox = static_cast<QLineEdit*>(editor);
         textBox->setText(index.model()->data(index, Qt::DisplayRole).toString());
+        textBox->show();
+        return;
+    }
+    if (delegateType.contains("UnitBox"))
+    {
+        UnitTextBox *textBox = static_cast<UnitTextBox*>(editor);
+        textBox->setText(index.model()->data(index, Qt::DisplayRole).toString());
+        textBox->setUnitsList(index.model()->data(index, CustomRoleCodes::Role::UnitsListRole).toStringList());
+        textBox->setUnit(index.model()->data(index, CustomRoleCodes::Role::UnitRole).toString());
         textBox->show();
         return;
     }
@@ -255,10 +274,18 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
         return;
     }
 
-    if (delegateType.contains("UnitBox"))
+    if (delegateType.contains("ValueBox"))
     {
         QLineEdit *textBox = static_cast<QLineEdit*>(editor);
         model->setData(index, textBox->text());
+    //	delete editor;
+        return;
+    }
+    if (delegateType.contains("UnitBox"))
+    {
+        UnitTextBox *textBox = static_cast<UnitTextBox*>(editor);
+        if (model->data(index, Qt::DisplayRole).toString() != textBox->text());
+            model->setData(index, textBox->text());
     //	delete editor;
         return;
     }

@@ -36,7 +36,7 @@
 	"includeinoutput": "false",
     	"description": "Scale factor",
     	"default": "1",
-    	"delegate": "UnitBox"
+    	"delegate": "ValueBox"
     },
     "z2" : {
     	"type": "value",
@@ -46,7 +46,7 @@
     	"default": "2",
     	"criteria": "z2>0",
         "warningmessage": "Wind reference height must be greater than zero",
-    	"delegate": "UnitBox"
+    	"delegate": "ValueBox"
     },
     "z0" : {
     	"type": "value",
@@ -56,7 +56,7 @@
     	"default": "0.0003",
     	"criteria": "z0>0",
        "warningmessage": "Roughness height must be greater than zero",
-    	"delegate": "UnitBox"
+    	"delegate": "ValueBox"
     },
     "B": {
     	"type": "expression",
@@ -109,7 +109,7 @@
 	"includeinoutput": "false",
     	"description": "Scale factor",
     	"default": "1",
-    	"delegate": "UnitBox"
+    	"delegate": "ValueBox"
     },
     "timeseries":{
     	"type": "timeseries",
@@ -156,7 +156,7 @@
 	"includeinoutput": "false",
     	"description": "Scale factor",
     	"default": "1",
-    	"delegate": "UnitBox"
+    	"delegate": "ValueBox"
     },
     "Temperature":{
     	"type": "timeseries",
@@ -224,7 +224,7 @@
 	"includeinoutput": "false",
     	"description": "Wind scale factor",
     	"default": "1",
-    	"delegate": "UnitBox"
+    	"delegate": "ValueBox"
     },
     "solar_scale_fact" : {
     	"type": "value",
@@ -232,7 +232,7 @@
 	"includeinoutput": "false",
     	"description": "Solar radiation scale factor",
     	"default": "1",
-    	"delegate": "UnitBox"
+    	"delegate": "ValueBox"
     },
     "R_h" : {
     	"type": "timeseries",
@@ -249,7 +249,7 @@
     	"default": "2",
     	"criteria": "z2>0",
         "warningmessage": "Wind reference height must be greater than zero",
-    	"delegate": "UnitBox"
+    	"delegate": "ValueBox"
     },
     "z0" : {
     	"type": "value",
@@ -259,7 +259,7 @@
     	"default": "0.0003",
     	"criteria": "z0>0",
        "warningmessage": "Roughness height must be greater than zero",
-    	"delegate": "UnitBox"
+    	"delegate": "ValueBox"
     },
     "gamma" : {
     	"type": "value",
@@ -269,7 +269,7 @@
     	"default": "66.8",
     	"criteria": "gamma>0",
        "warningmessage": "psychrometric constant must be greater than zero",
-    	"delegate": "UnitBox"
+    	"delegate": "ValueBox"
     },
     "B": {
     	"type": "expression",

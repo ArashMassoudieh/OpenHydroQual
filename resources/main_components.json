@@ -21,7 +21,7 @@
       "description": "Initial Storage",
       "ask_user": "false",
       "initial_value_expression": "area*depth",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "Precipitation": {
@@ -42,7 +42,7 @@
       "type": "value",
       "description": "Catchment area",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "unit": "m~^2",
       "estimate": "true",
       "criteria": "area>0",
@@ -53,41 +53,41 @@
       "description": "x",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "y": {
       "type": "value",
       "description": "y",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_width": {
       "type": "value",
       "description": "_width",
       "default": "200",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_height": {
       "type": "value",
       "description": "_height",
       "default": "200",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "Slope": {
       "type": "value",
       "description": "Catchment slope in the direction of flow",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "ManningCoeff": {
       "type": "value",
       "description": "Manning's Roughness Coefficient",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true",
       "criteria": "ManningCoeff>0",
       "warningmessage": "Manning's roughness coefficient must be greater than zero"
@@ -96,7 +96,7 @@
       "type": "value",
       "description": "The width of the catchment",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "depth": {
@@ -104,7 +104,7 @@
       "description": "Water depth",	
       "expression": "Storage/area",
       "description": "Average water depth",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "ask_user": "true",
       "includeinoutput": "true"
     },
@@ -112,7 +112,7 @@
       "type": "value",
       "description": "Mean elevation of the catchment",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "head": {
       "type": "expression",
@@ -138,7 +138,7 @@
       "type": "expression",
       "expression": "area",
       "ask_user": "false",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "timeseries": {
       "type": "timeseries_prec",
@@ -162,7 +162,7 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "reservoir_power": {
@@ -170,7 +170,7 @@
       "default": "2",
       "description": "Reservoir rating curve power",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "reservoir_coeff": {
@@ -178,7 +178,7 @@
       "default": "10",
       "description": "Reservoir rating curve coefficient",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "inflow": {
@@ -207,28 +207,28 @@
       "description": "x",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "y": {
       "type": "value",
       "description": "y",
 	  "default": "900",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_width": {
       "type": "value",
       "description": "_width",
 	  "default": "200",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "_height": {
       "type": "value",
       "description": "_height",
 	  "default": "200",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "Storage": {
       "type": "balance",
@@ -238,7 +238,7 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "reservoir_power": {
@@ -246,7 +246,7 @@
       "default": "2",
       "description": "Reservoir rating curve power",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "reservoir_coeff": {
@@ -254,7 +254,7 @@
       "default": "10",
       "description": "Reservoir rating curve coefficient",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "inflow": {
@@ -376,34 +376,6 @@
       "ask_user": "true",
       "delegate": "String"
     },
-    "x": {
-      "type": "value",
-      "description": "x",
-	  "default": "900",
-      "ask_user": "true",
-      "delegate": "UnitBox"
-    },
-    "y": {
-      "type": "value",
-      "description": "y",
-	  "default": "200",
-      "ask_user": "true",
-      "delegate": "UnitBox"
-    },
-    "_width": {
-      "type": "value",
-      "description": "_width",
-	  "default": "200",
-      "ask_user": "true",
-      "delegate": "UnitBox"
-    },
-    "_height": {
-      "type": "value",
-      "description": "_height",
-	  "default": "200",
-      "ask_user": "true",
-      "delegate": "UnitBox"
-    },
     "Storage": {
       "type": "balance",
       "massbalance": "true",
@@ -411,7 +383,7 @@
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     }
   },
@@ -453,7 +425,7 @@
       "includeinoutput": "true",
       "description": "Lower Limit",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "criteria": "low<high",
       "warningmessage": "Upper Limit must be greater than lower limit" 
     },
@@ -462,7 +434,7 @@
       "includeinoutput": "true",
       "description": "Upper Limit",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "criteria": "high>low",
       "warningmessage": "Upper Limit must be greater than lower limit" 
     },
@@ -471,7 +443,7 @@
       "includeinoutput": "true",
       "description": "Value",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "ValueBox" 
     },
     "prior_distribution": {
       "type": "string",
@@ -520,14 +492,14 @@
       "includeinoutput": "false",
       "description": "Weight",
       "ask_user": "true",
-      "delegate": "UnitBox" 
+      "delegate": "ValueBox" 
     },
     "exceedance_probability": {
       "type": "value",
       "includeinoutput": "false",
       "description": "Weight",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "default": 0.05 
     }
   },
@@ -577,7 +549,7 @@
       "description": "Error standard deviation",
       "default": "1",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     }
   },
@@ -596,7 +568,7 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "head": {
@@ -605,7 +577,7 @@
       "ask_user": "true",
       "includeinoutput": "true",
       "default": "0",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     }
   },
   "time_variable_fixed_head": {
@@ -623,7 +595,7 @@
       "includeinoutput": "true",
       "description": "Initial Storage",
       "ask_user": "true",
-      "delegate": "UnitBox",
+      "delegate": "ValueBox",
       "estimate": "true"
     },
     "head": {
@@ -653,7 +625,7 @@
       "ask_user": "true",
       "role": "copytoblocks",
       "includeinoutput": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -717,7 +689,7 @@
       "description": "Value",
       "type": "value",
       "ask_user": "true",
-      "delegate": "UnitBox"
+      "delegate": "ValueBox"
     }
   }
 }

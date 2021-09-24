@@ -2,7 +2,7 @@
 	"Pond": {
 		"type": "block",
 		"typecategory": "Blocks",
-                "description": "Stormwater pond",
+		"description": "Stormwater pond",
 		"icon": {
 			"filename": "stormwaterpond.png"		
 		},
@@ -11,103 +11,74 @@
 		      "type": "string",
 		      "ask_user": "true",
 		      "delegate": "String"
-    		},
-                "Storage": {
+		},
+		"Storage": {
 			"description": "Initial Storage;Storage",
-                        "type": "balance",
-                        "massbalance": "true",
-                        "flow": "flow",
-                        "inflow": "Precipitation",
-                        "ask_user": "true",
-                        "delegate": "UnitBox",
-                        "estimate": "true",
-                        "includeinoutput" : "true",
-                        "criteria": "Storage>-0.0000001",
+		        "type": "balance",
+		        "massbalance": "true",
+		        "flow": "flow",
+		        "inflow": "Precipitation",
+		        "ask_user": "true",
+		        "delegate": "ValueBox",
+		        "estimate": "true",
+		        "includeinoutput" : "true",
+		        "criteria": "Storage>-0.0000001",
 			 "warningmessage": "Storage can not be a negaive number!" 
 		},
 		"alpha": {
 			 "type": "value",
 			 "description": "The coefficient (alpha) in the rating curve S = alpha*d^beta",
 			 "ask_user": "true",
-			 "delegate": "UnitBox",
+			 "delegate": "ValueBox",
 			 "estimate": "true",
 			 "criteria": "alpha>0",
 			 "warningmessage": "alpha coefficient must be positive!"
 		},
-               "beta": {
+	       "beta": {
 			 "type": "value",
 			 "description": "The exponent (beta) in the rating curve S = alpha*d^beta",
 			 "ask_user": "true",
-			 "delegate": "UnitBox",
+			 "delegate": "ValueBox",
 			 "estimate": "true",
-                         "default": "2", 
+		         "default": "2", 
 			 "criteria": "beta>0",
 			 "warningmessage": "beta exponent must be positive!"
 		},
-        "depth": {
+		"depth": {
 			 "type": "expression",
 			 "expression" : "_pos(Storage^2/(alpha*(Storage+0.1)))^(1/beta)",
 			 "description": "Water depth",
 			 "ask_user": "false",
 			 "includeinoutput": "true"  
-        },
-        "Precipitation": {
+		},
+		"Precipitation": {
 			"type": "source",
 			"includeinoutput": "true",
 			"description": "precipitation time series",
 			"ask_user": "true",
 			"delegate": "ComboBox;Sources"
-    	},
-        "bottom_elevation": {
-             "type": "value",
-	      "description": "Bottom elevation of pond",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "estimate": "true"
-        },
-        "head": {
-         	"type": "expression",
-                "expression": "depth+bottom_elevation",
-                "description" : "Hydraulic head",
-                "ask_user": "false",
-                "includeinoutput" : "true"
-        },
-        "area": {
-         	"type": "expression",
-                "expression": "alpha*beta*(depth^(beta-1))",
-                "description" : "Surface area",
-                "ask_user": "false",
-                "includeinoutput" : "true"
-        },
-        
-              "x": {
-		      "type": "value",
-		      "description": "x",
-		      "default": "900",
+	    	},
+		"bottom_elevation": {
+		     "type": "value",
+		      "description": "Bottom elevation of pond",
 		      "ask_user": "true",
-		      "delegate": "UnitBox"
-		    },
-		"y": {
-		      "type": "value",
-		      "description": "y",
-		      "default": "900",
-		      "ask_user": "true",
-		      "delegate": "UnitBox"
-		    },
-		    "_width": {
-		      "type": "value",
-		      "description": "_width",
-		      "default": "200",
-		      "ask_user": "true",
-		      "delegate": "UnitBox"
-		    },
-		    "_height": {
-		      "type": "value",
-		      "description": "_height",
-		      "default": "200",
-		      "ask_user": "true",
-		      "delegate": "UnitBox"
-                    }
+		      "delegate": "ValueBox",
+		      "estimate": "true"
+		},
+		"head": {
+		 	"type": "expression",
+		        "expression": "depth+bottom_elevation",
+		        "description" : "Hydraulic head",
+		        "ask_user": "false",
+		        "includeinoutput" : "true"
+		},
+		"area": {
+		 	"type": "expression",
+		        "expression": "alpha*beta*(depth^(beta-1))",
+		        "description" : "Surface area",
+		        "ask_user": "false",
+		        "includeinoutput" : "true"
+		}
 	},
         "wier":{
 		"type": "link",
@@ -130,14 +101,14 @@
 			"type": "value",
 			"description": "Crest Elevation",
 			"ask_user" : "true",
-			"delegate" : "UnitBox",
+			"delegate" : "ValueBox",
 			"estimate" : "true"
 		},
 		"alpha": {
 		      "type": "value",
 		      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta",
 		      "ask_user": "true",
-		      "delegate": "UnitBox",
+		      "delegate": "ValueBox",
 		      "estimate": "true",
 		      "default": "1",
 		      "criteria": "alpha>0",
@@ -147,7 +118,7 @@
 		      "type": "value",
 		      "description": "Exponent beta in Q=alpha*(h-z_0)^beta",
 		      "ask_user": "true",
-		      "delegate": "UnitBox",
+		      "delegate": "ValueBox",
 		      "estimate": "true",
 		      "default": "2.5",
 		      "criteria": "beta>0",
@@ -182,14 +153,14 @@
 			"type": "value",
 			"description": "Crest Elevation",
 			"ask_user" : "true",
-			"delegate" : "UnitBox",
+			"delegate" : "ValueBox",
 			"estimate" : "true"
 		},
 		"head_loss_coefficient": {
 		      "type": "value",
 		      "description": "Head-loss coefficient",
 		      "ask_user": "true",
-		      "delegate": "UnitBox",
+		      "delegate": "ValueBox",
 		      "estimate": "true",
 		      "default": "0.6",
 		      "criteria": "head_loss_coefficient>0",
@@ -199,7 +170,7 @@
 		      "type": "value",
 		      "description": "Pipe Diameter",
 		      "ask_user": "true",
-		      "delegate": "UnitBox",
+		      "delegate": "ValueBox",
 		      "estimate": "true",
 		      "criteria": "pipe_diameter>0",
 		      "warningmessage": "pipe diameter must be positive"
@@ -233,7 +204,7 @@
 			"type": "value",
 			"description": "Width",
 			"ask_user" : "true",
-			"delegate" : "UnitBox",
+			"delegate" : "ValueBox",
 			"estimate" : "true"
 		},
 		"depth": {
@@ -254,13 +225,13 @@
 			"type": "value",
 			"description": "Manning's roughness coefficient",
 			"ask_user" : "true",
-			"delegate" : "UnitBox",
+			"delegate" : "ValueBox",
 			"includeinoutput": "false"
 		},
 		"length": {
 			"type": "value",
 			"description": "Channel length",
-			"delegate" : "UnitBox",
+			"delegate" : "ValueBox",
 			"includeinoutput": "false",
 			"ask_user": "true"
 		},
