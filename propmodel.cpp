@@ -33,7 +33,6 @@ int PropModel::columnCount(const QModelIndex &i) const
 
 QVariant PropModel::data(const QModelIndex &index, int role) const
 {
-    int row = index.row();
     int col = index.column();
    // generate a log message when this method gets called
    //qDebug() << QString("row %1, col%2, role %3")
@@ -72,7 +71,9 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                     }
                     else if (quanset->GetVarAskable(index.row())->Delegate()=="UnitBox")
                     {
-                        return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false)) + "["+XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()))+"]";
+                        double coefficient = XString::coefficient(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()));
+                        double value = atof(quanset->GetVarAskable(index.row())->GetProperty(false).c_str())/coefficient;
+                        return QString::number(value) + "["+XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()))+"]";
                     }
                     else
                     {
@@ -236,10 +237,11 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
     else
         VariableName = index.data(CustomRoleCodes::VariableNameRole).toString();
 
+    bool r;
     if (role==CustomRoleCodes::UnitRole)
     {
         quanset->GetVar(VariableName.toStdString()).Unit() = XString::reformBack(value.toString()).toStdString();
-
+        r = true;
     }
     else if (role!=CustomRoleCodes::setParamRole)
     {
@@ -248,11 +250,16 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
             mainwindow->GetSystem()->RemoveAsParameter(quanset->Parent()->GetName(),VariableName.toStdString(),quanset->GetVar(VariableName.toStdString()).GetParameterAssignedTo());
             quanset->GetVar(VariableName.toStdString()).SetParameterAssignedTo("");
         }
-        bool r;
+
         if (quanset->GetVar(VariableName.toStdString()).Delegate()=="expressionEditor")
             r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),false);
         else if (quanset->GetVar(VariableName.toStdString()).Delegate()=="UnitBox")
-            r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().split('[')[0].toStdString(),true);
+        {
+            double coefficient = XString::coefficient(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()));
+            double _value = value.toString().split('[')[0].toDouble()*coefficient;
+            r = quanset->GetVar(VariableName.toStdString()).SetProperty(aquiutils::numbertostring(_value),true);
+
+        }
         else
             r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),true);
         if (VariableName == "x")
@@ -271,20 +278,20 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
         {
             mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setHeight(value.toInt());
         }
-
-        if (!r && (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries || quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries))
-        {
-            QMessageBox::question(mainwindow, "File does not have the right format!", "File does not have the right format!", QMessageBox::Ok);
-        }
-        else if (!r)
-        {
-            QMessageBox::question(mainwindow, "Validation Failed", QString::fromStdString(quanset->GetVar(VariableName.toStdString()).WarningMessage()), QMessageBox::Ok);
-        }
     }
     else
     {
         quanset->GetVar(VariableName.toStdString()).SetParameterAssignedTo(value.toString().toStdString());
         mainwindow->GetSystem()->SetAsParameter(quanset->Parent()->GetName(),VariableName.toStdString(),value.toString().toStdString());
+    }
+
+    if (!r && (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries || quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries))
+    {
+        QMessageBox::question(mainwindow, "File does not have the right format!", "File does not have the right format!", QMessageBox::Ok);
+    }
+    else if (!r)
+    {
+        QMessageBox::question(mainwindow, "Validation Failed", QString::fromStdString(quanset->GetVar(VariableName.toStdString()).WarningMessage()), QMessageBox::Ok);
     }
 
     QString result = value.toString();

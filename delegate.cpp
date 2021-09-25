@@ -285,11 +285,12 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     if (delegateType.contains("UnitBox"))
     {
         UnitTextBox *textBox = static_cast<UnitTextBox*>(editor);
+        if (model->data(index, CustomRoleCodes::Role::UnitRole).toString()!=textBox->unit())
+            model->setData(index, textBox->unit(),CustomRoleCodes::UnitRole);
         if (model->data(index, Qt::DisplayRole).toString() != textBox->text())
             model->setData(index, textBox->text());
         //qDebug()<<model->data(index, CustomRoleCodes::Role::UnitRole).toString()<<":"<<textBox->unit();
-        if (model->data(index, CustomRoleCodes::Role::UnitRole).toString()!=textBox->unit())
-            model->setData(index, textBox->unit(),CustomRoleCodes::UnitRole);
+
     //	delete editor;
         return;
     }

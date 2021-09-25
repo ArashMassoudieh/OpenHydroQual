@@ -117,7 +117,9 @@ Quan::Quan(Json::ValueIterator &it)
     }
 
     if (it->isMember("unit"))
-        Units() = (*it)["unit"].asString();
+    {   Units() = (*it)["unit"].asString();
+        Unit() = aquiutils::split(Units(),';')[0];
+    }
 
     if (it->isMember("default_unit"))
         DefaultUnit() = (*it)["default_unit"].asString();
