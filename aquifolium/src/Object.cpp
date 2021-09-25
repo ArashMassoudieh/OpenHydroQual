@@ -3,6 +3,7 @@
 #include <string>
 #ifdef Q_version
 #include <qdebug.h>
+#include "XString.h"
 #endif
 
 Object::Object()
@@ -444,6 +445,21 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
     }
     if (var[prop].GetType() == Quan::_type::value || var[prop].GetType() == Quan::_type::balance || var[prop].GetType() == Quan::_type::constant || (var[prop].GetType() == Quan::_type::expression && (var[prop].Delegate()=="UnitBox"||var[prop].Delegate()=="ValueBox" )))
     {
+#ifdef Q_version
+        if (var[prop].Delegate()=="UnitBox")
+        {
+            if (aquiutils::split(value,'[').size()>1)
+            {   string unit = aquiutils::split(aquiutils::split(value,'[')[1],']')[0];
+                double coefficient = XString::coefficient(QString::fromStdString(unit));
+                double _value = atof(value.c_str())*coefficient;
+                var[prop].SetVal(_value,Expression::timing::both);
+                var[prop].Unit() = unit;
+            }
+            else
+                var[prop].SetVal(aquiutils::atof(value),Expression::timing::both);
+        }
+        else
+#endif
         var[prop].SetVal(aquiutils::atof(value),Expression::timing::both);
         return true;
     }

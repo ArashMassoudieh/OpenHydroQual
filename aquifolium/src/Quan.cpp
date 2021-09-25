@@ -4,6 +4,9 @@
 #include "System.h"
 #include "Precipitation.h"
 #include "Expression.h"
+#ifdef Q_version
+    #include "XString.h"
+#endif
 
 
 Quan::Quan()
@@ -921,7 +924,16 @@ string Quan::toCommand()
 {
     string s;
     if (delegate=="UnitBox")
-        s += GetName() + "=" + GetProperty(true);
+#ifdef Q_version
+        if (unit!=default_unit)
+        {
+            double coefficient = XString::coefficient(QString::fromStdString(unit));
+            double _value = atof(GetProperty(true).c_str())/coefficient;
+            s += GetName() + "=" + aquiutils::numbertostring(_value) + "[" + unit + "]";
+        }
+        else
+#endif
+            s += GetName() + "=" + GetProperty(true);
     else if (delegate=="ValueBox")
         s += GetName() + "=" + GetProperty(true);
     else
