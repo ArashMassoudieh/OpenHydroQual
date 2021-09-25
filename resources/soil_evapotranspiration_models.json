@@ -249,7 +249,8 @@
     	"default": "2",
     	"criteria": "z2>0",
         "warningmessage": "Wind reference height must be greater than zero",
-    	"delegate": "ValueBox"
+        "delegate": "UnitBox",
+        "unit": "m;ft"
     },
     "z0" : {
     	"type": "value",
@@ -259,7 +260,8 @@
     	"default": "0.0003",
     	"criteria": "z0>0",
        "warningmessage": "Roughness height must be greater than zero",
-    	"delegate": "ValueBox"
+    	"delegate": "UnitBox",
+        "unit": "m;ft"
     },
     "gamma" : {
     	"type": "value",

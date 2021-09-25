@@ -20,7 +20,8 @@
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
-      "delegate": "ValueBox"
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3"
     },
     "production_rate": {
       "type": "timeseries",
@@ -33,7 +34,8 @@
       "type": "value",
       "description": "Mean elevation of the catchment",
       "ask_user": "true",
-      "delegate": "ValueBox"
+      "delegate": "UnitBox",
+      "unit": "m;ft"
     },
     "head": {
       "type": "expression",

@@ -69,10 +69,10 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                     {
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                     }
-                    else if (quanset->GetVarAskable(index.row())->Delegate()=="UnitBox")
+                    else if (quanset->GetVarAskable(index.row())->Delegate()=="UnitBox" && quanset->GetVarAskable(index.row())->Units()!="")
                     {
                         double coefficient = XString::coefficient(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()));
-                        double value = atof(quanset->GetVarAskable(index.row())->GetProperty(false).c_str())/coefficient;
+                        double value = atof(quanset->GetVarAskable(index.row())->GetProperty(true).c_str())/coefficient;
                         return QString::number(value) + "["+XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()))+"]";
                     }
                     else

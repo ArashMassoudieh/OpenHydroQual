@@ -62,7 +62,8 @@
 		     "type": "value",
 		      "description": "Bottom elevation of pond",
 		      "ask_user": "true",
-		      "delegate": "ValueBox",
+		      "delegate": "UnitBox",
+      		      "unit": "m;ft",
 		      "estimate": "true"
 		},
 		"head": {
@@ -101,7 +102,8 @@
 			"type": "value",
 			"description": "Crest Elevation",
 			"ask_user" : "true",
-			"delegate" : "ValueBox",
+			"delegate": "UnitBox",
+		        "unit": "m;ft",
 			"estimate" : "true"
 		},
 		"alpha": {
@@ -153,7 +155,8 @@
 			"type": "value",
 			"description": "Crest Elevation",
 			"ask_user" : "true",
-			"delegate" : "ValueBox",
+			"delegate": "UnitBox",
+                       "unit": "m;ft",
 			"estimate" : "true"
 		},
 		"head_loss_coefficient": {
@@ -170,7 +173,8 @@
 		      "type": "value",
 		      "description": "Pipe Diameter",
 		      "ask_user": "true",
-		      "delegate": "ValueBox",
+		      "delegate": "UnitBox",
+                      "unit": "m;ft;cm",
 		      "estimate": "true",
 		      "criteria": "pipe_diameter>0",
 		      "warningmessage": "pipe diameter must be positive"
@@ -204,7 +208,8 @@
 			"type": "value",
 			"description": "Width",
 			"ask_user" : "true",
-			"delegate" : "ValueBox",
+			"delegate": "UnitBox",
+                       "unit": "m;ft;cm",
 			"estimate" : "true"
 		},
 		"depth": {
@@ -231,7 +236,8 @@
 		"length": {
 			"type": "value",
 			"description": "Channel length",
-			"delegate" : "ValueBox",
+			"delegate": "UnitBox",
+                       "unit": "m;ft;cm",
 			"includeinoutput": "false",
 			"ask_user": "true"
 		},

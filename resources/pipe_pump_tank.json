@@ -19,52 +19,26 @@
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
-      "delegate": "ValueBox",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
       "estimate": "true"
     },
     "area": {
       "type": "value",
       "description": "Base Area",
       "ask_user": "true",
-      "delegate": "ValueBox",
-      "unit": "m",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2",
       "estimate": "true",
       "criteria": "area>0",
       "warningmessage": "Base area must be positive"
-    },
-    "x": {
-      "type": "value",
-      "description": "x",
-	  "default": "900",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "y": {
-      "type": "value",
-      "description": "y",
-	  "default": "900",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "_width": {
-      "type": "value",
-      "description": "_width",
-	  "default": "200",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "_height": {
-      "type": "value",
-      "description": "_height",
-	  "default": "200",
-      "ask_user": "true",
-      "delegate": "ValueBox"
     },
     "bottom_elevation": {
       "type": "value",
       "description": "Bottom Elevation",
       "ask_user": "true",
-      "delegate": "ValueBox",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
       "estimate": "true"
     },
     "depth": {
@@ -72,7 +46,8 @@
       "expression": "Storage/area",
       "description": "Water Depth",
       "ask_user": "false",
-      "delegate": "ValueBox",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "includeinoutput": "true"
     },
     "head": {
@@ -80,7 +55,6 @@
       "expression": "depth+bottom_elevation",      
       "description": "Hydraulc Head",
       "ask_user": "false",
-      "delegate": "ValueBox",
       "includeinoutput": "true"
     }
   },
@@ -101,8 +75,8 @@
       "type": "value",
       "description": "Diameter",
       "ask_user": "true",
-      "delegate": "ValueBox",
-      "unit": "m",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "estimate": "true",
       "criteria": "diameter>0",
       "warningmessage": "diameter must be positive"
@@ -122,8 +96,8 @@
       "type": "value",
       "description": "Pipe length",
       "ask_user": "true",
-      "delegate": "ValueBox",
-      "unit": "m",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
       "estimate": "true",
       "criteria": "length>0",
       "warningmessage": "lenght must be positive"
@@ -165,8 +139,8 @@
       "type": "value",
       "description": "Diameter",
       "ask_user": "true",
-      "delegate": "ValueBox",
-      "unit": "m",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "estimate": "true",
       "criteria": "diameter>0",
       "warningmessage": "diameter must be positive"
@@ -186,8 +160,8 @@
       "type": "value",
       "description": "Pipe length",
       "ask_user": "true",
-      "delegate": "ValueBox",
-      "unit": "m",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "estimate": "true",
       "criteria": "length>0",
       "warningmessage": "lenght must be positive"
@@ -234,46 +208,19 @@
       "description": "Storage",
       "default": "100000"
     },
-    "x": {
-      "type": "value",
-      "description": "x",
-	  "default": "900",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "y": {
-      "type": "value",
-      "description": "y",
-	  "default": "900",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "_width": {
-      "type": "value",
-      "description": "_width",
-	  "default": "100",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "_height": {
-      "type": "value",
-      "description": "_height",
-	  "default": "100",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
     "elevation": {
       "type": "value",
       "description": "Elevation",
       "ask_user": "true",
-      "delegate": "ValueBox",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
       "estimate": "true"
     },
-	"elasticity": {
+    "elasticity": {
       "type": "value",
       "description": "Elasticity",
       "default": "100",
-	  "ask_user": "true",
+      "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
     },
@@ -282,7 +229,6 @@
       "expression": "elevation+elasticity*(Storage-100000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
-      "delegate": "ValueBox",
       "includeinoutput": "true"
     }
   },
@@ -309,39 +255,12 @@
       "default": "1000",
       "rigid": "true"
     },
-    "x": {
-      "type": "value",
-      "description": "x",
-	  "default": "900",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "y": {
-      "type": "value",
-      "description": "y",
-	  "default": "900",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "_width": {
-      "type": "value",
-      "description": "_width",
-	  "default": "100",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "_height": {
-      "type": "value",
-      "description": "_height",
-	  "default": "100",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
     "elevation": {
       "type": "value",
       "description": "Elevation",
       "ask_user": "true",
-      "delegate": "ValueBox",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
       "estimate": "true"
     },
     "head": {
@@ -349,7 +268,6 @@
       "expression": "elevation+1000*(Storage-1000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
-      "delegate": "ValueBox",
       "includeinoutput": "true"
     }
   },
@@ -370,8 +288,8 @@
       "type": "value",
       "description": "pump head at a zero flow (h0)",
       "ask_user": "true",
-      "delegate": "ValueBox",
-      "unit": "m",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "estimate": "true",
       "criteria": "head_0>0",
       "warningmessage": "pump head must be positive"
@@ -429,8 +347,8 @@
       "type": "value",
       "description": "pump head at a zero flow (h0)",
       "ask_user": "true",
-      "delegate": "ValueBox",
-      "unit": "m",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "estimate": "true",
       "criteria": "head_0>0",
       "warningmessage": "pump head must be positive"

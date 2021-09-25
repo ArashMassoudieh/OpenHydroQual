@@ -20,15 +20,14 @@
       "description": "Storage",
       "initial_value_expression": "length*(base_width+side_slope*depth)*depth",
       "ask_user": "false",
-      "delegate": "ValueBox",
       "estimate": "true"
     },
     "base_width": {
       "type": "value",
       "description": "Base Width",
       "ask_user": "true",
-      "delegate": "ValueBox",
-      "unit": "m",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "estimate": "true"
     },
     "side_slope": {
@@ -36,38 +35,9 @@
       "description": "Side Slope",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "unit": "",
       "estimate": "true",
       "criteria": "side_slope>0",
       "warningmessage": "Side slope must be greater than zero"
-    },
-    "x": {
-      "type": "value",
-      "description": "x",
-	    "default": "900",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "y": {
-      "type": "value",
-      "description": "y",
-      "default": "900",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "_width": {
-      "type": "value",
-      "description": "_width",
-      "default": "200",
-      "ask_user": "true",
-      "delegate": "ValueBox"
-    },
-    "_height": {
-      "type": "value",
-      "description": "_height",
-	  "default": "200",
-      "ask_user": "true",
-      "delegate": "ValueBox"
     },
     "ManningCoeff": {
       "type": "value",
@@ -80,7 +50,8 @@
       "type": "value",
       "description": "Bottom Elevation",
       "ask_user": "true",
-      "delegate": "ValueBox",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "estimate": "true"
     },
     "depth": {
@@ -89,7 +60,8 @@
       "precalcbasedon": "Storage:log:0.000001:1000000",
       "description": "Water Depth",
       "ask_user": "true",
-      "delegate": "ValueBox",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "includeinoutput": "true",
       "criteria": "depth>-0.0000001",
       "warningmessage": "Depth must be non-negative"
@@ -99,14 +71,14 @@
       "expression": "depth+bottom_elevation",      
       "description": "Hydraulc Head",
       "ask_user": "false",
-      "delegate": "ValueBox",
       "includeinoutput": "true"
     },
     "length": {
       "type": "value",
       "description": "Segment length",
       "ask_user": "true",
-      "delegate": "ValueBox",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "estimate": "true",
       "criteria": "length>0",
       "warningmessage": "Length must be greater than zero"
@@ -116,7 +88,6 @@
       "expression": "(base_width+side_slope*depth)*depth",
       "description": "Cross-sectional area",
       "ask_user": "false",
-      "delegate": "ValueBox",
       "includeinoutput": "true"
     },
     "perimeter": {
@@ -124,7 +95,6 @@
       "expression": "base_width+2*_sqt(1+side_slope^2)*depth",
       "description": "Wetted Perimeter",
       "ask_user": "false",
-      "delegate": "ValueBox",
       "includeinoutput": "true"
     },
     "inflow": {
