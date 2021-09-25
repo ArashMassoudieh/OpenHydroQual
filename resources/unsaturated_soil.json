@@ -251,6 +251,7 @@
     },
     "flow": {
       "type": "expression",
+      "description": "Flow",
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -297,7 +298,7 @@
     },
     "m": {
       "type": "expression",
-      "description": "Effective Saturation",
+      "description": "m parameter",
       "expression": "0.5*(m.s+m.e)",
       "includeinoutput": "true",
       "ask_user": "false"
@@ -344,7 +345,7 @@
     },
     "length": {
       "type": "expression",
-      "description": "lenght",
+      "description": "Lenght",
       "expression": "depth.e/2",
       "includeinoutput": "true",
       "ask_user": "false"
@@ -358,6 +359,7 @@
     },
     "flow": {
       "type": "expression",
+      "description": "Flow",
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -390,7 +392,7 @@
     },
     "length": {
       "type": "expression",
-      "description": "lenght",
+      "description": "Lenght",
       "expression": "depth.s/2",
       "includeinoutput": "true",
       "ask_user": "false"
@@ -404,7 +406,7 @@
     },
     "m": {
       "type": "expression",
-      "description": "Effective Saturation",
+      "description": "m parameter",
       "expression": "m.s",
       "includeinoutput": "true",
       "ask_user": "false"
@@ -425,6 +427,7 @@
     },
     "flow": {
       "type": "expression",
+      "description": "Flow",
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",

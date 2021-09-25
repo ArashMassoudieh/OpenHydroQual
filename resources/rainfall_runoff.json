@@ -112,12 +112,14 @@
 	     },
 	    "hydraulic_gradient": {
 	      "type": "expression",
+              "description": "Hydraulic gradient",
 	      "expression": "(head.s-head.e)/Length",
 	      "includeinoutput": "true",
 	      "ask_user": "false"
 	    }, 
 	    "flow": {
 	      "type": "expression",
+              "description": "Flow",
 	      "expression": "86400*(Width/ManningCoeff)*_sqt(hydraulic_gradient)*(_pos(depth)^1.666667)",
 	      "includeinoutput": "true",
 	      "applylimit": "true",
@@ -158,12 +160,14 @@
 	     },
 	     "hydraulic_gradient": {
 	      "type": "expression",
+      	      "description": "Hydraulic gradient",
 	      "expression": "(head.s-head.e)/Length",
 	      "includeinoutput": "true",
 	      "ask_user": "false"
 	    }, 
 	    "flow": {
 	      "type": "expression",
+	      "description": "Flow",
 	      "expression": "86400*(Width/ManningCoeff.s)*_sqr(hydraulic_gradient)*(_pos(depth.s)^1.666667)",
 	      "includeinoutput": "true",
 	      "applylimit": "true",
@@ -204,12 +208,14 @@
 	     },
 	     "hydraulic_gradient": {
 	      "type": "expression",
+      	      "description": "Hydraulic gradient",
 	      "expression": "(head.s-head.e)/Length",
 	      "includeinoutput": "true",
 	      "ask_user": "false"
 	    }, 
 	    "flow": {
 	      "type": "expression",
+	      "description": "Flow",
 	      "expression": "86400*(Width/ManningCoeff.s)*_sqt(hydraulic_gradient)*(_pos(depth.s)^1.666667)",
 	      "includeinoutput": "true",
 	      "applylimit": "true",

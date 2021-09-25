@@ -200,6 +200,7 @@
     },
     "flow": {
       "type": "expression",
+      "description": "Flow",
       "expression": "area*hydraulic_conductivity.s*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -237,6 +238,7 @@
     },
     "flow": {
       "type": "expression",
+      "description": "Flow",
       "expression": "0.5*area*(K_sat.s+hydraulic_conductivity.e)*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -285,6 +287,7 @@
     },
     "flow": {
       "type": "expression",
+      "description": "Flow",
       "expression": "0.5*area*hydraulic_conductivity*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",

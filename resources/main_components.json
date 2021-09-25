@@ -333,7 +333,8 @@
       },
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "description": "Flow"
     },
     "Q_min": {
       "type": "value",
@@ -402,6 +403,7 @@
     "flow": {
       "type": "timeseries",
       "includeinoutput": "true",
+      "description": "Flow",
       "applylimit": "true",
       "description": "Flow rate time series",
       "ask_user": "true",
