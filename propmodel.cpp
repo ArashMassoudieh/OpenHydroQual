@@ -9,6 +9,7 @@
 #include "diagramview.h"
 #include "node.h"
 #include "System.h"
+#include "XString.h"
 
 PropModel::PropModel(QuanSet* _quanset, QObject *parent, MainWindow *_mainwindow)
     : QAbstractTableModel(parent)
@@ -67,8 +68,11 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                 {
                     if (quanset->GetVarAskable(index.row())->Delegate()=="expressionEditor")
                     {
-                        //qDebug()<<"In propmodel: " << QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
+                    }
+                    else if (quanset->GetVarAskable(index.row())->Delegate()=="UnitBox")
+                    {
+                        return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false)) + "["+XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()))+"]";
                     }
                     else
                     {
@@ -98,7 +102,7 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                         //qDebug()<<"In propmodel: " << QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                     }
-                        else
+                    else
                     {
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
                     }
@@ -129,13 +133,13 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
        //    return Qt::Checked;
        break;
    case CustomRoleCodes::UnitsListRole:
-       return  QString::fromStdString(quanset->GetVarAskable(index.row())->Units()).split(";");
+       return  XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Units())).split(";");
        break;
    case CustomRoleCodes::defaultUnitRole:
-       return  QString::fromStdString(quanset->GetVarAskable(index.row())->DefaultUnit());
+       return  XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->DefaultUnit()));
        break;
    case CustomRoleCodes::UnitRole:
-       return  QString::fromStdString(quanset->GetVarAskable(index.row())->Unit());
+       return  XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()));
        break;
    case CustomRoleCodes::TypeRole:
        return QString::fromStdString(quanset->GetVarAskable(index.row())->Delegate());
@@ -221,8 +225,6 @@ QVariant PropModel::headerData(int section, Qt::Orientation orientation, int rol
 bool PropModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
     if (index.row() >= rows()) return false;
-    int row = index.row();
-    int col = index.column();
 
     QString VariableName;
     if (role == CustomRoleCodes::Role::loadIndex) {
@@ -234,7 +236,12 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
     else
         VariableName = index.data(CustomRoleCodes::VariableNameRole).toString();
 
-    if (role!=CustomRoleCodes::setParamRole)
+    if (role==CustomRoleCodes::UnitRole)
+    {
+        quanset->GetVar(VariableName.toStdString()).Unit() = XString::reformBack(value.toString()).toStdString();
+
+    }
+    else if (role!=CustomRoleCodes::setParamRole)
     {
         if (quanset->GetVar(VariableName.toStdString()).GetParameterAssignedTo()!="")
         {
@@ -244,6 +251,8 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
         bool r;
         if (quanset->GetVar(VariableName.toStdString()).Delegate()=="expressionEditor")
             r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),false);
+        else if (quanset->GetVar(VariableName.toStdString()).Delegate()=="UnitBox")
+            r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().split('[')[0].toStdString(),true);
         else
             r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),true);
         if (VariableName == "x")
@@ -283,6 +292,7 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
     emit editCompleted(result);
     return true;
 }
+
 
 Qt::ItemFlags PropModel::flags(const QModelIndex & /*index*/) const
 {

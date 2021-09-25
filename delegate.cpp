@@ -13,6 +13,7 @@
 #include "QMessageBox"
 #include "expEditor.h"
 #include "UnitTextBox.h"
+#include "XString.h"
 
 Delegate::Delegate(QObject *parent, MainWindow *_mainwindow) : QStyledItemDelegate(parent)
 {
@@ -61,7 +62,7 @@ QWidget *Delegate::createEditor(QWidget *parent,
     if (delegateType.contains("UnitBox"))
     {
         UnitTextBox *editor = new UnitTextBox(option,parent);
-        QString text = index.data(Qt::DisplayRole).toString();
+        QString text = index.data(Qt::DisplayRole).toString().split('[')[0];
         QStringList QL = index.data(CustomRoleCodes::Role::UnitsListRole).toStringList();
         editor->setUnitsList(index.data(CustomRoleCodes::Role::UnitsListRole).toStringList());
         editor->setText(text);
@@ -183,7 +184,7 @@ void Delegate::setEditorData(QWidget *editor,
     if (delegateType.contains("UnitBox"))
     {
         UnitTextBox *textBox = static_cast<UnitTextBox*>(editor);
-        textBox->setText(index.model()->data(index, Qt::DisplayRole).toString());
+        textBox->setText(index.model()->data(index, Qt::DisplayRole).toString().split('[')[0]);
         textBox->setUnitsList(index.model()->data(index, CustomRoleCodes::Role::UnitsListRole).toStringList());
         textBox->setUnit(index.model()->data(index, CustomRoleCodes::Role::UnitRole).toString());
         textBox->show();
@@ -284,8 +285,11 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     if (delegateType.contains("UnitBox"))
     {
         UnitTextBox *textBox = static_cast<UnitTextBox*>(editor);
-        if (model->data(index, Qt::DisplayRole).toString() != textBox->text());
+        if (model->data(index, Qt::DisplayRole).toString() != textBox->text())
             model->setData(index, textBox->text());
+        //qDebug()<<model->data(index, CustomRoleCodes::Role::UnitRole).toString()<<":"<<textBox->unit();
+        if (model->data(index, CustomRoleCodes::Role::UnitRole).toString()!=textBox->unit())
+            model->setData(index, textBox->unit(),CustomRoleCodes::UnitRole);
     //	delete editor;
         return;
     }
