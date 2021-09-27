@@ -228,6 +228,7 @@
     },
     "flow": {
       "type": "expression",
+      "desctiption" : "Flow",
       "expression": "reservoir_coeff.s*Storage.s^reservoir_power.s",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -248,6 +249,7 @@
     },
     "flow": {
       "type": "expression",
+      "desctiption" : "Flow",
       "expression": "86400*(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(_pos(depth.s)^1.666667)",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -274,6 +276,7 @@
     },
     "flow": {
       "type": "rule",
+      "desctiption" : "Flow",
       "rule": {
         "Storage.s<S_min": "Q_min",
         "S_min<Storage.s<S_max": "Q_min+((Storage.s-S_min)/(S_max-S_min))*(Q_max-Q_min)",
