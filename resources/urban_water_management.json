@@ -23,16 +23,32 @@
       "delegate": "UnitBox",
       "unit": "m~^3;ft~^3"
     },
-    "production_rate": {
+    "maximum_production_rate": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Production rate time series",
+      "description": "Maximum production rate time series",
       "ask_user": "true",
       "delegate": "Browser"
     },
+    "production_rate": {
+      "type": "expression",
+      "expression": "maximum_production_rate*_exp(-0.05*Storage/(storage_capacity-Storage))",
+      "includeinoutput": "true",
+      "description": "Actual production",
+      "ask_user": "false"
+    },
+    "storage_capacity": {
+      "type": "value",
+      "description": "Storage capacity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "criteria": "storage_capacity>0.001",
+      "warningmessage": "Storage capacity must be greater than zero" 
+    },
     "elevation": {
       "type": "value",
-      "description": "Mean elevation of the catchment",
+      "description": "Mean elevation of the plant",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft"

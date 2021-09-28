@@ -1,7 +1,0 @@
-/home/arash/Dropbox/Aquifolium/Simple_Tank_pipe_system_for_user's_manual.scr
-/home/arash/Dropbox/Aquifolium/Simple_Tank_2pipe_system_for_user's_manual.scr
-/home/arash/Dropbox/Aquifolium/Reaction_test.scr
-/home/arash/Dropbox/Observatory/Scripts/script2.scr
-/home/arash/Dropbox/Aquifolium/Desalination_test.scr
-/home/arash/Dropbox/Aquifolium/ValueBox_test.scr
-/home/arash/Dropbox/Observatory/Scripts/script1.scr

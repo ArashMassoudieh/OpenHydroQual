@@ -249,7 +249,7 @@
     },
     "flow": {
       "type": "expression",
-      "desctiption" : "Flow",
+      "description" : "Flow",
       "expression": "86400*(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(_pos(depth.s)^1.666667)",
       "includeinoutput": "true",
       "applylimit": "true",
