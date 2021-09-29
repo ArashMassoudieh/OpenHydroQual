@@ -648,7 +648,7 @@ bool System::Solve(bool applyparameters)
                 //cout<<"Processes Events...";
             }
 #endif
-            if (counter%restore_interval==0)
+            if ((counter-1)%restore_interval==0)
             {
                 restorepoint.GetSystem()->CopyStateVariablesFrom(this);
                 restorepoint.t = SolverTempVars.t;

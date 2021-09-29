@@ -1026,6 +1026,7 @@ bool CTimeSeries::append(double tt, double xx)
     {
         t.push_back(tt);
         C.push_back(xx);
+        D.push_back(0);
     }
     else
     {
@@ -1324,14 +1325,13 @@ bool CTimeSeries::wiggle_sl(double tol)
 
 void CTimeSeries::knock_out(double tt)
 {
-	int i=n-1;
-	if (n>0)
-		while (t[i]>tt)
-        {	t.pop_back();
-            C.pop_back();
-            n--;
-            i--;
-		}
+    int eliminate_from_here=0;
+    while (t[eliminate_from_here]<=tt) eliminate_from_here++;
+    t.resize(eliminate_from_here);
+    C.resize(eliminate_from_here);
+    D.resize(eliminate_from_here);
+    n = eliminate_from_here;
+
 }
 
 

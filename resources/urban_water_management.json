@@ -32,7 +32,7 @@
     },
     "production_rate": {
       "type": "expression",
-      "expression": "maximum_production_rate*_exp(-0.05*Storage/(storage_capacity-Storage))",
+      "expression": "maximum_production_rate*_exp(-0.05*Storage/_pos(storage_capacity-Storage))",
       "includeinoutput": "true",
       "description": "Actual production",
       "ask_user": "false"
@@ -220,6 +220,72 @@
       "description": "Flow",
       "applylimit": "true",
       "description": "Flow rate"
+    }
+  },
+  "Water Storage": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "Storage.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "includeinoutput": "true",
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true"
+    },
+    "elevation": {
+      "type": "value",
+      "description": "Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "capacity": {
+      "type": "value",
+      "description": "Capacity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true"
+    }
+  },
+  "Water Transfer": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Water Transfer",
+    "icon": {
+      "filename": "Water_Transfer.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m/day)",
+      "expression": "maximum_production_rate.s*_exp(-0.05*Storage.e/_pos(capacity.e-Storage.e))",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
     }
   }
 }
