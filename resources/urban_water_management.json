@@ -60,5 +60,166 @@
       "ask_user": "false",
       "includeinoutput": "true"
     }
+  },
+  "residential_user": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "residential.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "net_use_rate",
+      "includeinoutput": "false",
+      "description": "Initial Storage;Storage"
+    },
+    "use_rate": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Use rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "net_use_rate": {
+      "type": "expression",
+      "expression": "-use_rate",
+      "includeinoutput": "true",
+      "description": "Actual production",
+      "ask_user": "false"
+    }
+  },
+  "commertial_user": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "commertial.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "net_use_rate",
+      "includeinoutput": "false",
+      "description": "Initial Storage;Storage"
+    },
+    "use_rate": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Use rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "net_use_rate": {
+      "type": "expression",
+      "expression": "-use_rate",
+      "includeinoutput": "true",
+      "description": "Actual production",
+      "ask_user": "false"
+    }
+  },
+  "agricultural_user": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "agriculture.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "net_use_rate",
+      "includeinoutput": "false",
+      "description": "Initial Storage;Storage"
+    },
+    "use_rate": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Use rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "net_use_rate": {
+      "type": "expression",
+      "expression": "-use_rate",
+      "includeinoutput": "true",
+      "description": "Actual production",
+      "ask_user": "false"
+    }
+  },
+  "industrial_user": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "industrial.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "net_use_rate",
+      "includeinoutput": "false",
+      "description": "Initial Storage;Storage"
+    },
+    "use_rate": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Use rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "net_use_rate": {
+      "type": "expression",
+      "expression": "-use_rate",
+      "includeinoutput": "true",
+      "description": "Net use",
+      "ask_user": "false"
+    }
+  },
+  "Flow_to_user": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "arrow_to_user.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "use_rate.e",
+      "includeinoutput": "true",
+      "description": "Flow",
+      "applylimit": "true",
+      "description": "Flow rate"
+    }
   }
 }
