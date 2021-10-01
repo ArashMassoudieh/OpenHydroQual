@@ -37,7 +37,9 @@ public:
     void DeleteAllItems();
     void wheelEvent(QWheelEvent* pWheelEvent) override;
     double fontfactor=1;
+    int linkthickness = 1;
     QList<Node*> Nodes() const;
+    QList<Edge *> Edges() const;
     void UnSelectAll();
 private:
     MainWindow *mainwindow;
@@ -55,7 +57,6 @@ private:
     QList<Edge*> edges(const QList<QGraphicsItem*>items) const;
     QList<Node*> selectedNodes() const;
     QList<Edge*> selectedEdges() const;
-    QList<Edge *> Edges() const;
     Operation_Modes setMode(int i);
     QMap<QString, QMap<QString, QString>> specs;
     void updateNodeCoordinates();

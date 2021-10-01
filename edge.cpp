@@ -120,7 +120,6 @@ void Edge::adjust()
         return;
 
     QLineF line(mapFromItem(source, source->Width() / 2, source->Height() / 2), mapFromItem(dest, dest->Width() / 2, dest->Height() / 2));
-    qreal length = line.length();
 
     prepareGeometryChange();
 
@@ -180,11 +179,11 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 
     // Draw the line itself
     if (isSelected())
-        painter->setPen(QPen(Qt::green, (bold) ? 3 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter->setPen(QPen(Qt::green, (bold) ? 3*parent->linkthickness : 1*parent->linkthickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     else if (errorDetected())
-        painter->setPen(QPen(Qt::red, (bold) ? 3 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter->setPen(QPen(Qt::red, (bold) ? 3*parent->linkthickness : 1*parent->linkthickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     else if (parent->colorCode.edges)
-        painter->setPen(QPen(color.color1, 4, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter->setPen(QPen(color.color1, 4*parent->linkthickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     //		painter->setPen(QPen(QColor::fromRgb(color.color1), (bold) ? 3 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     else
     {
@@ -192,7 +191,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
             objectcolor = GetColor(object()->Variable("color")->GetProperty());
         else
             objectcolor = Qt::black;
-        painter->setPen(QPen(objectcolor, (bold) ? 3 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter->setPen(QPen(objectcolor, (bold) ? 3*parent->linkthickness : 1*parent->linkthickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     }
     if (!avoidCrossObjects)
     {
