@@ -11,6 +11,7 @@
 #include "GA.h"
 #include "logwindow.h"
 #include "aboutdialog.h"
+#include "undodata.h"
 
 
 
@@ -29,6 +30,7 @@ public:
     void resetPropModel() { propmodel = nullptr ;}
     System *GetSystem() {return &system;}
     bool AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type, Edge* edge);
+    UndoData undoData;
     void PopulatePropertyTable(QuanSet* quanset);
     void RecreateGraphicItemsFromSystem(bool zoom_all=true);
     void RefreshTreeView();

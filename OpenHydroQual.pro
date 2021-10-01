@@ -88,6 +88,7 @@ SOURCES += \
     propmodel.cpp \
     delegate.cpp \
     ray.cpp \
+    undodata.cpp \
     utilityfuncs.cpp \
     ./aquifolium/src/Command.cpp \
     ./aquifolium/src/Script.cpp \
@@ -159,6 +160,7 @@ HEADERS += \
     propmodel.h \
     delegate.h \
     ray.h \
+    undodata.h \
     utilityfuncs.h \
     ./aquifolium/include/Parameter.h \
     ./aquifolium/include/Parameter_Set.h \

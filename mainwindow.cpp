@@ -406,7 +406,7 @@ bool MainWindow::BuildObjectsToolBar()
 
 void MainWindow::onaddblock()
 {
-    
+
     QObject* obj = sender();
     Block block;
     //qDebug() << "Setting Quantities";
@@ -416,6 +416,7 @@ void MainWindow::onaddblock()
         return;
     }
     //qDebug() << "Quantities Set";
+    undoData.AppendAfterActive(&system);
     block.SetType(obj->objectName().toStdString());
     string name = CreateNewName(obj->objectName().toStdString());
     block.SetName(name);
@@ -459,6 +460,7 @@ bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
         //RecreateGraphicItemsFromSystem();
         return false;
     }
+    undoData.AppendAfterActive(&system);
     link.SetType(type.toStdString());
     link.SetName(LinkName.toStdString());
     if (!system.AddLink(link, sourceblock.toStdString(), targetblock.toStdString()))
@@ -493,6 +495,7 @@ void MainWindow::onaddsource()
     source.SetType(obj->objectName().toStdString());
     string name = CreateNewName(obj->objectName().toStdString());
     source.SetName(name);
+    undoData.AppendAfterActive(&system);
     system.AddSource(source);
     //qDebug() << "source added! " << obj->objectName();
     system.object(name)->SetName(name);
@@ -518,6 +521,7 @@ void MainWindow::onaddparameter()
     parameter.SetQuantities(system.GetMetaModel(),objectname);
     parameter.SetType(objectname);
     parameter.SetName(name);
+    undoData.AppendAfterActive(&system);
     system.Parameters().Append(name,parameter);
     //qDebug() << "parameter added! " << obj->objectName();
     //system.object(name)->SetName(name);
@@ -546,6 +550,7 @@ void MainWindow::onaddobjectivefunction()
     objective_function.SetType(objectname);
 
     objective_function.SetName(name);
+    undoData.AppendAfterActive(&system);
     system.AppendObjectiveFunction(name,objective_function);
     //qDebug() << "objective function added! " << obj->objectName();
     //system.object(name)->SetName(name);
@@ -575,6 +580,7 @@ void MainWindow::onaddobservation()
     observation.SetType(objectname);
 
     observation.SetName(name);
+    undoData.AppendAfterActive(&system);
     system.AddObservation(observation);
     system.object(name)->SetName(name);
     //qDebug() << "observation added! " << obj->objectName();
