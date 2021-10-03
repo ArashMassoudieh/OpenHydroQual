@@ -546,6 +546,8 @@ vector<string> *Object::functions()
     {
         return parent->functions;
     }
+
+
     else return nullptr;
 }
 

@@ -2,7 +2,8 @@
 #define ExpressionEditor_H
 
 #include <QLineEdit>
-
+#include <string>
+#include <vector>
 struct ExpressionEditorPri;
 class StatusViewer;
 class Object;
@@ -13,6 +14,7 @@ class ExpressionEditor : public QLineEdit
 public:
     explicit ExpressionEditor(Object* obj, StatusViewer* statusbar, QWidget* p = nullptr);
     ~ExpressionEditor();
+    std::vector<std::string> funcs();
 
 protected:
     void focusInEvent(QFocusEvent * e);
