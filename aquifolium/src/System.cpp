@@ -653,10 +653,11 @@ bool System::Solve(bool applyparameters)
                 restorepoint.GetSystem()->CopyStateVariablesFrom(this);
                 restorepoint.t = SolverTempVars.t;
                 restorepoint.dt = SolverTempVars.dt;
-                if (rtw->detailson)
-                {
-                    rtw->AppendtoDetails("Restore point saved!");
-                }
+                if (rtw!=nullptr)
+                    if (rtw->detailson)
+                    {
+                        rtw->AppendtoDetails("Restore point saved!");
+                    }
                 restorepoint.used_counter = 0;
                 if (GetSolutionLogger())
                     GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
