@@ -1215,7 +1215,7 @@ string Expression::ToString() const
         out += aquiutils::numbertostring(constant);
         return out;
     }
-    if (function!="") out += function;
+    if (function!="") out += "_" + function;
     out += "(";
     for (unsigned int i=0; i<terms.size();i++)
     {
