@@ -52,3 +52,8 @@ bool UndoData::CanRedo()
 
 }
 
+void UndoData::SetActiveSystem(const System *system)
+{
+    Systems[active] = *system;
+}
+

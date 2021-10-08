@@ -73,7 +73,7 @@ public slots:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-    void deleteselectednode(QString nodename="");
+    bool deleteselectednode(QString nodename="");
     void copyselectednode(QString nodename = "");
     void showgraph();
     void pastecopieddnode(); 

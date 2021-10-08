@@ -19,6 +19,7 @@ public:
     System *Redo();
     bool CanUndo();
     bool CanRedo();
+    void SetActiveSystem(const System *system);
     MainWindow *parent;
 
 };

@@ -432,6 +432,7 @@ void MainWindow::onaddblock()
     string name = CreateNewName(obj->objectName().toStdString());
     block.SetName(name);
     //qDebug() << "Adding Block to the system";
+    undoData.SetActiveSystem(&system);
     system.AddBlock(block);
     system.object(name)->SetName(name);
     Node *node = new Node(dView,&system);
@@ -474,6 +475,7 @@ bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
     undoData.AppendAfterActive(&system);
     link.SetType(type.toStdString());
     link.SetName(LinkName.toStdString());
+    undoData.SetActiveSystem(&system);
     if (!system.AddLink(link, sourceblock.toStdString(), targetblock.toStdString()))
     {
         qDebug() << QString::fromStdString(system.lasterror());
@@ -494,7 +496,8 @@ bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
     system.SetVariableParents();
 
     LogAddDelete("Link '" + LinkName + "' was added!");
-    return true; 
+    undoData.AppendAfterActive(&system);
+    return true;
 }
 
 
@@ -532,12 +535,13 @@ void MainWindow::onaddparameter()
     parameter.SetQuantities(system.GetMetaModel(),objectname);
     parameter.SetType(objectname);
     parameter.SetName(name);
-    undoData.AppendAfterActive(&system);
+    undoData.SetActiveSystem(&system);
     system.Parameters().Append(name,parameter);
     //qDebug() << "parameter added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Parameter '" + QString::fromStdString(name) + "' was added!");
+    undoData.AppendtoLast(&system);
 }
 
 void MainWindow::onaddobjectivefunction()
@@ -561,12 +565,13 @@ void MainWindow::onaddobjectivefunction()
     objective_function.SetType(objectname);
 
     objective_function.SetName(name);
-    undoData.AppendAfterActive(&system);
+    undoData.SetActiveSystem(&system);
     system.AppendObjectiveFunction(name,objective_function);
     //qDebug() << "objective function added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Objective Function '" + QString::fromStdString(name) + "' was added!");
+    undoData.AppendtoLast(&system);
 
 }
 
@@ -591,14 +596,14 @@ void MainWindow::onaddobservation()
     observation.SetType(objectname);
 
     observation.SetName(name);
-    undoData.AppendAfterActive(&system);
+    undoData.SetActiveSystem(&system);
     system.AddObservation(observation);
     system.object(name)->SetName(name);
     //qDebug() << "observation added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Observation '" + QString::fromStdString(name) + "' was added!");
-
+    undoData.AppendtoLast(&system);
 }
 
 void MainWindow::onaddconstituent()
@@ -622,6 +627,7 @@ void MainWindow::onaddconstituent()
     constituent.SetType(objectname);
 
     constituent.SetName(name);
+    undoData.SetActiveSystem(&system);
     system.AddConstituent(constituent);
     system.object(name)->SetName(name);
     //qDebug() << "Constituent added! " << obj->objectName();
@@ -629,7 +635,7 @@ void MainWindow::onaddconstituent()
     system.AddConstituentRelateProperties(system.constituent(name));
     RefreshTreeView();
     LogAddDelete("Constituent '" + QString::fromStdString(name) + "' was added!");
-
+    undoData.AppendtoLast(&system);
 }
 
 void MainWindow::onaddreaction()
@@ -653,6 +659,7 @@ void MainWindow::onaddreaction()
     reaction.SetType(objectname);
 
     reaction.SetName(name);
+    undoData.SetActiveSystem(&system);
     system.AddReaction(reaction);
     system.object(name)->SetName(name);
     system.AddAllConstituentRelateProperties(system.reaction(name));
@@ -660,6 +667,7 @@ void MainWindow::onaddreaction()
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Reaction '" + QString::fromStdString(name) + "' was added!");
+    undoData.AppendtoLast(&system);
 
 }
 
@@ -684,13 +692,14 @@ void MainWindow::onaddreactionparameter()
     reactionparameter.SetType(objectname);
 
     reactionparameter.SetName(name);
+    undoData.SetActiveSystem(&system);
     system.AddReactionParameter(reactionparameter);
     system.object(name)->SetName(name);
     //qDebug() << "Reaction Parameter added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Reaction '" + QString::fromStdString(name) + "' was added!");
-
+    undoData.AppendtoLast(&system);
 }
 
 
@@ -1050,6 +1059,7 @@ void MainWindow::onDeleteItem()
 {
     QAction* act = qobject_cast<QAction*>(sender());
     QString item = act->data().toString();
+    undoData.SetActiveSystem(&system);
     dView->deleteselectednode(item);
     
 }
@@ -1867,4 +1877,15 @@ bool MainWindow::CreateFileIfDoesNotExist(QString fileName)
         filetobecreated.close();
     }
     return success; 
+}
+
+void MainWindow::AddStatetoUndoData()
+{
+    undoData.AppendtoLast(&system);
+}
+
+
+void MainWindow::SetActiveUndo()
+{
+    undoData.SetActiveSystem(&system);
 }

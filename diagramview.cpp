@@ -274,7 +274,7 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
         int pw = resizenode->Width();
         int ph = resizenode->Height();
         int minH = resizenode->minH, minW = resizenode->minW;
-
+        mainWindow()->SetActiveUndo();
         if (resizecorner == topleft && (px - xx + pw) > minW && (py - yy + ph) > minH)
         {
             resizenode->setX(xx);
@@ -321,6 +321,7 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
             mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_height", aquiutils::numbertostring(yy-py));
         }
         resizenode->update();
+        mainWindow()->AddStatetoUndoData();
         for(Edge *edge : resizenode->edges())
             edge->adjust();
     }
@@ -494,10 +495,12 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             specs[n->Name()]["w"] = QString::number(n->Width());
             specs[n->Name()]["h"] = QString::number(n->Height());
             if (n->object())
-            {   n->object()->SetVal("x",n->x());
+            {   mainWindow()->SetActiveUndo();
+                n->object()->SetVal("x",n->x());
                 n->object()->SetVal("y",n->y());
                 n->object()->SetVal("_width", n->Width());
                 n->object()->SetVal("_height", n->Height());
+                mainWindow()->AddStatetoUndoData();
             }
         }
     }
@@ -507,12 +510,12 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
 
 
 }
-void DiagramView::deleteselectednode(QString nodename)
+bool DiagramView::deleteselectednode(QString nodename)
 {
+    mainWindow()->SetActiveUndo();
     if (QMessageBox::question(this, tr("Delete"),
         "Are you sure you want to delete Block/Edge '" + nodename + "'", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
     {
-
         if (nodename=="")
             mainWindow()->GetSystem()->Delete(nodenametobedeleted.toStdString());
         else
@@ -523,9 +526,10 @@ void DiagramView::deleteselectednode(QString nodename)
         mainWindow()->GetSystem()->SetVariableParents();
         mainWindow()->RefreshTreeView();
         RecreateGraphics = true; 
-        
+        return true;
+        mainWindow()->AddStatetoUndoData();
     }
-    
+    return false;
 }
 
 void DiagramView::wheelEvent(QWheelEvent* pWheelEvent)
@@ -577,6 +581,7 @@ void DiagramView::copyselectednode(QString nodename)
 
 void DiagramView::pastecopieddnode()
 {
+    mainWindow()->SetActiveUndo();
     mainWindow()->GetSystem()->AddBlock(copied_block, false);
     Node* node = new Node(this, mainWindow()->GetSystem());
     repaint();
@@ -585,6 +590,7 @@ void DiagramView::pastecopieddnode()
     mainWindow()->PopulatePropertyTable(nullptr); 
     mainWindow()->RefreshTreeView();
     nodenametobecopied = "";
+    mainWindow()->AddStatetoUndoData();
     
 }
 

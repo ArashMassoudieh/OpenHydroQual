@@ -48,6 +48,8 @@ public:
     void addplugin(const QString &fileName);
     void ResetSystem();
     void InactivateUndo(bool yes=true);
+    void AddStatetoUndoData();
+    void SetActiveUndo();
 private:
     logwindow *LogWindow;
     Ui::MainWindow *ui;
