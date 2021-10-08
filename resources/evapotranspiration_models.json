@@ -182,7 +182,7 @@
       "expression": "-corr_fact*solar_radiation/(l_v*1000)*86400"
     }
   },
-  "Evapotranspiration_Priestly_Taylor (S)": {
+  "Evapotranspiration_Penmam (S)": {
     "type": "source",
     "typecategory": "Sources",
     "icon": {

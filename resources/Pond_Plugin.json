@@ -128,7 +128,7 @@
    		},	
 	        "flow" : {
 		      	"type": "expression",
-			"description": "Flow rate (m/day)",
+			"description": "Flow rate (m~^3/day)",
                         "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
@@ -181,8 +181,8 @@
    		},	
 	        "flow" : {
 		      	"type": "expression",
-			"description": "Flow rate (m/day)",
-                        "expression" : "86400*1.962*_pos(head.s-crest_elevation)^(0.5)/((head_loss_coefficient+1)^0.5)",
+			"description": "Flow rate (m~^3/day)",
+                        "expression" : "86400*3.47*_pos(head.s-crest_elevation)^(0.5)/((head_loss_coefficient+1)^0.5)*(pipe_diameter^2)",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
 		}  	
@@ -243,7 +243,7 @@
 		},
 		"flow": {
 			"type": "expression",
-   	                "description": "Flow rate (m/day)",
+   	                "description": "Flow rate (m~^3/day)",
 			"expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*width*depth^1.6667",
 			"includeinoutput": "true",
 			"applylimit": "true",

@@ -18,7 +18,7 @@
       "flow": "flow",
       "inflow": "Precipitation,Evapotranspiration",
       "includeinoutput": "true",
-      "description": "Initial Storage",
+      "description": "Initial Storage;Storage",
       "ask_user": "false",
       "initial_value_expression": "area*depth",
       "estimate": "true"
@@ -459,7 +459,7 @@
     "exceedance_probability": {
       "type": "value",
       "includeinoutput": "false",
-      "description": "Weight",
+      "description": "Exceedance probability",
       "ask_user": "true",
       "delegate": "ValueBox",
       "default": 0.05 

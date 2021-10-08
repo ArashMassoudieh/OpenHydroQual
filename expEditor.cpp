@@ -53,7 +53,7 @@ void expEditor::setupCompleter()
     }
 
     if (d->obj!=nullptr)
-        d->Words << toQStringList(*d->obj->functions()) << toQStringList(d->obj->quantitative_variable_list());
+        d->Words << toQStringList(funcs()) << toQStringList(d->obj->quantitative_variable_list());
     d->Comp = new QCompleter(d->Words, this);
     d->Comp->setWidget(this);
     d->Comp->setCompletionMode(QCompleter::PopupCompletion);
@@ -153,4 +153,25 @@ void expEditor::onCompletorActivated(const QString &arg)
 {
     int ind = lastIndexOfNonVariable(text().left(cursorPosition()));
     setText(text().replace(ind + 1, cursorPosition() - ind - 1, arg));
+}
+
+std::vector<std::string> expEditor::funcs()
+{
+    std::vector<std::string> out;
+    out.push_back("_min");
+    out.push_back("_max");
+    out.push_back("_exp");
+    out.push_back("_log");
+    out.push_back("_abs");
+    out.push_back("_sgn");
+    out.push_back("_sqr");
+    out.push_back("_sqt");
+    out.push_back("_pos");
+    out.push_back("_hsd");
+    out.push_back("_lpw");
+    out.push_back("_ups");
+    out.push_back("_bkw");
+    out.push_back("_mon");
+    out.push_back("_mbs");
+    return out;
 }

@@ -111,7 +111,7 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m/day)",
+      "description": "Flow rate (m~^3/day)",
       "expression": "24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs((head.s-head.e)/length;0.00001)*_abs((head.s-head.e)/length)^0.54",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -175,7 +175,7 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m/day)",
+      "description": "Flow rate (m~^3/day)",
       "expression": "24055.44*hz_coeff*diameter^2.63*_pos((head.s-head.e)/length)^0.54",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -265,7 +265,7 @@
     },
     "head": {
       "type": "expression",
-      "expression": "elevation+1000*(Storage-1000)",
+      "expression": "elevation+1*(Storage-1000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "includeinoutput": "true"
@@ -317,7 +317,7 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m/day)",
+      "description": "Flow rate (m~^3/day)",
       "expression": "(_pos(head.s-head.e+head_0)/alpha)^(1/beta)",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -383,7 +383,7 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m/day)",
+      "description": "Flow rate (m~^3/day)",
       "expression": "coefficient_time_series*((_pos(head.s-head.e+head_0)/alpha)^(1/beta))",
       "includeinoutput": "true",
       "applylimit": "true",
