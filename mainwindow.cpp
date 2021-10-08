@@ -90,6 +90,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionSave_as,SIGNAL(triggered()),this,SLOT(onsaveas()));
     connect(ui->actionExport_to_SVG,SIGNAL(triggered()),this,SLOT(onexporttosvg()));
     connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(onabout()));
+    connect(ui->actionUndo,SIGNAL(triggered()),this,SLOT(on_Undo()));
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
     connect(ui->actionLoad_a_new_template,SIGNAL(triggered()),this,SLOT(loadnewtemplate()));
     connect(ui->actionAddPlugin,SIGNAL(triggered()),this,SLOT(addplugin()));
@@ -102,7 +103,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableView->setItemDelegateForColumn(1,new Delegate(this,this));
     Populate_General_ToolBar();
     readRecentFilesList();
+    undoData = UndoData(this);
+    undoData.AppendtoLast(&system);
+    if (undoData.active==undoData.Systems.size()-1) InactivateUndo();
 
+
+}
+
+void MainWindow::InactivateUndo(bool yes)
+{
+    ui->actionUndo->setEnabled(!yes);
+    ui->actionUndo->setDisabled(yes);
 }
 
 void MainWindow::ResetSystem()
@@ -416,7 +427,7 @@ void MainWindow::onaddblock()
         return;
     }
     //qDebug() << "Quantities Set";
-    undoData.AppendAfterActive(&system);
+
     block.SetType(obj->objectName().toStdString());
     string name = CreateNewName(obj->objectName().toStdString());
     block.SetName(name);
@@ -433,7 +444,7 @@ void MainWindow::onaddblock()
     node->SetObject(system.object(name));
     RefreshTreeView();
     LogAddDelete("Block '" + QString::fromStdString(name) + "' was added!");
-
+    undoData.AppendAfterActive(&system);
  }
 
 void MainWindow::onaddlink()
@@ -1041,6 +1052,15 @@ void MainWindow::onDeleteItem()
     QString item = act->data().toString();
     dView->deleteselectednode(item);
     
+}
+
+void MainWindow::on_Undo()
+{
+    if (undoData.CanUndo())
+        system = *undoData.Undo();
+    PopulatePropertyTable(nullptr);
+    RecreateGraphicItemsFromSystem(false);
+    RefreshTreeView();
 }
 
 void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)

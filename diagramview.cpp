@@ -493,10 +493,12 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             specs[n->Name()]["y"] = QString::number(n->y());
             specs[n->Name()]["w"] = QString::number(n->Width());
             specs[n->Name()]["h"] = QString::number(n->Height());
-            n->object()->SetVal("x",n->x());
-            n->object()->SetVal("y",n->y());
-            n->object()->SetVal("_width", n->Width());
-            n->object()->SetVal("_height", n->Height());
+            if (n->object())
+            {   n->object()->SetVal("x",n->x());
+                n->object()->SetVal("y",n->y());
+                n->object()->SetVal("_width", n->Width());
+                n->object()->SetVal("_height", n->Height());
+            }
         }
     }
     if (_changed)

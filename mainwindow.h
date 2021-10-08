@@ -47,6 +47,7 @@ public:
     void SetZoomWindow(bool panmode) {actionzoomwindow->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
     void addplugin(const QString &fileName);
     void ResetSystem();
+    void InactivateUndo(bool yes=true);
 private:
     logwindow *LogWindow;
     Ui::MainWindow *ui;
@@ -123,6 +124,7 @@ private slots:
     void showgraph();
     void onDeleteItem();
     void on_actionRecent_triggered();
+    void on_Undo();
 };
 
 QString localAppFolderAddress();
