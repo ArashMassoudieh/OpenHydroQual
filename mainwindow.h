@@ -48,6 +48,7 @@ public:
     void addplugin(const QString &fileName);
     void ResetSystem();
     void InactivateUndo(bool yes=true);
+    void InactivateRedo(bool yes=true);
     void AddStatetoUndoData();
     void SetActiveUndo();
 private:
@@ -127,6 +128,7 @@ private slots:
     void onDeleteItem();
     void on_actionRecent_triggered();
     void on_Undo();
+    void on_Redo();
 };
 
 QString localAppFolderAddress();

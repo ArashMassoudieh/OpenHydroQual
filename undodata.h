@@ -21,6 +21,7 @@ public:
     bool CanRedo();
     void SetActiveSystem(const System *system);
     MainWindow *parent;
+    unsigned int capacity=20;
 
 };
 

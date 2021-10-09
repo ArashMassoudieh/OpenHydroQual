@@ -91,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionExport_to_SVG,SIGNAL(triggered()),this,SLOT(onexporttosvg()));
     connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(onabout()));
     connect(ui->actionUndo,SIGNAL(triggered()),this,SLOT(on_Undo()));
+    connect(ui->actionRedo,SIGNAL(triggered()),this,SLOT(on_Redo()));
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
     connect(ui->actionLoad_a_new_template,SIGNAL(triggered()),this,SLOT(loadnewtemplate()));
     connect(ui->actionAddPlugin,SIGNAL(triggered()),this,SLOT(addplugin()));
@@ -105,8 +106,8 @@ MainWindow::MainWindow(QWidget *parent) :
     readRecentFilesList();
     undoData = UndoData(this);
     undoData.AppendtoLast(&system);
-    if (undoData.active==undoData.Systems.size()-1) InactivateUndo();
-
+    if (undoData.active==0) InactivateUndo();
+    if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
 
 }
 
@@ -115,6 +116,13 @@ void MainWindow::InactivateUndo(bool yes)
     ui->actionUndo->setEnabled(!yes);
     ui->actionUndo->setDisabled(yes);
 }
+
+void MainWindow::InactivateRedo(bool yes)
+{
+    ui->actionRedo->setEnabled(!yes);
+    ui->actionRedo->setDisabled(yes);
+}
+
 
 void MainWindow::ResetSystem()
 {
@@ -1072,6 +1080,16 @@ void MainWindow::on_Undo()
     RecreateGraphicItemsFromSystem(false);
     RefreshTreeView();
 }
+
+void MainWindow::on_Redo()
+{
+    if (undoData.CanRedo())
+        system = *undoData.Redo();
+    PopulatePropertyTable(nullptr);
+    RecreateGraphicItemsFromSystem(false);
+    RefreshTreeView();
+}
+
 
 void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
 {

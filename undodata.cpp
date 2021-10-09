@@ -8,9 +8,16 @@ UndoData::UndoData(MainWindow *_parent)
 
 void UndoData::AppendtoLast(const System *system)
 {
+    EliminateFrom(active+1);
     Systems.append(*system);
     active = Systems.count() - 1;
     parent->InactivateUndo(false);
+    parent->InactivateRedo();
+    if (Systems.size()>capacity)
+    {
+        Systems.remove(0);
+        active--;
+    }
 }
 void UndoData::EliminateFrom(unsigned int i)
 {
@@ -30,15 +37,17 @@ System *UndoData::Undo()
     if (!CanUndo()) return nullptr;
     active--;
     if (active==0) parent->InactivateUndo();
-
+    if (active<Systems.size()-1) parent->InactivateRedo(false);
 
     return &Systems[active];
 
 }
 System *UndoData::Redo()
 {
-    if (active==Systems.size()-1) return nullptr;
+    if (!CanRedo()) return nullptr;
     active++;
+    if (active==Systems.size()-1) parent->InactivateRedo();
+    if (active>0) parent->InactivateUndo(false);
     return &Systems[active];
 }
 
