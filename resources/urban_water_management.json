@@ -33,8 +33,8 @@
     "production_rate": {
       "type": "expression",
       "expression": "maximum_production_rate*_exp(-0.05*Storage/_pos(storage_capacity-Storage))",
-      "includeinoutput": "true",
-      "description": "Actual production",
+      "includeinoutput": "false",
+      "description": "Net production",
       "ask_user": "false"
     },
     "storage_capacity": {
@@ -91,8 +91,8 @@
     "net_use_rate": {
       "type": "expression",
       "expression": "-use_rate",
-      "includeinoutput": "true",
-      "description": "Actual production",
+      "includeinoutput": "false",
+      "description": "Net production",
       "ask_user": "false"
     }
   },
@@ -126,8 +126,6 @@
     "net_use_rate": {
       "type": "expression",
       "expression": "-use_rate",
-      "includeinoutput": "true",
-      "description": "Actual production",
       "ask_user": "false"
     }
   },
@@ -161,8 +159,8 @@
     "net_use_rate": {
       "type": "expression",
       "expression": "-use_rate",
-      "includeinoutput": "true",
-      "description": "Actual production",
+      "includeinoutput": "false",
+      "description": "Net production",
       "ask_user": "false"
     }
   },
@@ -277,7 +275,7 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m/day)",
+      "description": "Flow rate (m~^3/day)",
       "expression": "maximum_production_rate.s*_exp(-0.05*Storage.e/_pos(capacity.e-Storage.e))",
       "includeinoutput": "true",
       "applylimit": "true",

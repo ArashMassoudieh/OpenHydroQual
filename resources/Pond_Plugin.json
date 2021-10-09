@@ -19,6 +19,7 @@
 		        "flow": "flow",
 		        "inflow": "Precipitation",
 		        "ask_user": "true",
+		        "unit": "m~^3;ft~^3",
 		        "delegate": "ValueBox",
 		        "estimate": "true",
 		        "includeinoutput" : "true",
