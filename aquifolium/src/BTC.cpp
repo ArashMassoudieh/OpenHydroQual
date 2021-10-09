@@ -595,7 +595,8 @@ void CTimeSeries::readfile(string Filename)
 		if (s.size()>0)
 		if (s[0].substr(0,2)!="//")
 		{
-			t.push_back(atof(s[0].c_str()));
+
+            t.push_back(aquiutils::atof(s[0]));
 			C.push_back(atof(s[1].c_str()));
 			n++;
 			if (t.size()>2)
