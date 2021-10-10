@@ -330,6 +330,7 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
 }
 void DiagramView::mouseReleaseEvent(QMouseEvent *event)
 {
+    mainWindow()->SetActiveUndo();
     if (RecreateGraphics)
     {
         mainWindow()->RecreateGraphicItemsFromSystem(false);
@@ -495,17 +496,19 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             specs[n->Name()]["w"] = QString::number(n->Width());
             specs[n->Name()]["h"] = QString::number(n->Height());
             if (n->object())
-            {   mainWindow()->SetActiveUndo();
+            {
                 n->object()->SetVal("x",n->x());
                 n->object()->SetVal("y",n->y());
                 n->object()->SetVal("_width", n->Width());
                 n->object()->SetVal("_height", n->Height());
-                mainWindow()->AddStatetoUndoData();
             }
         }
     }
     if (_changed)
+    {
         emit changed();
+        mainWindow()->AddStatetoUndoData();
+    }
         //gwChanged();
 
 

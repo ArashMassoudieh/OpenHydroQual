@@ -257,7 +257,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^3;ft~^3",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "capacity>0.001",
+      "warningmessage": "Capacity must be greater than zero"
     }
   },
   "Water Transfer": {

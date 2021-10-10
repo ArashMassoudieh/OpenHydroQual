@@ -268,17 +268,21 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     QString Property = model->data(index.sibling(index.row(), 0)).toString();
 
     QString delegateType = index.data(CustomRoleCodes::Role::TypeRole).toString();
+    mainwindow->SetActiveUndo();
     if (delegateType.toLower().contains("date"))
     {
         QDateEdit *textBox = static_cast<QDateEdit*>(editor);
-        model->setData(index, QDate2Xldate(textBox->dateTime()) );
+
+        if (model->setData(index, QDate2Xldate(textBox->dateTime())))
+            mainwindow->AddStatetoUndoData();
         return;
     }
 
     if (delegateType.contains("ValueBox"))
     {
         QLineEdit *textBox = static_cast<QLineEdit*>(editor);
-        model->setData(index, textBox->text());
+        if (model->setData(index, textBox->text()))
+            mainwindow->AddStatetoUndoData();
     //	delete editor;
         return;
     }
@@ -286,9 +290,11 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     {
         UnitTextBox *textBox = static_cast<UnitTextBox*>(editor);
         if (model->data(index, CustomRoleCodes::Role::UnitRole).toString()!=textBox->unit())
-            model->setData(index, textBox->unit(),CustomRoleCodes::UnitRole);
+            if (model->setData(index, textBox->unit(),CustomRoleCodes::UnitRole))
+                mainwindow->AddStatetoUndoData();
         if (model->data(index, Qt::DisplayRole).toString() != textBox->text())
-            model->setData(index, textBox->text());
+            if(model->setData(index, textBox->text()))
+                mainwindow->AddStatetoUndoData();
         //qDebug()<<model->data(index, CustomRoleCodes::Role::UnitRole).toString()<<":"<<textBox->unit();
 
     //	delete editor;
@@ -304,21 +310,24 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
                 selectedList.append(list->item(i)->text());
         QString newValue = selectedList.join(':');
         if (model->data(index, Qt::EditRole).toString() != newValue)
-            model->setData(index, newValue, Qt::EditRole);
+            if (model->setData(index, newValue, Qt::EditRole))
+                mainwindow->AddStatetoUndoData();
         return;
     }
     if (delegateType.contains("ComboBox"))
     {
         QComboBox *comboBox = static_cast<QComboBox*>(editor);
         if (model->data(index, Qt::EditRole).toString() != comboBox->currentText())
-            model->setData(index, comboBox->currentText(), Qt::EditRole);
+            if (model->setData(index, comboBox->currentText(), Qt::EditRole))
+                mainwindow->AddStatetoUndoData();
         return;
     }
     if (delegateType.contains("CheckBox"))
     {
         QCheckBox *checkBox = static_cast<QCheckBox*>(editor);
         if (model->data(index, Qt::CheckStateRole).toBool() != checkBox->checkState())
-            model->setData(index, (checkBox->checkState()) ? 1 : 0, Qt::EditRole);
+            if (model->setData(index, (checkBox->checkState()) ? 1 : 0, Qt::EditRole))
+                mainwindow->AddStatetoUndoData();
         return;
     }
     if (delegateType.contains("DirBrowser"))
@@ -330,34 +339,39 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
         return;
         QComboBox *comboBox = static_cast<QComboBox*>(editor);
         //qDebug() << comboBox->currentText();
-        model->setData(index, comboBox->currentText(), Qt::EditRole);
+        if (model->setData(index, comboBox->currentText(), Qt::EditRole))
+            mainwindow->AddStatetoUndoData();
         return;
     }
     if (delegateType.contains("ListBox"))
     {
         QComboBox *comboBox = static_cast<QComboBox*>(editor);
         if (model->data(index, Qt::EditRole).toString() != comboBox->currentData().toString())
-            model->setData(index, comboBox->currentData().toString(), Qt::EditRole);
+            if (model->setData(index, comboBox->currentData().toString(), Qt::EditRole))
+                mainwindow->AddStatetoUndoData();
         return;
     }
     if (delegateType.contains("PushButton"))
     {
         QPushButton *comboBox = static_cast<QPushButton*>(editor);
-        model->setData(index, comboBox->text(), Qt::EditRole);
+        if (model->setData(index, comboBox->text(), Qt::EditRole))
+            mainwindow->AddStatetoUndoData();
         return;
     }
     if (delegateType.contains("Memo"))
     {
         QTextEdit *memo = static_cast<QTextEdit*>(editor);
         if (index.model()->data(index, Qt::EditRole).toString() != memo->toPlainText())
-            model->setData(index, memo->toPlainText(), Qt::EditRole);
+            if (model->setData(index, memo->toPlainText(), Qt::EditRole))
+                mainwindow->AddStatetoUndoData();
         return;
     }
     if (delegateType.contains("expressionEditor"))
     {
         expEditor* expression = static_cast<expEditor*>(editor);
         if (index.model()->data(index, Qt::EditRole).toString() != expression->text())
-            model->setData(index, expression->text(), Qt::EditRole);
+            if (model->setData(index, expression->text(), Qt::EditRole))
+                mainwindow->AddStatetoUndoData();
         return;
     }
     if (delegateType.toLower().contains("String"))
@@ -365,7 +379,8 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
         QLineEdit *textBox = static_cast<QLineEdit*>(editor);
 
         if (model->data(index, Qt::EditRole).toString() != textBox->text())
-            model->setData(index, textBox->text(), Qt::EditRole);
+            if (model->setData(index, textBox->text(), Qt::EditRole))
+                mainwindow->AddStatetoUndoData();
 //		parent->setFocus(); // tableProp->setFocus();
 //		QWidget * ed = QStyledItemDelegate::createEditor(parent, editor->rect(), index.sibling(index.row(), 0);
 //		ed->setFocus();

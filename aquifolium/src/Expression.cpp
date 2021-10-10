@@ -824,7 +824,7 @@ void aquiutils::remove(string &s,unsigned int pos, unsigned int len)
 
 bool aquiutils::isnumber(char S)
 {
-	if ((((int)S > 47) && ((int)S < 58)) || (S=='.'))
+    if ((((int)S > 47) && ((int)S < 58)) || (S=='.') || S=='e' || S=='+' || S=='-')
 		return true;
 	else
 		return false;
@@ -854,7 +854,15 @@ bool aquiutils::isintegernumber(string S)
 
 double aquiutils::atof(const string &S)
 {
-    return std::atof(S.c_str());
+    string S_corrected;
+    int start = 0;
+    for (unsigned int i=0; i<S.size(); i++)
+        if (aquiutils::isnumber(S[i]))
+        {   start = i;
+            break;
+        }
+    S_corrected = S.substr(start,S.size()-start);
+    return std::atof(S_corrected.c_str());
 }
 double aquiutils::atoi(const string &S)
 {
@@ -1215,7 +1223,7 @@ string Expression::ToString() const
         out += aquiutils::numbertostring(constant);
         return out;
     }
-    if (function!="") out += function;
+    if (function!="") out += "_" + function;
     out += "(";
     for (unsigned int i=0; i<terms.size();i++)
     {
