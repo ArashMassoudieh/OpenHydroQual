@@ -17,7 +17,7 @@
 		        "type": "balance",
 		        "massbalance": "true",
 		        "flow": "flow",
-		        "inflow": "Precipitation",
+		        "inflow": "Precipitation,Evapotranspiration",
 		        "ask_user": "true",
 		        "unit": "m~^3;ft~^3",
 		        "delegate": "ValueBox",
@@ -59,6 +59,13 @@
 			"ask_user": "true",
 			"delegate": "ComboBox;Sources"
 	    	},
+	    	"Evapotranspiration": {
+		      "type": "source",
+		      "includeinoutput": "true",
+		      "description": "Evapotranspiration",
+		      "ask_user": "true",
+		      "delegate": "ComboBox;Sources"
+		},
 		"bottom_elevation": {
 		     "type": "value",
 		      "description": "Bottom elevation of pond",

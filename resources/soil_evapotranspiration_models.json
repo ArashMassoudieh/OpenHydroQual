@@ -74,7 +74,7 @@
     "R_h" : {
     	"type": "timeseries",
     	"includeinoutput": "true",
-	"description": "Relative humidity timeseries",
+	"description": "Relative humidity time series",
     	"ask_user": "true",
 	"delegate": "Browser"
     },
@@ -114,7 +114,7 @@
     "timeseries":{
     	"type": "timeseries",
 	"includeinoutput": "true",
-	"description": "Evaporation timeseries",
+	"description": "Evaporation time series",
     	"ask_user": "true",
 	"delegate": "Browser"
     },
@@ -237,7 +237,7 @@
     "R_h" : {
     	"type": "timeseries",
     	"includeinoutput": "true",
-	"description": "Relative humidity timeseries",
+	"description": "Relative humidity time series",
     	"ask_user": "true",
 	"delegate": "Browser"
     },

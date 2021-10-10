@@ -76,7 +76,7 @@
     "R_h" : {
     	"type": "timeseries",
     	"includeinoutput": "true",
-	"description": "Relative humidity timeseries",
+	"description": "Relative humidity time series",
     	"ask_user": "true",
 	"delegate": "Browser"
     },
@@ -85,7 +85,7 @@
       "includeinoutput": "true",
       "description": "Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "B*e_as*(R_h-1)/1000"
+      "expression": "corr_fact*B*e_as*(R_h-1)/1000"
     }
   },
   "Evapotranspiration_Time_Series (S)": {
@@ -116,7 +116,7 @@
     "timeseries":{
     	"type": "timeseries",
 	"includeinoutput": "true",
-	"description": "Evaporation timeseries",
+	"description": "Evaporation time series",
     	"ask_user": "true",
 	"delegate": "Browser"
     },
@@ -239,7 +239,7 @@
     "R_h" : {
     	"type": "timeseries",
     	"includeinoutput": "true",
-	"description": "Relative humidity timeseries",
+	"description": "Relative humidity time series",
     	"ask_user": "true",
 	"delegate": "Browser"
     },
