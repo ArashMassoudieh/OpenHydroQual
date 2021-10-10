@@ -435,7 +435,7 @@ void Object::SetAllParents()
     var.SetParent(this);
 }
 
-bool Object::SetProperty(const string &prop, const string &value, bool force_value)
+bool Object::SetProperty(const string &prop, const string &value, bool force_value, bool check_criteria)
 {
     if (!HasQuantity(prop))
     {
@@ -452,11 +452,11 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
             {   string unit = aquiutils::split(aquiutils::split(value,'[')[1],']')[0];
                 double coefficient = XString::coefficient(QString::fromStdString(unit));
                 double _value = atof(value.c_str())*coefficient;
-                var[prop].SetVal(_value,Expression::timing::both);
+                var[prop].SetVal(_value,Expression::timing::both, check_criteria);
                 var[prop].Unit() = unit;
             }
             else
-                var[prop].SetVal(aquiutils::atof(value),Expression::timing::both);
+                var[prop].SetVal(aquiutils::atof(value),Expression::timing::both, check_criteria);
         }
         else
 #endif

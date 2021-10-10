@@ -42,12 +42,12 @@ class Parameter : public Object
         void SetValue(const double &val) {value = val; SetProperty("value", aquiutils::numbertostring(val));}
         double GetValue() {return Object::GetVal("value");}
         string LastError() {return last_error;}
-        bool SetProperty(const string &s, const string &val)
+        bool SetProperty(const string &s, const string &val, bool check_criteria=true)
         {
             if (s=="low") { Object::SetProperty("low",val);}
             if (s=="high") { Object::SetProperty("high",val);}
             if (s=="value") {value = atof(val.c_str());}
-            return Object::SetProperty(s,val);
+            return Object::SetProperty(s,val,false,check_criteria);
 
         }
         string toString(int _tabs = 0);

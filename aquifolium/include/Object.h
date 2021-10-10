@@ -105,7 +105,7 @@ class Object
         void ShowMessage(const string &msg);
         System* Parent() {if (parent!=nullptr) return parent; else return nullptr;}
         void SetAllParents();
-        bool SetProperty(const string &prop, const string &value, bool force_value=false);
+        bool SetProperty(const string &prop, const string &value, bool force_value=false, bool check_criteria=true);
         string toString(int _tabs=0);
         void SetPrimaryKey(const string &prmkey) {primary_key = prmkey;}
         string GetPrimaryKey() {return primary_key;}
