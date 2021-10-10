@@ -414,6 +414,7 @@
     <ClCompile Include="..\qcustomplot\qcustomplot.cpp" />
     <ClCompile Include="ray.cpp" />
     <ClCompile Include="runtimewindow.cpp" />
+    <ClCompile Include="undodata.cpp" />
     <ClCompile Include="utilityfuncs.cpp" />
     <ClCompile Include="wizard_select_dialog.cpp" />
   </ItemGroup>
@@ -489,6 +490,7 @@
     <ClInclude Include="..\jsoncpp\include\json\reader.h" />
     <QtMoc Include="runtimewindow.h">
     </QtMoc>
+    <ClInclude Include="undodata.h" />
     <ClInclude Include="utilityfuncs.h" />
     <ClInclude Include="..\jsoncpp\include\json\value.h" />
     <ClInclude Include="..\jsoncpp\include\json\version.h" />
