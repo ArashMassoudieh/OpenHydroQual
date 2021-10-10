@@ -634,7 +634,7 @@ string tostring(const Quan::_type &typ)
 }
 
 
-bool Quan::SetVal(const double &v, const Expression::timing &tmg)
+bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_criteria)
 {
     double past_val = _val;
     double past_val_star = _val;
@@ -649,7 +649,7 @@ bool Quan::SetVal(const double &v, const Expression::timing &tmg)
         value_star_updated = true;
         if (HasCriteria() && parent != nullptr)
         {
-            bool validate = Criteria().calc(parent, tmg);
+            bool validate = Criteria().calc(parent, tmg) || !check_criteria;
             if (!validate)
             {
                 AppendError(parent->GetName(), "Quan", "SetVal", warning_message, 8012);
@@ -862,10 +862,10 @@ string Quan::GetProperty(bool force_value)
 
 }
 
-bool Quan::SetProperty(const string &val, bool force_value)
+bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
 {
     if (type == _type::balance || type== _type::constant || type==_type::global_quan || type==_type::value || (type==_type::expression && force_value))
-        return SetVal(aquiutils::atof(val),Expression::timing::both);
+        return SetVal(aquiutils::atof(val),Expression::timing::both, check_criteria);
     if (type == _type::timeseries)
     {
         if (parent->Parent()->InputPath() != "")
@@ -909,7 +909,7 @@ bool Quan::SetProperty(const string &val, bool force_value)
     _string_value = val;
 
 
-    return SetVal(aquiutils::atof(val),Expression::timing::both);
+    return SetVal(aquiutils::atof(val),Expression::timing::both, check_criteria);
 
     return true;
 }

@@ -1380,6 +1380,10 @@ void MainWindow::onopen()
     RefreshTreeView();
     BuildObjectsToolBar();
     LogAllSystemErrors();
+    undoData = UndoData(this);
+    undoData.AppendtoLast(&system);
+    if (undoData.active==0) InactivateUndo();
+    if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
 
 }
 
@@ -1401,7 +1405,10 @@ void MainWindow::onnewproject()
     RefreshTreeView();
     BuildObjectsToolBar();
     LogAllSystemErrors();
-
+    undoData = UndoData(this);
+    undoData.AppendtoLast(&system);
+    if (undoData.active==0) InactivateUndo();
+    if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
 }
 
 bool MainWindow::LoadModel(QString fileName)
@@ -1856,6 +1863,10 @@ void MainWindow::on_actionRecent_triggered()
     {
         addToRecentFiles(fileName, false);
     }
+    undoData = UndoData(this);
+    undoData.AppendtoLast(&system);
+    if (undoData.active==0) InactivateUndo();
+    if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
 
 }
 

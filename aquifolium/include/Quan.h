@@ -49,7 +49,7 @@ class Quan
         bool SetExpression(const string &E);
         bool SetExpression(const Expression &E);
         bool SetRule(const string &R);
-        bool SetVal(const double &v, const Expression::timing &tmg=Expression::timing::past);
+        bool SetVal(const double &v, const Expression::timing &tmg=Expression::timing::past, bool check_criteria=false);
         bool SetSource(const string &sourcename);
         void SetCorrespondingFlowVar(const string &s);
         
@@ -113,7 +113,7 @@ class Quan
         }
 		void SetName(const string &name) {_var_name=name;}
 		bool AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code);
-        bool SetProperty(const string &val, bool force_value = false);
+        bool SetProperty(const string &val, bool force_value = false, bool check_criteria=true);
         string GetProperty(bool force_value = false);
 		string SourceName() { return sourcename;}
         bool SetSourceName(const string& s) { sourcename = s; return true;}

@@ -285,7 +285,7 @@ class System: public Object
         bool ReadSystemSettingsTemplate(const string &filename);
         void SetSystemSettings();
         void DisconnectLink(const string linkname);
-        bool SetSystemSettingsObjectProperties(const string &s, const string &val);
+        bool SetSystemSettingsObjectProperties(const string &s, const string &val, bool checkcritetia = false);
         bool Delete(const string& objectname);
         void PopulateOperatorsFunctions();
         bool VerifyAsSource(Block* blk, Link* lnk);

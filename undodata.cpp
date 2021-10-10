@@ -3,6 +3,7 @@
 
 UndoData::UndoData(MainWindow *_parent)
 {
+    Systems.clear();
     parent = _parent;
 }
 

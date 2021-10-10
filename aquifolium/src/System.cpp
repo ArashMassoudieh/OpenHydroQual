@@ -756,13 +756,13 @@ bool System::SetProp(const string &s, const double &val)
     return false;
 }
 
-bool System::SetSystemSettingsObjectProperties(const string &s, const string &val)
+bool System::SetSystemSettingsObjectProperties(const string &s, const string &val, bool check_criteria)
 {
     for (unsigned int i=0; i<Settings.size(); i++)
     {
         for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
         {   if (j->first==s)
-            {   j->second.SetProperty(val);
+            {   j->second.SetProperty(val,false, check_criteria);
                 return true;
             }
 

@@ -83,7 +83,7 @@
       "includeinoutput": "true",
       "description": "Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "B*e_as*(R_h-1)/1000"
+      "expression": "B*e_as*(R_h-1)"
     }
   },
   "Evapotranspiration_Time_Series (Soil)": {
@@ -291,7 +291,7 @@
       "includeinoutput": "true",
       "description": "Aerodynamic Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "B*e_as*(R_h-1)/1000"
+      "expression": "B*e_as*(R_h-1)"
     },
     "l_v" :
     {

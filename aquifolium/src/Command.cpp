@@ -370,7 +370,7 @@ bool Command::Execute(System *_sys)
         }
         if (aquiutils::tolower(assignments["object"])=="system")
         {
-            return sys->SetSystemSettingsObjectProperties(assignments["quantity"],assignments["value"]);
+            return sys->SetSystemSettingsObjectProperties(assignments["quantity"],assignments["value"],false);
         }
 
         if (aquiutils::tolower(assignments["object"])=="optimizer")
