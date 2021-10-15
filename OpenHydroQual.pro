@@ -57,6 +57,7 @@ SOURCES += \
     aquifolium/src/restorepoint.cpp \
     diagramview.cpp \
     edge.cpp \
+    gridgenerator.cpp \
         main.cpp \
         mainwindow.cpp \
     ./aquifolium/src/Block.cpp \
@@ -123,6 +124,7 @@ HEADERS += \
     aquifolium/include/restorepoint.h \
     diagramview.h \
     edge.h \
+    gridgenerator.h \
         mainwindow.h \
     ./aquifolium/include/Block.h \
     ./aquifolium/include/BTC.h \
@@ -186,6 +188,7 @@ HEADERS += \
 FORMS += \
     Options.ui \
     aboutdialog.ui \
+    gridgenerator.ui \
         mainwindow.ui \
     runtimewindow.ui \
     plotter.ui \

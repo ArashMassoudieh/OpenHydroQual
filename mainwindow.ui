@@ -93,6 +93,8 @@
     </property>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
+    <addaction name="separator"/>
+    <addaction name="actionCreate_2D_Array"/>
    </widget>
    <addaction name="menuFilw"/>
    <addaction name="menuEdit"/>
@@ -279,6 +281,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="actionCreate_2D_Array">
+   <property name="text">
+    <string>Create 2D Array</string>
    </property>
   </action>
  </widget>

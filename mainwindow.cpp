@@ -33,6 +33,7 @@
 #include <QtSvg/QSvgRenderer>
 #include "options.h"
 #include <QFileInfo>
+#include "gridgenerator.h"
 
 using namespace std;
 
@@ -92,6 +93,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(onabout()));
     connect(ui->actionUndo,SIGNAL(triggered()),this,SLOT(on_Undo()));
     connect(ui->actionRedo,SIGNAL(triggered()),this,SLOT(on_Redo()));
+    connect(ui->actionCreate_2D_Array,SIGNAL(triggered()),this,SLOT(onCreate2dArray()));
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
     connect(ui->actionLoad_a_new_template,SIGNAL(triggered()),this,SLOT(loadnewtemplate()));
     connect(ui->actionAddPlugin,SIGNAL(triggered()),this,SLOT(addplugin()));
@@ -1917,4 +1919,11 @@ void MainWindow::AddStatetoUndoData()
 void MainWindow::SetActiveUndo()
 {
     undoData.SetActiveSystem(&system);
+}
+
+void MainWindow::onCreate2dArray()
+{
+    GridGenerator *gridgenerator = new GridGenerator(this);
+    gridgenerator->show();
+
 }

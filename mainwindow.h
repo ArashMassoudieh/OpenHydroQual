@@ -129,6 +129,7 @@ private slots:
     void on_actionRecent_triggered();
     void on_Undo();
     void on_Redo();
+    void onCreate2dArray();// Is called when 2D Array action is triggered
 };
 
 QString localAppFolderAddress();
