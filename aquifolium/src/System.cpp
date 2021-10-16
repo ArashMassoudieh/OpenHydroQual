@@ -1843,7 +1843,7 @@ vector<string> System::GetAllBlockTypes()
     for (map<string, QuanSet>::iterator it = metamodel.GetMetaModel()->begin(); it != metamodel.GetMetaModel()->end(); it++)
         if (it->second.BlockLink == blocklink::block)
         {
-            ShowMessage(it->first);
+            //ShowMessage(it->first);
             out.push_back(it->first);
         }
 
@@ -1857,7 +1857,7 @@ vector<string> System::GetAllLinkTypes()
     for (map<string, QuanSet>::iterator it = metamodel.GetMetaModel()->begin(); it != metamodel.GetMetaModel()->end(); it++)
         if (it->second.BlockLink == blocklink::link)
         {
-            ShowMessage(it->first);
+            //ShowMessage(it->first);
             out.push_back(it->first);
         }
 

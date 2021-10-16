@@ -23,6 +23,17 @@ public:
 private:
     Ui::GridGenerator *ui;
     MainWindow *mainwindow;
+    QString Block_type_selected;
+    QString Link_type_selected;
+    QList<QLabel*> BlockPropertiesLabels;
+    QList<QLabel*> LinkPropertiesLabels;
+    QList<QWidget*> BlockPropertiesValues;
+    QList<QWidget*> LinkPropertiesValues;
+    QList<QWidget*> BlockPropertiesIncrements;
+    QList<QWidget*> LinkPropertiesIncrements;
+    void ClearPropertiesWindow();
+private slots:
+    void on_Selected_item_changed();
 };
 
 #endif // GRIDGENERATOR_H
