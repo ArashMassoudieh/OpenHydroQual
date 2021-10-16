@@ -3,6 +3,7 @@
   "Catchment": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Catchment",
     "icon": {
       "filename": "rainwater-catchment.png"
     },
@@ -99,6 +100,7 @@
   "Precipitation": {
     "type": "source",
     "typecategory": "Sources",
+    "description": "Precipitation",
     "icon": {
       "filename": "cloud.png"
     },
@@ -125,6 +127,7 @@
   "Reservoir": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Reservoir",
     "icon": {
       "filename": "Reservoir_Rating_Curve.png"
     },
@@ -168,6 +171,7 @@
   "Special_Reservoir": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Reservoir with controlled outflow",
     "icon": {
       "filename": "Reservoid_Control.png"
     },
@@ -217,6 +221,7 @@
   "Reservoir_link": {
     "type": "link",
     "typecategory": "Connectors",
+    "description": "Link from a reservoir",
     "icon": {
       "filename": "Reservoir_Link_Arrow.png"
     },
@@ -238,6 +243,7 @@
   "Catchment_link": {
     "type": "link",
     "typecategory": "Connectors",
+    "description": "Link from a catchment",
     "icon": {
       "filename": "Catchment_outlet.png"
     },
@@ -265,6 +271,7 @@
   "Reservoir_link_rule": {
     "type": "link",
     "typecategory": "Connectors",
+    "description": "Reservoir outflow with a rule-based flow",
     "icon": {
       "filename": "reservoir_link.png"
     },
@@ -327,6 +334,7 @@
   "User": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Water user",
     "icon": {
       "filename": "farm.png"
     },
@@ -351,6 +359,7 @@
   "User_flow": {
     "type": "link",
     "typecategory": "Connectors",
+    "description": "Flow link to water user",
     "icon": {
       "filename": "farm_link.png"
     },
@@ -373,6 +382,7 @@
   "Parameter": {
     "type": "parameter",
     "typecategory": "Parameters",
+    "description": "Parameter",
     "icon": {
       "filename": "parameter.png"
     },
@@ -418,6 +428,7 @@
   },
   "Objective_Function": {
     "type": "objective_function",
+    "description": "Objective function",
     "typecategory": "Objective Functions",
     "icon": {
       "filename": "objective.png"
@@ -467,6 +478,7 @@
   },
   "Observation": {
     "type": "observation",
+    "description": "Observation",
     "typecategory": "Observations",
     "icon": {
       "filename": "observation.png"
@@ -518,6 +530,7 @@
   "fixed_head": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Fixed-head boundary",
     "icon": {
       "filename": "fixedhead.png"
     },
@@ -547,6 +560,7 @@
   "time_variable_fixed_head": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Time-variable fixed-head boundary",
     "icon": {
     	"filename": "fixedhead_timeseries.png"
     },
@@ -573,6 +587,7 @@
   "Constituent": {
     "type": "constituent",
     "typecategory": "Constituents",
+    "description": "Chemical constituent",
     "icon": {
       "filename": "constituent.png"
     },
@@ -621,6 +636,7 @@
   },
   "Reaction": {
     "type": "Reaction",
+    "description": "Chemical reaction",
     "typecategory": "Reactions",
     "icon": {
       "filename": "reaction.png"

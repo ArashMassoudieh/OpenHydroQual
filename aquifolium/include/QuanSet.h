@@ -35,7 +35,10 @@ class QuanSet
         std::unordered_map<string,Quan>::iterator begin() {return quans.begin();}
         unsigned long size() {return quans.size();}
         unsigned long AskableSize();
-        string &Description() {return description;}
+        string &Description() 
+        {
+            return description;
+        }
         string &IconFileName() {return iconfilename;}
         string &Name() {return name;}
         void ShowMessage(const string &msg);

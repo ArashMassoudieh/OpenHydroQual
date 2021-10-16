@@ -404,6 +404,7 @@
     <ClCompile Include="..\jsoncpp\src\lib_json\json_writer.cpp" />
     <ClCompile Include="expEditor.cpp" />
     <ClCompile Include="expressioneditor.cpp" />
+    <ClCompile Include="gridgenerator.cpp" />
     <ClCompile Include="logwindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
@@ -479,6 +480,7 @@
     <QtMoc Include="expEditor.h" />
     <QtMoc Include="expressioneditor.h" />
     <QtMoc Include="logwindow.h" />
+    <QtMoc Include="gridgenerator.h" />
     <ClInclude Include="node.h" />
     <QtMoc Include="propmodel.h">
     </QtMoc>
@@ -501,6 +503,7 @@
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="aboutdialog.ui" />
+    <QtUic Include="gridgenerator.ui" />
     <QtUic Include="logwindow.ui" />
     <QtUic Include="mainwindow.ui">
     </QtUic>
