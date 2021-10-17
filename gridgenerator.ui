@@ -22,7 +22,7 @@
      <property name="currentIndex">
       <number>1</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tab_SelectComponents">
       <attribute name="title">
        <string>Select  Components</string>
       </attribute>
@@ -67,7 +67,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="tab_BlockProperties">
       <property name="enabled">
        <bool>false</bool>
       </property>
@@ -133,7 +133,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_3">
+     <widget class="QWidget" name="tab_LinkProperties">
       <property name="enabled">
        <bool>false</bool>
       </property>

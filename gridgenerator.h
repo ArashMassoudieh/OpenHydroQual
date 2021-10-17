@@ -4,6 +4,10 @@
 #include <QDialog>
 #include "System.h"
 
+constexpr int max_size_x = 300;
+constexpr int max_size_y = 300;
+
+
 class MainWindow;
 
 namespace Ui {
@@ -32,8 +36,10 @@ private:
     QList<QWidget*> BlockPropertiesIncrements;
     QList<QWidget*> LinkPropertiesIncrements;
     void ClearPropertiesWindow();
+    void UpdateToolTipes();
 private slots:
     void on_Selected_item_changed();
+    void browserClicked();
 };
 
 #endif // GRIDGENERATOR_H

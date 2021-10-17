@@ -52,6 +52,7 @@ SOURCES += \
     ../jsoncpp/src/lib_json/json_value.cpp \
     ../jsoncpp/src/lib_json/json_writer.cpp \
     CustomPlotZoom.cpp \
+    UnitTextBox3.cpp \
     XString.cpp \
     aboutdialog.cpp \
     aquifolium/src/restorepoint.cpp \
@@ -119,6 +120,7 @@ HEADERS += \
     ./aquifolium/include/solutionlogger.h \
     CustomPlotZoom.h \
     UnitTextBox.h \
+    UnitTextBox3.h \
     XString.h \
     aboutdialog.h \
     aquifolium/include/restorepoint.h \
