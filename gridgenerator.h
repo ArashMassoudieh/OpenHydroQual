@@ -7,6 +7,7 @@
 constexpr int max_size_x = 300;
 constexpr int max_size_y = 300;
 
+enum class objectType {block, link};
 
 class MainWindow;
 
@@ -35,11 +36,19 @@ private:
     QList<QWidget*> LinkPropertiesValues;
     QList<QWidget*> BlockPropertiesIncrements;
     QList<QWidget*> LinkPropertiesIncrements;
-    void ClearPropertiesWindow();
+    void ClearPropertiesWindow(objectType);
     void UpdateToolTipes();
+    void PopulatePropertiesTab(QuanSet&, QGridLayout *,objectType);
+    QSpacerItem *verticalSpacer_links = nullptr;
+    QSpacerItem *verticalSpacer_blocks = nullptr;
+
 private slots:
-    void on_Selected_item_changed();
+    void on_Selected_block_changed();
+    void on_Selected_link_changed();
     void browserClicked();
+    void on_NextClicked();
+    void on_PreviousClicked();
+    void on_TabChanged();
 };
 
 #endif // GRIDGENERATOR_H

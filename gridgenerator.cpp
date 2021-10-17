@@ -13,8 +13,11 @@ GridGenerator::GridGenerator(MainWindow *parent) :
     mainwindow = parent;
     PopulateBlocks();
     PopulateLinks(); 
-    connect(ui->listWidgetBlocks,SIGNAL(itemSelectionChanged()),this,SLOT(on_Selected_item_changed()));
-    connect(ui->listWidgetLinks,SIGNAL(itemSelectionChanged()),this,SLOT(on_Selected_item_changed()));
+    connect(ui->listWidgetBlocks,SIGNAL(itemSelectionChanged()),this,SLOT(on_Selected_block_changed()));
+    connect(ui->listWidgetLinks,SIGNAL(itemSelectionChanged()),this,SLOT(on_Selected_link_changed()));
+    connect(ui->pushButtonNext,SIGNAL(clicked()),this,SLOT(on_NextClicked()));
+    connect(ui->pushButtonPrevious,SIGNAL(clicked()),this,SLOT(on_PreviousClicked()));
+    connect(ui->tabWidget,SIGNAL(currentChanged(int)), this, SLOT(on_TabChanged()));
     ui->pushButtonNext->setEnabled(false);
     ui->tabWidget->setCurrentIndex(0);
 }
@@ -95,79 +98,133 @@ System * GridGenerator::system()
         return nullptr;
 }
 
-void GridGenerator::on_Selected_item_changed()
+void GridGenerator::on_Selected_block_changed()
 {
-    ClearPropertiesWindow();
+    ClearPropertiesWindow(objectType::block);
     if (ui->listWidgetBlocks->selectedItems().count()>0)
         Block_type_selected = ui->listWidgetBlocks->selectedItems()[0]->data(1000).toString();
     else
+    {
+        ui->tab_BlockProperties->setEnabled(false);
         return;
 
-    if (ui->listWidgetLinks->selectedItems().count()>0)
-        Link_type_selected = ui->listWidgetBlocks->selectedItems()[0]->data(1000).toString();
-    else
-        return;
+    }
 
     QuanSet blockQS = *system()->GetModel(Block_type_selected.toStdString());
+
+    PopulatePropertiesTab(blockQS, ui->gridLayout_Block, objectType::block);
+
+    ui->tab_BlockProperties->setEnabled(true);
+    ui->pushButtonNext->setEnabled(true);
+
+}
+
+void GridGenerator::on_Selected_link_changed()
+{
+    ClearPropertiesWindow(objectType::link);
+
+    if (ui->listWidgetLinks->selectedItems().count()>0)
+        Link_type_selected = ui->listWidgetLinks->selectedItems()[0]->data(1000).toString();
+    else
+    {   ui->tab_LinkProperties->setEnabled(false);
+        return;
+    }
+
     QuanSet linkQS = *system()->GetModel(Link_type_selected.toStdString());
 
-    for (unsigned int i=0; i<blockQS.AskableSize(); i++)
+    PopulatePropertiesTab(linkQS, ui->gridLayout_Link, objectType::link);
+
+    ui->tab_LinkProperties->setEnabled(true);
+    ui->pushButtonNext->setEnabled(true);
+
+}
+
+
+void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, objectType ObjectType)
+{
+
+    for (unsigned int i=0; i<qs.AskableSize(); i++)
     {
         QLabel *label = new QLabel;
-        label->setText(QString::fromStdString(blockQS.GetVarAskable(i)->Description()));
-        BlockPropertiesLabels.append(label);
-        ui->gridLayout->addWidget(label,i+1,0);
+        label->setText(QString::fromStdString(qs.GetVarAskable(i)->Description()));
+        if (ObjectType == objectType::block)
+            BlockPropertiesLabels.append(label);
+        else if (ObjectType == objectType::link)
+            LinkPropertiesLabels.append(label);
+        layout->addWidget(label,i+1,0);
 
-        if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("UnitBox"))
+        if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("UnitBox"))
         {
-            UnitTextBox3 *unitBox = new UnitTextBox3(QStyleOptionViewItem() ,this);
-            unitBox->setText(QString::fromStdString(blockQS.GetVarAskable(i)->Default()));
-            unitBox->setUnit(QString::fromStdString(blockQS.GetVarAskable(i)->Unit()));
-            unitBox->setUnitsList(XString::reform(QString::fromStdString(blockQS.GetVarAskable(i)->Units()).split(";")));
-            unitBox->setMaximumSize(max_size_x,max_size_y);
-            BlockPropertiesValues.append(unitBox);
-            ui->gridLayout->addWidget(unitBox,i+1,1);
+            UnitTextBox3 *editor = new UnitTextBox3(QStyleOptionViewItem() ,this);
+            editor->setText(QString::fromStdString(qs.GetVarAskable(i)->Default()));
+            editor->setUnit(QString::fromStdString(qs.GetVarAskable(i)->Unit()));
+            editor->setUnitsList(XString::reform(QString::fromStdString(qs.GetVarAskable(i)->Units()).split(";")));
+            editor->setMaximumSize(max_size_x,max_size_y);
+
+            layout->addWidget(editor,i+1,1);
             UnitTextBox3 *incrementTxtBox = new UnitTextBox3(QStyleOptionViewItem(),false ,this);
-            incrementTxtBox->setUnit(QString::fromStdString(blockQS.GetVarAskable(i)->Unit()));
-            incrementTxtBox->setUnitsList(XString::reform(QString::fromStdString(blockQS.GetVarAskable(i)->Units()).split(";")));
-            BlockPropertiesIncrements.append(incrementTxtBox);
+            incrementTxtBox->setUnit(QString::fromStdString(qs.GetVarAskable(i)->Unit()));
+            incrementTxtBox->setUnitsList(XString::reform(QString::fromStdString(qs.GetVarAskable(i)->Units()).split(";")));
+            if (ObjectType == objectType::block)
+            {   BlockPropertiesIncrements.append(incrementTxtBox);
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesIncrements.append(incrementTxtBox);
+                LinkPropertiesValues.append(editor);
+            }
             incrementTxtBox->setMaximumSize(max_size_x,max_size_y);
-            ui->gridLayout->addWidget(incrementTxtBox,i+1,2);
+            layout->addWidget(incrementTxtBox,i+1,2);
         }
-        else if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("ValueBox"))
-        {   QLineEdit *valueBox = new QLineEdit();
-            valueBox->setText(QString::fromStdString(blockQS.GetVarAskable(i)->Default()));
-            BlockPropertiesValues.append(valueBox);
-            valueBox->setMaximumSize(max_size_x,max_size_y);
-            ui->gridLayout->addWidget(valueBox,i+1,1);
+        else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("ValueBox"))
+        {   QLineEdit *editor = new QLineEdit();
+            editor->setText(QString::fromStdString(qs.GetVarAskable(i)->Default()));
+            editor->setMaximumSize(max_size_x,max_size_y);
+            layout->addWidget(editor,i+1,1);
             QLineEdit *incrementTxtBox = new QLineEdit();
-            BlockPropertiesIncrements.append(incrementTxtBox);
-            ui->gridLayout->addWidget(incrementTxtBox,i+1,2);
+            if (ObjectType == objectType::block)
+            {   BlockPropertiesIncrements.append(incrementTxtBox);
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesIncrements.append(incrementTxtBox);
+                LinkPropertiesValues.append(editor);
+            }
+            layout->addWidget(incrementTxtBox,i+1,2);
             incrementTxtBox->setMaximumSize(max_size_x,max_size_y);
         }
-        else if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("String"))
-        {   QLineEdit *valueBox = new QLineEdit();
-            valueBox->setText(QString::fromStdString(blockQS.GetVarAskable(i)->Default()));
-            BlockPropertiesValues.append(valueBox);
-            valueBox->setMaximumSize(max_size_x,max_size_y);
-            ui->gridLayout->addWidget(valueBox,i+1,1);
+        else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("String"))
+        {   QLineEdit *editor = new QLineEdit();
+            editor->setText(QString::fromStdString(qs.GetVarAskable(i)->Default()));
+            if (ObjectType == objectType::block)
+            {
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesValues.append(editor);
+            }
+            editor->setMaximumSize(max_size_x,max_size_y);
+            layout->addWidget(editor,i+1,1);
         }
-        else if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("MultiComboBox"))
+        else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("MultiComboBox"))
         {
             QListWidget *editor = new QListWidget(this);
             QStringList allItems;
-            if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("Sources"))
+            if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("Sources"))
             {
                 allItems = toQStringList(mainwindow->GetSystem()->GetAllSourceNames());
             }
-            if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("BlockLinks"))
+            if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("BlockLinks"))
             {
                 allItems = toQStringList(mainwindow->GetSystem()->GetAllBlockNames());
                 allItems.append(toQStringList(mainwindow->GetSystem()->GetAllLinkNames()));
             }
-            if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("items"))
+            if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("items"))
             {
-                allItems = QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).split(":")[1].split(",");
+                allItems = QString::fromStdString(qs.GetVarAskable(i)->Delegate()).split(":")[1].split(",");
             }
             foreach (QString item , allItems)
             {
@@ -177,99 +234,148 @@ void GridGenerator::on_Selected_item_changed()
             }
             editor->setSelectionMode(QAbstractItemView::MultiSelection);
             editor->setMaximumSize(max_size_x,max_size_y);
-            ui->gridLayout->addWidget(editor,i+1,1);
-            BlockPropertiesValues.append(editor);
+            layout->addWidget(editor,i+1,1);
+            if (ObjectType == objectType::block)
+            {
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesValues.append(editor);
+            }
         }
-        else if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("ComboBox"))
+        else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("ComboBox"))
         {
             QComboBox *editor = new QComboBox(this);
             editor->setFrame(false);
             QStringList allItems;
-            if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("Sources"))
+            if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("Sources"))
             {
                 allItems = toQStringList(mainwindow->GetSystem()->GetAllSourceNames());
             }
-            if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("BlockLinks"))
+            if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("BlockLinks"))
             {
                 allItems = toQStringList(mainwindow->GetSystem()->GetAllBlockNames());
                 allItems.append(toQStringList(mainwindow->GetSystem()->GetAllLinkNames()));
             }
-            if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("items"))
+            if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("items"))
             {
-                allItems = QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).split(":")[1].split(",");
+                allItems = QString::fromStdString(qs.GetVarAskable(i)->Delegate()).split(":")[1].split(",");
             }
             editor->addItems(allItems);
             editor->setMaximumSize(max_size_x,max_size_y);
-            ui->gridLayout->addWidget(editor,i+1,1);
-            BlockPropertiesValues.append(editor);
+            layout->addWidget(editor,i+1,1);
+            if (ObjectType == objectType::block)
+            {
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesValues.append(editor);
+            }
         }
-        else if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("CheckBox"))
+        else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("CheckBox"))
         {
             QCheckBox *editor = new QCheckBox(this);
             editor->setMaximumSize(max_size_x,max_size_y);
-            ui->gridLayout->addWidget(editor,i+1,1);
-            BlockPropertiesValues.append(editor);
+            layout->addWidget(editor,i+1,1);
+            if (ObjectType == objectType::block)
+            {
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesValues.append(editor);
+            }
         }
-        else if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("DirBrowser"))
+        else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("DirBrowser"))
         {
             QPushButton *editor = new QPushButton(this);
             editor->setMaximumSize(max_size_x,max_size_y);
-            ui->gridLayout->addWidget(editor,i+1,1);
+            layout->addWidget(editor,i+1,1);
             QObject::connect(editor, SIGNAL(clicked()), this, SLOT(dirBrowserClicked()));
-            BlockPropertiesValues.append(editor);
+            if (ObjectType == objectType::block)
+            {
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesValues.append(editor);
+            }
         }
-        else if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("Browser"))
+        else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("Browser"))
         {
             QPushButton *editor = new QPushButton(this);
             editor->setMaximumSize(max_size_x,max_size_y);
-            ui->gridLayout->addWidget(editor,i+1,1);
+            layout->addWidget(editor,i+1,1);
             QObject::connect(editor, SIGNAL(clicked()), this, SLOT(browserClicked()));
-            BlockPropertiesValues.append(editor);
+            if (ObjectType == objectType::block)
+            {
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesValues.append(editor);
+            }
 
         }
-        else if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("ListBox"))
+        else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("ListBox"))
         {
             QComboBox *editor = new QComboBox(this);
             editor->setMaximumSize(max_size_x,max_size_y);
             //connect(editor, SIGNAL(clicked()), this, SLOT(browserClicked()));
             QStringList allItems;
-            if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("Sources"))
+            if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("Sources"))
             {
                 allItems = toQStringList(mainwindow->GetSystem()->GetAllSourceNames());
             }
-            if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("BlockLinks"))
+            if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("BlockLinks"))
             {
                 allItems = toQStringList(mainwindow->GetSystem()->GetAllBlockNames());
                 allItems.append(toQStringList(mainwindow->GetSystem()->GetAllLinkNames()));
             }
-            if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("items"))
+            if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("items"))
             {
-                allItems = QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).split(":")[1].split(",");
+                allItems = QString::fromStdString(qs.GetVarAskable(i)->Delegate()).split(":")[1].split(",");
             }
             editor->addItems(allItems);
-            ui->gridLayout->addWidget(editor,i+1,1);
-            BlockPropertiesValues.append(editor);
+            layout->addWidget(editor,i+1,1);
+            if (ObjectType == objectType::block)
+            {
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesValues.append(editor);
+            }
         }
-        else if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("Memo"))
+        else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("Memo"))
         {
             QTextEdit* editor = new QTextEdit(this);
             editor->setMaximumSize(max_size_x,max_size_y);
             editor->setWordWrapMode(QTextOption::NoWrap);
-            ui->gridLayout->addWidget(editor,i+1,1);
-            BlockPropertiesValues.append(editor);
+            layout->addWidget(editor,i+1,1);
+            if (ObjectType == objectType::block)
+            {
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesValues.append(editor);
+            }
         }
-        else if (QString::fromStdString(blockQS.GetVarAskable(i)->Delegate()).contains("expressionEditor"))
+        else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("expressionEditor"))
         {
             QStringList words;
-            for (unsigned int i=0; i<blockQS.AllConstituents().size(); i++)
-                 words << QString::fromStdString(blockQS.AllConstituents()[i]);
+            for (unsigned int i=0; i<qs.AllConstituents().size(); i++)
+                 words << QString::fromStdString(qs.AllConstituents()[i]);
 
-            for (unsigned int i=0; i<blockQS.AllReactionParameters().size(); i++)
-                 words << QString::fromStdString(blockQS.AllReactionParameters()[i]);
+            for (unsigned int i=0; i<qs.AllReactionParameters().size(); i++)
+                 words << QString::fromStdString(qs.AllReactionParameters()[i]);
 
             QString objname;
-            if (blockQS.Count("object")>0)
-                objname = QString::fromStdString(blockQS.GetVar("object").GetProperty());
+            if (qs.Count("object")>0)
+                objname = QString::fromStdString(qs.GetVar("object").GetProperty());
 
             Object *obj = nullptr;
             if (objname!="")
@@ -277,42 +383,101 @@ void GridGenerator::on_Selected_item_changed()
 
             expEditor* editor = new expEditor(obj, words, nullptr, this);
             editor->setMaximumSize(max_size_x,max_size_y);
-            ui->gridLayout->addWidget(editor,i+1,1);
-            BlockPropertiesValues.append(editor);
+            layout->addWidget(editor,i+1,1);
+            if (ObjectType == objectType::block)
+            {
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesValues.append(editor);
+            }
         }
         else
         {
-            QLineEdit *valueBox = new QLineEdit();
-            valueBox->setText(QString::fromStdString(blockQS.GetVarAskable(i)->Default()));
-            BlockPropertiesValues.append(valueBox);
-            valueBox->setMaximumSize(max_size_x,max_size_y);
-            ui->gridLayout->addWidget(valueBox,i+1,1);
-            BlockPropertiesValues.append(valueBox);
+            QLineEdit *editor = new QLineEdit();
+            editor->setText(QString::fromStdString(qs.GetVarAskable(i)->Default()));
+            BlockPropertiesValues.append(editor);
+            editor->setMaximumSize(max_size_x,max_size_y);
+            layout->addWidget(editor,i+1,1);
+            if (ObjectType == objectType::block)
+            {
+                BlockPropertiesValues.append(editor);
+            }
+            else if (ObjectType == objectType::block)
+            {
+                LinkPropertiesValues.append(editor);
+            }
         }
 
     }
-    ui->tab_BlockProperties->setEnabled(true);
-    ui->pushButtonNext->setEnabled(true);
+
+    if (ObjectType == objectType::block)
+    {
+        verticalSpacer_blocks = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        ui->gridLayout_Block->addItem(verticalSpacer_blocks, qs.AskableSize(), 0, 1, 3);
+
+    }
+    else if (ObjectType == objectType::link)
+    {
+        verticalSpacer_links = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        ui->gridLayout_Link->addItem(verticalSpacer_links, qs.AskableSize(), 0, 1, 3);
+    }
+
 }
 
-void GridGenerator::ClearPropertiesWindow()
+
+void GridGenerator::ClearPropertiesWindow(objectType ObjectType)
 {
-    for (int i=0; i<BlockPropertiesLabels.count(); i++)
-    {   ui->gridLayout->removeWidget(BlockPropertiesLabels[i]);
-        delete BlockPropertiesLabels[i];
+    if (ObjectType == objectType::block)
+    {   for (int i=0; i<BlockPropertiesLabels.count(); i++)
+        {   ui->gridLayout_Block->removeWidget(BlockPropertiesLabels[i]);
+            delete BlockPropertiesLabels[i];
+        }
+        for (int i=0; i<BlockPropertiesValues.count(); i++)
+        {   ui->gridLayout_Block->removeWidget(BlockPropertiesValues[i]);
+            delete BlockPropertiesValues[i];
+        }
+        for (int i=0; i<BlockPropertiesIncrements.count(); i++)
+        {   ui->gridLayout_Block->removeWidget(BlockPropertiesIncrements[i]);
+            delete BlockPropertiesIncrements[i];
+        }
+
+        if (verticalSpacer_blocks!=nullptr)
+        {   ui->gridLayout_Link->removeItem(verticalSpacer_blocks);
+            delete verticalSpacer_blocks;
+        }
+        ui->tab_BlockProperties->update();
+        BlockPropertiesIncrements.clear();
+        BlockPropertiesLabels.clear();
+        BlockPropertiesValues.clear();
+
     }
-    for (int i=0; i<BlockPropertiesValues.count(); i++)
-    {   ui->gridLayout->removeWidget(BlockPropertiesValues[i]);
-        delete BlockPropertiesValues[i];
+    if (ObjectType == objectType::link)
+    {   for (int i=0; i<LinkPropertiesLabels.count(); i++)
+        {   ui->gridLayout_Link->removeWidget(LinkPropertiesLabels[i]);
+            delete LinkPropertiesLabels[i];
+        }
+        for (int i=0; i<LinkPropertiesValues.count(); i++)
+        {   ui->gridLayout_Link->removeWidget(LinkPropertiesValues[i]);
+            delete LinkPropertiesValues[i];
+        }
+        for (int i=0; i<LinkPropertiesIncrements.count(); i++)
+        {   ui->gridLayout_Link->removeWidget(LinkPropertiesIncrements[i]);
+            delete LinkPropertiesIncrements[i];
+        }
+
+        if (verticalSpacer_links !=nullptr)
+        {   ui->gridLayout_Link->removeItem(verticalSpacer_links);
+            delete verticalSpacer_links;
+        }
+
+        ui->tab_LinkProperties->update();
+        LinkPropertiesIncrements.clear();
+        LinkPropertiesLabels.clear();
+        LinkPropertiesValues.clear();
+
     }
-    for (int i=0; i<BlockPropertiesIncrements.count(); i++)
-    {   ui->gridLayout->removeWidget(BlockPropertiesIncrements[i]);
-        delete BlockPropertiesIncrements[i];
-    }
-    ui->tab_BlockProperties->update();
-    BlockPropertiesIncrements.clear();
-    BlockPropertiesLabels.clear();
-    BlockPropertiesValues.clear();
 
 }
 
@@ -336,5 +501,33 @@ void GridGenerator::browserClicked()
 
 void GridGenerator::UpdateToolTipes()
 {
+
+}
+
+void GridGenerator::on_NextClicked()
+{
+    if (ui->tabWidget->currentIndex()<ui->tabWidget->count()-1)
+        ui->tabWidget->setCurrentIndex(ui->tabWidget->currentIndex()+1);
+
+    on_TabChanged();
+}
+void GridGenerator::on_PreviousClicked()
+{
+    if (ui->tabWidget->currentIndex()>0)
+        ui->tabWidget->setCurrentIndex(ui->tabWidget->currentIndex()-1);
+
+    on_TabChanged();
+}
+
+void GridGenerator::on_TabChanged()
+{
+    if (ui->tabWidget->currentIndex()==0)
+        ui->pushButtonPrevious->setEnabled(false);
+    else
+        ui->pushButtonPrevious->setEnabled(true);
+    if (ui->tabWidget->currentIndex()==ui->tabWidget->count()-1)
+        ui->pushButtonNext->setEnabled(false);
+    else
+        ui->pushButtonNext->setEnabled(true);
 
 }
