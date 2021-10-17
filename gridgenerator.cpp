@@ -152,7 +152,9 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
         else if (ObjectType == objectType::link)
             LinkPropertiesLabels.append(label);
         layout->addWidget(label,i+1,0);
-
+        label->setMaximumSize(max_size_x,max_size_y);
+        label->setMinimumSize(min_size_x,min_size_y);
+        label->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
         if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("UnitBox"))
         {
             UnitTextBox3 *editor = new UnitTextBox3(QStyleOptionViewItem() ,this);
@@ -160,7 +162,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             editor->setUnit(QString::fromStdString(qs.GetVarAskable(i)->Unit()));
             editor->setUnitsList(XString::reform(QString::fromStdString(qs.GetVarAskable(i)->Units()).split(";")));
             editor->setMaximumSize(max_size_x,max_size_y);
-
+            editor->setMinimumSize(min_size_x,min_size_y);
             layout->addWidget(editor,i+1,1);
             UnitTextBox3 *incrementTxtBox = new UnitTextBox3(QStyleOptionViewItem(),false ,this);
             incrementTxtBox->setUnit(QString::fromStdString(qs.GetVarAskable(i)->Unit()));
@@ -169,31 +171,35 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {   BlockPropertiesIncrements.append(incrementTxtBox);
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesIncrements.append(incrementTxtBox);
                 LinkPropertiesValues.append(editor);
             }
             incrementTxtBox->setMaximumSize(max_size_x,max_size_y);
+            incrementTxtBox->setMinimumSize(min_size_x,min_size_y);
             layout->addWidget(incrementTxtBox,i+1,2);
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("ValueBox"))
         {   QLineEdit *editor = new QLineEdit();
             editor->setText(QString::fromStdString(qs.GetVarAskable(i)->Default()));
             editor->setMaximumSize(max_size_x,max_size_y);
+            editor->setMinimumSize(min_size_x,min_size_y);
+
             layout->addWidget(editor,i+1,1);
             QLineEdit *incrementTxtBox = new QLineEdit();
             if (ObjectType == objectType::block)
             {   BlockPropertiesIncrements.append(incrementTxtBox);
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesIncrements.append(incrementTxtBox);
                 LinkPropertiesValues.append(editor);
             }
             layout->addWidget(incrementTxtBox,i+1,2);
             incrementTxtBox->setMaximumSize(max_size_x,max_size_y);
+            incrementTxtBox->setMinimumSize(min_size_x,min_size_y);
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("String"))
         {   QLineEdit *editor = new QLineEdit();
@@ -202,11 +208,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesValues.append(editor);
             }
             editor->setMaximumSize(max_size_x,max_size_y);
+            editor->setMinimumSize(min_size_x,min_size_y);
+
             layout->addWidget(editor,i+1,1);
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("MultiComboBox"))
@@ -239,7 +247,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesValues.append(editor);
             }
@@ -269,7 +277,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesValues.append(editor);
             }
@@ -283,7 +291,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesValues.append(editor);
             }
@@ -298,7 +306,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesValues.append(editor);
             }
@@ -313,7 +321,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesValues.append(editor);
             }
@@ -344,7 +352,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesValues.append(editor);
             }
@@ -359,7 +367,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesValues.append(editor);
             }
@@ -388,7 +396,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesValues.append(editor);
             }
@@ -404,7 +412,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 BlockPropertiesValues.append(editor);
             }
-            else if (ObjectType == objectType::block)
+            else if (ObjectType == objectType::link)
             {
                 LinkPropertiesValues.append(editor);
             }
@@ -414,14 +422,15 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
 
     if (ObjectType == objectType::block)
     {
-        verticalSpacer_blocks = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-        ui->gridLayout_Block->addItem(verticalSpacer_blocks, qs.AskableSize(), 0, 1, 3);
+        verticalSpacer_blocks = new QSpacerItem(20, 40, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding);
+
+        ui->gridLayout_Block->addItem(verticalSpacer_blocks, qs.AskableSize(), 1, 1, 1);
 
     }
     else if (ObjectType == objectType::link)
     {
-        verticalSpacer_links = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-        ui->gridLayout_Link->addItem(verticalSpacer_links, qs.AskableSize(), 0, 1, 3);
+        verticalSpacer_links = new QSpacerItem(20, 40, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding);
+        ui->gridLayout_Link->addItem(verticalSpacer_links, qs.AskableSize(), 1, 1, 1);
     }
 
 }
@@ -444,10 +453,11 @@ void GridGenerator::ClearPropertiesWindow(objectType ObjectType)
         }
 
         if (verticalSpacer_blocks!=nullptr)
-        {   ui->gridLayout_Link->removeItem(verticalSpacer_blocks);
+        {   ui->gridLayout_Block->removeItem(verticalSpacer_blocks);
             delete verticalSpacer_blocks;
         }
         ui->tab_BlockProperties->update();
+        ui->gridLayout_Block->update();
         BlockPropertiesIncrements.clear();
         BlockPropertiesLabels.clear();
         BlockPropertiesValues.clear();
@@ -473,6 +483,7 @@ void GridGenerator::ClearPropertiesWindow(objectType ObjectType)
         }
 
         ui->tab_LinkProperties->update();
+        ui->gridLayout_Link->update();
         LinkPropertiesIncrements.clear();
         LinkPropertiesLabels.clear();
         LinkPropertiesValues.clear();

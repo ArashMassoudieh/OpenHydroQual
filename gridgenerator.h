@@ -6,6 +6,8 @@
 
 constexpr int max_size_x = 300;
 constexpr int max_size_y = 300;
+constexpr int min_size_x = 100;
+constexpr int min_size_y = 30;
 
 enum class objectType {block, link};
 
