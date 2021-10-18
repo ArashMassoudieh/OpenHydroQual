@@ -19,4 +19,10 @@ UnitTextBox3::UnitTextBox3(const XString &X, bool openFileMenu, QWidget * parent
     setXString(X);
     setFocusProxy(textBox);
     updateContextMenu(openFileMenu);
+    connect(textBox, SIGNAL(textEdited(const QString&)),this, SLOT(on_text_edited(const QString&)));
+}
+
+void UnitTextBox3::on_text_edited(const QString& text)
+{
+    emit textEdited(text);
 }

@@ -125,22 +125,26 @@ void GridGenerator::on_Selected_block_changed()
 
 void GridGenerator::on_Selected_link_changed()
 {
-    ClearPropertiesWindow(objectType::link);
+    ClearPropertiesWindow(objectType::link_x);
+    ClearPropertiesWindow(objectType::link_y);
 
     if (ui->listWidgetLinks->selectedItems().count()>0)
         Link_type_selected = ui->listWidgetLinks->selectedItems()[0]->data(1000).toString();
     else
-    {   ui->tab_LinkProperties->setEnabled(false);
+    {   ui->tab_LinkProperties_x->setEnabled(false);
+        ui->tab_LinkProperties_y->setEnabled(false);
         return;
     }
 
     linkQS = *system()->GetModel(Link_type_selected.toStdString());
 
-    PopulatePropertiesTab(linkQS, ui->gridLayout_Link, objectType::link);
-
-    ui->tab_LinkProperties->setEnabled(true);
+    PopulatePropertiesTab(linkQS, ui->gridLayout_Link_x, objectType::link_x);
+    PopulatePropertiesTab(linkQS, ui->gridLayout_Link_y, objectType::link_y);
+    ui->tab_LinkProperties_x->setEnabled(true);
+    ui->tab_LinkProperties_y->setEnabled(true);
     ui->pushButtonNext->setEnabled(true);
     ui->pushButtonGenerate->setEnabled(true);
+    connectLinkTextBoxes();
 
 }
 
@@ -155,10 +159,15 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             quan_info qinfo;
             quan_info_Block.insert(qs.GetVarAskable(i)->GetName(),qinfo);
         }
-        else if (ObjectType == objectType::link)
+        else if (ObjectType == objectType::link_x)
         {
             quan_info qinfo;
-            quan_info_Link.insert(qs.GetVarAskable(i)->GetName(),qinfo);
+            quan_info_Link_x.insert(qs.GetVarAskable(i)->GetName(),qinfo);
+        }
+        else if (ObjectType == objectType::link_y)
+        {
+            quan_info qinfo;
+            quan_info_Link_y.insert(qs.GetVarAskable(i)->GetName(),qinfo);
         }
         QLabel *label = new QLabel;
         label->setText(QString::fromStdString(qs.GetVarAskable(i)->Description()));
@@ -166,9 +175,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
         {   quan_info_Block[qs.GetVarAskable(i)->GetName()].label = label;
             quan_info_Block[qs.GetVarAskable(i)->GetName()].delegate = qs.GetVarAskable(i)->Delegate();
         }
-        else if (ObjectType == objectType::link)
-        {   quan_info_Link[qs.GetVarAskable(i)->GetName()].label = label;
-            quan_info_Link[qs.GetVarAskable(i)->GetName()].delegate = qs.GetVarAskable(i)->Delegate();
+        else if (ObjectType == objectType::link_x)
+        {   quan_info_Link_x[qs.GetVarAskable(i)->GetName()].label = label;
+            quan_info_Link_x[qs.GetVarAskable(i)->GetName()].delegate = qs.GetVarAskable(i)->Delegate();
+        }
+        else if (ObjectType == objectType::link_y)
+        {   quan_info_Link_y[qs.GetVarAskable(i)->GetName()].label = label;
+            quan_info_Link_y[qs.GetVarAskable(i)->GetName()].delegate = qs.GetVarAskable(i)->Delegate();
         }
         layout->addWidget(label,i+1,0);
         label->setMaximumSize(max_size_x,max_size_y);
@@ -196,11 +209,17 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].increment_V = incrementTxtBox_V;
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].increment_H = incrementTxtBox_H;
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].increment_V = incrementTxtBox_V;
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].increment_H = incrementTxtBox_H;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].increment_V = incrementTxtBox_V;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].increment_H = incrementTxtBox_H;
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].increment_V = incrementTxtBox_V;
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
             incrementTxtBox_H->setMaximumSize(max_size_x/2,max_size_y);
             incrementTxtBox_H->setMinimumSize(min_size_x,min_size_y);
@@ -223,11 +242,17 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].increment_V = incrementTxtBox_V;
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].increment_H = incrementTxtBox_H;
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].increment_V = incrementTxtBox_V;
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].increment_H = incrementTxtBox_H;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].increment_V = incrementTxtBox_V;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_x)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].increment_H = incrementTxtBox_H;
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].increment_V = incrementTxtBox_V;
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
             layout->addWidget(incrementTxtBox_H,i+1,2);
             layout->addWidget(incrementTxtBox_V,i+1,3);
@@ -247,9 +272,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
             editor->setMaximumSize(max_size_x,max_size_y);
             editor->setMinimumSize(min_size_x,min_size_y);
@@ -259,7 +288,11 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
                 {
                     editor->setText(Block_type_selected);
                 }
-                else if (ObjectType == objectType::link)
+                else if (ObjectType == objectType::link_x)
+                {
+                    editor->setText(Link_type_selected);
+                }
+                else if (ObjectType == objectType::link_y)
                 {
                     editor->setText(Link_type_selected);
                 }
@@ -296,9 +329,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("ComboBox"))
@@ -326,9 +363,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("CheckBox"))
@@ -340,9 +381,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("DirBrowser"))
@@ -355,9 +400,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("Browser"))
@@ -370,9 +419,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
 
         }
@@ -401,9 +454,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("Memo"))
@@ -416,9 +473,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("expressionEditor"))
@@ -445,9 +506,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
         }
         else
@@ -461,9 +526,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             {
                 quan_info_Block[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link)
+            else if (ObjectType == objectType::link_x)
             {
-                quan_info_Link[qs.GetVarAskable(i)->GetName()].value = editor;
+                quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
+            }
+            else if (ObjectType == objectType::link_y)
+            {
+                quan_info_Link_y[qs.GetVarAskable(i)->GetName()].value = editor;
             }
         }
 
@@ -472,13 +541,18 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
     if (ObjectType == objectType::block)
     {
         verticalSpacer_blocks = new QSpacerItem(20, 40, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding);
-        ui->gridLayout_Block->addItem(verticalSpacer_blocks, qs.AskableSize(), 1, 1, 1);
+        layout->addItem(verticalSpacer_blocks, qs.AskableSize(), 1, 1, 1);
 
     }
-    else if (ObjectType == objectType::link)
+    else if (ObjectType == objectType::link_x)
     {
-        verticalSpacer_links = new QSpacerItem(20, 40, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding);
-        ui->gridLayout_Link->addItem(verticalSpacer_links, qs.AskableSize(), 1, 1, 1);
+        verticalSpacer_links_x = new QSpacerItem(20, 40, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding);
+        layout->addItem(verticalSpacer_links_x, qs.AskableSize(), 1, 1, 1);
+    }
+    else if (ObjectType == objectType::link_y)
+    {
+        verticalSpacer_links_y = new QSpacerItem(20, 40, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding);
+        layout->addItem(verticalSpacer_links_y, qs.AskableSize(), 1, 1, 1);
     }
 
 }
@@ -511,28 +585,52 @@ void GridGenerator::ClearPropertiesWindow(objectType ObjectType)
         quan_info_Block.clear();
 
     }
-    if (ObjectType == objectType::link)
-    {   for (QMap<string,quan_info>::iterator i = quan_info_Link.begin(); i!=quan_info_Link.end(); i++)
-        {   ui->gridLayout_Link->removeWidget(i->label);
+    else if (ObjectType == objectType::link_x)
+    {   for (QMap<string,quan_info>::iterator i = quan_info_Link_x.begin(); i!=quan_info_Link_x.end(); i++)
+        {   ui->gridLayout_Link_x->removeWidget(i->label);
             delete i->label;
-            ui->gridLayout_Link->removeWidget(i->value);
+            ui->gridLayout_Link_x->removeWidget(i->value);
             delete i->value;
             if (i->increment_H!=nullptr)
-            {   ui->gridLayout_Link->removeWidget(i->increment_H);
+            {   ui->gridLayout_Link_x->removeWidget(i->increment_H);
                 delete i->increment_H;
             }
             if (i->increment_V!=nullptr)
-            {   ui->gridLayout_Link->removeWidget(i->increment_V);
+            {   ui->gridLayout_Link_x->removeWidget(i->increment_V);
                 delete i->increment_V;
             }
 
         }
-        if (verticalSpacer_links!=nullptr)
-        {   ui->gridLayout_Link->removeItem(verticalSpacer_links);
-            delete verticalSpacer_links;
+        if (verticalSpacer_links_x!=nullptr)
+        {   ui->gridLayout_Link_x->removeItem(verticalSpacer_links_x);
+            delete verticalSpacer_links_x;
         }
 
-        quan_info_Link.clear();
+        quan_info_Link_x.clear();
+
+    }
+    else if (ObjectType == objectType::link_y)
+    {   for (QMap<string,quan_info>::iterator i = quan_info_Link_y.begin(); i!=quan_info_Link_y.end(); i++)
+        {   ui->gridLayout_Link_y->removeWidget(i->label);
+            delete i->label;
+            ui->gridLayout_Link_y->removeWidget(i->value);
+            delete i->value;
+            if (i->increment_H!=nullptr)
+            {   ui->gridLayout_Link_y->removeWidget(i->increment_H);
+                delete i->increment_H;
+            }
+            if (i->increment_V!=nullptr)
+            {   ui->gridLayout_Link_y->removeWidget(i->increment_V);
+                delete i->increment_V;
+            }
+
+        }
+        if (verticalSpacer_links_y!=nullptr)
+        {   ui->gridLayout_Link_y->removeItem(verticalSpacer_links_y);
+            delete verticalSpacer_links_y;
+        }
+
+        quan_info_Link_y.clear();
 
     }
 
@@ -659,7 +757,7 @@ bool GridGenerator::GenerateLinks()
     for (int i=0; i<ui->spinBox_nx->text().toInt(); i++)
         for (int j=0; j<ui->spinBox_ny->text().toInt()-1; j++)
         {
-            string name = (dynamic_cast<QLineEdit*>(quan_info_Link["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+1)+":"+QString::number(j+2)+")").toStdString();
+            string name = (dynamic_cast<QLineEdit*>(quan_info_Link_y["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+1)+":"+QString::number(j+2)+")").toStdString();
             if (system()->object(name)!=nullptr)
             {
                 QMessageBox::question(this, QString("An object called " + QString::fromStdString(name) + "already exists. Considering chamaging the name of the object."), QString::fromStdString(system()->lasterror()), QMessageBox::Ok);
@@ -670,7 +768,7 @@ bool GridGenerator::GenerateLinks()
     for (int i=0; i<ui->spinBox_nx->text().toInt()-1; i++)
         for (int j=0; j<ui->spinBox_ny->text().toInt(); j++)
         {
-            string name = (dynamic_cast<QLineEdit*>(quan_info_Link["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+2)+":"+QString::number(j+1)+")").toStdString();
+            string name = (dynamic_cast<QLineEdit*>(quan_info_Link_x["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+2)+":"+QString::number(j+1)+")").toStdString();
             if (system()->object(name)!=nullptr)
             {
                 QMessageBox::question(this, QString("An object called " + QString::fromStdString(name) + "already exists. Considering chamaging the name of the object."), QString::fromStdString(system()->lasterror()), QMessageBox::Ok);
@@ -690,7 +788,7 @@ bool GridGenerator::GenerateLinks()
 
             link.SetType(Block_type_selected.toStdString());
 
-            string name = (dynamic_cast<QLineEdit*>(quan_info_Link["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+1)+":"+QString::number(j+2)+")").toStdString();
+            string name = (dynamic_cast<QLineEdit*>(quan_info_Link_y["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+1)+":"+QString::number(j+2)+")").toStdString();
             string srcname = (dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")").toStdString();
             string destname = (dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+2)+")").toStdString();
             link.SetName(name);
@@ -699,7 +797,7 @@ bool GridGenerator::GenerateLinks()
             system()->AddLink(link,srcname,destname);
             system()->object(name)->SetName(name);
             system()->AddAllConstituentRelateProperties(system()->link(name));
-            for (QMap<string,quan_info>::iterator it = quan_info_Link.begin(); it!=quan_info_Link.end(); it++)
+            for (QMap<string,quan_info>::iterator it = quan_info_Link_y.begin(); it!=quan_info_Link_y.end(); it++)
                 AssignProperty(name,linkQS,it,i,j);
             //qDebug() << "DiagramView Repainted!";
             system()->object(name)->AssignRandomPrimaryKey();
@@ -723,7 +821,7 @@ bool GridGenerator::GenerateLinks()
 
             link.SetType(Block_type_selected.toStdString());
 
-            string name = (dynamic_cast<QLineEdit*>(quan_info_Link["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+2)+":"+QString::number(j+1)+")").toStdString();
+            string name = (dynamic_cast<QLineEdit*>(quan_info_Link_x["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+2)+":"+QString::number(j+1)+")").toStdString();
             string srcname = (dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")").toStdString();
             string destname = (dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text()+ "("+QString::number(i+2)+":"+QString::number(j+1)+")").toStdString();
             link.SetName(name);
@@ -732,7 +830,7 @@ bool GridGenerator::GenerateLinks()
             system()->AddLink(link,srcname,destname);
             system()->object(name)->SetName(name);
             system()->AddAllConstituentRelateProperties(system()->link(name));
-            for (QMap<string,quan_info>::iterator it = quan_info_Link.begin(); it!=quan_info_Link.end(); it++)
+            for (QMap<string,quan_info>::iterator it = quan_info_Link_x.begin(); it!=quan_info_Link_x.end(); it++)
                 AssignProperty(name,linkQS,it,i,j);
             //qDebug() << "DiagramView Repainted!";
             system()->object(name)->AssignRandomPrimaryKey();
@@ -806,4 +904,16 @@ bool GridGenerator::AssignProperty(const string &name, QuanSet &quanset, QMap<st
         r = system()->object(name)->Variable(it.key())->SetProperty(value,false);
     }
     return r;
+}
+
+void GridGenerator::connectLinkTextBoxes()
+{
+    for (QMap<string,quan_info>::iterator i = quan_info_Link_x.begin(); i!=quan_info_Link_x.end(); i++)
+    {
+        connect(i->value,SIGNAL(textEdited(const QString&)),quan_info_Link_y[i.key()].value,SLOT(setText(const QString&)));
+        if (i->increment_H!=nullptr)
+            connect(i->increment_H,SIGNAL(textEdited(const QString&)),quan_info_Link_y[i.key()].increment_H,SLOT(setText(const QString&)));
+        if (i->increment_V)
+            connect(i->increment_V,SIGNAL(textEdited(const QString&)),quan_info_Link_y[i.key()].increment_V,SLOT(setText(const QString&)));
+    }
 }

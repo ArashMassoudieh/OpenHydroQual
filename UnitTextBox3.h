@@ -18,7 +18,10 @@ public:
     UnitTextBox3(const XString &X, bool openFileMenu = false, QWidget * parent = 0);
 
     UnitTextBox3(QWidget * parent = 0)
-        :QWidget(parent) {}
+        :QWidget(parent) {
+        connect(textBox, SIGNAL(textEdited(const QString&)),this, SLOT(on_text_edited(const QString&)));
+
+    }
 
     UnitTextBox3(const QStyleOptionViewItem &option, bool openFileMenu = false, QWidget * parent = 0)
         :QWidget(parent)
@@ -32,6 +35,7 @@ public:
         textBox->show();
         this->show();
         updateContextMenu(openFileMenu);
+        connect(textBox, SIGNAL(textEdited(const QString&)),this, SLOT(on_text_edited(const QString&)));
     }
 
     ~UnitTextBox3(){}
@@ -68,7 +72,7 @@ public:
 
     }
 
-    void setText(const QString &T){ textBox->setText(T); }
+
     void setUnit(const QString &U){ unitBox->setCurrentText(U); }
     void setUnitsList(const QStringList &L){ for (int i = 0; unitBox->count(); i++) unitBox->clear(); unitBox->addItems(L); }
     QString text() const { return textBox->text(); }
@@ -83,6 +87,8 @@ public:
     }
 
 public slots:
+    void on_text_edited(const QString& text);
+    void setText(const QString &T){ textBox->setText(T); }
     void showContextMenu(const QPoint &pt)
     {
         QMenu *menu = textBox->createStandardContextMenu();
@@ -102,6 +108,9 @@ public slots:
             textBox->setText(m_fileName);
         }
     }
+signals:
+    void textEdited(const QString &text);
+
 
 private:
     QString m_fileName;
