@@ -10,12 +10,33 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
+      "inflow": "recharge,Precipitation",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "initial_value_expression": "area*(piezometric_head-base_elevation)*specific_yield",
       "ask_user": "false",
       "estimate": "true"
+    },
+    "Precipitation": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "precipitation time series",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources"
+    },
+    "recharge": {
+      "type": "expression",
+      "expression": "recharge_per_area*area",      
+      "description": "Total recharge",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "recharge_per_area": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Recharge per unit area [m/day]",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
     "hydraulic_conductivity": {
       "type": "value",
@@ -139,18 +160,12 @@
       "ask_user": "false"
     }
   },
-  "groundwater_to_fixedhead": {
+  "unconfined_groundwater_to_fixedhead": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Groundwater to fixed head",
+    "description": "Unconfined Groundwater to fixed head",
     "icon": {
-      "filename": "gw_2_fixed_head.png"
-    },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
+      "filename": "unconfined_GW2fixedhead.png"
     },
     "length": {
       "type": "value",
@@ -162,68 +177,44 @@
       "criteria": "length>0",
       "warningmessage": "Length must be greater than zero"
     },
-    "area": {
+    "width": {
       "type": "value",
-      "description": "Interface Area",
+      "description": "Interface Width",
       "includeinoutput": "false",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2;cm~^2;in~^2",
-      "criteria": "area>0",
-      "warningmessage": "Interface area must be greater than zero"
+      "unit": "m;ft;cm;in",
+      "criteria": "width>0",
+      "warningmessage": "Width must be greater than zero"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic Gradient",
+      "expression": "(piezometric_head.s-head.e)/length",
+      "includeinoutput": "true",
+      "ask_user": "false"
     },
     "flow": {
       "type": "expression",
-      "description": "Flow",
-      "expression": "area*hydraulic_conductivity.s*(head.s-head.e)/length",
+      "description": "Flow rate",
+      "expression": "hydraulic_conductivity.s*(piezometric_head.s-head.e)*width*depth.s/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "Darcy flux": {
+      "type": "expression",
+      "description": "Darcy flux",
+      "expression": "hydraulic_conductivity.s*(piezometric_head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
     }
   },
-  "soil2groundwater_link": {
+  "surface2UCgroundwater_link": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Soil to groundwater link",
-    "icon": {
-      "filename": "soil2gw_link.png"
-    },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
-    },
-    "length": {
-      "type": "expression",
-      "expression": "(depth.s+depth.e)/2",
-      "description": "Length",
-      "includeinoutput": "false",
-      "ask_user": "false"
-    },
-    "area": {
-      "type": "value",
-      "description": "Interface Area",
-      "includeinoutput": "false",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2;cm~^2;in~^2",
-      "criteria": "area>0",
-      "warningmessage": "Interface area must be greater than zero"
-    },
-    "flow": {
-      "type": "expression",
-      "description": "Flow",
-      "expression": "0.5*area*(K_sat.s+hydraulic_conductivity.e)*(head.s-head.e)/length",
-      "includeinoutput": "true",
-      "applylimit": "true",
-      "ask_user": "false"
-    }
-  },
-  "surface2groundwater_link": {
-    "type": "link",
-    "typecategory": "Connectors",
-    "description": "Surface water to groundwater link",
+    "description": "Surface water to unconfined groundwater link",
     "icon": {
       "filename": "Surface2GW_link.png"
     },
@@ -266,7 +257,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "0.5*area*hydraulic_conductivity*(head.s-head.e)/length",
+      "expression": "area*hydraulic_conductivity*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
