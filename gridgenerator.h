@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "System.h"
+#include <QMap>
 
 constexpr int max_size_x = 300;
 constexpr int max_size_y = 300;
@@ -10,6 +11,15 @@ constexpr int min_size_x = 100;
 constexpr int min_size_y = 30;
 
 enum class objectType {block, link};
+
+struct quan_info
+{
+    QLabel *label=nullptr;
+    QWidget *value=nullptr;
+    QWidget *increment_H = nullptr;
+    QWidget *increment_V = nullptr;
+    string delegate = "";
+};
 
 class MainWindow;
 
@@ -32,18 +42,18 @@ private:
     MainWindow *mainwindow;
     QString Block_type_selected;
     QString Link_type_selected;
-    QList<QLabel*> BlockPropertiesLabels;
-    QList<QLabel*> LinkPropertiesLabels;
-    QList<QWidget*> BlockPropertiesValues;
-    QList<QWidget*> LinkPropertiesValues;
-    QList<QWidget*> BlockPropertiesIncrements;
-    QList<QWidget*> LinkPropertiesIncrements;
+    QMap<string, quan_info> quan_info_Block;
+    QMap<string, quan_info> quan_info_Link;
     void ClearPropertiesWindow(objectType);
     void UpdateToolTipes();
     void PopulatePropertiesTab(QuanSet&, QGridLayout *,objectType);
     QSpacerItem *verticalSpacer_links = nullptr;
     QSpacerItem *verticalSpacer_blocks = nullptr;
-
+    QuanSet blockQS;
+    QuanSet linkQS;
+    bool GenerateBlocks();
+    bool GenerateLinks();
+    bool AssignProperty(const string &name, QuanSet &quanset, QMap<string,quan_info>::iterator it, int i, int j);
 private slots:
     void on_Selected_block_changed();
     void on_Selected_link_changed();
@@ -51,6 +61,8 @@ private slots:
     void on_NextClicked();
     void on_PreviousClicked();
     void on_TabChanged();
+    void on_Canceled();
+    void on_Generate();
 };
 
 #endif // GRIDGENERATOR_H
