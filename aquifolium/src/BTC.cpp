@@ -232,14 +232,16 @@ CTimeSeries CTimeSeries::MA_smooth(int span)
 double CTimeSeries::interpol_D(double x)
 {
 	double r=0;
-	if (n>1)
+    if (x<t[0])
+        return t[0]-x;
+    if (n>1)
 	{
 
 		if (structured == false)
 		{	for (int i=0; i<n-1; i++)
 			{
 				if (t[i] <= x && t[i+1] >= x)
-					r=(D[i+1]-D[i])/(t[i+1]-t[i])*(x-t[i]) + D[i];
+                    r=max((D[i+1]-D[i])/(t[i+1]-t[i])*(x-t[i]) + D[i],t[i+1]-t[i]);
 			}
 			if (x>t[n-1]) r=D[n-1];
 			if (x<t[0]) r=D[0];
@@ -250,12 +252,12 @@ double CTimeSeries::interpol_D(double x)
 			int i = int((x-t[0])/dt);
 			if (x>=t[n-1]) r=D[n-1];
 			else if (x<=t[0]) r=D[0];
-			else r=(D[i+1]-D[i])/(t[i+1]-t[i])*(x-t[i]) + D[i];
+            else r=max((D[i+1]-D[i])/(t[i+1]-t[i])*(x-t[i]) + D[i],t[i+1]-t[i]);
 		}
 	}
 	else
 		r = D[0];
-	return r;
+    return r;
 
 }
 

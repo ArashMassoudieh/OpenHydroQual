@@ -1207,7 +1207,7 @@ void MainWindow::Populate_General_ToolBar()
     // Run
     QIcon iconrun;
     iconrun.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/runmodel.png"), QSize(), QIcon::Normal, QIcon::Off);
-    QAction* actionrun = new QAction(this);
+    actionrun = new QAction(this);
     actionrun->setIcon(iconrun);
     ui->GeneraltoolBar->addAction(actionrun);
     actionrun->setText("Run Model");
@@ -1396,7 +1396,7 @@ void MainWindow::onnewproject()
                                                                 tr("Are you sure?\n"),
                                                                 QMessageBox::Cancel | QMessageBox::Yes,
                                                                 QMessageBox::Yes);
-    if (resBtn == QMessageBox::No)
+    if (resBtn == QMessageBox::Cancel)
         return;
 
     ResetSystem();
@@ -1419,7 +1419,7 @@ bool MainWindow::LoadModel(QString fileName)
                                                                 tr("Are you sure?\n"),
                                                                 QMessageBox::Cancel | QMessageBox::Yes,
                                                                 QMessageBox::Yes);
-    if (resBtn == QMessageBox::No)
+    if (resBtn == QMessageBox::Cancel)
         return false;
 
     bool success = true;
@@ -1491,11 +1491,13 @@ void MainWindow::RecreateGraphicItemsFromSystem(bool zoom_all)
 
 void MainWindow::onrunmodel()
 {
+    actionrun->setEnabled(false);
     ErrorHandler errs = system.VerifyAllQuantities();
     if (errs.Count()!=0)
     {
         LogAllSystemErrors(&errs);
         QMessageBox::question(this, "Errors!", "There are errors in the values assigned to some of the variables. Check the log window for more details.", QMessageBox::Ok);
+        actionrun->setEnabled(true);
         return;
     }
     System copiedsystem(system);
@@ -1514,7 +1516,7 @@ void MainWindow::onrunmodel()
         copiedsystem.GetSolutionLogger()->Close();
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
-
+    actionrun->setEnabled(true);
 }
 
 void MainWindow::closeEvent (QCloseEvent *event)

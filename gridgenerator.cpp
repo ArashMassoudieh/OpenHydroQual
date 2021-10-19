@@ -786,7 +786,7 @@ bool GridGenerator::GenerateLinks()
                 return false;
             }
 
-            link.SetType(Block_type_selected.toStdString());
+            link.SetType(Link_type_selected.toStdString());
 
             string name = (dynamic_cast<QLineEdit*>(quan_info_Link_y["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+1)+":"+QString::number(j+2)+")").toStdString();
             string srcname = (dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")").toStdString();
@@ -819,7 +819,7 @@ bool GridGenerator::GenerateLinks()
                 return false;
             }
 
-            link.SetType(Block_type_selected.toStdString());
+            link.SetType(Link_type_selected.toStdString());
 
             string name = (dynamic_cast<QLineEdit*>(quan_info_Link_x["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+2)+":"+QString::number(j+1)+")").toStdString();
             string srcname = (dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")").toStdString();

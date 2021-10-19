@@ -12,7 +12,7 @@
       "flow": "flow",
       "inflow": "recharge,Precipitation",
       "includeinoutput": "true",
-      "description": "Initial Storage;Storage",
+      "description": "Storage",
       "initial_value_expression": "area*(piezometric_head-base_elevation)*specific_yield",
       "ask_user": "false",
       "estimate": "true"
@@ -85,7 +85,7 @@
     "piezometric_head": {
       "type": "expression",
       "expression": "Storage/(specific_yield*area)+base_elevation",      
-      "description": "Piezometric head",
+      "description": "Initial Piezometric head; Piezometric head",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
@@ -302,7 +302,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "pumping_rate.e*_pos(piezometric_head.s-bottom_elevation.e)/(0.01+_pos(piezometric_head.s-bottom_elevation.e))",
+      "expression": "pumping_rate.e*_pos(piezometric_head.s-bottom_elevation.e)/(0.1+_pos(piezometric_head.s-bottom_elevation.e))",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
