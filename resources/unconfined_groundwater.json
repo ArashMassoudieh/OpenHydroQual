@@ -262,5 +262,50 @@
       "applylimit": "true",
       "ask_user": "false"
     }
+  },
+  "water_supply_well": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "water_supply_well.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "includeinoutput": "false",
+      "description": "Storage"
+    },
+    "pumping_rate": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Pumping rate time series [m~^3/d]",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "The bottom elevation of the well",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    }
+  },
+  "aquifer2well_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Unconfined to Well connector",
+    "icon": {
+      "filename": "unconfined_aquifer2well.png"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "pumping_rate.e*_pos(piezometric_head.s-bottom_elevation.e)/(0.01+_pos(piezometric_head.s-bottom_elevation.e))",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
   }
 }
