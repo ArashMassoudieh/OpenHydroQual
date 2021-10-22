@@ -28,7 +28,7 @@
 		},
 		"alpha": {
 			 "type": "value",
-			 "description": "The coefficient (alpha) in the rating curve S = alpha*d^beta",
+			 "description": "The coefficient (~alpha) in the rating curve S = ~alpha d^~beta",
 			 "ask_user": "true",
 			 "delegate": "ValueBox",
 			 "estimate": "true",
@@ -37,7 +37,7 @@
 		},
 	       "beta": {
 			 "type": "value",
-			 "description": "The exponent (beta) in the rating curve S = alpha*d^beta",
+			 "description": "The exponent (~beta) in the rating curve S = ~alpha d^~beta",
 			 "ask_user": "true",
 			 "delegate": "ValueBox",
 			 "estimate": "true",
