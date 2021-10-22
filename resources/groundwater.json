@@ -186,6 +186,48 @@
       "ask_user": "false"
     }
   },
+   "groundwater_to_stream": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Groundwater to stream",
+    "icon": {
+      "filename": "gw_2_fixed_head.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
+    },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;cm~^2;in~^2",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "area*hydraulic_conductivity.s*(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
   "soil2groundwater_link": {
     "type": "link",
     "typecategory": "Connectors",
@@ -272,6 +314,43 @@
       "type": "expression",
       "description": "Flow",
       "expression": "0.5*area*hydraulic_conductivity*(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+	}
+   },
+	"lake2groundwater_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Lake to groundwater link",
+    "icon": {
+      "filename": "Surface2GW_link.png"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "expression": "depth.e/2"      
+    },
+    "area": {
+      "type": "expression",
+      "description": "Interface Area",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "expression": "area.s"
+    },
+    "hydraulic_conductivity": {
+      "type": "expression",
+      "description": "Hydraulic conductivity",
+      "includeinoutput": "false",
+      "ask_user": "false",
+	  "expression": "hydraulic_conductivity.e"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "area*hydraulic_conductivity*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
