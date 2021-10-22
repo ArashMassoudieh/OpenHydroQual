@@ -23,7 +23,15 @@
       "delegate": "UnitBox",
       "unit": "m~^3;ft~^3"
     },
-    "maximum_production_rate": {
+    "constant_production_rate": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant production rate",
+      "ask_user": "true",
+	  "unit": "m~^3/day;ft~^3/day",
+      "delegate": "UnitBox"
+    },
+	"maximum_production_rate": {
       "type": "timeseries",
       "includeinoutput": "true",
       "description": "Maximum production rate time series",
@@ -32,7 +40,7 @@
     },
     "production_rate": {
       "type": "expression",
-      "expression": "maximum_production_rate*_exp(-0.05*Storage/_pos(storage_capacity-Storage))",
+      "expression": "(maximum_production_rate+constant_production_rate)*_exp(-0.05*Storage/_pos(storage_capacity-Storage))",
       "includeinoutput": "false",
       "description": "Net production",
       "ask_user": "false"
@@ -88,9 +96,17 @@
       "ask_user": "true",
       "delegate": "Browser"
     },
+	"constant_use_rate": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant use rate",
+      "ask_user": "true",
+	  "unit": "m~^3/day;ft~^3/day",
+      "delegate": "UnitBox"
+    },
     "net_use_rate": {
       "type": "expression",
-      "expression": "-use_rate",
+      "expression": "-use_rate-constant_use_rate",
       "includeinoutput": "false",
       "description": "Net production",
       "ask_user": "false"
@@ -123,9 +139,19 @@
       "ask_user": "true",
       "delegate": "Browser"
     },
+    "constant_use_rate": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant use rate",
+      "ask_user": "true",
+	  "unit": "m~^3/day;ft~^3/day",
+      "delegate": "UnitBox"
+    },
     "net_use_rate": {
       "type": "expression",
-      "expression": "-use_rate",
+      "expression": "-use_rate-constant_use_rate",
+      "includeinoutput": "false",
+      "description": "Net production",
       "ask_user": "false"
     }
   },
@@ -156,9 +182,17 @@
       "ask_user": "true",
       "delegate": "Browser"
     },
+    "constant_use_rate": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant use rate",
+      "ask_user": "true",
+	  "unit": "m~^3/day;ft~^3/day",
+      "delegate": "UnitBox"
+    },
     "net_use_rate": {
       "type": "expression",
-      "expression": "-use_rate",
+      "expression": "-use_rate-constant_use_rate",
       "includeinoutput": "false",
       "description": "Net production",
       "ask_user": "false"
@@ -191,11 +225,19 @@
       "ask_user": "true",
       "delegate": "Browser"
     },
+    "constant_use_rate": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant use rate",
+      "ask_user": "true",
+	  "unit": "m~^3/day;ft~^3/day",
+      "delegate": "UnitBox"
+    },
     "net_use_rate": {
       "type": "expression",
-      "expression": "-use_rate",
-      "includeinoutput": "true",
-      "description": "Net use",
+      "expression": "-use_rate-constant_use_rate",
+      "includeinoutput": "false",
+      "description": "Net production",
       "ask_user": "false"
     }
   },
