@@ -537,6 +537,7 @@ int CGA<T>::optimize()
     {   if (i==0) rtw->SetYRange(0,Ind[j].actual_fitness*1.1);
         rtw->SetProgress(double(i)/double(GA_params.nGen));
         rtw->AddDataPoint(i+1,Ind[j].actual_fitness);
+        rtw->Replot();
         QCoreApplication::processEvents();
     }
 #endif

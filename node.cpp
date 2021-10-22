@@ -8,6 +8,7 @@
 #include "edge.h"
 #include "enums.h"
 #include "Object.h"
+#include "qrandom.h"
 
 Node::Node(DiagramView *_parent, System *_system)
 {
