@@ -104,6 +104,9 @@ public:
 	bool error = false;
     double GetLastItemValue();
     double GetLastItemTime();
+    double &lastD();
+    double &lastC();
+    double &lastt();
 
 
 #ifdef QT_version

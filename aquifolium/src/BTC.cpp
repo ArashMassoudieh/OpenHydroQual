@@ -1107,7 +1107,7 @@ CTimeSeries CTimeSeries::make_uniform(double increment)
                 if (x>out.GetLastItemTime())
                 {
                     out.append(x, CC);
-                    out.D.push_back(DD);
+                    out.lastD() = DD;
                 }
 
 			}
@@ -1564,3 +1564,19 @@ CTimeSeries::CTimeSeries(const vector<double> &t, const vector<double> &C)
     if (n > 2) for (int i = 2; i < n; i++)
         if ((t[i] - t[i - 1]) != (t[i - 1] - t[i - 2]))structured = false;
 }
+
+double &CTimeSeries::lastD()
+{
+    return D[n-1];
+}
+
+double &CTimeSeries::lastC()
+{
+    return C[n-1];
+}
+
+double &CTimeSeries::lastt()
+{
+    return t[n-1];
+}
+

@@ -663,6 +663,7 @@ bool System::Solve(bool applyparameters)
                     GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
             }
             fail_counter = 0;
+            PopulateOutputs();
             SolverTempVars.t += SolverTempVars.dt;
             if (SolverTempVars.MaxNumberOfIterations()>SolverSettings.NR_niteration_upper)
             {
@@ -679,7 +680,7 @@ bool System::Solve(bool applyparameters)
             Update();
             UpdateObjectiveFunctions(SolverTempVars.t);
             UpdateObservations(SolverTempVars.t);
-            PopulateOutputs();
+
         }
 
     }
@@ -1597,7 +1598,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     {
         if (blocks[i].isrigid(variable))
         {
-            F[i] = - blocks[i].GetInflowValue(variable, Expression::timing::present);
+            F[i] = - 10000*blocks[i].GetInflowValue(variable, Expression::timing::present);
         }
         else if (blocks[i].GetLimitedOutflow())
         {
@@ -1633,8 +1634,14 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 
     for (unsigned int i=0; i<links.size(); i++)
     {
-        F[links[i].s_Block_No()] += LinkFlow[i];
-        F[links[i].e_Block_No()] -= LinkFlow[i];
+        if (blocks[links[i].s_Block_No()].isrigid(variable))
+            F[links[i].s_Block_No()] += LinkFlow[i]*10000;
+        else
+            F[links[i].s_Block_No()] += LinkFlow[i];
+        if (blocks[links[i].e_Block_No()].isrigid(variable))
+            F[links[i].e_Block_No()] -= LinkFlow[i]*10000;
+        else
+            F[links[i].e_Block_No()] -= LinkFlow[i];
     }
 }
     for (unsigned int i = 0; i < links.size(); i++)
@@ -3115,4 +3122,13 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     return jacobian;
 }
 
+CBTCSet System::GetModeledObjectiveFunctions()
+{
+    CBTCSet out;
+    for (unsigned int i=0; i<ObjectiveFunctionsCount(); i++)
+    {
+        out.append(*objectivefunction(objective_function_set[i]->GetName())->GetTimeSeries(),objective_function_set[i]->GetName());
+    }
+    return out;
+}
 

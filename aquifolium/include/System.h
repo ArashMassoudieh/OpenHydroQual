@@ -337,6 +337,7 @@ class System: public Object
         void SetParameterEstimationMode(parameter_estimation_options mode = parameter_estimation_options::none);
         void SetQuanPointers();
         bool ResetBasedOnRestorePoint(RestorePoint *rp);
+        CBTCSet GetModeledObjectiveFunctions();
     protected:
 
     private:

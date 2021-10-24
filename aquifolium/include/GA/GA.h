@@ -147,7 +147,7 @@ private:
     int get_time_series(int i);
     double evaluateforward();
     double evaluateforward_mixed(vector<double> v);
-
+    int current_generation = 0;
     CDistribution fitdist;
 
 	// GUI
