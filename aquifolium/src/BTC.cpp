@@ -139,7 +139,10 @@ CTimeSeries::CTimeSeries(string Filename)
 
 CTimeSeries& CTimeSeries::operator = (const CTimeSeries &CC)
 {
-	n=CC.n;
+    t.clear();
+    C.clear();
+    D.clear();
+    n=CC.n;
 	if (n > 0)
 	{
 		t = CC.t;

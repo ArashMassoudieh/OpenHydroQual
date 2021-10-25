@@ -168,7 +168,8 @@ int CTimeSeriesSet::maxnumpoints()
 
 CTimeSeriesSet::CTimeSeriesSet(const CTimeSeriesSet &B)
 {
-	nvars = B.nvars;
+    BTC.clear();
+    nvars = B.nvars;
 	BTC.resize(nvars);
 	names = B.names;
 	BTC = B.BTC;
@@ -187,7 +188,8 @@ CTimeSeriesSet::CTimeSeriesSet(const CTimeSeries &B)
 
 CTimeSeriesSet& CTimeSeriesSet::operator = (const CTimeSeriesSet &B)
 {
-	nvars = B.nvars;
+    BTC.clear();
+    nvars = B.nvars;
 	BTC.resize(nvars);
 	names = B.names;
     filename = B.filename;
@@ -717,12 +719,16 @@ CTimeSeriesSet CTimeSeriesSet::make_uniform(double increment, bool assgn_d)
 	CTimeSeriesSet out(nvars);
 	out.names = names;
 
+    for (int i = 0; i < nvars; i++)
+        out.BTC[i].name = BTC[i].name;
+
 	if (unif == true)
 	{
 		//qDebug() << "make uniform with unif option";
 		for (int i = 0; i < nvars; i++)
 		{
-			out.BTC[i].append(BTC[i].t[0], BTC[i].C[0]);
+
+            out.BTC[i].append(BTC[i].t[0], BTC[i].C[0]);
 			if (assgn_d)
 			{
 				//qDebug() << "Assigning D to the original BTC";
