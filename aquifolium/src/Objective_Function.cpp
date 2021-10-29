@@ -42,7 +42,7 @@ Objective_Function& Objective_Function::operator=(const Objective_Function& rhs)
     expression = rhs.expression;
     location = rhs.location;
     type = rhs.type;
-    stored_time_series = rhs.stored_time_series; 
+    stored_time_series.clear();
     return *this;
 }
 

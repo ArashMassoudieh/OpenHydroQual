@@ -1565,6 +1565,10 @@ void MainWindow::onoptimize()
     optimizer->SetRunTimeWindow(rtw);
     system.SetParameterEstimationMode(parameter_estimation_options::optimize);
     optimizer->optimize();
+    optimizer->Model_out.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
+    optimizer->Model_out.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/observedoutputs.txt");
+    optimizer->Model_out.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
+
     system.TransferResultsFrom(&optimizer->Model_out);
     system.Parameters() = optimizer->Model_out.Parameters();
     system.SetOutputItems();
