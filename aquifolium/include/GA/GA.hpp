@@ -336,11 +336,17 @@ int counter=0;
                 fclose(FileOut);
             }
 			clock_t t0 = clock();
-            Models[k].Solve();
 
-			Ind[k].actual_fitness = Models[k].GetObjectiveFunctionValue();
-            cout << "Individual " << k <<":" <<Ind[k].actual_fitness<<  std::endl;
-            epochs[k] += Models[k].EpochCount();
+#ifdef Debug_GA
+            Models[k].SavetoScriptFile(filenames.pathname+"/temp/model_" + aquiutils::numbertostring(k) +"_" +aquiutils::numbertostring(current_generation)+".scr",string(""), vector<string>());
+#endif
+            Models[k].Solve();
+            Ind[k].actual_fitness = Models[k].GetObjectiveFunctionValue();
+#ifdef Debug_GA
+            Models[k].GetModeledObjectiveFunctions().writetofile(filenames.pathname+"/temp//observedoutputs_"+aquiutils::numbertostring(k)+"_"+aquiutils::numbertostring(current_generation)+".txt");
+            Models[k].GetOutputs().writetofile(filenames.pathname+"/temp//outputs_"+aquiutils::numbertostring(k)+"_"+aquiutils::numbertostring(current_generation)+".txt");
+#endif
+			epochs[k] += Models[k].EpochCount();
 			time_[k] = ((float)(clock() - t0))/CLOCKS_PER_SEC;
             counter++;
 #pragma omp critical
@@ -495,7 +501,7 @@ int CGA<T>::optimize()
 
 	CMatrix Fitness(GA_params.nGen, 3);
 
-	for (int i=0; i<GA_params.nGen; i++)
+    for (current_generation=0; current_generation<GA_params.nGen; current_generation++)
 	{
 
 		write_to_detailed_GA("Assigning fitnesses ...");
@@ -505,14 +511,14 @@ int CGA<T>::optimize()
 
 		write_to_detailed_GA("Assigning fitnesses done!");
 		FileOut = fopen(RunFileName.c_str(),"a");
-		printf("Generation: %i\n", i);
-		fprintf(FileOut, "Generation: %i\n", i);
+        printf("Generation: %i\n", current_generation);
+        fprintf(FileOut, "Generation: %i\n", current_generation);
 		fprintf(FileOut, "ID, ");
 		for (int k=0; k<Ind[0].nParams; k++)
 			fprintf(FileOut, "%s, ", paramname[k].c_str());
 		fprintf(FileOut, "%s, %s, %s", "likelihood", "Fitness", "Rank");
 		fprintf(FileOut, "\n");
-        write_to_detailed_GA("Generation: " + aquiutils::numbertostring(i));
+        write_to_detailed_GA("Generation: " + aquiutils::numbertostring(current_generation));
 		for (int j1=0; j1<GA_params.maxpop; j1++)
 		{
 
@@ -531,46 +537,46 @@ int CGA<T>::optimize()
 
 		int j = maxfitness();
 
-		Fitness[i][0] = Ind[j].actual_fitness;
+        Fitness[current_generation][0] = Ind[j].actual_fitness;
 
 #ifdef Q_version
     if (rtw)
-    {   if (i==0) rtw->SetYRange(0,Ind[j].actual_fitness*1.1);
-        rtw->SetProgress(double(i)/double(GA_params.nGen));
-        rtw->AddDataPoint(i+1,Ind[j].actual_fitness);
+    {   if (current_generation==0) rtw->SetYRange(0,Ind[j].actual_fitness*1.1);
+        rtw->SetProgress(double(current_generation)/double(GA_params.nGen));
+        rtw->AddDataPoint(current_generation+1,Ind[j].actual_fitness);
         rtw->Replot();
         QCoreApplication::processEvents();
     }
 #endif
-		if (i>10)
+        if (current_generation>10)
 		{
-			if ((Fitness[i][0] == Fitness[i - 3][0]) && GA_params.shakescale>pow(10.0, -Ind[0].precision[0]))
+            if ((Fitness[current_generation][0] == Fitness[current_generation - 3][0]) && GA_params.shakescale>pow(10.0, -Ind[0].precision[0]))
 				GA_params.shakescale *= GA_params.shakescalered;
 
 
-			if ((Fitness[i][0]>Fitness[i - 1][0]) && (GA_params.shakescale<shakescaleini))
+            if ((Fitness[current_generation][0]>Fitness[current_generation - 1][0]) && (GA_params.shakescale<shakescaleini))
 				GA_params.shakescale /= GA_params.shakescalered;
 			GA_params.numenhancements = 0;
 		}
 
-		if (i>50)
+        if (current_generation>50)
 		{
-            if (Fitness[i][0] == Fitness[i - 20][0])
+            if (Fitness[current_generation][0] == Fitness[current_generation - 20][0])
 			{
 				GA_params.numenhancements *= 1.05;
 				if (GA_params.numenhancements == 0) GA_params.numenhancements = ininumenhancements;
 			}
 
-            if (Fitness[i][0] == Fitness[i - 50][0])
+            if (Fitness[current_generation][0] == Fitness[current_generation - 50][0])
 				GA_params.numenhancements = ininumenhancements * 10;
 		}
 
-		Fitness[i][1] = GA_params.shakescale;
-		Fitness[i][2] = GA_params.pmute;
+        Fitness[current_generation][1] = GA_params.shakescale;
+        Fitness[current_generation][2] = GA_params.pmute;
 
-		if (i>20)
+        if (current_generation>20)
 		{
-			if (GA_params.shakescale == Fitness[i - 20][1])
+            if (GA_params.shakescale == Fitness[current_generation - 20][1])
 				GA_params.shakescale = shakescaleini;
 		}
 
@@ -578,7 +584,7 @@ int CGA<T>::optimize()
 		j = maxfitness();
 		MaxFitness = Ind[j].actual_fitness;
 
-		Fitness[i][0] = Ind[j].actual_fitness;
+        Fitness[current_generation][0] = Ind[j].actual_fitness;
 
 
 		fillfitdist();

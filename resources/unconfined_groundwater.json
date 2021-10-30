@@ -266,6 +266,7 @@
   "water_supply_well": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Water Supply Well",
     "icon": {
       "filename": "water_supply_well.png"
     },
@@ -295,7 +296,7 @@
   "aquifer2well_link": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Unconfined to Well connector",
+    "description": "Unconfined Aquifer to Well connector",
     "icon": {
       "filename": "unconfined_aquifer2well.png"
     },

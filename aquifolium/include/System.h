@@ -255,6 +255,7 @@ class System: public Object
         bool AppendObjectiveFunction(const string &name, const string &location, const Expression &exp, double weight=1);
         void UpdateObjectiveFunctions(double t);
         double GetObjectiveFunctionValue();
+        void MakeObjectiveFunctionExpressionUniform();
         Objective_Function *ObjectiveFunction(const string &name); // returns a pointer to an objective function
 // Parameters
         Parameter *GetParameter(const string &name) {return parameter_set[name];}
@@ -337,6 +338,7 @@ class System: public Object
         void SetParameterEstimationMode(parameter_estimation_options mode = parameter_estimation_options::none);
         void SetQuanPointers();
         bool ResetBasedOnRestorePoint(RestorePoint *rp);
+        CBTCSet GetModeledObjectiveFunctions();
     protected:
 
     private:

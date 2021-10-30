@@ -663,6 +663,7 @@ bool System::Solve(bool applyparameters)
                     GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
             }
             fail_counter = 0;
+            PopulateOutputs();
             SolverTempVars.t += SolverTempVars.dt;
             if (SolverTempVars.MaxNumberOfIterations()>SolverSettings.NR_niteration_upper)
             {
@@ -679,7 +680,7 @@ bool System::Solve(bool applyparameters)
             Update();
             UpdateObjectiveFunctions(SolverTempVars.t);
             UpdateObservations(SolverTempVars.t);
-            PopulateOutputs();
+
         }
 
     }
@@ -706,6 +707,9 @@ bool System::Solve(bool applyparameters)
     }
     #else
     Outputs.AllOutputs.adjust_size();
+    Outputs.AllOutputs.unif = false;
+    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0);
+    MakeObjectiveFunctionExpressionUniform();
     ShowMessage("Simulation finished!");
     if (GetSolutionLogger())
         GetSolutionLogger()->Flush();
@@ -1633,8 +1637,14 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 
     for (unsigned int i=0; i<links.size(); i++)
     {
-        F[links[i].s_Block_No()] += LinkFlow[i];
-        F[links[i].e_Block_No()] -= LinkFlow[i];
+        if (blocks[links[i].s_Block_No()].isrigid(variable))
+            F[links[i].s_Block_No()] += LinkFlow[i];
+        else
+            F[links[i].s_Block_No()] += LinkFlow[i];
+        if (blocks[links[i].e_Block_No()].isrigid(variable))
+            F[links[i].e_Block_No()] -= LinkFlow[i];
+        else
+            F[links[i].e_Block_No()] -= LinkFlow[i];
     }
 }
     for (unsigned int i = 0; i < links.size(); i++)
@@ -1786,8 +1796,9 @@ CMatrix_arma System::Jacobian(const string &variable, CVector_arma &X, bool tran
 CVector_arma System::Jacobian(const string &variable, CVector_arma &V, CVector_arma &F0, int i, bool transport)
 {
       double epsilon;
-      double u;
+      double u = 1;
       if (unitrandom()>0.5) u=1; else u=-1;
+
       epsilon = -1e-6*u*(fabs(V[i])+1);
       CVector_arma V1(V);
       V1[i] += epsilon;
@@ -2014,6 +2025,14 @@ double System::GetObjectiveFunctionValue()
         return objective_function_set.Calculate();
     else
         return CalcMisfit();
+}
+
+void System::MakeObjectiveFunctionExpressionUniform()
+{
+
+    for (unsigned int i=0; i < ObjectiveFunctionsCount(); i++)
+        objective_function_set[i]->SetTimeSeries(objective_function_set[i]->GetTimeSeries()->make_uniform(SimulationParameters.dt0));
+
 }
 
 double System::CalcMisfit()
@@ -3115,4 +3134,13 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     return jacobian;
 }
 
+CBTCSet System::GetModeledObjectiveFunctions()
+{
+    CBTCSet out;
+    for (unsigned int i=0; i<ObjectiveFunctionsCount(); i++)
+    {
+        out.append(*objectivefunction(objective_function_set[i]->GetName())->GetTimeSeries(),objective_function_set[i]->GetName());
+    }
+    return out;
+}
 

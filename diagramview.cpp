@@ -466,7 +466,8 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
     }
     case Operation_Modes::Node1_selected:
     {
-        if (Node1 == nullptr) return; 
+        if (Node1 == nullptr) return;
+        if (connect_feature=="") return;
         Node1->setFlag(QGraphicsItem::ItemIsMovable);
         setMode(1);
         MainGraphicsScene->removeItem(tempRay);
@@ -478,6 +479,8 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         Node1=nullptr;
         setMode(1);
         emit changed();
+        Operation_Mode = Operation_Modes::NormalMode;
+        connect_feature="";
         break;
     }
     //	default:

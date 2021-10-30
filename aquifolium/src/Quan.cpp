@@ -530,6 +530,14 @@ double Quan::GetVal(const Expression::timing &tmg)
                     _val_star = 0;
                 value_star_updated = true;
             }
+            if (type == _type::prec_timeseries)
+            {
+                if (GetTimeSeries()!=nullptr)
+                    _val_star = GetTimeSeries()->interpol(GetSimulationTime());
+                else
+                    _val_star = 0;
+                value_star_updated = true;
+            }
             return _val_star;
 
         }

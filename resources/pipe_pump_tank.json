@@ -252,6 +252,7 @@
       "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Storage",
+      "includeinoutput": "false",
       "default": "1000",
       "rigid": "true"
     },
@@ -261,6 +262,7 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
+      "includeinoutput": "true",
       "estimate": "true"
     },
     "head": {
@@ -268,6 +270,7 @@
       "expression": "elevation+1*(Storage-1000)",
       "description": "Hydraulc Head",
       "ask_user": "false",
+      "includeinoutput": "true",
       "includeinoutput": "true"
     }
   },
