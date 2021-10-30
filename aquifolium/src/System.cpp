@@ -82,6 +82,8 @@ System::System(const System& other):Object::Object(other)
     metamodel = other.metamodel;
     SetAllParents();
     Object::AssignRandomPrimaryKey();
+    Outputs.AllOutputs.clear();
+    Outputs.ObservedOutputs.clear();
 }
 
 System& System::operator=(const System& rhs)
@@ -112,6 +114,8 @@ System& System::operator=(const System& rhs)
     SetAllParents();
     PopulateOperatorsFunctions();
     Object::AssignRandomPrimaryKey();
+    Outputs.AllOutputs.clear();
+    Outputs.ObservedOutputs.clear();
     return *this;
 }
 
@@ -684,6 +688,10 @@ bool System::Solve(bool applyparameters)
         }
 
     }
+    Outputs.AllOutputs.adjust_size();
+    Outputs.AllOutputs.unif = false;
+    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0);
+    MakeObjectiveFunctionExpressionUniform();
 #ifdef Q_version
     if (rtw)
     {
@@ -706,10 +714,6 @@ bool System::Solve(bool applyparameters)
         LogWindow()->append("Simulation finished!");
     }
     #else
-    Outputs.AllOutputs.adjust_size();
-    Outputs.AllOutputs.unif = false;
-    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0);
-    MakeObjectiveFunctionExpressionUniform();
     ShowMessage("Simulation finished!");
     if (GetSolutionLogger())
         GetSolutionLogger()->Flush();

@@ -768,7 +768,9 @@ CTimeSeriesSet CTimeSeriesSet::make_uniform(double increment, bool assgn_d)
 		}
 	}
 	for (int k=0; k<nvars; k++)
-		out.BTC[k].structured = true;
+    {   out.BTC[k].structured = true;
+        out.BTC[k].name = BTC[k].name;
+    }
 
 	out.unif=true;
 
