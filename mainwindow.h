@@ -107,6 +107,7 @@ private slots:
     void onpantriggered();
     void onzoomwindowtriggered();
     void onsave();
+    void onnormalmode();
     void onsaveas();
     void onexporttosvg();
     void onopen();

@@ -1121,6 +1121,14 @@ void MainWindow::PopulatePropertyTable(QuanSet* quanset)
 
 void MainWindow::Populate_General_ToolBar()
 {
+    //Normal Mode
+    QAction* actionnormalmode = new QAction(this);
+    actionnormalmode->setObjectName("Normal Mode");
+    QIcon iconnormalmodel;
+    iconnormalmodel.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/arrow_cursor.png"), QSize(), QIcon::Normal, QIcon::Off);
+    actionnormalmode->setIcon(iconnormalmodel);
+    ui->GeneraltoolBar->addAction(actionnormalmode);
+    connect(actionnormalmode, SIGNAL(triggered()), this, SLOT(onnormalmode()));
     // Save //
     QAction* actionsave = new QAction(this);
     actionsave->setObjectName("Save");
@@ -1355,6 +1363,15 @@ void MainWindow::onsave()
     }
     else
         onsaveas();
+
+}
+
+void MainWindow::onnormalmode()
+{
+    foreach (QAction* action, ui->mainToolBar->actions())
+        action->setChecked(false);
+
+    dView->setMode(Operation_Modes::NormalMode);
 
 }
 
