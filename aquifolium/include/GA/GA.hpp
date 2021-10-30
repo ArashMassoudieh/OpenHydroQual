@@ -284,7 +284,8 @@ void CGA<T>::assignfitnesses()
 	vector<double> time_(GA_params.maxpop);
 	vector<int> epochs(GA_params.maxpop);
 	clock_t t0,t1;
-
+    Models.clear();
+    Models.resize(GA_params.maxpop);
 	for (int k = 0; k < GA_params.maxpop; k++)
 	{
 		for (int i = 0; i < GA_params.nParam; i++)
@@ -317,7 +318,7 @@ int counter=0;
 #pragma omp parallel for //private(ts,l)
 		for (int k=0; k<GA_params.maxpop; k++)
 		{
-			cout << "Individual " << k << std::endl;
+
 			FILE *FileOut;
 #pragma omp critical
             {
@@ -378,8 +379,7 @@ template<class T>
 void CGA<T>::crossover()
 {
 
-	for (int i=0; i<GA_params.maxpop; i++)
-		Ind_old[i] = Ind[i];
+    Ind_old = Ind;
 	int a = maxfitness();
 	Ind[0] = Ind_old[a];
 	Ind[1] = Ind_old[a];

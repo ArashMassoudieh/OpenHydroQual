@@ -42,8 +42,8 @@ Observation& Observation::operator=(const Observation& rhs)
     Object::operator=(rhs);
     expression = rhs.expression;
     location = rhs.location;
-    modeled_time_series = rhs.modeled_time_series;
     observed_time_series = rhs.observed_time_series;
+    modeled_time_series.clear();
     return *this;
 }
 
