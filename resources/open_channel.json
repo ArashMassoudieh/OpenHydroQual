@@ -15,7 +15,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "inflow",
+      "inflow": "inflow;ag_withdrawal;non_ag_withdrawal",
       "includeinoutput": "true",
       "description": "Storage",
       "initial_value_expression": "length*(base_width+side_slope*depth)*depth",
@@ -102,6 +102,52 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+	"ag_area": {
+      "type": "value",
+      "description": "Area of agriculural land",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2",
+      "estimate": "true"
+    },
+	"non_ag_area": {
+      "type": "value",
+      "description": "Area of non-agriculural activity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2",
+      "estimate": "true"
+    },
+	"ag_withdrawal": {
+      "type": "expression",
+      "expression": "-ag_area*ag_withdrawal_per_unit_area",
+      "description": "Agricultural Withdrawal",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+	"non_ag_withdrawal": {
+      "type": "expression",
+      "expression": "-non_ag_area*non_ag_withdrawal_per_unit_area",
+      "description": "Non-Agricultural Withdrawal",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+	"ag_withdrawal_per_unit_area": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Agricultural Withdrawal per unit area",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+	"non_ag_withdrawal_per_unit_area": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Non-Agricultural Withdrawal per unit area",
       "ask_user": "true",
       "delegate": "Browser"
     }
