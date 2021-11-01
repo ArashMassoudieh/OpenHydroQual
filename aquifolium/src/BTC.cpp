@@ -1268,9 +1268,9 @@ void CTimeSeries::assign_D()
 		}
 		if (i + 1 == n)
 			counter = t[n - 1] - t[n - 2];
-		if (counter==0)
-			counter = t[i] - t[i-1];
-		D.push_back(counter);
+		if (counter == 0)
+			counter = t[i] - ((i > 0)? t[i - 1]:0);
+		D.push_back(fabs(counter));
 	}
 }
 
