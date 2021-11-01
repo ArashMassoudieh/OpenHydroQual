@@ -1270,7 +1270,7 @@ void CTimeSeries::assign_D()
 			counter = t[n - 1] - t[n - 2];
 		if (counter == 0)
 			counter = t[i] - ((i > 0)? t[i - 1]:0);
-		D.push_back(fabs(counter));
+		D.push_back(std::fabs(counter));
 	}
 }
 
