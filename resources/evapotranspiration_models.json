@@ -36,7 +36,8 @@
 	"includeinoutput": "false",
     	"description": "Scale factor",
     	"default": "1",
-    	"delegate": "ValueBox"
+    	"delegate": "ValueBox",
+		"estimate": "true"
     },
     "z2" : {
     	"type": "value",
@@ -111,7 +112,8 @@
 	"includeinoutput": "false",
     	"description": "Scale factor",
     	"default": "1",
-    	"delegate": "ValueBox"
+    	"delegate": "ValueBox",
+		"estimate": "true"
     },
     "timeseries":{
     	"type": "timeseries",
@@ -158,7 +160,8 @@
 	"includeinoutput": "false",
     	"description": "Scale factor",
     	"default": "1",
-    	"delegate": "ValueBox"
+    	"delegate": "ValueBox",
+		"estimate": "true"
     },
     "Temperature":{
     	"type": "timeseries",
@@ -226,7 +229,8 @@
 	"includeinoutput": "false",
     	"description": "Wind scale factor",
     	"default": "1",
-    	"delegate": "ValueBox"
+    	"delegate": "ValueBox",
+		"estimate": "true"
     },
     "solar_scale_fact" : {
     	"type": "value",
@@ -234,7 +238,8 @@
 	"includeinoutput": "false",
     	"description": "Solar radiation scale factor",
     	"default": "1",
-    	"delegate": "ValueBox"
+    	"delegate": "ValueBox",
+		"estimate": "true"
     },
     "R_h" : {
     	"type": "timeseries",

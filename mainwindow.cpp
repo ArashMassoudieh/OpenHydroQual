@@ -1526,6 +1526,8 @@ void MainWindow::onrunmodel()
     rtw->SetUpForForwardRun();
     copiedsystem.SetRunTimeWindow(rtw);
     copiedsystem.Solve(true);
+    rtw->AppendText("Saving output files to the hard-drive...");
+    QCoreApplication::processEvents();
     copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
     copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/observedoutputs.txt");
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
@@ -1534,6 +1536,7 @@ void MainWindow::onrunmodel()
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
     actionrun->setEnabled(true);
+    rtw->AppendText("All tasks finished!");
 }
 
 void MainWindow::closeEvent (QCloseEvent *event)

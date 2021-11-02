@@ -416,6 +416,7 @@
     <ClCompile Include="ray.cpp" />
     <ClCompile Include="runtimewindow.cpp" />
     <ClCompile Include="undodata.cpp" />
+    <ClCompile Include="UnitTextBox3.cpp" />
     <ClCompile Include="utilityfuncs.cpp" />
     <ClCompile Include="wizard_select_dialog.cpp" />
   </ItemGroup>
@@ -493,6 +494,7 @@
     <QtMoc Include="runtimewindow.h">
     </QtMoc>
     <ClInclude Include="undodata.h" />
+    <QtMoc Include="UnitTextBox3.h" />
     <ClInclude Include="utilityfuncs.h" />
     <ClInclude Include="..\jsoncpp\include\json\value.h" />
     <ClInclude Include="..\jsoncpp\include\json\version.h" />
