@@ -529,6 +529,7 @@
   },
   "fixed_head": {
     "type": "block",
+    "description": "Fixed-Head",
     "typecategory": "Blocks",
     "description": "Fixed-head boundary",
     "icon": {
@@ -559,6 +560,7 @@
   },
   "time_variable_fixed_head": {
     "type": "block",
+    "description": "Time-variable Fixed-Head",
     "typecategory": "Blocks",
     "description": "Time-variable fixed-head boundary",
     "icon": {

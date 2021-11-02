@@ -60,6 +60,7 @@ private:
     QAction* actionzoomwindow = nullptr;
     bool Populate_TreeWidget();
     bool BuildObjectsToolBar();
+    bool ReCreateObjectsMenu();
     PropModel *propmodel = nullptr;
     void Populate_General_ToolBar();
     string maintemplatefilename;

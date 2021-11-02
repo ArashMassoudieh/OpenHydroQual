@@ -94,15 +94,86 @@
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
     <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuObjects">
+    <property name="title">
+     <string>Add Objects</string>
+    </property>
+    <widget class="QMenu" name="menuBlocks">
+     <property name="title">
+      <string>Blocks</string>
+     </property>
+     <addaction name="separator"/>
+    </widget>
+    <widget class="QMenu" name="menuLinks">
+     <property name="title">
+      <string>Links</string>
+     </property>
+     <addaction name="separator"/>
+    </widget>
+    <widget class="QMenu" name="menuSources">
+     <property name="title">
+      <string>Sources</string>
+     </property>
+     <addaction name="separator"/>
+    </widget>
+    <widget class="QMenu" name="menuChemistry">
+     <property name="title">
+      <string>Chemistry</string>
+     </property>
+     <addaction name="separator"/>
+    </widget>
+    <addaction name="menuBlocks"/>
+    <addaction name="menuLinks"/>
+    <addaction name="menuSources"/>
+    <addaction name="menuChemistry"/>
+    <addaction name="separator"/>
     <addaction name="actionCreate_2D_Array"/>
    </widget>
    <addaction name="menuFilw"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuObjects"/>
    <addaction name="menuView"/>
    <addaction name="menuModel"/>
    <addaction name="menuHelp"/>
   </widget>
+  <widget class="QToolBar" name="BlocksToolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QToolBar" name="LinksToolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QToolBar" name="SourcesToolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="windowTitle">
+    <string>Blocks</string>
+   </property>
    <property name="iconSize">
     <size>
      <width>32</width>

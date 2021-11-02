@@ -83,6 +83,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->dockWidget_3,SIGNAL(visibilityChanged(bool)),this,SLOT(on_object_browser_closed(bool)));
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     BuildObjectsToolBar();
+    ReCreateObjectsMenu();
     connect(ui->treeWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(preparetreeviewMenu(const QPoint&)));
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
 
@@ -310,6 +311,9 @@ void MainWindow::on_object_browser_closed(bool visible)
 bool MainWindow::BuildObjectsToolBar()
 {
     ui->mainToolBar->clear();
+    ui->BlocksToolBar->clear();
+    ui->LinksToolBar->clear();
+    ui->SourcesToolBar->clear();
     for (unsigned int i = 0; i < system.GetAllBlockTypes().size(); i++)
     {
         //qDebug() << QString::fromStdString(system.GetAllBlockTypes()[i]);
@@ -333,12 +337,12 @@ bool MainWindow::BuildObjectsToolBar()
         }
         action->setIcon(icon);
         action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
-        ui->mainToolBar->addAction(action);
+        ui->BlocksToolBar->addAction(action);
         action->setText(QString::fromStdString(system.GetAllBlockTypes()[i]));
         connect(action, SIGNAL(triggered()), this, SLOT(onaddblock()));
 
     }
-    ui->mainToolBar->addSeparator();
+
     for (unsigned int i = 0; i < system.GetAllLinkTypes().size(); i++)
     {
         //qDebug() << QString::fromStdString(system.GetAllLinkTypes()[i]);
@@ -363,11 +367,11 @@ bool MainWindow::BuildObjectsToolBar()
         }
         action->setIcon(icon);
         action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
-        ui->mainToolBar->addAction(action);
+        ui->LinksToolBar->addAction(action);
         action->setText(QString::fromStdString(system.GetAllLinkTypes()[i]));
         connect(action, SIGNAL(triggered()), this, SLOT(onaddlink()));
     }
-    ui->mainToolBar->addSeparator();
+
     for (unsigned int j = 0; j < system.QGetAllCategoryTypes().size(); j++)
     {
         string typecategory = system.QGetAllCategoryTypes()[j].toStdString();
@@ -399,7 +403,10 @@ bool MainWindow::BuildObjectsToolBar()
 
                 action->setIcon(icon);
                 action->setToolTip(QString::fromStdString(system.GetModel(type)->Description()));
-                ui->mainToolBar->addAction(action);
+                if (typecategory=="Sources")
+                    ui->SourcesToolBar->addAction(action);
+                else
+                    ui->mainToolBar->addAction(action);
                 action->setText(QString::fromStdString(type));
                 if (typecategory=="Sources")
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddsource()));
@@ -418,7 +425,131 @@ bool MainWindow::BuildObjectsToolBar()
                 else
                     connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
             }
-        ui->mainToolBar->addSeparator();
+
+    }
+
+    return true;
+}
+
+bool MainWindow::ReCreateObjectsMenu()
+{
+    ui->menuBlocks->clear();
+    ui->menuLinks->clear();
+    ui->menuChemistry->clear();
+    ui->menuSources->clear();
+    for (unsigned int i = 0; i < system.GetAllBlockTypes().size(); i++)
+    {
+        //qDebug() << QString::fromStdString(system.GetAllBlockTypes()[i]);
+        QAction* action = new QAction(this);
+        action->setObjectName(QString::fromStdString(system.GetAllBlockTypes()[i]));
+        action->setText(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
+        QIcon icon;
+        if (QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()).contains("/"))
+        {
+            if (!QFile::exists(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+        }
+        else
+        {
+            if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+
+        }
+        action->setIcon(icon);
+        action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
+        ui->menuBlocks->addAction(action);
+        connect(action, SIGNAL(triggered()), this, SLOT(onaddblock()));
+
+    }
+
+    for (unsigned int i = 0; i < system.GetAllLinkTypes().size(); i++)
+    {
+        //qDebug() << QString::fromStdString(system.GetAllLinkTypes()[i]);
+        QAction* action = new QAction(this);
+        action->setCheckable(true);
+        action->setObjectName(QString::fromStdString(system.GetAllLinkTypes()[i]));
+        action->setText(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
+        QIcon icon;
+        if (QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()).contains("/"))
+        {
+            if (!QFile::exists(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+        }
+        else
+        {
+            if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+
+        }
+        action->setIcon(icon);
+        action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
+        ui->menuLinks->addAction(action);
+        connect(action, SIGNAL(triggered()), this, SLOT(onaddlink()));
+    }
+
+    for (unsigned int j = 0; j < system.QGetAllCategoryTypes().size(); j++)
+    {
+        string typecategory = system.QGetAllCategoryTypes()[j].toStdString();
+
+        if (typecategory!="Blocks" && typecategory !="Connectors" && typecategory!="Settings")
+            for (unsigned int i = 0; i < system.GetAllTypesOf(typecategory).size(); i++)
+            {
+                string type = system.GetAllTypesOf(typecategory)[i];
+                QAction* action = new QAction(this);
+                action->setCheckable(false);
+                action->setObjectName(QString::fromStdString(type));
+                action->setText(QString::fromStdString(system.GetModel(type)->Description()));
+                QIcon icon;
+                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                if (QString::fromStdString(system.GetModel(type)->IconFileName()).contains("/"))
+                {
+                    if (!QFile::exists(QString::fromStdString(system.GetModel(type)->IconFileName())))
+                        LogError("Icon file '" + QString::fromStdString(system.GetModel(type)->IconFileName()) + "' was not found!");
+                    else
+                        icon.addFile(QString::fromStdString(system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                }
+                else
+                {
+                    if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName())))
+                        LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()) + "' was not found!");
+                    else
+                        icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                }
+
+
+                action->setIcon(icon);
+                action->setToolTip(QString::fromStdString(system.GetModel(type)->Description()));
+                if (typecategory=="Sources")
+                    ui->menuSources->addAction(action);
+                else if (typecategory == "Constituents" || typecategory == "Reactions" || typecategory == "Reaction Parameters")
+                    ui->menuChemistry->addAction(action);
+                action->setText(QString::fromStdString(system.GetModel(type)->Description()));
+                if (typecategory=="Sources")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddsource()));
+                else if (typecategory == "Parameters")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddparameter()));
+                else if (typecategory == "Objective Functions")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddobjectivefunction()));
+                else if (typecategory == "Observations")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddobservation()));
+                else if (typecategory == "Constituents")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddconstituent()));
+                else if (typecategory == "Reactions")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddreaction()));
+                else if (typecategory == "Reaction Parameters")
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddreactionparameter()));
+                else
+                    connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
+            }
+
     }
 
     return true;
@@ -497,7 +628,12 @@ bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
     system.object(LinkName.toStdString())->SetName(LinkName.toStdString());
     system.object(LinkName.toStdString())->AssignRandomPrimaryKey();
     edge->SetObject(system.object(LinkName.toStdString()));
-    foreach (QAction* action, ui->mainToolBar->actions())
+    foreach (QAction* action, ui->LinksToolBar->actions())
+    {
+        action->setChecked(false);
+    }
+
+    foreach (QAction* action, ui->menuLinks->actions())
     {
         action->setChecked(false);
     }
@@ -1398,6 +1534,7 @@ void MainWindow::onopen()
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();
     BuildObjectsToolBar();
+    ReCreateObjectsMenu();
     LogAllSystemErrors();
     undoData = UndoData(this);
     undoData.AppendtoLast(&system);
@@ -1423,6 +1560,7 @@ void MainWindow::onnewproject()
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();
     BuildObjectsToolBar();
+    ReCreateObjectsMenu();
     LogAllSystemErrors();
     undoData = UndoData(this);
     undoData.AppendtoLast(&system);
@@ -1453,6 +1591,7 @@ bool MainWindow::LoadModel(QString fileName)
         RecreateGraphicItemsFromSystem();
         RefreshTreeView();
         BuildObjectsToolBar();
+        ReCreateObjectsMenu();
         LogAllSystemErrors();
         return success;
     }
@@ -1691,6 +1830,7 @@ void MainWindow::loadnewtemplate()
         system.ReadSystemSettingsTemplate(entitiesfilename);
         ui->mainToolBar->clear();
         BuildObjectsToolBar();
+        ReCreateObjectsMenu();
         RefreshTreeView();
         maintemplatefilename = fileName.toStdString();
     }
@@ -1709,6 +1849,7 @@ void MainWindow::addplugin()
         if (system.AppendQuanTemplate(fileName.toStdString()))
         {   ui->mainToolBar->clear();
             BuildObjectsToolBar();
+            ReCreateObjectsMenu();
             RefreshTreeView();
             addedtemplatefilenames.push_back(fileName.toStdString());
         }
@@ -1728,6 +1869,7 @@ void MainWindow::addplugin(const QString &fileName)
         if (system.AppendQuanTemplate(fileName.toStdString()))
         {   ui->mainToolBar->clear();
             BuildObjectsToolBar();
+            ReCreateObjectsMenu();
             RefreshTreeView();
             addedtemplatefilenames.push_back(fileName.toStdString());
         }
