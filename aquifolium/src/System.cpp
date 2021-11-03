@@ -563,6 +563,7 @@ bool System::Solve(bool applyparameters)
     RestorePoint restorepoint(this);
     while (SolverTempVars.t<SimulationParameters.tend+SolverTempVars.dt && !stop_triggered)
     {
+        //qDebug()<<SolverTempVars.t;
         progress_p = progress;
         progress = (SolverTempVars.t - SimulationParameters.tstart) / (SimulationParameters.tend - SimulationParameters.tstart);
         counter++;
@@ -1103,7 +1104,9 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
         }
 
 		CVector_arma X_past = X;
+        //qDebug()<<"Getting residuals";
         CVector_arma F = GetResiduals(variable, X, transport);
+        //qDebug()<<"Getting residuals done";
 #ifdef DEBUG
         CVector_arma F_ini = F;
 #endif // DEBUG
@@ -1605,9 +1608,10 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     UnUpdateAllVariables();
     //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
     CVector LinkFlow(links.size());
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (unsigned int i=0; i<blocks.size(); i++)
     {
+        //qDebug()<<QString::fromStdString(blocks[i].GetName());
         if (blocks[i].isrigid(variable))
         {
             F[i] = - blocks[i].GetInflowValue(variable, Expression::timing::present);
@@ -1638,12 +1642,13 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 {
 
 //#pragma omp parallel for
+    //qDebug()<<"Calculating flows...";
     for (unsigned int i=0; i<links.size(); i++)
     {   LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
         //qDebug()<<i;
 
     }
-
+    //qDebug()<<"Updating F with flows!";
     for (unsigned int i=0; i<links.size(); i++)
     {
         if (blocks[links[i].s_Block_No()].isrigid(variable))
@@ -1662,7 +1667,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
             F[links[i].e_Block_No()] += (double(sgn(F[links[i].e_Block_No()])) - 0.5) * pow(links[i].GetOutflowLimitFactor(Expression::timing::present), 2)*fabs(links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present));
             F[links[i].s_Block_No()] += (double(sgn(F[links[i].s_Block_No()])) - 0.5) * pow(links[i].GetOutflowLimitFactor(Expression::timing::present), 2)*fabs(links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present));
         }
-
+    //qDebug()<<"Correction factors!";
     for (unsigned int i = 0; i < blocks.size(); i++)
     {
         bool alloutflowszero = true;
@@ -2656,6 +2661,24 @@ bool System::Delete(const string& objectname)
         if (Parameters()[i]->GetName() == objectname)
         {
             return Parameters().erase(i);
+        }
+
+    for (unsigned int i = 0; i < ObservationsCount(); i++)
+        if (observation(i)->GetName() == objectname)
+        {
+            observations.erase(observations.begin() + i);
+        }
+
+    for (unsigned int i = 0; i < ReactionsCount(); i++)
+        if (reaction(i)->GetName() == objectname)
+        {
+            reactions.erase(reactions.begin() + i);
+        }
+
+    for (unsigned int i = 0; i < ReactionParametersCount(); i++)
+        if (reactionparameter(i)->GetName() == objectname)
+        {
+            reaction_parameters.erase(reaction_parameters.begin() + i);
         }
 
     for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
