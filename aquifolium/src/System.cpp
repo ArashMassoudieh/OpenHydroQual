@@ -1039,7 +1039,12 @@ void System::PopulateOutputs(bool dolinks)
             if (it->second.IncludeInOutput())
             {
                 //sources[i].CalcExpressions(Expression::timing::present);
-                Outputs.AllOutputs["Obs_"+observations[i].GetName() + "_" + it->first].append(SolverTempVars.t,observations[i].Variable(it->first)->CalcVal(object(observations[i].GetLocation()),Expression::timing::present));
+                Object* location;
+                if (object(observations[i].GetLocation())!=nullptr)
+                    location = object(observations[i].GetLocation());
+                else
+                    location = observation(i);
+                Outputs.AllOutputs["Obs_"+observations[i].GetName() + "_" + it->first].append(SolverTempVars.t,observations[i].Variable(it->first)->CalcVal(location,Expression::timing::present));
             }
     }
 

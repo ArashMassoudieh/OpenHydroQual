@@ -30,7 +30,14 @@ class Objective_Function: public Object
         double Weight();
         double Percentile();
         void SetLocation(const string &loc) {location = loc;}
-        string GetLocation() {return location;}
+        string GetLocation() {
+            if (Variable("object"))
+            {
+                if (location!=Variable("object")->GetProperty())
+                    location = Variable("object")->GetProperty();
+            }
+            return location;
+        }
         void SetExpression(const Expression &exp) {expression = exp;}
         bool SetProperty(const string &prop, const string &val);
         double Value() {return current_value;}
