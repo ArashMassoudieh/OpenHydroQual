@@ -1040,7 +1040,7 @@ void System::PopulateOutputs(bool dolinks)
             {
                 //sources[i].CalcExpressions(Expression::timing::present);
                 Object* location;
-                if (object(observations[i].GetLocation())!=nullptr)
+                if (it->second.GetType() == Quan::_type::expression)
                     location = object(observations[i].GetLocation());
                 else
                     location = observation(i);
