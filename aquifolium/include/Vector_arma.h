@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#define ARMA_DONT_PRINT_ERRORS
 #include "armadillo"
 
 

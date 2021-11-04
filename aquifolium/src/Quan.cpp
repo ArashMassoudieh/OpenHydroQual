@@ -7,6 +7,7 @@
 #ifdef Q_version
     #include "XString.h"
 #endif
+#include "omp.h"
 
 
 Quan::Quan()
@@ -513,6 +514,9 @@ double Quan::GetVal(const Expression::timing &tmg)
             return _val_star;
         else
         {
+            omp_lock_t writelock;
+
+            omp_init_lock(&writelock);
 
             if (type == _type::expression)
             {
@@ -539,7 +543,9 @@ double Quan::GetVal(const Expression::timing &tmg)
                 value_star_updated = true;
             }
             return _val_star;
+            omp_unset_lock(&writelock);
 
+            omp_destroy_lock(&writelock);
         }
     }
 }

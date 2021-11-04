@@ -19,8 +19,8 @@ class CMatrix_arma
 {
 
 private:
-	int numrows;
-	int numcols;
+    //int numrows;
+    //int numcols;
 
 public:
 	mat matr;
@@ -45,7 +45,8 @@ public:
 	friend CVector_arma gauss0(CMatrix_arma, CVector_arma);
     friend CVector_arma diag(const CMatrix_arma&);
     CVector maxelements() const;
-
+    int numrows() const {return matr.n_rows;}
+    int numcols() const {return matr.n_cols;}
     CMatrix_arma LU_decomposition();
     CMatrix_arma Cholesky_factor();
     double det();
@@ -98,6 +99,7 @@ CVector_arma operator/(CVector_arma&, CMatrix_arma&);
 CVector_arma operator/(const CVector_arma &V, const CMatrix_arma &M);
 CMatrix_arma Transpose(CMatrix_arma &M1);
 CMatrix_arma Invert(CMatrix_arma M1);
+bool Invert(CMatrix_arma &M1,CMatrix_arma &out);
 CVector_arma SpareSolve(CMatrix_arma, CVector_arma);
 CMatrix_arma oneoneprod(CMatrix_arma &m1, CMatrix_arma &m2);
 CVector_arma solve_ar(CMatrix_arma&, CVector_arma&);

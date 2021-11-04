@@ -26,42 +26,33 @@ using namespace std;
 
 CMatrix_arma::CMatrix_arma(int m, int n)
 {
-	numrows = m;
-	numcols = n;
-	matr = mat(m, n);
+    matr = mat(m, n);
 	matr.fill(fill::zeros);
 
 }
 
 CMatrix_arma::CMatrix_arma()
 {
-	numrows = 0;
-	numcols = 0;
-}
+    }
 
 CMatrix_arma::CMatrix_arma(int m)
 {
-	numrows = m;
-	numcols = m;
+
 	matr = mat(m, m);
 	matr.fill(fill::zeros);
 }
 
 CMatrix_arma::CMatrix_arma(const CMatrix_arma &m)
 {
-	numrows = m.numrows;
-	numcols = m.numcols;
-	matr = m.matr;
+    matr = m.matr;
 
 }
 
 CMatrix_arma::CMatrix_arma(const CVector_arma &v)
 {
-	numrows = v.num;
-	numcols = 1;
-	matr = mat(numrows,1);
+    matr = mat(numrows(),1);
 
-	for (int i=0; i<numrows; ++i)  matr(i,0) = v.vect(i);
+    for (int i=0; i<numrows(); ++i)  matr(i,0) = v.vect(i);
 }
 
 
@@ -83,21 +74,19 @@ double & CMatrix_arma::operator()(int i, int j)
 vector<double*> CMatrix_arma::get(int i)
 {
 	vector<double*> v;
-	for (int j = 0; j < numrows; j++)
+    for (int j = 0; j < numrows(); j++)
 		v[j] = &matr(i, j);
 
 	return v;
 }
 
-int CMatrix_arma::getnumrows() const {return numrows;};
-int CMatrix_arma::getnumcols() const {return numcols;};
+int CMatrix_arma::getnumrows() const {return numrows();};
+int CMatrix_arma::getnumcols() const {return numcols();};
 
 CMatrix_arma& CMatrix_arma::operator=(const CMatrix_arma &m)
 {
 
-	numcols = m.numcols;
-	numrows = m.numrows;
-	matr = m.matr;
+    matr = m.matr;
 
 	return *this;
 }
@@ -105,22 +94,22 @@ CMatrix_arma& CMatrix_arma::operator=(const CMatrix_arma &m)
 CMatrix_arma& CMatrix_arma::operator+=(const CMatrix_arma &m)
 {
 
-	for (int i=0; i<numrows; i++)
+    for (int i=0; i<numrows(); i++)
 		matr[i] += m.matr(i);
 	return *this;
 }
 
 CMatrix_arma& CMatrix_arma::operator-=(const CMatrix_arma &m)
 {
-	for (int i=0; i<numrows; i++)
+    for (int i=0; i<numrows(); i++)
 		matr[i] -= m.matr(i);
 	return *this;
 }
 
 void CMatrix_arma::Print(FILE *FIL)
 {
-	for (int i=0; i<numrows; i++)
-	{	for (int j=0; j<numcols; j++)
+    for (int i=0; i<numrows(); i++)
+    {	for (int j=0; j<numcols(); j++)
 			fprintf(FIL, "%le ", matr(i,j));
 		fprintf(FIL, "\n");
 	}
@@ -295,6 +284,22 @@ CMatrix_arma Invert(CMatrix_arma M1)
 	return InvM;
 }
 
+bool Invert(CMatrix_arma &M1,CMatrix_arma &out)
+{
+
+    out.matr = arma::zeros(M1.getnumcols(), M1.getnumcols());
+    return inv(out.matr,M1.matr);
+
+}
+
+bool Invert(CMatrix_arma *M1,CMatrix_arma *out)
+{
+
+    out->matr = arma::zeros(M1->getnumcols(), M1->getnumcols());
+    return inv(out->matr,M1->matr);
+
+}
+
 
 /*double det(CMatrix_arma &A)
 {
@@ -373,8 +378,8 @@ CMatrix_arma oneoneprod(CMatrix_arma &m1, CMatrix_arma &m2)
 
 void CMatrix_arma::setval(double a)
 {
-	for (int i=0; i<numrows ; i++)
-		for (int j=0; j<numcols ; j++)
+    for (int i=0; i<numrows() ; i++)
+        for (int j=0; j<numcols() ; j++)
 			matr(i,j) = a;
 
 
@@ -389,8 +394,8 @@ void CMatrix_arma::setvaldiag(double a)
 
 void CMatrix_arma::writetofile(FILE *f)
 {
-	for (int i=0; i<numrows; i++)
-	{	for (int j=0; j<numcols; j++)
+    for (int i=0; i<numrows(); i++)
+    {	for (int j=0; j<numcols(); j++)
 			fprintf(f, "%le, ", matr(i,j));
 		fprintf(f, "\n");
 	}
@@ -399,8 +404,8 @@ void CMatrix_arma::writetofile(FILE *f)
 void CMatrix_arma::writetofile(string filename)
 {
 	FILE *f = fopen(filename.c_str(),"w");
-	for (int i=0; i<numrows; i++)
-	{	for (int j=0; j<numcols; j++)
+    for (int i=0; i<numrows(); i++)
+    {	for (int j=0; j<numcols(); j++)
 			fprintf(f, "%le, ", matr(i,j));
 		fprintf(f, "\n");
 	}
@@ -412,8 +417,8 @@ void CMatrix_arma::writetofile(string filename)
 void CMatrix_arma::writetofile_app(string filename)
 {
 	FILE *f = fopen(filename.c_str(),"a");
-	for (int i=0; i<numrows; i++)
-	{	for (int j=0; j<numcols; j++)
+    for (int i=0; i<numrows(); i++)
+    {	for (int j=0; j<numcols(); j++)
 			fprintf(f, "%le, ", matr(i,j));
 		fprintf(f, "\n");
 	}
@@ -433,9 +438,9 @@ void CMatrix_arma::print(string s)
 	ofstream Afile;
 	Afile.open(s+".txt");
 
-	for (int i = 0; i<numrows; ++i)
+    for (int i = 0; i<numrows(); ++i)
 	{
-		for (int j = 0; j<numcols; ++j)
+        for (int j = 0; j<numcols(); ++j)
 		{
 			Afile << matr(i,j) << "\, ";
 		}
@@ -475,9 +480,7 @@ double rcond(CMatrix_arma &M)
 
 CMatrix_arma& CMatrix_arma::operator=(mat &A)
 {
-	numcols = A.n_cols;
-	numrows = A.n_rows;
-	matr = A;
+    matr = A;
 	return *this;
 }
 
@@ -487,9 +490,9 @@ void write_to_file(vector<CMatrix_arma> M, string filename)
 	Afile.open(filename);
 	M.push_back(Average(M));
     for (unsigned int k = 0; k<M.size(); k++)
-	{	for (int i = 0; i<M[k].numrows; ++i)
+    {	for (int i = 0; i<M[k].numrows(); ++i)
 		{
-			for (int j = 0; j<M[k].numcols; ++j)
+            for (int j = 0; j<M[k].numcols(); ++j)
 			{
 				Afile << M[k].get(i,j) << "\, ";
 				cout<< M[k].get(i,j) << "\, ";
@@ -503,21 +506,21 @@ void write_to_file(vector<CMatrix_arma> M, string filename)
 
 CMatrix_arma Average(vector<CMatrix_arma> M)
 {
-	CMatrix_arma AVG(M[0].numrows, M[0].numcols);
+    CMatrix_arma AVG(M[0].numrows(), M[0].numcols());
 	int n = M.size();
     for (unsigned int k = 0; k<M.size(); k++)
-        for (unsigned int i = 0; i<M[k].numrows; ++i)
-			for (int j = 0; j<M[k].numcols; ++j)
+        for (unsigned int i = 0; i<M[k].numrows(); ++i)
+            for (int j = 0; j<M[k].numcols(); ++j)
 				AVG.get(i,j) += M[k].get(i,j)/n;
 	return AVG;
 }
 
 CVector_arma CMatrix_arma::diag_ratio()
 {
-	CVector_arma X(numcols);
-	CVector_arma maxs(numcols);
-	for (int i=0; i<numcols; i++)
-	{	for (int j=0; j<numrows; j++)
+    CVector_arma X(numcols());
+    CVector_arma maxs(numcols());
+    for (int i=0; i<numcols(); i++)
+    {	for (int j=0; j<numrows(); j++)
 			if (i!=j) maxs[i] += fabs(matr(i,j));
 		X[i]=maxs[i]/matr(i,i);
 	}
@@ -564,7 +567,7 @@ CMatrix_arma Identity_ar(int rows)
 
 CMatrix_arma CMatrix_arma::Preconditioner(double tol)
 {
-	CMatrix_arma M = non_posdef_elems_m(tol)+Identity_ar(numcols);
+    CMatrix_arma M = non_posdef_elems_m(tol)+Identity_ar(numcols());
 	for (int i = 0; i < getnumcols(); i++)
 		for (int j = 0; j < getnumrows(); j++)
 			if ((M.get(i,j) != 0) & (i != j))
@@ -577,43 +580,43 @@ vector<string> CMatrix_arma::toString(string format, vector<string> columnHeader
 	vector<string> r;
 	bool rowH = false, colH = false;
 	int rowOffset = 0, colOffset = 0;
-	if (columnHeaders.size() && columnHeaders.size() == numcols)
+    if (columnHeaders.size() && columnHeaders.size() == numcols())
 	{
 		colH = true;
 		rowOffset = 1;
 	}
-	if (rowHeaders.size() && rowHeaders.size() == numrows)
+    if (rowHeaders.size() && rowHeaders.size() == numrows())
 	{
 		rowH = true;
 		colOffset = 1;
 	}
-	r.resize(numrows + rowOffset);
+    r.resize(numrows() + rowOffset);
 
 
 	if (colH)
 	{
 		if (rowH) r[0] += "\, ";
-		for (int j = 0; j<numcols; j++)
+        for (int j = 0; j<numcols(); j++)
 		{
 			r[0] += columnHeaders[j];
-			if (j < numcols - 1) r[0] += "\, ";
+            if (j < numcols() - 1) r[0] += "\, ";
 		}
 
 	}
-	for (int i = 0; i<numrows; i++)
+    for (int i = 0; i<numrows(); i++)
 	{
 		if (rowH)
 		{
 			r[i + rowOffset] += rowHeaders[i];
 			r[i + rowOffset] += "\, ";
 		}
-		for (int j = 0; j<numcols; j++)
+        for (int j = 0; j<numcols(); j++)
 		{
             std::ostringstream streamObj;
             streamObj << matr(i,j);
             std::string strObj = streamObj.str();
             r[i + rowOffset] += strObj;
-            if (j < numcols - 1) r[i + rowOffset] += "\, ";
+            if (j < numcols() - 1) r[i + rowOffset] += "\, ";
 		}
 	}
 	return r;
@@ -622,8 +625,7 @@ vector<string> CMatrix_arma::toString(string format, vector<string> columnHeader
 
 void CMatrix_arma::setnumcolrows()
 {
-	numcols = matr.n_cols;
-	numrows = matr.n_rows;
+
 }
 
 void CMatrix_arma::setrow(int i, CVector_arma V)
@@ -728,10 +730,10 @@ void CMatrix_arma::ScaleDiagonal(double x)
 
 CVector CMatrix_arma::diagvector()
 {
-    CVector X(numcols);
-    CVector maxs(numcols);
-    for (int i=0; i<numcols; i++)
-    {	for (int j=0; j<numrows; j++)
+    CVector X(numcols());
+    CVector maxs(numcols());
+    for (int i=0; i<numcols(); i++)
+    {	for (int j=0; j<numrows(); j++)
             X[i]=matr(i,i);
     }
     return X;

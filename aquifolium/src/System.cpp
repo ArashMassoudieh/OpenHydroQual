@@ -1220,45 +1220,35 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 }
             }
 #else
-                double determinant = det(J);
-                double cond = rcond(J);
-                if (determinant==0)
-                {
-                    if (GetSolutionLogger())
-                    {
-                        GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
-                        GetSolutionLogger()->WriteString("Determinant = " + aquiutils::numbertostring(determinant));
-                        GetSolutionLogger()->WriteString("Rcond = " + aquiutils::numbertostring(cond));
-                        GetSolutionLogger()->WriteString("Diagonal vector!");
-                        GetSolutionLogger()->WriteVector(J.diagvector());
-                        if (J.diagvector().lookup(0).size()>0)
-                        {
-                            GetSolutionLogger()->WriteString("Blocks corresponding to the zero diagonal element:");
-                            for (unsigned int j=0; j<J.diagvector().lookup(0).size(); j++)
-                            {
-                                GetSolutionLogger()->WriteString(blocks[J.diagvector().lookup(0)[j]].GetName());
-                            }
-                        }
-                        //GetSolutionLogger()->WriteVector(F);
-                        //GetSolutionLogger()->WriteString("State variable:");
-                        //GetSolutionLogger()->WriteVector(X);
-                        //GetSolutionLogger()->WriteString("Block states - present: ");
-                        //WriteBlocksStates(variable, Expression::timing::present);
-                        //GetSolutionLogger()->WriteString("Block states - past: ");
-                        //WriteBlocksStates(variable, Expression::timing::past);
-                        //GetSolutionLogger()->WriteString("Link states - present: ");
-                        //WriteLinksStates(variable, Expression::timing::present);
-                        //GetSolutionLogger()->WriteString("Links states - past: ");
-                        //WriteLinksStates(variable, Expression::timing::past);
-                        GetSolutionLogger()->Flush();
-                    }
 
-                    SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
-                    if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
-                    return false;
-                }
+
                 if (!SolverSettings.direct_jacobian)
-                    SolverTempVars.Inverse_Jacobian[statevarno] = Invert(J);
+                {   if (!Invert(J,SolverTempVars.Inverse_Jacobian[statevarno]))
+                    {
+
+                        if (GetSolutionLogger())
+                        {
+                            GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
+                            GetSolutionLogger()->WriteString("Diagonal vector!");
+                            GetSolutionLogger()->WriteVector(J.diagvector());
+                            if (J.diagvector().lookup(0).size()>0)
+                            {
+                                GetSolutionLogger()->WriteString("Blocks corresponding to the zero diagonal element:");
+                                for (unsigned int j=0; j<J.diagvector().lookup(0).size(); j++)
+                                {
+                                    GetSolutionLogger()->WriteString(blocks[J.diagvector().lookup(0)[j]].GetName());
+                                }
+                            }
+
+                            GetSolutionLogger()->Flush();
+                        }
+
+                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
+                        if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+                        return false;
+
+                    }
+                }
                 else
                     SolverTempVars.Inverse_Jacobian[statevarno] = J;
                 SolverTempVars.updatejacobian[statevarno] = false;
@@ -1271,11 +1261,20 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 if (!SolverSettings.direct_jacobian)
                 {
                     dx = SolverTempVars.Inverse_Jacobian[statevarno] * F;
-                    X -= dx; 
+                    X -= dx;
                 }
                 else
                 {
                     dx = F / SolverTempVars.Inverse_Jacobian[statevarno];
+                    if (dx.num!=X.num)
+                    {
+                        GetSolutionLogger()->WriteString("Jacobian matrix is singular");
+                        GetSolutionLogger()->Flush();
+                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
+                        if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+                        return false;
+                    }
+
                     X -= dx; 
                 }
             }
@@ -1642,13 +1641,11 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 {
 
 //#pragma omp parallel for
-    //qDebug()<<"Calculating flows...";
     for (unsigned int i=0; i<links.size(); i++)
-    {   LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
-        //qDebug()<<i;
+       LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
 
-    }
-    //qDebug()<<"Updating F with flows!";
+
+
     for (unsigned int i=0; i<links.size(); i++)
     {
         if (blocks[links[i].s_Block_No()].isrigid(variable))
