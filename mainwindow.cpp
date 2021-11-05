@@ -1667,8 +1667,16 @@ void MainWindow::onrunmodel()
     copiedsystem.Solve(true);
     rtw->AppendText("Saving output files to the hard-drive...");
     QCoreApplication::processEvents();
-    copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
-    copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/observedoutputs.txt");
+    if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
+        copiedsystem.GetOutputs().writetofile(copiedsystem.OutputFileName());
+    else
+        copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName());
+
+    if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
+        copiedsystem.GetOutputs().writetofile(copiedsystem.ObservedOutputFileName());
+    else
+        copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
+
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();

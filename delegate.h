@@ -31,6 +31,7 @@ public:
 public slots:
     void browserClicked();
     void dirBrowserClicked();
+    void browserSaveClicked();
     //void browserCheck(QString);// const;
 
 private:

@@ -826,6 +826,22 @@ bool System::SetProperty(const string &s, const string &val)
     {
         paths.inputpath = val; return true;
     }
+    if (s=="jacobian_method")
+    {
+        if (val=="Inverse Jacobian")
+            SolverSettings.direct_jacobian=false;
+        if (val=="Direct")
+            SolverSettings.direct_jacobian=true;
+        return true;
+    }
+    if (s=="alloutputfile")
+    {
+        paths.outputfilename = val; return true;
+    }
+    if (s=="observedoutputfile")
+    {
+        paths.observedoutputfilename = val; return true;
+    }
     if (s=="outputpath")
     {
         paths.outputpath = val; return true;

@@ -20,7 +20,7 @@
     },
     "n_threads": {
       "type": "value",
-      "default": "4",
+      "default": "8",
       "description": "Number of threads to be used",
       "ask_user": "true",
       "delegate": "ValueBox",
@@ -66,12 +66,20 @@
       "delegate": "ValueBox",
       "code": "dt"
     },
-      "write_solution_details": {
+    "write_solution_details": {
       "type": "string",
       "default": "No",
       "description": "Write Solution Details",
       "ask_user": "true",
       "delegate": "ComboBox, items: Yes, No",
+      "code": "write_solution_details"
+    },
+    "jacobian_method": {
+      "type": "string",
+      "default": "Inverse Jacobian",
+      "description": "Equation system solution method",
+      "ask_user": "true",
+      "delegate": "ComboBox, items: Inverse Jacobian, Direct",
       "code": "write_solution_details"
     }
   },
@@ -105,6 +113,22 @@
       "code": "time_max",
       "criteria": "simulation_start_time<simulation_end_time",
       "warningmessage": "End time must be greater than start time"
+    },
+    "alloutputfile": {
+      "default": "output.txt",
+      "description": "Output File Name (All outputs)",
+      "ask_user": "true",
+      "type": "string",
+      "delegate": "Browser_Save",
+      "code": "outputfile"
+    },
+    "observed_outputfile": {
+      "default": "observedoutput.txt",
+      "description": "Output corresponding to observed data",
+      "ask_user": "true",
+      "type": "string",
+      "delegate": "Browser_Save",
+      "code": "outputfile"
     }
   },
   "optimizer": {
@@ -171,7 +195,7 @@
       "description": "GA Output File Name",
       "ask_user": "true",
       "type": "string",
-      "delegate": "Browser",
+      "delegate": "Browser_Save",
       "code": "outputfile"
     }
   }

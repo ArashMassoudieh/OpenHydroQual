@@ -381,16 +381,51 @@ CMatrix Sqrt(CMatrix &M1)
 
 
 
-CMatrix Invert(CMatrix M1)
+CMatrix Invert(CMatrix &M1)
 {
 	CMatrix InvM(M1.getnumcols(), M1.getnumcols());
 	for (int i=0; i<M1.getnumcols(); i++)
 	{
 		CVector V(M1.getnumcols());
 		V[i] = 1;
-		InvM[i] = V/M1;
+        CVector invV = V/M1;
+        if (invV.num==0)
+            return CMatrix();
+        InvM[i] = invV;
 	}
 	return Transpose(InvM);
+}
+
+CMatrix Invert(CMatrix *M1)
+{
+    CMatrix InvM(M1->getnumcols(), M1->getnumcols());
+    for (int i=0; i<M1->getnumcols(); i++)
+    {
+        CVector V(M1->getnumcols());
+        V[i] = 1;
+        CVector invV = V/(*M1);
+        if (invV.num==0)
+            return CMatrix();
+        InvM[i] = invV;
+    }
+    return Transpose(InvM);
+}
+
+bool Invert(CMatrix &M1,CMatrix &out)
+{
+    out=Invert(M1);
+    if (out.getnumrows()==0)
+        return false;
+    return true;
+}
+
+bool Invert(CMatrix *M1,CMatrix *out)
+{
+    *out=Invert(M1);
+    if (out->getnumrows()==0)
+        return false;
+
+    return true;
 }
 
 CMatrix Cholesky_factor(CMatrix &M)
@@ -751,19 +786,15 @@ CVector solve_ar(CMatrix &M, CVector &V)
 	};
 
 	mat C;
-	try {
-		C = solve(A,B);
-		throw 0;
-	}
+    bool out = solve( C, A, B );
 
-	catch(int rtt)
-	{
+    if (out)
+    {   for (int i = 0;i<V.getsize(); ++i)
+            ansr[i] = C(i,0);
 
-	}
-	for (int i = 0;i<V.getsize(); ++i)
-		ansr[i] = C(i,0);
-
-	return ansr;
+        return ansr;
+    }
+    else return CVector();
 }
 
 CVector solve_ar(const CMatrix &M, const CVector &V)

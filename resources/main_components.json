@@ -74,7 +74,7 @@
     },
     "depth": {
       "type": "expression",
-      "description": "Water depth",	
+      "description": "Initial water depth; Water depth",	
       "expression": "Storage/area",
       "description": "Average water depth",
       "delegate": "UnitBox",
@@ -168,7 +168,7 @@
       "delegate": "Browser"
     }
   },
-  "Special_Reservoir": {
+  "Controlled_Reservoir": {
     "type": "block",
     "typecategory": "Blocks",
     "description": "Reservoir with controlled outflow",
@@ -187,7 +187,7 @@
       "flow": "flow",
       "inflow": "inflow",
       "includeinoutput": "true",
-      "description": "Initial Storage",
+      "description": "Initial Storage;Storage",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^3;ft~^3",

@@ -111,6 +111,12 @@ QWidget *Delegate::createEditor(QWidget *parent,
         editor->setText(index.data().toString());
         return editor;
     }
+    if (delegateType.contains("Browser_Save"))
+    {
+        QPushButton *editor = new QPushButton(parent);
+        editor->setText(index.data().toString());
+        return editor;
+    }
     if (delegateType.contains("ListBox"))
     {
         QComboBox *editor = new QComboBox(parent);
@@ -229,7 +235,10 @@ void Delegate::setEditorData(QWidget *editor,
         QPushButton *pushButton = static_cast<QPushButton*>(editor);
         pushButton->setText(index.data().toString());
         index.model()->data(index, CustomRoleCodes::Role::saveIndex);
-        QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(browserClicked()));
+        if (delegateType.contains("Browser_Save"))
+            QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(browserSaveClicked()));
+        else
+            QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(browserClicked()));
         return;
     }
     if (delegateType.contains("ListBox"))
@@ -337,11 +346,12 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     if (delegateType.contains("Browser"))
     {
         return;
-        QComboBox *comboBox = static_cast<QComboBox*>(editor);
-        //qDebug() << comboBox->currentText();
-        if (model->setData(index, comboBox->currentText(), Qt::EditRole))
-            mainwindow->AddStatetoUndoData();
+
+    }
+    if (delegateType.contains("Browser_Save"))
+    {
         return;
+
     }
     if (delegateType.contains("ListBox"))
     {
@@ -464,6 +474,14 @@ void Delegate::browserClicked()
         }
     }
 
+    mainwindow->propModel()->setData(selectedindex, fileName, CustomRoleCodes::Role::loadIndex);
+}
+
+void Delegate::browserSaveClicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(mainwindow,
+            tr("Save"), "",
+            tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"));
     mainwindow->propModel()->setData(selectedindex, fileName, CustomRoleCodes::Role::loadIndex);
 }
 void Delegate::dirBrowserClicked()

@@ -110,6 +110,8 @@ struct _directories
     string inputpath;
     string outputpath;
 	string default_template_path;
+    string outputfilename="output.txt";
+    string observedoutputfilename="observedoutput.txt";
 };
 
 class System: public Object
@@ -279,6 +281,8 @@ class System: public Object
 		string& DefaultTemplatePath() { return paths.default_template_path; }
 		string InputPath() {return paths.inputpath;}
         string OutputPath() {return paths.outputpath;}
+        string ObservedOutputFileName() {return paths.observedoutputfilename;}
+        string OutputFileName() {return paths.outputfilename;}
         vector<CTimeSeries*> TimeSeries();
         double GetMinimumNextTimeStepSize();
         Object *GetObjectBasedOnPrimaryKey(const string &s);
