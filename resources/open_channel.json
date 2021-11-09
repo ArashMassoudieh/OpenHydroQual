@@ -15,7 +15,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "inflow;ag_withdrawal;non_ag_withdrawal",
+      "inflow": "inflow,ag_withdrawal,non_ag_withdrawal",
       "includeinoutput": "true",
       "description": "Storage",
       "initial_value_expression": "length*(base_width+side_slope*depth)*depth",

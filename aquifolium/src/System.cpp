@@ -838,7 +838,7 @@ bool System::SetProperty(const string &s, const string &val)
     {
         paths.outputfilename = val; return true;
     }
-    if (s=="observedoutputfile")
+    if (s=="observed_outputfile")
     {
         paths.observedoutputfilename = val; return true;
     }

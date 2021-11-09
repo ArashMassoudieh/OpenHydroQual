@@ -327,11 +327,14 @@
       "filename": "Surface2GW_link.png"
     },
     "length": {
-      "type": "expression",
+      "type": "value",
       "description": "Length",
       "includeinoutput": "false",
-      "ask_user": "false",
-      "expression": "depth.e/2"      
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
     },
     "area": {
       "type": "expression",

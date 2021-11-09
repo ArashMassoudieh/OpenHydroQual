@@ -1673,9 +1673,9 @@ void MainWindow::onrunmodel()
         copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName());
 
     if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
-        copiedsystem.GetOutputs().writetofile(copiedsystem.ObservedOutputFileName());
+        copiedsystem.GetObservedOutputs().writetofile(copiedsystem.ObservedOutputFileName());
     else
-        copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
+        copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
 
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())

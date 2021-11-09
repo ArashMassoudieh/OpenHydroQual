@@ -120,7 +120,7 @@
       "ask_user": "true",
       "type": "string",
       "delegate": "Browser_Save",
-      "code": "outputfile"
+      "code": "alloutputfile"
     },
     "observed_outputfile": {
       "default": "observedoutput.txt",
@@ -128,7 +128,7 @@
       "ask_user": "true",
       "type": "string",
       "delegate": "Browser_Save",
-      "code": "outputfile"
+      "code": "observed_outputfile"
     }
   },
   "optimizer": {
