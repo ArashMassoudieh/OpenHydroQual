@@ -497,6 +497,7 @@ bool System::Solve(bool applyparameters)
 {
     double timestepminfactor = 100000;
     double timestepmaxfactor = 50;
+    SolverTempVars.time_start = time(nullptr);
     SetAllParents();
     SetQuanPointers();
     if (ConstituentsCount()>0)
@@ -649,6 +650,52 @@ bool System::Solve(bool applyparameters)
                     rtw->Replot();
                 if (rtw->detailson) rtw->AppendtoDetails("Number of iterations:" + QString::number(SolverTempVars.MaxNumberOfIterations()) + ",dt = " + QString::number(SolverTempVars.dt) + ",t = " + QString::number(SolverTempVars.t, 'f', 6) + ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
                 if (rtw->stoptriggered) stop_triggered = true;
+                if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time)
+                {
+#ifdef Q_version
+                        if (rtw)
+                        {
+                            if (rtw->detailson)
+                                rtw->AppendtoDetails("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+
+                            rtw->AppendErrorMessage("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+                            QCoreApplication::processEvents();
+                        }
+#endif
+                        if (GetSolutionLogger())
+                        {
+                            GetSolutionLogger()->WriteString("Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+                            GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
+                        }
+                        cout<<"Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!"<<endl;
+                        cout<<"The attempt to solve the problem failed!"<<std::endl;
+                        SolverTempVars.SolutionFailed = true;
+                        stop_triggered = true;
+
+                }
+                else if (SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
+                {
+#ifdef Q_version
+                        if (rtw)
+                        {
+                            if (rtw->detailson)
+                                rtw->AppendtoDetails("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+
+                            rtw->AppendErrorMessage("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+                            QCoreApplication::processEvents();
+                        }
+#endif
+                        if (GetSolutionLogger())
+                        {
+                            GetSolutionLogger()->WriteString("Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+                            GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
+                        }
+                        cout<<"Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!"<<endl;
+                        cout<<"The attempt to solve the problem failed!"<<std::endl;
+                        SolverTempVars.SolutionFailed = true;
+                        stop_triggered = true;
+
+                }
                 QCoreApplication::processEvents();
                 //cout<<"Processes Events...";
             }
@@ -817,6 +864,14 @@ bool System::SetProperty(const string &s, const string &val)
     if (s=="dt" || s=="initial_time_step")
     {
         SimulationParameters.dt0 = aquiutils::atof(val); return true;
+    }
+    if (s=="maximum_time_allowed")
+    {
+        SolverSettings.maximum_simulation_time = aquiutils::atof(val); return true;
+    }
+    if (s=="maximum_number_of_matrix_inverstions")
+    {
+        SolverSettings.maximum_number_of_matrix_inversions = aquiutils::atoi(val); return true;
     }
     if (s=="silent")
     {
@@ -1132,15 +1187,6 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
             if (GetSolutionLogger())
             {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite, dt = " + aquiutils::numbertostring(SolverTempVars.dt));
-                //GetSolutionLogger()->WriteString("Block states - present: ");
-                //WriteBlocksStates(variable, Expression::timing::present);
-                //GetSolutionLogger()->WriteString("Block states - past: ");
-                //WriteBlocksStates(variable, Expression::timing::past);
-                //GetSolutionLogger()->WriteString("Link states - present: ");
-                //WriteLinksStates(variable, Expression::timing::present);
-                //GetSolutionLogger()->WriteString("Links states - past: ");
-                //WriteLinksStates(variable, Expression::timing::past);
-
                 GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "X=" + X.toString());
                 GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "F=" + F.toString());
                 GetSolutionLogger()->Flush();
@@ -1162,7 +1208,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             if (SolverTempVars.updatejacobian[statevarno])
             {
                 CMatrix_arma J = Jacobian(variable, X, transport);
-
+                SolverTempVars.epoch_count ++;
                 if (SolverSettings.scalediagonal)
                     J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
 #ifdef NormalizeByDiagonal

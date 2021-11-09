@@ -58,13 +58,29 @@
       "delegate": "ValueBox",
       "code": "minimum_timestep"
     },
-      "initial_time_step": {
+    "initial_time_step": {
       "type": "value",
       "default": "1e-2",
       "description": "Initial time-step",
       "ask_user": "true",
       "delegate": "ValueBox",
       "code": "dt"
+    },
+    "maximum_time_allowed": {
+      "type": "value",
+      "default": "86400",
+      "description": "Maximum simulation time allowed (seconds)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "code": "maximum_time_allowed"
+    },
+    "maximum_number_of_matrix_inverstions": {
+      "type": "value",
+      "default": "200000",
+      "description": "Maximum number of jacobian calculations allowed",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "code": "maximum_number_of_matrix_inverstions"
     },
     "write_solution_details": {
       "type": "string",

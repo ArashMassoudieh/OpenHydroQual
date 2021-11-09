@@ -60,7 +60,8 @@ struct solversettings
     bool optimize_lambda = true;
     bool direct_jacobian = false;
     bool write_solution_details = false;
-
+    double maximum_simulation_time = 86400; //maximum simulation time allows in seconds
+    int maximum_number_of_matrix_inversions = 200000; //maximum number of matrix inversions allowed
 
 };
 
@@ -87,14 +88,14 @@ struct solvertemporaryvars
     }
     vector<int> numiterations;
     int numiteration_tr;
-    int epoch_count;
+    int epoch_count = 0;
     vector<string> fail_reason;
     double t;
     double dt;
     double dt_base;
     bool SolutionFailed = false;
     CVector_arma Jacobia_Diagonal;
-
+    time_t time_start; //simulation start time
 
 };
 
