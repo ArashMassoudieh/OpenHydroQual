@@ -103,7 +103,7 @@ private slots:
     void onTreeSelectionChanged(QTreeWidgetItem *current);
     void onzoomin();
     void onzoomout();
-    void onzoomall();
+    void onzoomall(bool open_new=false);
     void onabout();
     void onpantriggered();
     void onzoomwindowtriggered();

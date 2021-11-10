@@ -1387,7 +1387,7 @@ void MainWindow::onzoomout()
     dView->scaleView(1 / 1.25);
 }
 
-void MainWindow::onzoomall()
+void MainWindow::onzoomall(bool openornew)
 {
     QRectF newRect = dView->MainGraphicsScene->itemsBoundingRect();
     float width = float(newRect.width());
@@ -1398,7 +1398,7 @@ void MainWindow::onzoomall()
     newRect.setWidth(qreal(width * scale));
     newRect.setHeight(qreal(height * scale));
     //qDebug()<<newRect;
-    if (width>dView->MainGraphicsScene->sceneRect().width() || height>dView->MainGraphicsScene->sceneRect().height() )
+    if (width>dView->MainGraphicsScene->sceneRect().width() || height>dView->MainGraphicsScene->sceneRect().height() || openornew )
         dView->MainGraphicsScene->setSceneRect(newRect);
     dView->fitInView(newRect,Qt::KeepAspectRatio);
 }
@@ -1514,6 +1514,7 @@ void MainWindow::onnormalmode()
 
 void MainWindow::onopen()
 {
+
     QString fileName = QFileDialog::getOpenFileName(this,
             tr("Open"), "",
             tr("Script files (*.scr);; All files (*.*)"));
@@ -1521,6 +1522,7 @@ void MainWindow::onopen()
 
     if (fileName!="")
     {
+
         ResetSystem();
         Script scr(fileName.toStdString(),&system);
         system.clear();
@@ -1531,6 +1533,7 @@ void MainWindow::onopen()
     }
     addedtemplatefilenames = system.addedtemplates; 
     PopulatePropertyTable(nullptr);
+    dView->DeleteAllItems();
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();
     BuildObjectsToolBar();
@@ -1557,6 +1560,7 @@ void MainWindow::onnewproject()
     QString fileName = "unnamed.scr";
     SetFileName(fileName);
     PopulatePropertyTable(nullptr);
+    dView->DeleteAllItems();
     RecreateGraphicItemsFromSystem();
     RefreshTreeView();
     BuildObjectsToolBar();
@@ -1642,7 +1646,7 @@ void MainWindow::RecreateGraphicItemsFromSystem(bool zoom_all)
     }
     dView->repaint();
     if (zoom_all)
-        onzoomall();
+        onzoomall(true);
 }
 
 void MainWindow::onrunmodel()
