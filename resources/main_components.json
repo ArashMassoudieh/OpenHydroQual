@@ -622,6 +622,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "masstransfer",
+      "inflow": "external_mass_flow_timeseries,external_source",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytoblocks",
@@ -634,7 +635,23 @@
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"
-    }
+    },
+    "external_mass_flow_timeseries": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "External mass flow time-series",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "Browser"
+    },
+    "external_source": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "External source",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "ComboBox;Sources"
+    },
   },
   "Reaction": {
     "type": "Reaction",

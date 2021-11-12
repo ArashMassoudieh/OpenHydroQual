@@ -64,10 +64,10 @@ double Block::GetInflowValue(const string &variable, const string &constituent, 
     {
         if (Variable(variablefullname)->GetCorrespondingInflowVar()[i] != "")
         {
-            if (Variable(Variable(variablefullname)->GetCorrespondingInflowVar()[i]))
+            if (Variable(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i]))
             {
-                double inflow1 = CalcVal(Variable(variablefullname)->GetCorrespondingInflowVar()[i]);
-                Variable(Variable(variablefullname)->GetCorrespondingInflowVar()[i])->SetVal(inflow1, tmg);
+                double inflow1 = CalcVal(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i]);
+                Variable(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i])->SetVal(inflow1, tmg);
                 inflow += inflow1;
             }
         }

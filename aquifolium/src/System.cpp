@@ -2933,6 +2933,7 @@ bool System::AddAllConstituentRelateProperties(Block *blk)
         {
             if (blk->GetVars()->Count(quanstobecopied[j].GetName())==0)
             {   blk->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+                blk->Variable(quanstobecopied[j].GetName())->SetParent(blk);
                 quantityordertobechanged.push_back(quanstobecopied[j].GetName());
             }
         }
@@ -2952,6 +2953,7 @@ bool System::AddAllConstituentRelateProperties(Reaction *rxn)
         {
             if (rxn->GetVars()->Count(quanstobecopied[j].GetName())==0)
             {   rxn->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+                rxn->Variable(quanstobecopied[j].GetName())->SetParent(rxn);
                 quantityordertobechanged.push_back(quanstobecopied[j].GetName());
             }
         }
@@ -2971,6 +2973,7 @@ bool System::AddAllConstituentRelateProperties(Link *lnk)
         {
             if (lnk->GetVars()->Count(quanstobecopied[j].GetName())==0)
             {   lnk->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+                lnk->Variable(quanstobecopied[j].GetName())->SetParent(lnk);
                 quantityordertobechanged.push_back(quanstobecopied[j].GetName());
             }
         }
@@ -2991,6 +2994,7 @@ bool System::AddAllConstituentRelateProperties(Source *src)
         {
             if (src->GetVars()->Count(quanstobecopied[j].GetName())==0)
             {   src->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+                src->Variable(quanstobecopied[j].GetName())->SetParent(src);
                 quantityordertobechanged.push_back(quanstobecopied[j].GetName());
             }
         }
@@ -3011,7 +3015,9 @@ bool System::AddConstituentRelateProperties(Constituent *consttnt)
         for (unsigned int j=0; j<quanstobecopied.size(); j++)
         {
             if (blocks[i].GetVars()->Count(quanstobecopied[j].GetName())==0)
-                block(i)->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+            {   block(i)->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+                block(i)->Variable(quanstobecopied[j].GetName())->SetParent(block(i));
+            }
         }
     }
     quanstobecopied = GetToBeCopiedQuantities(consttnt,object_type::link);
@@ -3021,7 +3027,9 @@ bool System::AddConstituentRelateProperties(Constituent *consttnt)
         for (unsigned int j=0; j<quanstobecopied.size(); j++)
         {
             if (links[i].GetVars()->Count(quanstobecopied[j].GetName())==0)
-               link(i)->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+            {  link(i)->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+               link(i)->Variable(quanstobecopied[j].GetName())->SetParent(link(i));
+            }
         }
     }
     quanstobecopied = GetToBeCopiedQuantities(consttnt,object_type::reaction);
@@ -3031,7 +3039,9 @@ bool System::AddConstituentRelateProperties(Constituent *consttnt)
         for (unsigned int j=0; j<quanstobecopied.size(); j++)
         {
             if (reactions[i].GetVars()->Count(quanstobecopied[j].GetName())==0)
-               reaction(i)->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+            {   reaction(i)->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+                reaction(i)->Variable(quanstobecopied[j].GetName())->SetParent(reaction(i));
+            }
         }
     }
     return true;

@@ -180,6 +180,7 @@ bool QuanSet::Append(const string &s, const Quan &q)
     {
         //qDebug()<<QString::fromStdString(q.ToString());
         quans[s] = q;
+
         //qDebug()<<"Done!";
         quantity_order.push_back(s);
         //qDebug()<<"Done!";
