@@ -2989,7 +2989,7 @@ bool System::AddAllConstituentRelateProperties(Source *src)
     vector<string> quantityordertobechanged;
     for (unsigned int i=0; i<constituents.size();i++)
     {
-        vector<Quan> quanstobecopied = GetToBeCopiedQuantities(constituent(i),object_type::link);
+        vector<Quan> quanstobecopied = GetToBeCopiedQuantities(constituent(i),object_type::source);
         for (unsigned int j=0; j<quanstobecopied.size(); j++)
         {
             if (src->GetVars()->Count(quanstobecopied[j].GetName())==0)

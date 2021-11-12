@@ -691,5 +691,56 @@
       "ask_user": "true",
       "delegate": "ValueBox"
     }
-  }
+  },
+  "chemical_source_timeseries": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Chemical source time series",
+    "icon": {
+      "filename": "Chemical_Source_timeseries.png"
+    },
+    "timeseries": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Loading rate (mass/time)",
+      "ask_user": "true",
+      "delegate": "Browser;time series"
+    }
+  },
+    "atmospheric exchange": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Atmospheric Exchange",
+    "icon": {
+      "filename": "Chemical_Source_exchange.png"
+    },
+    "rate_coefficient":
+    {
+    	"type": "value",
+    	"ask_user": "true",
+    	"description": "Rate coefficient",
+    	"delegate": "UnitBox",
+    	"unit": "1/day;1/s;1/hr"
+    },
+    "saturation":
+    {
+    	"type": "value",
+    	"ask_user": "true",
+    	"description": "Saturation Concentration Level",
+    	"delegate": "UnitBox",
+    	"unit": "g/m~^3"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "Storage*rate_coefficient*(saturation-concentration)",
+      "ask_user": "false",
+    },
+    "timeseries": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "true",
+      "description": "Precipitation intensity",
+      "ask_user": "false",
+    }
+  },
 }
