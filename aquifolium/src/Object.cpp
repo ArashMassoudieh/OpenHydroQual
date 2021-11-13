@@ -91,6 +91,15 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
         {
             return Parent()->reactionparameter(s)->GetVal("value",tmg);
         }
+        else if (Parent()->source(GetCurrentCorrespondingSource())!=nullptr)
+        {
+            if (Parent()->source(GetCurrentCorrespondingSource())->HasQuantity(s))
+                return Parent()->source(GetCurrentCorrespondingSource())->GetVal(s,tmg);
+        }
+        if (HasQuantity(GetCurrentCorrespondingConstituent()+":"+s))
+        {
+            return aquiutils::Pos(var[GetCurrentCorrespondingConstituent()+":"+s].GetVal(tmg));
+        }
         else
         {
             Parent()->errorhandler.Append(GetName(),"Object","GetVal","property '" + s + "' does not exist!",1002);
@@ -661,4 +670,23 @@ bool Object::CopyStateVariablesFrom(Object* obj)
         }
     }
     return true;
+}
+
+unordered_map<string, Quan*> Object::AllSourceParameters()
+{
+    unordered_map<string, Quan* > out;
+    for (unordered_map<string, Quan>::iterator s = var.begin(); s != var.end(); ++s)
+    {
+        if (var[s->first].GetType()==Quan::_type::source)
+        {
+            if(var[s->first].GetSource()!=nullptr)
+            {
+                for (unordered_map<string, Quan>::const_iterator s1 = var[s->first].GetSource()->GetVars()->begin(); s1 != var[s->first].GetSource()->GetVars()->end(); ++s1)
+                {
+                    out[s1->first] = var[s->first].GetSource()->Variable(s1->first);
+                }
+            }
+        }
+    }
+    return out;
 }

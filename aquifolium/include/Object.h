@@ -133,9 +133,16 @@ class Object
         void MakeTimeSeriesUniform(const double &increment);
         void SetQuanPointers();
         bool CopyStateVariablesFrom(Object* obj);
+        unordered_map<string, Quan*> AllSourceParameters();
+        void SetCurrentCorrespondingSource(const string s) {current_corresponding_source = s; }
+        void SetCurrentCorrespondingConstituent(const string s) {current_corresponding_constituent = s; }
+        string GetCurrentCorrespondingSource() {return current_corresponding_source; }
+        string GetCurrentCorrespondingConstituent() {return current_corresponding_constituent; }
     protected:
 
     private:
+        string current_corresponding_source="";
+        string current_corresponding_constituent="";
         QuanSet var;
         vector<string> errors;
         string last_error;

@@ -651,7 +651,7 @@
       "ask_user": "true",
       "role": "copytoblocks",
       "delegate": "ComboBox;Sources"
-    },
+    }
   },
   "Reaction": {
     "type": "Reaction",
@@ -733,14 +733,16 @@
     "coefficient": {
       "type": "expression",
       "expression": "Storage*rate_coefficient*(saturation-concentration)",
-      "ask_user": "false",
+      "includeinoutput": "false",
+      "description": "Transfer rate",
+      "ask_user": "false"
     },
     "timeseries": {
       "type": "expression",
       "expression": "1",
-      "includeinoutput": "true",
-      "description": "Precipitation intensity",
-      "ask_user": "false",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
     }
-  },
+  }
 }

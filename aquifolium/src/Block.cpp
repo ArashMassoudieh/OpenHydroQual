@@ -66,6 +66,12 @@ double Block::GetInflowValue(const string &variable, const string &constituent, 
         {
             if (Variable(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i]))
             {
+                if (Variable(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i])->GetType()==Quan::_type::source)
+                    if (Variable(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i])->GetSource()!=nullptr)
+                    {
+                        SetCurrentCorrespondingConstituent(constituent);
+                        SetCurrentCorrespondingSource(Variable(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i])->GetSource()->GetName());
+                    }
                 double inflow1 = CalcVal(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i]);
                 Variable(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i])->SetVal(inflow1, tmg);
                 inflow += inflow1;
