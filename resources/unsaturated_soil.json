@@ -123,6 +123,7 @@
       "expression" : "Storage/(area*depth)",
       "description": "Moisture Content",
       "ask_user": "true",
+      "estimate": "true",
       "includeinoutput": "true",
       "delegate": "ValueBox"
     },
