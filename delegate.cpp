@@ -474,7 +474,8 @@ void Delegate::browserClicked()
         }
     }
 
-    mainwindow->propModel()->setData(selectedindex, fileName, CustomRoleCodes::Role::loadIndex);
+    if (mainwindow->propModel())
+        mainwindow->propModel()->setData(selectedindex, fileName, CustomRoleCodes::Role::loadIndex);
 }
 
 void Delegate::browserSaveClicked()

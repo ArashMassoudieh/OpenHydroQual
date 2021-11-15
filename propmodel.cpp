@@ -261,7 +261,14 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
 
         }
         else
+        {
+            if (quanset->GetVar(VariableName.toStdString()).GetParent()==nullptr)
+            {
+                quanset->GetVar(VariableName.toStdString()).SetParent(quanset->Parent());
+            }
             r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),true);
+
+        }
         if (VariableName == "x")
         {
             mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setX(value.toInt());
