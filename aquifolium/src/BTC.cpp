@@ -108,7 +108,7 @@ CTimeSeries::CTimeSeries(string Filename)
 //			return;
 		}
 		if (s.size()>=2)
-		if ((s[0].substr(0,2)!="//") && (aquiutils::tolower(s[0])!="names"))
+        if ((s[0].substr(0,2)!="//") && (aquiutils::tolower(s[0])!="names") && aquiutils::trim(s[0])!="")
 		{
 			t.push_back(atof(s[0].c_str()));
 			C.push_back(atof(s[1].c_str()));
@@ -598,7 +598,7 @@ void CTimeSeries::readfile(string Filename)
 	{
 		s = aquiutils::getline(file);
 		if (s.size()>0)
-		if (s[0].substr(0,2)!="//")
+        if (s[0].substr(0,2)!="//" && aquiutils::trim(s[0])!="" && aquiutils::isnumber(s[0][0]))
 		{
 
             t.push_back(aquiutils::atof(s[0]));

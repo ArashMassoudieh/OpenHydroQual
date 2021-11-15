@@ -83,7 +83,7 @@ CPrecipitation::CPrecipitation(string _filename)
 	{	ss = aquiutils::getline(fil);
 
 		if (ss.size()>=3)
-			if (ss[0].substr(0, 2) != "//")
+            if (ss[0].substr(0, 2) != "//" && aquiutils::trim(ss[0])!="")
 			{
 				s.push_back(atof(ss[0].c_str()));
 				e.push_back(atof(ss[1].c_str()));
