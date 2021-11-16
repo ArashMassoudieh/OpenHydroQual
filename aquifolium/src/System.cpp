@@ -667,7 +667,7 @@ bool System::Solve(bool applyparameters)
                             GetSolutionLogger()->WriteString("Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
                             GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
                         }
-                        cout<<"Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!"<<endl;
+                        cout<<"Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!"<<std::endl;
                         cout<<"The attempt to solve the problem failed!"<<std::endl;
                         SolverTempVars.SolutionFailed = true;
                         stop_triggered = true;
@@ -690,7 +690,7 @@ bool System::Solve(bool applyparameters)
                             GetSolutionLogger()->WriteString("Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
                             GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
                         }
-                        cout<<"Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!"<<endl;
+                        cout<<"Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!"<<std::endl;
                         cout<<"The attempt to solve the problem failed!"<<std::endl;
                         SolverTempVars.SolutionFailed = true;
                         stop_triggered = true;
