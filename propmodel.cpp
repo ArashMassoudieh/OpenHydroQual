@@ -292,11 +292,12 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
         mainwindow->GetSystem()->SetAsParameter(quanset->Parent()->GetName(),VariableName.toStdString(),value.toString().toStdString());
     }
 
-    if (!r && (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries || quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries))
+
+    if ((!r && value!="") && (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries || quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries))
     {
         QMessageBox::question(mainwindow, "File does not have the right format!", "File does not have the right format!", QMessageBox::Ok);
     }
-    else if (!r)
+    else if (!r & value!="")
     {
         QMessageBox::question(mainwindow, "Validation Failed", QString::fromStdString(quanset->GetVar(VariableName.toStdString()).WarningMessage()), QMessageBox::Ok);
     }

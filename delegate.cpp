@@ -473,6 +473,8 @@ void Delegate::browserClicked()
             QMessageBox::information(mainwindow, "File not found!", "File " + fileName + " was not found!", QMessageBox::Ok, QMessageBox::StandardButton::Ok);
         }
     }
+    else
+        selected_fileName = "";
 
     if (mainwindow->propModel())
         mainwindow->propModel()->setData(selectedindex, fileName, CustomRoleCodes::Role::loadIndex);
