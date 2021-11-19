@@ -34,8 +34,8 @@ public:
     void PopulatePropertyTable(QuanSet* quanset);
     void RecreateGraphicItemsFromSystem(bool zoom_all=true);
     void RefreshTreeView();
-    Plotter* Plot(CTimeSeries& plotitem);
-    Plotter* Plot(CTimeSeries& plotmodeled, CTimeSeries& plotobserved);
+    Plotter* Plot(CTimeSeries<timeseriesprecision>& plotitem);
+    Plotter* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);
     string CreateNewName(string type);
     DiagramView* GetDiagramView() { return dView; }
     bool Log(const QString &s);

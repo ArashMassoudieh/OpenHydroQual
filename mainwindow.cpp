@@ -1784,7 +1784,7 @@ void MainWindow::oninverserun()
 }
 
 
-Plotter* MainWindow::Plot(CTimeSeries& plotitem)
+Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem)
 {
     Plotter* plotter = new Plotter(this);
     plotter->PlotData(plotitem);
@@ -1792,7 +1792,7 @@ Plotter* MainWindow::Plot(CTimeSeries& plotitem)
     return plotter;
 }
 
-Plotter* MainWindow::Plot(CTimeSeries& plotmodeled, CTimeSeries& plotobserved)
+Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved)
 {
     Plotter* plotter = new Plotter(this);
     if (plotmodeled.n>0)

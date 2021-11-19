@@ -22,7 +22,7 @@ class Observation: public Object
         void SetSystem(System *_system) {system = _system;}
         string GetLastError() {return lasterror;}
         void SetLastError(const string &lerror) {lasterror = lerror;}
-        CTimeSeries *GetTimeSeries() {return &modeled_time_series;}
+        CTimeSeries<timeseriesprecision> *GetTimeSeries() {return &modeled_time_series;}
         void SetLocation(const string &loc) {location = loc;}
         string GetLocation() {
             if (Variable("object"))
@@ -44,8 +44,8 @@ class Observation: public Object
     private:
         string location; // location at which the objective function will be evaluated
         Expression expression; // Function
-        CTimeSeries modeled_time_series; // Stored time series values;
-        CTimeSeries observed_time_series; // Stored time series values;
+        CTimeSeries<timeseriesprecision> modeled_time_series; // Stored time series values;
+        CTimeSeries<timeseriesprecision> observed_time_series; // Stored time series values;
         System *system; // pointer to the system the observation is evaluated at
         string lasterror;
         double current_value=0;

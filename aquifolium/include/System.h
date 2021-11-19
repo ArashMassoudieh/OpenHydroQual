@@ -272,7 +272,7 @@ class System: public Object
         bool SetParameterValue(const string &paramname, const double &val);
         bool SetParameterValue(int i, const double &val);
         bool ApplyParameters();
-        CTimeSeries *GetObjectiveFunctionTimeSeries(const string &name) {return ObjectiveFunction(name)->GetTimeSeries();}
+        CTimeSeries<timeseriesprecision> *GetObjectiveFunctionTimeSeries(const string &name) {return ObjectiveFunction(name)->GetTimeSeries();}
         void SetSilent(bool _s) {silent = _s;}
         bool IsSilent() {return silent;}
         void ShowMessage(const string &msg) {if (!silent) cout<<msg<<std::endl; }
@@ -284,7 +284,7 @@ class System: public Object
         string OutputPath() {return paths.outputpath;}
         string ObservedOutputFileName() {return paths.observedoutputfilename;}
         string OutputFileName() {return paths.outputfilename;}
-        vector<CTimeSeries*> TimeSeries();
+        vector<CTimeSeries<timeseriesprecision>*> TimeSeries();
         double GetMinimumNextTimeStepSize();
         Object *GetObjectBasedOnPrimaryKey(const string &s);
         bool SavetoScriptFile(const string &filename, const string &templatefilename="", const vector<string> &addedtemplates = vector<string>());
@@ -387,7 +387,7 @@ class System: public Object
         Parameter_Set parameter_set;
         bool silent;
         _directories paths;
-        vector<CTimeSeries*> alltimeseries;
+        vector<CTimeSeries<float>*> alltimeseries;
         void CalculateAllExpressions(Expression::timing tmg = Expression::timing::present);
         void SetNumberOfStateVariables(unsigned int n)
 		{

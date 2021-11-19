@@ -3,7 +3,7 @@
 
 #include "BTC.h"
 
-class PreCalculatedFunction : public CTimeSeries
+class PreCalculatedFunction : public CTimeSeries<double>
 {
 public:
     PreCalculatedFunction();

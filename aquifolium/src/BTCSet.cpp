@@ -73,7 +73,12 @@ void CTimeSeriesSet::writetofile(char outputfile[])
 {
 	FILE *Fil;
 	Fil = fopen(outputfile, "w");
-	for (unsigned int i=0; i<names.size(); i++)
+    if (!Fil)
+    {
+        cout << "File '" + string(outputfile) +"' cannot be opened!"<<std::endl;
+        return;
+    }
+    for (unsigned int i=0; i<names.size(); i++)
 		fprintf(Fil , "t, %s, ", names[i].c_str());
 	fprintf(Fil, "\n");
 	for (int j=0; j<maxnumpoints(); j++)
@@ -134,7 +139,12 @@ void CTimeSeriesSet::writetofile(string outputfile, int outputwriteinterval)
 {
 	FILE *Fil;
 	Fil = fopen(outputfile.c_str() , "w");
-	for (unsigned int i=0; i<names.size(); i++)
+    if (!Fil)
+    {
+        cout << "File '" + outputfile +"' cannot be opened!"<<std::endl;
+        return;
+    }
+    for (unsigned int i=0; i<names.size(); i++)
 		fprintf(Fil , "t, %s, ", names[i].c_str());
 	fprintf(Fil, "\n");
 	for (int j=0; j<maxnumpoints(); j++)

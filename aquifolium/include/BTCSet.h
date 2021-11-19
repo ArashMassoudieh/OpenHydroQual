@@ -12,11 +12,11 @@ public:
 	CTimeSeriesSet(int n); //construction with number of variables (timeseries)
 	CTimeSeriesSet(int numberofBTCs, int sizeofBTCvector);
 	CTimeSeriesSet(const CTimeSeriesSet &BTC);
-	CTimeSeriesSet(const CTimeSeries &BTC);
+    CTimeSeriesSet(const CTimeSeries<double> &BTC);
 	CTimeSeriesSet(string filename, bool varytime);
 	int nvars;
     string filename;
-	vector<CTimeSeries> BTC;
+    vector<CTimeSeries<double>> BTC;
 	void writetofile(char outputfile[]);
 	int maxnumpoints();
 	CTimeSeriesSet& operator = (const CTimeSeriesSet &C);
@@ -42,10 +42,10 @@ public:
 	vector<double> percentile(double x, int limit, vector<int> index);
 	vector<double> getrandom(int burnin);
 	void append(double t, vector<double> c);
-	CTimeSeries add(vector<int> ii);
-	CTimeSeries add_mult(vector<int> ii, vector<double> mult);
-	CTimeSeries add_mult(vector<int> ii, CTimeSeriesSet &mult);
-	CTimeSeries divide(int ii, int jj);
+    CTimeSeries<double> add(vector<int> ii);
+    CTimeSeries<double> add_mult(vector<int> ii, vector<double> mult);
+    CTimeSeries<double> add_mult(vector<int> ii, CTimeSeriesSet &mult);
+    CTimeSeries<double> divide(int ii, int jj);
 	CTimeSeriesSet make_uniform(double increment, bool assgn_d=true);
 	CTimeSeriesSet getpercentiles(vector<double> percents);
 	CVector out_of_limit(double limit);
@@ -64,8 +64,8 @@ public:
     void ResizeIfNeeded(unsigned int _increment);
     void adjust_size();
 	bool file_not_found=false;
-	CTimeSeries &operator[](int index);
-	CTimeSeries &operator[](string BTCName);
+    CTimeSeries<double> &operator[](int index);
+    CTimeSeries<double> &operator[](string BTCName);
     bool Contains(string BTCName);
 #ifdef QT_version
 	CTimeSeries &operator[](QString BTCName) {
@@ -76,7 +76,7 @@ public:
 	CTimeSeriesSet(vector < vector<double>> &, int writeInterval = 1);
 	int indexOf(const string& name) const;
 	void pushBackName(string name);
-	void append(const CTimeSeries &BTC, string name = "");
+    void append(const CTimeSeries<double> &BTC, string name = "");
 	CTimeSeriesSet sort(int burnOut = 0);
 #ifdef QT_version
 	void compact(QDataStream &data) const;

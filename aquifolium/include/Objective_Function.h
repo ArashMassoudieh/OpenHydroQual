@@ -25,8 +25,8 @@ class Objective_Function: public Object
         void SetSystem(System *_system) {system = _system;}
         string GetLastError() {return lasterror;}
         void SetLastError(const string &lerror) {lasterror = lerror;}
-        CTimeSeries *GetTimeSeries() {return &stored_time_series;}
-        void SetTimeSeries(const CBTC &X) {stored_time_series = X;}
+        CTimeSeries<float> *GetTimeSeries() {return &stored_time_series;}
+        void SetTimeSeries(const CTimeSeries<timeseriesprecision> &X) {stored_time_series = X;}
         double Weight();
         double Percentile();
         void SetLocation(const string &loc) {location = loc;}
@@ -49,7 +49,7 @@ class Objective_Function: public Object
     private:
         string location; // location at which the objective function will be evaluated
         Expression expression; // Function
-        CTimeSeries stored_time_series; // Stored time series values;
+        CTimeSeries<float> stored_time_series; // Stored time series values;
         System *system; // pointer to the system the objective function is evaluated at
         string lasterror;
         objfunctype type = objfunctype::Integrate;

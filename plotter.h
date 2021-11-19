@@ -54,8 +54,8 @@ class Plotter : public QMainWindow
 public:
     explicit Plotter(MainWindow *parent = nullptr);
     ~Plotter();
-    bool PlotData(CBTC& BTC, string style="line");
-    bool AddData(CBTC& BTC,string style="line");
+    bool PlotData(CTimeSeries<timeseriesprecision>& BTC, string style="line");
+    bool AddData(CTimeSeries<timeseriesprecision>& BTC,string style="line");
     void SetYAxisTitle(const QString& s);
 private:
     Ui::Plotter *ui;
@@ -82,7 +82,7 @@ private:
     QList<QAction *> subActions(const QMap<QString, int> &list, const int &value, QMenu * menuItem, int graphIndex, QVariant val, bool enabled = true);
     void refreshFormat();
     QCPGraph* addScatterPlot(QCPGraph *g, plotformat format);
-    CTimeSeries QCPDatatoTimeSeries(QCPGraphDataContainer &_data);
+    CTimeSeries<timeseriesprecision> QCPDatatoTimeSeries(QCPGraphDataContainer &_data);
     QVector<QVector<double>> QCPDatatoQVector(QCPGraph *_g);
 private slots:
     bool On_Legend_Clicked();

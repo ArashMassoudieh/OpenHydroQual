@@ -47,7 +47,7 @@ class QuanSet
         void SetParent(Object *p) {parent = p; SetAllParents();}
         void SetAllParents();
         Object *Parent() {return parent; }
-        vector<CTimeSeries*> TimeSeries();
+        vector<CTimeSeries<float>*> TimeSeries();
         vector<string> QuanNames();
         string toCommand();
         string toCommandSetAsParam();

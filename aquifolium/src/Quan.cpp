@@ -560,7 +560,7 @@ double &Quan::GetSimulationTime() const
     return parent->GetParent()->GetSimulationTime();
 }
 
-CTimeSeries* Quan::GetTimeSeries()
+CTimeSeries<timeseriesprecision>* Quan::GetTimeSeries()
 {
     if (_timeseries.n != 0)
         return &_timeseries;

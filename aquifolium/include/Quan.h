@@ -12,6 +12,7 @@
 #include <qjsonobject.h>
 #endif
 
+#define timeseriesprecision float
 class Block;
 class Link;
 class System;
@@ -39,7 +40,7 @@ class Quan
         double CalcVal(const Expression::timing &tmg=Expression::timing::past);
         double GetVal(const Expression::timing &tmg=Expression::timing::past);
         double &GetSimulationTime() const;
-		CTimeSeries* GetTimeSeries();
+        CTimeSeries<timeseriesprecision>* GetTimeSeries();
         string last_error;
         void SetType(const _type &t) {type = t;}
         _type GetType() {return type;}
@@ -68,7 +69,7 @@ class Quan
         void SetIncludeInOutput(bool x) {includeinoutput = x;}
         void SetEstimable(bool x) {estimable=x;}
         string GetName() {return _var_name;}
-        CTimeSeries* TimeSeries();
+        CTimeSeries<double>* TimeSeries();
         bool IncludeInOutput() {return includeinoutput;}
 		bool SetTimeSeries(const string &filename, bool prec=false);
         string &Description(bool graph=false)
@@ -157,7 +158,7 @@ class Quan
     private:
         Expression _expression;
         Rule _rule;
-        CTimeSeries _timeseries;
+        CTimeSeries<timeseriesprecision> _timeseries;
         Source *source = nullptr;
 		string sourcename = ""; 
 		string _var_name;

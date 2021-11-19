@@ -6,6 +6,7 @@
 
 QT       += core gui opengl printsupport svg
 INCLUDEPATH += ./aquifolium/include
+INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
@@ -63,7 +64,6 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     ./aquifolium/src/Block.cpp \
-    ./aquifolium/src/BTC.cpp \
     ./aquifolium/src/BTCSet.cpp \
     ./aquifolium/src/Expression.cpp \
     ./aquifolium/src/Matrix.cpp \
@@ -184,6 +184,7 @@ HEADERS += \
     statusviewer.h \
     expressioneditor.h \
     ./aquifolium/include/GA/GA.hpp \
+    ./aquifolium/src/BTC.hpp \
     logwindow.h \
     ./aquifolium/include/reaction.h \
     wizard_select_dialog.h
