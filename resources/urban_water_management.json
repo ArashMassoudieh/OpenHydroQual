@@ -3,6 +3,7 @@
   "desalination_plant": {
     "type": "block",
     "typecategory": "Blocks",
+    "description" : "Desalination Plant",    
     "icon": {
       "filename": "desalination_plant.png"
     },
@@ -31,7 +32,7 @@
 	  "unit": "m~^3/day;ft~^3/day",
       "delegate": "UnitBox"
     },
-	"maximum_production_rate": {
+      "maximum_production_rate": {
       "type": "timeseries",
       "includeinoutput": "true",
       "description": "Maximum production rate time series",
@@ -72,6 +73,7 @@
   "residential_user": {
     "type": "block",
     "typecategory": "Blocks",
+    "description" : "Residential User",    
     "icon": {
       "filename": "residential.png"
     },
@@ -115,6 +117,7 @@
   "commertial_user": {
     "type": "block",
     "typecategory": "Blocks",
+    "description" : "Commertial User",    
     "icon": {
       "filename": "commertial.png"
     },
@@ -158,6 +161,7 @@
   "agricultural_user": {
     "type": "block",
     "typecategory": "Blocks",
+    "description" : "Agricultural User",
     "icon": {
       "filename": "agriculture.png"
     },
@@ -201,8 +205,53 @@
   "industrial_user": {
     "type": "block",
     "typecategory": "Blocks",
+    "description" : "Industrial User",
     "icon": {
       "filename": "industrial.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "net_use_rate",
+      "includeinoutput": "false",
+      "description": "Initial Storage;Storage"
+    },
+    "use_rate": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Use rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "constant_use_rate": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant use rate",
+      "ask_user": "true",
+	  "unit": "m~^3/day;ft~^3/day",
+      "delegate": "UnitBox"
+    },
+    "net_use_rate": {
+      "type": "expression",
+      "expression": "-use_rate-constant_use_rate",
+      "includeinoutput": "false",
+      "description": "Net production",
+      "ask_user": "false"
+    }
+  },
+  "public_user": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description" : "Public User",
+    "icon": {
+      "filename": "public.png"
     },
     "name": {
       "description": "Name",
@@ -244,6 +293,7 @@
   "Flow_to_user": {
     "type": "link",
     "typecategory": "Connectors",
+    "description" : "Flow link to user",    
     "icon": {
       "filename": "arrow_to_user.png"
     },
@@ -311,12 +361,6 @@
     "icon": {
       "filename": "Water_Transfer.png"
     },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
-    },
     "flow": {
       "type": "expression",
       "description": "Flow rate (m~^3/day)",
@@ -328,6 +372,33 @@
     "color": {
       "type": "string",
       "default": "0,0,200"
+    }
+  },
+    "Aquifer_recharge": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Aquifer recharge",
+    "icon": {
+      "filename": "aquifer_recharge.png"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "recharge_rate*Storage.s/(Storage.s+10)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "recharge_rate": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Recharge Rate (m~^3/day)",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "color": {
+      "type": "string",
+      "default": "150,0,200"
     }
   }
 }
