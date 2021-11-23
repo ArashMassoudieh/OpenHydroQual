@@ -21,7 +21,7 @@ class Objective_Function_Set
         double Calculate();
         void Update(double t);
         string LastError() {return lasterror;}
-        CTimeSeriesSet GetTimeSeriesSet();
+        CTimeSeriesSet<timeseriesprecision> GetTimeSeriesSet();
         void SetSystem(System* s);
         void clear();
         bool erase(int i);

@@ -150,9 +150,9 @@ void CPrecipitation::getfromfile(string _filename)
 }
 
 
-CBTCSet CPrecipitation::getflow (double A, double dt)
+CTimeSeriesSet<double> CPrecipitation::getflow (double A, double dt)
 {
-	CBTCSet Rainflowout(1);
+    CTimeSeriesSet<double> Rainflowout(1);
     Rainflowout.filename = filename;
 	if (n == 0) return Rainflowout;
 	Rainflowout.names.clear();
@@ -164,9 +164,9 @@ CBTCSet CPrecipitation::getflow (double A, double dt)
 	return Rainflowout;
 }
 
-CBTCSet CPrecipitation::getflow(double A)
+CTimeSeriesSet<double> CPrecipitation::getflow(double A)
 {
-	CBTCSet Rainflowout(1);
+    CTimeSeriesSet<double> Rainflowout(1);
     Rainflowout.filename = filename;
     Rainflowout.names.clear();
 	Rainflowout.names.push_back("flow");

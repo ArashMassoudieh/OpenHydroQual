@@ -1181,12 +1181,8 @@ T CTimeSeries<T>::mean_t()
 
 }
 
-int sgn(int val) {
-    return (int(0) < val) - (val < int(0));
-}
-
 template<class T>
-double sgn(T val) {
+T sgn(T val) {
     return double(double(0) < val) - (val < double(0));
 }
 

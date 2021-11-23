@@ -22,7 +22,7 @@
 #endif
 #include "ErrorHandler.h"
 #include <string>
-
+#define outputtimeseriesprecision double
 #if Q_version
 #include <QStringList>
 #include "runtimewindow.h"
@@ -67,8 +67,8 @@ struct solversettings
 
 struct outputs
 {
-    CBTCSet AllOutputs;
-    CBTCSet ObservedOutputs;
+    CTimeSeriesSet<outputtimeseriesprecision> AllOutputs;
+    CTimeSeriesSet<timeseriesprecision> ObservedOutputs;
 };
 
 struct solvertemporaryvars
@@ -239,8 +239,8 @@ class System: public Object
         void MakeTimeSeriesUniform(const double &increment);
 		bool SetProp(const string &s, const double &val);
 		bool SetProperty(const string &s, const string &val);
-        CBTCSet& GetOutputs() {return Outputs.AllOutputs;}
-        CBTCSet& GetObservedOutputs() {return Outputs.ObservedOutputs;}
+        CTimeSeriesSet<outputtimeseriesprecision>& GetOutputs() {return Outputs.AllOutputs;}
+        CTimeSeriesSet<timeseriesprecision>& GetObservedOutputs() {return Outputs.ObservedOutputs;}
         vector<string> GetAllBlockTypes();
         vector<string> GetAllLinkTypes();
 		vector<string> GetAllSourceTypes();
@@ -343,7 +343,7 @@ class System: public Object
         void SetParameterEstimationMode(parameter_estimation_options mode = parameter_estimation_options::none);
         void SetQuanPointers();
         bool ResetBasedOnRestorePoint(RestorePoint *rp);
-        CBTCSet GetModeledObjectiveFunctions();
+        CTimeSeriesSet<timeseriesprecision> GetModeledObjectiveFunctions();
     protected:
 
     private:
@@ -387,7 +387,7 @@ class System: public Object
         Parameter_Set parameter_set;
         bool silent;
         _directories paths;
-        vector<CTimeSeries<float>*> alltimeseries;
+        vector<CTimeSeries<timeseriesprecision>*> alltimeseries;
         void CalculateAllExpressions(Expression::timing tmg = Expression::timing::present);
         void SetNumberOfStateVariables(unsigned int n)
 		{

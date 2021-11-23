@@ -788,7 +788,7 @@ void Quan::Update()
 }
 
 
-CTimeSeries* Quan::TimeSeries()
+CTimeSeries<timeseriesprecision>* Quan::TimeSeries()
 {
     if (_timeseries.C.size()!=0)
         return &_timeseries;

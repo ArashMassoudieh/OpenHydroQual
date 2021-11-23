@@ -56,9 +56,9 @@ void Objective_Function_Set::Update(double t)
     return;
 }
 
-CTimeSeriesSet Objective_Function_Set::GetTimeSeriesSet()
+CTimeSeriesSet<timeseriesprecision> Objective_Function_Set::GetTimeSeriesSet()
 {
-    CTimeSeriesSet out;
+    CTimeSeriesSet<timeseriesprecision> out;
     for (unsigned int i=0; i < objectivefunctions.size(); i++)
         out.append(*objectivefunctions[i].GetTimeSeries(),objectivefunctions[i].GetName());
     return out;

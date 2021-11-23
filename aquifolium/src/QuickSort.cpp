@@ -18,32 +18,7 @@ CQuickSort::~CQuickSort(void)
 
 }
 
-vector<double> QSort(const vector<double> &V1)
-{
 
-	if (V1.size() <= 1) return V1;
-	vector<double> V = V1;
-	int end = V.size();
-	if (V[end - 1]<V[0]) V = reverse_order(V);
-	vector<double> less, greater;
-	greater.push_back(V[end - 1]);
-	for (int i = 0; i<end - 1; i++)
-		if (V[i]<V[end - 1]) less.push_back(V[i]);
-		else greater.push_back(V[i]);
-
-
-		if ((V == greater) && (less.size() == 0))
-			return greater;
-		vector<double> res = QSort(less);
-		vector<double> x2 = QSort(greater);
-
-		res.insert(res.end(), x2.begin(), x2.end());
-		less.clear();
-		greater.clear();
-		x2.clear();
-		return res;
-
-}
 
 vector<double> QbSort(const vector<double> &V1)
 {
@@ -73,30 +48,6 @@ vector<double> QbSort(const vector<double> &V1)
 
 }
 
-vector<int> QSort(const vector<int> &V1)
-{
-	if (V1.size() <= 1) return V1;
-	vector<int> V = V1;
-	int end = V.size();
-	if (V[end - 1]<V[0]) V = reverse_order(V);
-	vector<int> less, greater;
-	greater.push_back(V[end - 1]);
-	for (int i = 0; i<end - 1; i++)
-		if (V[i]<V[end - 1]) less.push_back(V[i]);
-		else greater.push_back(V[i]);
-
-
-		vector<int> res = QSort(less);
-		if ((V == greater) && (less.size() == 0)) return greater;
-		vector<int> x2 = QSort(greater);
-
-		res.insert(res.end(), x2.begin(), x2.end());
-		less.clear();
-		greater.clear();
-		x2.clear();
-		return res;
-
-}
 
 vector<int> QbSort(const vector<int> &V1)
 {
@@ -124,23 +75,7 @@ vector<int> QbSort(const vector<int> &V1)
 
 }
 
-vector<double> reverse_order(const vector<double> &V)
-{
-	vector<double> A;
-	for (int i = V.size() - 1; i >= 0; i--)
-		A.push_back(V[i]);
 
-	return A;
-}
-
-vector<int> reverse_order(const vector<int> &V)
-{
-	vector<int> A;
-	for (int i = V.size() - 1; i >= 0; i--)
-		A.push_back(V[i]);
-
-	return A;
-}
 
 vector<double> bubbleSort(const vector<double> &V)
 {

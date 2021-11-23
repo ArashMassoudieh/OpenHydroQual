@@ -31,8 +31,8 @@ public:
 	//MM
     //CBTCSet getflow_Evap(double A);
 	
-    CBTCSet getflow (double A);
-    CBTCSet getflow(double A, double dt);
+    CTimeSeriesSet<double> getflow (double A);
+    CTimeSeriesSet<double> getflow(double A, double dt);
 
 	static bool isFileValid(string filename);
 public:

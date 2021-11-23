@@ -9,6 +9,8 @@ class MainWindow;
 #include <BTCSet.h>
 #include "qcustomplot.h"
 #include "CustomPlotZoom.h"
+#include "Quan.h"
+#include "System.h"
 
 struct plotformat{
     Qt::GlobalColor color = Qt::red;
@@ -40,12 +42,13 @@ struct _timeseries
 {
     QString filename;
     QString name;
-    CTimeSeriesSet Data;
+    CTimeSeriesSet<outputtimeseriesprecision> Data;
 };
 
 namespace Ui {
 class Plotter;
 }
+
 
 class Plotter : public QMainWindow
 {
@@ -54,17 +57,17 @@ class Plotter : public QMainWindow
 public:
     explicit Plotter(MainWindow *parent = nullptr);
     ~Plotter();
-    bool PlotData(CTimeSeries<timeseriesprecision>& BTC, string style="line");
-    bool AddData(CTimeSeries<timeseriesprecision>& BTC,string style="line");
+    bool PlotData(CTimeSeries<outputtimeseriesprecision>& BTC, string style="line");
+    bool AddData(CTimeSeries<outputtimeseriesprecision>& BTC,string style="line");
     void SetYAxisTitle(const QString& s);
 private:
     Ui::Plotter *ui;
     QMap<QString, _timeseries> BTCs;
     CustomPlotZoom *plot;
-    double minx=1e12;
-    double maxx=-1e12;
-    double miny=1e12;
-    double maxy=-1e12;
+    outputtimeseriesprecision minx=1e12;
+    outputtimeseriesprecision maxx=-1e12;
+    outputtimeseriesprecision miny=1e12;
+    outputtimeseriesprecision maxy=-1e12;
     double xtoTime(const double &x) {
         return x * 86400 - 2209161600;
     }
@@ -82,7 +85,7 @@ private:
     QList<QAction *> subActions(const QMap<QString, int> &list, const int &value, QMenu * menuItem, int graphIndex, QVariant val, bool enabled = true);
     void refreshFormat();
     QCPGraph* addScatterPlot(QCPGraph *g, plotformat format);
-    CTimeSeries<timeseriesprecision> QCPDatatoTimeSeries(QCPGraphDataContainer &_data);
+    CTimeSeries<outputtimeseriesprecision> QCPDatatoTimeSeries(QCPGraphDataContainer &_data);
     QVector<QVector<double>> QCPDatatoQVector(QCPGraph *_g);
 private slots:
     bool On_Legend_Clicked();

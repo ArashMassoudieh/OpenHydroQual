@@ -64,7 +64,6 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     ./aquifolium/src/Block.cpp \
-    ./aquifolium/src/BTCSet.cpp \
     ./aquifolium/src/Expression.cpp \
     ./aquifolium/src/Matrix.cpp \
     ./aquifolium/src/Matrix_arma.cpp \
@@ -185,6 +184,7 @@ HEADERS += \
     expressioneditor.h \
     ./aquifolium/include/GA/GA.hpp \
     ./aquifolium/src/BTC.hpp \
+    ./aquifolium/src/BTCSet.hpp \
     logwindow.h \
     ./aquifolium/include/reaction.h \
     wizard_select_dialog.h

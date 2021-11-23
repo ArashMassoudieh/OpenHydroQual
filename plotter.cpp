@@ -46,7 +46,7 @@ Plotter::~Plotter()
 
 
 
-bool Plotter::PlotData(CBTC& BTC, string style)
+bool Plotter::PlotData(CTimeSeries<timeseriesprecision>& BTC, string style)
 {
     minx=1e12;
     maxx=-1e12;
@@ -310,9 +310,9 @@ QCPGraph* Plotter::addScatterPlot(QCPGraph *g, plotformat format)
 }
 
 
-CTimeSeries Plotter::QCPDatatoTimeSeries(QCPGraphDataContainer &_data)
+CTimeSeries<timeseriesprecision> Plotter::QCPDatatoTimeSeries(QCPGraphDataContainer &_data)
 {
-    CTimeSeries out;
+    CTimeSeries<timeseriesprecision> out;
     for (QCPGraphDataContainer::const_iterator it=_data.begin(); it!=_data.end(); ++it)
     {
         out.append(it->key, it->value);
@@ -362,7 +362,7 @@ void Plotter::refreshFormat()
 
 
 
-bool Plotter::AddData(CBTC& BTC, string style)
+bool Plotter::AddData(CTimeSeries<timeseriesprecision>& BTC, string style)
 {
     minx=1e12;
     maxx=-1e12;

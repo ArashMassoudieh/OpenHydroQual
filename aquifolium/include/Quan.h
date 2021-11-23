@@ -12,7 +12,7 @@
 #include <qjsonobject.h>
 #endif
 
-#define timeseriesprecision float
+#define timeseriesprecision double
 class Block;
 class Link;
 class System;
@@ -69,7 +69,7 @@ class Quan
         void SetIncludeInOutput(bool x) {includeinoutput = x;}
         void SetEstimable(bool x) {estimable=x;}
         string GetName() {return _var_name;}
-        CTimeSeries<double>* TimeSeries();
+        CTimeSeries<timeseriesprecision>* TimeSeries();
         bool IncludeInOutput() {return includeinoutput;}
 		bool SetTimeSeries(const string &filename, bool prec=false);
         string &Description(bool graph=false)

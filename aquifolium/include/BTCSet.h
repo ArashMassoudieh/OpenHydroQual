@@ -3,20 +3,19 @@
 #include <vector>
 #include "Vector.h"
 
-#define CBTCSet CTimeSeriesSet
-
+template <class T>
 class CTimeSeriesSet
 {
 public:
 	CTimeSeriesSet(void); //default constructor
 	CTimeSeriesSet(int n); //construction with number of variables (timeseries)
 	CTimeSeriesSet(int numberofBTCs, int sizeofBTCvector);
-	CTimeSeriesSet(const CTimeSeriesSet &BTC);
-    CTimeSeriesSet(const CTimeSeries<double> &BTC);
+    CTimeSeriesSet(const CTimeSeriesSet<T> &BTC);
+    CTimeSeriesSet(const CTimeSeries<T> &BTC);
 	CTimeSeriesSet(string filename, bool varytime);
 	int nvars;
     string filename;
-    vector<CTimeSeries<double>> BTC;
+    vector<CTimeSeries<T>> BTC;
 	void writetofile(char outputfile[]);
 	int maxnumpoints();
 	CTimeSeriesSet& operator = (const CTimeSeriesSet &C);
@@ -24,48 +23,48 @@ public:
 	bool unif;
 	void writetofile(string outputfile, bool writeColumnHeaders = false);
 	void writetofile(string outputfile, int writeinterval);
-	vector<double> interpolate(double t);
-	vector<double> interpolate(double t, int fnvars);
+    vector<T> interpolate(T t);
+    vector<T> interpolate(T t, int fnvars);
 	void getfromfile(string filename, bool varytime);
-	double maxtime();
-	double mintime();
-	vector<double> getrandom();
-	vector<double> percentile(double x);
-	vector<double> mean(int limit);
-	vector<double> mean(int limit, vector<int> index);
-	vector<double> std(int limit);
-	vector<double> std(int limit, vector<int> index);
+    T maxtime();
+    T mintime();
+    vector<T> getrandom();
+    vector<T> percentile(T x);
+    vector<T> mean(int limit);
+    vector<T> mean(int limit, vector<int> index);
+    vector<T> std(int limit);
+    vector<T> std(int limit, vector<int> index);
 	CMatrix correlation(int limit, int n);
-	vector<double> integrate();
-	vector<double> average();
-	vector<double> percentile(double x, int limit);
-	vector<double> percentile(double x, int limit, vector<int> index);
-	vector<double> getrandom(int burnin);
-	void append(double t, vector<double> c);
-    CTimeSeries<double> add(vector<int> ii);
-    CTimeSeries<double> add_mult(vector<int> ii, vector<double> mult);
-    CTimeSeries<double> add_mult(vector<int> ii, CTimeSeriesSet &mult);
-    CTimeSeries<double> divide(int ii, int jj);
-	CTimeSeriesSet make_uniform(double increment, bool assgn_d=true);
-	CTimeSeriesSet getpercentiles(vector<double> percents);
-	CVector out_of_limit(double limit);
+    vector<T> integrate();
+    vector<T> average();
+    vector<T> percentile(T x, int limit);
+    vector<T> percentile(T x, int limit, vector<int> index);
+    vector<T> getrandom(int burnin);
+    void append(T t, vector<T> c);
+    CTimeSeries<T> add(vector<int> ii);
+    CTimeSeries<T> add_mult(vector<int> ii, vector<T> mult);
+    CTimeSeries<T> add_mult(vector<int> ii, CTimeSeriesSet &mult);
+    CTimeSeries<T> divide(int ii, int jj);
+    CTimeSeriesSet make_uniform(T increment, bool assgn_d=true);
+    CTimeSeriesSet getpercentiles(vector<T> percents);
+    CVector out_of_limit(T limit);
 	CTimeSeriesSet distribution(int n_bins, int n_columns, int limit);
-	CTimeSeriesSet add_noise(vector<double> std, bool logd);
+    CTimeSeriesSet add_noise(vector<T> std, bool logd);
 	void clear();
-	vector<double> max_wiggle();
-	vector<double> max_wiggle_corr(int _n = 10);
-	vector<int> max_wiggle_sl(int ii, double tol);
-	CTimeSeriesSet getflow (double A);
-	void knockout(double t);
+    vector<T> max_wiggle();
+    vector<T> max_wiggle_corr(int _n = 10);
+    vector<int> max_wiggle_sl(int ii, T tol);
+    CTimeSeriesSet getflow (T A);
+    void knockout(T t);
 	int lookup(string S);
-	vector<double> getrow(int a);
+    vector<T> getrow(int a);
 	void setname(int i, string name);
     void resize(unsigned int _size);
     void ResizeIfNeeded(unsigned int _increment);
     void adjust_size();
 	bool file_not_found=false;
-    CTimeSeries<double> &operator[](int index);
-    CTimeSeries<double> &operator[](string BTCName);
+    CTimeSeries<T> &operator[](int index);
+    CTimeSeries<T> &operator[](string BTCName);
     bool Contains(string BTCName);
 #ifdef QT_version
 	CTimeSeries &operator[](QString BTCName) {
@@ -73,10 +72,10 @@ public:
 #endif // QT_version
 
 
-	CTimeSeriesSet(vector < vector<double>> &, int writeInterval = 1);
+    CTimeSeriesSet(vector < vector<T>> &, int writeInterval = 1);
 	int indexOf(const string& name) const;
 	void pushBackName(string name);
-    void append(const CTimeSeries<double> &BTC, string name = "");
+    void append(const CTimeSeries<T> &BTC, string name = "");
 	CTimeSeriesSet sort(int burnOut = 0);
 #ifdef QT_version
 	void compact(QDataStream &data) const;
@@ -85,11 +84,13 @@ public:
 	~CTimeSeriesSet(void);
 };
 
-double diff(CTimeSeriesSet B1, CTimeSeriesSet B2);
-CTimeSeriesSet operator * (const CTimeSeriesSet &BTC, const double &C);
-CVector norm2dif(CTimeSeriesSet &A, CTimeSeriesSet &B);
-CTimeSeriesSet merge(CTimeSeriesSet A, const CTimeSeriesSet &B);
-CTimeSeriesSet merge(vector<CTimeSeriesSet> &A);
-CVector sum_interpolate(vector<CTimeSeriesSet> &BTC, double t);
-double sum_interpolate(vector<CTimeSeriesSet> &BTC, double t, string name);
-int max_n_vars(vector<CTimeSeriesSet> &BTC);
+template <class T> T diff(CTimeSeriesSet<T> B1, CTimeSeriesSet<T> B2);
+template <class T> CTimeSeriesSet<T> operator * (const CTimeSeriesSet<T> &BTC, const double &C);
+template <class T> CVector norm2dif(CTimeSeriesSet<T> &A, CTimeSeriesSet<T> &B);
+template <class T> CTimeSeriesSet<T> merge(CTimeSeriesSet<T> A, const CTimeSeriesSet<T> &B);
+template <class T> CTimeSeriesSet<T> merge(vector<CTimeSeriesSet<T>> &A);
+template <class T> CVector sum_interpolate(vector<CTimeSeriesSet<T>> &BTC, double t);
+template <class T> T sum_interpolate(vector<CTimeSeriesSet<T>> &BTC, T t, string name);
+template <class T> int max_n_vars(vector<CTimeSeriesSet<T>> &BTC);
+
+#include "BTCSet.hpp"

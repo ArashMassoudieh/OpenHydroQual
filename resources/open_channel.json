@@ -58,7 +58,7 @@
       "type": "expression",
       "expression": "(-base_width+_sqt(base_width^2+4*side_slope*Storage/length))/(2*side_slope)",
       "precalcbasedon": "Storage:log:0.000001:1000000",
-      "description": "Water Depth",
+      "description": "Initial Water Depth; Water Depth",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm",

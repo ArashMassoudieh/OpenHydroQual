@@ -121,7 +121,7 @@
     "theta": {
       "type": "expression",
       "expression" : "Storage/(area*depth)",
-      "description": "Moisture Content",
+      "description": "Initial Moisture Content; Moisture Content",
       "ask_user": "true",
       "estimate": "true",
       "includeinoutput": "true",
@@ -134,6 +134,7 @@
       "ask_user": "false",
       "delegate": "ValueBox",
       "unit": "",
+      "estimate": "true",
       "includeinoutput": "true"
     },
     "specific_storage" : {

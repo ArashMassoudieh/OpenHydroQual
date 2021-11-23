@@ -925,7 +925,7 @@ void System::InitiateOutputs()
         for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CBTC(), blocks[i].GetName() + "_" + it->first);
+                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), blocks[i].GetName() + "_" + it->first);
                 it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
             }
     }
@@ -935,19 +935,19 @@ void System::InitiateOutputs()
         for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CBTC(), links[i].GetName() + "_" + it->first);
+                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), links[i].GetName() + "_" + it->first);
                 it->second.SetOutputItem(links[i].GetName() + "_" + it->first);
             }
     }
 
     for (unsigned int i=0; i<objective_function_set.size(); i++)
     {
-        Outputs.AllOutputs.append(CBTC(), "Obj_" + objective_function_set[i]->GetName());
+        Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), "Obj_" + objective_function_set[i]->GetName());
         objective_function_set[i]->SetOutputItem("Obj_" + objective_function_set[i]->GetName());
         for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CBTC(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
+                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 //qDebug()<<QString::fromStdString(it->second.GetOutputItem());
             }
@@ -955,16 +955,16 @@ void System::InitiateOutputs()
 
     for (unsigned int i=0; i<observations.size(); i++)
     {
-        Outputs.AllOutputs.append(CBTC(), "Obs_" + observations[i].GetName());
+        Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), "Obs_" + observations[i].GetName());
         observations[i].SetOutputItem("Obs_" + observations[i].GetName());
         for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CBTC(), "Obs_" + observations[i].GetName()+"_"+it->first);
+                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), "Obs_" + observations[i].GetName()+"_"+it->first);
                 it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
                 //qDebug()<<QString::fromStdString(it->second.GetOutputItem());
             }
-         Outputs.ObservedOutputs.append(CBTC(), observations[i].GetName());
+         Outputs.ObservedOutputs.append(CTimeSeries<timeseriesprecision>(), observations[i].GetName());
     }
 
     for (unsigned int i=0; i<sources.size(); i++)
@@ -973,7 +973,7 @@ void System::InitiateOutputs()
         {
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CBTC(), sources[i].GetName() + "_" + it->first);
+                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), sources[i].GetName() + "_" + it->first);
                 it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
             }
         }
@@ -1021,7 +1021,7 @@ void System::SetOutputItems()
         for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CBTC(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
+                Outputs.AllOutputs.append(CTimeSeries<timeseriesprecision>(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
 
             }
@@ -1033,7 +1033,7 @@ void System::SetOutputItems()
         for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CBTC(), "Obs_" + observations[i].GetName()+"_"+it->first);
+                Outputs.AllOutputs.append(CTimeSeries<timeseriesprecision>(), "Obs_" + observations[i].GetName()+"_"+it->first);
                 it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
 
             }
@@ -2410,9 +2410,9 @@ bool System::Echo(const string &obj, const string &quant, const string &feature)
 
 }
 
-vector<CTimeSeries*> System::TimeSeries()
+vector<CTimeSeries<timeseriesprecision>*> System::TimeSeries()
 {
-    vector<CTimeSeries*> out;
+    vector<CTimeSeries<timeseriesprecision>*> out;
     for (unsigned int i=0; i<links.size(); i++)
     {
         for (unsigned int j=0; j<links[i].TimeSeries().size(); j++)
@@ -2445,13 +2445,13 @@ vector<CTimeSeries*> System::TimeSeries()
 
 double System::GetMinimumNextTimeStepSize()
 {
-    double x=1e12;
+    timeseriesprecision x=1e12;
 
     for (unsigned int i=0; i<alltimeseries.size(); i++)
     {
         x = min(x,alltimeseries[i]->interpol_D(this->SolverTempVars.t));
     }
-    return max(x,0.001);
+    return max(x,timeseriesprecision(0.001));
 }
 
 #if defined(QT_version) || defined(Q_version)
@@ -3235,9 +3235,9 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     return jacobian;
 }
 
-CBTCSet System::GetModeledObjectiveFunctions()
+CTimeSeriesSet<timeseriesprecision> System::GetModeledObjectiveFunctions()
 {
-    CBTCSet out;
+    CTimeSeriesSet<timeseriesprecision> out;
     for (unsigned int i=0; i<ObjectiveFunctionsCount(); i++)
     {
         out.append(*objectivefunction(objective_function_set[i]->GetName())->GetTimeSeries(),objective_function_set[i]->GetName());
