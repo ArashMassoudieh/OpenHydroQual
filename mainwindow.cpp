@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.0.13"
-#define last_modified "November 16, 2021"
+#define openhydroqual_version "1.0.14"
+#define last_modified "November 23, 2021"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -1671,16 +1671,20 @@ void MainWindow::onrunmodel()
     copiedsystem.Solve(true);
     rtw->AppendText("Saving output files to the hard-drive...");
     QCoreApplication::processEvents();
-    if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
-        copiedsystem.GetOutputs().writetofile(copiedsystem.OutputFileName());
-    else
-        copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName());
-
-    if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
-        copiedsystem.GetObservedOutputs().writetofile(copiedsystem.ObservedOutputFileName());
-    else
-        copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
-
+    if (copiedsystem.OutputFileName() != "")
+    {
+        if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
+            copiedsystem.GetOutputs().writetofile(copiedsystem.OutputFileName());
+        else
+            copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName());
+    }
+    if (copiedsystem.ObservedOutputFileName() != "")
+    {
+        if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
+            copiedsystem.GetObservedOutputs().writetofile(copiedsystem.ObservedOutputFileName());
+        else
+            copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
+    }
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();

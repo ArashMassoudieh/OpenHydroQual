@@ -183,7 +183,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;release;C:\Qt\5.15.1\msvc2019_64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;release;C:\Qt\5.15.1\msvc2019_64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>release\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -356,8 +356,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="aquifolium\src\BTC.cpp" />
-    <ClCompile Include="aquifolium\src\BTCSet.cpp" />
     <ClCompile Include="aquifolium\src\constituent.cpp" />
     <ClCompile Include="aquifolium\src\GA\Binary.cpp" />
     <ClCompile Include="aquifolium\src\Block.cpp" />
@@ -469,6 +467,8 @@
     <QtMoc Include="diagramview.h">
     </QtMoc>
     <QtMoc Include="aboutdialog.h" />
+    <ClInclude Include="aquifolium\src\BTC.hpp" />
+    <ClInclude Include="aquifolium\src\BTCSet.hpp" />
     <ClInclude Include="CustomPlotZoom.h" />
     <ClInclude Include="edge.h" />
     <ClInclude Include="enums.h" />
