@@ -430,6 +430,11 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
                 edge->setZValue(100);
             }
         }
+        else
+        {
+            UnSelectAll();
+        }
+
         if (event->button() == Qt::LeftButton && dragMode()!=DragMode::RubberBandDrag)
         {   if (event->modifiers()) {
                 if (node)

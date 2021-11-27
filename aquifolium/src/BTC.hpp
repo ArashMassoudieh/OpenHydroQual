@@ -601,6 +601,7 @@ T diff(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, CTimeSeries<T> Q)
 template<class T>
 void CTimeSeries<T>::readfile(string Filename)
 {
+    clear();
     filename = Filename;
     ifstream file(Filename);
 	vector<string> s;
