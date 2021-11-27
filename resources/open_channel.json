@@ -1,6 +1,7 @@
 {
   "Trapezoidal Channel Segment": {
     "type": "block",
+    "description": "Open Channel Segment", 
     "typecategory": "Blocks",
     "icon": {
       "filename": "Trapezoidal_Channel.png"
@@ -36,6 +37,7 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
+      "default" : "1",
       "criteria": "side_slope>0",
       "warningmessage": "Side slope must be greater than zero"
     },
@@ -61,6 +63,7 @@
       "description": "Initial Water Depth; Water Depth",
       "ask_user": "true",
       "delegate": "UnitBox",
+      "default": "0",
       "unit": "m;ft;cm",
       "includeinoutput": "true",
       "criteria": "depth>-0.0000001",
@@ -69,7 +72,7 @@
     "head": {
       "type": "expression",
       "expression": "depth+bottom_elevation",      
-      "description": "Hydraulc Head",
+      "description": "Hydraulic Head",
       "ask_user": "false",
       "includeinoutput": "true"
     },

@@ -71,6 +71,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             if (it->size()!=0)
             {
                 //qDebug()<<QString::fromStdString(it.key().asString());
+                qDebug()<<QString::fromStdString(it.key().asString());
                 Quan Q(it);
                 //qDebug()<<QString::fromStdString(Q.ToString());
                 Append(it.key().asString(),Q);

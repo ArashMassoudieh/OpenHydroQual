@@ -5,12 +5,6 @@
     "icon": {
       "filename": "Groundwater.png"
     },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String"
-    },
     "Storage": {
       "type": "balance",
       "massbalance": "true",

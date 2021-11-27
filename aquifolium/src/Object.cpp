@@ -215,7 +215,7 @@ void Object::SetDefaults()
         //qDebug() << "Setting Defults for variable " << QString::fromStdString(s->first);
         if (var[s->first].Default() != "")
         {
-            var[s->first].SetProperty(var[s->first].Default().c_str());
+            var[s->first].SetProperty(var[s->first].Default().c_str(),true);
             //qDebug() << "Default Value was set to " << QString::fromStdString(var[s->first].Default()); 
         }
     }
