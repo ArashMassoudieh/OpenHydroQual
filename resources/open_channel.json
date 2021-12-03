@@ -1,16 +1,10 @@
 {
   "Trapezoidal Channel Segment": {
     "type": "block",
-    "description": "Open Channel Segment", 
     "typecategory": "Blocks",
+    "description": "Trapezoidal Channel Segment", 
     "icon": {
       "filename": "Trapezoidal_Channel.png"
-    },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String"
     },
     "Storage": {
       "type": "balance",
@@ -37,7 +31,6 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
-      "default" : "1",
       "criteria": "side_slope>0",
       "warningmessage": "Side slope must be greater than zero"
     },
@@ -63,7 +56,6 @@
       "description": "Initial Water Depth; Water Depth",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "default": "0",
       "unit": "m;ft;cm",
       "includeinoutput": "true",
       "criteria": "depth>-0.0000001",
@@ -72,7 +64,7 @@
     "head": {
       "type": "expression",
       "expression": "depth+bottom_elevation",      
-      "description": "Hydraulic Head",
+      "description": "Hydraulc Head",
       "ask_user": "false",
       "includeinoutput": "true"
     },
@@ -324,6 +316,113 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
+    }
+  },
+   "Sewer_channel_segment": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Sewer Channel Segment", 
+    "icon": {
+      "filename": "Sewer_pipe.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow,ag_withdrawal,non_ag_withdrawal",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "initial_value_expression": "length*diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
+      "ask_user": "false",
+      "estimate": "true"
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's Roughness Coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true"
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "criteria": "diameter>0",
+      "warningmessage": "Diameter cannot be zero"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "normalized_depth*diameter",
+      "precalcbasedon": "Storage:log:0.000001:1000000",
+      "description": "Initial Water Depth; Water Depth",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "includeinoutput": "true",
+      "criteria": "depth>-0.0000001",
+      "warningmessage": "Depth must be non-negative"
+    },
+    "normalized_area": {
+      "type": "expression",
+      "expression": "Storage/(length*diameter^2)",
+      "description": "Normalized area",
+      "ask_user": "false"
+    },
+    "normalized_depth": {
+      "type": "expression",
+      "expression": "2.2298958*normalized_area^3-2.7110899*normalized_area^2+2.027012721*normalized_area",
+      "description": "Normalized water depth",
+      "ask_user": "false"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation+_pos(depth-diameter)*10000",      
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Segment length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
+      "description": "Cross-sectional area",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "perimeter": {
+      "type": "expression",
+      "expression": "diameter*(5.486583*(depth/diameter)^3-8.60202*(depth/diameter)^2+6.1081605*(depth/diameter))",
+      "description": "Wetted Perimeter",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     }
   }
 }
