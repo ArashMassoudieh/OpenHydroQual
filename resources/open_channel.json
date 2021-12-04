@@ -100,7 +100,7 @@
       "ask_user": "true",
       "delegate": "Browser"
     },
-	"ag_area": {
+    "ag_area": {
       "type": "value",
       "description": "Area of agriculural land",
       "ask_user": "true",
@@ -108,7 +108,7 @@
       "unit": "m~^2",
       "estimate": "true"
     },
-	"non_ag_area": {
+    "non_ag_area": {
       "type": "value",
       "description": "Area of non-agriculural activity",
       "ask_user": "true",
@@ -116,7 +116,7 @@
       "unit": "m~^2",
       "estimate": "true"
     },
-	"ag_withdrawal": {
+    "ag_withdrawal": {
       "type": "expression",
       "expression": "-ag_area*ag_withdrawal_per_unit_area*depth/(depth+0.05)",
       "description": "Agricultural Withdrawal",
@@ -153,12 +153,6 @@
     "description": "Link from a channel segment to another",
     "icon": {
       "filename": "Trapezoidal_Channel_Link.png"
-    },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
     },
     "area": {
       "type": "expression",

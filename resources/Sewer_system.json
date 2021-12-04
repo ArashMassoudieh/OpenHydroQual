@@ -1,0 +1,297 @@
+{
+  "Sewerchannelsegment": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Sewer Channel Segment", 
+    "icon": {
+      "filename": "Sewer_pipe_section.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow,ag_withdrawal,non_ag_withdrawal",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "initial_value_expression": "length*diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
+      "ask_user": "false",
+      "estimate": "true"
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's Roughness Coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true"
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "criteria": "diameter>0",
+      "warningmessage": "Diameter cannot be zero"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "normalized_depth*diameter",
+      "precalcbasedon": "Storage:log:0.000001:1000000",
+      "description": "Initial Water Depth; Water Depth",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "includeinoutput": "true",
+      "criteria": "depth>-0.0000001",
+      "warningmessage": "Depth must be non-negative"
+    },
+    "normalized_area": {
+      "type": "expression",
+      "expression": "Storage/(length*diameter^2)",
+      "description": "Normalized area",
+      "ask_user": "false"
+    },
+    "normalized_depth": {
+      "type": "expression",
+      "expression": "2.2298958*normalized_area^3-2.7110899*normalized_area^2+2.027012721*normalized_area",
+      "description": "Normalized water depth",
+      "ask_user": "false"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation+_pos(depth-diameter)*10000",      
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Segment length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
+      "description": "Cross-sectional area",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "perimeter": {
+      "type": "expression",
+      "expression": "diameter*(5.486583*(depth/diameter)^3-8.60202*(depth/diameter)^2+6.1081605*(depth/diameter))",
+      "description": "Wetted Perimeter",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    }
+  },
+  "Sewer_pipe": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Sewer pipe",
+    "icon": {
+      "filename": "Sewer_pipe_link.png"
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "criteria": "diameter>0",
+      "warningmessage": "diameter must be positive"
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's roughness coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "unit": "m",
+      "estimate": "true",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness coefficient must be greater than zero"
+    },
+    "length": {
+      "type": "value",
+      "description": "Pipe length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "lenght must be positive"
+    },
+    "start_elevation": {
+      "type": "value",
+      "description": "Start elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    },
+    "end_elevation": {
+      "type": "value",
+      "description": "End elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic Gradient",
+      "expression": "(head.e-head.s)/length",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "depth_1": {
+      "type": "expression",
+      "description": "Start Depth",
+      "expression": "_min(_pos(head.s-start_elevation);diameter)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "depth_2": {
+      "type": "expression",
+      "description": "End Depth",
+      "expression": "_min(_pos(head.e-end_elevation);diameter)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "area_1": {
+      "type": "expression",
+      "description": "Start area",
+      "expression": "diameter^2*(-0.910331972*(depth_1/diameter)^3+1.376045712*(depth_1/diameter)^2+0.319684423*(depth_1/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "area_2": {
+      "type": "expression",
+      "description": "End area",
+      "expression": "diameter^2*(-0.910331972*(depth_2/diameter)^3+1.376045712*(depth_2/diameter)^2+0.319684423*(depth_2/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "perimeter_1": {
+      "type": "expression",
+      "description": "Start wetted perimeter",
+      "expression": "diameter*(5.486583*(depth_1/diameter)^3-8.60202*(depth_1/diameter)^2+6.1081605*(depth_1/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "perimeter_2": {
+      "type": "expression",
+      "description": "End wetted perimeter",
+      "expression": "diameter*(5.486583*(depth_2/diameter)^3-8.60202*(depth_2/diameter)^2+6.1081605*(depth_2/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "eff_area": {
+      "type": "expression",
+      "description": "Effective area",
+      "expression": "_hsd(_max(head.s;start_elevation)-_max(head.e;end_elevation))*area_1 + _hsd(_max(head.e;end_elevation)-_max(head.s;start_elevation))*area_2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hydraulic_radius": {
+      "type": "expression",
+      "description": "Effective hydraulic radious",
+      "expression": "_hsd(_max(head.s;start_elevation)-_max(head.e;end_elevation))*area_1/perimeter_1 + _hsd(_max(head.e;end_elevation)-_max(head.s;start_elevation))*area_2/perimeter_2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "86400*(_sqt((_max(head.s;start_elevation)-_max(head.e;end_elevation))/length)/ManningCoeff)*eff_area*hydraulic_radius^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    }
+  },
+  "Catch basin": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "Catch_basin.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow",
+      "includeinoutput": "true",
+      "description": "Initial Storage;Storage",
+      "ask_user": "false",
+      "default": "0",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "area": {
+      "type": "value",
+      "description": "Base Area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "Base area must be positive"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "Storage/area",
+      "description": "Water Depth",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "includeinoutput": "true"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation",      
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    }
+  }
+}
