@@ -123,7 +123,7 @@
       "ask_user": "false",
       "includeinoutput": "true"
     },
-	"non_ag_withdrawal": {
+    "non_ag_withdrawal": {
       "type": "expression",
       "expression": "-non_ag_area*non_ag_withdrawal_per_unit_area*depth/(depth+0.05)",
       "description": "Non-Agricultural Withdrawal",
@@ -138,7 +138,7 @@
       "ask_user": "true",
       "delegate": "Browser"
     },
-	"non_ag_withdrawal_per_unit_area": {
+    "non_ag_withdrawal_per_unit_area": {
       "type": "timeseries",
       "includeinoutput": "true",
       "applylimit": "true",
