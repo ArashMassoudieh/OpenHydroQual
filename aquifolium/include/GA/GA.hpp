@@ -304,6 +304,7 @@ void CGA<T>::assignfitnesses()
 
         Models[k] = *Model;
         Models[k].SetSilent(true);
+        Models[k].SetNumThreads(1);
 		for (int i = 0; i < GA_params.nParam; i++)
 			Models[k].SetParameterValue(i, inp[k][i]);
         Models[k].ApplyParameters();

@@ -33,7 +33,10 @@ CONFIG += c++14
 
 CONFIG(debug, debug|release) {
     message(Building in debug mode)
-    DEFINES += NO_OPENMP DEBUG
+    QMAKE_CXXFLAGS+= -fopenmp
+    QMAKE_LFLAGS +=  -fopenmp
+    LIBS += -lgomp -lpthread
+    #DEFINES += NO_OPENMP DEBUG
 
 } else {
     message(Building in release mode)
