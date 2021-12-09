@@ -336,7 +336,7 @@ int counter=0;
                 fprintf(FileOut, "\n");
                 fclose(FileOut);
             }
-			clock_t t0 = clock();
+            time_t t0 = time(nullptr);
 
 #ifdef Debug_GA
             Models[k].SavetoScriptFile(filenames.pathname+"/temp/model_" + aquiutils::numbertostring(k) +"_" +aquiutils::numbertostring(current_generation)+".scr",string(""), vector<string>());
@@ -348,7 +348,7 @@ int counter=0;
             Models[k].GetOutputs().writetofile(filenames.pathname+"/temp//outputs_"+aquiutils::numbertostring(k)+"_"+aquiutils::numbertostring(current_generation)+".txt");
 #endif
 			epochs[k] += Models[k].EpochCount();
-			time_[k] = ((float)(clock() - t0))/CLOCKS_PER_SEC;
+            time_[k] = time(nullptr)-t0;
             counter++;
 #pragma omp critical
 {
@@ -362,7 +362,7 @@ int counter=0;
 
             {
                 FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
-                fprintf(FileOut, "%i, fitness=%e, time=%e\n", k, Ind[k].actual_fitness, time_[k]);
+                fprintf(FileOut, "%i, fitness=%e, time=%e, internal_time=%e, failed=%i\n", k, Ind[k].actual_fitness, time_[k], Models[k].GetSimulationDuration(), Models[k].GetSolutionFailed());
                 fclose(FileOut);
             }
 

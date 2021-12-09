@@ -96,6 +96,7 @@ struct solvertemporaryvars
     bool SolutionFailed = false;
     CVector_arma Jacobia_Diagonal;
     time_t time_start; //simulation start time
+    time_t simulation_duration = 0; //simulation duration
 
 };
 
@@ -345,6 +346,8 @@ class System: public Object
         void SetQuanPointers();
         bool ResetBasedOnRestorePoint(RestorePoint *rp);
         CTimeSeriesSet<timeseriesprecision> GetModeledObjectiveFunctions();
+        time_t GetSimulationDuration() {return SolverTempVars.simulation_duration;}
+        void SetSimulationDuration(const time_t &duration) {SolverTempVars.simulation_duration = duration;}
     protected:
 
     private:
