@@ -650,56 +650,7 @@ bool System::Solve(bool applyparameters)
                     rtw->Replot();
                 if (rtw->detailson) rtw->AppendtoDetails("Number of iterations:" + QString::number(SolverTempVars.MaxNumberOfIterations()) + ",dt = " + QString::number(SolverTempVars.dt) + ",t = " + QString::number(SolverTempVars.t, 'f', 6) + ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
                 if (rtw->stoptriggered) stop_triggered = true;
-                if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time)
-                {
-#ifdef Q_version
-                        if (rtw)
-                        {
-                            if (rtw->detailson)
-                                rtw->AppendtoDetails("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
 
-                            rtw->AppendErrorMessage("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
-                            QCoreApplication::processEvents();
-                        }
-#endif
-                        if (GetSolutionLogger())
-                        {
-                            GetSolutionLogger()->WriteString("Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
-                            GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
-                        }
-                        cout<<"Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!"<<std::endl;
-                        cout<<"The attempt to solve the problem failed!"<<std::endl;
-                        SolverTempVars.SolutionFailed = true;
-                        stop_triggered = true;
-
-                }
-                else if (SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
-                {
-#ifdef Q_version
-                        if (rtw)
-                        {
-                            if (rtw->detailson)
-                                rtw->AppendtoDetails("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
-
-                            rtw->AppendErrorMessage("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
-                            QCoreApplication::processEvents();
-                        }
-#endif
-                        if (GetSolutionLogger())
-                        {
-                            GetSolutionLogger()->WriteString("Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
-                            GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
-                        }
-                        cout<<"Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!"<<std::endl;
-                        cout<<"The attempt to solve the problem failed!"<<std::endl;
-                        SolverTempVars.SolutionFailed = true;
-                        stop_triggered = true;
-
-                }
-                QCoreApplication::processEvents();
-                //cout<<"Processes Events...";
-            }
-#endif
             if ((counter-1)%restore_interval==0)
             {
                 restorepoint.GetSystem()->CopyStateVariablesFrom(this);
@@ -714,6 +665,10 @@ bool System::Solve(bool applyparameters)
                 if (GetSolutionLogger())
                     GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
             }
+            QCoreApplication::processEvents();
+            //cout<<"Processes Events...";
+        }
+#endif
             fail_counter = 0;
             PopulateOutputs();
             SolverTempVars.t += SolverTempVars.dt;
@@ -734,7 +689,52 @@ bool System::Solve(bool applyparameters)
             UpdateObservations(SolverTempVars.t);
 
         }
+        if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time)
+        {
+#ifdef Q_version
+                if (rtw)
+                {
+                    if (rtw->detailson)
+                        rtw->AppendtoDetails("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
 
+                    rtw->AppendErrorMessage("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+                    QCoreApplication::processEvents();
+                }
+#endif
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString("Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+                    GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
+                }
+                cout<<"Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!"<<std::endl;
+                cout<<"The attempt to solve the problem failed!"<<std::endl;
+                SolverTempVars.SolutionFailed = true;
+                stop_triggered = true;
+
+        }
+        else if (SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
+        {
+#ifdef Q_version
+                if (rtw)
+                {
+                    if (rtw->detailson)
+                        rtw->AppendtoDetails("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+
+                    rtw->AppendErrorMessage("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+                    QCoreApplication::processEvents();
+                }
+#endif
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString("Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+                    GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
+                }
+                cout<<"Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!"<<std::endl;
+                cout<<"The attempt to solve the problem failed!"<<std::endl;
+                SolverTempVars.SolutionFailed = true;
+                stop_triggered = true;
+
+        }
     }
     Outputs.AllOutputs.adjust_size();
     Outputs.AllOutputs.unif = false;
@@ -770,7 +770,7 @@ bool System::Solve(bool applyparameters)
     CALLGRIND_TOGGLE_COLLECT;
     CALLGRIND_STOP_INSTRUMENTATION;
 #endif
-
+    SetSimulationDuration(time(nullptr)-SolverTempVars.time_start);
     return true;
 }
 

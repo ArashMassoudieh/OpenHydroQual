@@ -96,6 +96,7 @@ struct solvertemporaryvars
     bool SolutionFailed = false;
     CVector_arma Jacobia_Diagonal;
     time_t time_start; //simulation start time
+    time_t simulation_duration = 0; //simulation duration
 
 };
 
@@ -303,6 +304,7 @@ class System: public Object
         void WriteLinksStates(const string &variable, const Expression::timing &tmg);
         bool InitiatePrecalculatedFunctions();
         bool CopyStateVariablesFrom(System *sys);
+        void SetNumThreads(unsigned int i) {SolverSettings.n_threads = i;}
 #if defined(QT_version)
         logWindow *LogWindow() {return logwindow;}
         void SetLogWindow(logWindow *lgwnd) {logwindow=lgwnd;}
@@ -344,6 +346,8 @@ class System: public Object
         void SetQuanPointers();
         bool ResetBasedOnRestorePoint(RestorePoint *rp);
         CTimeSeriesSet<timeseriesprecision> GetModeledObjectiveFunctions();
+        time_t GetSimulationDuration() {return SolverTempVars.simulation_duration;}
+        void SetSimulationDuration(const time_t &duration) {SolverTempVars.simulation_duration = duration;}
     protected:
 
     private:

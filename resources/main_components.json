@@ -689,7 +689,8 @@
       "description": "Value",
       "type": "value",
       "ask_user": "true",
-      "delegate": "ValueBox"
+      "delegate": "ValueBox",
+      "estimate": "true"
     }
   }
 }
