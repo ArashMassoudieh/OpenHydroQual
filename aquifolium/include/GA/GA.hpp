@@ -355,14 +355,17 @@ int counter=0;
 #ifdef Q_version
 			if (rtw != nullptr)
 			{
-                rtw->SetProgress2(double(counter + 1) / GA_params.maxpop);
-				QCoreApplication::processEvents();
+				if (omp_get_thread_num() == 0)
+				{
+					rtw->SetProgress2(double(counter + 1) / GA_params.maxpop);
+					QCoreApplication::processEvents();
+				}
 			}
 #endif
 
             {
                 FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
-                fprintf(FileOut, "%i, fitness=%e, time=%e, internal_time=%e, failed=%i\n", k, Ind[k].actual_fitness, time_[k], Models[k].GetSimulationDuration(), Models[k].GetSolutionFailed());
+                fprintf(FileOut, "%i, fitness=%e, time=%e, internal_time=%e, failed=%i\n", k, Ind[k].actual_fitness, time_[k], double(Models[k].GetSimulationDuration()), Models[k].GetSolutionFailed());
                 fclose(FileOut);
             }
 

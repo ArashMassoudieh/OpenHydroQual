@@ -346,8 +346,14 @@ class System: public Object
         void SetQuanPointers();
         bool ResetBasedOnRestorePoint(RestorePoint *rp);
         CTimeSeriesSet<timeseriesprecision> GetModeledObjectiveFunctions();
-        time_t GetSimulationDuration() {return SolverTempVars.simulation_duration;}
-        void SetSimulationDuration(const time_t &duration) {SolverTempVars.simulation_duration = duration;}
+        time_t GetSimulationDuration() 
+        {
+            return SolverTempVars.simulation_duration;
+        }
+        void SetSimulationDuration(const time_t &duration) 
+        {
+            SolverTempVars.simulation_duration = duration;
+        }
     protected:
 
     private:

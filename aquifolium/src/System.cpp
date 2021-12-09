@@ -1053,13 +1053,13 @@ void System::PopulateOutputs(bool dolinks)
     Outputs.AllOutputs.ResizeIfNeeded(1000);
 
 #pragma omp parallel for
-    for (unsigned int i=0; i<blocks.size(); i++)
+    for (int i=0; i<blocks.size(); i++)
         blocks[i].CalcExpressions(Expression::timing::present);
 
     if (dolinks)
 {
 #pragma omp parallel for
-         for (unsigned int i=0; i<links.size(); i++)
+         for (int i=0; i<links.size(); i++)
                 links[i].CalcExpressions(Expression::timing::present);
 }
     for (unsigned int i=0; i<blocks.size(); i++)
