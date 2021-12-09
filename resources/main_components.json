@@ -607,6 +607,7 @@
       "role": "copytoblocks",
       "includeinoutput": "true",
       "delegate": "UnitBox",
+      "estimate": "true",
       "unit": "g/m~^3"
     },
     "stoichiometric_constant": {
