@@ -615,17 +615,23 @@ void CTimeSeries<T>::readfile(string Filename)
 	while (file.eof()== false)
 	{
 		s = aquiutils::getline(file);
-		if (s.size()>0)
-        if (s[0].substr(0,2)!="//" && aquiutils::trim(s[0])!="" && aquiutils::isnumber(s[0][0]))
+		if (s.size() > 0)
 		{
+			while (!aquiutils::isnumber(s[0][0]))
+			{
+				s[0] = s[0].substr(1, s[0].length() - 1);
+			}
+			if (s[0].substr(0, 2) != "//" && aquiutils::trim(s[0]) != "" && aquiutils::isnumber(s[0][0]))
+			{
 
-            t.push_back(aquiutils::atof(s[0]));
-			C.push_back(atof(s[1].c_str()));
-			n++;
-			if (t.size()>2)
-				if (t[t.size()-1]-t[t.size()-2]!=t[t.size()-2]-t[t.size()-3])
-					structured = false;
+				t.push_back(aquiutils::atof(s[0]));
+				C.push_back(atof(s[1].c_str()));
+				n++;
+				if (t.size() > 2)
+					if (t[t.size() - 1] - t[t.size() - 2] != t[t.size() - 2] - t[t.size() - 3])
+						structured = false;
 
+			}
 		}
 	}
     file_not_found = false;
@@ -1230,7 +1236,7 @@ void CTimeSeries<T>::assign_D()
                 break;
             }
 		}
-		if (i + 1 == n)
+		if (i + 1 == n && n>1)
 			counter = t[n - 1] - t[n - 2];
 		if (counter == 0)
 			counter = t[i] - ((i > 0)? t[i - 1]:0);

@@ -1050,76 +1050,85 @@ bool System::TransferResultsFrom(System *other)
 void System::PopulateOutputs(bool dolinks)
 {
 
-    Outputs.AllOutputs.ResizeIfNeeded(1000);
-
-#pragma omp parallel for
-    for (int i=0; i<blocks.size(); i++)
-        blocks[i].CalcExpressions(Expression::timing::present);
-
-    if (dolinks)
-{
-#pragma omp parallel for
-         for (int i=0; i<links.size(); i++)
-                links[i].CalcExpressions(Expression::timing::present);
-}
-    for (unsigned int i=0; i<blocks.size(); i++)
+    if (RecordResults())
     {
-        for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
-			if (it->second.IncludeInOutput())
-                Outputs.AllOutputs[blocks[i].GetName() + "_" + it->first].append(SolverTempVars.t, blocks[i].GetVal(it->first, Expression::timing::present));
+        Outputs.AllOutputs.ResizeIfNeeded(1000);
 
-    }
+    #pragma omp parallel for
+        for (int i = 0; i < blocks.size(); i++)
+            blocks[i].CalcExpressions(Expression::timing::present);
 
-    if (dolinks)
-        for (unsigned int i=0; i<links.size(); i++)
+        if (dolinks)
         {
-            for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
+    #pragma omp parallel for
+            for (int i = 0; i < links.size(); i++)
+                links[i].CalcExpressions(Expression::timing::present);
+        }
+        for (unsigned int i = 0; i < blocks.size(); i++)
+        {
+            for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
+                if (it->second.IncludeInOutput())
+                    Outputs.AllOutputs[blocks[i].GetName() + "_" + it->first].append(SolverTempVars.t, blocks[i].GetVal(it->first, Expression::timing::present));
+
+        }
+
+        if (dolinks)
+            for (unsigned int i = 0; i < links.size(); i++)
+            {
+                for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
+                    if (it->second.IncludeInOutput())
+                    {
+                        Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(SolverTempVars.t, links[i].GetVal(it->first, Expression::timing::present, true));
+                    }
+            }
+
+        for (unsigned int i = 0; i < sources.size(); i++)
+        {
+            for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
                 if (it->second.IncludeInOutput())
                 {
-				    Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(SolverTempVars.t,links[i].GetVal(it->first,Expression::timing::present,true));
+                    //sources[i].CalcExpressions(Expression::timing::present);
+                    Outputs.AllOutputs[sources[i].GetName() + "_" + it->first].append(SolverTempVars.t, sources[i].GetVal(it->first, Expression::timing::present, true));
                 }
         }
 
-    for (unsigned int i=0; i<sources.size(); i++)
-    {
-        for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
-            if (it->second.IncludeInOutput())
-            {
-                //sources[i].CalcExpressions(Expression::timing::present);
-                Outputs.AllOutputs[sources[i].GetName() + "_" + it->first].append(SolverTempVars.t,sources[i].GetVal(it->first,Expression::timing::present,true));
-            }
+
+        for (unsigned int i = 0; i < objective_function_set.size(); i++)
+        {
+            Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName()].append(SolverTempVars.t, objectivefunction(objective_function_set[i]->GetName())->Value());
+            for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
+                if (it->second.IncludeInOutput())
+                {
+                    //sources[i].CalcExpressions(Expression::timing::present);
+                    Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName() + "_" + it->first].append(SolverTempVars.t, objective_function_set[i]->Variable(it->first)->CalcVal(object(objective_function_set[i]->GetLocation()), Expression::timing::present));
+                }
+        }
+
+
+        for (unsigned int i = 0; i < observations.size(); i++)
+        {
+            Outputs.AllOutputs["Obs_" + observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
+            Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
+            for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
+                if (it->second.IncludeInOutput())
+                {
+                    //sources[i].CalcExpressions(Expression::timing::present);
+                    Object* location;
+                    if (it->second.GetType() == Quan::_type::expression)
+                        location = object(observations[i].GetLocation());
+                    else
+                        location = observation(i);
+                    Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present));
+                }
+        }
     }
-
-
-    for (unsigned int i=0; i<objective_function_set.size(); i++)
+    else
     {
-        Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName()].append(SolverTempVars.t,objectivefunction(objective_function_set[i]->GetName())->Value());
-        for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
-            if (it->second.IncludeInOutput())
-            {
-                //sources[i].CalcExpressions(Expression::timing::present);
-                Outputs.AllOutputs["Obj_"+objective_function_set[i]->GetName() + "_" + it->first].append(SolverTempVars.t,objective_function_set[i]->Variable(it->first)->CalcVal(object(objective_function_set[i]->GetLocation()),Expression::timing::present));
-            }
+        for (unsigned int i = 0; i < observations.size(); i++)
+        {
+            Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
+        }
     }
-
-
-    for (unsigned int i=0; i<observations.size(); i++)
-    {
-        Outputs.AllOutputs["Obs_" + observations[i].GetName()].append(SolverTempVars.t,observation(observations[i].GetName())->Value());
-        Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t,observation(observations[i].GetName())->Value());
-        for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
-            if (it->second.IncludeInOutput())
-            {
-                //sources[i].CalcExpressions(Expression::timing::present);
-                Object* location;
-                if (it->second.GetType() == Quan::_type::expression)
-                    location = object(observations[i].GetLocation());
-                else
-                    location = observation(i);
-                Outputs.AllOutputs["Obs_"+observations[i].GetName() + "_" + it->first].append(SolverTempVars.t,observations[i].Variable(it->first)->CalcVal(location,Expression::timing::present));
-            }
-    }
-
 }
 
 

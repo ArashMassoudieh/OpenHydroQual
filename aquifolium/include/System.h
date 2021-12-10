@@ -62,6 +62,7 @@ struct solversettings
     bool write_solution_details = false;
     double maximum_simulation_time = 86400; //maximum simulation time allows in seconds
     int maximum_number_of_matrix_inversions = 200000; //maximum number of matrix inversions allowed
+    bool RecordAllOutputs = true; //whether the results will be all recorded on not
 
 };
 
@@ -353,6 +354,14 @@ class System: public Object
         void SetSimulationDuration(const time_t &duration) 
         {
             SolverTempVars.simulation_duration = duration;
+        }
+        void SetRecordResults(bool recresults)
+        {
+            SolverSettings.RecordAllOutputs = recresults;
+        }
+        bool RecordResults()
+        {
+            return SolverSettings.RecordAllOutputs;
         }
     protected:
 
