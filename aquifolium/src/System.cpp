@@ -1124,10 +1124,10 @@ void System::PopulateOutputs(bool dolinks)
     }
     else
     {
-        for (unsigned int i = 0; i < observations.size(); i++)
-        {
-            Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
-        }
+        //for (unsigned int i = 0; i < observations.size(); i++)
+        //{
+        //    Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
+        //}
     }
 }
 
