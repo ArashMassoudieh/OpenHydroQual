@@ -460,7 +460,7 @@ vector<T> CTimeSeriesSet<T>::getrandom()
 	int a = int(GetRndUniF(0,BTC[0].n));
     vector<T> res(nvars);
 	for (int i=0; i<nvars; i++)
-		res[i] = BTC[i].C[a];
+		res[i] = BTC[i].GetC(a);
 
 	return res;
 }
@@ -471,7 +471,7 @@ vector<T> CTimeSeriesSet<T>::getrandom(int burnin)
 	int a = int(GetRndUniF(0,BTC[0].n-burnin));
     vector<T> res(nvars);
 	for (int i=0; i<nvars; i++)
-		res[i] = BTC[i].C[a+burnin];
+		res[i] = BTC[i].GetC(a+burnin);
 
 	return res;
 }
@@ -482,7 +482,7 @@ vector<T> CTimeSeriesSet<T>::getrow(int a)
 
     vector<T> res(nvars);
 	for (int i = 0; i<nvars; i++)
-		res[i] = BTC[i].C[a];
+		res[i] = BTC[i].GetC(a);
 
 	return res;
 }
@@ -614,7 +614,7 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::sort(int burnOut)
 //		r.BTC[i].C.resize(BTC[i].n - burnOut);
 		tempVec.resize(BTC[i].n - burnOut);
 		for (unsigned int j = 0; j < tempVec.size(); j++)
-			tempVec[j] = BTC[i].C[j + burnOut];
+			tempVec[j] = BTC[i].GetC(j + burnOut);
 
 		temp[i] = bubbleSort(tempVec);
 //		r.BTC[i].C = QSort(temp);

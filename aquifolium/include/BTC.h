@@ -32,9 +32,6 @@ public:
 	string unit = "";
 	string defaultUnit = "";
 	vector<string> unitsList;
-
-    vector<T> D;
-
     T interpol(const T &x) const; //interpolate at location x
 	CTimeSeries MA_smooth(int span); //Moving average smoothing with span of 1+2*span
     T interpol_D(const T &x); //interpolate the distance to the next non-zero data point
@@ -107,13 +104,17 @@ public:
     T &lastt();
     bool SetT(int i, const T &value);
     bool SetC(int i, const T &value);
+    bool SetD(int i, const T& value);
     T GetT(int i) const;
     T GetC(int i) const;
+    T GetD(int i) const;
     unsigned int CSize() {return C.size();}
     unsigned int tSize() {return t.size();}
+    unsigned int DSize() {return D.size(); }
 private:
     vector<T> t;
     vector<T> C;
+    vector<T> D;
 #ifdef QT_version
 	CTimeSeries(QList <QMap <QVariant, QVariant>> data);
 	void compact(QDataStream &data) const;

@@ -80,12 +80,30 @@ bool CTimeSeries<T>::SetC(int i, const T &value)
 }
 
 template<class T>
+bool CTimeSeries<T>::SetD(int i, const T& value)
+{
+	if (i < D.size())
+		D[i] = value;
+	else
+		return false;
+}
+
+template<class T>
 T CTimeSeries<T>::GetT(int i) const
 {
     if (i<t.size())
         return t[i];
     else
         return 0;
+}
+
+template<class T>
+T CTimeSeries<T>::GetD(int i) const
+{
+	if (i < D.size())
+		return D[i];
+	else
+		return 0;
 }
 
 template<class T>
