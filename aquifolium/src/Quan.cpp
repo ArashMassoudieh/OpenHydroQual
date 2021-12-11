@@ -790,7 +790,7 @@ void Quan::Update()
 
 CTimeSeries<timeseriesprecision>* Quan::TimeSeries()
 {
-    if (_timeseries.C.size()!=0)
+    if (_timeseries.CSize()!=0)
         return &_timeseries;
     else
         return nullptr;
@@ -1037,7 +1037,7 @@ double Quan::InterpolateBasedonPrecalcFunction(const double &val)
 {
     if (precalcfunction.Logarithmic())
     {
-        if (val<=0) return precalcfunction.C[0];
+        if (val<=0) return precalcfunction.GetC(0);
         return precalcfunction.interpol(log(val));
     }
     else

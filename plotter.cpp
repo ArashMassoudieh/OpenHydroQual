@@ -52,15 +52,15 @@ bool Plotter::PlotData(CTimeSeries<timeseriesprecision>& BTC, string style)
     maxx=-1e12;
     miny=1e12;
     maxy=-1e12;
-    maxx = max(BTC.t[0],maxx);
+    maxx = max(BTC.GetT(0),maxx);
     maxy = max(BTC.maxC(),maxy);
-    minx = min(BTC.t[BTC.n-1],minx);
+    minx = min(BTC.GetT(BTC.n-1),minx);
     miny = min(BTC.minC(),miny);
     plot->legend->setVisible(showlegend);
     plot->clearGraphs();
     QVector<double> x, y; // initialize with entries 0..100
     format.push_back(plotformat());
-    if (format[format.size()-1].xAxisTimeFormat && ((BTC.t[BTC.n - 1] - BTC.t[0]) < 5 || BTC.t[BTC.n - 1]< 18264))
+    if (format[format.size()-1].xAxisTimeFormat && ((BTC.GetT(BTC.n - 1) - BTC.GetT(0)) < 5 || BTC.GetT(BTC.n - 1)< 18264))
         format[format.size()-1].xAxisTimeFormat = false;
 
     /*	QVector<qreal> y1(y.count());
@@ -74,8 +74,8 @@ bool Plotter::PlotData(CTimeSeries<timeseriesprecision>& BTC, string style)
 
     if (format[format.size()-1].xAxisTimeFormat)
     {
-        QDateTime start = QDateTime::fromTime_t(xtoTime(BTC.t[0]), QTimeZone(0));
-        QDateTime end = QDateTime::fromTime_t(xtoTime(BTC.t[BTC.n - 1]), QTimeZone(0));
+        QDateTime start = QDateTime::fromTime_t(xtoTime(BTC.GetT(0)), QTimeZone(0));
+        QDateTime end = QDateTime::fromTime_t(xtoTime(BTC.GetT(BTC.n - 1)), QTimeZone(0));
         QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
         dateTicker->setTickCount(10);
 
@@ -97,10 +97,10 @@ bool Plotter::PlotData(CTimeSeries<timeseriesprecision>& BTC, string style)
     for (int i=0; i<BTC.n; ++i)
     {
       if (!format[format.size()-1].xAxisTimeFormat)
-        x.push_back(BTC.t[i]);
+        x.push_back(BTC.GetT(i));
       else
-        x.push_back(xtoTime(BTC.t[i]));
-      y.push_back(BTC.C[i]);
+        x.push_back(xtoTime(BTC.GetT(i)));
+      y.push_back(BTC.GetC(i));
     }
     // create graph and assign data to it:
     plot->addGraph();
@@ -118,12 +118,12 @@ bool Plotter::PlotData(CTimeSeries<timeseriesprecision>& BTC, string style)
     // set axes ranges, so we see all data:
     double tickstep=0;
     if (!format[format.size()-1].xAxisTimeFormat)
-    {   plot->xAxis->setRange(BTC.t[0], BTC.t[BTC.n-1]);
-        tickstep = (BTC.t[BTC.n-1] - BTC.t[0])/10;
+    {   plot->xAxis->setRange(BTC.GetT(0), BTC.GetT(BTC.n-1));
+        tickstep = (BTC.GetT(BTC.n-1) - BTC.GetT(0))/10;
     }
     else
-    {   plot->xAxis->setRange(xtoTime(BTC.t[0]), xtoTime(BTC.t[BTC.n-1]));
-        tickstep = (xtoTime(BTC.t[BTC.n-1]) - xtoTime(BTC.t[0]))/10;
+    {   plot->xAxis->setRange(xtoTime(BTC.GetT(0)), xtoTime(BTC.GetT(BTC.n-1)));
+        tickstep = (xtoTime(BTC.GetT(BTC.n-1)) - xtoTime(BTC.GetT(0)))/10;
     }
     plot->yAxis->setRange(BTC.minC()-0.001, BTC.maxC()+0.001);
 
@@ -368,20 +368,20 @@ bool Plotter::AddData(CTimeSeries<timeseriesprecision>& BTC, string style)
     maxx=-1e12;
     miny=1e12;
     maxy=-1e12;
-    maxx = max(BTC.t[0],maxx);
+    maxx = max(BTC.GetT(0),maxx);
     maxy = max(BTC.maxC(),maxy);
-    minx = min(BTC.t[BTC.n-1],minx);
+    minx = min(BTC.GetT(BTC.n-1),minx);
     miny = min(BTC.minC(),miny);
     plot->legend->setVisible(showlegend);
     QVector<double> x, y; // initialize with entries 0..100
     format.push_back(plotformat());
-    if (format[format.size()-1].xAxisTimeFormat && ((BTC.t[BTC.n - 1] - BTC.t[0]) < 5 || BTC.t[BTC.n - 1]< 18264))
+    if (format[format.size()-1].xAxisTimeFormat && ((BTC.GetT(BTC.n - 1) - BTC.GetT(0)) < 5 || BTC.GetT(BTC.n - 1)< 18264))
         format[format.size()-1].xAxisTimeFormat = false;
 
     if (format[format.size()-1].xAxisTimeFormat)
     {
-        QDateTime start = QDateTime::fromTime_t(xtoTime(BTC.t[0]), QTimeZone(0));
-        QDateTime end = QDateTime::fromTime_t(xtoTime(BTC.t[BTC.n - 1]), QTimeZone(0));
+        QDateTime start = QDateTime::fromTime_t(xtoTime(BTC.GetT(0)), QTimeZone(0));
+        QDateTime end = QDateTime::fromTime_t(xtoTime(BTC.GetT(BTC.n - 1)), QTimeZone(0));
         QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
         dateTicker->setTickCount(10);
 
@@ -402,10 +402,10 @@ bool Plotter::AddData(CTimeSeries<timeseriesprecision>& BTC, string style)
     for (int i=0; i<BTC.n; ++i)
     {
       if (!format[format.size()-1].xAxisTimeFormat)
-        x.push_back(BTC.t[i]);
+        x.push_back(BTC.GetT(i));
       else
-        x.push_back(xtoTime(BTC.t[i]));
-      y.push_back(BTC.C[i]);
+        x.push_back(xtoTime(BTC.GetT(i)));
+      y.push_back(BTC.GetC(i));
     }
     // create graph and assign data to it:
     plot->addGraph();
@@ -423,12 +423,12 @@ bool Plotter::AddData(CTimeSeries<timeseriesprecision>& BTC, string style)
     // set axes ranges, so we see all data:
     double tickstep=0;
     if (!format[format.size()-1].xAxisTimeFormat)
-    {   plot->xAxis->setRange(BTC.t[0], BTC.t[BTC.n-1]);
-        tickstep = (BTC.t[BTC.n-1] - BTC.t[0])/10;
+    {   plot->xAxis->setRange(BTC.GetT(0), BTC.GetT(BTC.n-1));
+        tickstep = (BTC.GetT(BTC.n-1) - BTC.GetT(0))/10;
     }
     else
-    {   plot->xAxis->setRange(xtoTime(BTC.t[0]), xtoTime(BTC.t[BTC.n-1]));
-        tickstep = (xtoTime(BTC.t[BTC.n-1]) - xtoTime(BTC.t[0]))/10;
+    {   plot->xAxis->setRange(xtoTime(BTC.GetT(0)), xtoTime(BTC.GetT(BTC.n-1)));
+        tickstep = (xtoTime(BTC.GetT(BTC.n-1)) - xtoTime(BTC.GetT(0)))/10;
     }
     plot->yAxis->setRange(BTC.minC()-0.001, BTC.maxC()+0.001);
     return true;

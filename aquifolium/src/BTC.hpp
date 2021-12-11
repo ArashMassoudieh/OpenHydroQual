@@ -60,6 +60,43 @@ void CTimeSeries<T>::setnumpoints(int n1)
 	C.resize(n);
 }
 
+
+template<class T>
+bool CTimeSeries<T>::SetT(int i, const T &value)
+{
+    if (i<t.size())
+        t[i] = value;
+    else
+        return false;
+}
+
+template<class T>
+bool CTimeSeries<T>::SetC(int i, const T &value)
+{
+    if (i<C.size())
+        C[i] = value;
+    else
+        return false;
+}
+
+template<class T>
+T CTimeSeries<T>::GetT(int i) const
+{
+    if (i<t.size())
+        return t[i];
+    else
+        return 0;
+}
+
+template<class T>
+T CTimeSeries<T>::GetC(int i) const
+{
+    if (i<C.size())
+        return C[i];
+    else
+        return 0;
+}
+
 template<class T>
 CTimeSeries<T>::~CTimeSeries()
 {
@@ -387,7 +424,7 @@ T diff2(CTimeSeries<T> *BTC_p, CTimeSeries<T> BTC_d)
 {
     T sum = 0;
     for (int i=0; i<BTC_d.n; i++)
-        sum += pow(BTC_d.C[i] - BTC_p->interpol(BTC_d.t[i]),2);
+        sum += pow(BTC_d.GetC(i) - BTC_p->interpol(BTC_d.GetT(i)),2);
 
     return sum/double(BTC_d.n);
 }
@@ -410,7 +447,7 @@ T diff2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
     T sum = 0;
     for (int i=0; i<BTC_d.n; i++)
     {
-        sum += pow(BTC_d.C[i] - BTC_p.interpol(BTC_d.t[i]),2);
+        sum += pow(BTC_d.GetC(i) - BTC_p.interpol(BTC_d.GetT(i)),2);
     }
 
     return sum/double(BTC_d.n);

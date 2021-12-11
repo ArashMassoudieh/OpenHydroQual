@@ -27,8 +27,6 @@ public:
 	CTimeSeries(int n);
 	virtual ~CTimeSeries();
 	int n;
-    vector<T> t;
-    vector<T> C;
     string filename;
 	string name = "";
 	string unit = "";
@@ -107,8 +105,15 @@ public:
     T &lastD();
     T &lastC();
     T &lastt();
-
-
+    bool SetT(int i, const T &value);
+    bool SetC(int i, const T &value);
+    T GetT(int i) const;
+    T GetC(int i) const;
+    unsigned int CSize() {return C.size();}
+    unsigned int tSize() {return t.size();}
+private:
+    vector<T> t;
+    vector<T> C;
 #ifdef QT_version
 	CTimeSeries(QList <QMap <QVariant, QVariant>> data);
 	void compact(QDataStream &data) const;

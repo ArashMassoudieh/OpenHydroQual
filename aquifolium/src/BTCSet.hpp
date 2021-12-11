@@ -95,7 +95,7 @@ void CTimeSeriesSet<T>::writetofile(char outputfile[])
 		for (int i=0; i<nvars; i++)
 		{
             if (j<BTC[i].n)
-				fprintf(Fil, "%lf, %le,", BTC[i].t[j], BTC[i].C[j]);
+                fprintf(Fil, "%lf, %le,", BTC[i].GetT(j), BTC[i].GetC(j));
 			else
 				fprintf(Fil, ", ,");
 
@@ -133,7 +133,7 @@ void CTimeSeriesSet<T>::writetofile(string outputfile, bool writeColumnNameHeade
 		for (int i=0; i<nvars; i++)
 		{
 			if (j<BTC[i].n)
-				fprintf(Fil, "%lf, %le,", BTC[i].t[j], BTC[i].C[j]);
+                fprintf(Fil, "%lf, %le,", BTC[i].GetT(j), BTC[i].GetC(j));
 			else
 				fprintf(Fil, ", ,");
 
@@ -165,7 +165,7 @@ void CTimeSeriesSet<T>::writetofile(string outputfile, int outputwriteinterval)
 			if (j%outputwriteinterval==0)
 			{
 				if (j<BTC[i].n)
-					fprintf(Fil, "%lf, %le,", BTC[i].t[j], BTC[i].C[j]);
+                    fprintf(Fil, "%lf, %le,", BTC[i].GetT(j), BTC[i].GetC(j));
 				else
 					fprintf(Fil, ", ,");
 			}
@@ -282,7 +282,7 @@ CTimeSeriesSet<T>::CTimeSeriesSet(string _filename, bool varytime)
 							BTC[i].C.push_back(atof(s[i + 1].c_str()));
 							BTC[i].n++;
 							if (BTC[i].t.size()>2)
-								if ((BTC[i].t[BTC[i].t.size() - 1] - BTC[i].t[BTC[i].t.size() - 2]) != (BTC[i].t[BTC[i].t.size() - 2] - BTC[i].t[BTC[i].t.size() - 3]))
+                                if ((BTC[i].t[BTC[i].tSize() - 1] - BTC[i].t[BTC[i].tSize() - 2]) != (BTC[i].t[BTC[i].tSize() - 2] - BTC[i].t[BTC[i].tSize() - 3]))
 									BTC[i].structured = false;
 
 						}
@@ -781,7 +781,7 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::make_uniform(T increment, bool assgn_d)
 		for (int i = 0; i < nvars; i++)
 		{
 
-            out.BTC[i].append(BTC[i].t[0], BTC[i].C[0]);
+            out.BTC[i].append(BTC[i].GetT(0), BTC[i].GetC(0));
 			if (assgn_d)
 			{
 				//qDebug() << "Assigning D to the original BTC";
@@ -791,19 +791,19 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::make_uniform(T increment, bool assgn_d)
 		for (int i=0; i<BTC[0].n-1; i++)
 		{
 			////qDebug() << i;
-			int i1 = int((BTC[0].t[i]-BTC[0].t[0])/increment);
-			int i2 = int((BTC[0].t[i+1]-BTC[0].t[0])/increment);
+            int i1 = int((BTC[0].GetT(i)-BTC[0].GetT(0))/increment);
+            int i2 = int((BTC[0].GetT(i+1)-BTC[0].GetT(0))/increment);
 			for (int j=i1+1; j<=i2; j++)
 			{
-                T x = j*increment+BTC[0].t[0];
+                T x = j*increment+BTC[0].GetT(0);
 				for (int k=0; k<nvars; k++)
 				{
-                    T CC = (x-BTC[k].t[i])/(BTC[k].t[i+1]-BTC[k].t[i])*(BTC[k].C[i+1]-BTC[k].C[i])+BTC[k].C[i];
+                    T CC = (x-BTC[k].GetT(i))/(BTC[k].GetT(i+1)-BTC[k].GetT(i))*(BTC[k].GetC(i+1)-BTC[k].GetC(i))+BTC[k].GetC(i);
 
 					out.BTC[k].append(x,CC);
 					if (assgn_d)
 					{
-                        T DD = (x - BTC[k].t[i]) / (BTC[k].t[i + 1] - BTC[k].t[i])*(BTC[k].D[i + 1] - BTC[k].D[i]) + BTC[k].D[i];
+                        T DD = (x - BTC[k].GetT(i)) / (BTC[k].GetT(i + 1) - BTC[k].GetT(i))*(BTC[k].D[i + 1] - BTC[k].D[i]) + BTC[k].D[i];
 						out.BTC[k].D.push_back(DD);
 					}
 				}
@@ -855,7 +855,7 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::getpercentiles(vector<T> percents)
 		int count = 0;
 		for (int j=0; j<nvars; j++)
 			if (i<BTC[j].n)
-			{	x.push_back(BTC[j].C[i]);
+            {	x.push_back(BTC[j].GetC(i));
 				count++;
 			}
 
@@ -866,7 +866,7 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::getpercentiles(vector<T> percents)
 		for (unsigned int j=0; j<percents.size(); j++)
 			XX[j+1] = XX_prc[j];
 
-		X.append(BTC[0].t[i],XX);
+        X.append(BTC[0].GetT(i),XX);
 	}
 
 	return X;
@@ -881,7 +881,7 @@ CVector CTimeSeriesSet<T>::out_of_limit(T limit)
         T n_tot = BTC[i].n;
         T n_exceed = 0;
 		for (int j=0; j<BTC[i].n; j++)
-		{		if (BTC[i].C[j] > limit)
+        {		if (BTC[i].GetC(j) > limit)
 				n_exceed++;		}
 
 		v[i] = n_exceed/n_tot;
