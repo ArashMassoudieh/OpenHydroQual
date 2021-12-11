@@ -363,6 +363,7 @@ class System: public Object
         {
             return SolverSettings.RecordAllOutputs;
         }
+        void Clear();
     protected:
 
     private:

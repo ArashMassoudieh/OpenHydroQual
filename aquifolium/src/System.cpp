@@ -53,6 +53,8 @@ void System::PopulateOperatorsFunctions()
 
 System::~System()
 {
+    delete operators;
+    delete functions;
     //dtor
 }
 
@@ -89,6 +91,7 @@ System::System(const System& other):Object::Object(other)
 System& System::operator=(const System& rhs)
 {
     if (this == &rhs) return *this; // handle self assignment
+    Clear();
     Object::operator=(rhs);
 	SolverTempVars.SetUpdateJacobian(true);
 	blocks = rhs.blocks;
@@ -117,6 +120,21 @@ System& System::operator=(const System& rhs)
     Outputs.AllOutputs.clear();
     Outputs.ObservedOutputs.clear();
     return *this;
+}
+
+void System::Clear()
+{
+    blocks.clear();
+    links.clear();
+    sources.clear();
+    objective_function_set.clear();
+    parameter_set.clear();
+    reactions.clear();
+    reaction_parameters.clear();
+    constituents.clear();
+    Outputs.AllOutputs.clear();
+    Outputs.ObservedOutputs.clear();
+    metamodel.Clear();
 }
 
 

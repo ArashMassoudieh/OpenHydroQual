@@ -352,7 +352,7 @@ int counter=0;
             time_[k] = time(nullptr)-t0;
             counter++;
 #pragma omp critical
-{
+        {
 #ifdef Q_version
 			if (rtw != nullptr)
 			{
@@ -371,7 +371,7 @@ int counter=0;
             }
 
 		}
-}
+    }
 	Model_out = Models[maxfitness()];
 
 

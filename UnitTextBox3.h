@@ -38,7 +38,11 @@ public:
         connect(textBox, SIGNAL(textEdited(const QString&)),this, SLOT(on_text_edited(const QString&)));
     }
 
-    ~UnitTextBox3(){}
+    ~UnitTextBox3(){
+        delete textBox;
+        delete unitBox;
+        delete validator;
+    }
 
     void updateContextMenu(bool openFileMenu)
     {

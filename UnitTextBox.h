@@ -45,7 +45,11 @@ public:
 
 		//		QObject::connect(textBox, SIGNAL(textChanged(const QString & text)), this, SIGNAL(editingFinished()));
 	};
-	~UnitTextBox(){};
+    ~UnitTextBox(){
+        delete textBox;
+        delete unitBox;
+        delete validator;
+    };
 	void paintEvent(QPaintEvent * event)
 	{
 		setGeometry(rect());
