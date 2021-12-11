@@ -197,7 +197,7 @@ CTimeSeries<T> CTimeSeries<T>::Log()
 	CTimeSeries BTC = CTimeSeries(n);
 	for (int i=0; i<n; i++)
 	{
-		BTC.t[i] = t[i];
+		BTC.SetT(i,t[i]);
 		BTC.C[i] = log(C[i]);
 	}
 	return BTC;

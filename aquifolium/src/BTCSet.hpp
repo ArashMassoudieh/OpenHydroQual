@@ -282,7 +282,7 @@ CTimeSeriesSet<T>::CTimeSeriesSet(string _filename, bool varytime)
 							BTC[i].C.push_back(atof(s[i + 1].c_str()));
 							BTC[i].n++;
 							if (BTC[i].t.size()>2)
-                                if ((BTC[i].t[BTC[i].tSize() - 1] - BTC[i].t[BTC[i].tSize() - 2]) != (BTC[i].t[BTC[i].tSize() - 2] - BTC[i].t[BTC[i].tSize() - 3]))
+                                if ((BTC[i].GetT(BTC[i].tSize() - 1) - BTC[i].GetT(BTC[i].tSize() - 2)) != (BTC[i].GetT(BTC[i].tSize() - 2) - BTC[i].GetT(BTC[i].tSize() - 3)))
 									BTC[i].structured = false;
 
 						}
@@ -313,7 +313,7 @@ CTimeSeriesSet<T>::CTimeSeriesSet(string _filename, bool varytime)
 								BTC[i].C.push_back(atof(s[2 * i + 1].c_str()));
 								BTC[i].n++;
 								if (BTC[i].t.size()>2)
-									if ((BTC[i].t[BTC[i].t.size() - 1] - BTC[i].t[BTC[i].t.size() - 2]) != (BTC[i].t[BTC[i].t.size() - 2] - BTC[i].t[BTC[i].t.size() - 3]))
+									if ((BTC[i].GetT(BTC[i].t.size() - 1) - BTC[i].GetT(BTC[i].t.size() - 2)) != (BTC[i].GetT(BTC[i].t.size() - 2) - BTC[i].GetT(BTC[i].t.size() - 3)))
 										BTC[i].structured = false;
 							}
 					}
@@ -374,7 +374,7 @@ void CTimeSeriesSet<T>::getfromfile(string _filename, bool varytime)
 							BTC[i].C.push_back(atof(s[i+1].c_str()));
 							BTC[i].n++;
 							if (BTC[i].n>2)
-									if ((BTC[i].t[BTC[i].n-1]-BTC[i].t[BTC[i].n-2]) != (BTC[i].t[BTC[i].n-2]-BTC[i].t[BTC[i].n-3]))
+									if ((BTC[i].GetT(BTC[i].n-1)-BTC[i].GetT(BTC[i].n-2)) != (BTC[i].GetT(BTC[i].n-2)-BTC[i].GetT(BTC[i].n-3)))
 										BTC[i].structured = false;
 						}
 
@@ -404,7 +404,7 @@ void CTimeSeriesSet<T>::getfromfile(string _filename, bool varytime)
 							BTC[i].C.push_back(atof(s[2 * i + 1].c_str()));
 							BTC[i].n++;
 							if (BTC[i].n>2)
-								if ((BTC[i].t[BTC[i].n - 1] - BTC[i].t[BTC[i].n - 2]) != (BTC[i].t[BTC[i].n - 2] - BTC[i].t[BTC[i].n - 3]))
+								if ((BTC[i].GetT(BTC[i].n - 1) - BTC[i].GetT(BTC[i].n - 2)) != (BTC[i].GetT(BTC[i].n - 2) - BTC[i].GetT(BTC[i].n - 3)))
 									BTC[i].structured = false;
 						}
 					}
@@ -424,14 +424,14 @@ void CTimeSeriesSet<T>::getfromfile(string _filename, bool varytime)
 template <class T>
 T CTimeSeriesSet<T>::maxtime()
 {
-	return BTC[0].t[BTC[0].n-1];
+	return BTC[0].GetT(BTC[0].n-1);
 
 }
 
 template <class T>
 T CTimeSeriesSet<T>::mintime()
 {
-	return BTC[0].t[0];
+	return BTC[0].GetT(0);
 
 }
 
@@ -671,7 +671,7 @@ void CTimeSeriesSet<T>::append(T t, vector<T> c)
 	{	BTC[i].structured = true;
 		BTC[i].append(t,c[i]);
 		if (BTC[i].n>2)
-			if ((BTC[i].t[BTC[i].n-1]-BTC[i].t[BTC[i].n-2]) != (BTC[i].t[BTC[i].n-2]-BTC[i].t[BTC[i].n-3]))
+			if ((BTC[i].GetT(BTC[i].n-1)-BTC[i].GetT(BTC[i].n-2)) != (BTC[i].GetT(BTC[i].n-2)-BTC[i].GetT(BTC[i].n-3)))
 				BTC[i].structured = false;
 	}
 }
@@ -716,8 +716,8 @@ CTimeSeries<T> CTimeSeriesSet<T>::add_mult(vector<int> ii, vector<T> mult)
 	else
 	{
 		A.setnumpoints(2);
-		A.t[0] = mintime();
-		A.t[1] = maxtime();
+		A.SetT(0,mintime());
+		A.SetT(1,maxtime());
 	}
 	return A;
 }
@@ -744,8 +744,8 @@ CTimeSeries<T> CTimeSeriesSet<T>::add_mult(vector<int> ii, CTimeSeriesSet &mult)
 	else
 	{
 		A.setnumpoints(2);
-		A.t[0] = mintime();
-		A.t[1] = maxtime();
+		A.SetT(0,mintime());
+		A.SetT(1,maxtime());
 	}
 	return A;
 }
