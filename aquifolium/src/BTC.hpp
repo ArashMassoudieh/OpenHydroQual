@@ -617,7 +617,7 @@ void CTimeSeries<T>::readfile(string Filename)
 		s = aquiutils::getline(file);
 		if (s.size() > 0)
 		{
-			while (!aquiutils::isnumber(s[0][0]))
+			while (!aquiutils::isnumber(s[0][0]) && s[0].size()>1)
 			{
 				s[0] = s[0].substr(1, s[0].length() - 1);
 			}
