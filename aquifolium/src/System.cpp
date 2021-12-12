@@ -26,7 +26,8 @@ System::System():Object::Object()
 void System::PopulateOperatorsFunctions()
 {
 #ifndef NO_OPENMP
-    omp_set_num_threads(SolverSettings.n_threads);
+    if (!omp_in_parallel())
+        omp_set_num_threads(SolverSettings.n_threads);
 #endif
 
     operators = new vector<string>;
