@@ -155,13 +155,13 @@ template<class T> T Ybar(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d);
 template<class T> T Xbar(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d);
 template<class T> CTimeSeries<T> operator+(CTimeSeries<T> &v1, CTimeSeries<T> &v2);
 template<class T> T prcntl(vector<T> C, T x);
-template<class T> vector<T> prcntl(vector<T> C, vector<T> x);
+template<class T> vector<T> prcntl(vector<T> &C, vector<T> &x);
 template<class T> T sgn(T val);
 template<class T> T sum_interpolate(vector<CTimeSeries<T>>, double t);
 template<class T> T R2_c(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d);
 template<class T> T norm2(CTimeSeries<T> BTC1);
 template<class T> CTimeSeries<T> max(CTimeSeries<T> A, T b);
 //GUI
-template<class T> map<string, T> regression(vector<T> x, vector<T> y);
+template<class T> map<string, T> regression(vector<T> &x, vector<T> &y);
 
 #include "BTC.hpp"

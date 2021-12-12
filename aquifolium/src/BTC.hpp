@@ -1041,7 +1041,10 @@ bool CTimeSeries<T>::append(T tt, T xx)
 
     bool increase = false;
     if (C.size()==n-1) increase = true;
-    if (C.size()<n+1)
+	if (D.size() != t.size())
+		cout << "D size not equal to t size" << std::endl;
+
+	if (C.size()<n+1)
     {
         t.push_back(tt);
         C.push_back(xx);
@@ -1163,7 +1166,7 @@ T prcntl(vector<T> C, T x)
 }
 
 template<class T>
-vector<T> prcntl(vector<T> C, vector<T> x)
+vector<T> prcntl(vector<T> &C, vector<T> &x)
 {
     vector<T> X = QSort(C);
     vector<T> Xout = x;
