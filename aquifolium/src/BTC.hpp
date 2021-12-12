@@ -148,6 +148,7 @@ CTimeSeries<T>::CTimeSeries(string Filename)
 	n = 0;
 	t.clear();
 	C.clear();
+	D.clear();
     filename = Filename;
 	ifstream file(Filename);
 	if (file.good() == false)

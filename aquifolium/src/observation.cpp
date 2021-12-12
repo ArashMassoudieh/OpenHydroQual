@@ -24,7 +24,8 @@ Observation::Observation(System *_system, const Expression &expr, const string &
 
 Observation::~Observation()
 {
-    //dtor
+    modeled_time_series.clear();
+    observed_time_series.clear(); 
 }
 
 Observation::Observation(const Observation& other)

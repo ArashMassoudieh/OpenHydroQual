@@ -785,7 +785,7 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::make_uniform(T increment, bool assgn_d)
 			if (assgn_d)
 			{
 				//qDebug() << "Assigning D to the original BTC";
-				if (BTC[i].D.size() == 0) BTC[i].assign_D();
+				if (BTC[i].DSize() == 0) BTC[i].assign_D();
 			}
 		}
 		for (int i=0; i<BTC[0].n-1; i++)
@@ -803,8 +803,8 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::make_uniform(T increment, bool assgn_d)
 					out.BTC[k].append(x,CC);
 					if (assgn_d)
 					{
-                        T DD = (x - BTC[k].GetT(i)) / (BTC[k].GetT(i + 1) - BTC[k].GetT(i))*(BTC[k].D[i + 1] - BTC[k].D[i]) + BTC[k].D[i];
-						out.BTC[k].D.push_back(DD);
+                        T DD = (x - BTC[k].GetT(i)) / (BTC[k].GetT(i + 1) - BTC[k].GetT(i))*(BTC[k].GetD(i + 1) - BTC[k].GetD(i)) + BTC[k].GetD(i);
+						out.BTC[k].AppendD(DD);
 					}
 				}
 			}

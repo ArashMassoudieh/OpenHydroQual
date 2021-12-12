@@ -17,8 +17,8 @@ public:
     double GetRndGamma();
     void initializeNormal(double dx0, double dxmult,int nint);
     void initializeGamma(double dx0, double dxmult, int nint, double r, double lambda);
-	bool set;
-	bool symetrical;
+	bool set = false;
+	bool symetrical = false;
 	CDistributionNUnif(const CDistributionNUnif &D);
     CDistributionNUnif operator=(const CDistributionNUnif &D);
 };

@@ -111,6 +111,7 @@ public:
     unsigned int CSize() {return C.size();}
     unsigned int tSize() {return t.size();}
     unsigned int DSize() {return D.size(); }
+    void AppendD(const T &value) { D.push_back(value); }
 private:
     vector<T> t;
     vector<T> C;

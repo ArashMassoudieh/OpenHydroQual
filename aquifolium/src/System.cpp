@@ -55,6 +55,8 @@ System::~System()
 {
     delete operators;
     delete functions;
+    
+    clear(); 
     //dtor
 }
 
@@ -2057,6 +2059,7 @@ void System::clear()
     reaction_parameters.clear();
     observations.clear();
     constituents.clear();
+    errorhandler.clear();
 }
 
 void System::TransferQuantitiesFromMetaModel()

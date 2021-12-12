@@ -20,7 +20,7 @@ public:
 	int maxnumpoints();
 	CTimeSeriesSet& operator = (const CTimeSeriesSet &C);
 	vector<string> names;
-	bool unif;
+	bool unif = false;
 	void writetofile(string outputfile, bool writeColumnHeaders = false);
 	void writetofile(string outputfile, int writeinterval);
     vector<T> interpolate(T t);

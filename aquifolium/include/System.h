@@ -429,7 +429,7 @@ class System: public Object
 
 #ifdef QT_version
         GraphWidget *diagramview;
-        runtimeWindow *rtw;
+        runtimeWindow *rtw = nullptr;
         void updateProgress(bool finished);
         logWindow *logwindow = nullptr;
 #endif

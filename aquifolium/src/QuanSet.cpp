@@ -23,7 +23,8 @@ QuanSet::QuanSet()
 
 QuanSet::~QuanSet()
 {
-    //dtor
+    quans.clear(); 
+    quantity_order.clear(); 
 }
 
 QuanSet::QuanSet(Json::ValueIterator& object_types)

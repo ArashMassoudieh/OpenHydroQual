@@ -22,7 +22,7 @@ public:
     vector<double> s;
     vector<double> e;
     vector<double> i;
-    bool structured;
+    bool structured = false;
     double dt;
     double getval(double time);
     void getfromfile(string filename);

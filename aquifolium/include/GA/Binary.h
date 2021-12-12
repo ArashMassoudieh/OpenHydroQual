@@ -21,7 +21,7 @@ public:
     double decode(double minrange);
     int& operator[](unsigned int i);
     void show();
-	bool sign;
+	bool sign = true;
     void mutate(double mu);
 	
 };
