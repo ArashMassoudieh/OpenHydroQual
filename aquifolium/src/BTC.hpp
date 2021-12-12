@@ -1120,7 +1120,6 @@ CTimeSeries<T> CTimeSeries<T>::make_uniform(T increment)
 	if (t.size() >1 && C.size() > 1)
 	{
 		out.append(t[0], C[0]);
-		out.D.push_back(0);
 		for (int i = 0; i < n - 1; i++)
 		{
 			int i1 = int((t[i] - t[0]) / increment);
