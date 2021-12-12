@@ -305,7 +305,12 @@ class System: public Object
         void WriteLinksStates(const string &variable, const Expression::timing &tmg);
         bool InitiatePrecalculatedFunctions();
         bool CopyStateVariablesFrom(System *sys);
-        void SetNumThreads(unsigned int i) {SolverSettings.n_threads = i;}
+        void SetNumThreads(unsigned int i) 
+        {
+            SolverSettings.n_threads = i;
+        }
+        int NumThreads() { return SolverSettings.n_threads; }
+        
 #if defined(QT_version)
         logWindow *LogWindow() {return logwindow;}
         void SetLogWindow(logWindow *lgwnd) {logwindow=lgwnd;}

@@ -314,7 +314,7 @@ void CGA<T>::assignfitnesses()
 
 
 #ifndef NO_OPENMP
-    omp_set_num_threads(numberOfThreads);
+	omp_set_num_threads(numberOfThreads);
 #endif
 int counter=0;
 #pragma omp parallel for //private(ts,l)

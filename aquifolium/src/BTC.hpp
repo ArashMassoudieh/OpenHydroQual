@@ -1273,8 +1273,10 @@ void CTimeSeries<T>::assign_D()
                 break;
             }
 		}
-		if (i + 1 == n && n>1)
+		if (i + 1 == n && n > 1)
 			counter = t[n - 1] - t[n - 2];
+		else if (n == 1)
+			counter = 100; 
 		if (counter == 0)
 			counter = t[i] - ((i > 0)? t[i - 1]:0);
 		D.push_back(std::fabs(counter));
