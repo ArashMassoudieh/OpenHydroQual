@@ -8,6 +8,10 @@ class RestorePoint
 public:
     RestorePoint();
     RestorePoint(System *sys);
+    virtual ~RestorePoint()
+    {
+        CopiedSystem.clear();
+    }
     System *GetSystem();
     double t;
     double dt;

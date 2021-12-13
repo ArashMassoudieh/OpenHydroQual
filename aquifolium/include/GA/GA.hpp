@@ -23,7 +23,7 @@ CGA<T>::CGA()
 	GA_params.pcross = 1;
 	GA_params.cross_over_type = 1;
 	MaxFitness = 0;
-	numberOfThreads = 8;
+    numberOfThreads = 16;
 }
 
 template<class T>
@@ -35,7 +35,7 @@ CGA<T>::CGA(string filename, const T &model)
 	GA_params.pcross = 1;
 	GA_params.N = 1;
 	GA_params.RCGA = false;
-    numberOfThreads = 8;
+    numberOfThreads = 20;
     filenames.pathname = Model->OutputPath();
 	vector<string> s;
 	while (file.eof() == false)
@@ -107,7 +107,7 @@ CGA<T>::CGA(T *model)
 	GA_params.pcross = 1;
 	GA_params.N = 1;
 	GA_params.RCGA = false;
-    numberOfThreads = 8;
+    numberOfThreads = 20;
     filenames.pathname = Model->OutputPath();
     GA_params.maxpop = max(1,GA_params.maxpop);
     for (unsigned int i=0; i<Model->Parameters().size(); i++)

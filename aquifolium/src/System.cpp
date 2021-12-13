@@ -654,8 +654,9 @@ bool System::Solve(bool applyparameters)
                 {
                     if (GetSolutionLogger())
                         GetSolutionLogger()->WriteString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t) );
-                    if (rtw->detailson)
-                        rtw->AppendtoDetails(QString::fromStdString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t)));
+                    if (rtw)
+                        if (rtw->detailson)
+                            rtw->AppendtoDetails(QString::fromStdString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t)));
 
                 }
             }

@@ -1367,7 +1367,10 @@ template<class T>
 void CTimeSeries<T>::knock_out(T tt)
 {
     int eliminate_from_here=0;
-    while (t[eliminate_from_here]<=tt) eliminate_from_here++;
+    if (t.size()>0)
+        while (t[eliminate_from_here]<=tt) eliminate_from_here++;
+    else
+        eliminate_from_here=0;
     t.resize(eliminate_from_here);
     C.resize(eliminate_from_here);
     D.resize(eliminate_from_here);
