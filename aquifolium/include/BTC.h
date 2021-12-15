@@ -44,6 +44,8 @@ public:
 	void writefile(string Filename); //writes the BTC contets into a fild
     T maxC(); //returns the maximum value
     T minC(); //returns the minimum value
+    T maxt();
+    T mint();
 	void setnumpoints(int); //resize the timeseries
 	CTimeSeries Log(); //take the log of all the data points
     CTimeSeries Log(T min); //log(min(min,C))

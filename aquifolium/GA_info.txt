@@ -1,8 +1,0 @@
-maxpop, 60
-ngen, 100
-pcross, 1
-pmute, 0.08
-shakescale, 0.05
-shakescalered, 0.75
-outputfile, GA_out.txt
-

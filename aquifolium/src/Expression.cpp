@@ -267,31 +267,6 @@ vector<string> Expression::extract_terms(string s)
 	return out;
 }
 
-int aquiutils::lookup(const vector<string> &s, const string &s1)
-{
-    for (unsigned int i=0; i<s.size(); i++)
-        if (s[i]==s1)
-            return i;
-    return -1;
-}
-
-int aquiutils::lookup(const vector<int> &s, const int &s1)
-{
-    for (unsigned int i=0; i<s.size(); i++)
-        if (s[i]==s1)
-            return i;
-    return -1;
-}
-
-int aquiutils::lookup(const vector<vector<int> > &s, const vector<int> &s1)
-{
-    for (unsigned int i=0; i<s.size(); i++)
-        if (s[i]==s1)
-            return i;
-    return -1;
-}
-
-
 void Expression::ResetTermsSources()
 {
     if (!term_sources_determined)
@@ -660,6 +635,153 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
     return term_vals[term_sources[i1][0]];
 }
 
+int Expression::lookup_operators(const string &s)
+{
+    for (unsigned int i=0; i<operators.size(); i++)
+        if (operators[i]==s)
+            return i;
+    return -1;
+
+}
+
+int Expression::count_operators(const string &s)
+{
+    int count = 0;
+    for (unsigned int i=0; i<operators.size(); i++)
+        if (operators[i]==s)
+            count ++;
+    return count;
+
+}
+
+vector<string> Expression::GetAllRequieredStartingBlockProperties()
+{
+    vector<string> s;
+    if (param_constant_expression == "parameter")
+    {
+        if (location == loc::source)
+            s.push_back(parameter);
+        return s;
+    }
+    if (param_constant_expression == "expression")
+    {
+        for (unsigned int i = 0; i < terms.size(); i++)
+        {
+            for (unsigned int j = 0; j < terms[i].GetAllRequieredStartingBlockProperties().size(); j++)
+                s.push_back(terms[i].GetAllRequieredStartingBlockProperties()[j]);
+        }
+        return s;
+    }
+    return s;
+}
+vector<string> Expression::GetAllRequieredEndingBlockProperties()
+{
+    vector<string> s;
+    if (param_constant_expression == "parameter")
+    {
+        if (location == loc::destination)
+            s.push_back(parameter);
+        return s;
+    }
+    if (param_constant_expression == "expression")
+    {
+        for (unsigned int i = 0; i < terms.size(); i++)
+        {
+            for (unsigned int j = 0; j < terms[i].GetAllRequieredEndingBlockProperties().size(); j++)
+                s.push_back(terms[i].GetAllRequieredEndingBlockProperties()[j]);
+        }
+        return s;
+    }
+    return s;
+}
+
+Expression Expression::ReviseConstituent(const string &constituent_name, const string &quantity)
+{
+    Expression out = *this;
+    if (param_constant_expression=="parameter")
+    {
+        if (parameter==quantity)
+        {   out.parameter = constituent_name + ":" + quantity;
+            return out;
+        }
+    }
+    for (unsigned int i=0; i<terms.size(); i++)
+    {
+        if (terms[i].param_constant_expression == "parameter")
+        {
+            if (out.terms[i].parameter == quantity)
+            {
+                out.terms[i].parameter = constituent_name + ":" + quantity;
+            }
+
+        }
+        else if (terms[i].terms.size() > 0)
+        {
+            out.terms[i] = terms[i].ReviseConstituent(constituent_name,quantity);
+        }
+    }
+    return out;
+}
+
+bool Expression::RenameQuantity(const string &oldname, const string &newname)
+{
+    bool out=false;
+    if (param_constant_expression=="parameter")
+    {
+        if (parameter==oldname)
+        {   parameter = newname;
+            return true;
+        }
+    }
+    for (unsigned int i=0; i<terms.size(); i++)
+    {
+        if (terms[i].param_constant_expression == "parameter")
+        {
+            if (terms[i].parameter == oldname)
+            {
+                terms[i].parameter = newname;
+                out = true;
+            }
+
+        }
+        else if (terms[i].param_constant_expression == "expression")
+        {
+            out = out || terms[i].RenameQuantity(oldname,newname);
+        }
+    }
+    return out;
+}
+
+string Expression::ToString() const
+{
+    string out;
+    if (param_constant_expression=="parameter")
+    {
+        out += parameter;
+        if (location == loc::source)
+            out+=".s";
+        if (location == loc::destination)
+            out+=".e";
+        return out;
+    }
+    if (param_constant_expression=="constant")
+    {
+        out += aquiutils::numbertostring(constant);
+        return out;
+    }
+    if (function!="") out += "_" + function;
+    out += "(";
+    for (unsigned int i=0; i<terms.size();i++)
+    {
+        out += terms[i].ToString();
+        if (i<terms.size()-1) out += operators[i];
+    }
+    out += ")";
+    return out;
+}
+
+
+/*
 int aquiutils::corresponding_parenthesis(string S, int i)
 {
 	string s = S;
@@ -929,25 +1051,6 @@ vector<string> aquiutils::split(const string &s, char del)
 
 }
 
-int Expression::lookup_operators(const string &s)
-{
-    for (unsigned int i=0; i<operators.size(); i++)
-        if (operators[i]==s)
-            return i;
-    return -1;
-
-}
-
-int Expression::count_operators(const string &s)
-{
-    int count = 0;
-    for (unsigned int i=0; i<operators.size(); i++)
-        if (operators[i]==s)
-            count ++;
-    return count;
-
-}
-
 vector<string> aquiutils::getline(ifstream& file)
 {
 	string line;
@@ -1206,33 +1309,6 @@ string aquiutils::tail(std::string const& source, size_t const length) {
 	return source.substr(source.size() - length);
 } // tail
 
-string Expression::ToString() const
-{
-    string out;
-    if (param_constant_expression=="parameter")
-    {
-        out += parameter;
-        if (location == loc::source)
-            out+=".s";
-        if (location == loc::destination)
-            out+=".e";
-        return out;
-    }
-    if (param_constant_expression=="constant")
-    {
-        out += aquiutils::numbertostring(constant);
-        return out;
-    }
-    if (function!="") out += "_" + function;
-    out += "(";
-    for (unsigned int i=0; i<terms.size();i++)
-    {
-        out += terms[i].ToString();
-        if (i<terms.size()-1) out += operators[i];
-    }
-    out += ")";
-    return out;
-}
 
 string aquiutils::tabs(int i)
 {
@@ -1261,47 +1337,6 @@ string aquiutils::remove_backslash_r(const string &ss)
 
 }
 
-vector<string> Expression::GetAllRequieredStartingBlockProperties()
-{
-	vector<string> s; 
-	if (param_constant_expression == "parameter")
-	{
-		if (location == loc::source)
-			s.push_back(parameter);
-		return s; 
-	}
-	if (param_constant_expression == "expression")
-	{
-		for (unsigned int i = 0; i < terms.size(); i++)
-		{
-			for (unsigned int j = 0; j < terms[i].GetAllRequieredStartingBlockProperties().size(); j++)
-				s.push_back(terms[i].GetAllRequieredStartingBlockProperties()[j]);
-		}
-		return s; 
-	}
-	return s; 
-}
-vector<string> Expression::GetAllRequieredEndingBlockProperties()
-{
-	vector<string> s;
-	if (param_constant_expression == "parameter")
-	{
-		if (location == loc::destination)
-			s.push_back(parameter);
-		return s;
-	}
-	if (param_constant_expression == "expression")
-	{
-		for (unsigned int i = 0; i < terms.size(); i++)
-		{
-			for (unsigned int j = 0; j < terms[i].GetAllRequieredEndingBlockProperties().size(); j++)
-				s.push_back(terms[i].GetAllRequieredEndingBlockProperties()[j]);
-		}
-		return s;
-	}
-	return s;
-}
-
 string aquiutils::GetOnlyFileName(const string &fullfilename)
 {
     vector<char> del;
@@ -1312,60 +1347,30 @@ string aquiutils::GetOnlyFileName(const string &fullfilename)
 
 }
 
-Expression Expression::ReviseConstituent(const string &constituent_name, const string &quantity)
+int aquiutils::lookup(const vector<string> &s, const string &s1)
 {
-    Expression out = *this;
-    if (param_constant_expression=="parameter")
-    {
-        if (parameter==quantity)
-        {   out.parameter = constituent_name + ":" + quantity;
-            return out;
-        }
-    }
-    for (unsigned int i=0; i<terms.size(); i++)
-    {
-        if (terms[i].param_constant_expression == "parameter")
-        {
-            if (out.terms[i].parameter == quantity)
-            {
-                out.terms[i].parameter = constituent_name + ":" + quantity;
-            }
-
-        }
-        else if (terms[i].terms.size() > 0)
-        {
-            out.terms[i] = terms[i].ReviseConstituent(constituent_name,quantity);
-        }
-    }
-    return out;
+    for (unsigned int i=0; i<s.size(); i++)
+        if (s[i]==s1)
+            return i;
+    return -1;
 }
 
-bool Expression::RenameQuantity(const string &oldname, const string &newname)
+int aquiutils::lookup(const vector<int> &s, const int &s1)
 {
-    bool out=false;
-    if (param_constant_expression=="parameter")
-    {
-        if (parameter==oldname)
-        {   parameter = newname;
-            return true;
-        }
-    }
-    for (unsigned int i=0; i<terms.size(); i++)
-    {
-        if (terms[i].param_constant_expression == "parameter")
-        {
-            if (terms[i].parameter == oldname)
-            {
-                terms[i].parameter = newname;
-                out = true;
-            }
-
-        }
-        else if (terms[i].param_constant_expression == "expression")
-        {
-            out = out || terms[i].RenameQuantity(oldname,newname);
-        }
-    }
-    return out;
+    for (unsigned int i=0; i<s.size(); i++)
+        if (s[i]==s1)
+            return i;
+    return -1;
 }
+
+int aquiutils::lookup(const vector<vector<int> > &s, const vector<int> &s1)
+{
+    for (unsigned int i=0; i<s.size(); i++)
+        if (s[i]==s1)
+            return i;
+    return -1;
+}
+
+
+*/
 

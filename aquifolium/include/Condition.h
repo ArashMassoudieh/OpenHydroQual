@@ -2,6 +2,7 @@
 #define CONDITION_H
 #include "Expression.h"
 
+
 class Object;
 
 enum class _oprtr{lessthan, greaterthan};

@@ -60,6 +60,7 @@ SOURCES += \
     UnitTextBox3.cpp \
     XString.cpp \
     aboutdialog.cpp \
+    aquifolium/src/Utilities.cpp \
     aquifolium/src/restorepoint.cpp \
     diagramview.cpp \
     edge.cpp \

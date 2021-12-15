@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-
+#include "Utilities.h"
 using namespace std;
 
 class Object;
@@ -65,7 +65,7 @@ class Expression
         loc location = loc::self; //0: self, 1: start, 2: end
 
 };
-namespace aquiutils
+/*namespace aquiutils
 {
 	int corresponding_parenthesis(string S, int i);
 	bool parantheses_balance(string S);
@@ -129,6 +129,6 @@ namespace aquiutils
 	string remove_backslash_r(const string &s);
     string GetOnlyFileName(const string &fullfilename);
 
-};
+};*/
 
 #endif // EXPRESSION_H

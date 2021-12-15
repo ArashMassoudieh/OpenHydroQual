@@ -2,13 +2,15 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+
+
 #include "BTC.h"
 #include "math.h"
 #include "string.h"
 #include <iostream>
 #include <fstream>
 //#include "StringOP.h"
-#include "Expression.h"
+#include "Utilities.h"
 #include "NormalDist.h"
 #ifdef Q_version
 #include "qfile.h"
@@ -141,6 +143,22 @@ CTimeSeries<T>::CTimeSeries(const CTimeSeries<T> &CC)
 	file_not_found = CC.file_not_found;
 
 }
+
+#ifdef _arma
+template<class T>
+CTimeSeries<T>::CTimeSeries(arma::mat &x, arma::mat &y)
+{
+    if (x.size()!=y.size())
+        return;
+
+    for (int i=0; i<x.size(); i++)
+    {
+        append(x[i],y[i]);
+    }
+
+}
+#endif
+
 
 template<class T>
 CTimeSeries<T>::CTimeSeries(string Filename)
@@ -417,22 +435,6 @@ T diff_log(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d, T lowlim)
 		a = BTC_p.interpol(BTC_d.t[i]);
 		sum += pow(log(max(BTC_d.C[i],lowlim)) - log(max(a,lowlim)),2);
 
-	}
-
-	return sum;
-}
-
-template<class T>
-T diff_mixed(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d, T lowlim, T std_n, T std_ln)
-{
-
-	CNormalDist ND;
-    T sum = 0;
-    T a;
-	for (int i=0; i<BTC_d.n; i++)
-	{
-		a = BTC_p.interpol(BTC_d.t[i]);
-		sum += ND.likelihood_mixed(a,BTC_d.C[i],std_n,std_ln);
 	}
 
 	return sum;
@@ -766,7 +768,7 @@ CTimeSeries<T> operator-(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 {
     CTimeSeries<T> S = BTC1;
 	for (int i=0; i<BTC1.n; i++)
-		S.C[i] = BTC1.C[i]-BTC2.interpol(BTC1.t[i]);
+        S.SetC(i, BTC1.GetC(i)-BTC2.interpol(BTC1.GetT(i)));
 
 	return S;
 }
@@ -776,7 +778,7 @@ CTimeSeries<T> operator*(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 {
     CTimeSeries<T> S = BTC1;
 	for (int i=0; i<BTC1.n; i++)
-		S.C[i] = BTC1.C[i]*BTC2.interpol(BTC1.t[i]);
+        S.SetC(i, BTC1.GetC(i)*BTC2.interpol(BTC1.GetT(i)));
 
 	return S;
 }
@@ -812,6 +814,28 @@ T CTimeSeries<T>::maxC()
 			max = C[i];
 	}
 	return max;
+}
+
+template<class T>
+T CTimeSeries<T>::maxt()
+{
+    double max = -1e32;
+    for (int i=0; i<n; i++)
+    {	if (t[i]>max)
+            max = t[i];
+    }
+    return max;
+}
+
+template<class T>
+T CTimeSeries<T>::mint()
+{
+    double min = 1e32;
+    for (int i=0; i<n; i++)
+    {	if (t[i]<min)
+            min = t[i];
+    }
+    return min;
 }
 
 template<class T>
@@ -1456,7 +1480,7 @@ T norm2(CTimeSeries<T> BTC1)
 {
     T sum = 0;
 	for (int i = 0; i<BTC1.n; i++)
-		sum += pow(BTC1.C[i], 2);
+        sum += pow(BTC1.GetC(i), 2);
 
 	return sum;
 }
@@ -1466,7 +1490,7 @@ CTimeSeries<T> max(CTimeSeries<T> A, T b)
 {
     CTimeSeries<T> S = A;
 	for (int i = 0; i<A.n; i++)
-		S.C[i] = max(A.C[i], b);
+        S.C[i] = max(A.GetC(i), b);
 	return S;
 }
 
