@@ -5,6 +5,8 @@
 #include "NormalDist.h"
 #include <string>
 #include <omp.h>
+#include "MCMC.h"
+#include "runtimewindow.h"
 
 using namespace std;
 
@@ -22,13 +24,14 @@ CMCMC<T>::~CMCMC(void)
 	logp.clear();
 }
 
-vector<CBTCSet*> CMCMC::model(vector<double> par)
+template<class T>
+vector<CTimeSeriesSet<double>*> CMCMC<T>::model(vector<double> par)
 {
 	double sum = 0;
-	vector<CBTCSet> res;
+    vector<CTimeSeriesSet<double>> res;
 
 
-	CMediumSet G1 = G;
+    T G1 = G;
 	for (int i=0; i<nActParams; i++)
 	{
 		if (apply_to_all[i] == true)
@@ -52,11 +55,12 @@ vector<CBTCSet*> CMCMC::model(vector<double> par)
 
 
 
+/*
 template<class T>
-vector<CBTCSet> CMCMC<T>::model_lumped(vector<double> par)
+vector<CTimeSeriesSet<double>> CMCMC<T>::model_lumped(vector<double> par)
 {
 	double sum = 0;
-	vector<CBTCSet> res;
+    vector<CTimeSeriesSet<double>> res;
 
 	for (int ts = 0; ts < 1; ts++)
 	{
@@ -110,14 +114,14 @@ res.push_back(G1.Medium[0].ANS_obs);
 	return res;
 }
 #ifdef GIFMOD
-	vector<CBTCSet> CMCMC::model_lumped(vector<double> par, CMedium &G) const
+    vector<CTimeSeriesSet<double>> CMCMC::model_lumped(vector<double> par, CMedium &G) const
 #endif
 #ifdef GWA
-	vector<CBTCSet> CMCMC::model_lumped(vector<double> par, CGWA &G) const
+    vector<CTimeSeriesSet<double>> CMCMC::model_lumped(vector<double> par, CGWA &G) const
 #endif
 {
 	double sum = 0;
-	vector<CBTCSet> res;
+    vector<CTimeSeriesSet<double>> res;
 
 	for (int ts = 0; ts<1; ts++)
 	{
@@ -154,6 +158,7 @@ res.push_back(G1.Medium[0].ANS_obs);
 	}
 	return res;
 }
+*/
 
 
 template<class T>
@@ -162,52 +167,38 @@ double CMCMC<T>::posterior(vector<double> par, int ID)
 	double sum = 0;
 	for (int ts=0; ts<1; ts++)
 	{
-#ifdef GIFMOD
-		CMediumSet G1 = G;
+
+        T G1 = G;
 		if (ID == -1)
 			G1.ID = "final";
 		else
-			G1.ID = numbertostring(ID);
-		//G1.FI.write_details = false;
-#endif
-#ifdef GWA
-		CGWASet G1 = G;
-		G1.Medium[0].project = false;
-#endif
+            G1.ID = aquiutils::numbertostring(ID);
+
+
+
 		for (int i=0; i<nActParams; i++)
 		{
 				if (MCMCParam[i].type == 0) sum -= pow(par[getparamno(i,ts)]-MCMCParam[i].mean,2)/(2.0*pow(MCMCParam[i].std,2));
 				if (MCMCParam[i].type == 1) sum -= pow(log(par[getparamno(i,ts)])-log(MCMCParam[i].mean),2)/(2.0*pow(MCMCParam[i].std,2));
 				if (MCMCParam[i].type == 2)
 					if (par[getparamno(i, ts)]<MCMCParam[i].low || par[getparamno(i, ts)]>MCMCParam[i].high) sum -= 3000;
-#ifdef GIFMOD
+
 				G1.set_param(i,par[getparamno(i,ts)]);
 		}
 		G1.finalize_set_param();
 		sum += G1.calc_log_likelihood();
 
-#endif
-#ifdef GWA
-		G1.Medium[0].set_param(i, par[getparamno(i, ts)]);
-		}
-	G1.Medium[0].finalize_set_param();
-	sum += G1.Medium[0].calc_log_likelihood();
-#endif
 
-		}
+    }
 	return sum;
 }
 
 template<class T>
 double CMCMC<T>::posterior(vector<double> par, bool out)
 {
-#ifdef GIFMOD
-	CMediumSet G1 = G;
-#endif
-#ifdef GWA
-	CGWASet G1 = G;
-	G1.Medium[0].project = false;
-#endif
+
+    T G1 = G;
+
 	double sum = 0;
 	for (int i=0; i<nActParams; i++)
 	{	for (int ts=0; ts<1; ts++)
@@ -223,12 +214,8 @@ double CMCMC<T>::posterior(vector<double> par, bool out)
 				if (par[getparamno(i, 0)]<MCMCParam[i].low || par[getparamno(i, 0)]>MCMCParam[i].high) sum -= 3000;
 			if (MCMCParam[i].type == 0) sum -= pow(par[params[getparamno(i,0)]]-MCMCParam[i].mean,2)/(2.0*pow(MCMCParam[i].std,2));
 			if (MCMCParam[i].type == 1) sum -= pow(log(par[params[getparamno(i,0)]])-log(MCMCParam[i].mean),2)/(2.0*pow(MCMCParam[i].std,2));
-#ifdef GIFMOD
+
 			for (int ts=0; ts<1; ts++) G.set_param(i,par[getparamno(i,0)]);
-#endif
-#ifdef GWA
-			for (int ts = 0; ts<1; ts++) G.Medium[0].set_param(i, par[getparamno(i, 0)]);
-#endif
 		}
 			else
 				for (int ts=0; ts<1; ts++)
@@ -238,7 +225,7 @@ double CMCMC<T>::posterior(vector<double> par, bool out)
 
 					if (MCMCParam[i].type == 0) sum -= pow(par[getparamno(i,ts)]-MCMCParam[i].mean,2)/(2.0*pow(MCMCParam[i].std,2));
 					if (MCMCParam[i].type == 1) sum -= pow(log(par[getparamno(i,ts)])-log(MCMCParam[i].mean),2)/(2.0*pow(MCMCParam[i].std,2));
-#ifdef GIFMOD
+
 					G.set_param(i,par[getparamno(i,ts)]);
 				}
 	}
@@ -247,19 +234,7 @@ double CMCMC<T>::posterior(vector<double> par, bool out)
 	{
 		G1 = G;
 		sum += G1.calc_log_likelihood();
-#endif
-#ifdef GWA
-					G.Medium[0].set_param(i, par[getparamno(i, ts)]);
 	}
-}
-
-for (int ts = 0; ts<1; ts++)
-{
-	G1 = G;
-	sum += G1.Medium[0].calc_log_likelihood();
-#endif
-	}
-
 
 	if (out) G_out = G1;
 	return sum;
@@ -404,7 +379,7 @@ vector<double> CMCMC<T>::purturb(int k)
 }
 
 template<class T>
-bool CMCMC<T>::step(int k, int nsamps, string filename, runtimeWindow *rtw)
+bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 {
 	FILE *file;
 	if (continue_mcmc == false)
@@ -431,7 +406,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, runtimeWindow *rtw)
 	for (int kk=k; kk<k+nsamps+n_chains; kk+=n_chains)
 	{
         QCoreApplication::processEvents(QEventLoop::AllEvents,10*1000);
-		if (rtw->stopTriggered)
+        if (rtw->stoptriggered)
 			break;
 
         omp_set_num_threads(numberOfThreads);
@@ -463,7 +438,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, runtimeWindow *rtw)
 
 
 #pragma omp critical
-            {   if (rtw->sln_dtl_active)
+            {   if (rtw->detailson)
                 {   QString s;
                     s = s+"Sample no: "+QString::number(jj) + " Parameters: ";
                     for (int i = 0; i < n; i++)
@@ -472,8 +447,8 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, runtimeWindow *rtw)
                     s+= " Stuck counter: " + QString::number(stuckcounter[jj-kk]);
                     s+= " Log Likelihood: " + QString::number(logp[jj],'e',2);
 
-                    rtw->slndetails_append(s);
-                    rtw->slndetails_append(" ");
+                    rtw->AppendtoDetails(s);
+                    rtw->AppendtoDetails(" ");
                     QCoreApplication::processEvents(QEventLoop::AllEvents,100*1000);
                 }
             }
@@ -531,8 +506,9 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, runtimeWindow *rtw)
 			vars["perterbation factor"] = pertcoeff[0] / ini_purt_fact;
 			vars["acceptance rate"] = double(accepted_count) / double(total_count);
 			vars["x"] = kk;
-            rtw->update(vars);
-
+            rtw->SetProgress(progress);
+            rtw->AddDataPoint(kk,double(accepted_count) / double(total_count));
+            rtw->Replot();
 
 		}
 	}
@@ -604,7 +580,7 @@ void CMCMC<T>::getfromGA(const CGA<T> &GA)
 }
 
 template<class T>
-CMCMC::CMCMC<T>(const CGA<T> &GA)
+CMCMC<T>::CMCMC(const CGA<T> &GA)
 {
 	logtrans = GA.logtrans;
 	fixedstd = GA.fixedstd;
@@ -712,25 +688,25 @@ CVector CMCMC<T>::sensitivity(double d, vector<double> par)
 /*CMatrix CMCMC::sensitivity_mat(double d, vector<double> par)
 {
 
-	vector<CBTCSet> base = model(par);
+    vector<CTimeSeriesSet<double>> base = model(par);
 	CMatrix X(n,base[0].nvars);
 	for (int i=0; i<n; i++)
 	{
 		vector<double> par1 = par;
 		par1[i]=par[i]*(1+d);
-		vector<CBTCSet> base_1 = model(par1);
+        vector<CTimeSeriesSet<double>> base_1 = model(par1);
 
 		for (int j=0; j<1;j++)
 			X[i] = norm2dif(base[j],base_1[j])/d;
 	}
  	return X;
 }*/
-
+/*
 template<class T>
 CMatrix CMCMC<T>::sensitivity_mat_lumped(double d, vector<double> par)
 {
 
-	vector<CBTCSet> base = model_lumped(par);
+    vector<CTimeSeriesSet<double>> base = model_lumped(par);
 #ifdef GIFMOD
 	int ii = G.measured_quan.size();
 #endif
@@ -743,42 +719,38 @@ CMatrix CMCMC<T>::sensitivity_mat_lumped(double d, vector<double> par)
 	{
 		vector<double> par1 = par;
 		par1[i]=par[i]*(1+d);
-		vector<CBTCSet> base_1 = model_lumped(par1);
+        vector<CTimeSeriesSet<double>> base_1 = model_lumped(par1);
 
 		for (int j=0; j<1;j++)
 			X[i] += norm2dif(base[j],base_1[j])/d;
 	}
  	return X;
 }
+*/
 
-#ifdef GIFMOD
-CMatrix CMCMC::sensitivity_mat_lumped(double d, vector<double> par, CMedium &G) const
-#endif
-#ifdef GWA
-CMatrix CMCMC::sensitivity_mat_lumped(double d, vector<double> par, CGWA &G) const
-#endif
+/*
+template<class T>
+CMatrix CMCMC<T>::sensitivity_mat_lumped(double d, vector<double> par, T &G) const
+
 {
 
-	vector<CBTCSet> base = model_lumped(par, G);
-#ifdef GIFMOD
+    vector<CTimeSeriesSet<double>> base = model_lumped(par, G);
+
 	int ii = G.measured_quan().size();
-#endif
-#ifdef GWA
-	int ii = G.measured_quan.size();
-#endif
 
 	CMatrix X(n, ii);
 	for (int i = 0; i<n; i++)
 	{
 		vector<double> par1 = par;
 		par1[i] = par[i] * (1 + d);
-		vector<CBTCSet> base_1 = model_lumped(par1, G);
+        vector<CTimeSeriesSet<double>> base_1 = model_lumped(par1, G);
 
 		for (int j = 0; j<1; j++)
 			X[i] += norm2dif(base[j], base_1[j]) / d;
 	}
 	return X;
 }
+*/
 
 template<class T>
 CVector CMCMC<T>::sensitivity_ln(double d, vector<double> par)
@@ -813,11 +785,11 @@ int CMCMC<T>::readfromfile(string filename)
 
 	ifstream file(filename);
 	vector<string> s;
-	s = getline(file);
+    s = aquiutils::getline(file);
 	int jj=0;
 	while (file.eof() == false)
 	{
-		s = getline(file);
+        s = aquiutils::getline(file);
 		if (s.size() == 2*n+4)
 		{	Params[jj].resize(n);
 			for (int i=0; i<n; i++)
@@ -835,10 +807,10 @@ int CMCMC<T>::readfromfile(string filename)
 }
 
 template<class T>
-CBTCSet CMCMC<T>::prior_distribution(int n_bins)
+CTimeSeriesSet<double> CMCMC<T>::prior_distribution(int n_bins)
 {
-	CBTCSet A(nActParams);
-	CBTC B(n_bins);
+    CTimeSeriesSet<double> A(nActParams);
+    CTimeSeries<double> B(n_bins);
 
 	double min_range , max_range;
 
@@ -862,17 +834,17 @@ CBTCSet CMCMC<T>::prior_distribution(int n_bins)
 
 		double dp = abs(max_range - min_range) / n_bins;
 
-		B.t[0] = min_range + dp/2;
+        B.SetT(0, min_range + dp/2);
 		for (int j=0; j<n_bins-1; j++)
-			B.t[j+1] = B.t[j] + dp;
+            B.SetT(j+1, B.GetT(j) + dp);
 
 		if (MCMCParam[i].type != 1)
 			for (int j=0; j<n_bins; j++)
-				B.C[j] = exp(-pow(B.t[j]-MCMCParam[i].mean,2)/(2.0*pow(MCMCParam[i].std,2)))/(MCMCParam[i].std*pow(6.28,0.5));
+                B.SetC(j , exp(-pow(B.GetT(j)-MCMCParam[i].mean,2)/(2.0*pow(MCMCParam[i].std,2)))/(MCMCParam[i].std*pow(6.28,0.5)));
 
 		if (MCMCParam[i].type == 1)
 			for (int j=0; j<n_bins; j++)
-				B.C[j] = exp(-pow(log(B.t[j])-log(MCMCParam[i].mean),2)/(2.0*pow(MCMCParam[i].std,2)))/(B.t[j]*MCMCParam[i].std*pow(6.28,0.5));
+                B.SetC(j, exp(-pow(log(B.GetT(j))-log(MCMCParam[i].mean),2)/(2.0*pow(MCMCParam[i].std,2)))/(B.GetT(j)*MCMCParam[i].std*pow(6.28,0.5)));
 
 		A.BTC[i] = B;
 	}
@@ -881,16 +853,13 @@ CBTCSet CMCMC<T>::prior_distribution(int n_bins)
 }
 
 template<class T>
-void CMCMC<T>::getrealizations(CBTCSet &MCMCout)
+void CMCMC<T>::getrealizations(CTimeSeriesSet<double> &MCMCout)
 {
 	BTCout_obs.resize(1);
 	BTCout_obs_noise.resize(1);
-#ifdef GIFMOD
+
 	int n_BTCout_obs = G.measured_quan.size();
-#endif
-#ifdef GWA
-	int n_BTCout_obs = G.Medium[0].measured_quan.size();
-#endif
+
 	for (int i = 0; i < 1; i++)
 	{
 		BTCout_obs[i].resize(n_BTCout_obs);
@@ -898,14 +867,14 @@ void CMCMC<T>::getrealizations(CBTCSet &MCMCout)
 	}
 	for (int i = 0; i < n_BTCout_obs; i++)
 	{
-		BTCout_obs[0][i] = CBTCSet(n_realizations);
-		BTCout_obs_noise[0][i] = CBTCSet(n_realizations);
+        BTCout_obs[0][i] = CTimeSeriesSet<double>(n_realizations);
+        BTCout_obs_noise[0][i] = CTimeSeriesSet<double>(n_realizations);
 		BTCout_obs[0][i].names.clear();
 		BTCout_obs_noise[0][i].names.clear();
 	}
 
-	realized_paramsList = CBTCSet(MCMCout.nvars);
-	paramsList = CBTCSet(MCMCout.nvars);
+    realized_paramsList = CTimeSeriesSet<double>(MCMCout.nvars);
+    paramsList = CTimeSeriesSet<double>(MCMCout.nvars);
 	//qDebug() << "paramsList.names.size()" << paramsList.names.size();
 	paramsList.names = MCMCout.names;
 	//qDebug() << "MCMCout.names.size()" << MCMCout.names.size();
@@ -922,12 +891,8 @@ void CMCMC<T>::getrealizations(CBTCSet &MCMCout)
 	for (int jj = 0; jj <= n_realizations/numberOfThreads; jj++)
 	{
 
-#ifdef GIFMOD
-		vector<vector<CMediumSet>> Sys1(numberOfThreads);
-#endif
-#ifdef GWA
-		vector<vector<CGWASet>> Sys1(numberOfThreads);
-#endif
+
+        vector<vector<T>> Sys1(numberOfThreads);
 		for (int i = 0; i < numberOfThreads; i++) Sys1[i].resize(1);
 
         omp_set_num_threads(numberOfThreads);
@@ -939,25 +904,15 @@ void CMCMC<T>::getrealizations(CBTCSet &MCMCout)
 			//qDebug() << "Realization Sample No. : " << realizationNumber;
 			vector<double> param = realized_paramsList.getrow(realizationNumber);
 			Sys1[j][0] = G;
-			Sys1[j][0].ID = numbertostring(j);
-#ifdef GIFMOD
-			//Sys1[j][0].FI.write_details = false;
-#endif
-#ifdef GWA
-			Sys1[j][0].Medium[0].project = false;
-#endif
+            Sys1[j][0].ID = aquiutils::numbertostring(j);
+
 			int l = 0;
 			for (int i = 0; i < nActParams; i++)
-#ifdef GIFMOD
+
 			Sys1[j][0].set_param(i, param[i]);
 			Sys1[j][0].finalize_set_param();
 			Sys1[j][0].calc_log_likelihood();
-#endif
-#ifdef GWA
-			Sys1[j][0].Medium[0].set_param(i, param[i]);
-			Sys1[j][0].Medium[0].finalize_set_param();
-			Sys1[j][0].Medium[0].calc_log_likelihood();
-#endif
+
 			if (global_sensitivity == true)
 				global_sens_lumped.push_back(sensitivity_mat_lumped(dp_sens, param));
 
@@ -965,7 +920,7 @@ void CMCMC<T>::getrealizations(CBTCSet &MCMCout)
 			{
 				for (int ts = 0; ts < 1; ts++)
 				{
-#ifdef GIFMOD
+
 					BTCout_obs[ts][i].BTC[realizationNumber] = Sys1[j][ts].ANS_obs.BTC[i];
 					BTCout_obs[ts][i].names.push_back(Sys1[j][ts].ANS_obs.names[i] + "_" + to_string(realizationNumber));
 
@@ -974,17 +929,7 @@ void CMCMC<T>::getrealizations(CBTCSet &MCMCout)
 						BTCout_obs_noise[ts][i].BTC[realizationNumber] = Sys1[j][ts].ANS_obs_noise.BTC[i];
 						BTCout_obs_noise[ts][i].names.push_back(Sys1[j][ts].ANS_obs_noise.names[i] + "_" + to_string(realizationNumber));
 					}
-#endif
-#ifdef GWA
-					BTCout_obs[ts][i].BTC[realizationNumber] = Sys1[j][ts].Medium[0].ANS_obs.BTC[i];
-					BTCout_obs[ts][i].names.push_back(Sys1[j][ts].Medium[0].ANS_obs.names[i] + "_" + to_string(realizationNumber));
 
-					if (noise_realization_writeout)
-					{
-						BTCout_obs_noise[ts][i].BTC[realizationNumber] = Sys1[j][ts].Medium[0].ANS_obs_noise.BTC[i];
-						BTCout_obs_noise[ts][i].names.push_back(Sys1[j][ts].Medium[0].ANS_obs_noise.names[i] + "_" + to_string(realizationNumber));
-					}
-#endif
 				}
 			}
 			//qDebug() << "Realization Completed : " << realizationNumber << endl;
@@ -1015,44 +960,30 @@ void CMCMC<T>::getrealizations(CBTCSet &MCMCout)
 }
 
 template<class T>
-void CMCMC<T>::get_outputpercentiles(CBTCSet &MCMCout)
+void CMCMC<T>::get_outputpercentiles(CTimeSeriesSet<double> &MCMCout)
 {
-	//qDebug() << 501;
+
 	getrealizations(MCMCout);
-	//qDebug() << 502;
-#ifdef GIFMOD
 	int n_BTCout_obs = G.measured_quan.size();
-#endif
-#ifdef GWA
-	int n_BTCout_obs = G.Medium[0].measured_quan.size();
-#endif
-//qDebug() << 503;
+
 	BTCout_obs_prcntle.resize(1); for (int j = 0; j < 1; j++) BTCout_obs_prcntle[j].resize(n_BTCout_obs);
 	BTCout_obs_prcntle_noise.resize(1); for (int j = 0; j < 1; j++) BTCout_obs_prcntle_noise[j].resize(n_BTCout_obs);
-	//qDebug() << 504;
+
 	if (calc_output_percentiles.size()>0)
 		for (int i = 0; i < n_BTCout_obs; i++)
 		{
 			for (int j = 0; j < 1; j++)
 			{
 				BTCout_obs_prcntle[j][i] = BTCout_obs[j][i].getpercentiles(calc_output_percentiles);
-#ifdef GIFMOD
+
 				BTCout_obs_prcntle[j][i].writetofile(G.FI.outputpathname + "BTC_obs_prcntl_" + G.measured_quan[i].name + ".txt", G.FI.write_interval);
-#endif
-#ifdef GWA
-				BTCout_obs_prcntle[j][i].writetofile(G().pathname + "BTC_obs_prcntl" + to_string(i) + "_" + to_string(j) + ".txt", G.Medium[0].writeinterval);
-#endif
 
 				if (noise_realization_writeout)
 					BTCout_obs_prcntle_noise[j][i] = BTCout_obs_noise[j][i].getpercentiles(calc_output_percentiles);
-#ifdef GIFMOD
+
 				BTCout_obs_prcntle_noise[j][i].writetofile(G.FI.outputpathname + "BTC_obs_prcntl_noise_" + G.measured_quan[i].name + ".txt", G.FI.write_interval);
-#endif
-#ifdef GWA
-				BTCout_obs_prcntle_noise[j][i].writetofile(G().pathname + "BTC_obs_prcntl_noise" + to_string(i) + "_" + to_string(j) + ".txt", G.Medium[0].writeinterval);
-#endif
 
 			}
 		}
-	//qDebug() << 505;
+
 }

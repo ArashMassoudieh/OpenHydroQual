@@ -8,6 +8,7 @@ QT       += core gui opengl printsupport svg
 INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
+INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
 INCLUDEPATH += ../qcustomplot/
@@ -127,6 +128,9 @@ HEADERS += \
     UnitTextBox3.h \
     XString.h \
     aboutdialog.h \
+    aquifolium/include/GA/GA.h \
+    aquifolium/include/MCMC/MCMC.h \
+    aquifolium/include/MCMC/MCMC.hpp \
     aquifolium/include/restorepoint.h \
     diagramview.h \
     edge.h \

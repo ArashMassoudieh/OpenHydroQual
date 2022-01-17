@@ -1358,6 +1358,7 @@ void MainWindow::Populate_General_ToolBar()
     actionrun->setToolTip("Run Model");
     actionrun->setObjectName("Run Model");
     connect(actionrun, SIGNAL(triggered()), this, SLOT(onrunmodel()));
+    //optimize
     QIcon iconoptimize;
     iconoptimize.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/optimize.png"), QSize(), QIcon::Normal, QIcon::Off);
     QAction* actionoptimize = new QAction(this);
@@ -1366,6 +1367,7 @@ void MainWindow::Populate_General_ToolBar()
     actionoptimize->setText("Optimize");
     actionoptimize->setToolTip("Optimize");
     connect(actionoptimize, SIGNAL(triggered()), this, SLOT(onoptimize()));
+    //inverse run
     QIcon iconinverserun;
     iconinverserun.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/inverserun.png"), QSize(), QIcon::Normal, QIcon::Off);
     QAction* actioninverse = new QAction(this);
@@ -1374,6 +1376,15 @@ void MainWindow::Populate_General_ToolBar()
     actioninverse->setText("Invese Run");
     actioninverse->setToolTip("Inverse Run");
     connect(actioninverse, SIGNAL(triggered()), this, SLOT(oninverserun()));
+    //mcmc
+    QIcon iconmcmc;
+    iconmcmc.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/MCMC.png"), QSize(), QIcon::Normal, QIcon::Off);
+    QAction* actionmcmc = new QAction(this);
+    actioninverse->setIcon(iconmcmc);
+    ui->GeneraltoolBar->addAction(actionmcmc);
+    actioninverse->setText("MCMC parameter estimation");
+    actioninverse->setToolTip("MCMC parameter estimation");
+    connect(actioninverse, SIGNAL(triggered()), this, SLOT(onmcmc()));
 
 }
 

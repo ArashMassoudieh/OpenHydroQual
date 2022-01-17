@@ -5,6 +5,7 @@
 #include "NormalDist.h"
 #include "GA.h"
 #include "Vector.h"
+#include "BTCSet.h"
 
 using namespace std;
 
@@ -16,6 +17,8 @@ struct Param
 	bool loged;
 	double mean, std;
 };
+
+class RunTimeWindow;
 
 template<class T>
 class CMCMC
@@ -42,13 +45,13 @@ public:
 	void initialize();
     void initialize(vector<double> par);
     bool step(int k);
-    bool step(int k, int nsamps, string filename, runtimeWindow* rtw = 0);
+    bool step(int k, int nsamps, string filename, RunTimeWindow* rtw = 0);
 	vector<double> purturb(int k);
 	CNormalDist ND;
 	double purtscale;
     void writeoutput(string filename);
 	vector<int> params;
-	CBTCSet MData;
+    CTimeSeriesSet<double> MData;
 	int nActParams;
 	int numBTCs;
     int getparamno(int j);
@@ -67,7 +70,7 @@ public:
     CVector sensitivity_ln(double d, vector<double> par);
 	//runtimeWindow * rtw = 0;
     CMatrix sensitivity_mat_lumped(double d, vector<double> par);
-    CBTCSet prior_distribution(int n_bins);
+    CTimeSeriesSet<double> prior_distribution(int n_bins);
 	double purt_fac;
 	bool mixederror;
 	bool noinipurt;
@@ -76,16 +79,16 @@ public:
 	bool global_sensitivity;
 	bool continue_mcmc;
     int readfromfile(string filename);
-    vector<CBTCSet*> model(vector<double> par);
-	vector<vector<CBTCSet>> BTCout_obs;
-	vector<vector<CBTCSet>> BTCout_obs_noise;
-	vector<vector<CBTCSet>> BTCout_obs_prcntle;
-	vector<vector<CBTCSet>> BTCout_obs_prcntle_noise;
+    vector<CTimeSeriesSet<double>*> model(vector<double> par);
+    vector<vector<CTimeSeriesSet<double>>> BTCout_obs;
+    vector<vector<CTimeSeriesSet<double>>> BTCout_obs_noise;
+    vector<vector<CTimeSeriesSet<double>>> BTCout_obs_prcntle;
+    vector<vector<CTimeSeriesSet<double>>> BTCout_obs_prcntle_noise;
 	vector<CMatrix> global_sens_lumped;
-	CBTCSet paramsList;
-	CBTCSet realized_paramsList;
-    void getrealizations(CBTCSet &MCMCout);
-    void get_outputpercentiles(CBTCSet &MCMCout);
+    CTimeSeriesSet<double> paramsList;
+    CTimeSeriesSet<double> realized_paramsList;
+    void getrealizations(CTimeSeriesSet<double> &MCMCout);
+    void get_outputpercentiles(CTimeSeriesSet<double> &MCMCout);
 	int n_realizations;
 	double dp_sens;
 	bool noise_realization_writeout;
@@ -96,4 +99,4 @@ public:
 
 };
 
-#include "../src/MCMC/MCMC.hpp"
+#include "MCMC.hpp"
