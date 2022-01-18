@@ -1798,6 +1798,39 @@ void MainWindow::oninverserun()
     rtw->AppendText("Parameter Estimation Finished!");
 }
 
+void MainWindow::onmcmc()
+{
+    ErrorHandler errs = system.VerifyAllQuantities();
+    if (system.ParametersCount()==0)
+    {
+        LogAllSystemErrors(&errs);
+        QMessageBox::question(this, "Errors!", "No parameters have been defined!", QMessageBox::Ok);
+        return;
+    }
+    if (errs.Count()!=0)
+    {
+        LogAllSystemErrors(&errs);
+        QMessageBox::question(this, "Errors!", "There are errors in the values assigned to some of the variables. Check the log window for more details.", QMessageBox::Ok);
+        return;
+    }
+    system.SetSystemSettings();
+    mcmc = new CMCMC<System>(&system);
+    mcmc->SetParameters(system.object("MCMC"));
+    mcmc->filenames.pathname = workingfolder.toStdString() + "/";
+    system.SetAllParents();
+    rtw = new RunTimeWindow(this);
+    rtw->show();
+    rtw->AppendText("Parameter Estimation Started ...");
+    rtw->SetXRange(0,optimizer->GA_params.nGen);
+    rtw->SetUpForInverseRun();
+    system.SetRunTimeWindow(nullptr);
+    system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
+    mcmc->SetRunTimeWindow(rtw);
+    mcmc->Perform();
+
+    rtw->AppendText("Parameter Estimation Finished!");
+}
+
 
 Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem)
 {

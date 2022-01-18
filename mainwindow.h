@@ -9,6 +9,7 @@
 #include "runtimewindow.h"
 #include "plotter.h"
 #include "GA.h"
+#include "MCMC.h"
 #include "logwindow.h"
 #include "aboutdialog.h"
 #include "undodata.h"
@@ -73,6 +74,7 @@ private:
     QModelIndex tableitemrightckicked;
     QMenu *menu = nullptr;
     CGA<System> *optimizer;
+    CMCMC<System> *mcmc;
     QString timeseriestobeshown;
     QString filename="";
     void SetFileName(const QString &_filename);
@@ -116,6 +118,7 @@ private slots:
     void onrunmodel();
     void onoptimize();
     void oninverserun();
+    void onmcmc();
     void onAddItemThroughTreeViewRightClick();
     void tablePropShowContextMenu(const QPoint&);
     void addParameter(QAction* item);

@@ -39,6 +39,20 @@ class Parameter : public Object
                 return "normal";
             return Object::Variable("prior_distribution")->GetStringValue();
         }
+        double mean()
+        {
+            return (GetRange().high+GetRange().low)/2.0;
+        }
+        double geomean()
+        {
+            return sqrt(GetRange().high*GetRange().low);
+        }
+
+
+        double std()
+        {
+            return (GetRange().high-GetRange().low)/4.0;
+        }
         void SetValue(const double &val) {value = val; SetProperty("value", aquiutils::numbertostring(val));}
         double GetValue() {return Object::GetVal("value");}
         string LastError() {return last_error;}
