@@ -214,5 +214,140 @@
       "delegate": "Browser_Save",
       "code": "outputfile"
     }
+  },
+  "MCMC": {
+    "type": "setting",
+    "typecategory": "Settings",
+    "name": {
+      "description": "Name",
+      "setvalue": "MCMC",      
+      "type": "string",
+      "ask_user": "false",
+      "delegate": "String" 
+    },
+    "description": "Markov chain Monte Carlo settings",
+    "number_of_samples": {
+      "default": "1000",
+      "description": "Number of MCMC samples",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "ValueBox",
+      "code": "number_of_samples"
+    },
+    "number_of_chains": {
+      "default": "8",
+      "description": "Number of chains",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "ValueBox",
+      "code": "number_of_chains"
+    },
+    "number_of_burnout_samples": {
+      "default": "8",
+      "description": "Number of samples to be discarded (burn out)",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "ValueBox",
+      "code": "number_of_burnout_samples",
+      "criteria": "number_of_burnout_samples<number_of_samples",
+      "warningmessage": "Number of burnout samples must be smaller than the number of samples"
+    },
+    "initual_purturbation_factor": {
+      "default": "0.05",
+      "description": "Initial purturbation factor",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "ValueBox",
+      "code": "initual_purturbation_factor"
+    },
+    "record_interval": {
+      "default": "1",
+      "description": "The interval at which the samples are saved",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "ValueBox",
+      "code": "record_interval"
+    },
+    "record_interval": {
+      "default": "1",
+      "description": "The interval at which the samples are saved",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "ValueBox",
+      "code": "record_interval",
+      "criteria": "record_interval>0",
+      "warningmessage": "Record interval must be greater than zero"
+    },
+    "initial_purturbation": {
+      "type": "string",
+      "default": "No",
+      "description": "Initially purturb the samples",
+      "ask_user": "true",
+      "delegate": "ComboBox, items: Yes, No",
+      "code": "initial_purturbation"
+    },
+    "perform_global_sensitivity": {
+      "type": "string",
+      "default": "No",
+      "description": "Perform global sensitivity",
+      "ask_user": "true",
+      "delegate": "ComboBox, items: Yes, No",
+      "code": "perform_global_sensitivity"
+    },
+    "continue_based_on_file_name": {
+      "description": "Continue MCMC using pre-created file",
+      "ask_user": "true",
+      "type": "string",
+      "delegate": "Browser",
+      "code": "continue_based_on_file_name"
+    },
+    "number_of_post_estimate_realizations": {
+      "default": "1",
+      "description": "The interval at which the samples are saved",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "ValueBox",
+      "code": "number_of_post_estimate_realizations",
+      "criteria": "number_of_post_estimate_realizations>-0.001",
+      "warningmessage": "Number of realizations cannot be negative"
+    },
+    "add_noise_to_realizations": {
+      "type": "string",
+      "default": "No",
+      "description": "Add error noise to the realizations",
+      "ask_user": "true",
+      "delegate": "ComboBox, items: Yes, No",
+      "code": "add_noise_to_realizations"
+    },
+    "number_of_threads": {
+      "default": "1",
+      "description": "Number of threads to be used",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "ValueBox",
+      "code": "number_of_threads",
+      "criteria": "record_interval>0",
+      "warningmessage": "Number of threads must be greater than zero"
+    },
+    "acceptance_rate": {
+      "default": "0.15",
+      "description": "Desired acceptance rate",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "ValueBox",
+      "code": "acceptance_rate",
+      "criteria": "acceptance_rate>0",
+      "warningmessage": "Desired acceptance rate must be greater than zero"
+    },
+    "purturbation_change_scale": {
+      "default": "0.75",
+      "description": "Coefficient of change of purtubation factor",
+      "ask_user": "true",
+      "type": "value",
+      "delegate": "ValueBox",
+      "code": "purturbation_change_scale",
+      "criteria": "purturbation_change_scale<1",
+      "warningmessage": "Purturbation change factor must be smaller than 1"
+    }
   }
 }

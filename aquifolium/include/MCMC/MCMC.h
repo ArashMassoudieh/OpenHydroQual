@@ -95,7 +95,7 @@ public:
     int get_act_paramno(int i);
     int get_time_series(int i);
 	vector<bool> apply_to_all;
-    Parameter_Set *parameters;
+    Parameter_Set *parameters = nullptr;
     Parameter* parameter(int i);
     CVector sensitivity(double d, vector<double> par);
     CVector sensitivity_ln(double d, vector<double> par);

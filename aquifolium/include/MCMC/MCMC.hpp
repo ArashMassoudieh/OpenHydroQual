@@ -98,7 +98,7 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
             MCMC_Settings.continue_mcmc = false;
         return true;
     }
-    if (aquiutils::tolower(varname) == "number_of_post_estimate_reaslization")
+    if (aquiutils::tolower(varname) == "number_of_post_estimate_realizations")
     {
         MCMC_Settings.number_of_post_estimate_realizations = aquiutils::atoi(value);
         return true;
@@ -275,7 +275,10 @@ double CMCMC<T>::posterior(vector<double> par, bool out)
 template<class T>
 void CMCMC<T>::initialize(bool random)
 {
-	double pp=0;
+    Params.resize(MCMC_Settings.total_number_of_samples);
+    for (unsigned int i=0; i<MCMC_Settings.total_number_of_samples; i++)
+        Params[i].resize(MCMC_Settings.number_of_parameters);
+    double pp=0;
     if (random)
     {   for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
@@ -561,6 +564,7 @@ CMCMC<T>::CMCMC(T *_system)
         MCMC_Settings.number_of_parameters++;
         params.push_back(i);
     }
+    parameters = &Model->Parameters();
 }
 
 

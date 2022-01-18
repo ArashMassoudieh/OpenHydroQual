@@ -1380,11 +1380,11 @@ void MainWindow::Populate_General_ToolBar()
     QIcon iconmcmc;
     iconmcmc.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/MCMC.png"), QSize(), QIcon::Normal, QIcon::Off);
     QAction* actionmcmc = new QAction(this);
-    actioninverse->setIcon(iconmcmc);
+    actionmcmc->setIcon(iconmcmc);
     ui->GeneraltoolBar->addAction(actionmcmc);
-    actioninverse->setText("MCMC parameter estimation");
-    actioninverse->setToolTip("MCMC parameter estimation");
-    connect(actioninverse, SIGNAL(triggered()), this, SLOT(onmcmc()));
+    actionmcmc->setText("MCMC parameter estimation");
+    actionmcmc->setToolTip("MCMC parameter estimation");
+    connect(actionmcmc, SIGNAL(triggered()), this, SLOT(onmcmc()));
 
 }
 
@@ -1821,7 +1821,7 @@ void MainWindow::onmcmc()
     rtw = new RunTimeWindow(this);
     rtw->show();
     rtw->AppendText("Parameter Estimation Started ...");
-    rtw->SetXRange(0,optimizer->GA_params.nGen);
+    rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples);
     rtw->SetUpForInverseRun();
     system.SetRunTimeWindow(nullptr);
     system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
