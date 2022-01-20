@@ -9,26 +9,6 @@ RunTimeWindow::RunTimeWindow(QWidget *parent) :
     QIcon mainicon(qApp->applicationDirPath() + "/../../resources/Icons/Aquifolium.png");
     setWindowIcon(mainicon);
 
-    plot = new QCustomPlot(this);
-    plot->setObjectName(QStringLiteral("RunProgressPlot"));
-
-    ui->horizontalLayout->addWidget(plot);
-    QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    sizePolicy2.setHorizontalStretch(2);
-    sizePolicy2.setVerticalStretch(0);
-    sizePolicy2.setHeightForWidth(plot->sizePolicy().hasHeightForWidth());
-    plot->setSizePolicy(sizePolicy2);
-
-    plot->addGraph();
-    plot->graph(0)->setName("Time step size");
-
-    plot->graph(0)->setPen(QPen(Qt::blue));
-    plot->graph(0)->setBrush(QBrush(QColor(240, 255, 200)));
-    plot->xAxis->setLabel("t");
-    plot->yAxis->setLabel("Time-step size");
-    // set axes ranges, so we see all data:
-
-    plot->replot();
     ui->progressBar->setRange(0,100);
     ui->progressBar->setValue(0);
     ui->textBrowserdetails->setVisible(false);
@@ -59,14 +39,28 @@ void RunTimeWindow::AppendErrorMessage(const QString &s)
     ui->textBrowser->setTextColor(Qt::black);
 }
 
-void RunTimeWindow::AddDataPoint(const double &t, const double value)
+void RunTimeWindow::AddDataPoint(const double &t, const double value, int graph_no)
 {
-    plot->graph(0)->addData(t,value);
+    if (graph_no==0)
+    {   plot->graph(0)->addData(t,value);
+        if (value>plot->yAxis->range().upper)
+            plot->yAxis->setRange(0,value*1.3);
+    }
+    if (graph_no==1)
+        if (plot2)
+        {   plot2->graph(0)->addData(t,value);
+            if (value>plot2->yAxis->range().upper)
+                plot2->yAxis->setRange(0,value*1.3);
+        }
+
+
 }
 
 void RunTimeWindow::Replot()
 {
     plot->replot();
+    if (plot2)
+        plot2->replot();
 }
 void RunTimeWindow::SetProgress(const double &val)
 {
@@ -79,9 +73,13 @@ void RunTimeWindow::SetProgress2(const double &val)
 }
 
 
-void RunTimeWindow::SetXRange(const double &tstart, const double &tend)
+void RunTimeWindow::SetXRange(const double &tstart, const double &tend, int plotno)
 {
-    plot->xAxis->setRange(tstart,tend);
+    if (plotno==0)
+        plot->xAxis->setRange(tstart,tend);
+    else if (plotno==1)
+        if (plot2)
+            plot2->xAxis->setRange(tstart,tend);
 }
 
 void RunTimeWindow::SetYRange(const double &ymin, const double &ymax)
@@ -89,16 +87,79 @@ void RunTimeWindow::SetYRange(const double &ymin, const double &ymax)
      plot->yAxis->setRange(ymin,ymax);
 }
 
-void RunTimeWindow::SetUpForForwardRun()
+void RunTimeWindow::SetUp(config cnfg)
 {
-    ui->optprogressBar->setVisible(false);
-}
+    plot = new QCustomPlot(this);
+    plot->setObjectName(QStringLiteral("RunProgressPlot"));
 
-void RunTimeWindow::SetUpForInverseRun()
-{
-    plot->graph(0)->setName("Fitness");
-    plot->xAxis->setLabel("Generation");
-    plot->yAxis->setLabel("Fitness");
+    ui->verticalLayout->insertWidget(0,plot);
+    QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    sizePolicy2.setHorizontalStretch(2);
+    sizePolicy2.setVerticalStretch(3);
+    sizePolicy2.setHeightForWidth(plot->sizePolicy().hasHeightForWidth());
+    plot->setSizePolicy(sizePolicy2);
+
+    plot->addGraph();
+    plot->graph(0)->setName("Time step size");
+
+    plot->graph(0)->setPen(QPen(Qt::blue));
+    plot->graph(0)->setBrush(QBrush(QColor(240, 255, 200)));
+
+    // set axes ranges, so we see all data:
+
+    plot->replot();
+
+    if (cnfg==config::forward)
+    {   ui->optprogressBar->setVisible(false);
+        plot->xAxis->setLabel("t");
+        plot->yAxis->setLabel("Time-step size");
+        ui->optprogressBar->setVisible(false);
+        return;
+    }
+    if (cnfg==config::optimize)
+    {
+        plot->graph(0)->setName("Objective function");
+        plot->xAxis->setLabel("Generation");
+        plot->yAxis->setLabel("Objective function");
+        return;
+    }
+    if (cnfg == config::inverse)
+    {
+        plot->graph(0)->setName("Fitness");
+        plot->xAxis->setLabel("Generation");
+        plot->yAxis->setLabel("Fitness");
+        return;
+    }
+    if (cnfg == config::mcmc)
+    {
+        plot->graph(0)->setName("Acceptance rate");
+        plot->xAxis->setLabel("Sample");
+        plot->yAxis->setLabel("Acceptance rate");
+
+        plot2 = new QCustomPlot(this);
+        plot2->setObjectName(QStringLiteral("RunProgressPlot"));
+        plot2->addGraph();
+        plot2->graph(0)->setName("Purtubation factor");
+        plot2->xAxis->setLabel("Sample");
+        plot2->yAxis->setLabel("Purturbation factor");
+        plot2->yAxis->setRange(0,2);
+        ui->verticalLayout->insertWidget(1,plot2);
+        QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        sizePolicy2.setHorizontalStretch(2);
+        sizePolicy2.setVerticalStretch(3);
+        sizePolicy2.setHeightForWidth(plot2->sizePolicy().hasHeightForWidth());
+        plot2->setSizePolicy(sizePolicy2);
+
+        plot2->addGraph();
+        plot2->graph(0)->setName("Sample");
+
+        plot2->graph(0)->setPen(QPen(Qt::blue));
+        plot2->graph(0)->setBrush(QBrush(QColor(240, 255, 200)));
+        ui->optprogressBar->setVisible(false);
+        return;
+    }
+
+
 }
 
 void RunTimeWindow::showdetails()

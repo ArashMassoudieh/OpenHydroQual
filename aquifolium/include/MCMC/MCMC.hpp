@@ -98,6 +98,19 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
             MCMC_Settings.continue_mcmc = false;
         return true;
     }
+    if (aquiutils::tolower(varname) == "samples_filename")
+    {
+        if (value!="")
+        {
+            if (value.find_first_of('/')!=string::npos || value.find_first_of('\\')!=string::npos)
+                FileInformation.outputfilename = value;
+            else
+                FileInformation.outputfilename = FileInformation.outputpath + value;
+        }
+
+
+        return true;
+    }
     if (aquiutils::tolower(varname) == "number_of_post_estimate_realizations")
     {
         MCMC_Settings.number_of_post_estimate_realizations = aquiutils::atoi(value);
@@ -276,9 +289,23 @@ template<class T>
 void CMCMC<T>::initialize(bool random)
 {
     Params.resize(MCMC_Settings.total_number_of_samples);
+    logp.resize(MCMC_Settings.total_number_of_samples);
+    logp1.resize(MCMC_Settings.total_number_of_samples);
     for (unsigned int i=0; i<MCMC_Settings.total_number_of_samples; i++)
         Params[i].resize(MCMC_Settings.number_of_parameters);
     double pp=0;
+    for (int j = 0; j<MCMC_Settings.number_of_parameters; j++)
+    {
+        if (parameter(j)->GetPriorDistribution()=="normal" || parameter(j)->GetPriorDistribution()=="uniform")
+        {
+            pertcoeff[j] = MCMC_Settings.purturbation_factor*(-parameter(j)->GetRange().low + parameter(j)->GetRange().high);
+        }
+        if (parameter(j)->GetPriorDistribution()=="lognormal")
+        {
+            pertcoeff[j] = MCMC_Settings.purturbation_factor*(-log(parameter(j)->GetRange().low) + log(parameter(j)->GetRange().high));
+        }
+    }
+
     if (random)
     {   for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
@@ -297,8 +324,14 @@ void CMCMC<T>::initialize(bool random)
     else
     {
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
-            for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
-                Params[j][i] = parameter(i)->GetValue();
+        {   for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
+            {   Params[j][i] = parameter(i)->GetValue();
+                if (parameter(i)->GetPriorDistribution()=="lognormal")
+                    pp += log(Params[j][i]);
+            }
+            logp[j] = posterior(Params[j]);
+            logp1[j] = logp[j]+pp;
+        }
     }
 
 }
@@ -398,7 +431,7 @@ vector<double> CMCMC<T>::purturb(int k)
     X.resize(MCMC_Settings.number_of_parameters);
     for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
 	{
-        if (parameter(i).GetDistribution() == "lognormal")
+        if (parameter(i)->GetPriorDistribution() == "lognormal")
             X[i] = Params[k][i]*exp(pertcoeff[i]*ND.getstdnormalrand());
 		else
             X[i] = Params[k][i]+pertcoeff[i]*ND.getstdnormalrand();
@@ -530,14 +563,15 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 			//jj, double(accepted_count)/double(total_count);
 			//update kk/nsamps
 			vars["mode"] = "MCMC";
-			double progress = double(kk) / double(nsamps)*100.0;
-			vars["progress"] = progress;
-            vars["perterbation factor"] = pertcoeff[0] / MCMC_Settings.ini_purt_fact;
-			vars["acceptance rate"] = double(accepted_count) / double(total_count);
-			vars["x"] = kk;
+            double progress = double(kk) / double(nsamps);
             rtw->SetProgress(progress);
             rtw->AddDataPoint(kk,double(accepted_count) / double(total_count));
+            if (rtw->plot2)
+            {
+                rtw->AddDataPoint(kk,double(pertcoeff[0] / MCMC_Settings.ini_purt_fact),1);
+            }
             rtw->Replot();
+
 
 		}
 	}
@@ -557,7 +591,7 @@ CMCMC<T>::CMCMC(T *_system)
     Model = _system;
     MCMC_Settings.number_of_parameters = 0;
     MCMC_Settings.numberOfThreads = 20;
-    filenames.pathname = Model->OutputPath();
+    FileInformation.outputpath = Model->OutputPath();
 
     for (unsigned int i=0; i<Model->Parameters().size(); i++)
     {
@@ -565,6 +599,7 @@ CMCMC<T>::CMCMC(T *_system)
         params.push_back(i);
     }
     parameters = &Model->Parameters();
+    pertcoeff.resize(parameters->size());
 }
 
 
@@ -877,12 +912,12 @@ void CMCMC<T>::get_outputpercentiles(CTimeSeriesSet<double> &MCMCout)
 			{
 				BTCout_obs_prcntle[j][i] = BTCout_obs[j][i].getpercentiles(calc_output_percentiles);
 
-                BTCout_obs_prcntle[j][i].writetofile(filenames.pathname + "BTC_obs_prcntl_" + Model->Observation(i)->GetName() + ".txt");
+                BTCout_obs_prcntle[j][i].writetofile(FileInformation.outputpath + "BTC_obs_prcntl_" + Model->Observation(i)->GetName() + ".txt");
 
                 if (MCMC_Settings.noise_realization_writeout)
 					BTCout_obs_prcntle_noise[j][i] = BTCout_obs_noise[j][i].getpercentiles(calc_output_percentiles);
 
-                BTCout_obs_prcntle_noise[j][i].writetofile(filenames.pathname + "BTC_obs_prcntl_noise_" + Model->Observation(i)->GetName() + ".txt");
+                BTCout_obs_prcntle_noise[j][i].writetofile(FileInformation.outputpath + "BTC_obs_prcntl_noise_" + Model->Observation(i)->GetName() + ".txt");
 
 			}
 		}
@@ -893,4 +928,11 @@ template<class T>
 void CMCMC<T>::Perform()
 {
     initialize(false);
+    int mcmcstart = MCMC_Settings.number_of_chains;
+    if (MCMC_Settings.continue_mcmc)
+    {
+        mcmcstart = readfromfile(MCMC_Settings.continue_filename);
+    }
+
+    step(mcmcstart, int((MCMC_Settings.total_number_of_samples - mcmcstart) / MCMC_Settings.number_of_chains)*MCMC_Settings.number_of_chains, FileInformation.outputfilename , rtw);
 }

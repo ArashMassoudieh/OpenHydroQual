@@ -70,7 +70,6 @@ struct _filenames
     string pathname;
     string getfromfilename;
     string outputfilename;
-    string mcmcoutputfile;
 };
 
 using namespace std;

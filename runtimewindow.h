@@ -4,6 +4,8 @@
 #include <QDialog>
 #include "qcustomplot.h"
 
+enum class config {forward, optimize, inverse, mcmc};
+
 namespace Ui {
 class RunTimeWindow;
 }
@@ -15,18 +17,18 @@ class RunTimeWindow : public QDialog
 public:
     explicit RunTimeWindow(QWidget *parent = nullptr);
     ~RunTimeWindow();
-    QCustomPlot *plot;
+    QCustomPlot *plot = nullptr;
+    QCustomPlot *plot2 = nullptr;
     void AppendText(const QString &s);
     void AppendtoDetails(const QString &s);
-    void AddDataPoint(const double &t, const double value);
+    void AddDataPoint(const double &t, const double value, int graph_no=0);
     void Replot();
     void SetProgress(const double &val);
     void SetProgress2(const double &val);
-    void SetXRange(const double &tstart, const double &tend);
+    void SetXRange(const double &tstart, const double &tend, int plotno=0);
     void SetYRange(const double &ymin, const double &ymax);
     void AppendErrorMessage(const QString &s);
-    void SetUpForForwardRun();
-	void SetUpForInverseRun();
+    void SetUp(config);
     bool detailson = false;
     bool stoptriggered = false;
 private:

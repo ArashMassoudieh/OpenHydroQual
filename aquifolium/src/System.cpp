@@ -28,7 +28,7 @@ void System::PopulateOperatorsFunctions()
 #ifndef NO_OPENMP
     if (!omp_in_parallel())
     {
-        qDebug()<<"Number of Threads: "<<SolverSettings.n_threads;
+        //qDebug()<<"Number of Threads: "<<SolverSettings.n_threads;
         omp_set_num_threads(SolverSettings.n_threads);
 
     }

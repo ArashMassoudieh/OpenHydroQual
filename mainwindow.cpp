@@ -1677,7 +1677,7 @@ void MainWindow::onrunmodel()
         copiedsystem.SetSolutionLogger(workingfolder.toStdString() + "/solution_details.txt");
     rtw = new RunTimeWindow(this);
     rtw->show();
-    rtw->SetUpForForwardRun();
+    rtw->SetUp(config::forward);
     copiedsystem.SetRunTimeWindow(rtw);
     copiedsystem.Solve(true);
     rtw->AppendText("Saving output files to the hard-drive...");
@@ -1746,7 +1746,7 @@ void MainWindow::onoptimize()
     rtw->show();
     rtw->AppendText("Optimization Started ...");
     rtw->SetXRange(0,optimizer->GA_params.nGen);
-    rtw->SetUpForInverseRun(); 
+    rtw->SetUp(config::optimize);
     system.SetRunTimeWindow(nullptr);
     optimizer->SetRunTimeWindow(rtw);
     system.SetParameterEstimationMode(parameter_estimation_options::optimize);
@@ -1786,7 +1786,7 @@ void MainWindow::oninverserun()
     rtw->show();
     rtw->AppendText("Parameter Estimation Started ...");
     rtw->SetXRange(0,optimizer->GA_params.nGen);
-    rtw->SetUpForInverseRun();
+    rtw->SetUp(config::optimize);
     system.SetRunTimeWindow(nullptr);
     system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
     optimizer->SetRunTimeWindow(rtw);
@@ -1815,14 +1815,15 @@ void MainWindow::onmcmc()
     }
     system.SetSystemSettings();
     mcmc = new CMCMC<System>(&system);
+    mcmc->FileInformation.outputpath = workingfolder.toStdString() + "/";
     mcmc->SetParameters(system.object("MCMC"));
-    mcmc->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
     rtw = new RunTimeWindow(this);
     rtw->show();
+    rtw->SetUp(config::mcmc);
     rtw->AppendText("Parameter Estimation Started ...");
     rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples);
-    rtw->SetUpForInverseRun();
+    rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples,1);
     system.SetRunTimeWindow(nullptr);
     system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
     mcmc->SetRunTimeWindow(rtw);

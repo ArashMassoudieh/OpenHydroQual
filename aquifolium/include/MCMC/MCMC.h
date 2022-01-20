@@ -21,6 +21,7 @@ using namespace std;
 struct _MCMC_file_names
 {
     string outputpath;
+    string outputfilename;
 };
 
 
@@ -49,6 +50,7 @@ struct _MCMC_settings
     int numberOfThreads = 8;
     double acceptance_rate;
     double purt_change_scale = 0.75;
+
 };
 
 class RunTimeWindow;
@@ -85,7 +87,7 @@ public:
     void writeoutput(string filename);
 	vector<int> params;
     CTimeSeriesSet<double> MData;
-
+    _MCMC_file_names FileInformation;
     int getparamno(int j);
     double posterior(vector<double> par, bool out=false);
     void getfromGA(const CGA<T> &GA);
@@ -118,7 +120,6 @@ public:
 	vector<double> calc_output_percentiles;
     void SetRunTimeWindow(RunTimeWindow *_rtw);
 	double accepted_count=0, total_count=0;
-    _filenames filenames;
     string last_error;
     void Perform();
 };

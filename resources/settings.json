@@ -348,6 +348,14 @@
       "code": "purturbation_change_scale",
       "criteria": "purturbation_change_scale<1",
       "warningmessage": "Purturbation change factor must be smaller than 1"
+    },
+    "samples_filename": {
+      "default": "mcmc.txt",
+      "description": "MCMC Output file",
+      "ask_user": "true",
+      "type": "string",
+      "delegate": "Browser_Save",
+      "code": "samples_filename"
     }
   }
 }
