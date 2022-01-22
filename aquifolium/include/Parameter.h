@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "Object.h"
+#include "BTCSet.h"
 
 using namespace std;
 struct Range
@@ -47,12 +48,19 @@ class Parameter : public Object
         {
             return sqrt(GetRange().high*GetRange().low);
         }
-
-
         double std()
         {
             return (GetRange().high-GetRange().low)/4.0;
         }
+        double geostd()
+        {
+            return (log(GetRange().high)-log(GetRange().low))/4.0;
+        }
+        double ExpandedLow(const double &factor=1.5);
+        double ExpandedHigh(const double &factor=1.5);
+        CTimeSeries<double> PriorDistribution(unsigned int nbins = 100);
+        double CalcPriorProbability(const double &x);
+        double CalcLogPriorProbability(const double &x);
         void SetValue(const double &val) {value = val; SetProperty("value", aquiutils::numbertostring(val));}
         double GetValue() {return Object::GetVal("value");}
         string LastError() {return last_error;}
@@ -69,6 +77,11 @@ class Parameter : public Object
         string variable(const string &qntty);
         string TypeCategory() {return "Parameters";}
         bool SetName(string s);
+        void SetMCMCSamples(const CTimeSeriesSet<double> &mcmc_smpl_vals) {mcmc_sampled_values = mcmc_smpl_vals;}
+        CTimeSeriesSet<double>& GetMCMCSamples() {return mcmc_sampled_values;}
+        void SetPosteriorDistribution(const CTimeSeries<double> &posterior_dist) {posterior_distribution = posterior_dist;}
+        CTimeSeries<double>& GetPosteriorDistribution() {return posterior_distribution;};
+
     protected:
 
     private:
@@ -80,6 +93,8 @@ class Parameter : public Object
         //string prior_distribution;
         double value;
         string last_error;
+        CTimeSeriesSet<double> mcmc_sampled_values;
+        CTimeSeries<double> posterior_distribution;
 
 };
 

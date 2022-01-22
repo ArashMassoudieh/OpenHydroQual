@@ -57,9 +57,11 @@ class Plotter : public QMainWindow
 public:
     explicit Plotter(MainWindow *parent = nullptr);
     ~Plotter();
-    bool PlotData(CTimeSeries<outputtimeseriesprecision>& BTC, string style="line");
-    bool AddData(CTimeSeries<outputtimeseriesprecision>& BTC,string style="line");
+    bool PlotData(const CTimeSeries<outputtimeseriesprecision>& BTC, string style="line");
+    bool PlotData(const CTimeSeriesSet<timeseriesprecision>& BTC, string style="line");
+    bool AddData(const CTimeSeries<outputtimeseriesprecision>& BTC,string style="line");
     void SetYAxisTitle(const QString& s);
+    void SetXAxisTitle(const QString& s);
 private:
     Ui::Plotter *ui;
     QMap<QString, _timeseries> BTCs;

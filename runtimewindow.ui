@@ -13,7 +13,14 @@
   <property name="windowTitle">
    <string>Running Status</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="60,20,0,0,0,20">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_graphs" stretch="">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetMaximumSize</enum>
+     </property>
+    </layout>
+   </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0">
      <item>
@@ -54,7 +61,14 @@
     </layout>
    </item>
    <item>
-    <widget class="QTextBrowser" name="textBrowserdetails"/>
+    <widget class="QTextBrowser" name="textBrowserdetails">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

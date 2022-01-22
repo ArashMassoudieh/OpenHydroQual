@@ -198,6 +198,7 @@ CTimeSeriesSet<T>::CTimeSeriesSet(const CTimeSeriesSet &B)
 	BTC = B.BTC;
 	unif = B.unif;
     filename = B.filename;
+    name = B.name;
 
 }
 
@@ -217,6 +218,7 @@ CTimeSeriesSet<T>& CTimeSeriesSet<T>::operator = (const CTimeSeriesSet<T> &B)
     nvars = B.nvars;
 	BTC.resize(nvars);
 	names = B.names;
+    name = B.name;
     filename = B.filename;
 	for (int i=0; i<nvars; i++)
 		BTC[i] = B.BTC[i];
@@ -1053,6 +1055,25 @@ CTimeSeries<T> &CTimeSeriesSet<T>::operator[](string BTCName)
 
     }
 }
+
+template <class T>
+CTimeSeries<T> CTimeSeriesSet<T>::operator[](int index) const
+{
+    return BTC[index];
+}
+
+template <class T>
+CTimeSeries<T> CTimeSeriesSet<T>::operator[](string BTCName) const
+{
+    if (lookup(BTCName) != -1)
+        return BTC[lookup(BTCName)];
+    else
+    {	CTimeSeries<T> BTC1 = CTimeSeries<T>();
+        return BTC1;
+
+    }
+}
+
 
 template <class T>
 bool CTimeSeriesSet<T>::Contains(string BTCName)

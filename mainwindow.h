@@ -37,6 +37,7 @@ public:
     void RefreshTreeView();
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotitem);
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);
+    Plotter* Plot(CTimeSeriesSet<timeseriesprecision>& plotitem);
     string CreateNewName(string type);
     DiagramView* GetDiagramView() { return dView; }
     bool Log(const QString &s);

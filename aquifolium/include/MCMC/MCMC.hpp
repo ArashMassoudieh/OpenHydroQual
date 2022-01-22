@@ -150,111 +150,6 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
     return false;
 }
 
-/*
-template<class T>
-vector<CTimeSeriesSet<double>> CMCMC<T>::model_lumped(vector<double> par)
-{
-	double sum = 0;
-    vector<CTimeSeriesSet<double>> res;
-
-	for (int ts = 0; ts < 1; ts++)
-	{
-#ifdef GIFMOD
-		CMediumSet G1 = G;
-#endif
-#ifdef GWA
-		CGWASet G1 = G;
-		G1.Medium[0].project = false;
-#endif
-        for (int i = 0; i < MCMC_Settings.number_of_parameters; i++)
-		{
-			if (apply_to_all[i] == true)
-			{
-				if (MCMCParam[i].type == 0) sum -= pow(par[getparamno(i, ts)] - MCMCParam[i].mean, 2) / (2.0*pow(MCMCParam[i].std, 2)) / 1;
-				if (MCMCParam[i].type == 1) sum -= pow(log(par[getparamno(i, ts)]) - log(MCMCParam[i].mean), 2) / (2.0*pow(MCMCParam[i].std, 2)) / 1;
-				if (MCMCParam[i].type == 2)
-					if (par[getparamno(i, ts)]<MCMCParam[i].low || par[getparamno(i, ts)]>MCMCParam[i].high) sum -= 3000;
-#ifdef GIFMOD
-				G1.set_param(i, par[getparamno(i, 0)]);
-#endif
-#ifdef GWA
-				G1.Medium[0].set_param(i, par[getparamno(i, 0)]);
-#endif
-			}
-			else
-			{
-				if (MCMCParam[i].type == 0) sum -= pow(par[getparamno(i, ts)] - MCMCParam[i].mean, 2) / (2.0*pow(MCMCParam[i].std, 2));
-				if (MCMCParam[i].type == 1) sum -= pow(log(par[getparamno(i, ts)]) - log(MCMCParam[i].mean), 2) / (2.0*pow(MCMCParam[i].std, 2));
-				if (MCMCParam[i].type == 2)
-					if (par[getparamno(i, ts)]<MCMCParam[i].low || par[getparamno(i, ts)]>MCMCParam[i].high) sum -= 3000;
-#ifdef GIFMOD
-				G1.set_param(i, par[getparamno(i, ts)]);
-			}
-		}
-		G1.finalize_set_param();
-		sum += G1.calc_log_likelihood();
-
-		res.push_back(G1.ANS_obs);
-#endif
-#ifdef GWA
-		G1.Medium[0].set_param(i, par[getparamno(i, ts)]);
-			}
-		}
-G1.Medium[0].finalize_set_param();
-sum += G1.Medium[0].calc_log_likelihood();
-
-res.push_back(G1.Medium[0].ANS_obs);
-#endif
-	}
-	return res;
-}
-#ifdef GIFMOD
-    vector<CTimeSeriesSet<double>> CMCMC::model_lumped(vector<double> par, CMedium &G) const
-#endif
-#ifdef GWA
-    vector<CTimeSeriesSet<double>> CMCMC::model_lumped(vector<double> par, CGWA &G) const
-#endif
-{
-	double sum = 0;
-    vector<CTimeSeriesSet<double>> res;
-
-	for (int ts = 0; ts<1; ts++)
-	{
-#ifdef GIFMOD
-		CMedium G1 = G;
-#endif
-#ifdef GWA
-		CGWA G1 = G;
-		G1.project = false;
-#endif
-        for (int i = 0; i<MCMC_Settings.number_of_parameters; i++)
-		{
-			if (apply_to_all[i] == true)
-			{
-				if (MCMCParam[i].type == 0) sum -= pow(par[getparamno(i, ts)] - MCMCParam[i].mean, 2) / (2.0*pow(MCMCParam[i].std, 2)) / 1;
-				if (MCMCParam[i].type == 1) sum -= pow(log(par[getparamno(i, ts)]) - log(MCMCParam[i].mean), 2) / (2.0*pow(MCMCParam[i].std, 2)) / 1;
-				if (MCMCParam[i].type == 2)
-					if (par[getparamno(i, ts)]<MCMCParam[i].low || par[getparamno(i, ts)]>MCMCParam[i].high) sum -= 3000;
-				G1.set_param(i, par[getparamno(i, 0)]);
-			}
-			else
-			{
-				if (MCMCParam[i].type == 0) sum -= pow(par[getparamno(i, ts)] - MCMCParam[i].mean, 2) / (2.0*pow(MCMCParam[i].std, 2));
-				if (MCMCParam[i].type == 1) sum -= pow(log(par[getparamno(i, ts)]) - log(MCMCParam[i].mean), 2) / (2.0*pow(MCMCParam[i].std, 2));
-				if (MCMCParam[i].type == 2)
-					if (par[getparamno(i, ts)]<MCMCParam[i].low || par[getparamno(i, ts)]>MCMCParam[i].high) sum -= 3000;
-				G1.set_param(i, par[getparamno(i, ts)]);
-			}
-		}
-		G1.finalize_set_param();
-		sum += G1.calc_log_likelihood();
-
-        res.push_back(G1.Results.ANS_obs);
-	}
-	return res;
-}
-*/
-
 
 template<class T>
 double CMCMC<T>::posterior(vector<double> par, bool out)
@@ -272,14 +167,11 @@ double CMCMC<T>::posterior(vector<double> par, bool out)
             Model1.SetParameterValue(i, par[i]);
         Model1.ApplyParameters();
 
-        if (parameter(i)->GetPriorDistribution() == "uniform")
-            if (par[i]<parameter(i)->GetRange().low || par[i]>par[i]<parameter(i)->GetRange().high) sum -= 3000;
-        if (parameter(i)->GetPriorDistribution() == "normal") sum -= pow(par[i]-parameter(i)->mean(),2)/(2.0*pow(parameter(i)->std(),2));
-        if (parameter(i)->GetPriorDistribution() == "lognormal") sum -= pow(log(par[i])-log(parameter(i)->mean()),2)/(2.0*pow(parameter(i)->std(),2));
+        sum+=parameter(i)->CalcLogPriorProbability(par[i]);
 	}
 
     Model1.Solve();
-    sum+= Model1.GetObjectiveFunctionValue();
+    sum+= -Model1.GetObjectiveFunctionValue();
 
     if (out) Model_out = Model1;
 	return sum;
@@ -300,7 +192,7 @@ void CMCMC<T>::initialize(bool random)
         {
             pertcoeff[j] = MCMC_Settings.purturbation_factor*(-parameter(j)->GetRange().low + parameter(j)->GetRange().high);
         }
-        if (parameter(j)->GetPriorDistribution()=="lognormal")
+        if (parameter(j)->GetPriorDistribution()=="log-normal")
         {
             pertcoeff[j] = MCMC_Settings.purturbation_factor*(-log(parameter(j)->GetRange().low) + log(parameter(j)->GetRange().high));
         }
@@ -310,11 +202,11 @@ void CMCMC<T>::initialize(bool random)
     {   for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
             for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
-            {	if (parameter(i)->GetPriorDistribution()=="lognormal")
+            {	if (parameter(i)->GetPriorDistribution()=="log-normal")
                     Params[j][i] = exp(log(parameter(i)->GetRange().low)+(log(parameter(i)->GetRange().high)-log(parameter(i)->GetRange().low))*ND.unitrandom());
                 else
                     Params[j][i] = parameter(i)->GetRange().low+(parameter(i)->GetRange().high-parameter(i)->GetRange().low)*ND.unitrandom();
-                if (parameter(i)->GetPriorDistribution()=="lognormal")
+                if (parameter(i)->GetPriorDistribution()=="log-normal")
                     pp += log(Params[j][i]);
             }
             logp[j] = posterior(Params[j]);
@@ -326,7 +218,7 @@ void CMCMC<T>::initialize(bool random)
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {   for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
             {   Params[j][i] = parameter(i)->GetValue();
-                if (parameter(i)->GetPriorDistribution()=="lognormal")
+                if (parameter(i)->GetPriorDistribution()=="log-normal")
                     pp += log(Params[j][i]);
             }
             logp[j] = posterior(Params[j]);
@@ -352,7 +244,7 @@ void CMCMC<T>::initialize(vector<double> par)
 			{
                 pertcoeff[j] = MCMC_Settings.purturbation_factor / fabs(X[getparamno(j, 0)]);
 			}
-            if (parameter(j).Get_Distribution()=="lognormal")
+            if (parameter(j).Get_Distribution()=="log-normal")
 			{
                 pertcoeff[j] = MCMC_Settings.purturbation_factor / fabs(sqrt(par[j])*X[getparamno(j, 0)]);
 			}
@@ -366,7 +258,7 @@ void CMCMC<T>::initialize(vector<double> par)
 			{
                 pertcoeff[j] = MCMC_Settings.purturbation_factor*(-parameter(j)->GetRange().low + -parameter(j)->GetRange().high);
 			}
-            if (parameter(j).Get_Distribution()=="lognormal")
+            if (parameter(j).Get_Distribution()=="log-normal")
 			{
                 pertcoeff[j] = MCMC_Settings.purturbation_factor*(-log(parameter(j)->GetRange().low) + log(parameter(j)->GetRange().high));
 			}
@@ -383,7 +275,10 @@ void CMCMC<T>::initialize(vector<double> par)
 		{
             if (parameter(i).Get_Distribution()=="normal" || parameter(i).Get_Distribution()=="uniform")
                 Params[j][i] = par[i] + alpha*ND.getnormalrand(0, pertcoeff[i]);
-            else Params[j][i] = par[i] * exp(alpha*ND.getnormalrand(0, pertcoeff[i]));
+            else
+            {   Params[j][i] = par[i] * exp(alpha*ND.getnormalrand(0, pertcoeff[i]));
+                pp+=log(par[i]);
+            }
             if (parameter(i).Get_Distribution()=="uniform")
                 while ((Params[j][i]<parameter(i).GetRange().low) || (Params[j][i]>parameter(i).GetRange().high))
                     Params[j][i] = par[i] + alpha*ND.getnormalrand(0, pertcoeff[i]);
@@ -399,12 +294,20 @@ bool CMCMC<T>::step(int k)
 {
 
     vector<double> X = purturb(k-MCMC_Settings.number_of_chains);
+    double pp =0;
+    for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
+    {
+        if (parameter(i)->GetPriorDistribution()=="log-normal")
+            pp += log(X[i]);
+    }
+    double logp_0 = posterior(X, k%MCMC_Settings.number_of_chains) + pp;
 
-    double logp_0 = posterior(X, k%MCMC_Settings.number_of_chains);
-	double logp_1 = logp_0;
+
+    double logp_1 = logp_0;
 	bool res;
 
-    if (ND.unitrandom() <exp(logp_0-logp[k-MCMC_Settings.number_of_chains]))
+
+    if (ND.unitrandom() <exp(logp_0-logp[k-MCMC_Settings.number_of_chains]) && !isnan(logp_0))
 	{
 		res=true;
 		Params[k] = X;
@@ -431,7 +334,7 @@ vector<double> CMCMC<T>::purturb(int k)
     X.resize(MCMC_Settings.number_of_parameters);
     for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
 	{
-        if (parameter(i)->GetPriorDistribution() == "lognormal")
+        if (parameter(i)->GetPriorDistribution() == "log-normal")
             X[i] = Params[k][i]*exp(pertcoeff[i]*ND.getstdnormalrand());
 		else
             X[i] = Params[k][i]+pertcoeff[i]*ND.getstdnormalrand();
@@ -454,7 +357,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 		file = fopen(filename.c_str(),"a");
         fprintf(file,"%s, ", "no.");
         for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
-            fprintf(file, "%s, ", parameter(i)->GetName());
+            fprintf(file, "%s, ", parameter(i)->GetName().c_str());
 		fprintf(file,"%s, %s, %s,", "logp", "logp_1", "stuck_counter");
         for (int j=0; j<pertcoeff.size(); j++) fprintf(file,"%s,", string("purt_coeff_" + QString("%1").arg(j).toStdString()).c_str());
 		fprintf(file, "\n");
@@ -487,9 +390,9 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 		{
             QCoreApplication::processEvents(QEventLoop::AllEvents,10*1000);
 
-			qDebug() << "Starting step: " + QString::number(jj);
-			bool stepstuck = !step(jj);
-			qDebug() << "Step: " + QString::number(jj) + "Done!";
+            //qDebug() << "Starting step: " + QString::number(jj);
+            bool stepstuck = !step(jj);
+            //qDebug() << "Step: " + QString::number(jj) + "Done!";
             if (stepstuck == true)
 			{
 				stuckcounter[jj - kk]++;
@@ -753,12 +656,12 @@ CTimeSeriesSet<double> CMCMC<T>::prior_distribution(int n_bins)
 
     for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
 	{
-        if (parameter(i).GetDistribution() != "lognormal")
+        if (parameter(i).GetDistribution() != "log-normal")
 		{
             min_range = parameter(i)->mean() - 4*parameter(i)->std();
             max_range = parameter(i)->mean() + 4*parameter(i)->std();;
 		}
-        if (parameter(i).GetDistribution() == "lognormal")
+        if (parameter(i).GetDistribution() == "log-normal")
 		{
             min_range = parameter(i)->mean() * exp(-4*parameter(i)->std());
             max_range = parameter(i)->mean() * exp(4*parameter(i)->std());
@@ -771,11 +674,11 @@ CTimeSeriesSet<double> CMCMC<T>::prior_distribution(int n_bins)
 		for (int j=0; j<n_bins-1; j++)
             B.SetT(j+1, B.GetT(j) + dp);
 
-        if (parameter(i).GetDistribution() != "lognormal")
+        if (parameter(i).GetDistribution() != "log-normal")
 			for (int j=0; j<n_bins; j++)
                 B.SetC(j , exp(-pow(B.GetT(j)-parameter(i)->mean(),2)/(2.0*pow(parameter(i)->std(),2)))/(parameter(i)->std()*pow(6.28,0.5)));
 
-        if (parameter(i).GetDistribution() == "lognormal")
+        if (parameter(i).GetDistribution() == "log-normal")
 			for (int j=0; j<n_bins; j++)
                 B.SetC(j, exp(-pow(log(B.GetT(j))-log(parameter(i)->mean()),2)/(2.0*pow(parameter(i)->std(),2)))/(B.GetT(j)*parameter(i)->std()*pow(6.28,0.5)));
 
@@ -935,4 +838,28 @@ void CMCMC<T>::Perform()
     }
 
     step(mcmcstart, int((MCMC_Settings.total_number_of_samples - mcmcstart) / MCMC_Settings.number_of_chains)*MCMC_Settings.number_of_chains, FileInformation.outputfilename , rtw);
+    for (unsigned int i=0; i<parameters->size(); i++)
+    {
+        CTimeSeriesSet<double> chain_values(MCMC_Settings.number_of_chains);
+        CTimeSeries<double> all_samples;
+        for (unsigned int i=0; i<MCMC_Settings.number_of_chains; i++)
+        {
+            chain_values.setname(i,"Chain_" + aquiutils::numbertostring(i));
+        }
+        for (unsigned int j=MCMC_Settings.burnout_samples; j<MCMC_Settings.total_number_of_samples; j++)
+            chain_values[j%MCMC_Settings.number_of_chains].append(j,Params[j][i]);
+
+        for (unsigned int i=0; i<MCMC_Settings.number_of_chains; i++)
+        {
+            all_samples.append(chain_values[i]);
+        }
+        chain_values.name = parameter(i)->GetName();
+        parameter(i)->SetMCMCSamples(chain_values);
+
+        CTimeSeries<double> posterior_distribution = all_samples.distribution(all_samples.n/100,0);
+        posterior_distribution.name = "Posterior density";
+        parameter(i)->SetPosteriorDistribution(posterior_distribution);
+
+    }
+
 }

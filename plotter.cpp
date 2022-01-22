@@ -46,7 +46,16 @@ Plotter::~Plotter()
 
 
 
-bool Plotter::PlotData(CTimeSeries<timeseriesprecision>& BTC, string style)
+bool Plotter::PlotData(const CTimeSeriesSet<timeseriesprecision>& BTC, string style)
+{
+    PlotData(BTC[0]);
+    for (unsigned int i=1; i<BTC.nvars; i++)
+    {
+        AddData(BTC[i]);
+    }
+}
+
+bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, string style)
 {
     minx=1e12;
     maxx=-1e12;
@@ -62,15 +71,6 @@ bool Plotter::PlotData(CTimeSeries<timeseriesprecision>& BTC, string style)
     format.push_back(plotformat());
     if (format[format.size()-1].xAxisTimeFormat && ((BTC.GetT(BTC.n - 1) - BTC.GetT(0)) < 5 || BTC.GetT(BTC.n - 1)< 18264))
         format[format.size()-1].xAxisTimeFormat = false;
-
-    /*	QVector<qreal> y1(y.count());
-    for (int i = 0; i < y.count(); i++)
-        y1[i] = y[i] + .05;
-    customPlot->graph(0)->setData(t, y1);
-*/
-    //	customPlot->graph(3)->setDataValueError(x1, y1, y1err);
-    //	customPlot->graph(3)->rescaleAxes(true);
-    // setup look of bottom tick labels:
 
     if (format[format.size()-1].xAxisTimeFormat)
     {
@@ -362,7 +362,7 @@ void Plotter::refreshFormat()
 
 
 
-bool Plotter::AddData(CTimeSeries<timeseriesprecision>& BTC, string style)
+bool Plotter::AddData(const CTimeSeries<timeseriesprecision>& BTC, string style)
 {
     minx=1e12;
     maxx=-1e12;
@@ -438,6 +438,11 @@ bool Plotter::AddData(CTimeSeries<timeseriesprecision>& BTC, string style)
 void Plotter::SetYAxisTitle(const QString& s)
 {
     plot->yAxis->setLabel(s);
+}
+
+void Plotter::SetXAxisTitle(const QString& s)
+{
+    plot->xAxis->setLabel(s);
 }
 
 bool Plotter::On_Legend_Clicked()

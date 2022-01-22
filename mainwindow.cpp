@@ -1148,6 +1148,31 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
             connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
         }
 
+
+        if (system.object(nd->text(0).toStdString())->GetType()=="Parameter")
+        {
+            QMenu* posterior_results = menu.addMenu("Posterior results");
+            timeseriestobeshown = "distribution";
+            if (system.parameter(nd->text(0).toStdString())->GetPosteriorDistribution().n!=0)
+            {
+                QAction* graphaction = posterior_results->addAction("Distribution");
+                QVariant v = QVariant::fromValue(QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
+                graphaction->setData(v);
+                connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+            }
+            if (system.parameter(nd->text(0).toStdString())->GetMCMCSamples().nvars!=0)
+            {
+                QAction* graphaction = posterior_results->addAction("Marcov Chain");
+                QVariant v = QVariant::fromValue(QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
+                graphaction->setData(v);
+                connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+            }
+
+        }
+
+
+
+
         menu.exec( tree->mapToGlobal(pos) );
 
     }
@@ -1186,6 +1211,22 @@ void MainWindow::showgraph()
         {
             Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
             plot->SetYAxisTitle(act->text());
+        }
+    }
+    else if (timeseriestobeshown == "distribution")
+    {
+        if (act->text()=="Distribution")
+        {
+            Plotter* plot = Plot(GetSystem()->parameter(item.toStdString())->GetPosteriorDistribution());
+            plot->AddData(GetSystem()->parameter(item.toStdString())->PriorDistribution());
+            plot->SetYAxisTitle("Density");
+            plot->SetXAxisTitle(item);
+        }
+        else if (act->text()=="Marcov Chain")
+        {
+            Plotter* plot = Plot(GetSystem()->parameter(item.toStdString())->GetMCMCSamples());
+            plot->SetYAxisTitle(item);
+            plot->SetXAxisTitle("Sample");
         }
     }
     else
@@ -1675,9 +1716,8 @@ void MainWindow::onrunmodel()
     copiedsystem.SetSystemSettings();
     if (copiedsystem.GetSolverSettings().write_solution_details)
         copiedsystem.SetSolutionLogger(workingfolder.toStdString() + "/solution_details.txt");
-    rtw = new RunTimeWindow(this);
+    rtw = new RunTimeWindow(this,config::forward);
     rtw->show();
-    rtw->SetUp(config::forward);
     copiedsystem.SetRunTimeWindow(rtw);
     copiedsystem.Solve(true);
     rtw->AppendText("Saving output files to the hard-drive...");
@@ -1742,11 +1782,10 @@ void MainWindow::onoptimize()
     optimizer->SetParameters(system.object("Optimizer"));
     optimizer->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
-    rtw = new RunTimeWindow(this);
+    rtw = new RunTimeWindow(this,config::optimize);
     rtw->show();
     rtw->AppendText("Optimization Started ...");
     rtw->SetXRange(0,optimizer->GA_params.nGen);
-    rtw->SetUp(config::optimize);
     system.SetRunTimeWindow(nullptr);
     optimizer->SetRunTimeWindow(rtw);
     system.SetParameterEstimationMode(parameter_estimation_options::optimize);
@@ -1782,11 +1821,10 @@ void MainWindow::oninverserun()
     optimizer->SetParameters(system.object("Optimizer"));
     optimizer->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
-    rtw = new RunTimeWindow(this);
+    rtw = new RunTimeWindow(this, config::inverse);
     rtw->show();
     rtw->AppendText("Parameter Estimation Started ...");
     rtw->SetXRange(0,optimizer->GA_params.nGen);
-    rtw->SetUp(config::optimize);
     system.SetRunTimeWindow(nullptr);
     system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
     optimizer->SetRunTimeWindow(rtw);
@@ -1818,9 +1856,8 @@ void MainWindow::onmcmc()
     mcmc->FileInformation.outputpath = workingfolder.toStdString() + "/";
     mcmc->SetParameters(system.object("MCMC"));
     system.SetAllParents();
-    rtw = new RunTimeWindow(this);
+    rtw = new RunTimeWindow(this,config::mcmc);
     rtw->show();
-    rtw->SetUp(config::mcmc);
     rtw->AppendText("Parameter Estimation Started ...");
     rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples);
     rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples,1);
@@ -1834,6 +1871,14 @@ void MainWindow::onmcmc()
 
 
 Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem)
+{
+    Plotter* plotter = new Plotter(this);
+    plotter->PlotData(plotitem);
+    plotter->show();
+    return plotter;
+}
+
+Plotter* MainWindow::Plot(CTimeSeriesSet<timeseriesprecision>& plotitem)
 {
     Plotter* plotter = new Plotter(this);
     plotter->PlotData(plotitem);

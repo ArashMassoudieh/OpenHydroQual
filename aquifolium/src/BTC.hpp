@@ -806,7 +806,7 @@ CTimeSeries<T> operator&(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 }
 
 template<class T>
-T CTimeSeries<T>::maxC()
+T CTimeSeries<T>::maxC() const
 {
 	double max = -1e32;
 	for (int i=0; i<n; i++)
@@ -817,7 +817,7 @@ T CTimeSeries<T>::maxC()
 }
 
 template<class T>
-T CTimeSeries<T>::maxt()
+T CTimeSeries<T>::maxt() const
 {
     double max = -1e32;
     for (int i=0; i<n; i++)
@@ -828,7 +828,7 @@ T CTimeSeries<T>::maxt()
 }
 
 template<class T>
-T CTimeSeries<T>::mint()
+T CTimeSeries<T>::mint() const
 {
     double min = 1e32;
     for (int i=0; i<n; i++)
@@ -856,7 +856,7 @@ T CTimeSeries<T>::maxfabs()
 }
 
 template<class T>
-T CTimeSeries<T>::minC()
+T CTimeSeries<T>::minC() const
 {
 	double min = 1e32;
 	for (int i=0; i<n; i++)

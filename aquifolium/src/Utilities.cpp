@@ -1,7 +1,5 @@
 #include "Utilities.h"
 
-#define SMALLNUMBER 1e-23
-
 using namespace std;
 
 namespace aquiutils

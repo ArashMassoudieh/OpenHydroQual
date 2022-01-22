@@ -1,7 +1,7 @@
 #include "runtimewindow.h"
 #include "ui_runtimewindow.h"
 
-RunTimeWindow::RunTimeWindow(QWidget *parent) :
+RunTimeWindow::RunTimeWindow(QWidget *parent, config cfg) :
     QDialog(parent),
     ui(new Ui::RunTimeWindow)
 {
@@ -14,6 +14,8 @@ RunTimeWindow::RunTimeWindow(QWidget *parent) :
     ui->textBrowserdetails->setVisible(false);
     connect(ui->ShowDetails,SIGNAL(clicked()),this,SLOT(showdetails()));
     connect(ui->pushButtonStop,SIGNAL(clicked()),this,SLOT(stop_triggered()));
+
+    SetUp(cfg);
 }
 
 RunTimeWindow::~RunTimeWindow()
@@ -45,11 +47,15 @@ void RunTimeWindow::AddDataPoint(const double &t, const double value, int graph_
     {   plot->graph(0)->addData(t,value);
         if (value>plot->yAxis->range().upper)
             plot->yAxis->setRange(0,value*1.3);
+        if (value<plot->yAxis->range().lower)
+            plot->yAxis->setRange(0,value*1.3);
     }
     if (graph_no==1)
         if (plot2)
         {   plot2->graph(0)->addData(t,value);
             if (value>plot2->yAxis->range().upper)
+                plot2->yAxis->setRange(0,value*1.3);
+            if (value<plot->yAxis->range().lower)
                 plot2->yAxis->setRange(0,value*1.3);
         }
 
@@ -89,10 +95,11 @@ void RunTimeWindow::SetYRange(const double &ymin, const double &ymax)
 
 void RunTimeWindow::SetUp(config cnfg)
 {
+
     plot = new QCustomPlot(this);
     plot->setObjectName(QStringLiteral("RunProgressPlot"));
 
-    ui->verticalLayout->insertWidget(0,plot);
+    ui->verticalLayout_graphs->insertWidget(0,plot);
     QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Preferred);
     sizePolicy2.setHorizontalStretch(2);
     sizePolicy2.setVerticalStretch(3);
@@ -132,9 +139,11 @@ void RunTimeWindow::SetUp(config cnfg)
     }
     if (cnfg == config::mcmc)
     {
+
         plot->graph(0)->setName("Acceptance rate");
         plot->xAxis->setLabel("Sample");
         plot->yAxis->setLabel("Acceptance rate");
+        plot->yAxis->setRange(0,1);
 
         plot2 = new QCustomPlot(this);
         plot2->setObjectName(QStringLiteral("RunProgressPlot"));
@@ -143,7 +152,7 @@ void RunTimeWindow::SetUp(config cnfg)
         plot2->xAxis->setLabel("Sample");
         plot2->yAxis->setLabel("Purturbation factor");
         plot2->yAxis->setRange(0,2);
-        ui->verticalLayout->insertWidget(1,plot2);
+        ui->verticalLayout_graphs->insertWidget(1,plot2);
         QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Preferred);
         sizePolicy2.setHorizontalStretch(2);
         sizePolicy2.setVerticalStretch(3);

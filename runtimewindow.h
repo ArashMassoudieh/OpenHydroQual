@@ -15,7 +15,7 @@ class RunTimeWindow : public QDialog
     Q_OBJECT
 
 public:
-    explicit RunTimeWindow(QWidget *parent = nullptr);
+    explicit RunTimeWindow(QWidget *parent = nullptr, config cnfg=config::forward);
     ~RunTimeWindow();
     QCustomPlot *plot = nullptr;
     QCustomPlot *plot2 = nullptr;

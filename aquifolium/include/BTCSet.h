@@ -14,6 +14,7 @@ public:
     CTimeSeriesSet(const CTimeSeries<T> &BTC);
 	CTimeSeriesSet(string filename, bool varytime);
 	int nvars;
+    string name;
     string filename;
     vector<CTimeSeries<T>> BTC;
 	void writetofile(char outputfile[]);
@@ -65,6 +66,8 @@ public:
 	bool file_not_found=false;
     CTimeSeries<T> &operator[](int index);
     CTimeSeries<T> &operator[](string BTCName);
+    CTimeSeries<T> operator[](int index) const;
+    CTimeSeries<T> operator[](string BTCName) const;
     bool Contains(string BTCName);
 #ifdef QT_version
 	CTimeSeries &operator[](QString BTCName) {

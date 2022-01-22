@@ -41,10 +41,10 @@ string Parameter::toString(int _tabs)
     out += aquiutils::tabs(_tabs) + "high: " + aquiutils::numbertostring(Object::GetVal("high")) + "\n";
     out += aquiutils::tabs(_tabs) + "quans: {";
 
-    for (int i=0; i<_quan.size(); i++ ) { out +=  _quan[i]; if (i<_quan.size()-1) out += ","; }
+    for (unsigned int i=0; i<_quan.size(); i++ ) { out +=  _quan[i]; if (i<_quan.size()-1) out += ","; }
     out += "}\n";
     out += aquiutils::tabs(_tabs) + "locations: {";
-    for (int i=0; i<_location.size(); i++ ) { out +=  _location[i]; if (i<_location.size()-1) out += ","; }
+    for (unsigned int i=0; i<_location.size(); i++ ) { out +=  _location[i]; if (i<_location.size()-1) out += ","; }
     out += "}\n";
     out += aquiutils::tabs(_tabs) + "prior distribution: " + Object::Variable("prior_distribution")->GetStringValue() + "\n";
     out += aquiutils::tabs(_tabs) + "value: " + aquiutils::numbertostring(value) + "\n";
@@ -65,7 +65,7 @@ string Parameter::variable(const string &qntty)
     {
         string out;
         out += "{";
-        for (int i=0; i<_location.size(); i++ ) { out +=  _location[i]; if (i<_location.size()-1) out += ","; }
+        for (unsigned int i=0; i<_location.size(); i++ ) { out +=  _location[i]; if (i<_location.size()-1) out += ","; }
         out += "}";
         return out;
     }
@@ -81,7 +81,7 @@ string Parameter::variable(const string &qntty)
     {
         string out;
         out += "{";
-        for (int i=0; i<_quan.size(); i++ ) { out +=  _quan[i]; if (i<_quan.size()-1) out += ","; }
+        for (unsigned int i=0; i<_quan.size(); i++ ) { out +=  _quan[i]; if (i<_quan.size()-1) out += ","; }
         out += "}";
         return out;
     }
@@ -106,7 +106,7 @@ bool Parameter::SetName(string s)
 
 bool Parameter::RemoveLocationQuan(const string &loc, const string &quan)
 {
-    for (int i=0; i<_location.size(); i++)
+    for (unsigned int i=0; i<_location.size(); i++)
     {
         if (_location[i]==loc && _quan[i]==quan)
         {
@@ -118,4 +118,76 @@ bool Parameter::RemoveLocationQuan(const string &loc, const string &quan)
     return false;
 
 
+}
+
+double Parameter::ExpandedLow(const double &factor)
+{
+    if (GetPriorDistribution()!="log-normal")
+    {
+        return GetRange().low - (GetRange().high-GetRange().low)*(factor-1);
+    }
+    else
+    {
+        return exp(log(GetRange().low) - (log(GetRange().high)-log(GetRange().low))*(factor-1));
+    }
+}
+
+double Parameter::ExpandedHigh(const double &factor)
+{
+    if (GetPriorDistribution()!="log-normal")
+    {
+        return GetRange().high + (GetRange().high-GetRange().low)*(factor-1);
+    }
+    else
+    {
+        return exp(log(GetRange().high) + (log(GetRange().high)-log(GetRange().low))*(factor-1));
+    }
+}
+
+CTimeSeries<double> Parameter::PriorDistribution(unsigned int nbins)
+{
+    CTimeSeries<double> prior_dist;
+    prior_dist.name = "Prior density";
+    for (unsigned int i=0; i<nbins; i++)
+    {
+        double x = ExpandedLow() + i*(ExpandedHigh() - ExpandedLow())/double(nbins);
+        prior_dist.append(x,CalcPriorProbability(x));
+    }
+    return prior_dist;
+}
+
+double Parameter::CalcPriorProbability(const double &x)
+{
+    if (GetPriorDistribution()=="normal")
+        return 1.0/std()/sqrt(2*PI)*exp(-pow((x-mean())/std(),2)/2.0);
+    if (GetPriorDistribution()=="log-normal")
+    {   if (x>0)
+            return 1.0/(geostd()*sqrt(2*PI)*x)*exp(-pow((log(x)-log(geomean()))/geostd(),2)/2.0);
+        else
+            return 1e-30;
+    }
+    if (GetPriorDistribution()=="uniform")
+    {   if (x<Range().high && x>Range().low)
+            return 1.0/(Range().high-Range().low);
+        else
+            return 1e-30;
+    }
+}
+
+double Parameter::CalcLogPriorProbability(const double &x)
+{
+    if (GetPriorDistribution()=="normal")
+        return -log(std()/sqrt(2*PI))-pow((x-mean())/std(),2)/2.0;
+    if (GetPriorDistribution()=="log-normal")
+    {   if (x>0)
+            return -log((geostd()*sqrt(2*PI)*x))-pow((log(x)-log(geomean()))/geostd(),2)/2.0;
+        else
+            return log(1e-30);
+    }
+    if (GetPriorDistribution()=="uniform")
+    {   if (x<Range().high && x>Range().low)
+            return -log((Range().high-Range().low));
+        else
+            return log(1e-30);
+    }
 }

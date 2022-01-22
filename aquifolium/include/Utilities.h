@@ -10,6 +10,7 @@
 #include <sstream>
 
 #define SMALLNUMBER 1e-23
+#define PI 3.14159265359
 
 using namespace std;
 
