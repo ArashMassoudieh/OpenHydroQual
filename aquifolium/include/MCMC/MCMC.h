@@ -6,6 +6,7 @@
 #include "GA.h"
 #include "Vector.h"
 #include "BTCSet.h"
+#include "observation.h"
 
 using namespace std;
 
@@ -27,12 +28,12 @@ struct _MCMC_file_names
 
 struct _MCMC_settings
 {
-    int total_number_of_samples;
-    int number_of_chains;
-    int burnout_samples;
+    unsigned int total_number_of_samples;
+    unsigned int number_of_chains;
+    unsigned int burnout_samples;
     double ini_purt_fact = 1;
     double purturbation_factor = 0.05;
-    int number_of_parameters;
+    unsigned int number_of_parameters;
     //int nActParams;
     //int numBTCs;
     //int nsamples;
@@ -44,10 +45,10 @@ struct _MCMC_settings
     bool sensbasedpurt;
     bool global_sensitivity;
     bool continue_mcmc;
-    int number_of_post_estimate_realizations;
+    unsigned int number_of_post_estimate_realizations;
     double dp_sens;
     bool noise_realization_writeout;
-    int numberOfThreads = 8;
+    unsigned int numberOfThreads = 8;
     double acceptance_rate;
     double purt_change_scale = 0.75;
 
@@ -88,17 +89,17 @@ public:
 	vector<int> params;
     CTimeSeriesSet<double> MData;
     _MCMC_file_names FileInformation;
-    int getparamno(int j);
     double posterior(vector<double> par, bool out=false);
-    void getfromGA(const CGA<T> &GA);
-	string outputfilename;
+    void model(T *Model1 , vector<double> par);
     RunTimeWindow *rtw;
     int getparamno(int i,int ts)const;
     int get_act_paramno(int i);
     int get_time_series(int i);
 	vector<bool> apply_to_all;
     Parameter_Set *parameters = nullptr;
+    vector<Observation> *observations = nullptr;
     Parameter* parameter(int i);
+    Observation *observation(int i);
     CVector sensitivity(double d, vector<double> par);
     CVector sensitivity_ln(double d, vector<double> par);
 	//runtimeWindow * rtw = 0;
@@ -114,7 +115,7 @@ public:
 	vector<CMatrix> global_sens_lumped;
     CTimeSeriesSet<double> paramsList;
     CTimeSeriesSet<double> realized_paramsList;
-    void getrealizations(CTimeSeriesSet<double> &MCMCout);
+    void ProduceRealizations(CTimeSeriesSet<double> &MCMCout);
     void get_outputpercentiles(CTimeSeriesSet<double> &MCMCout);
 
 	vector<double> calc_output_percentiles;

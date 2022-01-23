@@ -32,6 +32,12 @@ Parameter* CMCMC<T>::parameter(int i)
     return (*parameters)[i];
 }
 
+template <class T>
+Observation* CMCMC<T>::observation(int i)
+{
+    return (&observations->at(i));
+}
+
 template<class T>
 CTimeSeriesSet<double> CMCMC<T>::model(vector<double> par)
 {
@@ -178,6 +184,24 @@ double CMCMC<T>::posterior(vector<double> par, bool out)
 }
 
 template<class T>
+void CMCMC<T>::model(T *Model1, vector<double> par)
+{
+
+    for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
+    {
+        Model1->SetSilent(true);
+        Model1->SetRecordResults(false);
+        Model1->SetNumThreads(1);
+        for (unsigned int i = 0; i < MCMC_Settings.number_of_parameters; i++)
+            Model1->SetParameterValue(i, par[i]);
+        Model1->ApplyParameters();
+    }
+
+    Model1->Solve();
+
+}
+
+template<class T>
 void CMCMC<T>::initialize(bool random)
 {
     Params.resize(MCMC_Settings.total_number_of_samples);
@@ -300,7 +324,7 @@ bool CMCMC<T>::step(int k)
         if (parameter(i)->GetPriorDistribution()=="log-normal")
             pp += log(X[i]);
     }
-    double logp_0 = posterior(X, k%MCMC_Settings.number_of_chains) + pp;
+    double logp_0 = posterior(X) + pp;
 
 
     double logp_1 = logp_0;
@@ -313,7 +337,7 @@ bool CMCMC<T>::step(int k)
 		Params[k] = X;
 		logp[k] = logp_0;
 		logp1[k] = logp_1;
-		accepted_count += 1;
+        //accepted_count += 1;
 	}
 	else
 	{
@@ -323,7 +347,7 @@ bool CMCMC<T>::step(int k)
 		logp1[k] = logp_1;
 
 	}
-	total_count += 1;
+    //total_count += 1;
 	return res;
 }
 
@@ -356,19 +380,20 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 	{
 		file = fopen(filename.c_str(),"a");
         fprintf(file,"%s, ", "no.");
-        for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
+        for (unsigned int i=0; i<MCMC_Settings.number_of_parameters; i++)
             fprintf(file, "%s, ", parameter(i)->GetName().c_str());
 		fprintf(file,"%s, %s, %s,", "logp", "logp_1", "stuck_counter");
-        for (int j=0; j<pertcoeff.size(); j++) fprintf(file,"%s,", string("purt_coeff_" + QString("%1").arg(j).toStdString()).c_str());
+        for (unsigned int j=0; j<pertcoeff.size(); j++) fprintf(file,"%s,", string("purt_coeff_" + QString("%1").arg(j).toStdString()).c_str());
 		fprintf(file, "\n");
 		fclose(file);
 	}
 
     CVector stuckcounter(MCMC_Settings.number_of_chains);
-	int acceptance_count=0;
+    CVector accepted(MCMC_Settings.number_of_chains);
+
     MCMC_Settings.ini_purt_fact = pertcoeff[0];
 	int k_0 = k;
-    for (int kk=k; kk<k+nsamps+MCMC_Settings.number_of_chains; kk+=MCMC_Settings.number_of_chains)
+    for (unsigned int kk=k; kk<k+nsamps+MCMC_Settings.number_of_chains; kk+=MCMC_Settings.number_of_chains)
 	{
         QCoreApplication::processEvents(QEventLoop::AllEvents,10*1000);
         if (rtw->stoptriggered)
@@ -386,27 +411,26 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 #endif
 
 #pragma omp parallel for
-        for (int jj = kk; jj < min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples); jj++)
+        for (unsigned int jj = kk; jj < min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples); jj++)
 		{
-            QCoreApplication::processEvents(QEventLoop::AllEvents,10*1000);
-
             //qDebug() << "Starting step: " + QString::number(jj);
             bool stepstuck = !step(jj);
             //qDebug() << "Step: " + QString::number(jj) + "Done!";
-            if (stepstuck == true)
-			{
-				stuckcounter[jj - kk]++;
-				acceptance_count++;
-			}
-			else
-				stuckcounter[jj - kk] = 0;
+            if (stepstuck)
+            {   stuckcounter[jj - kk]++;
+                accepted[jj-kk]=0;
+            }
+            else
+            {	stuckcounter[jj - kk] = 0;
+                accepted[jj-kk]=1;
+            }
 
 
 #pragma omp critical
             {   if (rtw->detailson)
                 {   QString s;
                     s = s+"Sample no: "+QString::number(jj) + " Parameters: ";
-                    for (int i = 0; i < MCMC_Settings.number_of_parameters; i++)
+                    for (unsigned int i = 0; i < MCMC_Settings.number_of_parameters; i++)
                         s+=QString::number(Params[jj][i],'e',2)+ ",";
 
                     s+= " Stuck counter: " + QString::number(stuckcounter[jj-kk]);
@@ -414,17 +438,18 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 
                     rtw->AppendtoDetails(s);
                     rtw->AppendtoDetails(" ");
-                    QCoreApplication::processEvents(QEventLoop::AllEvents,100*1000);
                 }
             }
         }
+        accepted_count += accepted.sum();
+        total_count += accepted.num;
         QCoreApplication::processEvents(QEventLoop::AllEvents,100*1000);
 
         if ((kk-k_0) % (50 * MCMC_Settings.number_of_chains) == 0 || kk == k + nsamps + MCMC_Settings.number_of_chains - 1)
 		{
 
             file = fopen(filename.c_str(), "a");
-            for (int jj = max(min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples) - 50 * MCMC_Settings.number_of_chains, k_0); jj < min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples); jj++)
+            for (int jj = max(int(min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples) - 50 * MCMC_Settings.number_of_chains), k_0); jj < min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples); jj++)
 			{
                 if (jj%MCMC_Settings.save_interval == 0)
 				{
@@ -445,8 +470,10 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 			}
 			fclose(file);
 		}
+
         if ((kk-k_0) % (50*MCMC_Settings.number_of_chains) == 0)
 		{
+
             if (double(accepted_count) / double(total_count)>MCMC_Settings.acceptance_rate)
                 for (int i = 0; i < MCMC_Settings.number_of_parameters; i++) pertcoeff[i] /= MCMC_Settings.purt_change_scale;
 			else
@@ -455,17 +482,10 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 			total_count = 0;
 
 		}
-		//double error = double(accepted_count) / double(total_count) - acceptance_rate;
-        //for (int i = 0; i < MCMC_Settings.number_of_parameters; i++) pertcoeff[i] /= pow(MCMC_Settings.purt_change_scale, error);
 
 
 		if (rtw)
 		{
-			QMap<QString, QVariant> vars;
-			//jj, pertcoeff[0]
-			//jj, double(accepted_count)/double(total_count);
-			//update kk/nsamps
-			vars["mode"] = "MCMC";
             double progress = double(kk) / double(nsamps);
             rtw->SetProgress(progress);
             rtw->AddDataPoint(kk,double(accepted_count) / double(total_count));
@@ -474,8 +494,6 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
                 rtw->AddDataPoint(kk,double(pertcoeff[0] / MCMC_Settings.ini_purt_fact),1);
             }
             rtw->Replot();
-
-
 		}
 	}
 
@@ -502,26 +520,8 @@ CMCMC<T>::CMCMC(T *_system)
         params.push_back(i);
     }
     parameters = &Model->Parameters();
+    observations = Model->Observations();
     pertcoeff.resize(parameters->size());
-}
-
-
-template<class T>
-int CMCMC<T>::getparamno(int i,int ts) const
-{
-		return i;
-}
-
-template<class T>
-int CMCMC<T>::get_act_paramno(int i)
-{
-	return i;
-}
-
-template<class T>
-int CMCMC<T>::get_time_series(int i)
-{
-	return 0;
 }
 
 template<class T>
@@ -689,120 +689,44 @@ CTimeSeriesSet<double> CMCMC<T>::prior_distribution(int n_bins)
 }
 
 template<class T>
-void CMCMC<T>::getrealizations(CTimeSeriesSet<double> &MCMCout)
+void CMCMC<T>::ProduceRealizations(CTimeSeriesSet<double> &MCMCout)
 {
-	BTCout_obs.resize(1);
-	BTCout_obs_noise.resize(1);
 
-    int n_BTCout_obs = Model->ObservationsCount();
+    vector<CTimeSeriesSet<double>> realized_timeseries(observations->size());
 
-	for (int i = 0; i < 1; i++)
-	{
-		BTCout_obs[i].resize(n_BTCout_obs);
-		BTCout_obs_noise[i].resize(n_BTCout_obs);
-	}
-	for (int i = 0; i < n_BTCout_obs; i++)
-	{
-        BTCout_obs[0][i] = CTimeSeriesSet<double>(MCMC_Settings.number_of_post_estimate_realizations);
-        BTCout_obs_noise[0][i] = CTimeSeriesSet<double>(MCMC_Settings.number_of_post_estimate_realizations);
-		BTCout_obs[0][i].names.clear();
-		BTCout_obs_noise[0][i].names.clear();
-	}
-
-    realized_paramsList = CTimeSeriesSet<double>(MCMCout.nvars);
-    paramsList = CTimeSeriesSet<double>(MCMCout.nvars);
-	//qDebug() << "paramsList.names.size()" << paramsList.names.size();
-	paramsList.names = MCMCout.names;
-	//qDebug() << "MCMCout.names.size()" << MCMCout.names.size();
-
-    for (int j = 0; j < MCMC_Settings.number_of_post_estimate_realizations; j++)
-	{
-        vector<double> param = MCMCout.getrandom(MCMC_Settings.burnout_samples);
-		realized_paramsList.append(j, param);
-	}
-	//qDebug() << 612;
-	//progress->setValue(0);
-	double pValue = 0;
-    double inc = 100.0 / MCMC_Settings.number_of_post_estimate_realizations;
     for (int jj = 0; jj <=MCMC_Settings.number_of_post_estimate_realizations/MCMC_Settings.numberOfThreads; jj++)
 	{
-
-
-        vector<vector<T>> Sys1(MCMC_Settings.numberOfThreads);
-        for (int i = 0; i < MCMC_Settings.numberOfThreads; i++) Sys1[i].resize(1);
+        vector<T> Sys1(MCMC_Settings.numberOfThreads);
 
         omp_set_num_threads(MCMC_Settings.numberOfThreads);
 #pragma omp parallel for
-        for (int j = 0; j < min(MCMC_Settings.numberOfThreads, MCMC_Settings.number_of_post_estimate_realizations - jj*MCMC_Settings.numberOfThreads); j++)
+        for (unsigned int j = 0; j < min(MCMC_Settings.numberOfThreads, MCMC_Settings.number_of_post_estimate_realizations - jj*MCMC_Settings.numberOfThreads); j++)
 		{
-            int realizationNumber = jj*MCMC_Settings.numberOfThreads + j;
-			cout << "Realization Sample No. : " << realizationNumber << std::endl;
-			//qDebug() << "Realization Sample No. : " << realizationNumber;
-			vector<double> param = realized_paramsList.getrow(realizationNumber);
-            Sys1[j][0] = *Model;
-            Sys1[j][0].ID = aquiutils::numbertostring(j);
+            Sys1[j] = *Model;
+            vector<double> sampled_parameters = MCMCout.getrandom();
+            model(&Sys1[j],sampled_parameters);
+            for (unsigned int i=0; i<observations->size(); i++)
+                realized_timeseries[i].append(*(Sys1[j].observation(i)->GetModeledTimeSeries()));
+        }
 
-			int l = 0;
-            for (int i = 0; i < MCMC_Settings.number_of_parameters; i++)
-
-			Sys1[j][0].set_param(i, param[i]);
-			Sys1[j][0].finalize_set_param();
-			Sys1[j][0].calc_log_likelihood();
-
-            if (MCMC_Settings.global_sensitivity == true)
-                global_sens_lumped.push_back(sensitivity_mat_lumped(MCMC_Settings.dp_sens, param));
-
-			for (int i = 0; i < n_BTCout_obs; i++)
-			{
-				for (int ts = 0; ts < 1; ts++)
-				{
-
-					BTCout_obs[ts][i].BTC[realizationNumber] = Sys1[j][ts].ANS_obs.BTC[i];
-					BTCout_obs[ts][i].names.push_back(Sys1[j][ts].ANS_obs.names[i] + "_" + to_string(realizationNumber));
-
-                    if (MCMC_Settings.noise_realization_writeout)
-					{
-						BTCout_obs_noise[ts][i].BTC[realizationNumber] = Sys1[j][ts].ANS_obs_noise.BTC[i];
-						BTCout_obs_noise[ts][i].names.push_back(Sys1[j][ts].ANS_obs_noise.names[i] + "_" + to_string(realizationNumber));
-					}
-
-				}
-			}
-			//qDebug() << "Realization Completed : " << realizationNumber << endl;
-			cout << "Realization Completed : " << realizationNumber;
-			//qDebug() << "Progress: " << pValue << inc;
-			pValue += inc;
-			//qDebug() << "Progress: " << pValue;
-		}
-		//qDebug() << "Progress: " << pValue << inc;
-        pValue += inc*MCMC_Settings.numberOfThreads;
-		//qDebug() << "Progress: " << pValue;
         if (rtw)
-		{
-			QMap<QString, QVariant> vars;
-			vars["mode"] = "MCMC";
-            vars["progress"] = pValue/MCMC_Settings.number_of_post_estimate_realizations;
-            rtw->SetProgress(pValue/MCMC_Settings.number_of_post_estimate_realizations);
-            rtw->AddDataPoint(jj,double(accepted_count) / double(total_count));
-            rtw->Replot();
-		}
-	}
-	if (rtw)
-	{
-		QMap<QString, QVariant> vars;
-		vars["mode"] = "MCMC";
-        vars["progress"] = 1;
-		vars["finished"] = 1;
-        rtw->SetProgress(1);
-        rtw->Replot();
-	}
+        {
+            double progress = double(jj*MCMC_Settings.numberOfThreads) / double(MCMC_Settings.number_of_post_estimate_realizations);
+            rtw->SetProgress(progress);
+        }
+    }
+    for (unsigned int i=0; i<observations->size(); i++)
+    {
+        realized_timeseries[i].writetofile(FileInformation.outputpath + "Realizations_" + observation(i)->GetName() + ".txt");
+    }
+    rtw->SetProgress(1);
 }
 
 template<class T>
 void CMCMC<T>::get_outputpercentiles(CTimeSeriesSet<double> &MCMCout)
 {
 
-	getrealizations(MCMCout);
+    ProduceRealizations(MCMCout);
     int n_BTCout_obs = Model->ObservationsCount();
 
 	BTCout_obs_prcntle.resize(1); for (int j = 0; j < 1; j++) BTCout_obs_prcntle[j].resize(n_BTCout_obs);
@@ -834,10 +758,14 @@ void CMCMC<T>::Perform()
     int mcmcstart = MCMC_Settings.number_of_chains;
     if (MCMC_Settings.continue_mcmc)
     {
+        if (rtw) rtw->AppendText("Reading samples from ... " + MCMC_Settings.continue_filename);
         mcmcstart = readfromfile(MCMC_Settings.continue_filename);
     }
-
+    if (rtw) rtw->AppendText(string("Generating samples ... "));
     step(mcmcstart, int((MCMC_Settings.total_number_of_samples - mcmcstart) / MCMC_Settings.number_of_chains)*MCMC_Settings.number_of_chains, FileInformation.outputfilename , rtw);
+    if (rtw) rtw->AppendText(string("Creating posterior distribution ..."));
+    CTimeSeriesSet<double> all_posterior_distributions;
+    CTimeSeriesSet<double> parameter_samples;
     for (unsigned int i=0; i<parameters->size(); i++)
     {
         CTimeSeriesSet<double> chain_values(MCMC_Settings.number_of_chains);
@@ -853,13 +781,18 @@ void CMCMC<T>::Perform()
         {
             all_samples.append(chain_values[i]);
         }
+
         chain_values.name = parameter(i)->GetName();
         parameter(i)->SetMCMCSamples(chain_values);
 
         CTimeSeries<double> posterior_distribution = all_samples.distribution(all_samples.n/100,0);
+        all_posterior_distributions.append(posterior_distribution,parameter(i)->GetName());
         posterior_distribution.name = "Posterior density";
         parameter(i)->SetPosteriorDistribution(posterior_distribution);
+        parameter_samples.append(all_samples);
 
     }
-
+    all_posterior_distributions.writetofile(FileInformation.outputpath + "Posterior_distributions.txt");
+    if (rtw) rtw->AppendText(string("Generating Realizations ..."));
+    ProduceRealizations(parameter_samples);
 }

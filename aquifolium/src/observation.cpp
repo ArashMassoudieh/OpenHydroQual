@@ -90,8 +90,6 @@ double Observation::CalcMisfit()
     {
         if (Variable("error_structure")->GetProperty()=="normal")
         {
-            Variable("observed_data")->GetTimeSeries()->writefile("observed.txt");
-            modeled_time_series.writefile("modeled.txt");
             return diff2(Variable("observed_data")->GetTimeSeries(),modeled_time_series)/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal());
         }
         else if (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal")

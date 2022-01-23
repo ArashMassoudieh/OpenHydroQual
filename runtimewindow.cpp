@@ -28,6 +28,11 @@ void RunTimeWindow::AppendText(const QString &s)
     ui->textBrowser->append(s);
 }
 
+void RunTimeWindow::AppendText(const std::string &s)
+{
+    ui->textBrowser->append(QString::fromStdString(s));
+}
+
 void RunTimeWindow::AppendtoDetails(const QString &s)
 {
     ui->textBrowserdetails->append(s);

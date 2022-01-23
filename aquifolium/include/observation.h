@@ -4,6 +4,7 @@
 #include "Expression.h"
 #include "BTC.h"
 #include "Object.h"
+#include "BTCSet.h"
 
 class System;
 
@@ -39,6 +40,11 @@ class Observation: public Object
         string GetOutputItem() { return outputitem; }
         vector<string> ItemswithOutput();
         double CalcMisfit();
+        CTimeSeries<timeseriesprecision>* GetModeledTimeSeries() {return &modeled_time_series;}
+        void SetRealizations(const CTimeSeriesSet<double>& rlztions) {realizations = rlztions;}
+        CTimeSeriesSet<double>& Realizations() {return realizations;}
+        void SetPercentile95(const CTimeSeriesSet<double>& rpct95) {percentile95 = rpct95;}
+        CTimeSeriesSet<double>& Percentile95() {return percentile95;}
     protected:
 
     private:
@@ -50,6 +56,8 @@ class Observation: public Object
         string lasterror;
         double current_value=0;
         string outputitem="";
+        CTimeSeriesSet<double> realizations;
+        CTimeSeriesSet<double> percentile95;
 
 };
 #endif // OBSERVATION_H

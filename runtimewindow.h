@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "qcustomplot.h"
+#include <string>
 
 enum class config {forward, optimize, inverse, mcmc};
 
@@ -20,6 +21,7 @@ public:
     QCustomPlot *plot = nullptr;
     QCustomPlot *plot2 = nullptr;
     void AppendText(const QString &s);
+    void AppendText(const std::string &s);
     void AppendtoDetails(const QString &s);
     void AddDataPoint(const double &t, const double value, int graph_no=0);
     void Replot();

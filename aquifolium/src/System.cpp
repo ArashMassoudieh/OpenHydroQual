@@ -503,7 +503,7 @@ void System::MakeTimeSeriesUniform(const double &increment)
 {
 
     if (rtw!=nullptr)
-        rtw->AppendText("Uniformizing of time-series...");
+        rtw->AppendText(string("Uniformizing of time-series..."));
     for (unsigned int i=0; i<sources.size(); i++)
         sources[i].MakeTimeSeriesUniform(increment);
 
@@ -514,7 +514,7 @@ void System::MakeTimeSeriesUniform(const double &increment)
         blocks[i].MakeTimeSeriesUniform(increment);
 
     if (rtw!=nullptr)
-        rtw->AppendText("Uniformizing of time-series (done!)");
+        rtw->AppendText(string("Uniformizing of time-series (done!)"));
 
 }
 

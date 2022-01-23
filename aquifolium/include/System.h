@@ -369,6 +369,7 @@ class System: public Object
             return SolverSettings.RecordAllOutputs;
         }
         void Clear();
+        vector<Observation>* Observations() {return &observations;}
     protected:
 
     private:

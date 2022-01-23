@@ -302,8 +302,8 @@
       "code": "continue_based_on_file_name"
     },
     "number_of_post_estimate_realizations": {
-      "default": "1",
-      "description": "The interval at which the samples are saved",
+      "default": "0",
+      "description": "Number of post-estimate realizations",
       "ask_user": "true",
       "type": "value",
       "delegate": "ValueBox",

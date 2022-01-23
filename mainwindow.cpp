@@ -1720,7 +1720,7 @@ void MainWindow::onrunmodel()
     rtw->show();
     copiedsystem.SetRunTimeWindow(rtw);
     copiedsystem.Solve(true);
-    rtw->AppendText("Saving output files to the hard-drive...");
+    rtw->AppendText(string("Saving output files to the hard-drive..."));
     QCoreApplication::processEvents();
     if (copiedsystem.OutputFileName() != "")
     {
@@ -1742,7 +1742,7 @@ void MainWindow::onrunmodel()
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
     actionrun->setEnabled(true);
-    rtw->AppendText("All tasks finished!");
+    rtw->AppendText(string("All tasks finished!"));
 }
 
 void MainWindow::closeEvent (QCloseEvent *event)
@@ -1784,7 +1784,7 @@ void MainWindow::onoptimize()
     system.SetAllParents();
     rtw = new RunTimeWindow(this,config::optimize);
     rtw->show();
-    rtw->AppendText("Optimization Started ...");
+    rtw->AppendText(string("Optimization Started ..."));
     rtw->SetXRange(0,optimizer->GA_params.nGen);
     system.SetRunTimeWindow(nullptr);
     optimizer->SetRunTimeWindow(rtw);
@@ -1798,7 +1798,7 @@ void MainWindow::onoptimize()
     system.Parameters() = optimizer->Model_out.Parameters();
     system.SetOutputItems();
     system.SetParameterEstimationMode();
-    rtw->AppendText("Optimization Finished!");
+    rtw->AppendText(string("Optimization Finished!"));
 }
 
 void MainWindow::oninverserun()
@@ -1823,7 +1823,7 @@ void MainWindow::oninverserun()
     system.SetAllParents();
     rtw = new RunTimeWindow(this, config::inverse);
     rtw->show();
-    rtw->AppendText("Parameter Estimation Started ...");
+    rtw->AppendText(string("Parameter Estimation Started ..."));
     rtw->SetXRange(0,optimizer->GA_params.nGen);
     system.SetRunTimeWindow(nullptr);
     system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
@@ -1833,7 +1833,7 @@ void MainWindow::oninverserun()
     system.Parameters() = optimizer->Model_out.Parameters();
     system.SetParameterEstimationMode();
     system.SetOutputItems();
-    rtw->AppendText("Parameter Estimation Finished!");
+    rtw->AppendText(string("Parameter Estimation Finished!"));
 }
 
 void MainWindow::onmcmc()
@@ -1858,7 +1858,7 @@ void MainWindow::onmcmc()
     system.SetAllParents();
     rtw = new RunTimeWindow(this,config::mcmc);
     rtw->show();
-    rtw->AppendText("Parameter Estimation Started ...");
+    rtw->AppendText(string("Parameter Estimation Started ..."));
     rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples);
     rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples,1);
     system.SetRunTimeWindow(nullptr);
@@ -1866,7 +1866,7 @@ void MainWindow::onmcmc()
     mcmc->SetRunTimeWindow(rtw);
     mcmc->Perform();
 
-    rtw->AppendText("Parameter Estimation Finished!");
+    rtw->AppendText(string("Parameter Estimation Finished!"));
 }
 
 
