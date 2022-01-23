@@ -93,6 +93,7 @@ Command::Command(const string &s, Script *parnt)
             if (prop.size()==1)
             {
                 last_error = "Property '" + prop[0] + "' does not have a right hand side!";
+                assignments[prop[0]] = "";
                 //validated = false;
                 //break;
             }

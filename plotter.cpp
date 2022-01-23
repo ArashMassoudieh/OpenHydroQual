@@ -48,11 +48,17 @@ Plotter::~Plotter()
 
 bool Plotter::PlotData(const CTimeSeriesSet<timeseriesprecision>& BTC, string style)
 {
+    qDebug()<<"plot 0";
+    qDebug()<<"nvars = " << BTC.nvars;
     PlotData(BTC[0]);
+
     for (unsigned int i=1; i<BTC.nvars; i++)
     {
+        qDebug()<<"plot " << i;
         AddData(BTC[i]);
     }
+    qDebug()<<"All plots added";
+    return true;
 }
 
 bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, string style)

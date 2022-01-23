@@ -798,15 +798,17 @@ CTimeSeries<timeseriesprecision>* Quan::TimeSeries()
 
 bool Quan::SetTimeSeries(const string &filename, bool prec)
 {
-	if (!prec)
+    if (filename=="")
+        return true;
+    if (!prec)
 	{
-		_timeseries.readfile(filename);
-		if (_timeseries.file_not_found)
-		{
-			AppendError(GetName(), "Quan", "SetTimeSeries", filename + " was not found!", 3001);
-			return false;
-		}
-		else
+        _timeseries.readfile(filename);
+        if (_timeseries.file_not_found)
+        {
+            AppendError(GetName(), "Quan", "SetTimeSeries", filename + " was not found!", 3001);
+            return false;
+        }
+        else
         {
 
             return true;

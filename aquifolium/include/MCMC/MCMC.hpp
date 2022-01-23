@@ -693,8 +693,9 @@ void CMCMC<T>::ProduceRealizations(CTimeSeriesSet<double> &MCMCout)
 {
 
     vector<CTimeSeriesSet<double>> realized_timeseries(observations->size());
+    vector<CTimeSeriesSet<double>> predicted_percentiles(observations->size());
 
-    for (int jj = 0; jj <=MCMC_Settings.number_of_post_estimate_realizations/MCMC_Settings.numberOfThreads; jj++)
+    for (unsigned int jj = 0; jj <=MCMC_Settings.number_of_post_estimate_realizations/MCMC_Settings.numberOfThreads; jj++)
 	{
         vector<T> Sys1(MCMC_Settings.numberOfThreads);
 
@@ -703,11 +704,13 @@ void CMCMC<T>::ProduceRealizations(CTimeSeriesSet<double> &MCMCout)
         for (unsigned int j = 0; j < min(MCMC_Settings.numberOfThreads, MCMC_Settings.number_of_post_estimate_realizations - jj*MCMC_Settings.numberOfThreads); j++)
 		{
             Sys1[j] = *Model;
-            vector<double> sampled_parameters = MCMCout.getrandom();
+            vector<double> sampled_parameters = MCMCout.getrandom(MCMC_Settings.burnout_samples);
             model(&Sys1[j],sampled_parameters);
+        }
+
+        for (unsigned int j = 0; j < min(MCMC_Settings.numberOfThreads, MCMC_Settings.number_of_post_estimate_realizations - jj*MCMC_Settings.numberOfThreads); j++)
             for (unsigned int i=0; i<observations->size(); i++)
                 realized_timeseries[i].append(*(Sys1[j].observation(i)->GetModeledTimeSeries()));
-        }
 
         if (rtw)
         {
@@ -715,9 +718,15 @@ void CMCMC<T>::ProduceRealizations(CTimeSeriesSet<double> &MCMCout)
             rtw->SetProgress(progress);
         }
     }
+    vector<double> percents; percents.push_back(0.025); percents.push_back(0.5); percents.push_back(0.975);
     for (unsigned int i=0; i<observations->size(); i++)
     {
         realized_timeseries[i].writetofile(FileInformation.outputpath + "Realizations_" + observation(i)->GetName() + ".txt");
+        predicted_percentiles[i] = realized_timeseries[i].getpercentiles(percents);
+        observation(i)->SetPercentile95(predicted_percentiles[i]);
+        predicted_percentiles[i].writetofile(FileInformation.outputpath + "Predicted_95p_Bracket" + observation(i)->GetName() + ".txt");
+        observation(i)->SetRealizations(realized_timeseries[i]);
+
     }
     rtw->SetProgress(1);
 }

@@ -62,6 +62,10 @@ public:
     bool AddData(const CTimeSeries<outputtimeseriesprecision>& BTC,string style="line");
     void SetYAxisTitle(const QString& s);
     void SetXAxisTitle(const QString& s);
+    void SetLegend(bool onoff)
+    {
+        plot->legend->setVisible(onoff);
+    }
 private:
     Ui::Plotter *ui;
     QMap<QString, _timeseries> BTCs;
@@ -89,6 +93,8 @@ private:
     QCPGraph* addScatterPlot(QCPGraph *g, plotformat format);
     CTimeSeries<outputtimeseriesprecision> QCPDatatoTimeSeries(QCPGraphDataContainer &_data);
     QVector<QVector<double>> QCPDatatoQVector(QCPGraph *_g);
+
+
 private slots:
     bool On_Legend_Clicked();
     void axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part);

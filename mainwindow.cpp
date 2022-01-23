@@ -1170,6 +1170,27 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
 
         }
 
+        if (system.object(nd->text(0).toStdString())->GetType()=="Observation")
+        {
+            QMenu* posterior_results = menu.addMenu("Posterior results");
+            timeseriestobeshown = "posterior";
+            if (system.observation(nd->text(0).toStdString())->Realizations().nvars!=0)
+            {
+                QAction* graphaction = posterior_results->addAction("Realizations");
+                QVariant v = QVariant::fromValue(QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
+                graphaction->setData(v);
+                connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+            }
+            if (system.observation(nd->text(0).toStdString())->Percentile95().nvars!=0)
+            {
+                QAction* graphaction = posterior_results->addAction("95 percent bracket");
+                QVariant v = QVariant::fromValue(QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
+                graphaction->setData(v);
+                connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+            }
+
+        }
+
 
 
 
@@ -1227,6 +1248,24 @@ void MainWindow::showgraph()
             Plotter* plot = Plot(GetSystem()->parameter(item.toStdString())->GetMCMCSamples());
             plot->SetYAxisTitle(item);
             plot->SetXAxisTitle("Sample");
+        }
+    }
+    else if (timeseriestobeshown == "posterior")
+    {
+        if (act->text()=="Realizations")
+        {
+            Plotter* plot = Plot(GetSystem()->observation(item.toStdString())->Realizations());
+            plot->SetYAxisTitle(QString::fromStdString(GetSystem()->observation(item.toStdString())->GetName()));
+            plot->SetLegend(false);
+            plot->SetXAxisTitle("t");
+        }
+        else if (act->text()=="95 percent bracket")
+        {
+            qDebug()<<"Attempting to plot ...";
+            Plotter* plot = Plot(GetSystem()->observation(item.toStdString())->Percentile95());
+            qDebug()<<"Aadding axis titles";
+            plot->SetYAxisTitle(QString::fromStdString(GetSystem()->observation(item.toStdString())->GetName()));
+            plot->SetXAxisTitle("t");
         }
     }
     else
@@ -1881,7 +1920,9 @@ Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem)
 Plotter* MainWindow::Plot(CTimeSeriesSet<timeseriesprecision>& plotitem)
 {
     Plotter* plotter = new Plotter(this);
+    qDebug()<<"plotting ...";
     plotter->PlotData(plotitem);
+    qDebug()<<"Showing plot";
     plotter->show();
     return plotter;
 }
