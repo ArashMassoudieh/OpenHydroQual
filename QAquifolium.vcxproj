@@ -396,6 +396,7 @@
     <ClCompile Include="aquifolium\src\solutionlogger.cpp" />
     <ClCompile Include="aquifolium\src\Source.cpp" />
     <ClCompile Include="aquifolium\src\System.cpp" />
+    <ClCompile Include="aquifolium\src\Utilities.cpp" />
     <ClCompile Include="aquifolium\src\Vector.cpp" />
     <ClCompile Include="aquifolium\src\Vector_arma.cpp" />
     <ClCompile Include="aboutdialog.cpp" />
