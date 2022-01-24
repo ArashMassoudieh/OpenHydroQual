@@ -379,7 +379,8 @@ Quan::Quan(QJsonObject& it)
 
 Quan::~Quan()
 {
-    //dtor
+    _timeseries.clear(); 
+    precalcfunction.clear(); 
 }
 
 Quan::Quan(const Quan& other)

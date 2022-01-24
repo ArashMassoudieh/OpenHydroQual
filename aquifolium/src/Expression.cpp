@@ -47,7 +47,8 @@ Expression::Expression(string S)
 	#ifdef Debug_mode
 	//cout<<text<<endl;
 	#endif // Debug_mode
-
+	funcs.clear(); 
+	opts.clear();
 	funcs.push_back("_min");
 	funcs.push_back("_max");
 	funcs.push_back("_exp");
@@ -184,6 +185,13 @@ Expression::Expression(string S)
 
 Expression::Expression(const Expression & S)
 {
+	operators.clear();
+	funcs.clear(); 
+	terms.clear(); 
+	term_vals.clear();
+	terms_calculated.clear();
+	_errors.clear(); 
+	quan = nullptr;
 	operators = S.operators;
 	constant = S.constant;
 	terms = S.terms;
@@ -203,6 +211,13 @@ Expression::Expression(const Expression & S)
 
 Expression & Expression::operator=(const Expression &S)
 {
+	operators.clear();
+	funcs.clear();
+	terms.clear();
+	term_vals.clear();
+	terms_calculated.clear();
+	_errors.clear();
+	quan = nullptr;
 	operators = S.operators;
 	constant = S.constant;
 	terms = S.terms;
@@ -224,6 +239,13 @@ Expression & Expression::operator=(const Expression &S)
 
 Expression::~Expression(void)
 {
+	operators.clear();
+	funcs.clear();
+	_errors.clear();
+	terms.clear();
+	term_sources.clear();
+	term_vals.clear();
+	terms_calculated.clear();
 }
 
 vector<string> Expression::extract_operators(string s)
