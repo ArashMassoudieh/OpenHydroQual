@@ -1240,14 +1240,14 @@ void MainWindow::showgraph()
     {
         if (act->text()=="Distribution")
         {
-            Plotter* plot = Plot(GetSystem()->parameter(item.toStdString())->GetPosteriorDistribution());
+            Plotter* plot = Plot(GetSystem()->parameter(item.toStdString())->GetPosteriorDistribution(),false);
             plot->AddData(GetSystem()->parameter(item.toStdString())->PriorDistribution());
             plot->SetYAxisTitle("Density");
             plot->SetXAxisTitle(item);
         }
         else if (act->text()=="Marcov Chain")
         {
-            Plotter* plot = Plot(GetSystem()->parameter(item.toStdString())->GetMCMCSamples());
+            Plotter* plot = Plot(GetSystem()->parameter(item.toStdString())->GetMCMCSamples(),false);
             plot->SetYAxisTitle(item);
             plot->SetXAxisTitle("Sample");
         }
@@ -1911,19 +1911,19 @@ void MainWindow::onmcmc()
 }
 
 
-Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem)
+Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime)
 {
     Plotter* plotter = new Plotter(this);
-    plotter->PlotData(plotitem);
+    plotter->PlotData(plotitem,allowtime);
     plotter->show();
     return plotter;
 }
 
-Plotter* MainWindow::Plot(CTimeSeriesSet<timeseriesprecision>& plotitem)
+Plotter* MainWindow::Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime)
 {
     Plotter* plotter = new Plotter(this);
     qDebug()<<"plotting ...";
-    plotter->PlotData(plotitem);
+    plotter->PlotData(plotitem, allowtime);
     qDebug()<<"Showing plot";
     plotter->show();
     return plotter;
@@ -1933,9 +1933,9 @@ Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSe
 {
     Plotter* plotter = new Plotter(this);
     if (plotmodeled.n>0)
-        plotter->PlotData(plotmodeled,"line");
+        plotter->PlotData(plotmodeled,false, "line");
     if (plotobserved.n>0)
-    plotter->AddData(plotobserved,"dots");
+    plotter->AddData(plotobserved,false, "dots");
     plotter->show();
     return plotter;
 }

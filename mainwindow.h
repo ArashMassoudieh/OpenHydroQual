@@ -35,9 +35,9 @@ public:
     void PopulatePropertyTable(QuanSet* quanset);
     void RecreateGraphicItemsFromSystem(bool zoom_all=true);
     void RefreshTreeView();
-    Plotter* Plot(CTimeSeries<timeseriesprecision>& plotitem);
+    Plotter* Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);
-    Plotter* Plot(CTimeSeriesSet<timeseriesprecision>& plotitem);
+    Plotter* Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime=true);
     string CreateNewName(string type);
     DiagramView* GetDiagramView() { return dView; }
     bool Log(const QString &s);

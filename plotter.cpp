@@ -46,22 +46,22 @@ Plotter::~Plotter()
 
 
 
-bool Plotter::PlotData(const CTimeSeriesSet<timeseriesprecision>& BTC, string style)
+bool Plotter::PlotData(const CTimeSeriesSet<timeseriesprecision>& BTC, bool allowtime, string style)
 {
     qDebug()<<"plot 0";
     qDebug()<<"nvars = " << BTC.nvars;
-    PlotData(BTC[0]);
+    PlotData(BTC[0],allowtime);
 
     for (unsigned int i=1; i<BTC.nvars; i++)
     {
         qDebug()<<"plot " << i;
-        AddData(BTC[i]);
+        AddData(BTC[i],allowtime);
     }
     qDebug()<<"All plots added";
     return true;
 }
 
-bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, string style)
+bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, bool allowtime, string style)
 {
     minx=1e12;
     maxx=-1e12;
@@ -76,6 +76,9 @@ bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, string style
     QVector<double> x, y; // initialize with entries 0..100
     format.push_back(plotformat());
     if (format[format.size()-1].xAxisTimeFormat && ((BTC.GetT(BTC.n - 1) - BTC.GetT(0)) < 5 || BTC.GetT(BTC.n - 1)< 18264))
+        format[format.size()-1].xAxisTimeFormat = false;
+
+    if (!allowtime)
         format[format.size()-1].xAxisTimeFormat = false;
 
     if (format[format.size()-1].xAxisTimeFormat)
@@ -368,7 +371,7 @@ void Plotter::refreshFormat()
 
 
 
-bool Plotter::AddData(const CTimeSeries<timeseriesprecision>& BTC, string style)
+bool Plotter::AddData(const CTimeSeries<timeseriesprecision>& BTC, bool allowtime, string style)
 {
     minx=1e12;
     maxx=-1e12;
@@ -384,6 +387,8 @@ bool Plotter::AddData(const CTimeSeries<timeseriesprecision>& BTC, string style)
     if (format[format.size()-1].xAxisTimeFormat && ((BTC.GetT(BTC.n - 1) - BTC.GetT(0)) < 5 || BTC.GetT(BTC.n - 1)< 18264))
         format[format.size()-1].xAxisTimeFormat = false;
 
+    if (!allowtime)
+        format[format.size()-1].xAxisTimeFormat = false;
     if (format[format.size()-1].xAxisTimeFormat)
     {
         QDateTime start = QDateTime::fromTime_t(xtoTime(BTC.GetT(0)), QTimeZone(0));
@@ -776,5 +781,6 @@ void Plotter::Deselect()
       }
     }
 }
+
 
 
