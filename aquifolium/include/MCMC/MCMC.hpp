@@ -411,7 +411,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 #endif
 
 #pragma omp parallel for
-        for (unsigned int jj = kk; jj < min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples); jj++)
+        for (int jj = kk; jj < min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples); jj++)
 		{
             //qDebug() << "Starting step: " + QString::number(jj);
             bool stepstuck = !step(jj);
@@ -701,7 +701,7 @@ void CMCMC<T>::ProduceRealizations(CTimeSeriesSet<double> &MCMCout)
 
         omp_set_num_threads(MCMC_Settings.numberOfThreads);
 #pragma omp parallel for
-        for (unsigned int j = 0; j < min(MCMC_Settings.numberOfThreads, MCMC_Settings.number_of_post_estimate_realizations - jj*MCMC_Settings.numberOfThreads); j++)
+        for (int j = 0; j < min(MCMC_Settings.numberOfThreads, MCMC_Settings.number_of_post_estimate_realizations - jj*MCMC_Settings.numberOfThreads); j++)
 		{
             Sys1[j] = *Model;
             vector<double> sampled_parameters = MCMCout.getrandom(MCMC_Settings.burnout_samples);

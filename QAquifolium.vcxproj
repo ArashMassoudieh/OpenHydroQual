@@ -183,7 +183,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;release;C:\Qt\5.15.1\msvc2019_64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>aquifolium\include\MCMC;aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;release;C:\Qt\5.15.1\msvc2019_64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>release\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -300,7 +300,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\Qt\5.15.1\msvc2019_64\include;debug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>aquifolium\include\MCMC;aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\Qt\5.15.1\msvc2019_64\include;debug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>debug\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -441,6 +441,8 @@
     <ClInclude Include="aquifolium\include\Link.h" />
     <ClInclude Include="aquifolium\include\Matrix.h" />
     <ClInclude Include="aquifolium\include\Matrix_arma.h" />
+    <ClInclude Include="aquifolium\include\MCMC\MCMC.h" />
+    <ClInclude Include="aquifolium\include\MCMC\MCMC.hpp" />
     <ClInclude Include="aquifolium\include\MetaModel.h" />
     <ClInclude Include="aquifolium\include\NormalDist.h" />
     <ClInclude Include="aquifolium\include\Object.h" />

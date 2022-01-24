@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.0.16"
-#define last_modified "December 9, 2021"
+#define openhydroqual_version "1.0.18"
+#define last_modified "January 23, 2022"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -1085,7 +1085,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
             QMenu* results = menu->addMenu("Results");
             timeseriestobeshown = "Time Series";
             QAction* graphaction = results->addAction(timeseriestobeshown);
-            QVariant v = QVariant::fromValue(QString::fromStdString(system.objectivefunction(nd->text(0).toStdString())->GetOutputItem()));
+            QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.objectivefunction(nd->text(0).toStdString())->GetOutputItem()));
             graphaction->setData(v);
             //called_by_clicking_on_graphical_object = true;
             connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
@@ -1095,7 +1095,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
             QMenu* results = menu->addMenu("Results");
             timeseriestobeshown = "Modeled vs Measured";
             QAction* graphaction = results->addAction(timeseriestobeshown);
-            QVariant v = QVariant::fromValue(QString::fromStdString(system.observation(nd->text(0).toStdString())->GetOutputItem()));
+            QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.observation(nd->text(0).toStdString())->GetOutputItem()));
             graphaction->setData(v);
             graphaction->setProperty("object",QString::fromStdString(system.observation(nd->text(0).toStdString())->GetName()));
             //called_by_clicking_on_graphical_object = true;
@@ -1109,7 +1109,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
             {
                 if (GetSystem()->source(nd->text(0).toStdString())->Variable("timeseries")->GetTimeSeries()!=nullptr)
                 {   QAction* graphaction = menu->addAction(timeseriestobeshown);
-                    QVariant v = QVariant::fromValue(nd->text(0));
+                    QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + nd->text(0));
                     graphaction->setData(v);
                     //called_by_clicking_on_graphical_object = true;
                     connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
@@ -1142,7 +1142,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         {
             timeseriestobeshown = QString::fromStdString(system.object(nd->text(0).toStdString())->ItemswithOutput()[i]);
             QAction* graphaction = results->addAction(timeseriestobeshown);
-            QVariant v = QVariant::fromValue(QString::fromStdString(system.object(nd->text(0).toStdString())->Variable(timeseriestobeshown.toStdString())->GetOutputItem()));
+            QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->Variable(timeseriestobeshown.toStdString())->GetOutputItem()));
             graphaction->setData(v);
             //called_by_clicking_on_graphical_object = true;
             connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
@@ -1156,14 +1156,14 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
             if (system.parameter(nd->text(0).toStdString())->GetPosteriorDistribution().n!=0)
             {
                 QAction* graphaction = posterior_results->addAction("Distribution");
-                QVariant v = QVariant::fromValue(QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
+                QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
                 graphaction->setData(v);
                 connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
             }
             if (system.parameter(nd->text(0).toStdString())->GetMCMCSamples().nvars!=0)
             {
                 QAction* graphaction = posterior_results->addAction("Marcov Chain");
-                QVariant v = QVariant::fromValue(QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
+                QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
                 graphaction->setData(v);
                 connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
             }
@@ -1177,14 +1177,14 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
             if (system.observation(nd->text(0).toStdString())->Realizations().nvars!=0)
             {
                 QAction* graphaction = posterior_results->addAction("Realizations");
-                QVariant v = QVariant::fromValue(QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
+                QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
                 graphaction->setData(v);
                 connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
             }
             if (system.observation(nd->text(0).toStdString())->Percentile95().nvars!=0)
             {
                 QAction* graphaction = posterior_results->addAction("95 percent bracket");
-                QVariant v = QVariant::fromValue(QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
+                QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
                 graphaction->setData(v);
                 connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
             }
@@ -1202,8 +1202,10 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
 void MainWindow::showgraph()
 {
     QAction* act = qobject_cast<QAction*>(sender());
-    QString item = act->data().toString();
-    if (timeseriestobeshown == "Precipitation")
+    QStringList keys = act->data().toString().split(";");
+    QString key2 = keys[0];
+    QString item = keys[1];
+    if (key2 == "Precipitation")
     {
         if (GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries() != nullptr)
         {
@@ -1212,7 +1214,7 @@ void MainWindow::showgraph()
         }
     return;
     }
-    if (timeseriestobeshown == "Modeled vs Measured")
+    if (key2 == "Modeled vs Measured")
     {
         QString object = act->property("object").toString();
         if (GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries() != nullptr)
@@ -1234,7 +1236,7 @@ void MainWindow::showgraph()
             plot->SetYAxisTitle(act->text());
         }
     }
-    else if (timeseriestobeshown == "distribution")
+    else if (key2 == "distribution")
     {
         if (act->text()=="Distribution")
         {
@@ -1250,7 +1252,7 @@ void MainWindow::showgraph()
             plot->SetXAxisTitle("Sample");
         }
     }
-    else if (timeseriestobeshown == "posterior")
+    else if (key2 == "posterior")
     {
         if (act->text()=="Realizations")
         {
