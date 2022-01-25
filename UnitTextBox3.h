@@ -39,9 +39,9 @@ public:
     }
 
     ~UnitTextBox3(){
-        delete textBox;
-        delete unitBox;
-        delete validator;
+        //delete textBox;
+        //delete unitBox;
+        //delete validator;
     }
 
     void updateContextMenu(bool openFileMenu)

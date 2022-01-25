@@ -46,9 +46,9 @@ public:
 		//		QObject::connect(textBox, SIGNAL(textChanged(const QString & text)), this, SIGNAL(editingFinished()));
 	};
     ~UnitTextBox(){
-        delete textBox;
-        delete unitBox;
-        delete validator;
+        //if (textBox) delete textBox;
+        //if (unitBox) delete unitBox;
+        //if (validator) delete validator;
     };
 	void paintEvent(QPaintEvent * event)
 	{
@@ -84,10 +84,10 @@ public:
 	QRect rect() const { return Rect; };
 	QString defaultUnit;
 private:
-	QComboBox *unitBox;
-	QLineEdit *textBox;
+    QComboBox *unitBox = nullptr;
+    QLineEdit *textBox = nullptr;
 	QRect Rect;
-	QDoubleValidator *validator;
+    QDoubleValidator *validator = nullptr;
 public slots:
 signals:
 /*	
