@@ -63,10 +63,6 @@ bool Plotter::PlotData(const CTimeSeriesSet<timeseriesprecision>& BTC, bool allo
 
 bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, bool allowtime, string style)
 {
-    minx=1e12;
-    maxx=-1e12;
-    miny=1e12;
-    maxy=-1e12;
     maxx = max(BTC.GetT(0),maxx);
     maxy = max(BTC.maxC(),maxy);
     minx = min(BTC.GetT(BTC.n-1),minx);
@@ -134,7 +130,7 @@ bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, bool allowti
     {   plot->xAxis->setRange(xtoTime(BTC.GetT(0)), xtoTime(BTC.GetT(BTC.n-1)));
         tickstep = (xtoTime(BTC.GetT(BTC.n-1)) - xtoTime(BTC.GetT(0)))/10;
     }
-    plot->yAxis->setRange(BTC.minC()-0.001, BTC.maxC()+0.001);
+    plot->yAxis->setRange(miny, maxy);
 
 
     plot->replot();
@@ -373,10 +369,6 @@ void Plotter::refreshFormat()
 
 bool Plotter::AddData(const CTimeSeries<timeseriesprecision>& BTC, bool allowtime, string style)
 {
-    minx=1e12;
-    maxx=-1e12;
-    miny=1e12;
-    maxy=-1e12;
     maxx = max(BTC.GetT(0),maxx);
     maxy = max(BTC.maxC(),maxy);
     minx = min(BTC.GetT(BTC.n-1),minx);
@@ -441,7 +433,7 @@ bool Plotter::AddData(const CTimeSeries<timeseriesprecision>& BTC, bool allowtim
     {   plot->xAxis->setRange(xtoTime(BTC.GetT(0)), xtoTime(BTC.GetT(BTC.n-1)));
         tickstep = (xtoTime(BTC.GetT(BTC.n-1)) - xtoTime(BTC.GetT(0)))/10;
     }
-    plot->yAxis->setRange(BTC.minC()-0.001, BTC.maxC()+0.001);
+    plot->yAxis->setRange(miny, maxy);
     return true;
 
 }

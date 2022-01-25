@@ -51,17 +51,17 @@ void RunTimeWindow::AddDataPoint(const double &t, const double value, int graph_
     if (graph_no==0)
     {   plot->graph(0)->addData(t,value);
         if (value>plot->yAxis->range().upper)
-            plot->yAxis->setRange(0,value*1.3);
+            plot->yAxis->setRange(plot->yAxis->range().lower,value*1.3);
         if (value<plot->yAxis->range().lower)
-            plot->yAxis->setRange(0,value*1.3);
+            plot->yAxis->setRange(value*1.3,plot->yAxis->range().upper);
     }
     if (graph_no==1)
         if (plot2)
         {   plot2->graph(0)->addData(t,value);
             if (value>plot2->yAxis->range().upper)
-                plot2->yAxis->setRange(0,value*1.3);
+                plot2->yAxis->setRange(plot->yAxis->range().lower,value*1.3);
             if (value<plot->yAxis->range().lower)
-                plot2->yAxis->setRange(0,value*1.3);
+                plot2->yAxis->setRange(value*1.3,plot->yAxis->range().upper);
         }
 
 
