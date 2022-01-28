@@ -17,7 +17,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation,Evapotranspiration",
+      "inflow": "Precipitation,Evapotranspiration,loss",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "false",
@@ -36,6 +36,14 @@
       "includeinoutput": "true",
       "description": "Evapotranspiration",
       "ask_user": "true",
+      "delegate": "ComboBox;Sources"
+    },
+    "loss": {
+      "type": "expression",
+      "expression": "-loss_coefficient*Storage",
+      "includeinoutput": "true",
+      "description": "Loss rate",
+      "ask_user": "false",
       "delegate": "ComboBox;Sources"
     },
     "area": {
@@ -95,6 +103,21 @@
       "description": "Average water head",
       "ask_user": "false",
       "includeinoutput": "true"
+    },
+    "depression_storage": {
+      "type": "value",
+      "description": "Depression storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in"
+    },
+    "loss_coefficient": {
+      "type": "value",
+      "default": "0", 
+      "description": "Loss coefficient",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day;1/hr"
     }
   },
   "Precipitation": {
@@ -256,7 +279,7 @@
     "flow": {
       "type": "expression",
       "description" : "Flow",
-      "expression": "86400*(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(_pos(depth.s)^1.666667)",
+      "expression": "86400*(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(_pos(depth.s-depression_storage.s)^1.666667)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
