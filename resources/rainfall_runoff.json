@@ -15,7 +15,7 @@
 	      "type": "balance",
 	      "massbalance": "true",
 	      "flow": "flow",
-	      "inflow": "Precipitation",
+	      "inflow": "Precipitation,Evapotranspiration,loss",
 	      "includeinoutput": "true",
 	      "description": "Storage",
 	      "ask_user": "false",
@@ -29,6 +29,21 @@
 	      "ask_user": "true",
 	      "delegate": "ComboBox;Sources"
 	    },
+		"Evapotranspiration": {
+		  "type": "source",
+		  "includeinoutput": "true",
+		  "description": "Evapotranspiration",
+		  "ask_user": "true",
+		  "delegate": "ComboBox;Sources"
+		},
+		"loss": {
+		  "type": "expression",
+		  "expression": "-loss_coefficient*Storage",
+		  "includeinoutput": "true",
+		  "description": "Loss rate",
+		  "ask_user": "false",
+		  "delegate": "ComboBox;Sources"
+		},
 	    "area": {
 	      "type": "value",
 	      "description": "Catchment area",
@@ -70,7 +85,22 @@
 	      "description": "Average water head",
 	      "ask_user": "false",
 	      "includeinoutput": "true"
-	    }
+	    },
+		"depression_storage": {
+		  "type": "value",
+		  "description": "Depression storage",
+		  "ask_user": "true",
+		  "delegate": "UnitBox",
+		  "unit": "m;ft;cm;in"
+		},
+		"loss_coefficient": {
+		  "type": "value",
+		  "default": "0", 
+		  "description": "Loss coefficient",
+		  "ask_user": "true",
+		  "delegate": "UnitBox",
+		  "unit": "1/day;1/hr"
+		}
 	  },
 	  "distributed_catchment_link": {
 	    "type": "link",
@@ -102,7 +132,7 @@
 	     },
 	     "depth": {
 	      "type": "expression",
-	      "expression": "_hsd(head.s-head.e)*depth.s+_hsd(head.e-head.s)*depth.e",
+	      "expression": "_hsd(head.s-head.e)*_pos(depth.s-depression_storage.s)+_hsd(head.e-head.s)*_pos(depth.e-depression_storage.e)",
 	      "description": "Flow depth",
 	      "includeinoutput": "true"
 	     },
@@ -121,7 +151,7 @@
 	    }, 
 	    "flow": {
 	      "type": "expression",
-              "description": "Flow",
+          "description": "Flow",
 	      "expression": "86400*(Width/ManningCoeff)*_sqt(hydraulic_gradient)*(_pos(depth)^1.666667)",
 	      "includeinoutput": "true",
 	      "applylimit": "true",
@@ -150,8 +180,8 @@
 	      "type": "value",
 	      "description": "The width of flow",
 	      "ask_user": "true",
-             "delegate": "UnitBox",
-              "unit": "m;ft",
+          "delegate": "UnitBox",
+          "unit": "m;ft",
 	      "estimate": "true"
 	     },
 	     "Length": {
@@ -164,7 +194,7 @@
 	     },
 	     "hydraulic_gradient": {
 	      "type": "expression",
-      	      "description": "Hydraulic gradient",
+      	  "description": "Hydraulic gradient",
 	      "expression": "(head.s-head.e)/Length",
 	      "includeinoutput": "true",
 	      "ask_user": "false"
@@ -172,7 +202,7 @@
 	    "flow": {
 	      "type": "expression",
 	      "description": "Flow",
-	      "expression": "86400*(Width/ManningCoeff.s)*_sqr(hydraulic_gradient)*(_pos(depth.s)^1.666667)",
+	      "expression": "86400*(Width/ManningCoeff.s)*_sqr(hydraulic_gradient)*(_pos(depth.s-depression_storage.s)^1.666667)",
 	      "includeinoutput": "true",
 	      "applylimit": "true",
 	      "ask_user": "false"
@@ -209,7 +239,7 @@
 	      "description": "Centroid to centroid distance of the catchments",
 	      "ask_user": "true",
 	      "delegate": "UnitBox",
-              "unit": "m;ft",
+          "unit": "m;ft",
 	      "estimate": "true"
 	     },
 	     "hydraulic_gradient": {
@@ -222,7 +252,7 @@
 	    "flow": {
 	      "type": "expression",
 	      "description": "Flow",
-	      "expression": "86400*(Width/ManningCoeff.s)*_sqt(hydraulic_gradient)*(_pos(depth.s)^1.666667)",
+	      "expression": "86400*(Width/ManningCoeff.s)*_sqt(hydraulic_gradient)*(_pos(depth.s-depression_storage.s)^1.666667)",
 	      "includeinoutput": "true",
 	      "applylimit": "true",
 	      "ask_user": "false"
