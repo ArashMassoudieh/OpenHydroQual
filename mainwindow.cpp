@@ -2017,6 +2017,7 @@ void MainWindow::addplugin(const QString &fileName)
     {
         if (system.AppendQuanTemplate(fileName.toStdString()))
         {   ui->mainToolBar->clear();
+            system.AddConstituentRelatePropertiestoMetalModel();
             BuildObjectsToolBar();
             ReCreateObjectsMenu();
             RefreshTreeView();
@@ -2034,7 +2035,6 @@ void MainWindow::adddefaultpluging()
 {
     Wizard_select_dialog *Wizard_Select_Form = new Wizard_select_dialog(this);
     Wizard_Select_Form->show();
-
 }
 
 void MainWindow::optionsdialog()

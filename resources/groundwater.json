@@ -2,6 +2,7 @@
   "Groundwater cell": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Groundwater cell",
     "icon": {
       "filename": "Groundwater.png"
     },
@@ -313,7 +314,7 @@
       "ask_user": "false"
 	}
    },
-	"lake2groundwater_link": {
+   "lake2groundwater_link": {
     "type": "link",
     "typecategory": "Connectors",
     "description": "Lake to groundwater link",

@@ -2967,15 +2967,20 @@ bool System::AddAllConstituentRelateProperties(Block *blk)
         vector<Quan> quanstobecopied = GetToBeCopiedQuantities(constituent(i),object_type::block);
         for (unsigned int j=0; j<quanstobecopied.size(); j++)
         {
-            if (blk->GetVars()->Count(quanstobecopied[j].GetName())==0)
-            {   blk->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
-                blk->Variable(quanstobecopied[j].GetName())->SetParent(blk);
-                quantityordertobechanged.push_back(quanstobecopied[j].GetName());
+            if (blk)
+            {   if (blk->GetVars()->Count(quanstobecopied[j].GetName())==0)
+                {   blk->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+                    blk->Variable(quanstobecopied[j].GetName())->SetParent(blk);
+                    quantityordertobechanged.push_back(quanstobecopied[j].GetName());
+                }
             }
+
         }
     }
-    for (unsigned int i=0; i<quantityordertobechanged.size(); i++)
-        blk->GetVars()->Quantity_Order().push_back(quantityordertobechanged[i]);
+    if (blk)
+    {   for (unsigned int i=0; i<quantityordertobechanged.size(); i++)
+            blk->GetVars()->Quantity_Order().push_back(quantityordertobechanged[i]);
+    }
     return true;
 }
 
@@ -3042,9 +3047,24 @@ bool System::AddAllConstituentRelateProperties(Source *src)
 }
 
 
+void System::AddConstituentRelatePropertiestoMetalModel()
+{
+    for (unsigned int j=0; j<ConstituentsCount(); j++)
+        AddConstituentRelateProperties(constituent(j));
+}
+
 bool System::AddConstituentRelateProperties(Constituent *consttnt)
 {
     vector<Quan> quanstobecopied = GetToBeCopiedQuantities(consttnt,object_type::block);
+    for (map<string, QuanSet>::iterator it = metamodel.begin(); it!=metamodel.end(); it++)
+    {
+        for (unsigned int j=0; j<quanstobecopied.size(); j++)
+        {   if (it->second.Count(quanstobecopied[j].GetName())==0 && aquiutils::tolower(metamodel.GetItem(it->first)->ObjectType) == "block")
+            {
+                metamodel.GetItem(it->first)->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+            }
+        }
+    }
     for (unsigned int i=0; i<blocks.size(); i++)
     {
         vector<string> quantityordertobechanged;
@@ -3057,6 +3077,15 @@ bool System::AddConstituentRelateProperties(Constituent *consttnt)
         }
     }
     quanstobecopied = GetToBeCopiedQuantities(consttnt,object_type::link);
+    for (map<string, QuanSet>::iterator it = metamodel.begin(); it!=metamodel.end(); it++)
+    {
+        for (unsigned int j=0; j<quanstobecopied.size(); j++)
+        {   if (it->second.Count(quanstobecopied[j].GetName())==0 &&aquiutils::tolower(metamodel.GetItem(it->first)->ObjectType) == "link")
+            {
+                metamodel.GetItem(it->first)->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+            }
+        }
+    }
     for (unsigned int i=0; i<links.size(); i++)
     {
         vector<string> quantityordertobechanged;
@@ -3069,6 +3098,15 @@ bool System::AddConstituentRelateProperties(Constituent *consttnt)
         }
     }
     quanstobecopied = GetToBeCopiedQuantities(consttnt,object_type::reaction);
+    for (map<string, QuanSet>::iterator it = metamodel.begin(); it!=metamodel.end(); it++)
+    {
+        for (unsigned int j=0; j<quanstobecopied.size(); j++)
+        {   if (it->second.Count(quanstobecopied[j].GetName())==0 && aquiutils::tolower(metamodel.GetItem(it->first)->ObjectType) == "reaction")
+            {
+                metamodel.GetItem(it->first)->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+            }
+        }
+    }
     for (unsigned int i=0; i<reactions.size(); i++)
     {
         vector<string> quantityordertobechanged;

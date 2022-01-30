@@ -336,10 +336,11 @@ class System: public Object
         vector<Quan> GetToBeCopiedQuantities(Constituent *consttnt, const object_type &object_typ = object_type::none);
         bool AddAllConstituentRelateProperties();
         bool AddConstituentRelateProperties(Constituent *constituent);
-        bool AddAllConstituentRelateProperties(Block *blk);
-        bool AddAllConstituentRelateProperties(Link *lnk);
-        bool AddAllConstituentRelateProperties(Reaction *rxn);
-        bool AddAllConstituentRelateProperties(Source *src);
+        bool AddAllConstituentRelateProperties(Block *blk = nullptr);
+        bool AddAllConstituentRelateProperties(Link *lnk = nullptr);
+        bool AddAllConstituentRelateProperties(Reaction *rxn = nullptr);
+        bool AddAllConstituentRelateProperties(Source *src = nullptr);
+        void AddConstituentRelatePropertiestoMetalModel();
         void RenameConstituents(const string &oldname, const string &newname);
         vector<string> AllConstituents();
         vector<string> AllReactionParameters();
