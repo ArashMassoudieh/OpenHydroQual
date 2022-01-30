@@ -55,6 +55,7 @@
   "Reactor": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Reactor",
     "icon": {
       "filename": "reactor.png"
     },
@@ -74,6 +75,7 @@
   "Settling element": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Settling element",
     "icon": {
       "filename": "Settling_element.png"
     },

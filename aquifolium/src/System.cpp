@@ -1989,7 +1989,7 @@ vector<string> System::GetAllSourceTypes()
 	for (map<string, QuanSet>::iterator it = metamodel.GetMetaModel()->begin(); it != metamodel.GetMetaModel()->end(); it++)
 		if (it->second.BlockLink == blocklink::source)
 		{
-			ShowMessage(it->first);
+            //ShowMessage(it->first);
 			out.push_back(it->first);
 		}
 
@@ -2045,7 +2045,7 @@ vector<string> System::GetAllTypesOf(const string &type)
 	for (map<string, QuanSet>::iterator it = metamodel.GetMetaModel()->begin(); it != metamodel.GetMetaModel()->end(); it++)
 		if (it->second.CategoryType() == type)
 		{
-			ShowMessage(it->first);
+            //ShowMessage(it->first);
 			out.push_back(it->first);
 		}
 
