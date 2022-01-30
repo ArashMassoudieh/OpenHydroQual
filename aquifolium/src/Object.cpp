@@ -100,6 +100,13 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
         {
             return aquiutils::Pos(var[GetCurrentCorrespondingConstituent()+":"+s].GetVal(tmg));
         }
+        if (parent->constituent(aquiutils::split(s,':')[0]) && aquiutils::split(s,':').size()==2)
+        {
+            if (parent->constituent(aquiutils::split(s,':')[0])->HasQuantity(aquiutils::split(s,':')[1]))
+            {
+                return parent->constituent(aquiutils::split(s,':')[0])->GetVal(aquiutils::split(s,':')[1],tmg);
+            }
+        }
         else
         {
             Parent()->errorhandler.Append(GetName(),"Object","GetVal","property '" + s + "' does not exist!",1002);
