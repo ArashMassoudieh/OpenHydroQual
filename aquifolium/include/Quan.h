@@ -79,6 +79,7 @@ class Quan
             else
                 return description_graph;
         }
+        string &HelpText() {return helptext;}
         string &Unit() {return unit;}
         string &Units() {return units;}
         string &DefaultUnit() {return default_unit;}
@@ -175,6 +176,7 @@ class Quan
         bool includeinoutput = false;
         bool estimable = false;
         string description;
+        string helptext;
         string description_graph;
         string unit;
         string units;

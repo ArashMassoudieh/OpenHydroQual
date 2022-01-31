@@ -28,6 +28,7 @@
       "type": "source",
       "includeinoutput": "true",
       "description": "precipitation time series",
+      "helptext": "A precipitation source object must be selected.",  
       "ask_user": "true",
       "delegate": "ComboBox;Sources"
     },
@@ -35,6 +36,7 @@
       "type": "source",
       "includeinoutput": "true",
       "description": "Evapotranspiration",
+      "helptext": "A evapotranspiration 'source' object must be selected. In order to add an evapotransporation model a plug-in containing evapotranspiration models first needed to be added to the model",
       "ask_user": "true",
       "delegate": "ComboBox;Sources"
     },
@@ -59,6 +61,7 @@
     "Slope": {
       "type": "value",
       "description": "Catchment slope in the direction of flow",
+      "helptext": "The average slope of the catchment along the dominant flow direction",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
@@ -75,6 +78,7 @@
     "Width": {
       "type": "value",
       "description": "The width of the catchment",
+      "helptext": "The average width of the catchment perpendicular to the dominant flow direction",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
@@ -85,6 +89,7 @@
       "description": "Initial water depth; Water depth",	
       "expression": "Storage/area",
       "description": "Average water depth",
+      "helptext": "The initial depth of the standing water before the simulation start time. Most of the times, this value is zero",
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
       "ask_user": "true",
@@ -93,6 +98,7 @@
     "elevation": {
       "type": "value",
       "description": "Mean elevation of the catchment",
+      "helptext": "The elevation of the centroid of the catchment based on the model datum.",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft"

@@ -121,6 +121,10 @@ Quan::Quan(Json::ValueIterator &it)
             Description(true) = aquiutils::split((*it)["description"].asString(),';')[1];
         }
     }
+    if (it->isMember("helptext"))
+    {
+        HelpText() = (*it)["helptext"].asString();
+    }
 
     if (it->isMember("unit"))
     {
@@ -427,6 +431,7 @@ Quan::Quan(const Quan& other)
     value_star_updated = other.value_star_updated;
     precalcfunction = other.precalcfunction;
     OutputItem = other.OutputItem;
+    helptext = other.helptext;
 	//parent = other.parent;
 }
 
@@ -475,6 +480,7 @@ Quan& Quan::operator=(const Quan& rhs)
     value_star_updated = rhs.value_star_updated;
     precalcfunction = rhs.precalcfunction;
     OutputItem = rhs.OutputItem;
+    helptext = rhs.helptext;
     //parent = rhs.parent;
     return *this;
 }
