@@ -1,0 +1,126 @@
+{
+  "Bed_sediment": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Bed sediment layer",
+    "icon": {
+      "filename": "bed_sediment.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation",
+      "includeinoutput": "true",
+      "description": "Initial Storage; Storage",
+      "initial_value_expression": "length*width*depth*porosity",
+      "ask_user": "false",
+      "estimate": "true"
+    },
+    "hydraulic_conductivity": {
+      "type": "value",
+      "description": "Hydraulic Conductivity",
+      "helptext" : "Hydraulic conductivity of the sediments. \n This value will be used to calculate the water flux into the sediment layer as a result of changes in hydraulic head with the \n overlying water or deeper sediment layers",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;cm/s;in/s;m/s",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "hydraulic_conductivity>0",
+      "warningmessage": "Hydraulic conductivity must be greater than zero"
+    },
+    "K_eff": {
+      "type": "expression",
+      "expression": "hydraulic_conductivity",      
+      "description": "Hydraulic conductivity",
+      "ask_user": "false",
+      "includeinoutput": "false"
+    },
+    "porosity": {
+      "type": "value",
+      "description": "Porosity",
+      "helptext": "Porosity of the sediments", 
+      "ask_user": "true",
+      "default": "0.4",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "specific_storage": {
+      "type": "value",
+      "description": "Specific Storage",
+      "helptext" : "Specific storage of the sediment layer. \n This value will be used to calculate the hydraulic head in the sediment layer in case the water content is different than the porosity.\n The pressure head is calculated as p=(water_content-porosity)/specific_storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/m;1/ft;1/cm;1/in",
+      "estimate": "true",
+      "default": "0.01",
+      "criteria": "specific_storage>0",
+      "warningmessage": "Specific Storage must be greater than zero"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "helptext": "Bottom elelvation of the sediment layer with respect to the model datum",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "value",
+      "description": "Cell Depth",
+      "helptext": "Depth of the sediment layer", 
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "includeinoutput": "false",
+      "criteria": "depth>0",
+      "warningmessage": "Cell depth must be greater than zero"
+    },
+    "water_content": {
+      "type": "expression",
+      "expression": "Storage/(depth*area)",      
+      "description": "Initial Water content; Water content",
+      "helptext": "Initial water content. In most cases the water content should be equal to the porosity of the sediment layer", 
+      "ask_user": "true",
+      "default": "0.4",
+      "delegate": "ValueBox",
+      "includeinoutput": "true"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation+(water_content-porosity)/specific_storage",      
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Element depth",
+      "helptext": "Length of the sediment block. In most cases the length of the sediment block should be equal to the length of the block representing the overlying water",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "includeinoutput": "false",
+      "criteria": "length>0",
+      "warningmessage": "Element length must be greater than zero"
+    },
+    "width": {
+      "type": "value",
+      "description": "Element width",
+      "helptext": "Width of the sediment block. In most cases the length of the sediment block should be equal to the width of the block representing the overlying water",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "includeinoutput": "false",
+      "criteria": "width>0",
+      "warningmessage": "Element width must be greater than zero"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "width*length",
+      "description": "Cell area",
+      "ask_user": "false"
+    }
+  }
+}
