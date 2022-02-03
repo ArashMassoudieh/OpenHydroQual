@@ -13,7 +13,7 @@
 
 using namespace std;
 
-enum class object_type {none, block, link, source, parameter, objective_function, reaction, reaction_parameter, constituent};
+enum class object_type {none, block, link, source, parameter, objective_function, reaction, reaction_parameter, constituent, observation};
 
 class Object
 {
@@ -138,6 +138,8 @@ class Object
         void SetCurrentCorrespondingConstituent(const string s) {current_corresponding_constituent = s; }
         string GetCurrentCorrespondingSource() {return current_corresponding_source; }
         string GetCurrentCorrespondingConstituent() {return current_corresponding_constituent; }
+        object_type ObjectType() {return Object_Type;}
+        void SetObjectType(object_type typ) {Object_Type = typ;}
     protected:
 
     private:
@@ -154,6 +156,7 @@ class Object
         Object *e_Block=nullptr;
         unsigned int s_Block_no, e_Block_no;
         string type;
+        object_type Object_Type;
         double outflowlimitfactor_past = 1;
 		double outflowlimitfactor_current = 1;
         bool limitoutflow = false;

@@ -1586,7 +1586,8 @@ void MainWindow::onexporttosvg()
 
 void MainWindow::onsave()
 {
-    if (filename!="")
+
+    if (filename!="" && filename!="unnamed.scr")
     {   system.SavetoScriptFile(filename.toStdString(),maintemplatefilename, addedtemplatefilenames);
         addToRecentFiles(filename,true);
     }

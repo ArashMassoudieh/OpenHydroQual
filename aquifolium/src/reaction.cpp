@@ -2,7 +2,7 @@
 
 Reaction::Reaction() : Object::Object()
 {
-    //ctor
+    SetObjectType(object_type::reaction);
 }
 
 Reaction::~Reaction()

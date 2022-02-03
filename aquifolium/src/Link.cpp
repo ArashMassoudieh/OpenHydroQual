@@ -4,7 +4,7 @@
 
 Link::Link():Object::Object()
 {
-    //ctor
+    SetObjectType(object_type::link);
 }
 
 Link::~Link()

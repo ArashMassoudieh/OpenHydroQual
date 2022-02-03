@@ -6,7 +6,7 @@
 
 Parameter::Parameter(): Object::Object()
 {
-    //ctor
+    SetObjectType(object_type::parameter);
 }
 
 Parameter::~Parameter()

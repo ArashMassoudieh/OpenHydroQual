@@ -29,6 +29,7 @@ Object::Object(const Object& other)
 	type = other.type;
 	limitoutflow = false;
     primary_key = other.primary_key;
+    Object_Type = other.Object_Type;
 	SetAllParents();
 }
 
@@ -46,7 +47,8 @@ Object& Object::operator=(const Object& rhs)
     SetAllParents();
 	outflowlimitfactor_current = 1; 
 	outflowlimitfactor_past = 1;
-	limitoutflow = false; 
+    limitoutflow = false;
+    Object_Type = rhs.Object_Type;
     return *this;
 }
 
@@ -135,6 +137,8 @@ double Object::GetVal(const string& variable, const string& consttnt, const Expr
     }
 
 }
+
+
 
 double Object::GetVal(Quan* quan,const Expression::timing &tmg, bool limit)
 {
