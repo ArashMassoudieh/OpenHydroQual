@@ -114,8 +114,8 @@ class Object
         string toCommandSetAsParam();
         vector<string> ItemswithOutput();
         vector<string> quantitative_variable_list() {return var.quantitative_variable_list();}
-        vector<string> *operators();
-        vector<string> *functions();
+        unique_ptr<vector<string>> &operators();
+        unique_ptr<vector<string>> &functions();
         string& lasterror() {
             return last_error;
         }

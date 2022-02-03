@@ -612,10 +612,12 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
     {
         if (term_sources.size() > i2)
             for (unsigned int k=0; k<terms_source_counter[i2]; k++)
-                if (aquiutils::lookup(term_sources[term_sources[i2][k]],term_sources[i1][j])==-1)
+            {   vector<int> vec = term_sources[term_sources[i2][k]];
+                if (aquiutils::lookup(vec,term_sources[i1][j])==-1)
                 {   term_sources[term_sources[i2][k]][terms_source_counter[term_sources[i2][k]]]=term_sources[i1][j];
                     terms_source_counter[term_sources[i2][k]]++;
                 }
+            }
 
     }
     if (term_sources.size() > i2)

@@ -34,7 +34,7 @@ void System::PopulateOperatorsFunctions()
     }
 #endif
 
-    operators = new vector<string>;
+    operators.reset(new vector<string>);
     operators->push_back("+");
     operators->push_back("-");
     operators->push_back("*");
@@ -44,7 +44,7 @@ void System::PopulateOperatorsFunctions()
     operators->push_back(")");
     operators->push_back(":");
 
-    functions = new vector<string>;
+    functions.reset(new vector<string>);
     functions->push_back("abs");
     functions->push_back("sgn");
     functions->push_back("exp");
@@ -58,10 +58,7 @@ void System::PopulateOperatorsFunctions()
 
 System::~System()
 {
-    delete operators;
-    delete functions;
-    
-    clear(); 
+    clear();
     //dtor
 }
 

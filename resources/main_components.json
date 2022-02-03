@@ -781,6 +781,7 @@
   },
   "ReactionParameter": {
     "type": "ReactionParameter",
+    "description": "Reaction Parameter",
     "typecategory": "Reaction Parameters",
     "icon": {
       "filename": "reactionparameter.png"

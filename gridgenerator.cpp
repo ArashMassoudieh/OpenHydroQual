@@ -120,6 +120,7 @@ void GridGenerator::on_Selected_block_changed()
 
     ui->tab_BlockProperties->setEnabled(true);
     ui->pushButtonNext->setEnabled(true);
+    ui->pushButtonGenerate->setEnabled(true);
 
 }
 
@@ -143,7 +144,7 @@ void GridGenerator::on_Selected_link_changed()
     ui->tab_LinkProperties_x->setEnabled(true);
     ui->tab_LinkProperties_y->setEnabled(true);
     ui->pushButtonNext->setEnabled(true);
-    ui->pushButtonGenerate->setEnabled(true);
+
     connectLinkTextBoxes();
 
 }
@@ -696,7 +697,8 @@ void GridGenerator::on_Generate()
 {
     mainwindow->undoData.SetActiveSystem(system());
     GenerateBlocks();
-    GenerateLinks();
+    if (Link_type_selected!="")
+        GenerateLinks();
 
     mainwindow->RefreshTreeView();
     mainwindow->GetDiagramView()->repaint();

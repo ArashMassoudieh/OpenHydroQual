@@ -219,12 +219,28 @@ CVector Block::GetAllReactionRates(Expression::timing t)
 double Block::GetAvgOverLinks(const string& variable,const Expression::timing &tmg)
 {
     double sum=0;
-    for (unsigned int i=0; i<GetLinksFrom().size(); i++)
-        sum+= GetLinksFrom()[i]->GetVal(variable,tmg);
-    for (unsigned int i=0; i<GetLinksTo().size(); i++)
-        sum+= GetLinksTo()[i]->GetVal(variable,tmg);
-
-    return sum/(GetLinksFrom().size()+GetLinksTo().size());
+    double count = 0;
+    vector<Link*> linksto = GetLinksTo();
+    vector<Link*> linksfrom = GetLinksFrom();
+    for (unsigned int i=0; i<linksfrom.size(); i++)
+    {   if (linksfrom[i]->HasQuantity(variable))
+        {
+            sum+= linksfrom[i]->GetVal(variable,tmg);
+            count++;
+        }
+    }
+    for (unsigned int i=0; i<linksto.size(); i++)
+    {
+        if (linksto[i]->HasQuantity(variable))
+        {
+            sum+= linksto[i]->GetVal(variable,tmg);
+            count ++;
+        }
+    }
+    if (count>0)
+        return sum/count;
+    else
+        return 0;
 }
 
 

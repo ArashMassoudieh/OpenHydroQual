@@ -552,23 +552,21 @@ vector<string> Object::ItemswithOutput()
 }
 
 
-vector<string> *Object::operators()
+unique_ptr<vector<string>> &Object::operators()
 {
     if (parent)
     {
         return parent->operators;
     }
-    else return nullptr;
+
+
 }
-vector<string> *Object::functions()
+unique_ptr<vector<string>> &Object::functions()
 {
     if (parent)
     {
         return parent->functions;
     }
-
-
-    else return nullptr;
 }
 
 bool Object::RenameConstituents(const string &oldname, const string &newname)
