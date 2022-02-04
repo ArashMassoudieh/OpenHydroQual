@@ -496,6 +496,31 @@
       "estimate": "true",
       "unit": "m/s;m/day;ft/s;ft/day"
     },
+    "alpha": {
+      "description": "Alpha coefficient in resuspension rate",
+      "helptext": "The resuspension flux from bed sediments is calculated as:\n e=alpha*(v-v0)^beta",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "beta": {
+      "description": "Beta coefficient in resuspension rate",
+      "helptext": "The resuspension flux from bed sediments is calculated as:\n e=alpha*(v-v0)^beta",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "velocity_0": {
+      "description": "v0, velocity treshold for resuspension",
+      "helptext": "The resuspension flux from bed sediments is calculated as:\n e=alpha*(v-v0)^beta",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit":"m/s;m/day;ft/s;ft/day"
+    },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
       "type": "expression",
@@ -518,7 +543,15 @@
     "masstransfer": {
       "description": "Mass transfer rate",
       "type": "expression",
-      "expression": "_ups(flow;concentration)+(_hsd(bottom_elevation.s-bottom_elevation.e)-0.5)*2*settling_velocity*area*(_hsd(bottom_elevation.s-bottom_elevation.e)*concentration.s+_hsd(bottom_elevation.e-bottom_elevation.s)*concentration.e)",
+      "expression": "_ups(flow;concentration)+(_hsd(bottom_elevation.s-bottom_elevation.e)-0.5)*2*settling_velocity*area*(_hsd(bottom_elevation.s-bottom_elevation.e)*concentration.s-_hsd(bottom_elevation.e-bottom_elevation.s)*concentration.e)-resuspension_rate",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "resuspension_rate": {
+      "description": "Resuspension rate",
+      "type": "expression",
+      "expression": "alpha*(velocity.s-velocity_0)^beta*concentration.e/(concentration.e+0.0001)*area.e",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"
@@ -538,6 +571,34 @@
       "ask_user": "true",
       "role": "copytoblocks",
       "delegate": "ComboBox;Sources"
+    }
+  },
+  "River_bed_sediment_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "River to bed link",
+    "icon": {
+      "filename": "River2BedLink.png"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "depth.e/2",
+      "description": "Length",
+      "includeinoutput": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "length.e*width.e",
+      "description": "Length",
+      "includeinoutput": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "expression": "area*(hydraulic_conductivity.e)*(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
     }
   }
 }

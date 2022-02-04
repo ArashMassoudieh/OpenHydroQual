@@ -737,7 +737,7 @@
     "masstransfer": {
       "description": "Mass transfer rate",
       "type": "expression",
-      "expression": "_ups(flow;concentration)+(_hsd(bottom_elevation.s-bottom_elevation.e)-0.5)*2*settling_velocity*area*(_hsd(bottom_elevation.s-bottom_elevation.e)*concentration.s+_hsd(bottom_elevation.e-bottom_elevation.s)*concentration.e)",
+      "expression": "_ups(flow;concentration)+(_hsd(bottom_elevation.s-bottom_elevation.e)-0.5)*2*settling_velocity*area*(_hsd(bottom_elevation.s-bottom_elevation.e)*concentration.s-_hsd(bottom_elevation.e-bottom_elevation.s)*concentration.e)",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"

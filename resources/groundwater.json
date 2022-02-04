@@ -133,6 +133,7 @@
     },
     "flow": {
       "type": "expression",
+      "description": "Flow rate",
       "expression": "0.5*area*(hydraulic_conductivity.s+hydraulic_conductivity.e)*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
