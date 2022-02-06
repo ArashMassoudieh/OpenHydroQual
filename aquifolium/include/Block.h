@@ -35,7 +35,7 @@ class Block: public Object
         CVector GetAllConstituentVals(const string &s, Expression::timing t);
         CVector GetAllReactionRates(vector<Reaction> *rxns, Expression::timing t);
         CVector GetAllReactionRates(Expression::timing t);
-
+        double GetAvgOverLinks(const string& variable,const Expression::timing &tmg);
 
     protected:
 

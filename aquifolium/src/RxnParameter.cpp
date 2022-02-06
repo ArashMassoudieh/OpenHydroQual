@@ -2,7 +2,7 @@
 
 RxnParameter::RxnParameter(): Object::Object()
 {
-    //ctor
+    SetObjectType(object_type::reaction_parameter);
 }
 
 RxnParameter::~RxnParameter()

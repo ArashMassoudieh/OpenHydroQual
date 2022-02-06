@@ -4,12 +4,13 @@
 
 Objective_Function::Objective_Function(): Object::Object()
 {
-    //ctor
+    SetObjectType(object_type::objective_function);
 }
 
 Objective_Function::Objective_Function(System *_system)
 {
     system = _system;
+    SetObjectType(object_type::objective_function);
 }
 
 Objective_Function::Objective_Function(System *_system, const Expression &expr, const string &loc)
@@ -18,6 +19,7 @@ Objective_Function::Objective_Function(System *_system, const Expression &expr, 
     system = _system;
     expression = expr;
     location = loc;
+    SetObjectType(object_type::objective_function);
     
 }
 

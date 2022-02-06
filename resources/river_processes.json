@@ -1,0 +1,604 @@
+{
+  "Bed_sediment": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Bed sediment layer",
+    "icon": {
+      "filename": "bed_sediment.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation",
+      "includeinoutput": "true",
+      "description": "Initial Storage; Storage",
+      "initial_value_expression": "length*width*depth*porosity",
+      "ask_user": "false",
+      "estimate": "true"
+    },
+    "hydraulic_conductivity": {
+      "type": "value",
+      "description": "Hydraulic Conductivity",
+      "helptext" : "Hydraulic conductivity of the sediments. \n This value will be used to calculate the water flux into the sediment layer as a result of changes in hydraulic head with the \n overlying water or deeper sediment layers",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;cm/s;in/s;m/s",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "hydraulic_conductivity>0",
+      "warningmessage": "Hydraulic conductivity must be greater than zero"
+    },
+    "K_eff": {
+      "type": "expression",
+      "expression": "hydraulic_conductivity",      
+      "description": "Hydraulic conductivity",
+      "ask_user": "false",
+      "includeinoutput": "false"
+    },
+    "porosity": {
+      "type": "value",
+      "description": "Porosity",
+      "helptext": "Porosity of the sediments", 
+      "ask_user": "true",
+      "default": "0.4",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "specific_storage": {
+      "type": "value",
+      "description": "Specific Storage",
+      "helptext" : "Specific storage of the sediment layer. \n This value will be used to calculate the hydraulic head in the sediment layer in case the water content is different than the porosity.\n The pressure head is calculated as p=(water_content-porosity)/specific_storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/m;1/ft;1/cm;1/in",
+      "estimate": "true",
+      "default": "0.01",
+      "criteria": "specific_storage>0",
+      "warningmessage": "Specific Storage must be greater than zero"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "helptext": "Bottom elelvation of the sediment layer with respect to the model datum",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "value",
+      "description": "Cell Depth",
+      "helptext": "Depth of the sediment layer", 
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "includeinoutput": "false",
+      "criteria": "depth>0",
+      "warningmessage": "Cell depth must be greater than zero"
+    },
+    "water_content": {
+      "type": "expression",
+      "expression": "Storage/(depth*area)",      
+      "description": "Initial Water content; Water content",
+      "helptext": "Initial water content. In most cases the water content should be equal to the porosity of the sediment layer", 
+      "ask_user": "true",
+      "default": "0.4",
+      "delegate": "ValueBox",
+      "includeinoutput": "true"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation+(water_content-porosity)/specific_storage",      
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Element length",
+      "helptext": "Length of the sediment block. In most cases the length of the sediment block should be equal to the length of the block representing the overlying water",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "includeinoutput": "false",
+      "criteria": "length>0",
+      "warningmessage": "Element length must be greater than zero"
+    },
+    "width": {
+      "type": "value",
+      "description": "Element width",
+      "helptext": "Width of the sediment block. In most cases the length of the sediment block should be equal to the width of the block representing the overlying water",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "includeinoutput": "false",
+      "criteria": "width>0",
+      "warningmessage": "Element width must be greater than zero"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "width*length",
+      "description": "Cell area",
+      "ask_user": "false"
+    }
+  },
+  "River Segment": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "River Segment", 
+    "icon": {
+      "filename": "River.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow,ag_withdrawal,non_ag_withdrawal",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "initial_value_expression": "length*(base_width+side_slope*depth)*depth",
+      "ask_user": "false",
+      "estimate": "true"
+    },
+    "base_width": {
+      "type": "value",
+      "description": "Base Width",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true"
+    },
+    "side_slope": {
+      "type": "value",
+      "description": "Side Slope",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "criteria": "side_slope>0",
+      "warningmessage": "Side slope must be greater than zero"
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's Roughness Coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "(-base_width+_sqt(base_width^2+4*side_slope*Storage/length))/(2*side_slope)",
+      "precalcbasedon": "Storage:log:0.000001:1000000",
+      "description": "Initial Water Depth; Water Depth",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "includeinoutput": "true",
+      "criteria": "depth>-0.0000001",
+      "warningmessage": "Depth must be non-negative"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation",      
+      "description": "Hydraulc Head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "velocity":
+    {
+      "type": "expression",
+      "expression": "velocity.v",
+      "description": "Velocity",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Segment length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "(base_width+side_slope*depth)*depth",
+      "description": "Cross-sectional area",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "perimeter": {
+      "type": "expression",
+      "expression": "base_width+2*_sqt(1+side_slope^2)*depth",
+      "description": "Wetted Perimeter",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "ag_area": {
+      "type": "value",
+      "description": "Area of agriculural land",
+      "ask_user": "true",
+      "helptext": "The area of agricultural land served",
+      "delegate": "UnitBox",
+      "unit": "m~^2",
+      "estimate": "true"
+    },
+    "non_ag_area": {
+      "type": "value",
+      "description": "Area of non-agriculural activity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "helptext": "The area of non-agricultural land served",
+      "unit": "m~^2",
+      "estimate": "true"
+    },
+    "ag_withdrawal": {
+      "type": "expression",
+      "expression": "-ag_area*ag_withdrawal_per_unit_area*depth/(depth+0.05)",
+      "description": "Agricultural Withdrawal",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "non_ag_withdrawal": {
+      "type": "expression",
+      "expression": "-non_ag_area*non_ag_withdrawal_per_unit_area*depth/(depth+0.05)",
+      "description": "Non-Agricultural Withdrawal",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "ag_withdrawal_per_unit_area": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "helptext": "Time-series representing the time variation of agricultural withrawal per unit area served",
+      "description": "Agricultural Withdrawal per unit area",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "non_ag_withdrawal_per_unit_area": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "helptext": "Time-series representing the time variation of non-agricultural withrawal per unit area served",
+      "description": "Non-Agricultural Withdrawal per unit area",
+      "ask_user": "true",
+      "delegate": "Browser"
+    }
+  },
+  "Trapezoidal_Channel_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Link from a river segment to another",
+    "icon": {
+      "filename": "River2River.png"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(_bkw(head;area);0)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "(perimeter.s+perimeter.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Velocity",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "velocity*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
+  "Fixedhead_to_channel": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Link from a fixed head boundary to a channel segment",
+    "icon": {
+      "filename": "fixed2channel.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "(base_width.e+side_slope.e*_pos(head.s-bottom_elevation.e))*_pos(head.s-bottom_elevation.e)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "base_width.e+2*_sqt(1+side_slope.e^2)*_pos(head.s-bottom_elevation.e)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "ManningCoeff.e",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "length.e",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Velocity",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "velocity*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
+  "channel2fixed": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Link from a channel segment to fixed head boundary",
+    "icon": {
+      "filename": "channel2fixed.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(area.s;0)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "perimeter.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "ManningCoeff.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "length.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
+  "Suspended Sediments": {
+    "type": "constituent",
+    "typecategory": "Constituents",
+    "description": "Suspended sediments",
+    "icon": {
+      "filename": "suspended_sediments.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "concentration": {
+      "description": "Concentration",
+      "type": "expression",
+      "expression": "mass/Storage",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "includeinoutput": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "g/m~^3"
+    },
+    "settling_velocity": {
+      "description": "Settling velocity",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m/s;m/day;ft/s;ft/day"
+    },
+    "alpha": {
+      "description": "Alpha coefficient in resuspension rate",
+      "helptext": "The resuspension flux from bed sediments is calculated as:\n e=alpha*(v-v0)^beta",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "beta": {
+      "description": "Beta coefficient in resuspension rate",
+      "helptext": "The resuspension flux from bed sediments is calculated as:\n e=alpha*(v-v0)^beta",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "velocity_0": {
+      "description": "v0, velocity treshold for resuspension",
+      "helptext": "The resuspension flux from bed sediments is calculated as:\n e=alpha*(v-v0)^beta",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit":"m/s;m/day;ft/s;ft/day"
+    },
+    "stoichiometric_constant": {
+      "description": "Stoichiometric Constant",
+      "type": "expression",
+      "ask_user": "true",
+      "role": "copytoreactions",
+      "includeinoutput": "false",
+      "delegate": "expressionEditor"
+    },
+    "mass": {
+      "description": "Mass",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "masstransfer",
+      "inflow": "external_mass_flow_timeseries,external_source",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytoblocks",
+      "initial_value_expression": "concentration*Storage"
+    },
+    "masstransfer": {
+      "description": "Mass transfer rate",
+      "type": "expression",
+      "expression": "_ups(flow;concentration)+(_hsd(bottom_elevation.s-bottom_elevation.e)-0.5)*2*settling_velocity*area*(_hsd(bottom_elevation.s-bottom_elevation.e)*concentration.s-_hsd(bottom_elevation.e-bottom_elevation.s)*concentration.e)-resuspension_rate",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "resuspension_rate": {
+      "description": "Resuspension rate",
+      "type": "expression",
+      "expression": "alpha*(velocity.s-velocity_0)^beta*concentration.e/(concentration.e+0.0001)*area.e",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "external_mass_flow_timeseries": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "External mass flow time-series",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "Browser"
+    },
+    "external_source": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "External source",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "ComboBox;Sources"
+    }
+  },
+  "River_bed_sediment_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "River to bed link",
+    "icon": {
+      "filename": "River2BedLink.png"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "depth.e/2",
+      "description": "Length",
+      "includeinoutput": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "length.e*width.e",
+      "description": "Length",
+      "includeinoutput": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "expression": "area*(hydraulic_conductivity.e)*(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  }
+}

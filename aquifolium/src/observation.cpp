@@ -5,17 +5,20 @@
 
 Observation::Observation(): Object::Object()
 {
+    SetObjectType(object_type::observation);
     //ctor
 }
 
 Observation::Observation(System *_system)
 {
+    SetObjectType(object_type::observation);
     system = _system;
 }
 
 Observation::Observation(System *_system, const Expression &expr, const string &loc)
 {
     SetType("Observation");
+    SetObjectType(object_type::observation);
     system = _system;
     expression = expr;
     location = loc;

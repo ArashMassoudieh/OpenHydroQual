@@ -5,7 +5,7 @@
 
 Block::Block() : Object::Object()
 {
-    //ctor
+    SetObjectType(object_type::block);
 }
 
 Block::~Block()
@@ -215,6 +215,35 @@ CVector Block::GetAllReactionRates(Expression::timing t)
     }
     return out;
 }
+
+double Block::GetAvgOverLinks(const string& variable,const Expression::timing &tmg)
+{
+    double sum=0;
+    double count = 0;
+    vector<Link*> linksto = GetLinksTo();
+    vector<Link*> linksfrom = GetLinksFrom();
+    for (unsigned int i=0; i<linksfrom.size(); i++)
+    {   if (linksfrom[i]->HasQuantity(variable))
+        {
+            sum+= linksfrom[i]->GetVal(variable,tmg);
+            count++;
+        }
+    }
+    for (unsigned int i=0; i<linksto.size(); i++)
+    {
+        if (linksto[i]->HasQuantity(variable))
+        {
+            sum+= linksto[i]->GetVal(variable,tmg);
+            count ++;
+        }
+    }
+    if (count>0)
+        return sum/count;
+    else
+        return 0;
+}
+
+
 
 
 

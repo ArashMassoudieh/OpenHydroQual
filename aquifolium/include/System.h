@@ -323,8 +323,8 @@ class System: public Object
         RunTimeWindow *RunTimewindow() {return rtw;}
         void SetRunTimeWindow(RunTimeWindow* _rtw) {rtw = _rtw;}
 #endif
-        vector<string> *operators;
-        vector<string> *functions;
+        unique_ptr<vector<string>> operators;
+        unique_ptr<vector<string>> functions;
         void SetOutputItems();
         double & GetSimulationTime();
         vector<string> addedtemplates;

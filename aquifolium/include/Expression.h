@@ -41,7 +41,7 @@ class Expression
         vector<string> opts;
         int lookup_operators(const string &s);
         int count_operators(const string &s);
-        enum loc {self, source, destination};
+        enum loc {self, source, destination, average_of_links};
         string ToString() const;
 		vector<string> GetAllRequieredStartingBlockProperties();
 		vector<string> GetAllRequieredEndingBlockProperties();

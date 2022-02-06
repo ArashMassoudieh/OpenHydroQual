@@ -176,6 +176,11 @@ Expression::Expression(string S)
                     parameter = aquiutils::split(S,'.')[0];
                     location = loc::destination;
                 }
+                if (aquiutils::tolower(aquiutils::split(S,'.')[1]) == "v")
+                {
+                    parameter = aquiutils::split(S,'.')[0];
+                    location = loc::average_of_links;
+                }
             }
 		}
 	}
@@ -310,8 +315,10 @@ bool Expression::SetQuanPointers(Object *W)
     if (param_constant_expression=="parameter")
     {   if (location==Expression::loc::self)
             quan = W->Variable(parameter);
-        else
+        else if (location!=Expression::loc::average_of_links && W->ObjectType()==object_type::link)
             quan = W->GetConnectedBlock(location)->Variable(parameter);
+        else
+            quan = nullptr;
         return true;
     }
     else if (param_constant_expression == "expression")
@@ -407,7 +414,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
             else
                 out = W->GetVal(parameter, tmg,limit);
         }
-        else
+        else if (location!=loc::average_of_links)
         {
             if (W->GetConnectedBlock(location)!=nullptr)
             {    if (quan!=nullptr && quan->GetParent()==W->GetConnectedBlock(location))
@@ -422,6 +429,13 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
                     out = W->GetVal(parameter, tmg, limit);
             }
         }
+        else
+       {
+            if (W->ObjectType()==object_type::block)
+            {
+                out = dynamic_cast<Block*>(W)->GetAvgOverLinks(parameter,tmg);
+            }
+       }
 
         if (function == "")
             return out;
@@ -598,10 +612,12 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
     {
         if (term_sources.size() > i2)
             for (unsigned int k=0; k<terms_source_counter[i2]; k++)
-                if (aquiutils::lookup(term_sources[term_sources[i2][k]],term_sources[i1][j])==-1)
+            {   vector<int> vec = term_sources[term_sources[i2][k]];
+                if (aquiutils::lookup(vec,term_sources[i1][j])==-1)
                 {   term_sources[term_sources[i2][k]][terms_source_counter[term_sources[i2][k]]]=term_sources[i1][j];
                     terms_source_counter[term_sources[i2][k]]++;
                 }
+            }
 
     }
     if (term_sources.size() > i2)

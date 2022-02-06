@@ -2,7 +2,7 @@
 #include "System.h"
 Constituent::Constituent(): Object::Object()
 {
-    //ctor
+    SetObjectType(object_type::constituent);
 }
 
 Constituent::~Constituent()
@@ -12,6 +12,7 @@ Constituent::~Constituent()
 
 Constituent::Constituent(const Constituent& other):Object::Object(other)
 {
+    SetObjectType(object_type::constituent);
     Object::operator=(other);
 }
 

@@ -3,7 +3,7 @@
 
 Source::Source() : Object::Object()
 {
-    //ctor
+    SetObjectType(object_type::source);
 }
 
 Source::~Source()
