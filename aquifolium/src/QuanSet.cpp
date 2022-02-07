@@ -329,10 +329,10 @@ bool QuanSet::AppendError(const string &objectname, const string &cls, const str
     return true;
 }
 
-vector<CTimeSeries<timeseriesprecision>*> QuanSet::TimeSeries()
+SafeVector<CTimeSeries<timeseriesprecision>*> QuanSet::TimeSeries()
 {
 
-    vector<CTimeSeries<timeseriesprecision>*> out;
+    SafeVector<CTimeSeries<timeseriesprecision>*> out;
     for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
     {
         if (quans[it->first].GetType() == Quan::_type::timeseries && quans[it->first].TimeSeries()!=nullptr)
@@ -346,9 +346,9 @@ vector<CTimeSeries<timeseriesprecision>*> QuanSet::TimeSeries()
     return out;
 }
 
-vector<string> QuanSet::QuanNames()
+SafeVector<string> QuanSet::QuanNames()
 {
-    vector<string> out;
+    SafeVector<string> out;
     for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
         out.push_back(it->first);
     return out;

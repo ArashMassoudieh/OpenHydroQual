@@ -156,15 +156,15 @@ bool Block::deletelinkstofrom(const string& linkname)
     }
 }*/
 
-vector<Link*> Block::GetLinksFrom() {
-    vector<Link* > v;
+SafeVector<Link*> Block::GetLinksFrom() {
+    SafeVector<Link* > v;
     for (unsigned int i=0; i<links_from_ids.size(); i++)
         v.push_back(Parent()->link(links_from_ids[i]));
 
     return v;
 }
-vector<Link*> Block::GetLinksTo() {
-    vector<Link* > v;
+SafeVector<Link*> Block::GetLinksTo() {
+    SafeVector<Link* > v;
     for (unsigned int i=0; i<links_to_ids.size(); i++)
         v.push_back(Parent()->link(links_to_ids[i]));
 
@@ -220,8 +220,8 @@ double Block::GetAvgOverLinks(const string& variable,const Expression::timing &t
 {
     double sum=0;
     double count = 0;
-    vector<Link*> linksto = GetLinksTo();
-    vector<Link*> linksfrom = GetLinksFrom();
+    SafeVector<Link*> linksto = GetLinksTo();
+    SafeVector<Link*> linksfrom = GetLinksFrom();
     for (unsigned int i=0; i<linksfrom.size(); i++)
     {   if (linksfrom[i]->HasQuantity(variable))
         {

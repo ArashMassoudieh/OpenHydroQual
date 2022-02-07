@@ -397,7 +397,7 @@ Quan::Quan(const Quan& other)
     _var_name = other._var_name;
     _val = other._val;
     _val_star = other._val_star;
-    _parameters = other._parameters;
+    //_parameters = other._parameters;
     value_star_updated = other.value_star_updated;
     _parameterassignedto = other._parameterassignedto;
     type = other.type;
@@ -447,7 +447,7 @@ Quan& Quan::operator=(const Quan& rhs)
     _val = rhs._val;
     _val_star = rhs._val_star;
     value_star_updated = rhs.value_star_updated;
-    _parameters = rhs._parameters;
+    //_parameters = rhs._parameters;
     _parameterassignedto = rhs._parameterassignedto;
     sourcename = rhs.sourcename;
     type = rhs.type;
@@ -574,6 +574,13 @@ CTimeSeries<timeseriesprecision>* Quan::GetTimeSeries()
     else
         return nullptr;
 
+}
+
+bool Quan::EstablishExpressionStructure()
+{
+    if (type == _type::expression)
+        _expression.ResetTermsSources();
+    return true;
 }
 
 double Quan::CalcVal(const Expression::timing &tmg)
@@ -762,7 +769,7 @@ void Quan::SetCorrespondingFlowVar(const string &s)
 
 void Quan::SetCorrespondingInflowVar(const string &s)
 {
-    vector<string> corresponding_inflow_variables = aquiutils::split(s,',');
+    SafeVector<string> corresponding_inflow_variables = SafeVector<string>::fromStdVector(aquiutils::split(s,','));
     corresponding_inflow_quan = corresponding_inflow_variables;
 }
 

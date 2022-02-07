@@ -211,6 +211,7 @@ Expression::Expression(const Expression & S)
 	location = S.location;
     term_sources.clear();
     term_sources_determined = false;
+    sourceterms_resized = false;
 
 }
 
@@ -237,7 +238,7 @@ Expression & Expression::operator=(const Expression &S)
     location = S.location;
     term_sources.clear();
     term_sources_determined = false;
-
+    sourceterms_resized = false;
 	return *this;
 }
 
@@ -294,20 +295,31 @@ vector<string> Expression::extract_terms(string s)
 	return out;
 }
 
+
+void Expression::EstablishSourceStructure()
+{
+    if (!sourceterms_resized)
+    {
+        {
+            term_sources.resize(terms.size());
+            for (unsigned int j=0; j<terms.size(); j++)
+                term_sources[j].resize(terms.size());
+            terms_source_counter.resize(terms.size());
+        }
+    }
+    sourceterms_resized = true;
+}
+
+
 void Expression::ResetTermsSources()
 {
-    if (!term_sources_determined)
-    {
-        term_sources.resize(terms.size());
-        for (unsigned int j=0; j<terms.size(); j++)
-            term_sources[j].resize(terms.size());
-        terms_source_counter.resize(terms.size());
-    }
+
     for (unsigned int i=0; i<term_sources.size(); i++)
     {   for (unsigned int j=0; j<term_sources[i].size(); j++)
             term_sources[i][j] = -1;
         terms_source_counter[i]=0;
     }
+
 }
 
 bool Expression::SetQuanPointers(Object *W)
@@ -345,9 +357,8 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
         terms_calculated.resize(terms.size());
     }
 
+    EstablishSourceStructure();
     ResetTermsSources();
-
-
 
 	if (function=="ups")
 	{
@@ -501,7 +512,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
                 seploc = i;
                 if (i==0)
                     term_vals[0] = terms[0].calc(W,tmg,limit);
-                if (i==operators.size()-1)
+                if (i==int(operators.size()-1))
                     term_vals[i+1] = terms[i+1].calc(W,tmg,limit);
 
             }
@@ -612,10 +623,12 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
     {
         if (term_sources.size() > i2)
             for (unsigned int k=0; k<terms_source_counter[i2]; k++)
-            {   vector<int> vec = term_sources[term_sources[i2][k]];
-                if (aquiutils::lookup(vec,term_sources[i1][j])==-1)
-                {   term_sources[term_sources[i2][k]][terms_source_counter[term_sources[i2][k]]]=term_sources[i1][j];
-                    terms_source_counter[term_sources[i2][k]]++;
+            {   if (term_sources[i2][k]!=-1 && term_sources[i1][j]!=-1)
+                {   vector<int> vec = term_sources[term_sources[i2][k]];
+                    if (aquiutils::lookup(vec,term_sources[i1][j])==-1)
+                    {   term_sources[term_sources[i2][k]][terms_source_counter[term_sources[i2][k]]]=term_sources[i1][j];
+                        terms_source_counter[term_sources[i2][k]]++;
+                    }
                 }
             }
 
@@ -624,11 +637,16 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
         for (unsigned int j = 0; j < terms_source_counter[i2]; j++)
         {
             for (unsigned int k = 0; k<terms_source_counter[i1]; k++)
-                if (aquiutils::lookup(term_sources[term_sources[i1][k]],term_sources[i2][j])==-1)
-                {   term_sources[term_sources[i1][k]][terms_source_counter[term_sources[i1][k]]] = term_sources[i2][j];
-                    terms_source_counter[term_sources[i1][k]]++;
+            {
+                if (term_sources[i1][k]!=-1 && term_sources[i2][j]!=-1)
+                {
+                    if (aquiutils::lookup(term_sources[term_sources[i1][k]],term_sources[i2][j])==-1)
+                    {   term_sources[term_sources[i1][k]][terms_source_counter[term_sources[i1][k]]] = term_sources[i2][j];
+                        terms_source_counter[term_sources[i1][k]]++;
 
+                    }
                 }
+            }
 
         }
 
@@ -669,8 +687,8 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
     }
 	terms_calculated[i1] = true;
 	terms_calculated[i2] = true;
-
-    return term_vals[term_sources[i1][0]];
+    int i=term_sources[i1][0];
+    return term_vals[i];
 }
 
 int Expression::lookup_operators(const string &s)
@@ -800,6 +818,8 @@ string Expression::ToString() const
             out+=".s";
         if (location == loc::destination)
             out+=".e";
+        if (location == loc::average_of_links)
+            out+=".v";
         return out;
     }
     if (param_constant_expression=="constant")

@@ -21,6 +21,7 @@
     class logWindow;
 #endif
 #include "ErrorHandler.h"
+#include "safevector.h"
 #include <string>
 #define outputtimeseriesprecision double
 #if Q_version
@@ -28,6 +29,7 @@
 #include "runtimewindow.h"
 #include "QTime"
 #endif
+
 
 using namespace std;
 
@@ -286,7 +288,7 @@ class System: public Object
         string OutputPath() {return paths.outputpath;}
         string ObservedOutputFileName() {return paths.observedoutputfilename;}
         string OutputFileName() {return paths.outputfilename;}
-        vector<CTimeSeries<timeseriesprecision>*> TimeSeries();
+        SafeVector<CTimeSeries<timeseriesprecision>*> TimeSeries();
         double GetMinimumNextTimeStepSize();
         Object *GetObjectBasedOnPrimaryKey(const string &s);
         bool SavetoScriptFile(const string &filename, const string &templatefilename="", const vector<string> &addedtemplates = vector<string>());
@@ -370,19 +372,19 @@ class System: public Object
             return SolverSettings.RecordAllOutputs;
         }
         void Clear();
-        vector<Observation>* Observations() {return &observations;}
+        SafeVector<Observation>* Observations() {return &observations;}
     protected:
 
     private:
         vector<string> solvevariableorder;
-        vector<Block> blocks;
-        vector<Link> links;
-        vector<Source> sources;
-        vector<Constituent> constituents;
-        vector<Reaction> reactions;
-        vector<RxnParameter> reaction_parameters;
-        vector<Object> Settings;
-        vector<Observation> observations;
+        SafeVector<Block> blocks;
+        SafeVector<Link> links;
+        SafeVector<Source> sources;
+        SafeVector<Constituent> constituents;
+        SafeVector<Reaction> reactions;
+        SafeVector<RxnParameter> reaction_parameters;
+        SafeVector<Object> Settings;
+        SafeVector<Observation> observations;
         map<string, Quan> addedpropertiestoallblocks;
         map<string, Quan> addedpropertiestoalllinks;
         MetaModel metamodel;

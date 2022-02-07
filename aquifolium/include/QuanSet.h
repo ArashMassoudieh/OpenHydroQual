@@ -47,8 +47,8 @@ class QuanSet
         void SetParent(Object *p) {parent = p; SetAllParents();}
         void SetAllParents();
         Object *Parent() {return parent; }
-        vector<CTimeSeries<timeseriesprecision>*> TimeSeries();
-        vector<string> QuanNames();
+        SafeVector<CTimeSeries<timeseriesprecision>*> TimeSeries();
+        SafeVector<string> QuanNames();
         string toCommand();
         string toCommandSetAsParam();
         vector<string> quantitative_variable_list();

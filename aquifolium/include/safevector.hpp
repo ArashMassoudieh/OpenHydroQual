@@ -10,9 +10,16 @@ SafeVector<T>::SafeVector() : vector<T> ()
 template<class T>
 T& SafeVector<T>::operator[](int i)
 {
-    if (i>this->size()-1)
-    {   cout<<"Exceeded the size"<<endl;
-        T x(0);
+    if (i>int(this->size())-1)
+    {   cout<<int(this->size());
+        cout<<"Exceeded the size"<<endl;
+        T x;
+        return x;
+    }
+    else if (i<0)
+    {
+        cout<<"Counter is negative!"<<endl;
+        T x;
         return x;
     }
     else

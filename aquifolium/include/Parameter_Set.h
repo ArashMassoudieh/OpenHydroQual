@@ -31,7 +31,7 @@ class Parameter_Set
         string getKeyAtIndex (int index);
         int count(const string &s) {
             int j=0;
-            for (int i=0; i<parameters.size(); i++)
+            for (unsigned int i=0; i<parameters.size(); i++)
                 if (parameters[i].GetName()==s)
                     j++;
             return  j;
@@ -42,7 +42,7 @@ class Parameter_Set
     protected:
 
     private:
-        vector<Parameter> parameters;
+        SafeVector<Parameter> parameters;
         string lasterror;
 };
 

@@ -72,8 +72,9 @@ class Object
 		bool Renew(const string &variable);
 		bool Update(const string &variable);
 		bool CalcExpressions(const Expression::timing& tmg);
+        bool EstablishExpressionStructure();
         bool VerifyQuans(ErrorHandler *errorhandler);
-        vector<CTimeSeries<timeseriesprecision>*> TimeSeries() {return var.TimeSeries();}
+        SafeVector<CTimeSeries<timeseriesprecision>*> TimeSeries() {return var.TimeSeries();}
         string TypeCategory() {return GetVars()->CategoryType();}
 		QuanSet* GetVars()
             {

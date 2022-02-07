@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include "Utilities.h"
+#include "safevector.h"
 using namespace std;
 
 class Object;
@@ -48,20 +49,24 @@ class Expression
         Expression ReviseConstituent(const string &constituent_name, const string &quantity);
         bool RenameQuantity(const string &oldname, const string &newname);
         void ResetTermsSources();
+        void EstablishSourceStructure();
         void ClearTermSources()
         {
             term_sources_determined = false;
             term_sources.clear();
+            term_vals.clear();
+            terms_source_counter.clear();
         }
         bool SetQuanPointers(Object *W);
     protected:
 
     private:
-        vector<double> term_vals;
+        SafeVector<double> term_vals;
         vector<bool> terms_calculated;
-        vector<vector<int> > term_sources;
+        SafeVector<SafeVector<int> > term_sources;
         bool term_sources_determined = false;
-        vector<unsigned int> terms_source_counter;
+        bool sourceterms_resized = false;
+        SafeVector<unsigned int> terms_source_counter;
         loc location = loc::self; //0: self, 1: start, 2: end
 
 };

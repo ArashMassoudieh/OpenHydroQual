@@ -195,7 +195,7 @@
     "velocity":
     {
       "type": "expression",
-      "expression": "velocity.v",
+      "expression": "velocity.v*1",
       "description": "Velocity",
       "ask_user": "false",
       "includeinoutput": "true"

@@ -34,10 +34,10 @@ CONFIG += c++14
 
 CONFIG(debug, debug|release) {
     message(Building in debug mode)
-    QMAKE_CXXFLAGS+= -fopenmp
-    QMAKE_LFLAGS +=  -fopenmp
+    #QMAKE_CXXFLAGS+= -fopenmp
+    #QMAKE_LFLAGS +=  -fopenmp
     LIBS += -lgomp -lpthread
-    #DEFINES += NO_OPENMP DEBUG
+    DEFINES += NO_OPENMP DEBUG
 
 } else {
     message(Building in release mode)
@@ -132,6 +132,8 @@ HEADERS += \
     aquifolium/include/MCMC/MCMC.h \
     aquifolium/include/MCMC/MCMC.hpp \
     aquifolium/include/restorepoint.h \
+    aquifolium/include/safevector.h \
+    aquifolium/include/safevector.hpp \
     diagramview.h \
     edge.h \
     gridgenerator.h \

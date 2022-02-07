@@ -39,6 +39,7 @@ class Quan
         double CalcVal(Object *, const Expression::timing &tmg=Expression::timing::past);
         double CalcVal(const Expression::timing &tmg=Expression::timing::past);
         double GetVal(const Expression::timing &tmg=Expression::timing::past);
+        bool EstablishExpressionStructure();
         double &GetSimulationTime() const;
         CTimeSeries<timeseriesprecision>* GetTimeSeries();
         string last_error;
@@ -167,11 +168,10 @@ class Quan
         double _val=0;
         double _val_star=0;
         bool value_star_updated = false; 
-        vector<double> _parameters;
         _type type;
         bool perform_mass_balance = false;
         string corresponding_flow_quan;
-        vector<string> corresponding_inflow_quan;
+        SafeVector<string> corresponding_inflow_quan;
         Object *parent = nullptr;
         bool includeinoutput = false;
         bool estimable = false;

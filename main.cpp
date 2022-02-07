@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 
-#undef ARMA_USE_OPENMP
+//#undef ARMA_USE_OPENMP
 
 int main(int argc, char *argv[])
 {

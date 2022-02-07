@@ -945,6 +945,7 @@ void System::InitiateOutputs()
     Outputs.ObservedOutputs.clear();
     for (unsigned int i=0; i<blocks.size(); i++)
     {
+        blocks[i].EstablishExpressionStructure();
         for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
@@ -955,6 +956,7 @@ void System::InitiateOutputs()
 
     for (unsigned int i=0; i<links.size(); i++)
     {
+        blocks[i].EstablishExpressionStructure();
         for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
@@ -965,6 +967,7 @@ void System::InitiateOutputs()
 
     for (unsigned int i=0; i<objective_function_set.size(); i++)
     {
+        objective_function_set[i]->EstablishExpressionStructure();
         Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), "Obj_" + objective_function_set[i]->GetName());
         objective_function_set[i]->SetOutputItem("Obj_" + objective_function_set[i]->GetName());
         for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
@@ -978,6 +981,7 @@ void System::InitiateOutputs()
 
     for (unsigned int i=0; i<observations.size(); i++)
     {
+        observations[i].EstablishExpressionStructure();
         Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), "Obs_" + observations[i].GetName());
         observations[i].SetOutputItem("Obs_" + observations[i].GetName());
         for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
@@ -992,6 +996,7 @@ void System::InitiateOutputs()
 
     for (unsigned int i=0; i<sources.size(); i++)
     {
+        sources[i].EstablishExpressionStructure();
         for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
         {
             if (it->second.IncludeInOutput())
@@ -1078,13 +1083,13 @@ void System::PopulateOutputs(bool dolinks)
         Outputs.AllOutputs.ResizeIfNeeded(1000);
 
     #pragma omp parallel for
-        for (int i = 0; i < blocks.size(); i++)
+        for (unsigned int i = 0; i < blocks.size(); i++)
             blocks[i].CalcExpressions(Expression::timing::present);
 
         if (dolinks)
         {
     #pragma omp parallel for
-            for (int i = 0; i < links.size(); i++)
+            for (unsigned int i = 0; i < links.size(); i++)
                 links[i].CalcExpressions(Expression::timing::present);
         }
         for (unsigned int i = 0; i < blocks.size(); i++)
@@ -1660,7 +1665,7 @@ void System::CalculateAllExpressions(Expression::timing tmg)
         {
             if (blocks[i].Variable(blocks[i].QuantitOrder()[j])->GetType() == Quan::_type::expression)
             {
-                blocks[i].Variable(blocks[i].QuantitOrder()[j])->GetExpression()->ClearTermSources();
+                //blocks[i].Variable(blocks[i].QuantitOrder()[j])->GetExpression()->ClearTermSources();
                 blocks[i].Variable(blocks[i].QuantitOrder()[j])->SetVal(blocks[i].Variable(blocks[i].QuantitOrder()[j])->CalcVal(tmg), tmg);
             }
         }
@@ -1671,7 +1676,7 @@ void System::CalculateAllExpressions(Expression::timing tmg)
         for (unsigned int j = 0; j < links[i].QuantitOrder().size(); j++)
         {
             if (links[i].Variable(links[i].QuantitOrder()[j])->GetType() == Quan::_type::expression)
-            {   links[i].Variable(links[i].QuantitOrder()[j])->GetExpression()->ClearTermSources();
+            {   //links[i].Variable(links[i].QuantitOrder()[j])->GetExpression()->ClearTermSources();
                 links[i].Variable(links[i].QuantitOrder()[j])->SetVal(links[i].Variable(links[i].QuantitOrder()[j])->CalcVal(tmg), tmg);
 
             }
@@ -2443,9 +2448,9 @@ bool System::Echo(const string &obj, const string &quant, const string &feature)
 
 }
 
-vector<CTimeSeries<timeseriesprecision>*> System::TimeSeries()
+SafeVector<CTimeSeries<timeseriesprecision>*> System::TimeSeries()
 {
-    vector<CTimeSeries<timeseriesprecision>*> out;
+    SafeVector<CTimeSeries<timeseriesprecision>*> out;
     for (unsigned int i=0; i<links.size(); i++)
     {
         for (unsigned int j=0; j<links[i].TimeSeries().size(); j++)

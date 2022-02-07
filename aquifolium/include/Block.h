@@ -5,6 +5,7 @@
 #include "Expression.h"
 #include "Quan.h"
 #include "Object.h"
+#include "safevector.h"
 
 using namespace std;
 
@@ -25,8 +26,8 @@ class Block: public Object
         double GetInflowValue(const string &variable, const string &constituent, const Expression::timing &tmg);
 		void shiftlinkIds(int i);
         bool deletelinkstofrom(const string& linkname="_all"); //deletes a specific links from the list of links to and from the block
-        vector<Link*> GetLinksFrom();
-        vector<Link*> GetLinksTo();
+        SafeVector<Link*> GetLinksFrom();
+        SafeVector<Link*> GetLinksTo();
         void ClearLinksToFrom() {
             links_from_ids.clear(); links_to_ids.clear();
         }
@@ -40,8 +41,8 @@ class Block: public Object
     protected:
 
     private:
-        vector<int> links_from_ids;
-        vector<int> links_to_ids;
+        SafeVector<int> links_from_ids;
+        SafeVector<int> links_to_ids;
         vector<string> corresponding_inflow_var;
         bool corresponding_inflow_var_extracted = false;
 };

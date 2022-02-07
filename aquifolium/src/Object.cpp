@@ -436,6 +436,14 @@ bool Object::CalcExpressions(const Expression::timing &tmg)
 	return true; 
 }
 
+bool Object::EstablishExpressionStructure()
+{
+    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+        if (var[s->first].GetType() == Quan::_type::expression)
+            Variable(s->first)->EstablishExpressionStructure();
+    return true;
+}
+
 void Object::SetVariableParents()
 {
 	var.SetParent(this);
