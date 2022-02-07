@@ -1244,8 +1244,13 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             SolverTempVars.numiterations[statevarno]++;
             if (SolverTempVars.updatejacobian[statevarno])
             {
-                CMatrix_arma J = Jacobian(variable, X, transport);
-                //CMatrix_arma J = JacobianDirect(variable, X, transport);
+                CMatrix_arma J;
+                CMatrix_arma J_direct;
+                if (transport)
+                    J = Jacobian(variable, X, transport);
+                else
+                    J = Jacobian(variable, X, transport);
+                //J_direct = JacobianDirect(variable, X, transport);
                 //J.writetofile("jacob_traditional.txt");
                 //J_direct.writetofile("jacob_direct.txt");
                 SolverTempVars.epoch_count ++;
@@ -3371,7 +3376,18 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     for (unsigned int i=0; i<BlockCount(); i++)
     {
         jacobian(i,i) += 1/SolverTempVars.dt;
+        for (unsigned int j=0; j<block(i)->Variable(variable)->GetCorrespondingInflowVar().size(); j++)
+        {
+            if (block(i)->Variable(variable)->GetCorrespondingInflowVar()[j] != "")
+            {
+                if (Variable(block(i)->Variable(variable)->GetCorrespondingInflowVar()[j]))
+                {
+                    jacobian(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
+                }
+            }
+        }
     }
+    SetStateVariables_for_direct_Jacobian(variable,current_state,Expression::timing::present,transport);
     return jacobian;
 }
 

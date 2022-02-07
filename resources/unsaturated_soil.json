@@ -16,7 +16,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation,Evapotranspiration",
+      "inflow": "Evapotranspiration",
       "includeinoutput": "true",
       "description": "Storage",
       "ask_user": "false",
