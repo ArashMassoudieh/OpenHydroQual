@@ -391,11 +391,12 @@ class System: public Object
         CVector_arma GetResiduals(const string &variable, CVector_arma &X, bool transport=false);
         CVector_arma GetResiduals_TR(const string &variable, CVector_arma &X);
         double Gradient(Object* obj, Object* wrt, const string &dependent_var, const string &independent_var);
-        CVector_arma Gradient(Object* obj, Object* wrt, const string &independent_var);
+        CVector_arma Gradient(Object* obj, const string &independent_var);
         CMatrix_arma JacobianDirect(const string &variable, CVector_arma &X, bool transport);
 		void CorrectStoragesBasedonFluxes(const string& variable);
         CVector_arma CalcStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past);
         CVector_arma GetStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past, bool transport=false);
+        CVector_arma GetStateVariables_for_direct_Jacobian(const string &variable, const Expression::timing &tmg, bool transport);
         solversettings SolverSettings;
         simulationparameters SimulationParameters;
         vector<bool> OneStepSolve();
@@ -403,6 +404,7 @@ class System: public Object
         CVector_arma Jacobian(const string &variable, CVector_arma &V, CVector_arma &F0, int i, bool transport=false);
         bool CalculateFlows(const string &var, const Expression::timing &tmg = Expression::timing::present);
         void SetStateVariables(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present, bool transport=false);
+        void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport);
         void SetStateVariables_TR(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present);
         vector<bool> GetOutflowLimitedVector();
         void SetOutflowLimitedVector(vector<bool>& x);

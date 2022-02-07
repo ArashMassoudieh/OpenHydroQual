@@ -222,6 +222,8 @@ double Block::GetAvgOverLinks(const string& variable,const Expression::timing &t
     double count = 0;
     SafeVector<Link*> linksto = GetLinksTo();
     SafeVector<Link*> linksfrom = GetLinksFrom();
+#pragma omp critical
+{
     for (unsigned int i=0; i<linksfrom.size(); i++)
     {   if (linksfrom[i]->HasQuantity(variable))
         {
@@ -237,6 +239,7 @@ double Block::GetAvgOverLinks(const string& variable,const Expression::timing &t
             count ++;
         }
     }
+}
     if (count>0)
         return sum/count;
     else

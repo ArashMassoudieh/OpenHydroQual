@@ -10,6 +10,8 @@ SafeVector<T>::SafeVector() : vector<T> ()
 template<class T>
 T& SafeVector<T>::operator[](int i)
 {
+
+
     if (i>int(this->size())-1)
     {   cout<<int(this->size());
         cout<<"Exceeded the size"<<endl;
@@ -24,4 +26,15 @@ T& SafeVector<T>::operator[](int i)
     }
     else
         return vector<T>::operator[](i);
+}
+
+template<class T>
+unsigned int SafeVector<T>::lookup(const T &x)
+{
+    for (unsigned int i=0; i<this->size(); i++)
+    {
+        if (this->at(i) == x)
+            return i;
+    }
+    return -1;
 }

@@ -21,6 +21,7 @@ public:
         s.assign(x.begin(),x.end());
         return s;
     }
+    unsigned int lookup(const T &x);
 
 };
 

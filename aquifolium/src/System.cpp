@@ -1245,6 +1245,9 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             if (SolverTempVars.updatejacobian[statevarno])
             {
                 CMatrix_arma J = Jacobian(variable, X, transport);
+                //CMatrix_arma J = JacobianDirect(variable, X, transport);
+                //J.writetofile("jacob_traditional.txt");
+                //J_direct.writetofile("jacob_direct.txt");
                 SolverTempVars.epoch_count ++;
                 if (SolverSettings.scalediagonal)
                     J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
@@ -1599,6 +1602,21 @@ CVector_arma System::CalcStateVariables(const string &variable, const Expression
     return X;
 }
 
+CVector_arma System::GetStateVariables_for_direct_Jacobian(const string &variable, const Expression::timing &tmg, bool transport)
+{
+    CVector_arma X = GetStateVariables(variable, Expression::timing::past,transport);
+
+    if (!transport)
+    {   for (unsigned int i = 0; i < blocks.size(); i++)
+        {
+            if (blocks[i].GetLimitedOutflow())
+                X[i] = blocks[i].GetOutflowLimitFactor(Expression::timing::past);
+        }
+    }
+
+    return X;
+}
+
 CVector_arma System::GetStateVariables(const string &variable, const Expression::timing &tmg, bool transport)
 {
     if (!transport)
@@ -1643,6 +1661,44 @@ void System::SetStateVariables(const string &variable, CVector_arma &X, const Ex
             vector<Quan*> masses = blocks[i].GetAllConstituentProperties(variable);
             for (unsigned int j=0; j<masses.size(); j++)
                 masses[j]->SetVal(X[j+masses.size()*i],tmg);
+        }
+    }
+}
+
+void System::SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport)
+{
+    if (!transport)
+    {   for (unsigned int i=0; i<blocks.size(); i++)
+        {
+            if (!blocks[i].GetLimitedOutflow())
+            {
+                blocks[i].SetVal(variable, X[i], tmg);
+                blocks[i].SetOutflowLimitFactor(1, tmg);
+            }
+            else
+            {
+                blocks[i].SetOutflowLimitFactor(X[i],tmg);
+                blocks[i].SetVal(variable, 0, tmg);
+            }
+        }
+    }
+    else
+    {
+        for (unsigned int i=0; i<blocks.size(); i++)
+        {
+            vector<Quan*> masses = blocks[i].GetAllConstituentProperties(variable);
+            for (unsigned int j=0; j<masses.size(); j++)
+                masses[j]->SetVal(X[j+masses.size()*i],tmg);
+        }
+    }
+    UnUpdateAllVariables();
+
+    for (unsigned int i=0; i<blocks.size(); i++)
+    {
+        if (blocks[i].GetLimitedOutflow())
+        {
+            blocks[i].SetOutflowLimitFactor(X[i],Expression::timing::present);
+            blocks[i].SetVal(variable, blocks[i].GetVal(variable, Expression::timing::past) * SolverSettings.landtozero_factor,Expression::timing::present);
         }
     }
 }
@@ -3258,7 +3314,7 @@ double System::Gradient(Object* obj, Object* wrt, const string &dependent_var, c
     wrt->UnUpdateAllValues();
     obj->UnUpdateAllValues();
     return derivative;
-    return 0;
+
 }
 
 bool System::CopyStateVariablesFrom(System *sys)
@@ -3299,15 +3355,23 @@ bool System::ResetBasedOnRestorePoint(RestorePoint *rp)
     return true;
 }
 
-CVector_arma System::Gradient(Object* obj, Object* wrt, const string &independent_var)
-{
-    CVector_arma grad;
-    return grad;
-}
 
 CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, bool transport)
 {
-    CMatrix_arma jacobian;
+    CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Expression::timing::present,transport);
+    SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
+    CMatrix_arma jacobian(BlockCount());
+    for (unsigned int i=0; i<LinksCount(); i++)
+    {
+        jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable);
+        jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable);
+        jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable);
+        jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable);
+    }
+    for (unsigned int i=0; i<BlockCount(); i++)
+    {
+        jacobian(i,i) += 1/SolverTempVars.dt;
+    }
     return jacobian;
 }
 
