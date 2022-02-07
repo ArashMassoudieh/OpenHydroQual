@@ -813,7 +813,10 @@ CTimeSeries<timeseriesprecision>* Quan::TimeSeries()
 bool Quan::SetTimeSeries(const string &filename, bool prec)
 {
     if (filename=="")
+    {
+        _timeseries = CTimeSeries<double>();
         return true;
+    }
     if (!prec)
 	{
         _timeseries.readfile(filename);
