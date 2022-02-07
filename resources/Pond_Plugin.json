@@ -20,7 +20,7 @@
 		        "inflow": "Precipitation,Evapotranspiration",
 		        "ask_user": "true",
 		        "unit": "m~^3;ft~^3",
-		        "delegate": "ValueBox",
+		        "delegate": "UnitBox",
 		        "estimate": "true",
 		        "includeinoutput" : "true",
 		        "criteria": "Storage>-0.0000001",
@@ -257,5 +257,75 @@
 			"applylimit": "true",
 			"ask_user": "false"
 		}  	
-	}
+	},
+	"Aggregate_storage_layer": {
+	    "type": "block",
+	    "typecategory": "Blocks",
+	    "description": "Aggregate zone", 
+	    "icon": {
+	      "filename": "aggregates.png"
+	    },
+	    "Storage": {
+	      "type": "balance",
+	      "massbalance": "true",
+	      "flow": "flow",
+	      "inflow": "inflow",
+	      "includeinoutput": "true",
+	      "description": "Initial Storage;Storage",
+	      "ask_user": "false",
+	      "default": "0",
+	      "unit": "m~^3;ft~^3",
+	      "estimate": "true"
+	    },
+	    "inflow": {
+	      "type": "timeseries",
+	      "includeinoutput": "true",
+	      "applylimit": "true",
+	      "description": "Inflow time series",
+	      "ask_user": "true",
+	      "delegate": "Browser"
+	    },
+	    "area": {
+	      "type": "value",
+	      "description": "Base Area",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+	      "unit": "m~^2;ft~^2",
+	      "estimate": "true",
+	      "criteria": "area>0",
+	      "warningmessage": "Base area must be positive"
+	    },
+	    "bottom_elevation": {
+	      "type": "value",
+	      "description": "Bottom Elevation",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+	      "unit": "m;ft",
+	      "estimate": "true"
+	    },
+	    "porosity": {
+	      "type": "value",
+	      "description": "Porosity",
+	      "ask_user": "true",
+	      "default": "0.4",
+	      "delegate": "ValueBox",
+	      "estimate": "true"
+	    },
+	    "depth": {
+	      "type": "expression",
+	      "expression": "Storage/(area*porosity)",
+	      "description": "Water Depth",
+	      "ask_user": "false",
+	      "delegate": "UnitBox",
+	      "unit": "m;ft;cm",
+	      "includeinoutput": "true"
+	    },
+	    "head": {
+	      "type": "expression",
+	      "expression": "depth+bottom_elevation",      
+	      "description": "Hydraulc Head",
+	      "ask_user": "false",
+	      "includeinoutput": "true"
+	    }
+	  }
 }
