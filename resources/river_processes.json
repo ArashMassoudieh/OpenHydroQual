@@ -505,7 +505,7 @@
       "estimate": "true"
     },
     "beta": {
-      "description": "Beta coefficient in resuspension rate",
+      "description": "Beta exponent in resuspension rate",
       "helptext": "The resuspension flux from bed sediments is calculated as:\n e=alpha*(v-v0)^beta",
       "type": "value",
       "ask_user": "true",
@@ -540,10 +540,33 @@
       "role": "copytoblocks",
       "initial_value_expression": "concentration*Storage"
     },
+    "slope":{
+      "type": "expression",
+      "expression": "(bottom_elevation.s-bottom_elevation.e)/length",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "settling_transfer": {
+      "description": "Mass transfer rate through depsition (g/day)",
+      "type": "expression",
+      "expression": "settling_velocity*area*(_pos(slope)*concentration.s-_pos(-slope)*concentration.e)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "advective_transfer": {
+      "description": "Advective mass transfer (g/day)",
+      "type": "expression",
+      "expression": "_ups(flow;concentration)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
     "masstransfer": {
       "description": "Mass transfer rate",
       "type": "expression",
-      "expression": "_ups(flow;concentration)+(_hsd(bottom_elevation.s-bottom_elevation.e)-0.5)*2*settling_velocity*area*(_hsd(bottom_elevation.s-bottom_elevation.e)*concentration.s-_hsd(bottom_elevation.e-bottom_elevation.s)*concentration.e)-resuspension_rate",
+      "expression": "advective_transfer+settling_transfer-resuspension_rate",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"

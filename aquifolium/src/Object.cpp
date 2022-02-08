@@ -64,7 +64,7 @@ double Object::CalcVal(const string& s,const Expression::timing &tmg)
     else
     {
         if (parent)
-        Parent()->errorhandler.Append(GetName(),"Object","CalcVal","property '" + s + "' does not exist!",1001);
+        Parent()->errorhandler.Append(GetName(),"Object","CalcVal","property '" + s + "' does not exist in '" + GetName() + "'" ,1001);
         last_operation_success = false;
         return 0;
     }
@@ -111,7 +111,7 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
         }
         else
         {
-            Parent()->errorhandler.Append(GetName(),"Object","GetVal","property '" + s + "' does not exist!",1002);
+            Parent()->errorhandler.Append(GetName(),"Object","GetVal","property '" + s + "' does not exist in '" + GetName() + "'",1002);
             last_operation_success = false;
             return 0;
         }
@@ -131,7 +131,7 @@ double Object::GetVal(const string& variable, const string& consttnt, const Expr
     }
     else
     {
-        Parent()->errorhandler.Append(GetName(),"Object","GetVal","property '" + fullname + "' does not exist!",1017);
+        Parent()->errorhandler.Append(GetName(),"Object","GetVal","property '" + fullname + "' does not exist in '" + GetName() + "'" ,1017);
         last_operation_success = false;
         return 0;
     }

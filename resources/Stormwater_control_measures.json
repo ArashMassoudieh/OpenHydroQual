@@ -17,7 +17,7 @@
 		        "type": "balance",
 		        "massbalance": "true",
 		        "flow": "flow",
-		        "inflow": "Precipitation,Evapotranspiration,inflow",
+		        "inflow": "Precipitation,Evapotranspiration",
 		        "ask_user": "true",
 		        "unit": "m~^3;ft~^3",
 		        "delegate": "UnitBox",
@@ -25,15 +25,6 @@
 		        "includeinoutput" : "true",
 		        "criteria": "Storage>-0.0000001",
 			 "warningmessage": "Storage can not be a negaive number!" 
-		},
-		"inflow": {
-		      "type": "timeseries",
-		      "includeinoutput": "true",
-		      "applylimit": "true",
-		      "helptext": "The time series containing the inflow rate into the pond", 
-		      "description": "Inflow rate time series",
-		      "ask_user": "true",
-		      "delegate": "Browser"
 		},
 		"alpha": {
 			 "type": "value",
@@ -281,7 +272,6 @@
 	      "inflow": "inflow",
 	      "includeinoutput": "true",
 	      "description": "Initial Storage;Storage",
-	      "initial_value_expression": "area*depth*porosity",
 	      "ask_user": "false",
 	      "default": "0",
 	      "unit": "m~^3;ft~^3",
@@ -324,9 +314,8 @@
 	    "depth": {
 	      "type": "expression",
 	      "expression": "Storage/(area*porosity)",
-	      "description": "Initial Water Depth; Water Depth",
-	      "ask_user": "true",
-	      "helptext": "This is the initial depth of water in the aggregate layer",
+	      "description": "Water Depth",
+	      "ask_user": "false",
 	      "delegate": "UnitBox",
 	      "unit": "m;ft;cm",
 	      "includeinoutput": "true"
@@ -337,109 +326,6 @@
 	      "description": "Hydraulc Head",
 	      "ask_user": "false",
 	      "includeinoutput": "true"
-	    }
-	  },	  
-	"soil_to_aggregate_link": {
-	    "type": "link",
-	    "typecategory": "Connectors",
-	    "icon": {
-	      "filename": "soil2aggregate.png"
-	    },
-	    "description": "Soil to aggregate layer link",
-	    "area": {
-	      "type": "expression",
-	      "description": "Interface area",
-	      "expression": "area.s",
-	      "includeinoutput": "false",
-	      "ask_user": "false"
-	    },
-	    "length": {
-	      "type": "expression",
-	      "description": "Lenght",
-	      "expression": "depth.s/2",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "Se": {
-	      "type": "expression",
-	      "description": "Effective Saturation",
-	      "expression": "Se.s",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "m": {
-	      "type": "expression",
-	      "description": "m parameter",
-	      "expression": "m.s",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "K_sat": {
-	      "type": "expression",
-	      "description": "Saturated Hydraulic Conductivity",
-	      "expression": "K_sat.s",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "K_eff": {
-	      "type": "expression",
-	      "description": "Effective Hydraulic Conductivity",
-	      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "flow": {
-	      "type": "expression",
-	      "description": "Flow",
-	      "expression": "(head.s-head.e)*K_eff/length*area",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "ask_user": "false"
-	    },
-	    "color": {
-	      "type": "string",
-	      "default": "30,120,220"
-	    }
-	  },
-	  "aggregate_to_soil_link": {
-	    "type": "link",
-	    "typecategory": "Connectors",
-	    "icon": {
-	      "filename": "aggregate2soil.png"
-	    },
-	    "description": "Aggregate layer to soil link",
-	    "area": {
-	      "type": "expression",
-	      "description": "Interface area",
-	      "expression": "area.s",
-	      "includeinoutput": "false",
-	      "ask_user": "false"
-	    },
-	    "length": {
-	      "type": "expression",
-	      "description": "Lenght",
-	      "expression": "depth.e/2",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "K_sat": {
-	      "type": "expression",
-	      "description": "Saturated Hydraulic Conductivity",
-	      "expression": "K_sat.e",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "flow": {
-	      "type": "expression",
-	      "description": "Flow",
-	      "expression": "(head.s-head.e)*K_sat/length*area*depth.s/(depth.s+0.01)",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "ask_user": "false"
-	    },
-	    "color": {
-	      "type": "string",
-	      "default": "30,120,220"
 	    }
 	  }
 }
