@@ -956,7 +956,7 @@ void System::InitiateOutputs()
 
     for (unsigned int i=0; i<links.size(); i++)
     {
-        blocks[i].EstablishExpressionStructure();
+        links[i].EstablishExpressionStructure();
         for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {

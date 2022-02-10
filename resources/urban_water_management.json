@@ -77,19 +77,14 @@
     "icon": {
       "filename": "residential.png"
     },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String"
-    },
     "Storage": {
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
       "inflow": "net_use_rate",
       "includeinoutput": "false",
-      "description": "Initial Storage;Storage"
+      "description": "Initial Storage;Storage",
+      "default":"1000",
     },
     "use_rate": {
       "type": "timeseries",
@@ -108,7 +103,7 @@
     },
     "net_use_rate": {
       "type": "expression",
-      "expression": "-use_rate-constant_use_rate",
+      "expression": "-(use_rate+constant_use_rate)",
       "includeinoutput": "false",
       "description": "Net production",
       "ask_user": "false"
@@ -133,7 +128,11 @@
       "flow": "flow",
       "inflow": "net_use_rate",
       "includeinoutput": "false",
-      "description": "Initial Storage;Storage"
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "unit": "m~^3;ft~^3",
+      "default":"1000",
+      "delegate": "UnitBox"
     },
     "use_rate": {
       "type": "timeseries",
@@ -153,8 +152,8 @@
     "net_use_rate": {
       "type": "expression",
       "expression": "-use_rate-constant_use_rate",
-      "includeinoutput": "false",
-      "description": "Net production",
+      "includeinoutput": "true",
+      "description": "Net use",
       "ask_user": "false"
     }
   },
@@ -177,7 +176,11 @@
       "flow": "flow",
       "inflow": "net_use_rate",
       "includeinoutput": "false",
-      "description": "Initial Storage;Storage"
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "unit": "m~^3;ft~^3",
+      "default":"1000",
+      "delegate": "UnitBox"
     },
     "use_rate": {
       "type": "timeseries",
@@ -191,7 +194,7 @@
       "includeinoutput": "true",
       "description": "Constant use rate",
       "ask_user": "true",
-	  "unit": "m~^3/day;ft~^3/day",
+      "unit": "m~^3/day;ft~^3/day",
       "delegate": "UnitBox"
     },
     "net_use_rate": {
@@ -221,7 +224,11 @@
       "flow": "flow",
       "inflow": "net_use_rate",
       "includeinoutput": "false",
-      "description": "Initial Storage;Storage"
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "unit": "m~^3;ft~^3",
+      "default":"1000",
+      "delegate": "UnitBox"
     },
     "use_rate": {
       "type": "timeseries",
@@ -265,7 +272,11 @@
       "flow": "flow",
       "inflow": "net_use_rate",
       "includeinoutput": "false",
-      "description": "Initial Storage;Storage"
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "unit": "m~^3;ft~^3",
+      "default":"1000",
+      "delegate": "UnitBox"
     },
     "use_rate": {
       "type": "timeseries",
@@ -279,7 +290,7 @@
       "includeinoutput": "true",
       "description": "Constant use rate",
       "ask_user": "true",
-	  "unit": "m~^3/day;ft~^3/day",
+	"unit": "m~^3/day;ft~^3/day",
       "delegate": "UnitBox"
     },
     "net_use_rate": {
@@ -305,7 +316,7 @@
     },
     "flow": {
       "type": "expression",
-      "expression": "use_rate.e",
+      "expression": "use_rate.e+constant_use_rate.e",
       "includeinoutput": "true",
       "description": "Flow",
       "applylimit": "true",
