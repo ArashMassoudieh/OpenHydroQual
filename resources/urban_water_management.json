@@ -84,7 +84,7 @@
       "inflow": "net_use_rate",
       "includeinoutput": "false",
       "description": "Initial Storage;Storage",
-      "default":"1000",
+      "default":"1000"
     },
     "use_rate": {
       "type": "timeseries",
