@@ -431,6 +431,7 @@ class System: public Object
         SolutionLogger *solutionlogger = nullptr;
         parameter_estimation_options ParameterEstimationMode = parameter_estimation_options::none;
         CVector GetBlocksOutflowFactors(const Expression::timing &tmg);
+        bool OutFlowCanOccur(int blockno, const string &variable);
         CVector GetLinkssOutflowFactors(const Expression::timing &tmg);
         unsigned int restore_interval = 200;
 

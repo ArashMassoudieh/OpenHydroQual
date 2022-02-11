@@ -1508,7 +1508,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
         {
             for (unsigned int i=0; i<blocks.size(); i++)
             {
-                if (X[i]<-1e-13 && !blocks[i].GetLimitedOutflow())
+                if (X[i]<-1e-13 && !blocks[i].GetLimitedOutflow() && OutFlowCanOccur(i,variable))
                 {
                     blocks[i].SetLimitedOutflow(true);
                     switchvartonegpos = true;
@@ -1860,6 +1860,25 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     return F;
 }
 
+
+bool System::OutFlowCanOccur(int blockno, const string &variable)
+{
+    bool alloutflowszero = true;
+    double outflow = blocks[blockno].GetInflowValue(variable, Expression::timing::present);
+    alloutflowszero &= !aquiutils::isnegative(outflow);
+    for (unsigned int j = 0; j < blocks[blockno].GetLinksFrom().size(); j++)
+    {
+        outflow = blocks[blockno].GetLinksFrom()[j]->GetVal(blocks[blockno].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present);
+        alloutflowszero &= !aquiutils::ispositive(outflow);
+    }
+    for (unsigned int j = 0; j < blocks[blockno].GetLinksTo().size(); j++)
+    {
+        outflow = blocks[blockno].GetLinksTo()[j]->GetVal(blocks[blockno].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present);
+        alloutflowszero &= !aquiutils::isnegative(outflow);
+    }
+    return alloutflowszero;
+}
+
 CVector System::GetBlocksOutflowFactors(const Expression::timing &tmg)
 {
     CVector out(blocks.size());
@@ -1958,6 +1977,8 @@ CMatrix_arma System::Jacobian(const string &variable, CVector_arma &X, bool tran
         CVector_arma V = Jacobian(variable, X, F0, i,transport);
         for (int j=0; j<X.num; j++)
             M(i,j) = V[j];
+
+
     }
 
   return Transpose(M);
