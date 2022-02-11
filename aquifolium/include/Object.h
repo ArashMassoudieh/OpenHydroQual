@@ -57,6 +57,7 @@ class Object
         void AppendError(const string &s);
         void SetParent(System *s);
         Quan* CorrespondingFlowVariable(const string &s);
+
         Quan* Variable(const string &s);
         Quan* Variable(const string &variable, const string &constituent);
         void SetType(const string &typ) {type = typ;}

@@ -49,7 +49,10 @@ double Block::GetInflowValue(const string &variable, const Expression::timing &t
             {
                 double inflow1 = CalcVal(corresponding_inflow_var[i]);
                 Variable(corresponding_inflow_var[i])->SetVal(inflow1, tmg);
-                inflow += inflow1;
+                if (inflow1>0)
+                    inflow += inflow1;
+                else
+                    inflow += inflow1*min(GetOutflowLimitFactor(tmg),1.0);
             }
         }
     }

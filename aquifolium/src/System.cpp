@@ -1197,8 +1197,8 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
     bool switchvartonegpos = true;
 
-    int attempts = 0;
-    while (attempts<2 && switchvartonegpos)
+    unsigned int attempts = 0;
+    while (attempts<BlockCount() && switchvartonegpos)
     {
         CVector_arma X = GetStateVariables(variable, Expression::timing::past,transport);
         double X_norm = X.norm2();
@@ -1508,31 +1508,34 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
         {
             for (unsigned int i=0; i<blocks.size(); i++)
             {
-                if (X[i]<-1e-13 && !blocks[i].GetLimitedOutflow() && OutFlowCanOccur(i,variable))
+                if (OutFlowCanOccur(i,variable) && !switchvartonegpos)
                 {
-                    blocks[i].SetLimitedOutflow(true);
-                    switchvartonegpos = true;
-                    SolverTempVars.updatejacobian[statevarno] = true;
-                    if (attempts==1)
+                    if (X[i]<-1e-13 && !blocks[i].GetLimitedOutflow())
                     {
-                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts");
-                        if (GetSolutionLogger())
-                        {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts , dt = "  + aquiutils::numbertostring(dt()));
-                            GetSolutionLogger()->Flush();
+                        blocks[i].SetLimitedOutflow(true);
+                        switchvartonegpos = true;
+                        SolverTempVars.updatejacobian[statevarno] = true;
+                        if (attempts==1)
+                        {
+                            SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts");
+                            if (GetSolutionLogger())
+                            {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts , dt = "  + aquiutils::numbertostring(dt()));
+                                GetSolutionLogger()->Flush();
+                            }
+                            if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+                            return false;
                         }
-                        if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
-                        return false;
                     }
-                }
-                else if (X[i]>=1 && blocks[i].GetLimitedOutflow())
-                {
-                    blocks[i].SetLimitedOutflow(false);
-                    switchvartonegpos = true;
-                    SolverTempVars.updatejacobian[statevarno] = true;
-                }
-                else if (X[i]<0)
-                {
-                    blocks[i].SetOutflowLimitFactor(0,Expression::timing::present);
+                    else if (X[i]>=1 && blocks[i].GetLimitedOutflow())
+                    {
+                        blocks[i].SetLimitedOutflow(false);
+                        switchvartonegpos = true;
+                        SolverTempVars.updatejacobian[statevarno] = true;
+                    }
+                    else if (X[i]<0)
+                    {
+                        blocks[i].SetOutflowLimitFactor(0,Expression::timing::present);
+                    }
                 }
             }
         }
@@ -1827,23 +1830,9 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     //qDebug()<<"Correction factors!";
     for (unsigned int i = 0; i < blocks.size(); i++)
     {
-        bool alloutflowszero = true;
         if (blocks[i].GetLimitedOutflow())
         {
-            double outflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
-            alloutflowszero &= !aquiutils::isnegative(outflow);
-            for (unsigned int j = 0; j < blocks[i].GetLinksFrom().size(); j++)
-            {
-                outflow = blocks[i].GetLinksFrom()[j]->GetVal(blocks[i].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present);
-                alloutflowszero &= !aquiutils::ispositive(outflow);
-            }
-            for (unsigned int j = 0; j < blocks[i].GetLinksTo().size(); j++)
-            {
-                outflow = blocks[i].GetLinksTo()[j]->GetVal(blocks[i].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present);
-                alloutflowszero &= !aquiutils::isnegative(outflow);
-            }
-
-            if (alloutflowszero)
+            if (!OutFlowCanOccur(i,variable))
             {
                 F[i] = X[i] - 1.1;
             }
@@ -1864,8 +1853,19 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 bool System::OutFlowCanOccur(int blockno, const string &variable)
 {
     bool alloutflowszero = true;
-    double outflow = blocks[blockno].GetInflowValue(variable, Expression::timing::present);
-    alloutflowszero &= !aquiutils::isnegative(outflow);
+    double outflow;
+    for (unsigned int i=0; i<blocks[blockno].Variable(variable)->GetCorrespondingInflowVar().size(); i++)
+    {
+        if (blocks[blockno].Variable(variable)->GetCorrespondingInflowVar()[i] != "")
+        {
+            if (blocks[blockno].Variable(blocks[blockno].Variable(variable)->GetCorrespondingInflowVar()[i]))
+            {
+                outflow = CalcVal(blocks[blockno].Variable(variable)->GetCorrespondingInflowVar()[i]);
+                alloutflowszero &= !aquiutils::isnegative(outflow);
+            }
+        }
+    }
+
     for (unsigned int j = 0; j < blocks[blockno].GetLinksFrom().size(); j++)
     {
         outflow = blocks[blockno].GetLinksFrom()[j]->GetVal(blocks[blockno].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present);
@@ -1876,7 +1876,7 @@ bool System::OutFlowCanOccur(int blockno, const string &variable)
         outflow = blocks[blockno].GetLinksTo()[j]->GetVal(blocks[blockno].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present);
         alloutflowszero &= !aquiutils::isnegative(outflow);
     }
-    return alloutflowszero;
+    return !alloutflowszero;
 }
 
 CVector System::GetBlocksOutflowFactors(const Expression::timing &tmg)
