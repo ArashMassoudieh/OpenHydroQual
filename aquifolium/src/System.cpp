@@ -1228,7 +1228,8 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "F=" + F.toString());
                 GetSolutionLogger()->Flush();
             }
-            SetOutflowLimitedVector(outflowlimitstatus_old);
+            if (!transport)
+                SetOutflowLimitedVector(outflowlimitstatus_old);
             return false;
         }
 
