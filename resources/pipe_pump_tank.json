@@ -202,10 +202,9 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Storage",
-      "default": "100000"
+      "default": "0.01"
     },
     "elevation": {
       "type": "value",
@@ -248,7 +247,6 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Storage",
       "includeinoutput": "false",

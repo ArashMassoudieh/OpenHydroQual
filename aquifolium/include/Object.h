@@ -98,10 +98,7 @@ class Object
 				return outflowlimitfactor_current;
 
 		}
-        void SetLimitedOutflow(bool x)
-        {
-            limitoutflow = x;
-        }
+        void SetLimitedOutflow(bool x);
         bool GetLimitedOutflow() {return limitoutflow;}
 		void SetVariableParents();
         void ShowMessage(const string &msg);

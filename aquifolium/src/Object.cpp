@@ -456,6 +456,11 @@ void Object::SetVariableParents()
 	}
 }
 
+void Object::SetLimitedOutflow(bool x)
+{
+    limitoutflow = x;
+}
+
 void Object::ShowMessage(const string &msg) {if (!parent->IsSilent()) cout<<msg<<std::endl;}
 
 void Object::SetAllParents()
@@ -686,6 +691,7 @@ bool Object::CopyStateVariablesFrom(Object* obj)
             var[s->first].SetVal(obj->GetVal(s->first,Expression::timing::present),Expression::timing::present);
         }
     }
+    SetLimitedOutflow(obj->GetLimitedOutflow());
     return true;
 }
 

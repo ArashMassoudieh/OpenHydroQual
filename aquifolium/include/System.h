@@ -236,6 +236,9 @@ class System: public Object
         double &tstart() {return SimulationParameters.tstart;}
         bool OneStepSolve(unsigned int i, bool transport=false);
         bool Renew(const string &variable);
+        SafeVector<int> ConnectedBlocksTo(int blockid); // Get the list of blocks the block 'blockid' is connected to
+        SafeVector<int> ConnectedBlocksFrom(int blockid); // Get the list of connected to the block 'blockid'
+        SafeVector<int> SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited); //Set outflow limitation status for block blockid and the connected rigid blocks to it
 		bool Update(const string &variable="");
         void UnUpdateAllVariables();
 		//bool Solve(const string &variable, bool ApplyParams = false);

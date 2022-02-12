@@ -1512,7 +1512,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 {
                     if (X[i]<-1e-13 && !blocks[i].GetLimitedOutflow())
                     {
-                        blocks[i].SetLimitedOutflow(true);
+                        SetLimitedOutFlow(i, variable, true);
                         switchvartonegpos = true;
                         SolverTempVars.updatejacobian[statevarno] = true;
                         if (attempts==1)
@@ -1528,7 +1528,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     }
                     else if (X[i]>=1 && blocks[i].GetLimitedOutflow())
                     {
-                        blocks[i].SetLimitedOutflow(false);
+                        SetLimitedOutFlow(i,variable, false);
                         switchvartonegpos = true;
                         SolverTempVars.updatejacobian[statevarno] = true;
                     }
@@ -1543,6 +1543,51 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
     }
 
 	return true;
+}
+
+SafeVector<int> System::SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited)
+{
+    SafeVector<int> blocks_affected;
+    blocks[blockid].SetLimitedOutflow(outflowlimited);
+    SafeVector<int> connected_blocks = ConnectedBlocksFrom(blockid);
+    SafeVector<Link*> connected_links = blocks[blockid].GetLinksFrom();
+    for (unsigned int i=0; i<connected_blocks.size(); i++)
+    {
+        if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::ispositive(blocks[blockid].GetLinksFrom()[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present)))
+        {
+            SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited);
+        }
+    }
+    connected_blocks = ConnectedBlocksTo(blockid);
+    connected_links = blocks[blockid].GetLinksTo();
+    for (unsigned int i=0; i<connected_blocks.size(); i++)
+    {
+        if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::isnegative(blocks[blockid].GetLinksTo()[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present)))
+        {
+            SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited);
+        }
+    }
+    return blocks_affected;
+}
+
+SafeVector<int> System::ConnectedBlocksFrom(int blockid)
+{
+    SafeVector<int> out;
+    for(unsigned int i=0; i<blocks[blockid].GetLinksFrom().size(); i++)
+    {
+        out.push_back(blocks[blockid].GetLinksFrom()[i]->e_Block_No());
+    }
+    return out;
+}
+
+SafeVector<int> System::ConnectedBlocksTo(int blockid)
+{
+    SafeVector<int> out;
+    for(unsigned int i=0; i<blocks[blockid].GetLinksTo().size(); i++)
+    {
+        out.push_back(blocks[blockid].GetLinksTo()[i]->s_Block_No());
+    }
+    return out;
 }
 
 bool System::Renew(const string & variable)
