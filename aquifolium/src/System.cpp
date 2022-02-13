@@ -4,7 +4,9 @@
 #pragma warning(disable : 4996)
 #include <json/json.h>
 #include <Script.h>
+#ifndef NO_OPENMP
 #include <omp.h>
+#endif
 #include "restorepoint.h"
 #ifdef VALGRIND
 #include <valgrind/callgrind.h>

@@ -8,7 +8,11 @@ Wizard_select_dialog::Wizard_select_dialog(MainWindow *_parent)
     parent = _parent;
     ui.setupUi(this);
 	ui.listWidget->clear(); 
+#ifndef mac_version
     QString path = qApp->applicationDirPath() + "/../../resources/";
+#else
+    QString path = qApp->applicationDirPath() + "/../resources/";
+#endif
     ui.listWidget->setIconSize(QSize(100, 100));
 	
     if (!get_templates(path + "default_templates.list"))
@@ -40,7 +44,11 @@ bool Wizard_select_dialog::get_templates(const QString & TemplateListFileName)
     QFile inputFile(TemplateListFileName);
     if (!inputFile.open(QIODevice::ReadOnly))
         return false;
+#ifndef mac_version
     QString path = qApp->applicationDirPath() + "/../../resources/";
+#else
+    QString path = qApp->applicationDirPath() + "/../resources/";
+#endif
     QTextStream line(&inputFile);
     while (!line.atEnd())
     {

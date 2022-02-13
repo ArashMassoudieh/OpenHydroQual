@@ -109,4 +109,4 @@ CVector combinesort_s(const CVector V1, const CVector V2);
 double avg(CVector &);
 vector<double> create_vector(int i);
 vector<vector<double> > create_vector(int i, int j);
-template<typename T> bool isfinite(T arg);
+
