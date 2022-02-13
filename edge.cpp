@@ -177,6 +177,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     if (qFuzzyCompare(line.length(), qreal(0.)))
         return;
 
+
     // Draw the line itself
     if (isSelected())
         painter->setPen(QPen(Qt::green, (bold) ? 3*parent->linkthickness : 1*parent->linkthickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -234,11 +235,19 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
             painter->setBrush(objectcolor);
         painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
     }
-    //if (isSelected() && parent->mainWindow()->Table) Need to fix
-    //{
-    //    parent->tableProp->setModel(model);
-    //    parent->tableProp->setFocus();
-    //}
+    if (parent->showlinkicons)
+    {   qreal iconmargin = 0;
+        QPixmap pixmap;
+
+        if (QString::fromStdString(system->GetModel(object()->GetType())->IconFileName()).contains("/"))
+            pixmap = QPixmap(QString::fromStdString(system->GetModel(object()->GetType())->IconFileName()));
+        else
+            pixmap = QPixmap(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object()->GetType())->IconFileName()));
+
+        QRectF rect = QRectF(0.6*boundingRect().left()+0.4*boundingRect().right() + iconmargin*boundingRect().width(), boundingRect().top()*0.6+boundingRect().bottom()*0.4+iconmargin*boundingRect().width(), min(max(boundingRect().width()*(1-iconmargin)*0.2, boundingRect().height()*(1-iconmargin)*0.2),50.0),min(max(boundingRect().width()*(1-iconmargin)*0.2, boundingRect().height()*(1-iconmargin)*0.2),50.0));
+        QRectF source(0, 0, pixmap.size().width(), pixmap.size().height());
+        painter->drawPixmap(rect, pixmap, source);
+    }
 }
 
 Object *Edge::object()

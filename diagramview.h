@@ -38,6 +38,7 @@ public:
     void wheelEvent(QWheelEvent* pWheelEvent) override;
     double fontfactor=1;
     int linkthickness = 1;
+    bool showlinkicons = false;
     QList<Node*> Nodes() const;
     QList<Edge *> Edges() const;
     void UnSelectAll();

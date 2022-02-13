@@ -14,6 +14,7 @@ OptionsDialog::OptionsDialog(MainWindow *_parent) :
     connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(on_cancel_clicked()));
     ui->doubleSpinBox->setValue(parent->GetDiagramView()->fontfactor);
     ui->LineThickness->setValue(parent->GetDiagramView()->linkthickness);
+    ui->radioButton->setChecked(parent->GetDiagramView()->showlinkicons);
 }
 
 OptionsDialog::~OptionsDialog()
@@ -27,6 +28,7 @@ void OptionsDialog::on_ok_clicked()
     {
         parent->GetDiagramView()->fontfactor = ui->doubleSpinBox->value();
         parent->GetDiagramView()->linkthickness = ui->LineThickness->value();
+        parent->GetDiagramView()->showlinkicons = ui->radioButton->isChecked();
         parent->GetDiagramView()->update();
         parent->GetDiagramView()->scene()->update(parent->GetDiagramView()->sceneRect());
         for (int i=0; i<parent->GetDiagramView()->Nodes().size(); i++)
