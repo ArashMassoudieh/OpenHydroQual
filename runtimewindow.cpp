@@ -6,7 +6,11 @@ RunTimeWindow::RunTimeWindow(QWidget *parent, config cfg) :
     ui(new Ui::RunTimeWindow)
 {
     ui->setupUi(this);
+#ifndef mac_version
     QIcon mainicon(qApp->applicationDirPath() + "/../../resources/Icons/Aquifolium.png");
+#else
+     QIcon mainicon(qApp->applicationDirPath() + "/../resources/Icons/Aquifolium.png");
+#endif
     setWindowIcon(mainicon);
 
     ui->progressBar->setRange(0,100);

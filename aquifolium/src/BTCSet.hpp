@@ -6,7 +6,9 @@
 #include <iostream>
 #include "Vector.h"
 #include "Matrix.h"
+#ifndef mac_version
 #include <omp.h>
+#endif
 #ifdef QT_version
 #include "qdebug.h"
 #include "qdatastream.h"

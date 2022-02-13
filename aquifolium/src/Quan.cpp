@@ -7,8 +7,10 @@
 #ifdef Q_version
     #include "XString.h"
 #endif
+#ifndef mac_version
 #ifndef NO_OPENMP
 #include "omp.h"
+#endif
 #endif
 
 

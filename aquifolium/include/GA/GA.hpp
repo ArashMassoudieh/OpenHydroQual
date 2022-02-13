@@ -4,7 +4,9 @@
 ////////////////////////////////////////////////////////////////////////
 #include "GA.h"
 #include <stdlib.h>
+#ifndef mac_version
 #include <omp.h>
+#endif
 #include "Expression.h"
 #include "Object.h"
 
@@ -356,7 +358,9 @@ int counter=0;
 #ifdef Q_version
 			if (rtw != nullptr)
 			{
-				if (omp_get_thread_num() == 0)
+#ifndef NO_OPENMP
+                if (omp_get_thread_num() == 0)
+#endif
 				{
 					rtw->SetProgress2(double(counter + 1) / GA_params.maxpop);
 					QCoreApplication::processEvents();

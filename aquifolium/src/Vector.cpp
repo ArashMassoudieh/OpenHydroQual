@@ -311,7 +311,7 @@ bool CVector::is_finite()
 {
 	bool r=true;
 	for (int i=0; i<num; ++i)
-		if (isfinite(vec[i])!=true)
+        if (isfinite(vec[i])!=true)
 			r=false;
 	return r;
 }
