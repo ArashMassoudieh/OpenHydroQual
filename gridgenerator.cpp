@@ -48,14 +48,8 @@ void GridGenerator::PopulateBlocks()
         }
         else
         {
-#ifndef mac_version
-            if (QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system()->GetModel(system()->GetAllBlockTypes()[i])->IconFileName())))
-                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system()->GetModel(system()->GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-#else
-            if (QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../resources/Icons/" + system()->GetModel(system()->GetAllBlockTypes()[i])->IconFileName())))
-                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../resources/Icons/" + system()->GetModel(system()->GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-
-#endif
+            if (QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/" + system()->GetModel(system()->GetAllBlockTypes()[i])->IconFileName())))
+                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/" + system()->GetModel(system()->GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
         }
 
         QListWidgetItem *list_item = new QListWidgetItem(icon, QString::fromStdString(system()->GetModel(system()->GetAllBlockTypes()[i])->Description()));
@@ -83,14 +77,8 @@ void GridGenerator::PopulateLinks()
         }
         else
         {
-#ifndef mac_version
-            if (QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system()->GetModel(system()->GetAllLinkTypes()[i])->IconFileName())))
-                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system()->GetModel(system()->GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-#else
-            if (QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../resources/Icons/" + system()->GetModel(system()->GetAllLinkTypes()[i])->IconFileName())))
-                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../resources/Icons/" + system()->GetModel(system()->GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-
-#endif
+            if (QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/" + system()->GetModel(system()->GetAllLinkTypes()[i])->IconFileName())))
+                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/" + system()->GetModel(system()->GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
         }
 
         QListWidgetItem* list_item = new QListWidgetItem(icon, QString::fromStdString(system()->GetModel(system()->GetAllLinkTypes()[i])->Description()));

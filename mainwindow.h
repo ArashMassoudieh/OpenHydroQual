@@ -14,6 +14,17 @@
 #include "aboutdialog.h"
 #include "undodata.h"
 
+#ifdef windows_version
+    #define RESOURCE_DIRECTORY qApp->applicationDirPath().toStdString()+"/../../resources"
+#endif
+
+#ifdef ubuntu_version
+    #define RESOURCE_DIRECTORY qApp->applicationDirPath().toStdString()+"/../../resources"
+#endif
+
+#ifdef mac_version
+    #define RESOURCE_DIRECTORY qApp->applicationDirPath().toStdString()+"/../resources"
+#endif
 
 
 namespace Ui {

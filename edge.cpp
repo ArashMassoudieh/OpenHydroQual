@@ -242,11 +242,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
         if (QString::fromStdString(system->GetModel(object()->GetType())->IconFileName()).contains("/"))
             pixmap = QPixmap(QString::fromStdString(system->GetModel(object()->GetType())->IconFileName()));
         else
-#ifndef mac_version
-            pixmap = QPixmap(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system->GetModel(object()->GetType())->IconFileName()));
-#else
-            pixmap = QPixmap(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../resources/Icons/" + system->GetModel(object()->GetType())->IconFileName()));
-#endif
+            pixmap = QPixmap(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/" + system->GetModel(object()->GetType())->IconFileName()));
         QRectF rect = QRectF(0.6*boundingRect().left()+0.4*boundingRect().right() + iconmargin*boundingRect().width(), boundingRect().top()*0.6+boundingRect().bottom()*0.4+iconmargin*boundingRect().width(), min(max(boundingRect().width()*(1-iconmargin)*0.2, boundingRect().height()*(1-iconmargin)*0.2),50.0),min(max(boundingRect().width()*(1-iconmargin)*0.2, boundingRect().height()*(1-iconmargin)*0.2),50.0));
         QRectF source(0, 0, pixmap.size().width(), pixmap.size().height());
         painter->drawPixmap(rect, pixmap, source);
