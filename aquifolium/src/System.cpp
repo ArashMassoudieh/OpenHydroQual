@@ -1511,36 +1511,35 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
         {
             for (unsigned int i=0; i<blocks.size(); i++)
             {
-                if (OutFlowCanOccur(i,variable) && !switchvartonegpos)
+                if (X[i]<-1e-13 && !blocks[i].GetLimitedOutflow() && OutFlowCanOccur(i,variable) && !switchvartonegpos)
                 {
-                    if (X[i]<-1e-13 && !blocks[i].GetLimitedOutflow())
+                    SetLimitedOutFlow(i, variable, true);
+                    switchvartonegpos = true;
+                    SolverTempVars.updatejacobian[statevarno] = true;
+                    if (attempts==BlockCount())
                     {
-                        SetLimitedOutFlow(i, variable, true);
-                        switchvartonegpos = true;
-                        SolverTempVars.updatejacobian[statevarno] = true;
-                        if (attempts==BlockCount())
-                        {
-                            SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after " + aquiutils::numbertostring(int(BlockCount())) +" attempts");
-                            if (GetSolutionLogger())
-                            {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after " + aquiutils::numbertostring(int(BlockCount())) +" attempts , dt = "  + aquiutils::numbertostring(dt()));
-                                GetSolutionLogger()->Flush();
-                            }
-                            if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
-                            return false;
+                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after " + aquiutils::numbertostring(int(BlockCount())) +" attempts");
+                        if (GetSolutionLogger())
+                        {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after " + aquiutils::numbertostring(int(BlockCount())) +" attempts , dt = "  + aquiutils::numbertostring(dt()));
+                            GetSolutionLogger()->Flush();
                         }
-                    }
-                    else if (X[i]>=1 && blocks[i].GetLimitedOutflow())
-                    {
-                        SetLimitedOutFlow(i,variable, false);
-                        switchvartonegpos = true;
-                        SolverTempVars.updatejacobian[statevarno] = true;
-                    }
-                    else if (X[i]<0)
-                    {
-                        blocks[i].SetOutflowLimitFactor(0,Expression::timing::present);
+                        if (!transport)
+                            SetOutflowLimitedVector(outflowlimitstatus_old);
+                        return false;
                     }
                 }
+                else if (X[i]>=1 && blocks[i].GetLimitedOutflow() & !switchvartonegpos)
+                {
+                    SetLimitedOutFlow(i,variable, false);
+                    switchvartonegpos = true;
+                    SolverTempVars.updatejacobian[statevarno] = true;
+                }
+                else if (X[i]<0)
+                {
+                    blocks[i].SetOutflowLimitFactor(0,Expression::timing::present);
+                }
             }
+
         }
         if (switchvartonegpos) attempts++;
     }
@@ -1771,7 +1770,8 @@ void System::SetStateVariables_TR(const string &variable, CVector_arma &X, const
 
 void System::CalculateAllExpressions(Expression::timing tmg)
 {
-    for (unsigned int i=0; i<blocks.size(); i++)
+    #pragma omp parallel for
+    for (int i=0; i<blocks.size(); i++)
     {
         for (unsigned int j = 0; j < blocks[i].QuantitOrder().size(); j++)
         {
@@ -1782,7 +1782,7 @@ void System::CalculateAllExpressions(Expression::timing tmg)
             }
         }
     }
-
+    #pragma omp parallel for
     for (unsigned int i=0; i<links.size(); i++)
     {
         for (unsigned int j = 0; j < links[i].QuantitOrder().size(); j++)
