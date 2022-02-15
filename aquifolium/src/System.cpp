@@ -1518,11 +1518,11 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                         SetLimitedOutFlow(i, variable, true);
                         switchvartonegpos = true;
                         SolverTempVars.updatejacobian[statevarno] = true;
-                        if (attempts==1)
+                        if (attempts==BlockCount())
                         {
-                            SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts");
+                            SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after " + aquiutils::numbertostring(int(BlockCount())) +" attempts");
                             if (GetSolutionLogger())
-                            {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after two attempts , dt = "  + aquiutils::numbertostring(dt()));
+                            {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after " + aquiutils::numbertostring(int(BlockCount())) +" attempts , dt = "  + aquiutils::numbertostring(dt()));
                                 GetSolutionLogger()->Flush();
                             }
                             if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);

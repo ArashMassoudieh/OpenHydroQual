@@ -55,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
     maintemplatefilename = RESOURCE_DIRECTORY + "/main_components.json";
     qDebug()<<QString::fromStdString(maintemplatefilename);
     entitiesfilename = RESOURCE_DIRECTORY + "/settings.json";
-    system.DefaultTemplatePath() = RESOURCE_DIRECTORY;
+    system.DefaultTemplatePath() = RESOURCE_DIRECTORY + "/";
 
     Log("Default Template Location is set to '" + QString::fromStdString(system.DefaultTemplatePath()) + "'");
     if (system.GetQuanTemplate(maintemplatefilename)) //Read the template from modelfilename
@@ -134,7 +134,7 @@ void MainWindow::ResetSystem()
 
     maintemplatefilename = RESOURCE_DIRECTORY + "/main_components.json";
     entitiesfilename = RESOURCE_DIRECTORY + "/settings.json";
-    system.DefaultTemplatePath() = RESOURCE_DIRECTORY;
+    system.DefaultTemplatePath() = RESOURCE_DIRECTORY + "/";
 
 
     Log("Default Template Location is set to '" + QString::fromStdString(system.DefaultTemplatePath()) + "'");

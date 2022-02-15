@@ -286,7 +286,10 @@ class System: public Object
         void SetAllParents();
         ErrorHandler errorhandler;
         bool Echo(const string &object, const string &quantity = "", const string &feature="");
-		string& DefaultTemplatePath() { return paths.default_template_path; }
+        string& DefaultTemplatePath() {
+            cout<<paths.default_template_path;
+            return paths.default_template_path;
+        }
 		string InputPath() {return paths.inputpath;}
         string OutputPath() {return paths.outputpath;}
         string ObservedOutputFileName() {return paths.observedoutputfilename;}
