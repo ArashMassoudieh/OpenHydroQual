@@ -174,7 +174,7 @@ bool Command::Execute(System *_sys)
             {
                 if (!sys->GetQuanTemplate(sys->DefaultTemplatePath() + aquiutils::GetOnlyFileName(assignments["filename"])))
 				{
-                    cout<<sys->DefaultTemplatePath() + aquiutils::GetOnlyFileName(assignments["filename"])<<endl;
+                    //cout<<sys->DefaultTemplatePath() + aquiutils::GetOnlyFileName(assignments["filename"])<<endl;
                     last_error = "File '" + assignments["filename"] + "' was not found!";
 					return false;
 				}

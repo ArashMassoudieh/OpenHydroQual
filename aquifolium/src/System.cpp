@@ -1783,7 +1783,7 @@ void System::CalculateAllExpressions(Expression::timing tmg)
         }
     }
     #pragma omp parallel for
-    for (unsigned int i=0; i<links.size(); i++)
+    for (int i=0; i<links.size(); i++)
     {
         for (unsigned int j = 0; j < links[i].QuantitOrder().size(); j++)
         {
