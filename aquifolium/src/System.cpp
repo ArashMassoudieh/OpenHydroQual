@@ -1831,6 +1831,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
             blocks[i].SetOutflowLimitFactor(X[i],Expression::timing::present); //max(X[i],0.0)
             blocks[i].SetVal(variable, blocks[i].GetVal(variable, Expression::timing::past) * SolverSettings.landtozero_factor,Expression::timing::present);
             double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
+            if (inflow<0) inflow*=blocks[i].GetOutflowLimitFactor(Expression::timing::present);
             F[i] = -blocks[i].GetVal(variable,Expression::timing::past)*(1.0-SolverSettings.landtozero_factor)/dt() - inflow;
         }
         else
@@ -3437,25 +3438,47 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     CMatrix_arma jacobian(BlockCount());
     for (unsigned int i=0; i<LinksCount(); i++)
     {
-        jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
-        jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
-        jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
-        jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+        if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
+        {   jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+        }
+        else
+        {
+            jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
+            jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
+        }
+        if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
+        {
+            jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+        }
+        else
+        {
+            jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) += link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
+            jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) -= link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
+        }
     }
     for (unsigned int i=0; i<BlockCount(); i++)
     {
-        jacobian(i,i) += 1/SolverTempVars.dt;
+        if (!block(i)->GetLimitedOutflow() && !block(i)->isrigid(variable))
+            jacobian(i,i) += 1/SolverTempVars.dt;
         for (unsigned int j=0; j<block(i)->Variable(variable)->GetCorrespondingInflowVar().size(); j++)
         {
             if (block(i)->Variable(variable)->GetCorrespondingInflowVar()[j] != "")
             {
                 if (Variable(block(i)->Variable(variable)->GetCorrespondingInflowVar()[j]))
                 {
-                    jacobian(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
+                    if (!block(i)->GetLimitedOutflow())
+                        jacobian(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
+                    else
+                    {   double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
+                        if (inflow<0) jacobian(i,i) -= inflow;
+                    }
                 }
             }
         }
     }
+
     SetStateVariables_for_direct_Jacobian(variable,current_state,Expression::timing::present,transport);
     return jacobian;
 }
