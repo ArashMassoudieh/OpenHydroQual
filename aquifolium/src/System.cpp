@@ -1249,13 +1249,17 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             {
                 CMatrix_arma J;
                 CMatrix_arma J_direct;
+                CMatrix_arma J_trad;
                 if (transport)
                     J = Jacobian(variable, X, transport);
                 else
-                    J = Jacobian(variable, X, transport);
+                    J = JacobianDirect(variable, X, transport);
                 //J_direct = JacobianDirect(variable, X, transport);
-                //J.writetofile("jacob_traditional.txt");
                 //J_direct.writetofile("jacob_direct.txt");
+                //J.writetofile("jacob_traditional.txt");
+                //J_trad = Jacobian(variable, X, transport);
+                //J_trad.writetofile("jacob_traditional.txt");
+
                 SolverTempVars.epoch_count ++;
                 if (SolverSettings.scalediagonal)
                     J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
@@ -3433,6 +3437,22 @@ bool System::ResetBasedOnRestorePoint(RestorePoint *rp)
 
 CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, bool transport)
 {
+    for (unsigned int i=0; i<links.size(); i++)
+    {
+        if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) > 0)
+        {   links[i].SetOutflowLimitFactor(blocks[links[i].s_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
+            links[i].SetLimitedOutflow(true);
+        }
+        else if (blocks[links[i].e_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)<0)
+        {   links[i].SetOutflowLimitFactor(blocks[links[i].e_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
+            links[i].SetLimitedOutflow(true);
+        }
+        else
+        {   links[i].SetOutflowLimitFactor(1, Expression::timing::present);
+            links[i].SetLimitedOutflow(false);
+        }
+
+    }
     CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Expression::timing::present,transport);
     SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma jacobian(BlockCount());
@@ -3444,8 +3464,12 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
         }
         else
         {
-            jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
-            jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
+            jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            if (jacobian(link(i)->s_Block_No(),link(i)->s_Block_No())<0)
+            {
+                cout<<"!!!!"<<endl;
+            }
         }
         if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
         {
@@ -3454,8 +3478,12 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
         }
         else
         {
-            jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) += link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
-            jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) -= link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
+            jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) -= aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            if (jacobian(link(i)->e_Block_No(),link(i)->e_Block_No())<0)
+            {
+                cout<<"!!!!"<<endl;
+            }
         }
     }
     for (unsigned int i=0; i<BlockCount(); i++)
@@ -3475,6 +3503,18 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
                         if (inflow<0) jacobian(i,i) -= inflow;
                     }
                 }
+            }
+        }
+    }
+
+    for (unsigned int i = 0; i < blocks.size(); i++)
+    {
+        if (blocks[i].GetLimitedOutflow())
+        {
+            if (!OutFlowCanOccur(i,variable))
+            {
+                for (unsigned int j=0; j<blocks.size(); j++) jacobian(j,i)=0;
+                jacobian(i,i)=1;
             }
         }
     }
