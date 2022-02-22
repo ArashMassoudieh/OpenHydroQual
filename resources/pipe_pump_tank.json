@@ -249,7 +249,6 @@
       "flow": "flow",
       "includeinoutput": "true",
       "description": "Storage",
-      "includeinoutput": "false",
       "default": "1000",
       "rigid": "true"
     },

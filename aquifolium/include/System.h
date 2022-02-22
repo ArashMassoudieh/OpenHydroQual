@@ -318,7 +318,7 @@ class System: public Object
             SolverSettings.n_threads = i;
         }
         int NumThreads() { return SolverSettings.n_threads; }
-        
+        void ResetAllowLimitedFlows(bool allow);
 #if defined(QT_version)
         logWindow *LogWindow() {return logwindow;}
         void SetLogWindow(logWindow *lgwnd) {logwindow=lgwnd;}
