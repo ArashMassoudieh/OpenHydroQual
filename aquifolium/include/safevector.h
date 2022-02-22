@@ -24,7 +24,11 @@ public:
     unsigned int lookup(const T &x);
     void append(const SafeVector<T> &v)
     {
-        this->push_back(v);
+        this->insert(this->end(), v.begin(), v.end());
+    }
+    void append(const T &x)
+    {
+        this->push_back(x);
     }
 
 };

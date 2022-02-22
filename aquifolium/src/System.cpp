@@ -1534,9 +1534,9 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
         {
             for (unsigned int i=0; i<blocks.size(); i++)
             {
-                if (X[i]<-1e-13 && !blocks[i].GetLimitedOutflow() && OutFlowCanOccur(i,variable) && !switchvartonegpos)
+                if (X[i]<-1e-13 && !blocks[i].GetLimitedOutflow() && OutFlowCanOccur(i,variable))
                 {
-                    SetLimitedOutFlow(i, variable, true);
+                    SafeVector<int> blocks_affected = SetLimitedOutFlow(i, variable, true);
                     switchvartonegpos = true;
                     SolverTempVars.updatejacobian[statevarno] = true;
                     if (attempts==BlockCount())
@@ -1550,8 +1550,10 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                             SetOutflowLimitedVector(outflowlimitstatus_old);
                         return false;
                     }
+                    for (unsigned int j=0; j<blocks_affected.size(); j++)
+                        X[blocks_affected[j]] = 0.9999;
                 }
-                else if (X[i]>=1 && blocks[i].GetLimitedOutflow() && !switchvartonegpos)
+                else if (X[i]>=1 && blocks[i].GetLimitedOutflow())
                 {
                     SetLimitedOutFlow(i,variable, false);
                     switchvartonegpos = true;
@@ -1573,6 +1575,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 SafeVector<int> System::SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited)
 {
     SafeVector<int> blocks_affected;
+    blocks_affected.push_back(blockid);
     blocks[blockid].SetLimitedOutflow(outflowlimited);
     blocks[blockid].SetOutflowLimitFactor(1,Expression::timing::present);
     SafeVector<int> connected_blocks = ConnectedBlocksFrom(blockid);
@@ -1581,7 +1584,7 @@ SafeVector<int> System::SetLimitedOutFlow(int blockid, const string &variable, b
     {
         if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::ispositive(blocks[blockid].GetLinksFrom()[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present)))
         {
-            SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited);
+            blocks_affected.append(SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited));
         }
     }
     connected_blocks = ConnectedBlocksTo(blockid);
@@ -1590,7 +1593,7 @@ SafeVector<int> System::SetLimitedOutFlow(int blockid, const string &variable, b
     {
         if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::isnegative(blocks[blockid].GetLinksTo()[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present)))
         {
-            SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited);
+            blocks_affected.append(SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited));
         }
     }
     return blocks_affected;

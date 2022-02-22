@@ -40,3 +40,5 @@ unsigned int SafeVector<T>::lookup(const T &x)
     }
     return -1;
 }
+
+
