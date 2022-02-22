@@ -539,7 +539,11 @@ double Expression::func(string &f, double val)
 	if (f == "exp")
 		return exp(val);
 	if (f == "log")
-		return log(val);
+    {	if (val>0)
+            return log(val);
+        else
+            return -1e12;
+    }
 	if (f == "abs")
 		return fabs(val);
 	if (f == "sgn")

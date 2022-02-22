@@ -93,9 +93,9 @@ class Object
 		{
 
 			if (tmg == Expression::timing::past)
-				return outflowlimitfactor_past;
+                return outflowlimitfactor_past;
 			else
-				return outflowlimitfactor_current;
+                return outflowlimitfactor_current;
 
 		}
         void SetLimitedOutflow(bool x);

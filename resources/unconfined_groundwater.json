@@ -274,8 +274,11 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "includeinoutput": "false",
-      "description": "Storage"
+      "includeinoutput": "true",
+      "description": "Storage",
+      "initial_value_expression": "0.25*3.141521*diameter*diameter*depth",
+      "ask_user": "false",
+      "estimate": "true"
     },
     "pumping_rate": {
       "type": "timeseries",
@@ -284,9 +287,33 @@
       "ask_user": "true",
       "delegate": "Browser"
     },
+    "head": {
+    	"type":"expression",
+    	"includeinoutput": "true",
+        "description": "Hydraulic head in the well",
+        "expression": "bottom_elevation+depth"
+    },
+    "depth": {
+    	"type":"expression",
+    	"includeinoutput": "true",
+        "description": "Initial water depth;Water depth",
+        "expression": "4*Storage/(3.141521*diameter*diameter)",
+        "ask_user": "true",
+        "delegate": "UnitBox",
+        "unit": "m;ft"         
+    },
     "bottom_elevation": {
       "type": "value",
       "description": "The bottom elevation of the well",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    },
+    "diameter": {
+      "type": "value",
+      "default": "1",
+      "description": "well diameter",
       "includeinoutput": "false",
       "ask_user": "true",
       "delegate": "UnitBox",
@@ -296,7 +323,7 @@
   "aquifer2well_link": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Unconfined Aquifer to Well connector",
+    "description": "Unconfined Aquifer to Well connector for (fixed withdrawal)",
     "icon": {
       "filename": "unconfined_aquifer2well.png"
     },
@@ -304,6 +331,22 @@
       "type": "expression",
       "description": "Flow",
       "expression": "pumping_rate.e*_pos(piezometric_head.s-bottom_elevation.e)/(0.1+_pos(piezometric_head.s-bottom_elevation.e))",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
+  "aquifer2well_link_pump": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Unconfined Aquifer to Well connector (pumped withdrawal)",
+    "icon": {
+      "filename": "unconfined_aquifer2well.png"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow (m~^3/day)",
+      "expression": "3.141521*(depth.s+depth.e)*(piezometric_head.s-head.e)/(_log(_sqr(area.s/4)/diameter.e))",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"

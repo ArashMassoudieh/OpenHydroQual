@@ -413,6 +413,7 @@ class System: public Object
         void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport);
         void SetStateVariables_TR(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present);
         vector<bool> GetOutflowLimitedVector();
+        vector<double> GetOutflowLimitFactorVector(const Expression::timing &tmg);
         void SetOutflowLimitedVector(vector<bool>& x);
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
