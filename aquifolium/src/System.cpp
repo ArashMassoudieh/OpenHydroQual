@@ -1271,7 +1271,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 if (transport)
                     J = Jacobian(variable, X, transport);
                 else
-                    J = Jacobian(variable, X, transport);
+                    J = JacobianDirect(variable, X, transport);
                 //J_direct = JacobianDirect(variable, X, transport);
                 //J_direct.writetofile("jacob_direct.txt");
                 //J.writetofile("jacob_traditional.txt");
@@ -3508,10 +3508,6 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
         {
             jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
             jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
-            if (jacobian(link(i)->s_Block_No(),link(i)->s_Block_No())<0)
-            {
-                cout<<"!!!!"<<endl;
-            }
         }
         if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
         {
@@ -3522,10 +3518,6 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
         {
             jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) -= aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
             jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
-            if (jacobian(link(i)->e_Block_No(),link(i)->e_Block_No())<0)
-            {
-                cout<<"!!!!"<<endl;
-            }
         }
     }
     for (unsigned int i=0; i<BlockCount(); i++)

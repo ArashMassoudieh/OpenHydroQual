@@ -216,15 +216,15 @@
     },
     "elasticity": {
       "type": "value",
-      "description": "Elasticity",
-      "default": "100",
+      "description": "Elasticity (d head/d storage)",
+      "default": "1",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
     },
     "head": {
       "type": "expression",
-      "expression": "elevation+elasticity*(Storage-100000)",
+      "expression": "elevation+elasticity*Storage-0.01",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "includeinoutput": "true"
@@ -424,7 +424,7 @@
       "ask_user": "true",
       "delegate": "Browser"
     },
-	"constant_use_rate": {
+    "constant_use_rate": {
       "type": "value",
       "includeinoutput": "true",
       "description": "Constant use rate",
