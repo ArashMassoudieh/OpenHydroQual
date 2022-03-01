@@ -42,7 +42,7 @@
     "production_rate": {
       "type": "expression",
       "expression": "(maximum_production_rate+constant_production_rate)*_exp(-0.05*Storage/_pos(storage_capacity-Storage))",
-      "includeinoutput": "false",
+      "includeinoutput": "true",
       "description": "Net production",
       "ask_user": "false"
     },
@@ -375,7 +375,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow rate (m~^3/day)",
-      "expression": "maximum_production_rate.s*_exp(-0.05*Storage.e/_pos(capacity.e-Storage.e))",
+      "expression": "(maximum_production_rate.s+constant_production_rate.s)*_exp(-0.05*Storage.e/_pos(capacity.e-Storage.e))",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
