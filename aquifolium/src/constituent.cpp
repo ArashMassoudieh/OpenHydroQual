@@ -25,6 +25,10 @@ Constituent& Constituent::operator=(const Constituent& rhs)
 
 bool Constituent::SetName(const string &newname, bool setprop)
 {
+    if (newname.find('(') != std::string::npos || newname.find(')') != std::string::npos)
+    {
+        return false; 
+    }
     if (GetParent()!=nullptr)
     {
         if (newname!=GetName())

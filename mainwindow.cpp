@@ -760,12 +760,12 @@ void MainWindow::onaddconstituent()
     string name;
     string objectname;
     if (obj->objectName()!="")
-    {   name = CreateNewName(obj->objectName().toStdString());
+    {   name = CreateNewName(obj->objectName().toStdString(),false);
         objectname = obj->objectName().toStdString();
     }
     else
     {
-        name = CreateNewName("Constituent");
+        name = CreateNewName("Constituent",false);
         objectname = "Constituent";
     }
 
@@ -825,12 +825,12 @@ void MainWindow::onaddreactionparameter()
     string name;
     string objectname;
     if (obj->objectName()!="")
-    {   name = CreateNewName(obj->objectName().toStdString());
+    {   name = CreateNewName(obj->objectName().toStdString(),false);
         objectname = obj->objectName().toStdString();
     }
     else
     {
-        name = CreateNewName("Reaction Parameter");
+        name = CreateNewName("Reaction Parameter",false);
         objectname = "ReactionParameter";
     }
 
@@ -1046,13 +1046,25 @@ void MainWindow::RefreshTreeView()
     }
 }
 
-string MainWindow::CreateNewName(string type)
+string MainWindow::CreateNewName(string type, bool allow_parathesis)
 {
     int i=1;
-    string newname = type + " (" + aquiutils::numbertostring(i) + ")";
-    while (system.object(newname)!=nullptr)
+    string newname; 
+    if (allow_parathesis)
     {
-        newname = type + " (" + aquiutils::numbertostring(i++) + ")";
+        newname = type + " (" + aquiutils::numbertostring(i) + ")";
+        while (system.object(newname) != nullptr)
+        {
+            newname = type + " (" + aquiutils::numbertostring(i++) + ")";
+        }
+    }
+    else
+    {
+        newname = type + "_" + aquiutils::numbertostring(i);
+        while (system.object(newname) != nullptr)
+        {
+            newname = type+ "_" + aquiutils::numbertostring(i++);
+        }
     }
     return newname;
 

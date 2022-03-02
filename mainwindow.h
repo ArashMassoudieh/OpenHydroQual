@@ -49,7 +49,7 @@ public:
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);
     Plotter* Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime=true);
-    string CreateNewName(string type);
+    string CreateNewName(string type, bool allow_paranthesis = true);
     DiagramView* GetDiagramView() { return dView; }
     bool Log(const QString &s);
     bool LogError(const QString &s);

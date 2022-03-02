@@ -270,6 +270,14 @@ string Object::GetName() const
 
 bool Object::SetName(const string &s, bool setprop)
 {
+    if (Object_Type == object_type::constituent || Object_Type == object_type::reaction_parameter)
+    {
+        if (s.find('(') != std::string::npos || s.find(')') != std::string::npos)
+        {
+            return false; 
+        }
+    }
+
     if (setprop)
     {
         if (var.Count("name")>0)

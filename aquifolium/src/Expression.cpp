@@ -148,7 +148,8 @@ Expression::Expression(string S)
 					}
 			}
 
-			Expression sub_exp = Expression(aquiutils::trim(S.substr(last_operator_location+1, S.size() - last_operator_location)));
+			
+            Expression sub_exp = Expression(aquiutils::trim(S.substr(last_operator_location+1, S.size() - last_operator_location)));
 			if (operators.size() > 0)
 				sub_exp.sign = operators[operators.size() - 1];
 			else
