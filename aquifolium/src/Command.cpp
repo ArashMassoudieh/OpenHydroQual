@@ -579,16 +579,22 @@ bool Command::Execute(System *_sys)
             if (Validate())
             {
                 Constituent B;
-                B.SetName(assignments["name"]);
-                B.SetType(assignments["type"]);
-                sys->AddConstituent(B);
-                sys->AddConstituentRelateProperties(sys->constituent(assignments["name"]));
-                for (map<string,string>::iterator it=assignments.begin(); it!=assignments.end(); it++)
+                if (B.SetName(assignments["name"]))
                 {
-                    if (it->first!="type")
-                        sys->constituent(assignments["name"])->SetProperty(it->first,it->second,true,false);
+                    B.SetType(assignments["type"]);
+                    sys->AddConstituent(B);
+                    sys->AddConstituentRelateProperties(sys->constituent(assignments["name"]));
+                    for (map<string, string>::iterator it = assignments.begin(); it != assignments.end(); it++)
+                    {
+                        if (it->first != "type")
+                        {
+                            sys->constituent(assignments["name"])->SetProperty(it->first, it->second, true, false);
+                        }
+                    }
+                    return true;
                 }
-                return true;
+                else
+                    return false; 
             }
             else
                 return false;

@@ -3084,8 +3084,13 @@ vector<Quan> System::GetToBeCopiedQuantities(Constituent *consttnt, const object
         role = Quan::_role::copytoreactions;
 
     vector<Quan> quantitiestobecopiedtoallobjects;
-    vector<Quan> original_quans = consttnt->GetCopyofAllQuans();
-    vector<Quan> quans = original_quans;
+    vector<Quan> original_quans;
+    vector<Quan> quans;
+    if (consttnt)
+    {
+        original_quans = consttnt->GetCopyofAllQuans();
+        quans = original_quans;
+    }
 
     for (unsigned int j = 0; j < quans.size(); j++)
     {
