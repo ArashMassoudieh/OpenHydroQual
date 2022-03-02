@@ -64,9 +64,15 @@ bool Plotter::PlotData(const CTimeSeriesSet<timeseriesprecision>& BTC, bool allo
 bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, bool allowtime, string style)
 {
     maxx = max(BTC.GetT(0),maxx);
-    maxy = max(BTC.maxC(),maxy);
+    maxy = max(BTC.maxC()*(1+0.1*sgn(BTC.maxC())),maxy);
     minx = min(BTC.GetT(BTC.n-1),minx);
-    miny = min(BTC.minC(),miny);
+    miny = min(BTC.minC()*(1-0.1*sgn(BTC.minC())),miny);
+    if (miny>0)
+        miny = min(0.0,miny);
+
+    if (maxy<0)
+        maxy = max(0.0,maxy);
+
     plot->legend->setVisible(showlegend);
     plot->clearGraphs();
     QVector<double> x, y; // initialize with entries 0..100
@@ -370,9 +376,16 @@ void Plotter::refreshFormat()
 bool Plotter::AddData(const CTimeSeries<timeseriesprecision>& BTC, bool allowtime, string style)
 {
     maxx = max(BTC.GetT(0),maxx);
-    maxy = max(BTC.maxC(),maxy);
+    maxy = max(BTC.maxC()*(1+0.1*sgn(BTC.maxC())),maxy);
     minx = min(BTC.GetT(BTC.n-1),minx);
-    miny = min(BTC.minC(),miny);
+    miny = min(BTC.minC()*(1-0.1*sgn(BTC.minC())),miny);
+
+    if (miny>0)
+        miny = min(0.0,miny);
+
+    if (maxy<0)
+        maxy = max(0.0,maxy);
+
     plot->legend->setVisible(showlegend);
     QVector<double> x, y; // initialize with entries 0..100
     format.push_back(plotformat());

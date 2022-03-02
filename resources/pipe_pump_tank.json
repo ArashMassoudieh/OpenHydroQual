@@ -15,7 +15,6 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
@@ -203,10 +202,9 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Storage",
-      "default": "100000"
+      "default": "0.01"
     },
     "elevation": {
       "type": "value",
@@ -218,15 +216,15 @@
     },
     "elasticity": {
       "type": "value",
-      "description": "Elasticity",
-      "default": "100",
+      "description": "Elasticity (d head/d storage)",
+      "default": "1",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
     },
     "head": {
       "type": "expression",
-      "expression": "elevation+elasticity*(Storage-100000)",
+      "expression": "elevation+elasticity*Storage-0.01",
       "description": "Hydraulc Head",
       "ask_user": "false",
       "includeinoutput": "true"
@@ -249,10 +247,8 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Storage",
-      "includeinoutput": "false",
       "default": "1000",
       "rigid": "true"
     },
@@ -403,6 +399,67 @@
     "color": {
       "type": "string",
       "default": "0,0,0"
+    }
+  },
+  "residential_user": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description" : "User",    
+    "icon": {
+      "filename": "residential.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "net_use_rate",
+      "includeinoutput": "false",
+      "description": "Initial Storage;Storage",
+      "default":"1000"
+    },
+    "use_rate": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Use rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "constant_use_rate": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant use rate",
+      "ask_user": "true",
+	  "unit": "m~^3/day;ft~^3/day",
+      "delegate": "UnitBox"
+    },
+    "net_use_rate": {
+      "type": "expression",
+      "expression": "-(use_rate+constant_use_rate)",
+      "includeinoutput": "false",
+      "description": "Net production",
+      "ask_user": "false"
+    }
+  },
+  "Flow_to_user": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description" : "Flow link to user",    
+    "icon": {
+      "filename": "arrow_to_user.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "use_rate.e+constant_use_rate.e",
+      "includeinoutput": "true",
+      "description": "Flow",
+      "applylimit": "true",
+      "description": "Flow rate"
     }
   }
 }

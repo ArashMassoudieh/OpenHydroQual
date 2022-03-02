@@ -452,7 +452,6 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
       "default": "100000",
       "includeinoutput": "true",
       "description": "Initial Storage; Storage",

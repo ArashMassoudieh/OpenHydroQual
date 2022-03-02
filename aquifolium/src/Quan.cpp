@@ -7,8 +7,10 @@
 #ifdef Q_version
     #include "XString.h"
 #endif
+#ifndef mac_version
 #ifndef NO_OPENMP
 #include "omp.h"
+#endif
 #endif
 
 
@@ -530,7 +532,6 @@ double Quan::GetVal(const Expression::timing &tmg)
 #endif
             if (type == _type::expression)
             {
-                //#pragma omp critical
                 {
                     _val_star = CalcVal(tmg);
                     value_star_updated = true;

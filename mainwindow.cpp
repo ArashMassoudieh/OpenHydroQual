@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.0.19"
-#define last_modified "January 30, 2022"
+#define openhydroqual_version "1.0.21"
+#define last_modified "February 15, 2022"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -42,23 +42,21 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    QIcon mainicon(qApp->applicationDirPath() + "/../../resources/Icons/Aquifolium.png");
+
+    QIcon mainicon(QString::fromStdString(RESOURCE_DIRECTORY) + "/Icons/Aquifolium.png");
+
     setWindowIcon(mainicon);
     dView = new DiagramView(ui->centralWidget,this);
     dView->setObjectName(QStringLiteral("graphicsView"));
     ui->horizontalLayout->addWidget(dView);
     LogWindow = new logwindow(this);
     LogWindow->show();
-#ifndef Win_Version
-    maintemplatefilename = qApp->applicationDirPath().toStdString() + "/../../resources/main_components.json";
-    entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
-	system.DefaultTemplatePath() = qApp->applicationDirPath().toStdString() + "/../../resources/";
-#else
-    maintemplatefilename = qApp->applicationDirPath().toStdString() + "/resources/main_components.json";
-    entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
-	system.DefaultTemplatePath() = qApp->applicationDirPath().toStdString() + "/resources/";
 
-#endif // !Win_Version
+    maintemplatefilename = RESOURCE_DIRECTORY + "/main_components.json";
+    qDebug()<<QString::fromStdString(maintemplatefilename);
+    entitiesfilename = RESOURCE_DIRECTORY + "/settings.json";
+    system.DefaultTemplatePath() = RESOURCE_DIRECTORY + "/";
+
     Log("Default Template Location is set to '" + QString::fromStdString(system.DefaultTemplatePath()) + "'");
     if (system.GetQuanTemplate(maintemplatefilename)) //Read the template from modelfilename
     {
@@ -133,16 +131,12 @@ void MainWindow::ResetSystem()
     system.clear();
     system.addedtemplates.clear();
     addedtemplatefilenames = system.addedtemplates;
-#ifndef Win_Version
-    maintemplatefilename = qApp->applicationDirPath().toStdString() + "/../../resources/main_components.json";
-    entitiesfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
-    system.DefaultTemplatePath() = qApp->applicationDirPath().toStdString() + "/../../resources/";
-#else
-    maintemplatefilename = qApp->applicationDirPath().toStdString() + "/resources/main_components.json";
-    entitiesfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
-    system.DefaultTemplatePath() = qApp->applicationDirPath().toStdString() + "/resources/";
 
-#endif // !Win_Version
+    maintemplatefilename = RESOURCE_DIRECTORY + "/main_components.json";
+    entitiesfilename = RESOURCE_DIRECTORY + "/settings.json";
+    system.DefaultTemplatePath() = RESOURCE_DIRECTORY + "/";
+
+
     Log("Default Template Location is set to '" + QString::fromStdString(system.DefaultTemplatePath()) + "'");
     if (system.GetQuanTemplate(maintemplatefilename)) //Read the template from modelfilename
     {
@@ -329,11 +323,11 @@ bool MainWindow::BuildObjectsToolBar()
         }
         else
         {
-            if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
 
+            if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
         }
         action->setIcon(icon);
         action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
@@ -359,11 +353,11 @@ bool MainWindow::BuildObjectsToolBar()
         }
         else
         {
-            if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
 
+            if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
         }
         action->setIcon(icon);
         action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
@@ -384,7 +378,9 @@ bool MainWindow::BuildObjectsToolBar()
                 action->setCheckable(false);
                 action->setObjectName(QString::fromStdString(type));
                 QIcon icon;
-                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+
+                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+
                 if (QString::fromStdString(system.GetModel(type)->IconFileName()).contains("/"))
                 {
                     if (!QFile::exists(QString::fromStdString(system.GetModel(type)->IconFileName())))
@@ -394,10 +390,11 @@ bool MainWindow::BuildObjectsToolBar()
                 }
                 else
                 {
-                    if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName())))
-                        LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()) + "' was not found!");
+
+                    if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName())))
+                        LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName()) + "' was not found!");
                     else
-                        icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                        icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
                 }
 
 
@@ -453,10 +450,11 @@ bool MainWindow::ReCreateObjectsMenu()
         }
         else
         {
-            if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
+
+            if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
             else
-                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
 
         }
         action->setIcon(icon);
@@ -483,11 +481,11 @@ bool MainWindow::ReCreateObjectsMenu()
         }
         else
         {
-            if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
 
+            if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
+                LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
+            else
+                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
         }
         action->setIcon(icon);
         action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
@@ -508,7 +506,8 @@ bool MainWindow::ReCreateObjectsMenu()
                 action->setObjectName(QString::fromStdString(type));
                 action->setText(QString::fromStdString(system.GetModel(type)->Description()));
                 QIcon icon;
-                icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+
+                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
                 if (QString::fromStdString(system.GetModel(type)->IconFileName()).contains("/"))
                 {
                     if (!QFile::exists(QString::fromStdString(system.GetModel(type)->IconFileName())))
@@ -518,10 +517,11 @@ bool MainWindow::ReCreateObjectsMenu()
                 }
                 else
                 {
-                    if (!QFile::exists(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName())))
-                        LogError("Icon file '" + QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()) + "' was not found!");
+
+                    if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/" + system.GetModel(type)->IconFileName())))
+                        LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/" + system.GetModel(type)->IconFileName()) + "' was not found!");
                     else
-                        icon.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                        icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
                 }
 
 
@@ -1343,7 +1343,8 @@ void MainWindow::Populate_General_ToolBar()
     QAction* actionnormalmode = new QAction(this);
     actionnormalmode->setObjectName("Normal Mode");
     QIcon iconnormalmodel;
-    iconnormalmodel.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/arrow_cursor.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconnormalmodel.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/arrow_cursor.png"), QSize(), QIcon::Normal, QIcon::Off);
     actionnormalmode->setIcon(iconnormalmodel);
     ui->GeneraltoolBar->addAction(actionnormalmode);
     connect(actionnormalmode, SIGNAL(triggered()), this, SLOT(onnormalmode()));
@@ -1351,7 +1352,9 @@ void MainWindow::Populate_General_ToolBar()
     QAction* actionsave = new QAction(this);
     actionsave->setObjectName("Save");
     QIcon iconsave;
-    iconsave.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/Save.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconsave.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/Save.png"), QSize(), QIcon::Normal, QIcon::Off);
+
     actionsave->setIcon(iconsave);
     ui->GeneraltoolBar->addAction(actionsave);
     actionsave->setText("Save");
@@ -1361,7 +1364,8 @@ void MainWindow::Populate_General_ToolBar()
     QAction* actionopen = new QAction(this);
     actionopen->setObjectName("Open");
     QIcon iconopen;
-    iconopen.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/open.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconopen.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/open.png"), QSize(), QIcon::Normal, QIcon::Off);
     actionopen->setIcon(iconopen);
     ui->GeneraltoolBar->addAction(actionopen);
     actionopen->setText("Open");
@@ -1372,7 +1376,9 @@ void MainWindow::Populate_General_ToolBar()
     actionzoomall->setObjectName("Zoom All");
     actionopen->setToolTip("Zoom All");
     QIcon iconzoomall;
-    iconzoomall.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/Full_screen_view.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconzoomall.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/Full_screen_view.png"), QSize(), QIcon::Normal, QIcon::Off);
+
     actionzoomall->setIcon(iconzoomall);
     ui->GeneraltoolBar->addAction(actionzoomall);
     actionzoomall->setText("Zoom Extends");
@@ -1383,7 +1389,9 @@ void MainWindow::Populate_General_ToolBar()
     QAction* actionzoomin = new QAction(this);
     actionzoomin->setObjectName("Zoom_In");
     QIcon iconzoomin;
-    iconzoomin.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconzoomin.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
+
     actionzoomin->setIcon(iconzoomin);
     ui->GeneraltoolBar->addAction(actionzoomin);
     actionzoomin->setText("Zoom In");
@@ -1393,7 +1401,8 @@ void MainWindow::Populate_General_ToolBar()
     QAction* actionzoomout = new QAction(this);
     actionzoomall->setObjectName("Zoom_Out");
     QIcon iconzoomout;
-    iconzoomout.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconzoomout.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
     actionzoomout->setIcon(iconzoomout);
     ui->GeneraltoolBar->addAction(actionzoomout);
     actionzoomout->setText("Zoom Out");
@@ -1403,7 +1412,9 @@ void MainWindow::Populate_General_ToolBar()
     actionzoomwindow->setObjectName("Zoom Window");
     actionzoomwindow->setToolTip("Zoom Window");
     QIcon iconzoomwindow;
-    iconzoomwindow.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/WindowZoom.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconzoomwindow.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/WindowZoom.png"), QSize(), QIcon::Normal, QIcon::Off);
+
     actionzoomwindow->setCheckable(true);
     actionzoomwindow->setIcon(iconzoomwindow);
     ui->GeneraltoolBar->addAction(actionzoomwindow);
@@ -1420,7 +1431,9 @@ void MainWindow::Populate_General_ToolBar()
     actionpan->setObjectName("Pan");
     actionpan->setToolTip("Pan");
     QIcon iconpan;
-    iconpan.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/pan2.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconpan.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/pan2.png"), QSize(), QIcon::Normal, QIcon::Off);
+
     actionpan->setCheckable(true);
     actionpan->setIcon(iconpan);
     ui->GeneraltoolBar->addAction(actionpan);
@@ -1432,7 +1445,8 @@ void MainWindow::Populate_General_ToolBar()
 
     // Run
     QIcon iconrun;
-    iconrun.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/runmodel.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconrun.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/runmodel.png"), QSize(), QIcon::Normal, QIcon::Off);
     actionrun = new QAction(this);
     actionrun->setIcon(iconrun);
     ui->GeneraltoolBar->addAction(actionrun);
@@ -1442,7 +1456,9 @@ void MainWindow::Populate_General_ToolBar()
     connect(actionrun, SIGNAL(triggered()), this, SLOT(onrunmodel()));
     //optimize
     QIcon iconoptimize;
-    iconoptimize.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/optimize.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconoptimize.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/optimize.png"), QSize(), QIcon::Normal, QIcon::Off);
+
     QAction* actionoptimize = new QAction(this);
     actionoptimize->setIcon(iconoptimize);
     ui->GeneraltoolBar->addAction(actionoptimize);
@@ -1451,7 +1467,9 @@ void MainWindow::Populate_General_ToolBar()
     connect(actionoptimize, SIGNAL(triggered()), this, SLOT(onoptimize()));
     //inverse run
     QIcon iconinverserun;
-    iconinverserun.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/inverserun.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconinverserun.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/inverserun.png"), QSize(), QIcon::Normal, QIcon::Off);
+
     QAction* actioninverse = new QAction(this);
     actioninverse->setIcon(iconinverserun);
     ui->GeneraltoolBar->addAction(actioninverse);
@@ -1460,7 +1478,9 @@ void MainWindow::Populate_General_ToolBar()
     connect(actioninverse, SIGNAL(triggered()), this, SLOT(oninverserun()));
     //mcmc
     QIcon iconmcmc;
-    iconmcmc.addFile(QString::fromStdString(qApp->applicationDirPath().toStdString() + "/../../resources/Icons/MCMC.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    iconmcmc.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/MCMC.png"), QSize(), QIcon::Normal, QIcon::Off);
+
     QAction* actionmcmc = new QAction(this);
     actionmcmc->setIcon(iconmcmc);
     ui->GeneraltoolBar->addAction(actionmcmc);

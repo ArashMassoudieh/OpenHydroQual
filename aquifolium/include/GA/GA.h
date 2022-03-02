@@ -9,7 +9,9 @@
 #include "math.h"
 #include <iostream>
 #include "Matrix.h"
+#ifndef mac_version
 #include "omp.h"
+#endif
 #include <vector>
 #include "Object.h"
 

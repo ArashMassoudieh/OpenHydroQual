@@ -37,7 +37,11 @@ class Block: public Object
         CVector GetAllReactionRates(vector<Reaction> *rxns, Expression::timing t);
         CVector GetAllReactionRates(Expression::timing t);
         double GetAvgOverLinks(const string& variable,const Expression::timing &tmg);
-
+        void SetAllowLimitedFlow(bool allow)
+        {
+            allow_limited_flow = allow;
+        };
+        bool AllowLimitedFlow() {return allow_limited_flow;}
     protected:
 
     private:
@@ -45,6 +49,7 @@ class Block: public Object
         SafeVector<int> links_to_ids;
         vector<string> corresponding_inflow_var;
         bool corresponding_inflow_var_extracted = false;
+        bool allow_limited_flow = true;
 };
 
 #endif // BLOCK_H

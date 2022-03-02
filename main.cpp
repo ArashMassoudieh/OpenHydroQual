@@ -6,7 +6,9 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    a.setWindowIcon(QIcon(qApp->applicationDirPath() + "/../../resources/icons/Aquifolium.png"));
+
+    a.setWindowIcon(QIcon(QString::fromStdString(RESOURCE_DIRECTORY)+"/icons/Aquifolium.png"));
+
     MainWindow w;
     w.show();
 

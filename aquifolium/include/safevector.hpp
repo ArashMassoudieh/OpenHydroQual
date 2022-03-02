@@ -1,6 +1,8 @@
 #include "safevector.h"
 #include "iostream"
 
+using namespace std; 
+
 template<class T>
 SafeVector<T>::SafeVector() : vector<T> ()
 {
@@ -14,13 +16,13 @@ T& SafeVector<T>::operator[](int i)
 
     if (i>int(this->size())-1)
     {   cout<<int(this->size());
-        cout<<"Exceeded the size"<<endl;
+        cout<<"Exceeded the size"<<std::endl;
         T x;
         return x;
     }
     else if (i<0)
     {
-        cout<<"Counter is negative!"<<endl;
+        cout<<"Counter is negative!"<<std::endl;
         T x;
         return x;
     }
@@ -38,3 +40,5 @@ unsigned int SafeVector<T>::lookup(const T &x)
     }
     return -1;
 }
+
+

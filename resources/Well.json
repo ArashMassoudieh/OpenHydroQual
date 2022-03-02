@@ -6,13 +6,7 @@
 		"icon": {
 			"filename": "Well.png"		
 		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String"
-    		},
-                "Storage": {
+		"Storage": {
 			"description": "Storage",
                         "type": "balance",
                         "massbalance": "true",

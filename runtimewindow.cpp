@@ -1,12 +1,14 @@
 #include "runtimewindow.h"
 #include "ui_runtimewindow.h"
+#include "mainwindow.h"
 
 RunTimeWindow::RunTimeWindow(QWidget *parent, config cfg) :
     QDialog(parent),
     ui(new Ui::RunTimeWindow)
 {
     ui->setupUi(this);
-    QIcon mainicon(qApp->applicationDirPath() + "/../../resources/Icons/Aquifolium.png");
+
+    QIcon mainicon(QString::fromStdString(RESOURCE_DIRECTORY)+"/Icons/Aquifolium.png");
     setWindowIcon(mainicon);
 
     ui->progressBar->setRange(0,100);

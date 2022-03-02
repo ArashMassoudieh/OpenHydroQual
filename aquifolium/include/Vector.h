@@ -24,8 +24,9 @@ public:
 	CVector(int);
 	CVector(const vector<double>, int);
 	CVector(const vector<double> &v);
+    CVector(const vector<bool> &v);
+    CVector(const vector<int> &v);
 	CVector(CVector_arma &v);
-	CVector(const vector<int> &v);
 	CVector(const double x, int n);
     CVector(const double x_min, const double x_max, int n);  //cvector:: is redundant. However, works fine here.
 	CVector(const CVector&);
@@ -109,4 +110,4 @@ CVector combinesort_s(const CVector V1, const CVector V2);
 double avg(CVector &);
 vector<double> create_vector(int i);
 vector<vector<double> > create_vector(int i, int j);
-template<typename T> bool isfinite(T arg);
+

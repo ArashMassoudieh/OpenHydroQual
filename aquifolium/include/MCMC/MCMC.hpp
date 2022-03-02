@@ -4,7 +4,9 @@
 #include <vector>
 #include "NormalDist.h"
 #include <string>
+#ifndef mac_version
 #include <omp.h>
+#endif
 #include "MCMC.h"
 #include "runtimewindow.h"
 #include "Utilities.h"
@@ -399,8 +401,9 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
         if (rtw->stoptriggered)
 			break;
 
+#ifndef NO_OPENMP
         omp_set_num_threads(MCMC_Settings.numberOfThreads);
-
+#endif
 
 
 #ifdef WIN64
@@ -698,8 +701,9 @@ void CMCMC<T>::ProduceRealizations(CTimeSeriesSet<double> &MCMCout)
     for (unsigned int jj = 0; jj <=MCMC_Settings.number_of_post_estimate_realizations/MCMC_Settings.numberOfThreads; jj++)
 	{
         vector<T> Sys1(MCMC_Settings.numberOfThreads);
-
+#ifndef NO_OPENMP
         omp_set_num_threads(MCMC_Settings.numberOfThreads);
+#endif
 #pragma omp parallel for
         for (int j = 0; j < min(MCMC_Settings.numberOfThreads, MCMC_Settings.number_of_post_estimate_realizations - jj*MCMC_Settings.numberOfThreads); j++)
 		{

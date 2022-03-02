@@ -12,11 +12,15 @@ INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
 INCLUDEPATH += ../qcustomplot/
-
+if==macx:CONFIG += staticlib
+macx: DEFINES +=mac_version
+linux: DEFINES +=ubuntu_version
+win32: DEFINES +=windows_version
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = OpenHydroQual
 TEMPLATE = app
+win32:QMAKE_CXXFLAGS += /MP
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -36,14 +40,20 @@ CONFIG(debug, debug|release) {
     message(Building in debug mode)
     #QMAKE_CXXFLAGS+= -fopenmp
     #QMAKE_LFLAGS +=  -fopenmp
-    LIBS += -lgomp -lpthread
+    ! macx: LIBS += -lgomp -lpthread
+    macx: LIBS += -lpthread
     DEFINES += NO_OPENMP DEBUG
 
 } else {
     message(Building in release mode)
-    QMAKE_CXXFLAGS+= -fopenmp
-    QMAKE_LFLAGS +=  -fopenmp
-    LIBS += -lgomp -lpthread
+    !macx:QMAKE_CXXFLAGS += -fopenmp
+    !macx:QMAKE_LFLAGS +=  -fopenmp
+    # QMAKE_CFLAGS+=-pg
+    # QMAKE_CXXFLAGS+=-pg
+    # QMAKE_LFLAGS+=-pg
+    macx: DEFINES += NO_OPENMP
+    ! macx: LIBS += -lgomp -lpthread
+    macx: LIBS += -lpthread
 }
 
 
@@ -131,6 +141,7 @@ HEADERS += \
     aquifolium/include/GA/GA.h \
     aquifolium/include/MCMC/MCMC.h \
     aquifolium/include/MCMC/MCMC.hpp \
+    aquifolium/include/Utilities.h \
     aquifolium/include/restorepoint.h \
     aquifolium/include/safevector.h \
     aquifolium/include/safevector.hpp \
@@ -245,4 +256,10 @@ linux {
     #sudo apt-get install libblas-dev liblapack-dev
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
      LIBS += -larmadillo -llapack -lblas
+}
+
+macx {
+    #sudo apt-get install libblas-dev liblapack-dev
+     DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
+     LIBS += -llapack -lblas
 }

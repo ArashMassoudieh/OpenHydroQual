@@ -1392,7 +1392,7 @@ void CTimeSeries<T>::knock_out(T tt)
 {
     int eliminate_from_here=0;
     if (t.size()>0)
-        while (t[eliminate_from_here]<=tt) eliminate_from_here++;
+        while (t[eliminate_from_here]<=tt && eliminate_from_here<n) eliminate_from_here++;
     else
         eliminate_from_here=0;
     t.resize(eliminate_from_here);

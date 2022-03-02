@@ -57,6 +57,7 @@ class Object
         void AppendError(const string &s);
         void SetParent(System *s);
         Quan* CorrespondingFlowVariable(const string &s);
+
         Quan* Variable(const string &s);
         Quan* Variable(const string &variable, const string &constituent);
         void SetType(const string &typ) {type = typ;}
@@ -92,15 +93,12 @@ class Object
 		{
 
 			if (tmg == Expression::timing::past)
-				return outflowlimitfactor_past;
+                return outflowlimitfactor_past;
 			else
-				return outflowlimitfactor_current;
+                return outflowlimitfactor_current;
 
 		}
-        void SetLimitedOutflow(bool x)
-        {
-            limitoutflow = x;
-        }
+        void SetLimitedOutflow(bool x);
         bool GetLimitedOutflow() {return limitoutflow;}
 		void SetVariableParents();
         void ShowMessage(const string &msg);

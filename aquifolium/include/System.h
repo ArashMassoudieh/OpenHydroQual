@@ -236,6 +236,9 @@ class System: public Object
         double &tstart() {return SimulationParameters.tstart;}
         bool OneStepSolve(unsigned int i, bool transport=false);
         bool Renew(const string &variable);
+        SafeVector<int> ConnectedBlocksTo(int blockid); // Get the list of blocks the block 'blockid' is connected to
+        SafeVector<int> ConnectedBlocksFrom(int blockid); // Get the list of connected to the block 'blockid'
+        SafeVector<int> SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited); //Set outflow limitation status for block blockid and the connected rigid blocks to it
 		bool Update(const string &variable="");
         void UnUpdateAllVariables();
 		//bool Solve(const string &variable, bool ApplyParams = false);
@@ -283,7 +286,10 @@ class System: public Object
         void SetAllParents();
         ErrorHandler errorhandler;
         bool Echo(const string &object, const string &quantity = "", const string &feature="");
-		string& DefaultTemplatePath() { return paths.default_template_path; }
+        string& DefaultTemplatePath() {
+            cout<<paths.default_template_path;
+            return paths.default_template_path;
+        }
 		string InputPath() {return paths.inputpath;}
         string OutputPath() {return paths.outputpath;}
         string ObservedOutputFileName() {return paths.observedoutputfilename;}
@@ -312,7 +318,7 @@ class System: public Object
             SolverSettings.n_threads = i;
         }
         int NumThreads() { return SolverSettings.n_threads; }
-        
+        void ResetAllowLimitedFlows(bool allow);
 #if defined(QT_version)
         logWindow *LogWindow() {return logwindow;}
         void SetLogWindow(logWindow *lgwnd) {logwindow=lgwnd;}
@@ -407,6 +413,7 @@ class System: public Object
         void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport);
         void SetStateVariables_TR(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present);
         vector<bool> GetOutflowLimitedVector();
+        vector<double> GetOutflowLimitFactorVector(const Expression::timing &tmg);
         void SetOutflowLimitedVector(vector<bool>& x);
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
@@ -431,6 +438,7 @@ class System: public Object
         SolutionLogger *solutionlogger = nullptr;
         parameter_estimation_options ParameterEstimationMode = parameter_estimation_options::none;
         CVector GetBlocksOutflowFactors(const Expression::timing &tmg);
+        bool OutFlowCanOccur(int blockno, const string &variable);
         CVector GetLinkssOutflowFactors(const Expression::timing &tmg);
         unsigned int restore_interval = 200;
 
