@@ -98,15 +98,28 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
             if (Parent()->source(GetCurrentCorrespondingSource())->HasQuantity(s))
                 return Parent()->source(GetCurrentCorrespondingSource())->GetVal(s,tmg);
         }
-        if (HasQuantity(GetCurrentCorrespondingConstituent()+":"+s))
+        else if (HasQuantity(GetCurrentCorrespondingConstituent()+":"+s))
         {
             return aquiutils::Pos(var[GetCurrentCorrespondingConstituent()+":"+s].GetVal(tmg));
         }
+        else if (Parent()->reaction(GetCurrentCorrespondingConstituent())!=nullptr)
+        {
+            if (Parent()->reaction(GetCurrentCorrespondingConstituent())->HasQuantity(s))
+                return Parent()->reaction(GetCurrentCorrespondingConstituent())->Variable(s)->CalcVal(this,tmg);
+        }
+
         if (parent->constituent(aquiutils::split(s,':')[0]) && aquiutils::split(s,':').size()==2)
         {
             if (parent->constituent(aquiutils::split(s,':')[0])->HasQuantity(aquiutils::split(s,':')[1]))
             {
                 return parent->constituent(aquiutils::split(s,':')[0])->GetVal(aquiutils::split(s,':')[1],tmg);
+            }
+        }
+        if (parent->reaction(aquiutils::split(s,':')[0]) && aquiutils::split(s,':').size()==2)
+        {
+            if (parent->reaction(aquiutils::split(s,':')[0])->HasQuantity(aquiutils::split(s,':')[1]))
+            {
+                return parent->reaction(aquiutils::split(s,':')[0])->GetVal(aquiutils::split(s,':')[1],tmg);
             }
         }
         else

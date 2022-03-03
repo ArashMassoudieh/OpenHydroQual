@@ -341,9 +341,9 @@ class System: public Object
         void AddPropertytoAllLinks(const string &name, Quan &quan);
         void UpdateAddedPropertiestoAllBlockLinks();
         vector<Quan> GetToBeCopiedQuantities();
-        vector<Quan> GetToBeCopiedQuantities(Constituent *consttnt, const object_type &object_typ = object_type::none);
+        vector<Quan> GetToBeCopiedQuantities(Object *consttnt, const object_type &object_typ = object_type::none);
         bool AddAllConstituentRelateProperties();
-        bool AddConstituentRelateProperties(Constituent *constituent);
+        bool AddConstituentRelateProperties(Object *constituent);
         bool AddAllConstituentRelateProperties(Block *blk = nullptr);
         bool AddAllConstituentRelateProperties(Link *lnk = nullptr);
         bool AddAllConstituentRelateProperties(Reaction *rxn = nullptr);

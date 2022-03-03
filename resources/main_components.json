@@ -646,14 +646,9 @@
     "type": "Reaction",
     "description": "Chemical reaction",
     "typecategory": "Reactions",
+    "normalizing_quantity": "Storage",
     "icon": {
       "filename": "reaction.png"
-    },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
     },
     "rate_expression": {
       "description": "Rate Expression",
@@ -668,12 +663,6 @@
     "typecategory": "Reaction Parameters",
     "icon": {
       "filename": "reactionparameter.png"
-    },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
     },
     "value": {
       "description": "Value",

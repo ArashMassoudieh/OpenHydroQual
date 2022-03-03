@@ -626,6 +626,7 @@ bool Command::Execute(System *_sys)
                 B.SetType(assignments["type"]);
                 sys->AddReaction(B);
                 sys->AddAllConstituentRelateProperties(sys->reaction(assignments["name"]));
+                sys->AddConstituentRelateProperties(sys->reaction(assignments["name"]));
                 for (map<string,string>::iterator it=assignments.begin(); it!=assignments.end(); it++)
                 {
                     if (it->first!="type")

@@ -60,5 +60,46 @@
 	      "role": "copytoblocks",
 	      "delegate": "ComboBox;Sources"
 	    }
-	  }
+	  },
+	  "surface_release": {
+	    "type": "Reaction",
+	    "description": "Release from surface",
+	    "normalizing_quantity": "area",
+	    "typecategory": "Reactions",
+	    "icon": {
+	      "filename": "surface_release.png"
+	    },
+	    "concentration_dependence_rate_expression": {
+	      "description": "Concentration dependence function",
+	      "type": "expression",
+	      "helptext": "This expression indicates the dependence of the release rate to the concentration of attached constituent per surface area",
+	      "ask_user": "true",
+	      "delegate": "expressionEditor"
+	    },
+	    "coefficient": {
+	      "description": "Release coefficient",
+	      "type": "value",
+	      "ask_user": "true",
+	      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
+	      "role": "copytoblocks",
+	      "estimate": "true",
+	      "default": "1"
+	    },
+	    "exponent_of_depth":
+	    {
+	      "description": "Depth exponent",
+	      "type": "value",
+	      "ask_user": "true",
+	      "estimate": "true",
+	      "role": "copytoblocks",
+	      "helptext": "Indicates the exponent in the power function relating the release rate and water depth (alpha*d^beta)",
+	      "default": "0"
+	    },
+	    "rate_expression": {
+	      "description": "Release rate",
+	      "type": "expression",
+	      "ask_user": "false",
+	      "expression": "concentration_dependence_rate_expression*coefficient*depth^exponent_of_depth"
+    	    }
+  },
 }

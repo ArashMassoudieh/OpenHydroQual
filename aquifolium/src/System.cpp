@@ -2738,6 +2738,12 @@ bool System::SavetoScriptFile(const string &filename, const string &templatefile
     for (unsigned int i=0; i<ConstituentsCount(); i++)
         file << "create constituent;" << constituents[i].toCommand() << std::endl;
 
+    for (unsigned int i = 0; i < ReactionParametersCount(); i++)
+        file << "create reaction_parameter;" << reaction_parameters[i].toCommand() << std::endl;
+
+    for (unsigned int i = 0; i < ReactionsCount(); i++)
+        file << "create reaction;" << reactions[i].toCommand() << std::endl;
+
     for (unsigned int i=0; i<blocks.size(); i++)
         file << "create block;" << blocks[i].toCommand() << std::endl;
 
@@ -2750,11 +2756,7 @@ bool System::SavetoScriptFile(const string &filename, const string &templatefile
     for (unsigned int i = 0; i < ObservationsCount(); i++)
         file << "create observation;" << observation(i)->toCommand() << std::endl;
 
-    for (unsigned int i = 0; i < ReactionParametersCount(); i++)
-        file << "create reaction_parameter;" << reaction_parameters[i].toCommand() << std::endl;
 
-    for (unsigned int i = 0; i < ReactionsCount(); i++)
-        file << "create reaction;" << reactions[i].toCommand() << std::endl;
 
     for (unsigned int i=0; i<blocks.size(); i++)
         if (blocks[i].toCommandSetAsParam()!="")
@@ -3071,7 +3073,7 @@ vector<Quan> System::GetToBeCopiedQuantities()
 
 }
 
-vector<Quan> System::GetToBeCopiedQuantities(Constituent *consttnt, const object_type &object_typ)
+vector<Quan> System::GetToBeCopiedQuantities(Object *consttnt, const object_type &object_typ)
 {
     Quan::_role role = Quan::_role::none;
     if (object_typ == object_type::block)
@@ -3165,6 +3167,26 @@ bool System::AddAllConstituentRelateProperties(Block *blk)
     {   for (unsigned int i=0; i<quantityordertobechanged.size(); i++)
             blk->GetVars()->Quantity_Order().push_back(quantityordertobechanged[i]);
     }
+
+    for (unsigned int i=0; i<reactions.size();i++)
+    {
+        vector<Quan> quanstobecopied = GetToBeCopiedQuantities(reaction(i),object_type::block);
+        for (unsigned int j=0; j<quanstobecopied.size(); j++)
+        {
+            if (blk)
+            {   if (blk->GetVars()->Count(quanstobecopied[j].GetName())==0)
+                {   blk->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+                    blk->Variable(quanstobecopied[j].GetName())->SetParent(blk);
+                    quantityordertobechanged.push_back(quanstobecopied[j].GetName());
+                }
+            }
+
+        }
+    }
+    if (blk)
+    {   for (unsigned int i=0; i<quantityordertobechanged.size(); i++)
+            blk->GetVars()->Quantity_Order().push_back(quantityordertobechanged[i]);
+    }
     return true;
 }
 
@@ -3235,9 +3257,12 @@ void System::AddConstituentRelatePropertiestoMetalModel()
 {
     for (unsigned int j=0; j<ConstituentsCount(); j++)
         AddConstituentRelateProperties(constituent(j));
+
+    for (unsigned int j=0; j<ReactionsCount(); j++)
+        AddConstituentRelateProperties(reaction(j));
 }
 
-bool System::AddConstituentRelateProperties(Constituent *consttnt)
+bool System::AddConstituentRelateProperties(Object *consttnt)
 {
     vector<Quan> quanstobecopied = GetToBeCopiedQuantities(consttnt,object_type::block);
     for (map<string, QuanSet>::iterator it = metamodel.begin(); it!=metamodel.end(); it++)
@@ -3304,6 +3329,9 @@ bool System::AddConstituentRelateProperties(Constituent *consttnt)
     }
     return true;
 }
+
+
+
 
 void System::RenameConstituents(const string &oldname, const string &newname)
 {

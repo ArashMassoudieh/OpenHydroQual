@@ -39,6 +39,10 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             IconFileName() = (*it)["filename"].asString();
 		else if (it.key()=="typecategory")
 			typecategory = (*object_types)[it.key().asString()].asString();
+        else if (it.key()=="normalizing_quantity")
+        {
+            normalizing_quantity = (*object_types)[it.key().asString()].asString();
+        }
         else if (it.key()=="type")
         {
 			string _type = (*object_types)[it.key().asString()].asString();
@@ -152,7 +156,9 @@ QuanSet::QuanSet(const QuanSet& other)
     name = other.name;
 	typecategory = other.typecategory;
     quantity_order = other.quantity_order;
+    normalizing_quantity = other.normalizing_quantity;
     parent = nullptr;
+
 
 }
 
@@ -167,6 +173,7 @@ QuanSet& QuanSet::operator=(const QuanSet& rhs)
 	ObjectType = rhs.ObjectType;
 	typecategory = rhs.typecategory;
     quantity_order = rhs.quantity_order;
+    normalizing_quantity = rhs.normalizing_quantity;
     parent = nullptr;
     return *this;
 }

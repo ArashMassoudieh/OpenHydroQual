@@ -809,6 +809,7 @@ void MainWindow::onaddreaction()
     system.AddReaction(reaction);
     system.object(name)->SetName(name);
     system.AddAllConstituentRelateProperties(system.reaction(name));
+    system.AddConstituentRelateProperties(system.reaction(name));
     //qDebug() << "Reaction added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
