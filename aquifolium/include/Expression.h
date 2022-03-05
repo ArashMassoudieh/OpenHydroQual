@@ -49,6 +49,7 @@ class Expression
         Expression ReviseConstituent(const string &constituent_name, const string &quantity);
         bool RenameQuantity(const string &oldname, const string &newname);
         void ResetTermsSources();
+        vector<int> Order_Of_Calculation();
         void EstablishSourceStructure();
         void ClearTermSources()
         {

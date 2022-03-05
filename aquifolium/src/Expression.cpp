@@ -156,7 +156,7 @@ Expression::Expression(string S)
 				sub_exp.sign = "+";
 			terms.push_back(sub_exp);
 			aquiutils::push_back(_errors,sub_exp._errors);
-
+            vector<int> order = Order_Of_Calculation();
 		}
 		else
 		{
@@ -320,6 +320,62 @@ void Expression::ResetTermsSources()
             term_sources[i][j] = -1;
         terms_source_counter[i]=0;
     }
+
+}
+
+vector<int> Expression::Order_Of_Calculation()
+{
+    vector<int> order;
+    for (unsigned int i=0; i<terms.size()-1; i++)
+    {
+        if (operators[i]=="^")
+        {
+            if (order.size()==0)
+                order.push_back(i+1);
+            order.push_back(i);
+        }
+    }
+    for (unsigned int i=0; i<terms.size()-1; i++)
+    {
+        if (operators[i]=="*")
+        {
+            if (order.size()==0)
+                order.push_back(i+1);
+            order.push_back(i);
+        }
+    }
+    for (unsigned int i=0; i<terms.size()-1; i++)
+    {
+        if (operators[i]=="/")
+        {
+            if (order.size()==0)
+                order.push_back(i+1);
+            order.push_back(i);
+        }
+    }
+    for (unsigned int i=0; i<terms.size()-1; i++)
+    {
+        if (operators[i]=="+")
+        {
+            if (order.size()==0)
+                order.push_back(i+1);
+            order.push_back(i);
+        }
+    }
+
+    for (unsigned int i=0; i<terms.size()-1; i++)
+    {
+        if (operators[i]=="-")
+        {
+            if (order.size()==0)
+                order.push_back(i+1);
+            order.push_back(i);
+        }
+    }
+
+    return order;
+
+
 
 }
 
