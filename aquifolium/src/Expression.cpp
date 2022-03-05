@@ -15,61 +15,68 @@
 #define SMALLNUMBER 1e-23
 using namespace std;
 
+bool Expression::func_operators_initialized =false;
+vector<string> Expression::funcs = vector<string>();
+vector<string> Expression::opts = vector<string>();
+
 Expression::Expression(void)
 {
-    funcs.push_back("_min");
-    funcs.push_back("_max");
-    funcs.push_back("_exp");
-    funcs.push_back("_log");
-    funcs.push_back("_abs");
-    funcs.push_back("_sgn");
-    funcs.push_back("_sqr");
-    funcs.push_back("_sqt");
-	funcs.push_back("_lpw");
-    funcs.push_back("_pos");
-    funcs.push_back("_hsd");
-    funcs.push_back("_ups");
-    funcs.push_back("_bkw");
-    funcs.push_back("_mon");
-    funcs.push_back("_mbs");
-    opts.push_back("+");
-    opts.push_back("-");
-    opts.push_back("*");
-    opts.push_back(";");
-    opts.push_back("/");
-    opts.push_back("^");
+    if (Expression::func_operators_initialized != true)
+    {   Expression::funcs.push_back("_min");
+        Expression::funcs.push_back("_max");
+        Expression::funcs.push_back("_exp");
+        Expression::funcs.push_back("_log");
+        Expression::funcs.push_back("_abs");
+        Expression::funcs.push_back("_sgn");
+        Expression::funcs.push_back("_sqr");
+        Expression::funcs.push_back("_sqt");
+        Expression::funcs.push_back("_lpw");
+        Expression::funcs.push_back("_pos");
+        Expression::funcs.push_back("_hsd");
+        Expression::funcs.push_back("_ups");
+        Expression::funcs.push_back("_bkw");
+        Expression::funcs.push_back("_mon");
+        Expression::funcs.push_back("_mbs");
+        Expression::opts.push_back("+");
+        Expression::opts.push_back("-");
+        Expression::opts.push_back("*");
+        Expression::opts.push_back(";");
+        Expression::opts.push_back("/");
+        Expression::opts.push_back("^");
+        Expression::func_operators_initialized = true;
+    }
+
 
 }
 
 Expression::Expression(string S)
 {
 	text = S;
-	#ifdef Debug_mode
-	//cout<<text<<endl;
-	#endif // Debug_mode
-	funcs.clear(); 
-	opts.clear();
-	funcs.push_back("_min");
-	funcs.push_back("_max");
-	funcs.push_back("_exp");
-	funcs.push_back("_log");
-	funcs.push_back("_abs");
-	funcs.push_back("_sgn");
-	funcs.push_back("_sqr");
-    funcs.push_back("_sqt");
-	funcs.push_back("_pos");
-	funcs.push_back("_hsd");
-	funcs.push_back("_lpw");
-	funcs.push_back("_ups");
-    funcs.push_back("_bkw");
-	funcs.push_back("_mon");
-	funcs.push_back("_mbs");
-	opts.push_back("+");
-	opts.push_back("-");
-	opts.push_back("*");
-	opts.push_back(";");
-	opts.push_back("/");
-	opts.push_back("^");
+    if (Expression::func_operators_initialized != true)
+    {   Expression::funcs.push_back("_min");
+        Expression::funcs.push_back("_max");
+        Expression::funcs.push_back("_exp");
+        Expression::funcs.push_back("_log");
+        Expression::funcs.push_back("_abs");
+        Expression::funcs.push_back("_sgn");
+        Expression::funcs.push_back("_sqr");
+        Expression::funcs.push_back("_sqt");
+        Expression::funcs.push_back("_lpw");
+        Expression::funcs.push_back("_pos");
+        Expression::funcs.push_back("_hsd");
+        Expression::funcs.push_back("_ups");
+        Expression::funcs.push_back("_bkw");
+        Expression::funcs.push_back("_mon");
+        Expression::funcs.push_back("_mbs");
+        Expression::opts.push_back("+");
+        Expression::opts.push_back("-");
+        Expression::opts.push_back("*");
+        Expression::opts.push_back(";");
+        Expression::opts.push_back("/");
+        Expression::opts.push_back("^");
+        Expression::func_operators_initialized = true;
+    }
+
 
 	vector<string> out;
 	//bool inside_quote = false;
@@ -80,7 +87,7 @@ Expression::Expression(string S)
 		_errors.push_back("Parentheses do not match in" + S);
 		return;
 	}
-    if (aquiutils::lookup(funcs, aquiutils::left(S,4))!=-1 )
+    if (aquiutils::lookup(Expression::funcs, aquiutils::left(S,4))!=-1 )
 	{
         if (aquiutils::corresponding_parenthesis(S,4) == int(S.size()-1))
         {   function = aquiutils::right(aquiutils::left(S,4),3);
@@ -99,7 +106,7 @@ Expression::Expression(string S)
 			aquiutils::remove(S,S.size() - 1);
 			//if (opts.contains(S.left(1)))
 			//	terms.append(CExpression("0"));
-			if (aquiutils::lookup(funcs, aquiutils::left(S,4))!=-1)
+            if (aquiutils::lookup(Expression::funcs, aquiutils::left(S,4))!=-1)
 			{
                 //function = aquiutils::right(aquiutils::left(S,4),3);
 			}
@@ -192,9 +199,7 @@ Expression::Expression(string S)
 Expression::Expression(const Expression & S)
 {
 	operators.clear();
-	funcs.clear(); 
-	terms.clear(); 
-	term_vals.clear();
+    term_vals.clear();
 	terms_calculated.clear();
 	_errors.clear(); 
 	quan = nullptr;
@@ -202,8 +207,6 @@ Expression::Expression(const Expression & S)
 	constant = S.constant;
 	terms = S.terms;
 	sign = S.sign;
-	funcs = S.funcs;
-	opts = S.opts;
 	function = S.function;
 	parameter = S.parameter;
 	param_constant_expression = S.param_constant_expression;
@@ -218,9 +221,7 @@ Expression::Expression(const Expression & S)
 
 Expression & Expression::operator=(const Expression &S)
 {
-	operators.clear();
-	funcs.clear();
-	terms.clear();
+    terms.clear();
 	term_vals.clear();
 	terms_calculated.clear();
 	_errors.clear();
@@ -229,9 +230,7 @@ Expression & Expression::operator=(const Expression &S)
 	constant = S.constant;
 	terms = S.terms;
 	sign = S.sign;
-	funcs = S.funcs;
-	opts = S.opts;
-	function = S.function;
+    function = S.function;
 	parameter = S.parameter;
 	param_constant_expression = S.param_constant_expression;
 	unit = S.unit;
@@ -246,9 +245,7 @@ Expression & Expression::operator=(const Expression &S)
 
 Expression::~Expression(void)
 {
-	operators.clear();
-	funcs.clear();
-	_errors.clear();
+    _errors.clear();
 	terms.clear();
 	term_sources.clear();
 	term_vals.clear();

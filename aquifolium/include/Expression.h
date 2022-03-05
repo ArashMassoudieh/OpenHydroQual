@@ -36,10 +36,10 @@ class Expression
         double func(string &f, double cond, double val1, double val2);
         double oprt(string & f, double val1, double val2);
         double oprt(string & f, unsigned int i1, unsigned int i2, Object * W, const timing &tmg, bool limit=false);
-        vector<string> funcs;
         string unit;
         string text;
-        vector<string> opts;
+        static vector<string> funcs;
+        static vector<string> opts;
         int lookup_operators(const string &s);
         int count_operators(const string &s);
         enum loc {self, source, destination, average_of_links};
@@ -59,6 +59,7 @@ class Expression
             terms_source_counter.clear();
         }
         bool SetQuanPointers(Object *W);
+        static bool func_operators_initialized;
     protected:
 
     private:
