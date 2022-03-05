@@ -68,6 +68,13 @@ struct solversettings
 
 };
 
+struct function_operators
+{
+    vector<string> funcs;
+    vector<string> opts;
+
+};
+
 struct outputs
 {
     CTimeSeriesSet<outputtimeseriesprecision> AllOutputs;
@@ -319,6 +326,7 @@ class System: public Object
         }
         int NumThreads() { return SolverSettings.n_threads; }
         void ResetAllowLimitedFlows(bool allow);
+
 #if defined(QT_version)
         logWindow *LogWindow() {return logwindow;}
         void SetLogWindow(logWindow *lgwnd) {logwindow=lgwnd;}
@@ -379,6 +387,8 @@ class System: public Object
         }
         void Clear();
         SafeVector<Observation>* Observations() {return &observations;}
+        vector<string> exp_functions() {return func_operators.funcs;}
+        vector<string> exp_operators() {return func_operators.opts;}
     protected:
 
     private:
@@ -441,7 +451,8 @@ class System: public Object
         bool OutFlowCanOccur(int blockno, const string &variable);
         CVector GetLinkssOutflowFactors(const Expression::timing &tmg);
         unsigned int restore_interval = 200;
-
+        void PopulateFunctionOperators();
+        function_operators func_operators;
 #ifdef Q_version
     RunTimeWindow *rtw = nullptr;
 #endif

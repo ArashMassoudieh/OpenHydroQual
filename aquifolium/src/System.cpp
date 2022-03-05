@@ -3613,3 +3613,28 @@ void System::ResetAllowLimitedFlows(bool allow)
     for (unsigned int i=0; i<BlockCount(); i++)
         blocks[i].SetAllowLimitedFlow(allow);
 }
+
+void System::PopulateFunctionOperators()
+{
+    func_operators.funcs.push_back("_min");
+    func_operators.funcs.push_back("_max");
+    func_operators.funcs.push_back("_exp");
+    func_operators.funcs.push_back("_log");
+    func_operators.funcs.push_back("_abs");
+    func_operators.funcs.push_back("_sgn");
+    func_operators.funcs.push_back("_sqr");
+    func_operators.funcs.push_back("_sqt");
+    func_operators.funcs.push_back("_lpw");
+    func_operators.funcs.push_back("_pos");
+    func_operators.funcs.push_back("_hsd");
+    func_operators.funcs.push_back("_ups");
+    func_operators.funcs.push_back("_bkw");
+    func_operators.funcs.push_back("_mon");
+    func_operators.funcs.push_back("_mbs");
+    func_operators.opts.push_back("+");
+    func_operators.opts.push_back("-");
+    func_operators.opts.push_back("*");
+    func_operators.opts.push_back(";");
+    func_operators.opts.push_back("/");
+    func_operators.opts.push_back("^");
+}
