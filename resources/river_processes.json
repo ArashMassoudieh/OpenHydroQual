@@ -10,7 +10,6 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Initial Storage; Storage",
       "initial_value_expression": "length*width*depth*porosity",

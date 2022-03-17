@@ -40,7 +40,7 @@ public:
 	CTimeSeries(const CTimeSeries &C);
 	CTimeSeries(string Filename); //create BTC based on the filename
 	CTimeSeries& operator = (const CTimeSeries &C);
-	void readfile(string); //read the values from a text file
+    bool readfile(string); //read the values from a text file
 	void writefile(string Filename); //writes the BTC contets into a fild
     T maxC() const; //returns the maximum value
     T minC() const; //returns the minimum value
@@ -86,6 +86,7 @@ public:
     void knock_out(T t);
     T AutoCor1(int i=0);
 	bool file_not_found = false;
+    bool file_not_correct = false;
 	CTimeSeries getcummulative();
 	CTimeSeries Exp();
 	CTimeSeries fabs();

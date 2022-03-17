@@ -105,12 +105,6 @@
 		"icon": {
 			"filename": "vnotchweir.png"
 		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String" 
-		},
                 "color": {
       			"type": "string",
       			"default": "0,200,200"
@@ -149,6 +143,20 @@
                         "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
+		},
+	        "area" : {
+		      	"type": "value",
+			"description": "Area",
+			"default": "0",
+                       "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
+			"includeinoutput" : "false",
+			"applylimit": "false"	
+		},
+		"length" : {
+		      	"type": "value",
+			"description": "length",
+			"default": "1",
+			"includeinoutput" : "false"
 		}  	
 	},
 	"drain_pipe":{
@@ -248,7 +256,8 @@
 			"description": "Manning's roughness coefficient",
 			"ask_user" : "true",
 			"delegate" : "ValueBox",
-			"includeinoutput": "false"
+			"includeinoutput": "false",
+			"estimate": "true"
 		},
 		"length": {
 			"type": "value",

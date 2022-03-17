@@ -346,7 +346,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow (m~^3/day)",
-      "expression": "3.141521*(depth.s+depth.e)*(piezometric_head.s-head.e)/(_log(_sqr(area.s/4)/diameter.e))",
+      "expression": "3.141521*(depth.s+depth.e)*(piezometric_head.s-head.e)/(_log(_sqr(area.s)/diameter.e))",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"

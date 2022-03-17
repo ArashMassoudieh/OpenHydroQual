@@ -374,9 +374,7 @@ void CTimeSeriesSet<T>::getfromfile(string _filename, bool varytime)
 					if (int(s.size())==nvars+1)
 						for (int i=0; i<nvars; i++)
 						{
-							BTC[i].t.push_back(atof(s[0].c_str()));
-							BTC[i].C.push_back(atof(s[i+1].c_str()));
-							BTC[i].n++;
+                            BTC[i].append(atof(s[0].c_str()),atof(s[i+1].c_str()));
 							if (BTC[i].n>2)
 									if ((BTC[i].GetT(BTC[i].n-1)-BTC[i].GetT(BTC[i].n-2)) != (BTC[i].GetT(BTC[i].n-2)-BTC[i].GetT(BTC[i].n-3)))
 										BTC[i].structured = false;
@@ -404,9 +402,7 @@ void CTimeSeriesSet<T>::getfromfile(string _filename, bool varytime)
 					{
 						if ((aquiutils::trim(s[2 * i]) != "") && (aquiutils::trim(s[2 * i + 1]) != ""))
 						{
-							BTC[i].t.push_back(atof(s[2 * i].c_str()));
-							BTC[i].C.push_back(atof(s[2 * i + 1].c_str()));
-							BTC[i].n++;
+                            BTC[i].append(atof(s[2 * i].c_str()),atof(s[2 * i + 1].c_str()));
 							if (BTC[i].n>2)
 								if ((BTC[i].GetT(BTC[i].n - 1) - BTC[i].GetT(BTC[i].n - 2)) != (BTC[i].GetT(BTC[i].n - 2) - BTC[i].GetT(BTC[i].n - 3)))
 									BTC[i].structured = false;

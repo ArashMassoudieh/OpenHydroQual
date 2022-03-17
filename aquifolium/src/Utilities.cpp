@@ -198,7 +198,7 @@ namespace aquiutils
 
     bool isnumber(char S)
     {
-        if ((((int)S > 47) && ((int)S < 58)) || (S=='.'))
+        if ((((int)S > 47) && ((int)S < 58)) || (S=='.') || (S=='-'))
             return true;
         else
             return false;

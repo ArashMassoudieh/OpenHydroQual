@@ -163,7 +163,8 @@ Expression::Expression(string S)
 				sub_exp.sign = "+";
 			terms.push_back(sub_exp);
 			aquiutils::push_back(_errors,sub_exp._errors);
-            vector<int> order = Order_Of_Calculation();
+
+
 		}
 		else
 		{
@@ -320,61 +321,7 @@ void Expression::ResetTermsSources()
 
 }
 
-vector<int> Expression::Order_Of_Calculation()
-{
-    vector<int> order;
-    for (unsigned int i=0; i<terms.size()-1; i++)
-    {
-        if (operators[i]=="^")
-        {
-            if (order.size()==0)
-                order.push_back(i+1);
-            order.push_back(i);
-        }
-    }
-    for (unsigned int i=0; i<terms.size()-1; i++)
-    {
-        if (operators[i]=="*")
-        {
-            if (order.size()==0)
-                order.push_back(i+1);
-            order.push_back(i);
-        }
-    }
-    for (unsigned int i=0; i<terms.size()-1; i++)
-    {
-        if (operators[i]=="/")
-        {
-            if (order.size()==0)
-                order.push_back(i+1);
-            order.push_back(i);
-        }
-    }
-    for (unsigned int i=0; i<terms.size()-1; i++)
-    {
-        if (operators[i]=="+")
-        {
-            if (order.size()==0)
-                order.push_back(i+1);
-            order.push_back(i);
-        }
-    }
 
-    for (unsigned int i=0; i<terms.size()-1; i++)
-    {
-        if (operators[i]=="-")
-        {
-            if (order.size()==0)
-                order.push_back(i+1);
-            order.push_back(i);
-        }
-    }
-
-    return order;
-
-
-
-}
 
 bool Expression::SetQuanPointers(Object *W)
 {
@@ -406,10 +353,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 		return 0;
 	}
 
-    if (!term_sources_determined)
-    {   term_vals.resize(terms.size());
-        terms_calculated.resize(terms.size());
-    }
+
 
     EstablishSourceStructure();
     ResetTermsSources();
@@ -518,7 +462,9 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
             terms_source_counter[i]++;
         }
         if (!term_sources_determined)
-            terms_source_counter.resize(terms.size());
+        {   term_vals.resize(terms.size());
+            terms_calculated.resize(terms.size());
+        }
 
 
         for (unsigned int i = 0; i < terms.size(); i++) terms_calculated[i]=false;

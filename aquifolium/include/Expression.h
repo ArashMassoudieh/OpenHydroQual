@@ -49,7 +49,7 @@ class Expression
         Expression ReviseConstituent(const string &constituent_name, const string &quantity);
         bool RenameQuantity(const string &oldname, const string &newname);
         void ResetTermsSources();
-        vector<int> Order_Of_Calculation();
+        SafeVector<int> Order_Of_Calculation();
         void EstablishSourceStructure();
         void ClearTermSources()
         {
@@ -60,11 +60,13 @@ class Expression
         }
         bool SetQuanPointers(Object *W);
         static bool func_operators_initialized;
+        void Setup_Calculation_Structure();
     protected:
 
     private:
         SafeVector<double> term_vals;
         vector<bool> terms_calculated;
+        bool order_of_calculation_initialized = false;
         SafeVector<SafeVector<int> > term_sources;
         bool term_sources_determined = false;
         bool sourceterms_resized = false;
