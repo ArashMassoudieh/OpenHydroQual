@@ -14,7 +14,37 @@
       "delegate": "Browser;time series"
     }
   },
-    "atmospheric exchange": {
+  "constant_source": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Chemical source - constant",
+    "icon": {
+      "filename": "Chemical_source_constant.png"
+    },
+    "rate_per_volume": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Loading rate (mass/time/volume of water)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "g/day/m~^3"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "Storage*rate_per_volume",
+      "includeinoutput": "false",
+      "description": "Production rate",
+      "ask_user": "false"
+    },
+    "timeseries": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    }
+  },
+  "atmospheric exchange": {
     "type": "source",
     "typecategory": "Sources",
     "description": "Atmospheric Exchange",
