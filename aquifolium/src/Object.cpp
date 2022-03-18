@@ -89,20 +89,20 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
         {
             return aquiutils::Pos(var[s+":concentration"].GetVal(tmg));
         }
-        else if (Parent()->reactionparameter(s)!=nullptr)
+        if (Parent()->reactionparameter(s)!=nullptr)
         {
             return Parent()->reactionparameter(s)->GetVal("value",tmg);
         }
-        else if (Parent()->source(GetCurrentCorrespondingSource())!=nullptr)
+        if (Parent()->source(GetCurrentCorrespondingSource())!=nullptr)
         {
             if (Parent()->source(GetCurrentCorrespondingSource())->HasQuantity(s))
                 return Parent()->source(GetCurrentCorrespondingSource())->GetVal(s,tmg);
         }
-        else if (HasQuantity(GetCurrentCorrespondingConstituent()+":"+s))
+        if (HasQuantity(GetCurrentCorrespondingConstituent()+":"+s))
         {
             return aquiutils::Pos(var[GetCurrentCorrespondingConstituent()+":"+s].GetVal(tmg));
         }
-        else if (Parent()->reaction(GetCurrentCorrespondingConstituent())!=nullptr)
+        if (Parent()->reaction(GetCurrentCorrespondingConstituent())!=nullptr)
         {
             if (Parent()->reaction(GetCurrentCorrespondingConstituent())->HasQuantity(s))
                 return Parent()->reaction(GetCurrentCorrespondingConstituent())->Variable(s)->CalcVal(this,tmg);
