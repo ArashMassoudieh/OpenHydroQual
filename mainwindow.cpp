@@ -176,7 +176,7 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
     tableitemrightckicked = i2;
     if (i1.column() == 0)
     {
-        menu = new QMenu;
+        menu = std::unique_ptr<QMenu>(new QMenu(this));
 
         QMenu *estimatesMenu = new QMenu("Parameters");
         menu->addMenu(estimatesMenu);
@@ -194,7 +194,7 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
     }
     if (i1.column() == 1)
     {
-        menu = new QMenu;
+        menu = std::unique_ptr<QMenu>(new QMenu(this));
 
         if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("ComboBox"))
         {
@@ -1073,6 +1073,7 @@ string MainWindow::CreateNewName(string type, bool allow_parathesis)
 
 void MainWindow::preparetreeviewMenu(const QPoint &pos)
 {
+    menu = nullptr;
     QTreeWidget *tree = ui->treeWidget;
 
     QTreeWidgetItem *nd = tree->itemAt( pos );
@@ -1085,7 +1086,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
     {
         if (nd->text(0)=="Parameters" || nd->text(0)=="Objective Functions" || nd->text(0)=="Reactions" || nd->text(0)=="Reaction Parameters" || nd->text(0)=="Constituents" || nd->text(0)=="Observations")
         {
-            menu = new QMenu(this);
+            menu = std::unique_ptr<QMenu>(new QMenu(this));
             QAction *AddAct = new QAction(QIcon(":/Resource/warning32.ico"), "Add " + nd->text(0), this);
             AddAct->setProperty("group",nd->text(0));
             AddAct->setStatusTip("Append " + nd->text(0));
@@ -1116,7 +1117,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         }
         if (nd->data(0, CustomRoleCodes::Role::TypeRole).toString() == "Sources")
         {
-            menu = new QMenu(this);
+            menu = std::unique_ptr<QMenu>(new QMenu(this));
             timeseriestobeshown = "Precipitation";
             if (GetSystem()->source(nd->text(0).toStdString())->Variable("timeseries")!=nullptr)
             {
@@ -1131,8 +1132,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         }
         if (menu)
             menu->exec( tree->mapToGlobal(pos) );
-        if (menu)
-            delete(menu);
+
         return;
 
     }

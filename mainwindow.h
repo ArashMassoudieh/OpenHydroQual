@@ -84,7 +84,7 @@ private:
     QString workingfolder;
     QModelIndex addParameterIndex(const QModelIndex &index = QModelIndex());
     QModelIndex tableitemrightckicked;
-    QMenu *menu = nullptr;
+    std::unique_ptr<QMenu> menu;
     CGA<System> *optimizer;
     CMCMC<System> *mcmc;
     QString timeseriestobeshown;
