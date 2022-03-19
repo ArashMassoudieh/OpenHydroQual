@@ -938,7 +938,7 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
 	if (type == _type::string)
 	{
 		
-        bool outcome; 
+        bool outcome=true; 
         if (GetName()=="name")
         {
             if (parent)
