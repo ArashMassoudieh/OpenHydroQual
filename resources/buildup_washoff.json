@@ -76,7 +76,7 @@
 	      "ask_user": "true",
 	      "delegate": "expressionEditor"
 	    },
-	    "coefficient": {
+	    "release_coefficient": {
 	      "description": "Release coefficient",
 	      "type": "value",
 	      "ask_user": "true",
@@ -99,7 +99,37 @@
 	      "description": "Release rate",
 	      "type": "expression",
 	      "ask_user": "false",
-	      "expression": "concentration_dependence_rate_expression*coefficient*depth^exponent_of_depth"
+	      "expression": "concentration_dependence_rate_expression*release_coefficient*depth^exponent_of_depth"
     	    }
-  },
+    	},
+    "Build up": {
+	    "type": "source",
+	    "typecategory": "Sources",
+	    "description": "Buildup constant-rate",
+	    "icon": {
+	      "filename": "build_up.png"
+	    },
+	    "build_up_rate": {
+	      "type": "value",
+	      "includeinoutput": "false",
+	      "description": "Build up rate (mass/time/area)",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+	      "unit": "g/day/m~^2"
+	    },
+	    "coefficient": {
+	      "type": "expression",
+	      "expression": "area*build_up_rate",
+	      "includeinoutput": "false",
+	      "description": "Build-up rate",
+	      "ask_user": "false"
+	    },
+	    "timeseries": {
+	      "type": "expression",
+	      "expression": "1",
+	      "includeinoutput": "false",
+	      "description": "1",
+	      "ask_user": "false"
+	    }
+	}
 }
