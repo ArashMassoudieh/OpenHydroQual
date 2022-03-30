@@ -257,6 +257,7 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
         {
             mainwindow->GetSystem()->RemoveAsParameter(quanset->Parent()->GetName(),VariableName.toStdString(),quanset->GetVar(VariableName.toStdString()).GetParameterAssignedTo());
             quanset->GetVar(VariableName.toStdString()).SetParameterAssignedTo("");
+            r = true;
         }
 
         if (quanset->GetVar(VariableName.toStdString()).Delegate()=="expressionEditor")
@@ -298,6 +299,7 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
     {
         quanset->GetVar(VariableName.toStdString()).SetParameterAssignedTo(value.toString().toStdString());
         mainwindow->GetSystem()->SetAsParameter(quanset->Parent()->GetName(),VariableName.toStdString(),value.toString().toStdString());
+        r=true;
     }
 
 
