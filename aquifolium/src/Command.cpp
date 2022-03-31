@@ -422,8 +422,10 @@ bool Command::Execute(System *_sys)
         {
             sys->SetAsParameter(assignments["object"],assignments["quantity"],assignments["parametername"]);
 			if (sys->object(assignments["object"]))
-				sys->object(assignments["object"])->Variable(assignments["quantity"])->SetParameterAssignedTo(assignments["parametername"]);
-			else
+            {	if (sys->object(assignments["object"])->HasQuantity(assignments["quantity"]))
+                    sys->object(assignments["object"])->Variable(assignments["quantity"])->SetParameterAssignedTo(assignments["parametername"]);
+            }
+            else
 			{
 				return false;
 				sys->GetErrorHandler()->Append("system", "command", "Execute", "object '" + assignments["object"] + "' was not found!", 11237);
