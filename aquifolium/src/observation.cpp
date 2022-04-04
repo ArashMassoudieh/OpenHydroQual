@@ -114,7 +114,8 @@ void Observation::append_value(double t, double val)
 
 void Observation::append_value(double t)
 {
-    modeled_time_series.append(t,GetValue(Expression::timing::present));
+    current_value = GetValue(Expression::timing::present);
+    modeled_time_series.append(t,current_value);
     return;
 }
 

@@ -695,6 +695,9 @@ bool System::Solve(bool applyparameters)
         }
 #endif
             fail_counter = 0;
+            Update();
+            UpdateObjectiveFunctions(SolverTempVars.t);
+            UpdateObservations(SolverTempVars.t);
             PopulateOutputs();
             SolverTempVars.t += SolverTempVars.dt;
             if (SolverTempVars.MaxNumberOfIterations()>SolverSettings.NR_niteration_upper)
@@ -709,9 +712,8 @@ bool System::Solve(bool applyparameters)
                 SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1).vec;
             }
 
-            Update();
-            UpdateObjectiveFunctions(SolverTempVars.t);
-            UpdateObservations(SolverTempVars.t);
+
+
 
         }
         if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time)
