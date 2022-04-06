@@ -93,11 +93,13 @@ double Observation::CalcMisfit()
     {
         if (Variable("error_structure")->GetProperty()=="normal")
         {
-            return Variable("observed_data")->GetTimeSeries()->n*(diff2(Variable("observed_data")->GetTimeSeries(),modeled_time_series)/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
+            diff_value = diff2(Variable("observed_data")->GetTimeSeries(),modeled_time_series);
+            return Variable("observed_data")->GetTimeSeries()->n*(diff_value/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
         }
         else if (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal")
         {
-            return Variable("observed_data")->GetTimeSeries()->n*(diff2(Variable("observed_data")->GetTimeSeries()->Log(1e-8),modeled_time_series.Log(1e-8))/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
+            diff_value = diff2(Variable("observed_data")->GetTimeSeries()->Log(1e-8),modeled_time_series.Log(1e-8));
+            return Variable("observed_data")->GetTimeSeries()->n*(diff_value/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
         }
         else
             return 0;

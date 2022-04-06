@@ -25,8 +25,7 @@ public:
     void mutate(double mu);
 	int rank;
     void shake(double shakescale);
-	double R2;
-	double MSE;
+    vector<double> fit_measures;
 
 };
 

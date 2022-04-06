@@ -24,6 +24,7 @@ CIndividual::CIndividual()
 	precision.resize(nParams);
 	minrange.resize(nParams);
 	maxrange.resize(nParams);
+    fit_measures.resize(3);
 
 }
 
@@ -51,7 +52,7 @@ CIndividual::CIndividual(int n)
 		maxrange[i] = 1;
 		perteff[i] = 0;
 	}
-
+    fit_measures.resize(3);
 }
 
 
@@ -77,7 +78,7 @@ CIndividual::CIndividual(const CIndividual &C)
 	}
 	
 	fitness = C.fitness;
-	MSE = C.MSE;
+    fit_measures.resize(3);
 	actual_fitness = C.actual_fitness;
 	actual_fitness2 = C.actual_fitness2;
 
@@ -105,7 +106,7 @@ CIndividual CIndividual::operator = (const CIndividual &C)
 	}
 	
 	fitness = C.fitness;
-	MSE = C.MSE;
+    fit_measures = C.fit_measures;
 	actual_fitness = C.actual_fitness;
 	actual_fitness2 = C.actual_fitness2;
 	return *this;

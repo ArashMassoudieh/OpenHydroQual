@@ -453,6 +453,7 @@ class System: public Object
         unsigned int restore_interval = 200;
         void PopulateFunctionOperators();
         function_operators func_operators;
+        bool fit_error=0;
 #ifdef Q_version
     RunTimeWindow *rtw = nullptr;
 #endif
