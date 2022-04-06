@@ -50,7 +50,7 @@ public:
 	CTimeSeries Log(); //take the log of all the data points
     CTimeSeries Log(T min); //log(min(min,C))
     T std(); //standard deviation of C
-    T mean(); //mean of C
+    T mean() const; //mean of C
     T percentile(T x); //x^th percentile of C
     T percentile(T x, int limit); //x^th percentile with the exception of the first "limit" data points
     T mean(int limit); // mean of the data after excluding "limit" data points
@@ -139,7 +139,10 @@ template<class T> T diff2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC
 template<class T> T diff_mixed(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d, double lowlim, double std_n, double std_ln);
 template<class T> T ADD(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d);
 template<class T> T diff_relative(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d, double m);
-template<class T> T R2(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d);
+template<class T> T R2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d);
+template<class T> T R2(const CTimeSeries<T> *BTC_p, const CTimeSeries<T> *BTC_d);
+template<class T> T NSE(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d);
+template<class T> T NSE(const CTimeSeries<T> *BTC_p, const CTimeSeries<T> *BTC_d);
 template<class T> T R(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, int nlimit);
 template<class T> CTimeSeries<T> operator*(T, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator*(CTimeSeries<T>&, double);

@@ -521,6 +521,7 @@ bool System::Solve(bool applyparameters)
 {
     double timestepminfactor = 100000;
     double timestepmaxfactor = 50;
+    fit_measures.resize(ObservationsCount()*3);
     SolverTempVars.time_start = time(nullptr);
     SetAllParents();
     SetQuanPointers();
@@ -2328,10 +2329,12 @@ void System::MakeObjectiveFunctionExpressionUniform()
 double System::CalcMisfit()
 {
     double out=0;
-    fit_mse = 0;
+
     for (unsigned int i=0; i<ObservationsCount(); i++)
     {   out+=observation(i)->CalcMisfit();
-        fit_mse += observation(i)->fit_mse;
+        fit_measures[i*3] = observation(i)->fit_measures[0];
+        fit_measures[i*3+1] = observation(i)->fit_measures[1];
+        fit_measures[i*3+2] = observation(i)->fit_measures[2];
     }
 
     return out;

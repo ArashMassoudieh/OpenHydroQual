@@ -45,7 +45,7 @@ class Observation: public Object
         CTimeSeriesSet<double>& Realizations() {return realizations;}
         void SetPercentile95(const CTimeSeriesSet<double>& rpct95) {percentile95 = rpct95;}
         CTimeSeriesSet<double>& Percentile95() {return percentile95;}
-        double fit_mse = 0;
+        vector<double> fit_measures;
     protected:
 
     private:

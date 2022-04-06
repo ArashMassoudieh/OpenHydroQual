@@ -92,7 +92,9 @@ CGA<T>::CGA(string filename, const T &model)
 	for (int i=0; i<GA_params.maxpop; i++)
 	{
 		Ind[i] = CIndividual(GA_params.nParam);
+        Ind[i].fit_measures.resize(model->ObservationsCount()*3);
 		Ind_old[i] = CIndividual(GA_params.nParam);
+        Ind_old[i].fit_measures.resize(model->ObservationsCount()*3);
 	}
 
 	for (int i = 0; i<GA_params.nParam; i++)
@@ -146,7 +148,9 @@ CGA<T>::CGA(T *model)
 	for (int i=0; i<GA_params.maxpop; i++)
 	{
 		Ind[i] = CIndividual(GA_params.nParam);
+        Ind[i].fit_measures.resize(model->ObservationsCount()*3);
 		Ind_old[i] = CIndividual(GA_params.nParam);
+        Ind_old[i].fit_measures.resize(model->ObservationsCount()*3);
 	}
 
 	for (int j = 0; j < GA_params.nParam; j++)
@@ -346,6 +350,8 @@ int counter=0;
 #endif
             Models[k].Solve();
             Ind[k].actual_fitness = Models[k].GetObjectiveFunctionValue();
+            for (unsigned int i=0; i<Models[k].fit_measures.size(); i++)
+                Ind[k].fit_measures[i] = Models[k].fit_measures[i];
 #ifdef Debug_GA
             Models[k].GetModeledObjectiveFunctions().writetofile(filenames.pathname+"/temp//observedoutputs_"+aquiutils::numbertostring(k)+"_"+aquiutils::numbertostring(current_generation)+".txt");
             Models[k].GetOutputs().writetofile(filenames.pathname+"/temp//outputs_"+aquiutils::numbertostring(k)+"_"+aquiutils::numbertostring(current_generation)+".txt");
@@ -530,7 +536,11 @@ int CGA<T>::optimize()
 		for (int k=0; k<Ind[0].nParams; k++)
 			fprintf(FileOut, "%s, ", paramname[k].c_str());
 		fprintf(FileOut, "%s, %s, %s", "likelihood", "Fitness", "Rank");
-		fprintf(FileOut, "\n");
+        for (unsigned int i=0; i<Model->ObservationsCount();i++)
+        {
+            fprintf(FileOut, "%s, %s, %s", (Model->observation(i)->GetName()+"_MSE").c_str(), (Model->observation(i)->GetName()+"_R2").c_str(), (Model->observation(i)->GetName()+"_NSE").c_str());
+        }
+        fprintf(FileOut, "\n");
         write_to_detailed_GA("Generation: " + aquiutils::numbertostring(current_generation));
 		for (int j1=0; j1<GA_params.maxpop; j1++)
 		{
@@ -544,6 +554,10 @@ int CGA<T>::optimize()
 					fprintf(FileOut, "%le, ", Ind[j1].x[k]);
 
 			fprintf(FileOut, "%le, %le, %i", Ind[j1].actual_fitness, Ind[j1].fitness, Ind[j1].rank);
+            for (unsigned int i=0; i<Model->ObservationsCount();i++)
+            {
+                fprintf(FileOut, "%le, %le, %le", Ind[j1].fit_measures[i*3], Ind[j1].fit_measures[i*3+1], Ind[j1].fit_measures[i*3+2]);
+            }
 			fprintf(FileOut, "\n");
 		}
 		fclose(FileOut);

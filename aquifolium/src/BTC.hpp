@@ -458,7 +458,7 @@ T diff2(const CTimeSeries<T> &BTC_p, CTimeSeries<T> *BTC_d)
     int count = 0;
     for (int i=0; i<BTC_d->n; i++)
     {
-        if (BTC_d->GetT(i)>BTC_p->mint() && BTC_d->GetT(i)<BTC_p->maxt())
+        if (BTC_d->GetT(i)>BTC_p.mint() && BTC_d->GetT(i)<BTC_p.maxt())
         {   sum += pow(BTC_d->GetC(i) - BTC_p.interpol(BTC_d->GetT(i)),2);
             count++;
         }
@@ -475,7 +475,7 @@ T diff2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
     int count = 0;
     for (int i=0; i<BTC_d.n; i++)
     {
-        if (BTC_d.GetT(i)>BTC_p->mint() && BTC_d.GetT(i)<BTC_p->maxt())
+        if (BTC_d.GetT(i)>BTC_p.mint() && BTC_d.GetT(i)<BTC_p.maxt())
         {   sum += pow(BTC_d.GetC(i) - BTC_p.interpol(BTC_d.GetT(i)),2);
             count++;
         }
@@ -485,7 +485,7 @@ T diff2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
 }
 
 template<class T>
-T R2(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d)
+T R2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
 {
     T sumcov = 0;
     T sumvar1 = 0;
@@ -494,16 +494,68 @@ T R2(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d)
     T sum2 = 0;
 	for (int i=0; i<BTC_d.n; i++)
 	{
-        T x2 = BTC_p.interpol(BTC_d.t[i]);
-		sumcov += BTC_d.C[i]*x2/BTC_d.n;
-		sumvar1 += BTC_d.C[i]*BTC_d.C[i]/BTC_d.n;
+        T x2 = BTC_p.interpol(BTC_d.GetT(i));
+        sumcov += BTC_d.GetC(i)*x2/BTC_d.n;
+        sumvar1 += BTC_d.GetC(i)*BTC_d.GetC(i)/BTC_d.n;
 		sumvar2 += x2*x2/BTC_d.n;
-		sum1 += BTC_d.C[i]/BTC_d.n;
+        sum1 += BTC_d.GetC(i)/BTC_d.n;
 		sum2 += x2/BTC_d.n;
 	}
 
 	return pow(sumcov-sum1*sum2,2)/(sumvar1-sum1*sum1)/(sumvar2-sum2*sum2);
 }
+
+template<class T>
+T R2(const CTimeSeries<T> *BTC_p, const CTimeSeries<T> *BTC_d)
+{
+    T sumcov = 0;
+    T sumvar1 = 0;
+    T sumvar2 = 0;
+    T sum1 = 0;
+    T sum2 = 0;
+    for (int i=0; i<BTC_d->n; i++)
+    {
+        T x2 = BTC_p->interpol(BTC_d->GetT(i));
+        sumcov += BTC_d->GetC(i)*x2/BTC_d->n;
+        sumvar1 += BTC_d->GetC(i)*BTC_d->GetC(i)/BTC_d->n;
+        sumvar2 += x2*x2/BTC_d->n;
+        sum1 += BTC_d->GetC(i)/BTC_d->n;
+        sum2 += x2/BTC_d->n;
+    }
+
+    return pow(sumcov-sum1*sum2,2)/(sumvar1-sum1*sum1)/(sumvar2-sum2*sum2);
+}
+
+template<class T>
+T NSE(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
+{
+    T numerator = 0;
+    T denuminator = 0;
+    double avg = BTC_d.mean();
+    for (int i=0; i<BTC_d.n; i++)
+    {
+        numerator += pow(BTC_d.GetC(i)-BTC_p.interpol(BTC_d.GetT(i)),2);
+        denuminator += pow(BTC_d.GetC(i)-avg,2);
+    }
+
+    return 1.0-numerator/denuminator;
+}
+
+template<class T>
+T NSE(const CTimeSeries<T> *BTC_p, const CTimeSeries<T> *BTC_d)
+{
+    T numerator = 0;
+    T denuminator = 0;
+    double avg = BTC_d->mean();
+    for (int i=0; i<BTC_d->n; i++)
+    {
+        numerator += pow(BTC_d->GetC(i)-BTC_p->interpol(BTC_d->GetT(i)),2);
+        denuminator += pow(BTC_d->GetC(i)-avg,2);
+    }
+
+    return 1.0-numerator/denuminator;
+}
+
 
 template<class T>
 T R(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, int nlimit)
@@ -910,12 +962,12 @@ T CTimeSeries<T>::std(int nlimit)
 }
 
 template<class T>
-T CTimeSeries<T>::mean()
+T CTimeSeries<T>::mean() const
 {
     T sum = 0;
 	for (int i=0; i<n; i++)
 	{
-		sum+= C[i];
+        sum+= GetC(i);
 	}
 	if (n>0)
 		return sum/n;

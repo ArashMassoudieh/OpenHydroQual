@@ -389,6 +389,7 @@ class System: public Object
         SafeVector<Observation>* Observations() {return &observations;}
         vector<string> exp_functions() {return func_operators.funcs;}
         vector<string> exp_operators() {return func_operators.opts;}
+        vector<double> fit_measures;
     protected:
 
     private:
@@ -453,7 +454,7 @@ class System: public Object
         unsigned int restore_interval = 200;
         void PopulateFunctionOperators();
         function_operators func_operators;
-        bool fit_mse=0;
+
 #ifdef Q_version
     RunTimeWindow *rtw = nullptr;
 #endif

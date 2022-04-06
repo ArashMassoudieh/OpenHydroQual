@@ -91,14 +91,30 @@ double Observation::CalcMisfit()
 {
     if (Variable("observed_data")->GetTimeSeries()!=nullptr)
     {
+        double fit_mse = 0;
+        double _R2 = 0;
+        double Nash_Sutcliffe_efficiency = 0;
         if (Variable("error_structure")->GetProperty()=="normal")
         {
             fit_mse = diff2(modeled_time_series,Variable("observed_data")->GetTimeSeries());
+            _R2 = R2(&modeled_time_series,Variable("observed_data")->GetTimeSeries());
+            Nash_Sutcliffe_efficiency = NSE(&modeled_time_series,Variable("observed_data")->GetTimeSeries());
+            fit_measures.clear();
+            fit_measures.push_back(fit_mse);
+            fit_measures.push_back(_R2);
+            fit_measures.push_back(Nash_Sutcliffe_efficiency);
             return Variable("observed_data")->GetTimeSeries()->n*(fit_mse/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
+
         }
         else if (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal")
         {
             fit_mse = diff2(modeled_time_series.Log(1e-8),Variable("observed_data")->GetTimeSeries()->Log(1e-8));
+            _R2 = R2(modeled_time_series.Log(1e-8),Variable("observed_data")->GetTimeSeries()->Log(1e-8));
+            Nash_Sutcliffe_efficiency = NSE(modeled_time_series.Log(1e-8),Variable("observed_data")->GetTimeSeries()->Log(1e-8));
+            fit_measures.clear();
+            fit_measures.push_back(fit_mse);
+            fit_measures.push_back(_R2);
+            fit_measures.push_back(Nash_Sutcliffe_efficiency);
             return Variable("observed_data")->GetTimeSeries()->n*(fit_mse/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
         }
         else
