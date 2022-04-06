@@ -450,17 +450,19 @@ T diff2(CTimeSeries<T> *BTC_p, CTimeSeries<T> BTC_d)
     return sum/double(BTC_d.n);
 }
 
+
 template<class T>
-T diff2(CTimeSeries<T> BTC_p, CTimeSeries<T> *BTC_d)
+T diff2(const CTimeSeries<T> &BTC_p, CTimeSeries<T> *BTC_d)
 {
     T sum = 0;
     for (int i=0; i<BTC_d->n; i++)
     {
-        sum += pow(BTC_d->C[i] - BTC_p.interpol(BTC_d->t[i]),2);
+        sum += pow(BTC_d->GetC(i) - BTC_p.interpol(BTC_d->GetT(i)),2);
     }
 
     return sum/double(BTC_d->n);
 }
+
 
 template<class T>
 T diff2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)

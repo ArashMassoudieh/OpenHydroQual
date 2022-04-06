@@ -134,7 +134,7 @@ template<class T> T diff_norm(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d);
 template<class T> T diff(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, int scale);
 template<class T> T diff(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, CTimeSeries<T> Q);
 template<class T> T diff2(CTimeSeries<T> *BTC_p, CTimeSeries<T> BTC_d);
-template<class T> T diff2(CTimeSeries<T> BTC_p, CTimeSeries<T> *BTC_d);
+template<class T> T diff2(const CTimeSeries<T> &BTC_p, CTimeSeries<T> *BTC_d);
 template<class T> T diff2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d);
 template<class T> T diff_mixed(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d, double lowlim, double std_n, double std_ln);
 template<class T> T ADD(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d);
