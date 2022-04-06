@@ -2328,10 +2328,10 @@ void System::MakeObjectiveFunctionExpressionUniform()
 double System::CalcMisfit()
 {
     double out=0;
-    fit_error = 0;
+    fit_mse = 0;
     for (unsigned int i=0; i<ObservationsCount(); i++)
     {   out+=observation(i)->CalcMisfit();
-        fit_error += observation(i)->diff_value;
+        fit_mse += observation(i)->fit_mse;
     }
 
     return out;
