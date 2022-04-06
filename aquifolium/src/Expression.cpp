@@ -37,6 +37,7 @@ Expression::Expression(void)
         Expression::funcs.push_back("_bkw");
         Expression::funcs.push_back("_mon");
         Expression::funcs.push_back("_mbs");
+        Expression::funcs.push_back("_ekr");
         Expression::opts.push_back("+");
         Expression::opts.push_back("-");
         Expression::opts.push_back("*");
@@ -68,6 +69,7 @@ Expression::Expression(string S)
         Expression::funcs.push_back("_bkw");
         Expression::funcs.push_back("_mon");
         Expression::funcs.push_back("_mbs");
+        Expression::funcs.push_back("_ekr");
         Expression::opts.push_back("+");
         Expression::opts.push_back("-");
         Expression::opts.push_back("*");
@@ -408,6 +410,25 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
                 return terms[1].calc(W->GetConnectedBlock(Expression::loc::destination),tmg,limit);
             }
         }
+    }
+    if (function=="ekr")
+    {
+        if (terms.size()!=2)
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Function 'bkw' requiers two arguments", 7002);
+            return 0;
+        }
+        if (!W->HasQuantity(terms[0].parameter))
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Block '"+W->GetName()+ "' has no property " + terms[0].parameter, 7003);
+            return 0;
+        }
+        if (W->Variable(terms[0].parameter)->GetType()!=Quan::_type::prec_timeseries && W->Variable(terms[0].parameter)->GetType()!=Quan::_type::timeseries)
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","In block '"+W->GetName()+ "' property '" + terms[0].parameter + "' must be of type time-series", 7003);
+            return 0;
+        }
+        return W->Variable(terms[0].parameter)->TimeSeries()->Exponential_Kernel(W->Parent()->GetTime(),terms[1].calc(W,tmg,limit));
     }
 
 	if (param_constant_expression == "constant")

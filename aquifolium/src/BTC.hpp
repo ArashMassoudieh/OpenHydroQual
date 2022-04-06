@@ -1716,3 +1716,43 @@ T &CTimeSeries<T>::lastt()
     return t[n-1];
 }
 
+template<class T>
+T CTimeSeries<T>::Exponential_Kernel(const T &t,const T &lambda) const
+{
+    unsigned int initial_i = GetElementNumberAt(t);
+    unsigned int last_i = min(GetElementNumberAt(t+2.0/lambda),n-1);
+    T sum=0;
+    for (unsigned int i=initial_i; i<=last_i; i++)
+    {
+        sum+=GetC(i)*exp(-lambda*(GetT(i)-t));
+    }
+    return sum/(last_i-initial_i);
+}
+
+template<class T>
+int CTimeSeries<T>::GetElementNumberAt(const T &x) const
+{
+    if (n==0)
+        return 0;
+    if (n>1)
+    {
+
+        if (structured == false)
+        {	for (int i=0; i<n-1; i++)
+            {
+                if (GetT(i) <= x && GetT(i+1) >= x)
+                    return i;
+            }
+            if (x>GetT(n-1)) return n-1;
+            if (x<GetT(0)) return 0;
+        }
+        else
+        {
+            if (x < GetT(0)) return 0;
+            if (x > GetT(n - 1)) return n - 1;
+            return int((x-GetT(0))/(GetT(1)-GetT(0)));
+        }
+    }
+    else
+        return 0;
+}

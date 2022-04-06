@@ -535,7 +535,7 @@ int CGA<T>::optimize()
 		fprintf(FileOut, "ID, ");
 		for (int k=0; k<Ind[0].nParams; k++)
 			fprintf(FileOut, "%s, ", paramname[k].c_str());
-		fprintf(FileOut, "%s, %s, %s", "likelihood", "Fitness", "Rank");
+        fprintf(FileOut, "%s, %s, %s, ", "likelihood", "Fitness", "Rank");
         for (unsigned int i=0; i<Model->ObservationsCount();i++)
         {
             fprintf(FileOut, "%s, %s, %s", (Model->observation(i)->GetName()+"_MSE").c_str(), (Model->observation(i)->GetName()+"_R2").c_str(), (Model->observation(i)->GetName()+"_NSE").c_str());

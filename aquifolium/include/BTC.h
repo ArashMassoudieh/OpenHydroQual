@@ -115,6 +115,8 @@ public:
     unsigned int tSize() {return t.size();}
     unsigned int DSize() {return D.size(); }
     void AppendD(const T &value) { D.push_back(value); }
+    T Exponential_Kernel(const T &t,const T &lambda) const;
+    int GetElementNumberAt(const T &t) const;
 private:
     vector<T> t;
     vector<T> C;

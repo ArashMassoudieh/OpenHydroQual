@@ -1,0 +1,31 @@
+{
+  "solutionorder": [ "Storage" ],
+  "Precipitation_w_forcast": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Precipitation with forcast",
+    "icon": {
+      "filename": "cloud.png"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area",
+      "ask_user": "false",
+      "delegate": "ValueBox"
+    },
+    "timeseries": {
+      "type": "timeseries_prec",
+      "includeinoutput": "true",
+      "description": "Precipitation intensity",
+      "ask_user": "true",
+      "delegate": "Browser;time series"
+   },
+   "kernel_smoothed_forcast": {
+	"type": "expression",
+	"expression": "_ekr(timeseries;0.5)",
+	"description": "Kernel Smoothed Forcast",
+	"includeinoutput": "true",
+        "ask_user": "false"
+   }
+  }
+}
