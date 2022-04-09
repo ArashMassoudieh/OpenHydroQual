@@ -502,7 +502,7 @@ T R2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
         sum2 += x2;
     }
 
-    return pow(BTC_d.n*sumprod-sum1*sum2,2)/(BTC_d->n*sumvar1-sum1*sum1)/(BTC_d->n*sumvar2-sum2*sum2);
+    return pow(BTC_d.n*sumprod-sum1*sum2,2)/(BTC_d.n*sumvar1-sum1*sum1)/(BTC_d.n*sumvar2-sum2*sum2);
 }
 
 template<class T>
