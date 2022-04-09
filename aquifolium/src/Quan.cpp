@@ -532,10 +532,14 @@ double Quan::GetVal(const Expression::timing &tmg)
 #endif
             if (type == _type::expression)
             {
-                {
-                    _val_star = CalcVal(tmg);
-                    value_star_updated = true;
-                }
+                _val_star = CalcVal(tmg);
+                value_star_updated = true;
+
+            }
+            if (type == _type::rule)
+            {
+                _val_star = CalcVal(tmg);
+                value_star_updated = true;
             }
             if (type == _type::timeseries)
             {
