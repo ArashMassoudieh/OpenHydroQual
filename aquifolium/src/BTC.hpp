@@ -487,28 +487,28 @@ T diff2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
 template<class T>
 T R2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
 {
-    T sumcov = 0;
+    T sumprod = 0;
     T sumvar1 = 0;
     T sumvar2 = 0;
     T sum1 = 0;
     T sum2 = 0;
-	for (int i=0; i<BTC_d.n; i++)
-	{
+    for (int i=0; i<BTC_d.n; i++)
+    {
         T x2 = BTC_p.interpol(BTC_d.GetT(i));
-        sumcov += BTC_d.GetC(i)*x2/BTC_d.n;
-        sumvar1 += BTC_d.GetC(i)*BTC_d.GetC(i)/BTC_d.n;
-		sumvar2 += x2*x2/BTC_d.n;
-        sum1 += BTC_d.GetC(i)/BTC_d.n;
-		sum2 += x2/BTC_d.n;
-	}
+        sumprod += BTC_d.GetC(i)*x2;
+        sumvar1 += BTC_d.GetC(i)*BTC_d.GetC(i);
+        sumvar2 += x2*x2;
+        sum1 += BTC_d.GetC(i);
+        sum2 += x2;
+    }
 
-	return pow(sumcov-sum1*sum2,2)/(sumvar1-sum1*sum1)/(sumvar2-sum2*sum2);
+    return pow(BTC_d.n*sumprod-sum1*sum2,2)/(BTC_d->n*sumvar1-sum1*sum1)/(BTC_d->n*sumvar2-sum2*sum2);
 }
 
 template<class T>
 T R2(const CTimeSeries<T> *BTC_p, const CTimeSeries<T> *BTC_d)
 {
-    T sumcov = 0;
+    T sumprod = 0;
     T sumvar1 = 0;
     T sumvar2 = 0;
     T sum1 = 0;
@@ -516,14 +516,14 @@ T R2(const CTimeSeries<T> *BTC_p, const CTimeSeries<T> *BTC_d)
     for (int i=0; i<BTC_d->n; i++)
     {
         T x2 = BTC_p->interpol(BTC_d->GetT(i));
-        sumcov += BTC_d->GetC(i)*x2/BTC_d->n;
-        sumvar1 += BTC_d->GetC(i)*BTC_d->GetC(i)/BTC_d->n;
-        sumvar2 += x2*x2/BTC_d->n;
-        sum1 += BTC_d->GetC(i)/BTC_d->n;
-        sum2 += x2/BTC_d->n;
+        sumprod += BTC_d->GetC(i)*x2;
+        sumvar1 += BTC_d->GetC(i)*BTC_d->GetC(i);
+        sumvar2 += x2*x2;
+        sum1 += BTC_d->GetC(i);
+        sum2 += x2;
     }
 
-    return pow(sumcov-sum1*sum2,2)/(sumvar1-sum1*sum1)/(sumvar2-sum2*sum2);
+    return pow(BTC_d->n*sumprod-sum1*sum2,2)/(BTC_d->n*sumvar1-sum1*sum1)/(BTC_d->n*sumvar2-sum2*sum2);
 }
 
 template<class T>
