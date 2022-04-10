@@ -553,7 +553,7 @@ int CGA<T>::optimize()
 				else
 					fprintf(FileOut, "%le, ", Ind[j1].x[k]);
 
-			fprintf(FileOut, "%le, %le, %i", Ind[j1].actual_fitness, Ind[j1].fitness, Ind[j1].rank);
+            fprintf(FileOut, "%le, %le, %i, ", Ind[j1].actual_fitness, Ind[j1].fitness, Ind[j1].rank);
             for (unsigned int i=0; i<Model->ObservationsCount();i++)
             {
                 fprintf(FileOut, "%le, %le, %le", Ind[j1].fit_measures[i*3], Ind[j1].fit_measures[i*3+1], Ind[j1].fit_measures[i*3+2]);
