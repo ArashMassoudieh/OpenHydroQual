@@ -352,10 +352,21 @@ CTimeSeries<T> CTimeSeries<T>::interpol(CTimeSeries<T> &x) const
 {
     CTimeSeries<T> BTCout;
 	for (int i=0; i<x.n; i++)
-		BTCout.append(x.t[i],interpol(x.t[i]));
+        BTCout.append(x.GetT(i),interpol(x.GetT(i)));
 	return BTCout;
 
 }
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::interpol(CTimeSeries<T> *x) const
+{
+    CTimeSeries<T> BTCout;
+    for (int i=0; i<x->n; i++)
+        BTCout.append(x->GetT(i),interpol(x->GetT(i)));
+    return BTCout;
+
+}
+
 
 template<class T>
 T ADD(CTimeSeries<T> &BTC_p, CTimeSeries<T> &BTC_d)
@@ -492,17 +503,21 @@ T R2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
     T sumvar2 = 0;
     T sum1 = 0;
     T sum2 = 0;
+    int count = 0;
     for (int i=0; i<BTC_d.n; i++)
     {
-        T x2 = BTC_p.interpol(BTC_d.GetT(i));
-        sumprod += BTC_d.GetC(i)*x2;
-        sumvar1 += BTC_d.GetC(i)*BTC_d.GetC(i);
-        sumvar2 += x2*x2;
-        sum1 += BTC_d.GetC(i);
-        sum2 += x2;
+        if (BTC_d.GetT(i)>=BTC_p.GetT(0) && BTC_d.GetT(i)<=BTC_p.GetT(BTC_p.n-1))
+        {   T x2 = BTC_p.interpol(BTC_d.GetT(i));
+            sumprod += BTC_d.GetC(i)*x2;
+            sumvar1 += BTC_d.GetC(i)*BTC_d.GetC(i);
+            sumvar2 += x2*x2;
+            sum1 += BTC_d.GetC(i);
+            sum2 += x2;
+            count++;
+        }
     }
 
-    return pow(BTC_d.n*sumprod-sum1*sum2,2)/(BTC_d.n*sumvar1-sum1*sum1)/(BTC_d.n*sumvar2-sum2*sum2);
+    return pow(count*sumprod-sum1*sum2,2)/(count*sumvar1-sum1*sum1)/(count*sumvar2-sum2*sum2);
 }
 
 template<class T>

@@ -40,6 +40,7 @@ class Observation: public Object
         string GetOutputItem() { return outputitem; }
         vector<string> ItemswithOutput();
         double CalcMisfit();
+        void SetModeledTimeSeries(const CTimeSeries<timeseriesprecision> &X) {modeled_time_series = X;}
         CTimeSeries<timeseriesprecision>* GetModeledTimeSeries() {return &modeled_time_series;}
         void SetRealizations(const CTimeSeriesSet<double>& rlztions) {realizations = rlztions;}
         CTimeSeriesSet<double>& Realizations() {return realizations;}

@@ -37,6 +37,7 @@ public:
     T interpol_D(const T &x); //interpolate the distance to the next non-zero data point
     CTimeSeries interpol(vector<T> x); //interpolate at each value in vector x
     CTimeSeries interpol(CTimeSeries &x) const; //interpolate at times in the time axis of x
+    CTimeSeries interpol(CTimeSeries<T> *x) const; //interpolate at times in the time axis of x
 	CTimeSeries(const CTimeSeries &C);
 	CTimeSeries(string Filename); //create BTC based on the filename
 	CTimeSeries& operator = (const CTimeSeries &C);

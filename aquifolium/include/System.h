@@ -273,6 +273,7 @@ class System: public Object
         void UpdateObjectiveFunctions(double t);
         double GetObjectiveFunctionValue();
         void MakeObjectiveFunctionExpressionUniform();
+        void MakeObservationsExpressionUniform();
         Objective_Function *ObjectiveFunction(const string &name); // returns a pointer to an objective function
 // Parameters
         Parameter *GetParameter(const string &name) {return parameter_set[name];}

@@ -768,6 +768,7 @@ bool System::Solve(bool applyparameters)
     Outputs.AllOutputs.unif = false;
     Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0);
     MakeObjectiveFunctionExpressionUniform();
+    MakeObservationsExpressionUniform();
 #ifdef Q_version
     if (rtw)
     {
@@ -2323,6 +2324,14 @@ void System::MakeObjectiveFunctionExpressionUniform()
 
     for (unsigned int i=0; i < ObjectiveFunctionsCount(); i++)
         objective_function_set[i]->SetTimeSeries(objective_function_set[i]->GetTimeSeries()->make_uniform(SimulationParameters.dt0));
+
+}
+
+void System::MakeObservationsExpressionUniform()
+{
+
+    for (unsigned int i=0; i < ObservationsCount(); i++)
+        observation(i)->SetModeledTimeSeries(observations[i].GetModeledTimeSeries()->make_uniform(SimulationParameters.dt0));
 
 }
 

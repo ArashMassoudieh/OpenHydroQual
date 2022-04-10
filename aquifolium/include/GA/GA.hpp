@@ -654,7 +654,11 @@ int CGA<T>::optimize()
 		fprintf(FileOut, "%le, ", final_params[k]);
 		fprintf(FileOut, "%le, %le\n", Ind[j].actual_fitness, Ind[j].fitness);
 	}
-	fclose(FileOut);
+    for (unsigned int i=0; i<Model->ObservationsCount();i++)
+    {
+        fprintf(FileOut, "%le, %le, %le\n", Ind[j].fit_measures[i*3], Ind[j].fit_measures[i*3+1], Ind[j].fit_measures[i*3+2]);
+    }
+    fclose(FileOut);
 
 	assignfitnesses(final_params);
 

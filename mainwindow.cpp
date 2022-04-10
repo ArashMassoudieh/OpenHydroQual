@@ -1816,6 +1816,20 @@ void MainWindow::onrunmodel()
         copiedsystem.GetSolutionLogger()->Close();
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
+    CVector FitMeasures(3*copiedsystem.ObservationsCount());
+    CTimeSeriesSet<double> mapped_modeled_results;
+    for (unsigned int i=0; i<copiedsystem.ObservationsCount();  i++)
+    {
+        copiedsystem.observation(i)->CalcMisfit();
+        for (unsigned int j=0; j<3; j++)
+            FitMeasures[i*3+j] = copiedsystem.observation(i)->fit_measures[j];
+        if (copiedsystem.observation(i)->GetModeledTimeSeries()!=nullptr)
+            mapped_modeled_results.append(copiedsystem.observation(i)->GetModeledTimeSeries()->interpol(copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()),copiedsystem.observation(i)->GetName());
+    }
+
+
+    FitMeasures.writetofile(workingfolder.toStdString() + "/" + "fit_measures.txt");
+    mapped_modeled_results.writetofile(workingfolder.toStdString() + "/" + "mapped_modeled_results.txt");
     actionrun->setEnabled(true);
     rtw->AppendText(string("All tasks finished!"));
 }
