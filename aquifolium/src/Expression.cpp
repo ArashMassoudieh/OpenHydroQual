@@ -415,7 +415,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
     {
         if (terms.size()!=2)
         {
-            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Function 'bkw' requiers two arguments", 7002);
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Function 'ekr' requiers two arguments", 7002);
             return 0;
         }
         if (!W->HasQuantity(terms[0].parameter))

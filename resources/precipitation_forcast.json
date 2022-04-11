@@ -33,7 +33,7 @@
     "typecategory": "Connectors",
     "description": "Flow control device",
     "icon": {
-      "filename": "reservoir_link.png"
+      "filename": "control_valve.png"
     },
     "timeseries": {
       "type": "timeseries_prec",
@@ -42,9 +42,28 @@
       "ask_user": "true",
       "delegate": "Browser;time series"
    },
+   "kernel_delay_parameter": {
+      "type": "value",
+      "default": "5",
+      "description": "Mean kernel delay time",
+      "delegate": "UnitBox",
+      "unit": "day",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "The mean time of the exponential kernel function for precipitation forcast", 
+      "criteria": "kernel_delay_parameter>0",
+      "warningmessage": "Mean kernel delay time must be greater than zero"
+    },
+   "lambda": {
+	"type": "expression",
+	"expression": "1/kernel_delay_parameter",
+	"description": "lambda",
+	"includeinoutput": "false",
+        "ask_user": "false"
+   }, 
    "kernel_smoothed_forcast": {
 	"type": "expression",
-	"expression": "_ekr(timeseries;0.5)",
+	"expression": "_ekr(timeseries;lambda)",
 	"description": "Kernel Smoothed Forcast",
 	"includeinoutput": "true",
         "ask_user": "false"
