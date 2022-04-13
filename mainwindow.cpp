@@ -1822,7 +1822,8 @@ void MainWindow::onrunmodel()
     {
         copiedsystem.observation(i)->CalcMisfit();
         for (unsigned int j=0; j<3; j++)
-            FitMeasures[i*3+j] = copiedsystem.observation(i)->fit_measures[j];
+            if (copiedsystem.observation(i)->fit_measures.size()==3)
+                FitMeasures[i*3+j] = copiedsystem.observation(i)->fit_measures[j];
         if (copiedsystem.observation(i)->GetModeledTimeSeries()!=nullptr)
             mapped_modeled_results.append(copiedsystem.observation(i)->GetModeledTimeSeries()->interpol(copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()),copiedsystem.observation(i)->GetName());
     }
