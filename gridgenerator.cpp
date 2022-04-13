@@ -639,7 +639,7 @@ void GridGenerator::browserClicked()
 {
     QString fileName = QFileDialog::getOpenFileName(mainwindow,
             tr("Open"), "",
-            tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"));
+            tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
     if (fileName!="")
     {
         if (QFile(fileName).exists())

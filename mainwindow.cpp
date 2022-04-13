@@ -1574,7 +1574,7 @@ void MainWindow::onsaveas()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
             tr("Save"), "",
-            tr("script files (*.scr)"));
+            tr("script files (*.scr)"),nullptr,QFileDialog::DontUseNativeDialog);
     if (fileName!="")
     {
         //qDebug() << fileName.split('.');
@@ -1598,7 +1598,7 @@ void MainWindow::onexporttosvg()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
             tr("Save"), "",
-            tr("svg files (*.svg)"));
+            tr("svg files (*.svg)"),nullptr,QFileDialog::DontUseNativeDialog);
     QString svgfileName;
     if (fileName!="")
     {
@@ -1644,7 +1644,7 @@ void MainWindow::onopen()
 
     QString fileName = QFileDialog::getOpenFileName(this,
             tr("Open"), "",
-            tr("Script files (*.scr);; All files (*.*)"));
+            tr("Script files (*.scr);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
 
     if (fileName!="")
@@ -2016,7 +2016,7 @@ void MainWindow::loadnewtemplate()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
             tr("Open"), "",
-            tr("Script files (*.json);; All files (*.*)"));
+            tr("Script files (*.json);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
 
     if (fileName!="")
@@ -2038,7 +2038,7 @@ void MainWindow::addplugin()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
             tr("Open"), "",
-            tr("Script files (*.json);; All files (*.*)"));
+            tr("Script files (*.json);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
 
     if (fileName!="")

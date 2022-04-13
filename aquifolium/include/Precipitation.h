@@ -33,6 +33,7 @@ public:
 	
     CTimeSeriesSet<double> getflow (double A);
     CTimeSeriesSet<double> getflow(double A, double dt);
+    void writefile(string Filename);
 
 	static bool isFileValid(string filename);
 public:

@@ -106,7 +106,7 @@ public slots:
     {
         m_fileName = QFileDialog::getOpenFileName(this, ("Open File"),
                                                           QDir::currentPath(),
-                                                          ("All files (*.*)"));
+                                                          ("All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
         if( !m_fileName.isNull() )
         {
             textBox->setText(m_fileName);

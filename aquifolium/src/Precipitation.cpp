@@ -5,6 +5,8 @@
 #include <string>
 #include "BTC.h"
 #include "Expression.h"
+#include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -184,6 +186,22 @@ CTimeSeriesSet<double> CPrecipitation::getflow(double A)
 
 	Rainflowout.BTC[0].assign_D();
 	return Rainflowout;
+}
+
+void CPrecipitation::writefile(string Filename)
+{
+    ofstream file(Filename);
+    if (file.good())
+    {
+        for (int j=0; j<n; j++)
+        {   file << std::setprecision(4);
+            file << std::fixed;
+            file << s[j] << ", " << e[j] <<", " << i[j] << std::endl;
+
+        }
+    }
+    file.close();
+
 }
 
 

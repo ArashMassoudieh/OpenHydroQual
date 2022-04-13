@@ -464,7 +464,7 @@ void Delegate::browserClicked()
 {
     QString fileName = QFileDialog::getOpenFileName(mainwindow,
             tr("Open"), "",
-            tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"));
+            tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
     if (fileName!="")
     {
         if (QFile(fileName).exists())
@@ -484,7 +484,7 @@ void Delegate::browserSaveClicked()
 {
     QString fileName = QFileDialog::getSaveFileName(mainwindow,
             tr("Save"), "",
-            tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"));
+            tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
     mainwindow->propModel()->setData(selectedindex, fileName, CustomRoleCodes::Role::loadIndex);
 }
 void Delegate::dirBrowserClicked()
