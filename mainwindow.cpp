@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.0.27"
-#define last_modified "April 16, 2022"
+#define openhydroqual_version "1.0.26"
+#define last_modified "April 10, 2022"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -1825,7 +1825,8 @@ void MainWindow::onrunmodel()
             if (copiedsystem.observation(i)->fit_measures.size()==3)
                 FitMeasures[i*3+j] = copiedsystem.observation(i)->fit_measures[j];
         if (copiedsystem.observation(i)->GetModeledTimeSeries()!=nullptr)
-            mapped_modeled_results.append(copiedsystem.observation(i)->GetModeledTimeSeries()->interpol(copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()),copiedsystem.observation(i)->GetName());
+            if (copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()!=nullptr)
+                mapped_modeled_results.append(copiedsystem.observation(i)->GetModeledTimeSeries()->interpol(copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()),copiedsystem.observation(i)->GetName());
     }
 
 
