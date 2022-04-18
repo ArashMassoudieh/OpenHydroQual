@@ -1,0 +1,141 @@
+loadtemplate; filename = /home/arash/Projects/QAquifolium/bin/debug/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/debug/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/debug/../../resources/Pond_Plugin.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/debug/../../resources/unsaturated_soil.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/debug/../../resources/Sewer_system.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/debug/../../resources/soil_evapotranspiration_models.json
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=0
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=simulation_start_time, value=40179
+setvalue; object=system, quantity=simulation_end_time, value=41272
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=write_solution_details, value=Yes
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=initial_time_step, value=0.05
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=c_n_weight, value=1
+create source;type=Precipitation,timeseries=/home/arash/Dropbox/OpenHydroQual_paper/Climate_Data/Belts&Washairpot_Decm_2012.txt,name=Precipitation (1)
+create source;type=Evapotranspiration_Penman (Soil),z0=0.0003[m],solar_scale_fact=0.1,z2=2[m],wind_scale_fact=0.1,R_h=/home/arash/Dropbox/OpenHydroQual_paper/Climate_Data/Hummid_2010_2012.csv,Temperature=/home/arash/Dropbox/OpenHydroQual_paper/Climate_Data/Temp_2010_2012.csv,solar_radiation=/home/arash/Dropbox/OpenHydroQual_paper/Climate_Data/Solar_2010_2012.csv,wind_speed=/home/arash/Dropbox/OpenHydroQual_paper/Climate_Data/Wind_2010_2012.csv,gamma=66.8,name=Evapotranspiration_Penman (Soil) (1)
+create block;type=fixed_head,_height=100,_width=4000,y=2400,name=GW,x=0,head=153[m],Storage=100000[m~^3]
+create block;type=Pond,Storage=100[m~^3],_width=200,beta=2,inflow=,Precipitation=,alpha=8864,Evapotranspiration=,x=0,_height=100,bottom_elevation=158[m],name=Pond-C1,y=1000
+create block;type=Soil,theta_sat=0.4,theta_res=0.05,specific_storage=0.01[1/m],x=0,Evapotranspiration=Evapotranspiration_Penman (Soil) (1),_width=200,theta=0.3,K_sat=10[m/day],n=1.41,alpha=1[1/m],y=1200,area=354.56[m~^2],depth=0.63[m],_height=100,bottom_elevation=157.37[m],name=Engineered_Soil-C1
+create block;type=Aggregate_storage_layer,_width=200,y=1400,name=Aggregate_storage_layer-C1,x=0,depth=0.1[m],porosity=0.4,bottom_elevation=157[m],_height=100,area=354.56[m~^2],inflow=
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=0,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=1600,area=354.56[m~^2],depth=1[m],_height=100,bottom_elevation=156[m],name=Soil(1-C1)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=0,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=1800,area=354.56[m~^2],depth=1[m],_height=100,bottom_elevation=155[m],name=Soil(2-C1)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=0,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=2000,area=354.56[m~^2],depth=1[m],_height=100,bottom_elevation=154[m],name=Soil(3-C1)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=0,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=2200,area=354.56[m~^2],depth=1[m],_height=100,bottom_elevation=153[m],name=Soil(4-C1)
+create block;type=Catch basin,_width=200,y=2000,name=Catch basin-C1,x=400,bottom_elevation=155.3[m],_height=200,area=1[m~^2],inflow=
+create block;type=Catch basin,_width=200,y=600,name=CB-Main C1,x=400,bottom_elevation=154.9[m],_height=200,area=1[m~^2],inflow=
+create block;type=Catchment,_width=200,_height=200,name=Catchment (1),x=-300,Evapotranspiration=,Precipitation=Precipitation (1),ManningCoeff=0.01,Slope=0.01,Width=30[m],y=600,area=9000[m~^2],depression_storage=0.005[m],depth=0[m],elevation=160[m],loss_coefficient=1[1/day]
+create block;type=Pond,Storage=100[m~^3],_width=200,beta=2,inflow=,Precipitation=,alpha=8864,Evapotranspiration=,x=1000,_height=100,bottom_elevation=157.5[m],name=Pond-C2,y=1000
+create block;type=Soil,theta_sat=0.4,theta_res=0.05,specific_storage=0.01[1/m],x=1000,Evapotranspiration=Evapotranspiration_Penman (Soil) (1),_width=200,theta=0.3,K_sat=10[m/day],n=1.41,alpha=1[1/m],y=1200,area=354.56[m~^2],depth=0.63[m],_height=100,bottom_elevation=156.87[m],name=Engineered_Soil-C2
+create block;type=Aggregate_storage_layer,_width=200,y=1400,name=Aggregate_storage_layer-C2,x=1000,depth=0.1[m],porosity=0.4,bottom_elevation=156.5[m],_height=100,area=354.56[m~^2],inflow=
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=1000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=1600,area=354.56[m~^2],depth=0.875[m],_height=100,bottom_elevation=155.625[m],name=Soil(1-C2)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=1000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=1800,area=354.56[m~^2],depth=0.875[m],_height=100,bottom_elevation=154.75[m],name=Soil(2-C2)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=1000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=2000,area=354.56[m~^2],depth=0.875[m],_height=100,bottom_elevation=153.875[m],name=Soil(3-C2)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=1000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=2200,area=354.56[m~^2],depth=0.875[m],_height=100,bottom_elevation=153[m],name=Soil(4-C2)
+create block;type=Catch basin,_width=200,y=2000,name=Catch basin-C2,x=1400,bottom_elevation=154.8[m],_height=200,area=1[m~^2],inflow=
+create block;type=Catch basin,_width=200,y=600,name=CB-Main C2,x=1400,bottom_elevation=154.4[m],_height=200,area=1[m~^2],inflow=
+create block;type=Catchment,_width=200,_height=200,name=Catchment (2),x=700,Evapotranspiration=,Precipitation=Precipitation (1),ManningCoeff=0.01,Slope=0.01,Width=30[m],y=600,area=9000[m~^2],depression_storage=0.005[m],depth=0[m],elevation=160[m],loss_coefficient=1[1/day]
+create block;type=Pond,Storage=100[m~^3],_width=200,beta=2,inflow=,Precipitation=,alpha=8864,Evapotranspiration=,x=2000,_height=100,bottom_elevation=157[m],name=Pond-C3,y=1000
+create block;type=Soil,theta_sat=0.4,theta_res=0.05,specific_storage=0.01[1/m],x=2000,Evapotranspiration=Evapotranspiration_Penman (Soil) (1),_width=200,theta=0.3,K_sat=10[m/day],n=1.41,alpha=1[1/m],y=1200,area=354.56[m~^2],depth=0.63[m],_height=100,bottom_elevation=156.37[m],name=Engineered_Soil-C3
+create block;type=Aggregate_storage_layer,_width=200,y=1400,name=Aggregate_storage_layer-C3,x=2000,depth=0.1[m],porosity=0.4,bottom_elevation=156[m],_height=100,area=354.56[m~^2],inflow=
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=2000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=1600,area=354.56[m~^2],depth=0.75[m],_height=100,bottom_elevation=155.25[m],name=Soil(1-C3)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=2000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=1800,area=354.56[m~^2],depth=0.75[m],_height=100,bottom_elevation=154.5[m],name=Soil(2-C3)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=2000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=2000,area=354.56[m~^2],depth=0.75[m],_height=100,bottom_elevation=153.75[m],name=Soil(3-C3)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=2000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=2200,area=354.56[m~^2],depth=0.75[m],_height=100,bottom_elevation=153[m],name=Soil(4-C3)
+create block;type=Catch basin,_width=200,y=2000,name=Catch basin-C3,x=2400,bottom_elevation=154.3[m],_height=200,area=1[m~^2],inflow=
+create block;type=Catch basin,_width=200,y=600,name=CB-Main C3,x=2400,bottom_elevation=153.9[m],_height=200,area=1[m~^2],inflow=
+create block;type=Catchment,_width=200,_height=200,name=Catchment (3),x=1700,Evapotranspiration=,Precipitation=Precipitation (1),ManningCoeff=0.01,Slope=0.01,Width=30[m],y=600,area=9000[m~^2],depression_storage=0.005[m],depth=0[m],elevation=160[m],loss_coefficient=1[1/day]
+create block;type=Pond,Storage=100[m~^3],_width=200,beta=2,inflow=,Precipitation=,alpha=8864,Evapotranspiration=,x=3000,_height=100,bottom_elevation=157.5[m],name=Pond-C4,y=1000
+create block;type=Soil,theta_sat=0.4,theta_res=0.05,specific_storage=0.01[1/m],x=3000,Evapotranspiration=Evapotranspiration_Penman (Soil) (1),_width=200,theta=0.3,K_sat=10[m/day],n=1.41,alpha=1[1/m],y=1200,area=354.56[m~^2],depth=0.63[m],_height=100,bottom_elevation=156.87[m],name=Engineered_Soil-C4
+create block;type=Aggregate_storage_layer,_width=200,y=1400,name=Aggregate_storage_layer-C4,x=3000,depth=0.1[m],porosity=0.4,bottom_elevation=156.5[m],_height=100,area=354.56[m~^2],inflow=
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=3000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=1600,area=354.56[m~^2],depth=0.875[m],_height=100,bottom_elevation=155.625[m],name=Soil(1-C4)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=3000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=1800,area=354.56[m~^2],depth=0.875[m],_height=100,bottom_elevation=154.75[m],name=Soil(2-C4)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=3000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=2000,area=354.56[m~^2],depth=0.875[m],_height=100,bottom_elevation=153.875[m],name=Soil(3-C4)
+create block;type=Soil,theta_sat=0.4,theta_res=0.095,specific_storage=0.01[1/m],x=3000,Evapotranspiration=,_width=200,theta=0.38,K_sat=0.0624[m/day],n=1.31,alpha=1.9[1/m],y=2200,area=354.56[m~^2],depth=0.875[m],_height=100,bottom_elevation=153[m],name=Soil(4-C4)
+create block;type=Catch basin,_width=200,y=2000,name=Catch basin-C4,x=3400,bottom_elevation=154.8[m],_height=200,area=1[m~^2],inflow=
+create block;type=Catch basin,_width=200,y=600,name=CB-Main C4,x=3400,bottom_elevation=154.4[m],_height=200,area=1[m~^2],inflow=
+create block;type=Catchment,_width=200,_height=200,name=Catchment (4),x=2700,Evapotranspiration=,Precipitation=Precipitation (1),ManningCoeff=0.01,Slope=0.01,Width=30[m],y=600,area=9000[m~^2],depression_storage=0.005[m],depth=0[m],elevation=160[m],loss_coefficient=1[1/day]
+create block;type=fixed_head,_height=200,_width=200,y=100,name=Recieving_Water,x=2411,head=153.5[m],Storage=100000[m~^3]
+create block;type=Catchment,_width=200,_height=200,name=dummy_catchment,x=-326,Evapotranspiration=,Precipitation=Precipitation (1),ManningCoeff=0.01,Slope=0.01,Width=0[m],y=-12,area=1[m~^2],depression_storage=0[m],depth=0[m],elevation=0[m],loss_coefficient=0[1/day]
+create link;from=Pond-C1,to=Engineered_Soil-C1,type=surfacewater_to_soil_link,name=Pond - Engineered_Soil-C1
+create link;from=Engineered_Soil-C1,to=Aggregate_storage_layer-C1,type=soil_to_aggregate_link,name=Engineered_Soil - Aggregate_storage_layer - C1
+create link;from=Aggregate_storage_layer-C1,to=Soil(1-C1),type=aggregate_to_soil_link,name=Aggregate_storage_layer - Soil-C1
+create link;from=Soil(1-C1),to=Soil(2-C1),type=soil_to_soil_link,name=soil_to_soil_link(1-2)-C1
+create link;from=Soil(2-C1),to=Soil(3-C1),type=soil_to_soil_link,name=soil_to_soil_link(2-3)-C1
+create link;from=Soil(3-C1),to=Soil(4-C1),type=soil_to_soil_link,name=soil_to_soil_link(3-4)-C1
+create link;from=Soil(4-C1),to=GW,type=soil_to_fixedhead_link,name=Soil-GW-C1)
+create link;from=Pond-C1,to=Catch basin-C1,type=wier,name=Pond - Catch basin - C1,crest_elevation=158.2[m],beta=2.5,alpha=1000
+create link;from=Aggregate_storage_layer-C1,to=Catch basin-C1,type=Sewer_pipe,start_elevation=157.2[m],ManningCoeff=0.01,end_elevation=157.9[m],diameter=0.15[m],name=Aggregate_storage_layer - Catch basin - C1,length=20[m]
+create link;from=Catch basin-C1,to=CB-Main C1,type=Sewer_pipe,start_elevation=155.4[m],ManningCoeff=0.01,end_elevation=155[m],diameter=0.15[m],name=Pipe_to_main_C1,length=20[m]
+create link;from=Catchment (1),to=Pond-C1,type=Catchment_link,name=Catchment (1) - Pond-C1
+create link;from=Pond-C2,to=Engineered_Soil-C2,type=surfacewater_to_soil_link,name=Pond - Engineered_Soil-C2
+create link;from=Engineered_Soil-C2,to=Aggregate_storage_layer-C2,type=soil_to_aggregate_link,name=Engineered_Soil - Aggregate_storage_layer - C2
+create link;from=Aggregate_storage_layer-C2,to=Soil(1-C2),type=aggregate_to_soil_link,name=Aggregate_storage_layer - Soil-C2
+create link;from=Soil(1-C2),to=Soil(2-C2),type=soil_to_soil_link,name=soil_to_soil_link(1-2)-C2
+create link;from=Soil(2-C2),to=Soil(3-C2),type=soil_to_soil_link,name=soil_to_soil_link(2-3)-C2
+create link;from=Soil(3-C2),to=Soil(4-C2),type=soil_to_soil_link,name=soil_to_soil_link(3-4)-C2
+create link;from=Soil(4-C2),to=GW,type=soil_to_fixedhead_link,name=Soil-GW-C2)
+create link;from=Pond-C2,to=Catch basin-C2,type=wier,name=Pond - Catch basin - C2,crest_elevation=157.7[m],beta=2.5,alpha=1000
+create link;from=Aggregate_storage_layer-C2,to=Catch basin-C2,type=Sewer_pipe,start_elevation=156.7[m],ManningCoeff=0.01,end_elevation=157.4[m],diameter=0.15[m],name=Aggregate_storage_layer - Catch basin - C2,length=20[m]
+create link;from=Catch basin-C2,to=CB-Main C2,type=Sewer_pipe,start_elevation=154.9[m],ManningCoeff=0.01,end_elevation=154.5[m],diameter=0.15[m],name=Pipe_to_main_C2,length=20[m]
+create link;from=Catchment (2),to=Pond-C2,type=Catchment_link,name=Catchment (2) - Pond-C2
+create link;from=Pond-C3,to=Engineered_Soil-C3,type=surfacewater_to_soil_link,name=Pond - Engineered_Soil-C3
+create link;from=Engineered_Soil-C3,to=Aggregate_storage_layer-C3,type=soil_to_aggregate_link,name=Engineered_Soil - Aggregate_storage_layer - C3
+create link;from=Aggregate_storage_layer-C3,to=Soil(1-C3),type=aggregate_to_soil_link,name=Aggregate_storage_layer - Soil-C3
+create link;from=Soil(1-C3),to=Soil(2-C3),type=soil_to_soil_link,name=soil_to_soil_link(1-2)-C3
+create link;from=Soil(2-C3),to=Soil(3-C3),type=soil_to_soil_link,name=soil_to_soil_link(2-3)-C3
+create link;from=Soil(3-C3),to=Soil(4-C3),type=soil_to_soil_link,name=soil_to_soil_link(3-4)-C3
+create link;from=Soil(4-C3),to=GW,type=soil_to_fixedhead_link,name=Soil-GW-C3)
+create link;from=Pond-C3,to=Catch basin-C3,type=wier,name=Pond - Catch basin - C3,crest_elevation=157.2[m],beta=2.5,alpha=1000
+create link;from=Aggregate_storage_layer-C3,to=Catch basin-C3,type=Sewer_pipe,start_elevation=156.2[m],ManningCoeff=0.01,end_elevation=156.9[m],diameter=0.15[m],name=Aggregate_storage_layer - Catch basin - C3,length=20[m]
+create link;from=Catch basin-C3,to=CB-Main C3,type=Sewer_pipe,start_elevation=154.4[m],ManningCoeff=0.01,end_elevation=154[m],diameter=0.15[m],name=Pipe_to_main_C3,length=20[m]
+create link;from=Catchment (3),to=Pond-C3,type=Catchment_link,name=Catchment (3) - Pond-C3
+create link;from=Pond-C4,to=Engineered_Soil-C4,type=surfacewater_to_soil_link,name=Pond - Engineered_Soil-C4
+create link;from=Engineered_Soil-C4,to=Aggregate_storage_layer-C4,type=soil_to_aggregate_link,name=Engineered_Soil - Aggregate_storage_layer - C4
+create link;from=Aggregate_storage_layer-C4,to=Soil(1-C4),type=aggregate_to_soil_link,name=Aggregate_storage_layer - Soil-C4
+create link;from=Soil(1-C4),to=Soil(2-C4),type=soil_to_soil_link,name=soil_to_soil_link(1-2)-C4
+create link;from=Soil(2-C4),to=Soil(3-C4),type=soil_to_soil_link,name=soil_to_soil_link(2-3)-C4
+create link;from=Soil(3-C4),to=Soil(4-C4),type=soil_to_soil_link,name=soil_to_soil_link(3-4)-C4
+create link;from=Soil(4-C4),to=GW,type=soil_to_fixedhead_link,name=Soil-GW-C4)
+create link;from=Pond-C4,to=Catch basin-C4,type=wier,name=Pond - Catch basin - C4,crest_elevation=157.7[m],beta=2.5,alpha=1000
+create link;from=Aggregate_storage_layer-C4,to=Catch basin-C4,type=Sewer_pipe,start_elevation=156.7[m],ManningCoeff=0.01,end_elevation=157.4[m],diameter=0.15[m],name=Aggregate_storage_layer - Catch basin - C4,length=20[m]
+create link;from=Catch basin-C4,to=CB-Main C4,type=Sewer_pipe,start_elevation=154.9[m],ManningCoeff=0.01,end_elevation=154.5[m],diameter=0.15[m],name=Pipe_to_main_C4,length=20[m]
+create link;from=Catchment (4),to=Pond-C4,type=Catchment_link,name=Catchment (4) - Pond-C4
+create link;from=CB-Main C1,to=CB-Main C2,type=Sewer_pipe,start_elevation=155[m],ManningCoeff=0.01,end_elevation=154.5[m],diameter=0.2[m],name=Main_(1-2),length=100[m]
+create link;from=CB-Main C2,to=CB-Main C3,type=Sewer_pipe,start_elevation=154.5[m],ManningCoeff=0.01,end_elevation=154[m],diameter=0.2[m],name=Main_(2-3),length=100[m]
+create link;from=CB-Main C3,to=Recieving_Water,type=Sewer_pipe,start_elevation=154[m],ManningCoeff=0.01,end_elevation=153.5[m],diameter=0.2[m],name=CB-Main C3 - Reciving water,length=20[m]
+create link;from=CB-Main C4,to=CB-Main C3,type=Sewer_pipe,start_elevation=154.5[m],ManningCoeff=0.01,end_elevation=154[m],diameter=0.2[m],name=Main_(4-3),length=100[m]
+create observation;type=Observation,object=CB-Main C3 - Reciving water,name=outflow_to_sewer,expression=flow,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Soil-GW-C4),name=gw_recharge,expression=flow,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Aggregate_storage_layer - Catch basin - C2,name=underdrain_flow,expression=flow,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Pond - Catch basin - C1,name=overflow,expression=flow,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=dummy_catchment,name=precipitation_rate,expression=(Precipitation*1000),observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Engineered_Soil-C1,name=evap_rate,expression=(0-Evapotranspiration),observed_data=,error_structure=normal,error_standard_deviation=1
