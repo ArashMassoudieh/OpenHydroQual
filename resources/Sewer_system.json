@@ -395,5 +395,93 @@
       "applylimit": "true",
       "ask_user": "false"
     }
+  },
+  "sewer2pond": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Link from a sewer pipe segment to a pond",
+    "icon": {
+      "filename": "sewer2pond_link.png"
+    },
+    "end_elevation": {
+      "type": "value",
+      "description": "Pipe bottom elevation at the pond",
+      "ask_user": "false",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "includeinoutput": "false",
+      "ask_user": "true"
+    },
+    "depth_2": {
+      "type": "expression",
+      "description": "End Depth",
+      "expression": "_min(_pos(head.e-end_elevation);diameter.s)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "diameter": {
+      "type": "expression",
+      "description": "diameter",
+      "expression": "diameter.s",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "area_2": {
+      "type": "expression",
+      "description": "End area",
+      "expression": "diameter^2*(-0.910331972*(depth_2/diameter)^3+1.376045712*(depth_2/diameter)^2+0.319684423*(depth_2/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "perimeter_2": {
+      "type": "expression",
+      "description": "End wetted perimeter",
+      "expression": "diameter*(5.486583*(depth_2/diameter)^3-8.60202*(depth_2/diameter)^2+6.1081605*(depth_2/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(_max(area.s,area);0)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "_max(perimeter.s,perimeter_2)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "ManningCoeff.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "length.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow (m~^3/day)",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
   }
 }
