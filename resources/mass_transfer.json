@@ -82,6 +82,44 @@
       "ask_user": "false"
     }
   },
+  "surface_atmospheric exchange": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Surface Atmospheric Exchange",
+    "icon": {
+      "filename": "Surface_Chemical_Source_exchange.png"
+    },
+    "rate_coefficient":
+    {
+    	"type": "value",
+    	"ask_user": "true",
+    	"description": "Rate coefficient",
+    	"delegate": "UnitBox",
+    	"unit": "m/day;m/s;m/hr"
+    },
+    "saturation":
+    {
+    	"type": "value",
+    	"ask_user": "true",
+    	"description": "Saturation Concentration Level",
+    	"delegate": "UnitBox",
+    	"unit": "g/m~^3"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*rate_coefficient*(saturation-concentration)",
+      "includeinoutput": "false",
+      "description": "Transfer rate",
+      "ask_user": "false"
+    },
+    "timeseries": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    }
+  },
   "Reactor": {
     "type": "block",
     "typecategory": "Blocks",
