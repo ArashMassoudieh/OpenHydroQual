@@ -12,7 +12,6 @@
                         "massbalance": "true",
                         "flow": "flow",
                         "initial_value_expression": "(diameter^2)/4*3.1415*depth",
-                        "inflow": "Precipitation",
                         "ask_user": "false",
                         "delegate": "ValueBox",
                         "estimate": "false",
@@ -161,6 +160,7 @@
 		      	"type": "expression",
 			"description": "Flow rate",
                         "expression" : "K_sat.e*hydraulic_gradient*area.s",
+                        "description": "Flow (m~^3/day)",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
 		}  	
@@ -191,13 +191,6 @@
 			"length": ">0",
 		        "warningmessage": "length must be positive"
 		},
-		"depth": {
-			"type": "expression",
-			"description": "Water depth",
-			"expression": "_max((depth.s+(head.e-bottom_elevation.s))/2;0)",
-			"includeinoutput": "true",
-			"ask_user": "false"
-		},
 		"ManningCoeff": {
 			"type": "value",
 			"description": "Manning's roughness coefficient",
@@ -210,7 +203,8 @@
 		},
 		"flow": {
 			"type": "expression",
-			"expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*3.14*diameter.e*depth^1.6667",
+			"expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*3.14*diameter.e*depth.s^1.6667",
+			"description": "Flow (m~^3/day)",
 			"includeinoutput": "true",
 			"applylimit": "true",
 			"ask_user": "false"
