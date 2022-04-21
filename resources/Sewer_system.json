@@ -443,14 +443,14 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "_max(_max(area.s,area);0)",
+      "expression": "_max(_max(area.s;area_2);0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
     "perimeter": {
       "type": "expression",
       "description": "Wetted Perimeter",
-      "expression": "_max(perimeter.s,perimeter_2)",
+      "expression": "_max(perimeter.s;perimeter_2)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
