@@ -6,12 +6,6 @@
     "icon": {
       "filename": "Soil.png"
     },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String"
-    },
     "Storage": {
       "type": "balance",
       "massbalance": "true",
@@ -172,12 +166,6 @@
       "filename": "Soil2Soil.png"
     },
     "description": "Vertical soil to soil connector",
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
-    },
     "area": {
       "type": "expression",
       "description": "Interface area",
@@ -240,12 +228,6 @@
       "filename": "soil2soilH.png"
     },
     "description": "Horizontal soil to soil connector",
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
-    },
     "area": {
       "type": "value",
       "description": "Interface area",
@@ -260,7 +242,7 @@
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2"
+      "unit": "m;ft"
     },
     "Se": {
       "type": "expression",
@@ -292,6 +274,7 @@
     },
     "flow": {
       "type": "expression",
+      "description": "Flow (m~^3/day)",
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",

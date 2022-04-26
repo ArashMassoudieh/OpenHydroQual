@@ -513,7 +513,7 @@ namespace aquiutils
         return Result;
     }
 
-    string numbertostring(vector<double> x, bool scientific)
+    string numbertostring(const vector<double> &x, bool scientific)
     {
         string Result = "[";
         for (int i=0; i<x.size()-1;i++)
@@ -540,7 +540,7 @@ namespace aquiutils
         return Result;
     }
 
-    string numbertostring(vector<int> x, bool scientific)
+    string numbertostring(const vector<int> &x, bool scientific)
     {
         string Result = "[";
         if (x.size()>0)

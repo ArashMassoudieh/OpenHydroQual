@@ -65,10 +65,10 @@ namespace aquiutils
     double Heavyside(double x);
     double Pos(double x);
     string numbertostring(const double &x, bool scientific=false);
-    string numbertostring(vector<double> x, bool scientific=false);
+    string numbertostring(const vector<double> &x, bool scientific=false);
     string numbertostring(int x);
     string numbertostring(unsigned int x);
-    string numbertostring(vector<int> x, bool scientific=false);
+    string numbertostring(const vector<int> &x, bool scientific=false);
     string tail(std::string const& source, size_t const length);
     string tabs(int i);
     bool And(vector<bool> x);
