@@ -584,3 +584,31 @@ bool QuanSet::InitializePrecalcFunctions()
     return out;
 
 }
+
+bool QuanSet::RenameConstituents(const string &oldname, const string &newname)
+{
+    vector<string> oldfullname;
+    vector<string> newfullname;
+    for (unordered_map<string, Quan>::iterator it = quans.begin(); it != quans.end(); it++)
+    {
+        if (aquiutils::split(it->first,':').size()==2)
+        {   if (aquiutils::split(it->first,':')[0]==oldname)
+            {
+                oldfullname.push_back(it->first);
+                newfullname.push_back(newname + ":" + aquiutils::split(it->first,':')[1]);
+            }
+        }
+    }
+    bool succeed = true;
+    for (unsigned int i=0; i<oldfullname.size(); i++)
+    {
+        succeed &= RenameProperty(oldfullname[i],newfullname[i]);
+        if (quans.count(newfullname[i])>0)
+        {   quans[newfullname[i]].Description() = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+            quans[newfullname[i]].Description(true) = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+        }
+    }
+
+    return succeed;
+}
+

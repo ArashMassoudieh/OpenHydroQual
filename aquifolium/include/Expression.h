@@ -48,6 +48,7 @@ class Expression
 		vector<string> GetAllRequieredEndingBlockProperties();
         Expression ReviseConstituent(const string &constituent_name, const string &quantity);
         bool RenameQuantity(const string &oldname, const string &newname);
+        Expression RenameConstituent(const string &old_constituent_name, const string &new_constituent_name, const string &quantity);
         void ResetTermsSources();
         SafeVector<int> Order_Of_Calculation();
         void EstablishSourceStructure();

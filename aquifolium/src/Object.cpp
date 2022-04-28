@@ -605,6 +605,18 @@ unique_ptr<vector<string>> &Object::functions()
 
 bool Object::RenameConstituents(const string &oldname, const string &newname)
 {
+    Constituent* consttnt = parent->constituent(oldname);
+    if (consttnt)
+    {   vector<Quan> original_quans = consttnt->GetCopyofAllQuans();
+
+        for (unordered_map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)
+        {
+            if (it->second.GetType() == Quan::_type::expression )
+            {   for (unsigned int i=0; i<original_quans.size(); i++)
+                   it->second.SetExpression(it->second.GetExpression()->RenameConstituent(oldname,newname,original_quans[i].GetName()));
+            }
+        }
+    }
     vector<string> oldfullname;
     vector<string> newfullname;
     for (unordered_map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)

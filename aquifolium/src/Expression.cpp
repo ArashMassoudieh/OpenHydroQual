@@ -807,6 +807,35 @@ Expression Expression::ReviseConstituent(const string &constituent_name, const s
     return out;
 }
 
+Expression Expression::RenameConstituent(const string &old_constituent_name, const string &new_constituent_name, const string &quantity)
+{
+    Expression out = *this;
+    if (param_constant_expression=="parameter")
+    {
+        if (parameter==old_constituent_name + ":" + quantity)
+        {   out.parameter = new_constituent_name + ":" + quantity;
+            return out;
+        }
+    }
+    for (unsigned int i=0; i<terms.size(); i++)
+    {
+        if (terms[i].param_constant_expression == "parameter")
+        {
+            if (out.terms[i].parameter == old_constituent_name + ":" + quantity)
+            {
+                out.terms[i].parameter = new_constituent_name + ":" + quantity;
+            }
+
+        }
+        else if (terms[i].terms.size() > 0)
+        {
+            out.terms[i] = terms[i].RenameConstituent(old_constituent_name,new_constituent_name, quantity);
+        }
+    }
+    return out;
+}
+
+
 bool Expression::RenameQuantity(const string &oldname, const string &newname)
 {
     bool out=false;

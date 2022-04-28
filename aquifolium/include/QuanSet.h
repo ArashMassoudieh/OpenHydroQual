@@ -58,6 +58,7 @@ class QuanSet
         vector<string> AllConstituents();
         vector<string> AllReactionParameters();
         bool RenameQuantity(const string &oldname, const string &newname);
+        bool RenameConstituents(const string &oldname, const string &newname);
         bool Find(const string &s)
         {
             if (quans.find(s)!=quans.end())

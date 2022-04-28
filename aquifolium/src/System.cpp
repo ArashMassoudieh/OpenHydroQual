@@ -3368,6 +3368,11 @@ void System::RenameConstituents(const string &oldname, const string &newname)
     {
         reactions[i].RenameConstituents(oldname, newname);
     }
+    for (map<string, QuanSet>::iterator it = metamodel.begin(); it!=metamodel.end(); it++)
+    {
+        metamodel.GetItem(it->first)->RenameConstituents(oldname,newname);
+    }
+
 
 }
 
