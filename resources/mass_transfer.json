@@ -131,7 +131,6 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
@@ -183,6 +182,20 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
     },
     "color": {
       "type": "string",
