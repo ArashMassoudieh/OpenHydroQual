@@ -150,7 +150,6 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",

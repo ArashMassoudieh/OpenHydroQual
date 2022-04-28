@@ -1,0 +1,119 @@
+{
+  "Activated_Sludge_Reactor": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Reactor",
+    "icon": {
+      "filename": "activate_sludge_reactor.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "includeinoutput": "true",
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true"
+    }
+  },
+  "Settling element": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Settling element",
+    "icon": {
+      "filename": "sedimentation_tank_element.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "includeinoutput": "true",
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true"
+    },
+    "bottom_elevation":
+    {
+    	"type": "value",
+    	"ask_user": "true",
+    	"description": "Bottom elevation",
+    	"delegate": "UnitBox",
+    	"unit": "m;ft"
+    }
+  },
+  "Fixed flow": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Fixed flow",
+    "icon": {
+      "filename": "fixed_flow.png"
+    },
+    "flow": {
+      "type": "value",
+      "description": "Flow rate",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    }
+  },
+  "Sedimentation tank element interface": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Settling element interface",
+    "icon": {
+      "filename": "sedimentation_tank_element.png"
+    },
+    "flow": {
+      "type": "value",
+      "description": "Flow rate",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area":
+    {
+    	"type": "value",
+    	"ask_user": "true",
+    	"description": "Interface area",
+    	"delegate": "UnitBox",
+    	"unit": "m~^2;ft~^2"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    }
+ }
+}
