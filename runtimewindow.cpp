@@ -43,9 +43,11 @@ void RunTimeWindow::AppendtoDetails(const QString &s)
 
 void RunTimeWindow::AppendErrorMessage(const QString &s)
 {
-    ui->textBrowser->setTextColor(Qt::red);
-    ui->textBrowser->append(s);
-    ui->textBrowser->setTextColor(Qt::black);
+#pragma omp critical
+    {   ui->textBrowser->setTextColor(Qt::red);
+        ui->textBrowser->append(s);
+        ui->textBrowser->setTextColor(Qt::black);
+    }
 }
 
 void RunTimeWindow::AddDataPoint(const double &t, const double value, int graph_no)

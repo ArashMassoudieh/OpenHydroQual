@@ -124,9 +124,11 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
         }
         else
         {
-            Parent()->errorhandler.Append(GetName(),"Object","GetVal","property '" + s + "' does not exist in '" + GetName() + "'",1002);
-            last_operation_success = false;
-            return 0;
+#pragma omp critical(error_handle)
+            {   Parent()->errorhandler.Append(GetName(), "Object", "GetVal", "property '" + s + "' does not exist in '" + GetName() + "'", 1002);
+                last_operation_success = false;
+            }
+        return 0;
         }
     }
     return 0;
