@@ -346,7 +346,7 @@ int counter=0;
             time_t t0 = time(nullptr);
 
 #ifdef Debug_GA
-            Models[k].SavetoScriptFile(filenames.pathname+"/temp/model_" + aquiutils::numbertostring(k) +"_" +aquiutils::numbertostring(current_generation)+".scr",string(""), vector<string>());
+            Models[k].SavetoScriptFile(filenames.pathname+"/temp/model_" + aquiutils::numbertostring(k) +"_" +aquiutils::numbertostring(current_generation)+".ohq",string(""), vector<string>());
 #endif
             Models[k].Solve();
             Ind[k].actual_fitness = Models[k].GetObjectiveFunctionValue();

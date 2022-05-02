@@ -1574,16 +1574,16 @@ void MainWindow::onsaveas()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
             tr("Save"), "",
-            tr("script files (*.scr)"),nullptr,QFileDialog::DontUseNativeDialog);
+            tr("OpenHydroQual files (*.ohq)"),nullptr,QFileDialog::DontUseNativeDialog);
     if (fileName!="")
     {
         //qDebug() << fileName.split('.');
 
         if (!fileName.contains("."))
-            fileName = fileName + ".scr";
-        else if (fileName.split('.')[fileName.split('.').size()-1]!="scr" )
+            fileName = fileName + ".ohq";
+        else if (fileName.split('.')[fileName.split('.').size()-1]!="ohq" )
         {
-            fileName = fileName + ".scr";
+            fileName = fileName + ".ohq";
         }
         system.SavetoScriptFile(fileName.toStdString(),maintemplatefilename, addedtemplatefilenames);
 
@@ -1620,7 +1620,7 @@ void MainWindow::onexporttosvg()
 void MainWindow::onsave()
 {
 
-    if (filename!="" && filename!="unnamed.scr")
+    if (filename!="" && filename!="unnamed.ohq")
     {   system.SavetoScriptFile(filename.toStdString(),maintemplatefilename, addedtemplatefilenames);
         addToRecentFiles(filename,true);
     }
@@ -1644,7 +1644,7 @@ void MainWindow::onopen()
 
     QString fileName = QFileDialog::getOpenFileName(this,
             tr("Open"), "",
-            tr("Script files (*.scr);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
+            tr("OpenHydroQual files (*.ohq);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
 
     if (fileName!="")
@@ -1684,7 +1684,7 @@ void MainWindow::onnewproject()
         return;
 
     ResetSystem();
-    QString fileName = "unnamed.scr";
+    QString fileName = "unnamed.ohq";
     SetFileName(fileName);
     PopulatePropertyTable(nullptr);
     dView->DeleteAllItems();
