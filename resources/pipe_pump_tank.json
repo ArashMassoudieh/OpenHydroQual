@@ -64,13 +64,7 @@
     "icon": {
       "filename": "pipe.png"
     },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
-    },
-    "diameter": {
+     "diameter": {
       "type": "value",
       "description": "Diameter",
       "ask_user": "true",
@@ -112,6 +106,59 @@
       "type": "expression",
       "description": "Flow rate (m~^3/day)",
       "expression": "24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs((head.s-head.e)/length;0.00001)*_abs((head.s-head.e)/length)^0.54",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    }
+  },
+  "valve": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Valve",
+    "icon": {
+      "filename": "valve.png"
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "criteria": "diameter>0",
+      "warningmessage": "diameter must be positive"
+    },
+    "K_factor": {
+      "type": "value",
+      "description": "K Value",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "10",
+      "criteria": "K_factor>0",
+      "warningmessage": "K_factor must be positive"
+    },
+    "length": {
+      "type": "value",
+      "description": "Pipe length",
+      "ask_user": "false",
+      "default": "1"
+    },
+    "head_loss": {
+      "type": "expression",
+      "description": "Hydraulic Gradient",
+      "expression": "head.e-head.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "300575*_sqt(-head_loss/K_factor)*diameter^2",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
