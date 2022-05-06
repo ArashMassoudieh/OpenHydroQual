@@ -525,7 +525,7 @@ bool DiagramView::deleteselectednode(QString nodename)
 {
     mainWindow()->SetActiveUndo();
     if (QMessageBox::question(this, tr("Delete"),
-        "Are you sure you want to delete Block/Edge '" + nodename + "'", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+        "Are you sure you want to delete '" + nodename + "'", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
     {
         if (nodename=="")
             mainWindow()->GetSystem()->Delete(nodenametobedeleted.toStdString());

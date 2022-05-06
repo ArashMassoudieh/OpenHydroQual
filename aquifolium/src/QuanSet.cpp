@@ -361,6 +361,28 @@ SafeVector<string> QuanSet::QuanNames()
     return out;
 }
 
+bool QuanSet::DeleteConstituentRelatedProperties(const string &constituent_name)
+{
+    bool out = false;
+
+    unordered_map<string,Quan>::iterator it=quans.begin();
+    while (it != quans.end() ) {
+        if (aquiutils::contains(it->first,":"))
+        {
+            if (aquiutils::split(it->first,':')[0] == constituent_name)
+            {   it = quans.erase(it);
+                out = true;
+            }
+            else
+                ++it;
+        }
+        else {
+            ++it;
+        }
+    }
+    return out;
+}
+
 #ifdef QT_version
 QStringList QuanSet::QQuanNames()
 {

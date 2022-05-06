@@ -321,6 +321,7 @@ class System: public Object
         void WriteLinksStates(const string &variable, const Expression::timing &tmg);
         bool InitiatePrecalculatedFunctions();
         bool CopyStateVariablesFrom(System *sys);
+        bool EraseConstituentRelatedProperties(const string &constituent_name);
         void SetNumThreads(unsigned int i) 
         {
             SolverSettings.n_threads = i;

@@ -2956,6 +2956,14 @@ bool System::Delete(const string& objectname)
             return Parameters().erase(i);
         }
 
+    for (unsigned int i = 0; i < ConstituentsCount(); i++)
+        if (constituent(i)->GetName() == objectname)
+        {
+            EraseConstituentRelatedProperties(objectname);
+            constituents.erase(constituents.begin() + i);
+            return true;
+        }
+
     for (unsigned int i = 0; i < ObservationsCount(); i++)
         if (observation(i)->GetName() == objectname)
         {
@@ -2984,6 +2992,27 @@ bool System::Delete(const string& objectname)
 
     return false;
 
+}
+
+bool System::EraseConstituentRelatedProperties(const string &constituent_name)
+{
+    for (unsigned int i = 0; i < links.size(); i++)
+    {
+        links[i].GetVars()->DeleteConstituentRelatedProperties(constituent_name);
+    }
+    for (unsigned int i = 0; i < blocks.size(); i++)
+    {
+        blocks[i].GetVars()->DeleteConstituentRelatedProperties(constituent_name);
+    }
+    for (unsigned int i = 0; i < sources.size(); i++)
+    {
+        sources[i].GetVars()->DeleteConstituentRelatedProperties(constituent_name);
+    }
+    for (unsigned int i = 0; i < reactions.size(); i++)
+    {
+        reactions[i].GetVars()->DeleteConstituentRelatedProperties(constituent_name);
+    }
+    return true;
 }
 
 bool System::VerifyAsSource(Block* blk, Link* lnk)
