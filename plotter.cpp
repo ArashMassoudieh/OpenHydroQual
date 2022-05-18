@@ -63,9 +63,9 @@ bool Plotter::PlotData(const CTimeSeriesSet<timeseriesprecision>& BTC, bool allo
 
 bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, bool allowtime, string style)
 {
-    maxx = max(BTC.GetT(0),maxx);
+    minx = min(BTC.GetT(0),minx);
     maxy = max(BTC.maxC()*(1+0.1*sgn(BTC.maxC())),maxy);
-    minx = min(BTC.GetT(BTC.n-1),minx);
+    maxx = max(BTC.GetT(BTC.n-1),maxx);
     miny = min(BTC.minC()*(1-0.1*sgn(BTC.minC())),miny);
     if (miny>0)
         miny = min(0.0,miny);
@@ -180,7 +180,9 @@ void Plotter::contextMenuEvent(QContextMenuEvent *event)
         menu.addSeparator();
         QMenu *prop = menu.addMenu("Graph Properties");
         QMenu *xAxis = prop->addMenu("X-Axis");
-
+        QMenu *yAxis = prop->addMenu("Y-Axis");
+        xAxis->addActions(subActions(format[0].axisTimeFormats,0,xAxis,0,"x-Axis type"));
+        yAxis->addActions(subActions(format[0].axisTypes,0,yAxis,0,"y-Axis type"));
         menu.addSeparator();
         QList<QMenu *>graphs;
         for (int i = 0; i < plot->graphCount(); i++)
@@ -347,8 +349,27 @@ void Plotter::refreshFormat()
 {
     QCustomPlot *plot1 = plot;
     plot1->xAxis->setScaleType(format[0].xAxisType);
-    if (format[0].xAxisType == QCPAxis::stLogarithmic)
-        plot1->xAxis->setScaleType(QCPAxis::ScaleType::stLogarithmic);
+
+    if (format[format.size()-1].xAxisTimeFormat)
+    {
+        QDateTime start = QDateTime::fromTime_t(minx,QTimeZone(0));
+        QDateTime end = QDateTime::fromTime_t(maxx, QTimeZone(0));
+        QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+        dateTicker->setTickCount(10);
+        double timeinsecs = start.secsTo(end)*86400;
+        QString dformat;
+        if (timeinsecs < 600) dformat = "mm:ss:zzz";
+        if (timeinsecs > 3600) dformat = "hh:mm:ss";
+        if (timeinsecs > 86400) dformat = "MMM dd\nhh:mm:ss";
+        if (timeinsecs > 5*86400) dformat = "MM.dd.yyyy\nhh:mm";
+        if (timeinsecs > 180*86400) dformat = "MM.dd.yyyy\nhAP";
+        if (timeinsecs > 2 * 365*86400) dformat = "MMMM\nyyyy";
+        dateTicker->setDateTimeFormat(dformat);
+
+        plot->xAxis->setTicker(dateTicker);
+        plot->xAxis->setTickLabelRotation(90);
+    }
+
     plot1->yAxis->setScaleType(format[0].yAxisType);
     plot1->legend->setVisible(format[0].legend);
     plot1->xAxis->setLabel(format[0].xAxisLabel);
@@ -536,8 +557,11 @@ void Plotter::contextMenuRequest(QPoint pos)
           menu->addAction("Paste Curves");
       menu->addSeparator();
       QMenu *prop = menu->addMenu("Graph Properties");
-      QMenu *xAxis = prop->addMenu("X-Axis");
+      //QMenu *xAxis = prop->addMenu("X-Axis");
+      QMenu *yAxis = prop->addMenu("Y-Axis");
+      //xAxis->addActions(subActions(format[0].axisTimeFormats,0,xAxis,0,"xAxisType"));
 
+      yAxis->addActions(subActions(format[0].axisTypes,format[0].yAxisType,yAxis,0,"yAxisType"));
       menu->addSeparator();
       QList<QMenu *>graphs;
       for (int i = 0; i < plot->graphCount(); i++)
@@ -574,51 +598,13 @@ void Plotter::contextMenuRequest(QPoint pos)
               int i = graph.toInt();
                           previousFormat = format;
               if (prop == "xAxisType")
-                  format[i].xAxisType = QCPAxis::ScaleType(format[i].axisTypes[text]);
-              /*if (prop == "xAxisTimeFormat")
               {
-                  bool newTimeFormat = text.toLower().contains("time");
-                  if (format[i].xAxisTimeFormat != newTimeFormat)
-                  {
-                      format[i].xAxisTimeFormat = newTimeFormat;
-                      int n = plot->graph(i)->data()->;
-                      QVector<double> x(n), y(n);
-                      QCPData data;
-                      QList<qreal> oldX = ui->customPlot->graph(i)->data()->keys();
-                      QList<QCPData> oldY = ui->customPlot->graph(i)->data()->values();
-                      for (int c = 0; c < n; ++c)
-                      {
-                          qDebug() << c;
-                          if (newTimeFormat)
-                              x[c] = xtoTime(oldX[c]);
-                          else
-                              x[c] = timetoX(oldX[c]);
-                          y[c] = oldY[c].value;
-                      }
-                      ui->customPlot->graph(i)->setData(x, y);
+                  format[i].xAxisTimeFormat = format[i].axisTimeFormats[text];
+              }
 
-                      if (format[i].xAxisTimeFormat)
-                      {
-                          QDateTime start = QDateTime::fromTime_t(x[0], QTimeZone(0));
-                          QDateTime end = QDateTime::fromTime_t(x[x.count() - 1], QTimeZone(0));
-                          ui->customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
-                          QString format;
-                          if (start.secsTo(end) < 600) format = "mm:ss:zzz";
-                          if (start.secsTo(end) > 3600) format = "hh:mm:ss";
-                          if (start.daysTo(end) > 1) format = "MMM dd\nhh:mm:ss";
-                          if (start.daysTo(end) > 5) format = "MMM dd, yyyy\nhh:mm";
-                          if (start.daysTo(end) > 180)format = "MMM dd, yyyy\nhAP";
-                          if (start.daysTo(end) > 2 * 365)format = "MMMM\nyyyy";
-                          ui->customPlot->xAxis->setDateTimeFormat(format);
-                      }
-                      else
-                          ui->customPlot->xAxis->setTickLabelType(QCPAxis::ltNumber);
-
-                  }
-              }*/
 
               if (prop == "yAxisType")
-                  format[i].yAxisType = QCPAxis::ScaleType(format[i].axisTypes[text]);
+                  format[i].yAxisType = QCPAxis::ScaleType(format[0].axisTypes[text]);
               if (prop == "legend")
                   format[i].legend = format[i].legends[text];
               if (prop == "Line Style")
@@ -786,6 +772,7 @@ void Plotter::Deselect()
       }
     }
 }
+
 
 
 
