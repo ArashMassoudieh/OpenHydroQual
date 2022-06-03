@@ -900,7 +900,7 @@ bool System::SetProperty(const string &s, const string &val)
     }
     if (s=="maximum_number_of_matrix_inverstions")
     {
-        SolverSettings.maximum_number_of_matrix_inversions = aquiutils::atoi(val); return true;
+        SolverSettings.maximum_number_of_matrix_inversions = aquiutils::atof(val); return true;
     }
     if (s=="silent")
     {

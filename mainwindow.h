@@ -81,7 +81,7 @@ private:
     string entitiesfilename;
     RunTimeWindow *rtw = nullptr;
     void closeEvent (QCloseEvent *event) override;
-    QString workingfolder;
+    QString workingfolder = ".";
     QModelIndex addParameterIndex(const QModelIndex &index = QModelIndex());
     QModelIndex tableitemrightckicked;
     std::unique_ptr<QMenu> menu;
