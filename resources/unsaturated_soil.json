@@ -119,7 +119,9 @@
       "ask_user": "true",
       "estimate": "true",
       "includeinoutput": "true",
-      "delegate": "ValueBox"
+      "delegate": "ValueBox",
+      "criteria": "theta>theta_res",
+      "warningmessage": "Initial moisture content must be greater than the residual moisture content"
     },
     "Se": {
       "type": "expression",

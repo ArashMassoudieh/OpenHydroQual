@@ -62,13 +62,13 @@
     },
     "normalized_depth": {
       "type": "expression",
-      "expression": "2.2298958*normalized_area^3-2.7110899*normalized_area^2+2.027012721*normalized_area",
+      "expression": "_min(2.2298958*normalized_area^3-2.7110899*normalized_area^2+2.027012721*normalized_area;1)",
       "description": "Normalized water depth",
       "ask_user": "false"
     },
     "head": {
       "type": "expression",
-      "expression": "depth+bottom_elevation+_pos(depth-diameter)*10000",      
+      "expression": "depth+bottom_elevation+_pos(Storage-0.785398163*length*diameter^2)*10000",      
       "description": "Hydraulc Head",
       "ask_user": "false",
       "includeinoutput": "true"
@@ -479,6 +479,30 @@
       "type": "expression",
       "description": "Flow (m~^3/day)",
       "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
+  "soil2sewer": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Link from soil to a sewer pipe segment",
+    "icon": {
+      "filename": "soil2sewer.png"
+    },
+    "Transmissivity_coefficient": {
+      "type": "value",
+      "description": "Transmissivity coefficient",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day",
+      "estimate": "true"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow (m~^3/day)",
+      "expression": "Transmissivity_coefficient*(head.s-head.e)*3.1415*diameter.e*length.e",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
