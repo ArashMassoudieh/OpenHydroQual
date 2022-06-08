@@ -2,7 +2,6 @@
 #define SAFEVECTOR_H
 
 #include <vector>
-#include <omp.h>
 
 using namespace std;
 
@@ -11,7 +10,6 @@ class SafeVector: public vector<T>
 {
 public:
     SafeVector();
-    ~SafeVector();
     T& operator[](int i);
     vector<T> toStdVector()
     {
@@ -28,13 +26,11 @@ public:
     {
         this->insert(this->end(), v.begin(), v.end());
     }
-    bool SetVal(unsigned int i, const T &val);
     void append(const T &x)
     {
         this->push_back(x);
     }
-private:
-    omp_lock_t writelock;
+
 };
 
 

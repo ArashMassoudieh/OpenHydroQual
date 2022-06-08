@@ -525,6 +525,11 @@ double Quan::GetVal(const Expression::timing &tmg)
             return _val_star;
         else
         {
+#ifndef NO_OPENMP
+            omp_lock_t writelock;
+
+            omp_init_lock(&writelock);
+#endif
             if (type == _type::expression)
             {
                 _val_star = CalcVal(tmg);
@@ -553,6 +558,11 @@ double Quan::GetVal(const Expression::timing &tmg)
                 value_star_updated = true;
             }
             return _val_star;
+#ifndef NO_OPENMP
+            omp_unset_lock(&writelock);
+
+            omp_destroy_lock(&writelock);
+#endif
         }
     }
 }

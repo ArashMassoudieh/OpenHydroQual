@@ -47,9 +47,7 @@ double Block::GetInflowValue(const string &variable, const Expression::timing &t
         {
             if (Variable(corresponding_inflow_var[i]))
             {
-                double inflow1;
-#pragma omp critical (inflow)
-                inflow1 = CalcVal(corresponding_inflow_var[i]);
+                double inflow1 = CalcVal(corresponding_inflow_var[i]);
                 Variable(corresponding_inflow_var[i])->SetVal(inflow1, tmg);
                 if (inflow1>0)
                     inflow += inflow1;
