@@ -119,9 +119,7 @@
       "ask_user": "true",
       "estimate": "true",
       "includeinoutput": "true",
-      "delegate": "ValueBox",
-      "criteria": "theta>theta_res",
-      "warningmessage": "Initial moisture content must be greater than the residual moisture content"
+      "delegate": "ValueBox"
     },
     "Se": {
       "type": "expression",
@@ -335,12 +333,6 @@
       "filename": "soil2fixedhead.png"
     },
     "description": "Soil to fixed head connector",
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
-    },
     "area": {
       "type": "expression",
       "description": "Interface area",
@@ -394,6 +386,68 @@
     "color": {
       "type": "string",
       "default": "120,120,120"
+    }
+  },
+  "fixed_hydraulic_gradient_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "fixed_hydro_gradient.png"
+    },
+    "description": "Fixed Hydraulic Gradient link",
+    "area": {
+      "type": "expression",
+      "description": "Interface area",
+      "expression": "area.s",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "Se": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "Se.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "m": {
+      "type": "expression",
+      "description": "m parameter",
+      "expression": "m.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_sat": {
+      "type": "expression",
+      "description": "Saturated Hydraulic Conductivity",
+      "expression": "K_sat.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+	"Hydraulic_Gradient": {
+      "type": "value",
+      "description": "Hydraulic Gradient",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "ValueBox"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "Hydraulic_Gradient*K_eff*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "20,220,120"
     }
   }
 }
