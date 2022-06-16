@@ -162,16 +162,16 @@ class System: public Object
             else
                 return nullptr;
         }
-        unsigned long BlockCount() {return blocks.size();}
-        unsigned long SettingsCount() {return Settings.size();}
-        unsigned long LinksCount() {return links.size();}
-        unsigned long SourcesCount() {return sources.size();}
-        unsigned long ReactionsCount() {return reactions.size();}
-        unsigned long ObservationsCount() {return observations.size();}
-        unsigned long ParametersCount() {return Parameters().size();}
-        unsigned long ObjectiveFunctionsCount() {return ObjectiveFunctions().size();}
-        unsigned long ConstituentsCount() {return constituents.size();}
-        unsigned long ReactionParametersCount() {return reaction_parameters.size();}
+        unsigned int BlockCount() {return blocks.size();}
+        unsigned int SettingsCount() {return Settings.size();}
+        unsigned int LinksCount() {return links.size();}
+        unsigned int SourcesCount() {return sources.size();}
+        unsigned int ReactionsCount() {return reactions.size();}
+        unsigned int ObservationsCount() {return observations.size();}
+        unsigned int ParametersCount() {return Parameters().size();}
+        unsigned int ObjectiveFunctionsCount() {return ObjectiveFunctions().size();}
+        unsigned int ConstituentsCount() {return constituents.size();}
+        unsigned int ReactionParametersCount() {return reaction_parameters.size();}
         vector<string> GetAllSourceNames();
         vector<string> GetAllBlockNames();
         vector<string> GetAllLinkNames();
@@ -456,6 +456,7 @@ class System: public Object
         unsigned int restore_interval = 200;
         void PopulateFunctionOperators();
         function_operators func_operators;
+        omp_lock_t lock;
 
 #ifdef Q_version
     RunTimeWindow *rtw = nullptr;

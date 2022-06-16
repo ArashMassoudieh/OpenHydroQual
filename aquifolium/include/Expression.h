@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "Utilities.h"
 #include "safevector.h"
+#include "omp.h"
 using namespace std;
 
 class Object;
@@ -73,7 +74,7 @@ class Expression
         bool sourceterms_resized = false;
         SafeVector<unsigned int> terms_source_counter;
         loc location = loc::self; //0: self, 1: start, 2: end
-
+        omp_lock_t writelock;
 };
 
 
