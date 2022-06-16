@@ -52,7 +52,7 @@ Expression::Expression(void)
 
 Expression::Expression(string S)
 {
-	text = S;
+    text = S;
     if (Expression::func_operators_initialized != true)
     {   Expression::funcs.push_back("_min");
         Expression::funcs.push_back("_max");
@@ -201,7 +201,7 @@ Expression::Expression(string S)
 
 Expression::Expression(const Expression & S)
 {
-	operators.clear();
+    operators.clear();
     term_vals.clear();
 	terms_calculated.clear();
 	_errors.clear(); 
@@ -490,7 +490,6 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
             terms_calculated.resize(terms.size());
         }
 
-
         for (unsigned int i = 0; i < terms.size(); i++) terms_calculated[i]=false;
 
         for (int i = operators.size() - 1; i >= 0; i--)
@@ -643,10 +642,6 @@ double Expression::oprt(string &f, double val1, double val2)
 double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, const Expression::timing &tmg, bool limit)
 {
 
-	#ifdef Debug_mode
-	//cout<<i1<<","<<i2<<endl;
-	#endif // Debug_mode
-
     for (unsigned int j = 0; j < terms_source_counter[i1]; j++)
     {
         if (term_sources.size() > i2)
@@ -669,7 +664,7 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
                 if (term_sources[i1][k]!=-1 && term_sources[i2][j]!=-1)
                 {
                     if (aquiutils::lookup(term_sources[term_sources[i1][k]],term_sources[i2][j])==-1)
-                    {   term_sources[term_sources[i1][k]][terms_source_counter[term_sources[i1][k]]] = term_sources[i2][j];
+                    {   term_sources[term_sources[i1][k]].SetVal(terms_source_counter[term_sources[i1][k]],term_sources[i2][j]);
                         terms_source_counter[term_sources[i1][k]]++;
 
                     }
@@ -709,12 +704,12 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
     for (unsigned int j = 0; j<terms_source_counter[i1]; j++)
     {
         if (f=="^" && terms[i1].sign == "-")
-            term_vals[term_sources[i1][j]] = -oprt(f, -val1, val2);
+            term_vals.SetVal(term_sources[i1][j], -oprt(f, -val1, val2));
         else
-            term_vals[term_sources[i1][j]] = oprt(f, val1, val2);
+            term_vals.SetVal(term_sources[i1][j], oprt(f, val1, val2));
     }
-	terms_calculated[i1] = true;
-	terms_calculated[i2] = true;
+    terms_calculated[i1] = true;
+    terms_calculated[i2] = true;
     int i=term_sources[i1][0];
     return term_vals[i];
 }

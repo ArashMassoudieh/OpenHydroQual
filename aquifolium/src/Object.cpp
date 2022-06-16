@@ -140,9 +140,32 @@ double Object::GetVal(const string& variable, const string& consttnt, const Expr
     if (var.Find(fullname))
     {
         if (!limit)
-            return var[fullname].GetVal(tmg);
+        {
+            if (var[fullname].Value_Updated())
+                return var[fullname].GetVal(tmg);
+            else
+            {
+              double val;
+//#pragma omp critical(variable_change)
+              val = var[fullname].GetVal(tmg);
+              return val;
+            }
+
+        }
         else
-            return var[fullname].GetVal(tmg)*GetOutflowLimitFactor(tmg);
+        {
+            if (var[fullname].Value_Updated())
+                return var[fullname].GetVal(tmg)*GetOutflowLimitFactor(tmg);
+            else
+            {
+              double val;
+//#pragma omp critical(variable_change_2)
+              val = var[fullname].GetVal(tmg)*GetOutflowLimitFactor(tmg);
+              return val;
+            }
+
+
+        }
     }
     else
     {
@@ -158,9 +181,29 @@ double Object::GetVal(const string& variable, const string& consttnt, const Expr
 double Object::GetVal(Quan* quan,const Expression::timing &tmg, bool limit)
 {
     if (!limit || !quan->ApplyLimit())
-        return quan->GetVal(tmg);
+    {
+        if (quan->Value_Updated())
+            return quan->GetVal(tmg);
+        else
+        {
+            double val=0;
+//#pragma omp critical(getval_quan)
+            val = quan->GetVal(tmg);
+            return val;
+        }
+
+    }
     else
-        return quan->GetVal(tmg)*GetOutflowLimitFactor(tmg);
+    {   if (quan->Value_Updated())
+            return quan->GetVal(tmg);
+        else
+        {
+            double val=0;
+//#pragma omp critical(getval_quan_1)
+            val = quan->GetVal(tmg)*GetOutflowLimitFactor(tmg);
+            return val;
+        }
+    }
 }
 
 
@@ -249,16 +292,20 @@ void Object::SetDefaults()
 
 bool Object::SetVal(const string& s, double value, const Expression::timing &tmg)
 {
+
     if (var.find(s)!=var.end())
     {
-        var[s].SetVal(value,tmg);
+//#pragma omp critical (setval)
+            var[s].SetVal(value,tmg);
         return true;
     }
     else
     {
         if (Parent())
-            Parent()->errorhandler.Append(GetName(),"Object","SetVal","Variable " + s + " was not found!",1005);
-        last_error = "Variable " + s + " was not found!";
+//#pragma omp critical (setval_error)
+        {   Parent()->errorhandler.Append(GetName(),"Object","SetVal","Variable " + s + " was not found!",1005);
+            last_error = "Variable " + s + " was not found!";
+        }
         return false;
     }
 }

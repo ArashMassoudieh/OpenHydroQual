@@ -519,6 +519,9 @@ void System::MakeTimeSeriesUniform(const double &increment)
 
 bool System::Solve(bool applyparameters)
 {
+#ifndef NO_OPENMP
+    omp_init_lock(&lock);
+#endif
     double timestepminfactor = 100000;
     double timestepmaxfactor = 50;
     fit_measures.resize(ObservationsCount()*3);
@@ -900,7 +903,7 @@ bool System::SetProperty(const string &s, const string &val)
     }
     if (s=="maximum_number_of_matrix_inverstions")
     {
-        SolverSettings.maximum_number_of_matrix_inversions = aquiutils::atoi(val); return true;
+        SolverSettings.maximum_number_of_matrix_inversions = aquiutils::atof(val); return true;
     }
     if (s=="silent")
     {
@@ -1149,10 +1152,14 @@ void System::PopulateOutputs(bool dolinks)
                     //sources[i].CalcExpressions(Expression::timing::present);
                     Object* location;
                     if (it->second.GetType() == Quan::_type::expression)
-                        location = object(observations[i].GetLocation());
+                    {   location = object(observations[i].GetLocation());
+                        if (location->ObjectType() != object_type::link || dolinks)
+                            Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present)*location->GetOutflowLimitFactor(Expression::timing::present));
+                    }
                     else
-                        location = observation(i);
-                    Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present));
+                    {   location = observation(i);
+                        Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present));
+                    }
                 }
         }
     }
@@ -1860,7 +1867,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     UnUpdateAllVariables();
     //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
     CVector LinkFlow(links.size());
-    //#pragma omp parallel for
+#pragma omp parallel for
     for (unsigned int i=0; i<blocks.size(); i++)
     {
         //qDebug()<<QString::fromStdString(blocks[i].GetName());
@@ -1880,7 +1887,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
             F[i] = (X[i]-blocks[i].GetVal(variable,Expression::timing::past))/dt() - blocks[i].GetInflowValue(variable,Expression::timing::present);
     }
 
-
+//#pragma omp parallel for
     for (unsigned int i=0; i<links.size(); i++)
     {
         if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) > 0)
@@ -3582,6 +3589,7 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Expression::timing::present,transport);
     SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma jacobian(BlockCount());
+//#pragma omp parallel for
     for (unsigned int i=0; i<LinksCount(); i++)
     {
         if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())

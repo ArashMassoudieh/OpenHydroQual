@@ -62,13 +62,13 @@
     },
     "normalized_depth": {
       "type": "expression",
-      "expression": "2.2298958*normalized_area^3-2.7110899*normalized_area^2+2.027012721*normalized_area",
+      "expression": "_min(2.2298958*normalized_area^3-2.7110899*normalized_area^2+2.027012721*normalized_area;1)",
       "description": "Normalized water depth",
       "ask_user": "false"
     },
     "head": {
       "type": "expression",
-      "expression": "depth+bottom_elevation+_pos(depth-diameter)*10000",      
+      "expression": "depth+bottom_elevation+_pos(Storage-0.785398163*length*diameter^2)*10000",      
       "description": "Hydraulc Head",
       "ask_user": "false",
       "includeinoutput": "true"
@@ -428,36 +428,43 @@
     },
     "area_2": {
       "type": "expression",
-      "description": "End area",
+      "description": "Downstream area",
       "expression": "diameter^2*(-0.910331972*(depth_2/diameter)^3+1.376045712*(depth_2/diameter)^2+0.319684423*(depth_2/diameter))",
       "includeinoutput": "true",
       "ask_user": "false"
     },
     "perimeter_2": {
       "type": "expression",
-      "description": "End wetted perimeter",
+      "description": "Downstream wetted perimeter",
       "expression": "diameter*(5.486583*(depth_2/diameter)^3-8.60202*(depth_2/diameter)^2+6.1081605*(depth_2/diameter))",
       "includeinoutput": "true",
       "ask_user": "false"
     },
-    "area": {
+    "area_1": {
       "type": "expression",
-      "description": "Cross-sectional area",
-      "expression": "_max(_max(area.s;area_2);0)",
+      "description": "Upstream cross-sectional area",
+      "expression": "_max(area.s;0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
-    "perimeter": {
+    "perimeter_1": {
       "type": "expression",
-      "description": "Wetted Perimeter",
-      "expression": "_max(perimeter.s;perimeter_2)",
+      "description": "Upstream Wetted Perimeter",
+      "expression": "perimeter.s",
       "includeinoutput": "true",
       "ask_user": "false"
     },
-    "hydraulic_radious": {
+    "hydraulic_radious_1": {
       "type": "expression",
-      "description": "Hydraulic Radius",
-      "expression": "area/perimeter",
+      "description": "Upstream Hydraulic Radius",
+      "expression": "area_1/perimeter_1",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hydraulic_radious_2": {
+      "type": "expression",
+      "description": "Downstream Hydraulic Radius",
+      "expression": "area_1/perimeter_1",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -478,7 +485,31 @@
     "flow": {
       "type": "expression",
       "description": "Flow (m~^3/day)",
-      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*(_hsd(head.s-head.e)*area_1*hydraulic_radious_1^0.6667+_hsd(head.e-head.s)*area_2*hydraulic_radious_2)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
+  "soil2sewer": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Link from soil to a sewer pipe segment",
+    "icon": {
+      "filename": "soil2sewer.png"
+    },
+    "Transmissivity_coefficient": {
+      "type": "value",
+      "description": "Transmissivity coefficient",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day",
+      "estimate": "true"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow (m~^3/day)",
+      "expression": "Transmissivity_coefficient*(head.s-head.e)*3.1415*diameter.e*length.e",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"

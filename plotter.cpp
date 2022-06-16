@@ -604,7 +604,22 @@ void Plotter::contextMenuRequest(QPoint pos)
 
 
               if (prop == "yAxisType")
-                  format[i].yAxisType = QCPAxis::ScaleType(format[0].axisTypes[text]);
+              {     format[i].yAxisType = QCPAxis::ScaleType(format[0].axisTypes[text]);
+                    if (format[0].axisTypes[text] == QCPAxis::ScaleType::stLogarithmic)
+                    {   QSharedPointer<QCPAxisTickerLog> logTicker(new QCPAxisTickerLog);
+                        logTicker->setLogBase(10);
+                        logTicker->setSubTickCount(10);
+                        plot->yAxis->setTicker(logTicker);
+                        plot->yAxis->setScaleType(QCPAxis::ScaleType::stLogarithmic);
+                    }
+                    else
+                    {
+                        QSharedPointer<QCPAxisTicker> linearTicker(new QCPAxisTicker);
+                        linearTicker->setTickCount(10);
+                        plot->yAxis->setTicker(linearTicker);
+                        plot->yAxis->setScaleType(QCPAxis::ScaleType::stLinear);
+                    }
+              }
               if (prop == "legend")
                   format[i].legend = format[i].legends[text];
               if (prop == "Line Style")

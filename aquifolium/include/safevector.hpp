@@ -10,9 +10,14 @@ SafeVector<T>::SafeVector() : vector<T> ()
 }
 
 template<class T>
-T& SafeVector<T>::operator[](int i)
+SafeVector<T>::~SafeVector()
 {
 
+}
+
+template<class T>
+T& SafeVector<T>::operator[](int i)
+{
 
     if (i>int(this->size())-1)
     {   cout<<int(this->size());
@@ -28,6 +33,24 @@ T& SafeVector<T>::operator[](int i)
     }
     else
         return vector<T>::operator[](i);
+
+}
+
+template<class T>
+bool SafeVector<T>::SetVal(unsigned int i, const T &val)
+{
+    if (i>int(this->size())-1)
+    {
+        cout<<"Exceeded the size"<<std::endl;
+        return false;
+    }
+    else if (i<0)
+    {
+        cout<<"Counter is negative!"<<std::endl;
+        return false;
+    }
+    vector<T>::at(i)=val;
+
 }
 
 template<class T>

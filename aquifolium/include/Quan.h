@@ -133,6 +133,7 @@ class Quan
         vector<string> GetAllRequieredStartingBlockProperties();
         vector<string> GetAllRequieredEndingBlockProperties();
         void Set_Value_Update(bool x) { value_star_updated = x; }
+        bool Value_Updated() { return value_star_updated;}
         bool ApplyLimit() { return applylimit; }
         bool isrigid() { return rigid; }
         void SetInitialValueExpression(const string &expression);
