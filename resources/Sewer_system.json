@@ -428,36 +428,43 @@
     },
     "area_2": {
       "type": "expression",
-      "description": "End area",
+      "description": "Downstream area",
       "expression": "diameter^2*(-0.910331972*(depth_2/diameter)^3+1.376045712*(depth_2/diameter)^2+0.319684423*(depth_2/diameter))",
       "includeinoutput": "true",
       "ask_user": "false"
     },
     "perimeter_2": {
       "type": "expression",
-      "description": "End wetted perimeter",
+      "description": "Downstream wetted perimeter",
       "expression": "diameter*(5.486583*(depth_2/diameter)^3-8.60202*(depth_2/diameter)^2+6.1081605*(depth_2/diameter))",
       "includeinoutput": "true",
       "ask_user": "false"
     },
-    "area": {
+    "area_1": {
       "type": "expression",
-      "description": "Cross-sectional area",
-      "expression": "_max(_max(area.s;area_2);0)",
+      "description": "Upstream cross-sectional area",
+      "expression": "_max(area.s;0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
-    "perimeter": {
+    "perimeter_1": {
       "type": "expression",
-      "description": "Wetted Perimeter",
-      "expression": "_max(perimeter.s;perimeter_2)",
+      "description": "Upstream Wetted Perimeter",
+      "expression": "perimeter.s",
       "includeinoutput": "true",
       "ask_user": "false"
     },
-    "hydraulic_radious": {
+    "hydraulic_radious_1": {
       "type": "expression",
-      "description": "Hydraulic Radius",
-      "expression": "area/perimeter",
+      "description": "Upstream Hydraulic Radius",
+      "expression": "area_1/perimeter_1",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hydraulic_radious_2": {
+      "type": "expression",
+      "description": "Downstream Hydraulic Radius",
+      "expression": "area_1/perimeter_1",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -478,7 +485,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow (m~^3/day)",
-      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*(_hsd(head.s-head.e)*area_1*hydraulic_radious_1^0.6667+_hsd(head.e-head.s)*area_2*hydraulic_radious_2)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
