@@ -1867,7 +1867,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     UnUpdateAllVariables();
     //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
     CVector LinkFlow(links.size());
-#pragma omp parallel for
+//#pragma omp parallel for
     for (unsigned int i=0; i<blocks.size(); i++)
     {
         //qDebug()<<QString::fromStdString(blocks[i].GetName());
