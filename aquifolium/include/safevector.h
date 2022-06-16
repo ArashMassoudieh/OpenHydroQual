@@ -10,6 +10,7 @@ class SafeVector: public vector<T>
 {
 public:
     SafeVector();
+    ~SafeVector();
     T& operator[](int i);
     vector<T> toStdVector()
     {
@@ -21,6 +22,7 @@ public:
         s.assign(x.begin(),x.end());
         return s;
     }
+    bool SetVal(unsigned int i, const T &val);
     unsigned int lookup(const T &x);
     void append(const SafeVector<T> &v)
     {
