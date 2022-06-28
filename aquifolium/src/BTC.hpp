@@ -564,7 +564,7 @@ T NSE(const CTimeSeries<T> &modeled, const CTimeSeries<T> &observed)
 }
 
 template<class T>
-T NSE(const CTimeSeries<T> *modeled, const CTimeSeries<T> *observed, const double &start_time, const double &endtime)
+T NSE(const CTimeSeries<T> *modeled, const CTimeSeries<T> *observed)
 {
     T numerator = 0;
     T denuminator = 0;
