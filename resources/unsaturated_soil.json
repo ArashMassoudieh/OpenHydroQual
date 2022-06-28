@@ -123,7 +123,7 @@
     },
     "Se": {
       "type": "expression",
-      "expression" : "_max(_min((theta-theta_res)/(theta_sat-theta_res);0.9999);0.0001)",
+      "expression" : "_max(_min((theta-theta_res)/(theta_sat-theta_res);0.999);0.001)",
       "description": "Effective Moisture content",
       "ask_user": "false",
       "delegate": "ValueBox",
@@ -144,7 +144,7 @@
 	},
     "pressure_head": {
       "type": "expression",
-      "expression": "-(1/alpha)*(Se^(-1/m)-1)^(1/n) + theta_sat*_pos((theta-theta_res)/(theta_sat-theta_res)-0.9999)/specific_storage",
+      "expression": "-(1/alpha)*(Se^(-1/m)-1)^(1/n) + theta_sat*_pos((theta-theta_res)/(theta_sat-theta_res)-0.999)/specific_storage",
       "description": "Pressure Head",
       "precalcbasedon": "theta::0:1",
       "ask_user": "false",
