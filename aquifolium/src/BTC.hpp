@@ -553,7 +553,7 @@ T NSE(const CTimeSeries<T> &modeled, const CTimeSeries<T> &observed)
     double avg = observed.mean();
     for (int i=0; i<observed.n; i++)
     {
-        if (observed->GetT(i)>=modeled->GetT(0) && observed->GetT(i)<=modeled->GetT(modeled->n-1))
+        if (observed.GetT(i)>=modeled.GetT(0) && observed.GetT(i)<=modeled.GetT(modeled->n-1))
         {
             numerator += pow(observed.GetC(i)-modeled.interpol(observed.GetT(i)),2);
             denuminator += pow(observed.GetC(i)-avg,2);
