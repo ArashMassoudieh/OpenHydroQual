@@ -770,6 +770,7 @@ bool System::Solve(bool applyparameters)
     Outputs.AllOutputs.adjust_size();
     Outputs.AllOutputs.unif = false;
     Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0);
+    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0);
     MakeObjectiveFunctionExpressionUniform();
     MakeObservationsExpressionUniform();
 #ifdef Q_version

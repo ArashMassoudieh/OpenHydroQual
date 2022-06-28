@@ -318,7 +318,7 @@
     "hydraulic_radious": {
       "type": "expression",
       "description": "Hydraulic Radius",
-      "expression": "area/perimeter",
+      "expression": "area/(perimeter+0.001*diameter.s)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -457,14 +457,14 @@
     "hydraulic_radious_1": {
       "type": "expression",
       "description": "Upstream Hydraulic Radius",
-      "expression": "area_1/perimeter_1",
+      "expression": "area_1/(perimeter_1+0.001*diameter)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
     "hydraulic_radious_2": {
       "type": "expression",
       "description": "Downstream Hydraulic Radius",
-      "expression": "area_1/perimeter_1",
+      "expression": "area_2/(perimeter_2+0.001*diameter)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -485,7 +485,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow (m~^3/day)",
-      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*(_hsd(head.s-head.e)*area_1*hydraulic_radious_1^0.6667+_hsd(head.e-head.s)*area_2*hydraulic_radious_2)",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*(_hsd(head.s-head.e)*area_1*hydraulic_radious_1^0.6667+_hsd(head.e-head.s)*area_2*hydraulic_radious_2^0.6667)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
