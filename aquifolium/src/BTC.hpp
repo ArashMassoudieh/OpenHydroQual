@@ -542,30 +542,30 @@ T R2(const CTimeSeries<T> *BTC_p, const CTimeSeries<T> *BTC_d)
 }
 
 template<class T>
-T NSE(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
+T NSE(const CTimeSeries<T> &modeled, const CTimeSeries<T> &observed)
 {
     T numerator = 0;
     T denuminator = 0;
-    double avg = BTC_d.mean();
-    for (int i=0; i<BTC_d.n; i++)
+    double avg = observed.mean();
+    for (int i=0; i<observed.n; i++)
     {
-        numerator += pow(BTC_d.GetC(i)-BTC_p.interpol(BTC_d.GetT(i)),2);
-        denuminator += pow(BTC_d.GetC(i)-avg,2);
+        numerator += pow(observed.GetC(i)-modeled.interpol(observed.GetT(i)),2);
+        denuminator += pow(observed.GetC(i)-avg,2);
     }
 
     return 1.0-numerator/denuminator;
 }
 
 template<class T>
-T NSE(const CTimeSeries<T> *BTC_p, const CTimeSeries<T> *BTC_d)
+T NSE(const CTimeSeries<T> *modeled, const CTimeSeries<T> *observed)
 {
     T numerator = 0;
     T denuminator = 0;
-    double avg = BTC_d->mean();
-    for (int i=0; i<BTC_d->n; i++)
+    double avg = observed->mean();
+    for (int i=0; i<observed->n; i++)
     {
-        numerator += pow(BTC_d->GetC(i)-BTC_p->interpol(BTC_d->GetT(i)),2);
-        denuminator += pow(BTC_d->GetC(i)-avg,2);
+        numerator += pow(observed->GetC(i)-modeled->interpol(observed->GetT(i)),2);
+        denuminator += pow(observed->GetC(i)-avg,2);
     }
 
     return 1.0-numerator/denuminator;
