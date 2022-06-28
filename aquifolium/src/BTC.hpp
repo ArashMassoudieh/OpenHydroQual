@@ -480,14 +480,14 @@ T diff2(const CTimeSeries<T> &BTC_p, CTimeSeries<T> *BTC_d)
 
 
 template<class T>
-T diff2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
+T diff2(const CTimeSeries<T> &modeled, const CTimeSeries<T> &observed)
 {
     T sum = 0;
     int count = 0;
-    for (int i=0; i<BTC_d.n; i++)
+    for (int i=0; i<observed.n; i++)
     {
-        if (BTC_d.GetT(i)>BTC_p.mint() && BTC_d.GetT(i)<BTC_p.maxt())
-        {   sum += pow(BTC_d.GetC(i) - BTC_p.interpol(BTC_d.GetT(i)),2);
+        if (observed.GetT(i)>modeled.mint() && observed.GetT(i)<modeled.maxt())
+        {   sum += pow(observed.GetC(i) - modeled.interpol(observed.GetT(i)),2);
             count++;
         }
     }
@@ -496,22 +496,23 @@ T diff2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
 }
 
 template<class T>
-T R2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
+T R2(const CTimeSeries<T> &modeled, const CTimeSeries<T> &observed)
 {
+
     T sumprod = 0;
     T sumvar1 = 0;
     T sumvar2 = 0;
     T sum1 = 0;
     T sum2 = 0;
     int count = 0;
-    for (int i=0; i<BTC_d.n; i++)
+    for (int i=0; i<observed.n; i++)
     {
-        if (BTC_d.GetT(i)>=BTC_p.GetT(0) && BTC_d.GetT(i)<=BTC_p.GetT(BTC_p.n-1))
-        {   T x2 = BTC_p.interpol(BTC_d.GetT(i));
-            sumprod += BTC_d.GetC(i)*x2;
-            sumvar1 += BTC_d.GetC(i)*BTC_d.GetC(i);
+        if (observed.GetT(i)>=modeled.GetT(0) && observed.GetT(i)<=modeled.GetT(modeled.n-1))
+        {   T x2 = modeled.interpol(observed.GetT(i));
+            sumprod += observed.GetC(i)*x2;
+            sumvar1 += observed.GetC(i)*observed.GetC(i);
             sumvar2 += x2*x2;
-            sum1 += BTC_d.GetC(i);
+            sum1 += observed.GetC(i);
             sum2 += x2;
             count++;
         }
@@ -521,24 +522,27 @@ T R2(const CTimeSeries<T> &BTC_p, const CTimeSeries<T> &BTC_d)
 }
 
 template<class T>
-T R2(const CTimeSeries<T> *BTC_p, const CTimeSeries<T> *BTC_d)
+T R2(const CTimeSeries<T> *modeled, const CTimeSeries<T> *observed)
 {
     T sumprod = 0;
     T sumvar1 = 0;
     T sumvar2 = 0;
     T sum1 = 0;
     T sum2 = 0;
-    for (int i=0; i<BTC_d->n; i++)
+    for (int i=0; i<observed->n; i++)
     {
-        T x2 = BTC_p->interpol(BTC_d->GetT(i));
-        sumprod += BTC_d->GetC(i)*x2;
-        sumvar1 += BTC_d->GetC(i)*BTC_d->GetC(i);
-        sumvar2 += x2*x2;
-        sum1 += BTC_d->GetC(i);
-        sum2 += x2;
+        if (observed->GetT(i)>=modeled->GetT(0) && observed->GetT(i)<=modeled->GetT(modeled->n-1))
+        {
+            T x2 = modeled->interpol(observed->GetT(i));
+            sumprod += observed->GetC(i)*x2;
+            sumvar1 += observed->GetC(i)*observed->GetC(i);
+            sumvar2 += x2*x2;
+            sum1 += observed->GetC(i);
+            sum2 += x2;
+        }
     }
 
-    return pow(BTC_d->n*sumprod-sum1*sum2,2)/(BTC_d->n*sumvar1-sum1*sum1)/(BTC_d->n*sumvar2-sum2*sum2);
+    return pow(observed->n*sumprod-sum1*sum2,2)/(observed->n*sumvar1-sum1*sum1)/(observed->n*sumvar2-sum2*sum2);
 }
 
 template<class T>
@@ -549,23 +553,29 @@ T NSE(const CTimeSeries<T> &modeled, const CTimeSeries<T> &observed)
     double avg = observed.mean();
     for (int i=0; i<observed.n; i++)
     {
-        numerator += pow(observed.GetC(i)-modeled.interpol(observed.GetT(i)),2);
-        denuminator += pow(observed.GetC(i)-avg,2);
+        if (observed->GetT(i)>=modeled->GetT(0) && observed->GetT(i)<=modeled->GetT(modeled->n-1))
+        {
+            numerator += pow(observed.GetC(i)-modeled.interpol(observed.GetT(i)),2);
+            denuminator += pow(observed.GetC(i)-avg,2);
+        }
     }
 
     return 1.0-numerator/denuminator;
 }
 
 template<class T>
-T NSE(const CTimeSeries<T> *modeled, const CTimeSeries<T> *observed)
+T NSE(const CTimeSeries<T> *modeled, const CTimeSeries<T> *observed, const double &start_time, const double &endtime)
 {
     T numerator = 0;
     T denuminator = 0;
     double avg = observed->mean();
     for (int i=0; i<observed->n; i++)
     {
-        numerator += pow(observed->GetC(i)-modeled->interpol(observed->GetT(i)),2);
-        denuminator += pow(observed->GetC(i)-avg,2);
+        if (observed->GetT(i)>=modeled->GetT(0) && observed->GetT(i)<=modeled->GetT(modeled->n-1))
+        {
+            numerator += pow(observed->GetC(i)-modeled->interpol(observed->GetT(i)),2);
+            denuminator += pow(observed->GetC(i)-avg,2);
+        }
     }
 
     return 1.0-numerator/denuminator;
