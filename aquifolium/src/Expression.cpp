@@ -165,7 +165,7 @@ Expression::Expression(string S)
 				sub_exp.sign = "+";
 			terms.push_back(sub_exp);
 			aquiutils::push_back(_errors,sub_exp._errors);
-
+            Setup_Calculation_Structure();
 
 		}
 		else
@@ -219,6 +219,7 @@ Expression::Expression(const Expression & S)
     term_sources.clear();
     term_sources_determined = false;
     sourceterms_resized = false;
+    CalculationStructure = S.CalculationStructure;
 
 }
 
@@ -242,6 +243,7 @@ Expression & Expression::operator=(const Expression &S)
     term_sources.clear();
     term_sources_determined = false;
     sourceterms_resized = false;
+    CalculationStructure = S.CalculationStructure;
 	return *this;
 }
 
@@ -890,4 +892,123 @@ string Expression::ToString() const
     return out;
 }
 
+void Expression::Setup_Calculation_Structure(){
+
+
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == "^")
+        {
+            _calculation_pattern pattern;
+            pattern.operands.push_back(i);
+            pattern.operands.push_back(i+1);
+            pattern.output_cell_id = CalculationStructure.sources.size();
+            CalculationStructure.CalcOrder.push_back(pattern);
+            if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
+                CalculationStructure.sources.push_back(i);
+            else
+                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+
+            if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
+                CalculationStructure.sources.push_back(i+1);
+            else
+                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+        }
+
+    }
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == "*")
+        {
+            _calculation_pattern pattern;
+            pattern.operands.push_back(i);
+            pattern.operands.push_back(i+1);
+            pattern.output_cell_id = CalculationStructure.CalcOrder.size();
+            CalculationStructure.CalcOrder.push_back(pattern);
+            if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
+                CalculationStructure.sources.push_back(i);
+            else
+                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+
+            if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
+                CalculationStructure.sources.push_back(i+1);
+            else
+                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+        }
+    }
+
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == "/")
+        {
+            _calculation_pattern pattern;
+            pattern.operands.push_back(i);
+            pattern.operands.push_back(i+1);
+            pattern.output_cell_id = CalculationStructure.CalcOrder.size();
+            CalculationStructure.CalcOrder.push_back(pattern);
+            if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
+                CalculationStructure.sources.push_back(i);
+            else
+                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+
+            if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
+                CalculationStructure.sources.push_back(i+1);
+            else
+                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+        }
+    }
+
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == "+")
+        {
+            _calculation_pattern pattern;
+            pattern.operands.push_back(i);
+            pattern.operands.push_back(i+1);
+            pattern.output_cell_id = CalculationStructure.CalcOrder.size();
+            CalculationStructure.CalcOrder.push_back(pattern);
+            if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
+                CalculationStructure.sources.push_back(i);
+            else
+                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+
+            if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
+                CalculationStructure.sources.push_back(i+1);
+            else
+                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+        }
+    }
+
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == "-")
+        {
+            _calculation_pattern pattern;
+            pattern.operands.push_back(i);
+            pattern.operands.push_back(i+1);
+            pattern.output_cell_id = CalculationStructure.CalcOrder.size();
+            CalculationStructure.CalcOrder.push_back(pattern);
+            if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
+                CalculationStructure.sources.push_back(i);
+            else
+                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+
+            if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
+                CalculationStructure.sources.push_back(i+1);
+            else
+                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+        }
+    }
+
+}
 

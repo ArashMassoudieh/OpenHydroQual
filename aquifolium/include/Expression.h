@@ -10,6 +10,20 @@ using namespace std;
 class Object;
 class Quan;
 
+struct _calculation_pattern
+{
+    vector<int> operands;
+    int output_cell_id;
+    double value;
+};
+
+struct _calculation_struct
+{
+    vector<_calculation_pattern> CalcOrder;
+    vector<int> sources;
+    vector<int> targets;
+};
+
 class Expression
 {
     public:
@@ -65,7 +79,9 @@ class Expression
     protected:
 
     private:
+        _calculation_struct CalculationStructure;
         SafeVector<double> term_vals;
+        SafeVector<double> temporarily_stored_values;
         vector<bool> terms_calculated;
         bool order_of_calculation_initialized = false;
         SafeVector<SafeVector<int> > term_sources;
