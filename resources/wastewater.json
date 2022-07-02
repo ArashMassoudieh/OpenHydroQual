@@ -16,15 +16,6 @@
       "delegate": "UnitBox",
       "unit": "m~^3;ft~^3",
       "estimate": "true"
-    },
-    "bottom_elevation":
-    {
-    	"type": "value",
-    	"ask_user": "true",
-    	"default": "0",
-    	"description": "Bottom elevation",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft"
     }
   },
   "Settling element": {
@@ -94,7 +85,7 @@
     "typecategory": "Connectors",
     "description": "Settling element interface",
     "icon": {
-      "filename": "sedimentation_tank_link.png"
+      "filename": "sedimentation_tank_element.png"
     },
     "flow": {
       "type": "value",
