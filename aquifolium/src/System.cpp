@@ -1872,7 +1872,9 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     UnUpdateAllVariables();
     //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
     CVector LinkFlow(links.size());
-//#pragma omp parallel for
+#ifndef NO_OPENMP
+#pragma omp parallel for
+#endif
     for (unsigned int i=0; i<blocks.size(); i++)
     {
         //qDebug()<<QString::fromStdString(blocks[i].GetName());
@@ -1892,7 +1894,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
             F[i] = (X[i]-blocks[i].GetVal(variable,Expression::timing::past))/dt() - blocks[i].GetInflowValue(variable,Expression::timing::present);
     }
 
-//#pragma omp parallel for
+
     for (unsigned int i=0; i<links.size(); i++)
     {
         if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) > 0)
@@ -1906,7 +1908,9 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 
 {
 
-//#pragma omp parallel for
+#ifndef NO_OPENMP
+#pragma omp parallel for
+#endif
     for (unsigned int i=0; i<links.size(); i++)
        LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
 
