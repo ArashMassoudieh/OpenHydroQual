@@ -323,12 +323,16 @@ void CGA<T>::assignfitnesses()
 	omp_set_num_threads(numberOfThreads);
 #endif
 int counter=0;
+#ifndef NO_OPENMP
 #pragma omp parallel for //private(ts,l)
+#endif
 		for (int k=0; k<GA_params.maxpop; k++)
 		{
 
 			FILE *FileOut;
+#ifdef NO_OPENMP
 #pragma omp critical
+#endif
             {
                 FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
                 fprintf(FileOut, "%i, ", k);

@@ -177,7 +177,7 @@
       "type": "expression",
       "description": "lenght",
       "expression": "(depth.s+depth.e)/2",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "false"
     },
     "Se": {
@@ -189,16 +189,16 @@
     },
     "m": {
       "type": "expression",
-      "description": "Effective Saturation",
+      "description": "Van Genuchten m parameter",
       "expression": "0.5*(m.s+m.e)",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "false"
     },
     "K_sat": {
       "type": "expression",
       "description": "Saturated Hydraulic Conductivity",
       "expression": "0.5*(K_sat.s+K_sat.e)",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "false"
     },
     "K_eff": {
@@ -208,12 +208,28 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "flux": {
+      "type": "expression",
+      "description": "Flux",
+      "expression": "(head.s-head.e)*K_eff/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
     "flow": {
       "type": "expression",
       "description": "Flow",
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
+      "ask_user": "false"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic gradient",
+      "expression": "(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "false",
       "ask_user": "false"
     },
     "color": {

@@ -479,57 +479,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 	}
 	if (param_constant_expression == "expression")
 	{
-
-        //qDebug()<<QString::fromStdString(this->ToString())<<":"<<term_sources_determined;
-
-        for (unsigned int i = 0; i < terms.size(); i++)
-        {
-            term_sources[i][0]=i;
-            terms_source_counter[i]++;
-        }
-        if (!term_sources_determined)
-        {   term_vals.resize(terms.size());
-            terms_calculated.resize(terms.size());
-        }
-
-        for (unsigned int i = 0; i < terms.size(); i++) terms_calculated[i]=false;
-
-        for (int i = operators.size() - 1; i >= 0; i--)
-		{
-			if (operators[i] == "^")
-				oprt(operators[i], i, i + 1, W, tmg, limit);
-		}
-		for (int i = operators.size() - 1; i >= 0; i--)
-		{
-			if (operators[i] == "*")
-				oprt(operators[i], i, i + 1, W, tmg, limit);
-		}
-
-		for (int i = operators.size() - 1; i >= 0; i--)
-		{
-			if (operators[i] == "/")
-				oprt(operators[i], i, i + 1, W, tmg,limit);
-		}
-
-		for (int i = operators.size() - 1; i >= 0; i--)
-		{
-			if (operators[i] == "+")
-				oprt(operators[i], i, i + 1, W, tmg,limit);
-
-		}
-
-		for (int i = operators.size() - 1; i >= 0; i--)
-		{
-			if (operators[i] == "-")
-			{
-				oprt(operators[i], i, i + 1, W, tmg,limit);
-			}
-		}
-        if (operators.size()==0)
-        {
-            term_vals[0]=terms[0].calc(W,tmg,limit);
-        }
-        unsigned int seploc=0;
+        /*unsigned int seploc=0;
         for (int i = operators.size() - 1; i >= 0; i--)
         {
             if (operators[i] == ";")
@@ -543,15 +493,33 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
             }
         }
         term_sources_determined = true;
+        */
+        if (operators.size()==0)
+        {
+            CalculationStructure.CalcOrder[0].value = terms[0].calc(W,tmg,0);
+        }
+        else
+        {
+            for (unsigned int i=0; i<CalculationStructure.CalcOrder.size(); i++)
+            {
+                oprt(i, CalculationStructure.CalcOrder[i].operatr,W, tmg,limit);
+            }
+        }
 		if (function == "")
-			return term_vals[0];
+            return CalculationStructure.CalcOrder[CalculationStructure.CalcOrder.size()-1].value;
 		else if (count_operators(";")==0)
-			return func(function, term_vals[0]);
+            return func(function, CalculationStructure.CalcOrder[CalculationStructure.CalcOrder.size()-1].value);
 		else if (count_operators(";")==1)
-            return func(function, term_vals[seploc], term_vals[seploc+1]);
+        {
+            vector<double> vals=argument_values(CalculationStructure.CalcOrder.size()-1,W,tmg,limit);
+            return func(function, vals[0] , vals[1]);
+        }
         else if (count_operators(";")==2)
-            return func(function, term_vals[0], term_vals[1], term_vals[2]);
-
+        {
+            vector<double> vals1=argument_values(CalculationStructure.CalcOrder.size()-1,W,tmg,limit);
+            vector<double> vals2=argument_values(CalculationStructure.CalcOrder.size()-2,W,tmg,limit);
+            return func(function, vals1[0], vals1[1], vals2[0]);
+        }
     }
 
     return 0;
@@ -628,14 +596,14 @@ double Expression::func(string &f, double cond, double val1, double val2)
 
 double Expression::oprt(string &f, double val1, double val2)
 {
-    if (f == "^") return
-        pow(aquiutils::Pos(val1), val2);
+    if (f == "^")
+        return pow(aquiutils::Pos(val1), val2);
     if (f == "+") return
         val1 + val2;
     if (f == "-") return
-        val1 + val2;
+        val1 - val2;
     if (f == "/") return
-        val1 * val2;
+        val1 / (val2+1e-23);
     if (f == "*") return
         val1*val2;
 	return 0;
@@ -714,6 +682,77 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
     terms_calculated[i2] = true;
     int i=term_sources[i1][0];
     return term_vals[i];
+
+}
+
+vector<double> Expression::argument_values(unsigned int calculation_sequence, Object *W, const Expression::timing &tmg, bool limit)
+{
+    vector<double> out(2);
+    int i1 = CalculationStructure.sources[calculation_sequence*2];
+    int i2 = CalculationStructure.sources[calculation_sequence*2+1];
+    double val1=0;
+    double val2=0;
+    if (i1>=0 && i2>=0)
+    {
+        val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(W,tmg,limit);
+        val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(W,tmg,limit);
+    }
+    else if (i1<0 && i2>=0)
+    {
+        val1 = CalculationStructure.CalcOrder[-i1-1000].value;
+        val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(W,tmg,limit);
+    }
+    else if (i2<0 && i1>=0)
+    {
+        val2 = CalculationStructure.CalcOrder[-i2-1000].value;
+        val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(W,tmg,limit);
+    }
+    out[0]=val1;
+    out[1]=val2;
+    return out;
+}
+
+
+double Expression::oprt(unsigned int calculation_sequence, string &f, Object *W, const Expression::timing &tmg, bool limit)
+{
+
+    int i1 = CalculationStructure.sources[calculation_sequence*2];
+    int i2 = CalculationStructure.sources[calculation_sequence*2+1];
+    double val1=0;
+    double val2=0;
+    if (i1>=0 && i2>=0)
+    {
+        val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(W,tmg,limit);
+        val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(W,tmg,limit);
+    }
+    else if (i1<0 && i2>=0)
+    {
+        val1 = CalculationStructure.CalcOrder[-i1-1000].value;
+        val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(W,tmg,limit);
+    }
+    else if (i2<0 && i1>=0)
+    {
+        val2 = CalculationStructure.CalcOrder[-i2-1000].value;
+        val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(W,tmg,limit);
+    }
+
+    //if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].sign == "/")
+    //    val1 = 1/(val1+1e-23);
+    //if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].sign == "-")
+    //    val1 = -val1;
+
+    //if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].sign == "/") val2 = 1 / (val2+1e-23);
+    //if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].sign == "-") val2 = -val2;
+
+    if (f=="^" && terms[i1].sign == "-")
+        CalculationStructure.CalcOrder[calculation_sequence].value = oprt(f, val1, val2);
+    else
+        CalculationStructure.CalcOrder[calculation_sequence].value = oprt(f, val1, val2);
+
+    //qDebug()<<CalculationStructure.CalcOrder[calculation_sequence].value;
+
+    return CalculationStructure.CalcOrder[calculation_sequence].value;
+
 }
 
 int Expression::lookup_operators(const string &s)
@@ -902,45 +941,30 @@ void Expression::Setup_Calculation_Structure(){
             _calculation_pattern pattern;
             pattern.operands.push_back(i);
             pattern.operands.push_back(i+1);
-            pattern.output_cell_id = CalculationStructure.sources.size();
-            CalculationStructure.CalcOrder.push_back(pattern);
-            if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
-                CalculationStructure.sources.push_back(i);
-            else
-                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
-
-            if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
-                CalculationStructure.sources.push_back(i+1);
-            else
-                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
-            CalculationStructure.targets.push_back(pattern.output_cell_id);
-            CalculationStructure.targets.push_back(pattern.output_cell_id);
-        }
-
-    }
-    for (int i = operators.size() - 1; i >= 0; i--)
-    {
-        if (operators[i] == "*")
-        {
-            _calculation_pattern pattern;
-            pattern.operands.push_back(i);
-            pattern.operands.push_back(i+1);
+            pattern.operatr = operators[i];
             pattern.output_cell_id = CalculationStructure.CalcOrder.size();
             CalculationStructure.CalcOrder.push_back(pattern);
             if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
                 CalculationStructure.sources.push_back(i);
             else
-                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
 
             if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
                 CalculationStructure.sources.push_back(i+1);
             else
-                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i+1)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
+
             CalculationStructure.targets.push_back(pattern.output_cell_id);
             CalculationStructure.targets.push_back(pattern.output_cell_id);
         }
-    }
 
+    }
     for (int i = operators.size() - 1; i >= 0; i--)
     {
         if (operators[i] == "/")
@@ -948,17 +972,56 @@ void Expression::Setup_Calculation_Structure(){
             _calculation_pattern pattern;
             pattern.operands.push_back(i);
             pattern.operands.push_back(i+1);
+            pattern.operatr = operators[i];
             pattern.output_cell_id = CalculationStructure.CalcOrder.size();
             CalculationStructure.CalcOrder.push_back(pattern);
             if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
                 CalculationStructure.sources.push_back(i);
             else
-                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
 
             if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
                 CalculationStructure.sources.push_back(i+1);
             else
-                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i+1)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
+
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+        }
+    }
+
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == "*")
+        {
+            _calculation_pattern pattern;
+            pattern.operands.push_back(i);
+            pattern.operands.push_back(i+1);
+            pattern.operatr = operators[i];
+            pattern.output_cell_id = CalculationStructure.CalcOrder.size();
+            CalculationStructure.CalcOrder.push_back(pattern);
+            if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
+                CalculationStructure.sources.push_back(i);
+            else
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
+
+            if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
+                CalculationStructure.sources.push_back(i+1);
+            else
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i+1)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
+
             CalculationStructure.targets.push_back(pattern.output_cell_id);
             CalculationStructure.targets.push_back(pattern.output_cell_id);
         }
@@ -971,17 +1034,25 @@ void Expression::Setup_Calculation_Structure(){
             _calculation_pattern pattern;
             pattern.operands.push_back(i);
             pattern.operands.push_back(i+1);
+            pattern.operatr = operators[i];
             pattern.output_cell_id = CalculationStructure.CalcOrder.size();
             CalculationStructure.CalcOrder.push_back(pattern);
             if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
                 CalculationStructure.sources.push_back(i);
             else
-                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
 
             if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
                 CalculationStructure.sources.push_back(i+1);
             else
-                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i+1)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
+
             CalculationStructure.targets.push_back(pattern.output_cell_id);
             CalculationStructure.targets.push_back(pattern.output_cell_id);
         }
@@ -994,20 +1065,65 @@ void Expression::Setup_Calculation_Structure(){
             _calculation_pattern pattern;
             pattern.operands.push_back(i);
             pattern.operands.push_back(i+1);
+            pattern.operatr = operators[i];
             pattern.output_cell_id = CalculationStructure.CalcOrder.size();
             CalculationStructure.CalcOrder.push_back(pattern);
             if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
                 CalculationStructure.sources.push_back(i);
             else
-                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
 
             if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
                 CalculationStructure.sources.push_back(i+1);
             else
-                CalculationStructure.sources.push_back(-1000-pattern.output_cell_id);
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i+1)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
             CalculationStructure.targets.push_back(pattern.output_cell_id);
             CalculationStructure.targets.push_back(pattern.output_cell_id);
         }
+    }
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == ";")
+        {
+            _calculation_pattern pattern;
+            pattern.operands.push_back(i);
+            pattern.operands.push_back(i+1);
+            pattern.operatr = operators[i];
+            pattern.output_cell_id = CalculationStructure.CalcOrder.size();
+            CalculationStructure.CalcOrder.push_back(pattern);
+            if (aquiutils::lookup(CalculationStructure.sources,i)==-1)
+                CalculationStructure.sources.push_back(i);
+            else
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
+
+            if (aquiutils::lookup(CalculationStructure.sources,i+1)==-1)
+                CalculationStructure.sources.push_back(i+1);
+            else
+            {
+                int order_of_source_container = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,i+1)];
+                CalculationStructure.sources.push_back(-1000-order_of_source_container);
+            }
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+            CalculationStructure.targets.push_back(pattern.output_cell_id);
+        }
+    }
+    if (operators.size()==0)
+    {
+        _calculation_pattern pattern;
+        pattern.operands.push_back(0);
+        pattern.output_cell_id = 0;
+        CalculationStructure.CalcOrder.push_back(pattern);
+        CalculationStructure.sources.push_back(0);
+        CalculationStructure.targets.push_back(0);
     }
 
 }

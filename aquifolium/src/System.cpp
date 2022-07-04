@@ -1820,7 +1820,9 @@ void System::SetStateVariables_TR(const string &variable, CVector_arma &X, const
 
 void System::CalculateAllExpressions(Expression::timing tmg)
 {
-    #pragma omp parallel for
+#ifndef NO_OPENMP
+#pragma omp parallel for
+#endif
     for (int i=0; i<blocks.size(); i++)
     {
         for (unsigned int j = 0; j < blocks[i].QuantitOrder().size(); j++)
@@ -1832,7 +1834,9 @@ void System::CalculateAllExpressions(Expression::timing tmg)
             }
         }
     }
-    #pragma omp parallel for
+#ifndef NO_OPENMP
+#pragma omp parallel for
+#endif
     for (int i=0; i<links.size(); i++)
     {
         for (unsigned int j = 0; j < links[i].QuantitOrder().size(); j++)

@@ -12,9 +12,10 @@ class Quan;
 
 struct _calculation_pattern
 {
-    vector<int> operands;
+    vector<int> operands; // a vector of size two containing the indicators to the terms being oprated
     int output_cell_id;
-    double value;
+    string operatr; //operator
+    double value; // value of the term
 };
 
 struct _calculation_struct
@@ -50,6 +51,8 @@ class Expression
         double func(string &f, double cond, double val1, double val2);
         double oprt(string & f, double val1, double val2);
         double oprt(string & f, unsigned int i1, unsigned int i2, Object * W, const timing &tmg, bool limit=false);
+        double oprt(unsigned int calculation_sequence, string &f, Object *W, const Expression::timing &tmg, bool limit=false);
+        vector<double> argument_values(unsigned int calculation_sequence, Object *W, const Expression::timing &tmg, bool limit=false);
         string unit;
         string text;
         static vector<string> funcs;
