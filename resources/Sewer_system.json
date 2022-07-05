@@ -10,7 +10,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "inflow,ag_withdrawal,non_ag_withdrawal",
+      "inflow": "inflow",
       "includeinoutput": "true",
       "description": "Storage",
       "initial_value_expression": "length*diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
@@ -22,6 +22,8 @@
       "description": "Manning's Roughness Coefficient",
       "ask_user": "true",
       "delegate": "ValueBox",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness coefficient must be greater than zero",
       "estimate": "true"
     },
     "bottom_elevation": {
@@ -54,16 +56,29 @@
       "criteria": "depth>-0.0000001",
       "warningmessage": "Depth must be non-negative"
     },
+    "depth_no_precalc": {
+      "type": "expression",
+      "expression": "normalized_depth*diameter",
+      "description": "Initial Water Depth; Water Depth (no pre-calc)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "includeinoutput": "true",
+      "criteria": "depth>-0.0000001",
+      "warningmessage": "Depth must be non-negative"
+    },
     "normalized_area": {
       "type": "expression",
       "expression": "Storage/(length*diameter^2)",
       "description": "Normalized area",
+      "includeinoutput": "true",
       "ask_user": "false"
     },
     "normalized_depth": {
       "type": "expression",
       "expression": "_min(2.2298958*normalized_area^3-2.7110899*normalized_area^2+2.027012721*normalized_area;1)",
       "description": "Normalized water depth",
+      "includeinoutput": "true",
       "ask_user": "false"
     },
     "head": {
@@ -87,6 +102,34 @@
       "type": "expression",
       "expression": "diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
       "description": "Cross-sectional area",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "area_1": {
+      "type": "expression",
+      "expression": "-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter)",
+      "description": "Cross-sectional area_1",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "area_t1": {
+      "type": "expression",
+      "expression": "-0.910331972*(depth/diameter)^3",
+      "description": "Cross-sectional area_t1",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "area_t2": {
+      "type": "expression",
+      "expression": "1.376045712*(depth/diameter)^2",
+      "description": "Cross-sectional area_t2",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "area_t3": {
+      "type": "expression",
+      "expression": "0.319684423*(depth/diameter)",
+      "description": "Cross-sectional area_t3",
       "ask_user": "false",
       "includeinoutput": "true"
     },
@@ -391,6 +434,14 @@
       "type": "expression",
       "description": "Flow (m~^3/day)",
       "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "Hydraulic Gradient": {
+      "type": "expression",
+      "description": "Hydralic Gradient",
+      "expression": "(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"

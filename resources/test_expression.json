@@ -1,0 +1,55 @@
+{
+  "Dummy": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Dummy", 
+    "icon": {
+      "filename": "Sewer_pipe_section.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "ask_user": "true",
+      "estimate": "true"
+    },
+    "a": {
+      "type": "value",
+      "description": "a",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "b": {
+      "type": "value",
+      "description": "b",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "c": {
+      "type": "value",
+      "description": "c",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "d": {
+      "type": "value",
+      "description": "d",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "Calc_Value_1": {
+      "type": "expression",
+      "expression": "c*d-5*a^5*1-b*2",
+      "description": "Calculated_value_1",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    }
+  }
+}

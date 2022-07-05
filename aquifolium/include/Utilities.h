@@ -18,7 +18,7 @@ namespace aquiutils
 {
 
     int lookup(const vector<string> &s, const string &s1);
-    int lookup(const vector<int> &s, const int &s1);
+    int lookup(const vector<int> &s, const int &s1, bool backward=false);
     int lookup(const vector<vector<int> > &s, const vector<int> &s1);
     int corresponding_parenthesis(string S, int i);
     int count(const string &s, const string &s1);

@@ -16,6 +16,7 @@ struct _calculation_pattern
     int output_cell_id;
     string operatr; //operator
     double value; // value of the term
+    string sign = "+";
 };
 
 struct _calculation_struct
@@ -92,6 +93,9 @@ class Expression
         bool sourceterms_resized = false;
         SafeVector<unsigned int> terms_source_counter;
         loc location = loc::self; //0: self, 1: start, 2: end
+        int find_order_of_source_container(int j);
+        int get_target_item_of_term(int term_id);
+        void AppendTermToStructure(int i);
 
 };
 

@@ -13,11 +13,21 @@ namespace aquiutils
         return -1;
     }
 
-    int lookup(const vector<int> &s, const int &s1)
+    int lookup(const vector<int> &s, const int &s1, bool backward)
     {
-        for (unsigned int i=0; i<s.size(); i++)
-            if (s[i]==s1)
-                return i;
+        if (!backward)
+        {
+            for (unsigned int i=0; i<s.size(); i++)
+                if (s[i]==s1)
+                    return i;
+        }
+        else
+        {
+            for (int i=s.size()-1; i>=0; i--)
+                if (s[i]==s1)
+                    return i;
+        }
+
         return -1;
     }
 
