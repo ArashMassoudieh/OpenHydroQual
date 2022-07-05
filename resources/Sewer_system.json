@@ -56,17 +56,6 @@
       "criteria": "depth>-0.0000001",
       "warningmessage": "Depth must be non-negative"
     },
-    "depth_no_precalc": {
-      "type": "expression",
-      "expression": "normalized_depth*diameter",
-      "description": "Initial Water Depth; Water Depth (no pre-calc)",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft;cm",
-      "includeinoutput": "true",
-      "criteria": "depth>-0.0000001",
-      "warningmessage": "Depth must be non-negative"
-    },
     "normalized_area": {
       "type": "expression",
       "expression": "Storage/(length*diameter^2)",
@@ -102,34 +91,6 @@
       "type": "expression",
       "expression": "diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
       "description": "Cross-sectional area",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    },
-    "area_1": {
-      "type": "expression",
-      "expression": "-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter)",
-      "description": "Cross-sectional area_1",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    },
-    "area_t1": {
-      "type": "expression",
-      "expression": "-0.910331972*(depth/diameter)^3",
-      "description": "Cross-sectional area_t1",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    },
-    "area_t2": {
-      "type": "expression",
-      "expression": "1.376045712*(depth/diameter)^2",
-      "description": "Cross-sectional area_t2",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    },
-    "area_t3": {
-      "type": "expression",
-      "expression": "0.319684423*(depth/diameter)",
-      "description": "Cross-sectional area_t3",
       "ask_user": "false",
       "includeinoutput": "true"
     },
