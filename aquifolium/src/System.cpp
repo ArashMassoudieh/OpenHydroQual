@@ -1154,12 +1154,14 @@ void System::PopulateOutputs(bool dolinks)
                     Object* location;
                     if (it->second.GetType() == Quan::_type::expression)
                     {   location = object(observations[i].GetLocation());
-                        if (location->ObjectType() != object_type::link || dolinks)
-                            Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present)*location->GetOutflowLimitFactor(Expression::timing::present));
+                        if (location)
+                            if (location->ObjectType() != object_type::link || dolinks)
+                                Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present)*location->GetOutflowLimitFactor(Expression::timing::present));
                     }
                     else
                     {   location = observation(i);
-                        Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present));
+                        if (location)
+                            Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present));
                     }
                 }
         }

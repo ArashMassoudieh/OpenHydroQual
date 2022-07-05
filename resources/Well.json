@@ -110,7 +110,13 @@
 		"interface_area":{
 			"type": "expression",
 			"description":"Interface area between well and soil/gw",
-			"expression":"(_min(_max(0;head.s-bottom_elevation.e);depth.e)+_hsd(pressure_head.e)*_max(_min(depth.e+bottom_elevation.e-head.s;depth.e);0))*3.14*diameter.s",
+			"expression":"_min(_max(0;head.s-bottom_elevation.e);depth.e)*3.14*diameter.s",
+			"includeinoutput" : "true"
+		},
+        	"interface_area_reverse":{
+			"type": "expression",
+			"description":"Interface area between well and soil/gw",
+			"expression":"_max(_min(depth.e+bottom_elevation.e-head.s;depth.e);0)*3.14*diameter.s",
 			"includeinoutput" : "true"
 		},
 		"hydraulic_gradient":{
@@ -122,7 +128,7 @@
 	        "flow" : {
 		      	"type": "expression",
 			"description": "Flow rate",
-                        "expression" : "K_sat.e*hydraulic_gradient*interface_area",
+                        "expression" : "K_sat.e*(hydraulic_gradient)*interface_area - _pos(pressure_head.e)/length*K_sat.e",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
 		}  	
