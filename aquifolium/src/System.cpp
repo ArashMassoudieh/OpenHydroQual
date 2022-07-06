@@ -1877,7 +1877,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 #ifndef NO_OPENMP
 #pragma omp parallel for
 #endif
-    for (unsigned int i=0; i<blocks.size(); i++)
+    for (int i=0; i<blocks.size(); i++)
     {
         //qDebug()<<QString::fromStdString(blocks[i].GetName());
         if (blocks[i].isrigid(variable))
@@ -1913,7 +1913,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 #ifndef NO_OPENMP
 #pragma omp parallel for
 #endif
-    for (unsigned int i=0; i<links.size(); i++)
+    for (int i=0; i<links.size(); i++)
        LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
 
 
