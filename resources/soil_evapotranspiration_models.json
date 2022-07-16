@@ -13,7 +13,7 @@
     },
     "coefficient": {
       "type": "expression",
-      "expression": "area*(Se/(Se+0.001))",
+      "expression": "area*_pos(theta)/theta_sat",
       "ask_user": "false"
     },
     "wind_speed":{
@@ -101,7 +101,7 @@
     },
     "coefficient": {
       "type": "expression",
-      "expression": "area*(Se/(Se+0.001))",
+      "expression": "area*_pos(theta)/theta_sat",
       "ask_user": "false"
     },
     "corr_fact" : {
@@ -142,7 +142,7 @@
     },
     "coefficient": {
       "type": "expression",
-      "expression": "area*(Se/(Se+0.001))",
+      "expression": "area*_pos(theta)/theta_sat",
       "ask_user": "false"
     },
     "solar_radiation":{
@@ -197,7 +197,7 @@
     },
     "coefficient": {
       "type": "expression",
-      "expression": "area*(Se/(Se+0.001))",
+      "expression": "area*_pos(theta)/theta_sat",
       "ask_user": "false"
     },
     "solar_radiation":{

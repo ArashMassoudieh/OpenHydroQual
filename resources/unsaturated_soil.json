@@ -144,7 +144,7 @@
 	},
     "pressure_head": {
       "type": "expression",
-      "expression": "-(1/alpha)*(Se^(-1/m)-1)^(1/n) + theta_sat*_pos((theta-theta_res)/(theta_sat-theta_res)-0.999)/specific_storage",
+      "expression": "-_max((1/alpha)*(Se^(-1/m)-1)^(1/n);10000) + theta_sat*_pos((theta-theta_res)/(theta_sat-theta_res)-0.999)/specific_storage",
       "description": "Pressure Head",
       "precalcbasedon": "theta::0:1",
       "ask_user": "false",
