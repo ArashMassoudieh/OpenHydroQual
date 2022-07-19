@@ -1747,11 +1747,26 @@ T CTimeSeries<T>::Exponential_Kernel(const T &t,const T &lambda) const
     unsigned int initial_i = GetElementNumberAt(t);
     unsigned int last_i = min(GetElementNumberAt(t+2.0/lambda),n-1);
     T sum=0;
-    for (unsigned int i=initial_i; i<=last_i; i++)
+    for (unsigned int i=initial_i; i<last_i; i++)
     {
-        sum+=GetC(i)*exp(-lambda*(GetT(i)-t));
+        sum+=GetC(i)*exp(-lambda*(GetT(i)-t))*(GetT(i+1)-GetT(i));
+        sum+=GetC(i)*exp(-lambda*(GetT(i+1)-t))*(GetT(i+1)-GetT(i));
     }
-    return sum/(last_i-initial_i);
+    return sum;
+}
+
+template<class T>
+T CTimeSeries<T>::Gaussian_Kernel(const T &t,const T &mu, const T &stdev) const
+{
+    unsigned int initial_i = max(GetElementNumberAt(t-2.0*stdev),0);
+    unsigned int last_i = min(GetElementNumberAt(t+2.0*stdev),n-1);
+    T sum=0;
+    for (unsigned int i=initial_i; i<last_i; i++)
+    {
+        sum+=0.5*GetC(i)*exp(-pow(GetT(i)-t-mu,2)/(2*pow(stdev,2)))/(sqrt(2*3.1415)*stdev)*(GetT(i+1)-GetT(i));
+        sum+=0.5*GetC(i+1)*exp(-pow(GetT(i+1)-t-mu,2)/(2*pow(stdev,2)))/(sqrt(2*3.1415)*stdev)*(GetT(i+1)-GetT(i));
+    }
+    return sum;
 }
 
 template<class T>

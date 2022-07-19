@@ -116,5 +116,99 @@
       "ask_user": "true",
       "estimate": "true"
     }
+  },
+    "Flow_control_device_(Gaussian_Kernel)": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Flow control device (Gaussian Kernel)",
+    "icon": {
+      "filename": "control_valve.png"
+    },
+    "timeseries": {
+      "type": "timeseries_prec",
+      "includeinoutput": "true",
+      "description": "Precipitation intensity",
+      "ask_user": "true",
+      "delegate": "Browser;time series"
+   },
+   "kernel_delay_parameter": {
+      "type": "value",
+      "default": "5",
+      "description": "Mean kernel delay time",
+      "delegate": "UnitBox",
+      "unit": "day",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "The mean delay time of the gaussian kernel function for precipitation forcast", 
+      "criteria": "kernel_delay_parameter>0",
+      "warningmessage": "Mean kernel delay time must be greater than zero"
+    },
+    "kernel_spread_parameter": {
+      "type": "value",
+      "default": "5",
+      "description": "Kernel spread parameter",
+      "delegate": "UnitBox",
+      "unit": "day",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "The spread parameter of the kernel function for precipitation forcast", 
+      "criteria": "kernel_spread_parameter>0",
+      "warningmessage": "Kernel spread parameter must be greater than zero"
+    },
+   "kernel_smoothed_forcast": {
+	"type": "expression",
+	"expression": "_gkr(timeseries;kernel_delay_parameter;kernel_spread_parameter)",
+	"description": "Kernel Smoothed Forcast",
+	"includeinoutput": "true",
+        "ask_user": "false"
+   },
+    "flow": {
+      "type": "rule",
+      "description": "Flow",
+      "rule": {
+	      "kernel_smoothed_forcast<S_min": "Q_min",
+	      "S_min<kernel_smoothed_forcast<S_max": "Q_min+((kernel_smoothed_forcast-S_min)/(S_max-S_min))*(Q_max-Q_min)",
+	      "kernel_smoothed_forcast>S_max": "Q_max"
+    	},
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "Q_min": {
+      "type": "value",
+      "default": "10",
+      "description": "Minimum flow",
+      "delegate": "UnitBox",
+      "unit": "m~^3/day;ft~^3/day",
+      "ask_user": "true",
+      "estimate": "true"
+    },
+    "Q_max": {
+      "type": "value",
+      "default": "100",
+      "description": "Maximum flow",
+      "delegate": "UnitBox",
+      "unit": "m~^3/day;ft~^3/day",
+      "ask_user": "true",
+      "estimate": "true"
+    },
+    "S_min": {
+      "type": "value",
+      "default": "0",
+      "description": "Lower precipitation threshold",
+      "delegate": "UnitBox",
+      "unit": "m/day",
+      "ask_user": "true",
+      "estimate": "true"
+    },
+    "S_max": {
+      "type": "value",
+      "default": "100",
+      "description": "Upper precipitation threshold",
+      "delegate": "UnitBox",
+      "unit": "m/day",
+      "ask_user": "true",
+      "estimate": "true"
+    }
   }
 }

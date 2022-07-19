@@ -117,6 +117,7 @@ public:
     unsigned int DSize() {return D.size(); }
     void AppendD(const T &value) { D.push_back(value); }
     T Exponential_Kernel(const T &t,const T &lambda) const;
+    T Gaussian_Kernel(const T &t,const T &mu, const T &stdev) const;
     int GetElementNumberAt(const T &t) const;
 private:
     vector<T> t;
