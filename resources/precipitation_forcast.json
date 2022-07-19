@@ -42,6 +42,17 @@
       "ask_user": "true",
       "delegate": "Browser;time series"
    },
+   "flow_coefficient": {
+      "type": "value",
+      "default": "1",
+      "description": "Flow multiplier",
+      "delegate": "ValueBox",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "This coefficient is multiplied by the Qmin and Qmax for flow control, often to correct for contributing catchment area", 
+      "criteria": "flow_coefficient>0",
+      "warningmessage": "flow_coefficient must be greater than zero"
+    },
    "kernel_delay_parameter": {
       "type": "value",
       "default": "5",
@@ -72,9 +83,9 @@
       "type": "rule",
       "description": "Flow",
       "rule": {
-	      "kernel_smoothed_forcast<S_min": "Q_min",
-	      "S_min<kernel_smoothed_forcast<S_max": "Q_min+((kernel_smoothed_forcast-S_min)/(S_max-S_min))*(Q_max-Q_min)",
-	      "kernel_smoothed_forcast>S_max": "Q_max"
+	      "kernel_smoothed_forcast<S_min": "flow_coefficient*Q_min",
+	      "S_min<kernel_smoothed_forcast<S_max": "flow_coefficient*(Q_min+((kernel_smoothed_forcast-S_min)/(S_max-S_min))*(Q_max-Q_min))",
+	      "kernel_smoothed_forcast>S_max": "flow_coefficient*Q_max"
     	},
       "includeinoutput": "true",
       "applylimit": "true",
@@ -131,6 +142,17 @@
       "ask_user": "true",
       "delegate": "Browser;time series"
    },
+   "flow_coefficient": {
+      "type": "value",
+      "default": "1",
+      "description": "Flow multiplier",
+      "delegate": "ValueBox",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "This coefficient is multiplied by the Qmin and Qmax for flow control, often to correct for contributing catchment area", 
+      "criteria": "flow_coefficient>0",
+      "warningmessage": "flow_coefficient must be greater than zero"
+    },
    "kernel_delay_parameter": {
       "type": "value",
       "default": "5",
@@ -166,9 +188,9 @@
       "type": "rule",
       "description": "Flow",
       "rule": {
-	      "kernel_smoothed_forcast<S_min": "Q_min",
-	      "S_min<kernel_smoothed_forcast<S_max": "Q_min+((kernel_smoothed_forcast-S_min)/(S_max-S_min))*(Q_max-Q_min)",
-	      "kernel_smoothed_forcast>S_max": "Q_max"
+	      "kernel_smoothed_forcast<S_min": "flow_coefficient*Q_min",
+	      "S_min<kernel_smoothed_forcast<S_max": "flow_coefficient*(Q_min+((kernel_smoothed_forcast-S_min)/(S_max-S_min))*(Q_max-Q_min))",
+	      "kernel_smoothed_forcast>S_max": "flow_coefficient*Q_max"
     	},
       "includeinoutput": "true",
       "applylimit": "true",
