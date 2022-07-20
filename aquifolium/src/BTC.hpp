@@ -1758,13 +1758,17 @@ T CTimeSeries<T>::Exponential_Kernel(const T &t,const T &lambda) const
 template<class T>
 T CTimeSeries<T>::Gaussian_Kernel(const T &t,const T &mu, const T &stdev) const
 {
-    unsigned int initial_i = max(GetElementNumberAt(t-2.0*stdev),0);
-    unsigned int last_i = min(GetElementNumberAt(t+2.0*stdev),n-1);
+    unsigned int initial_i = max(GetElementNumberAt(t-2.0*stdev+mu),0);
+    unsigned int last_i = min(GetElementNumberAt(t+2.0*stdev+mu),n-1);
     T sum=0;
     for (unsigned int i=initial_i; i<last_i; i++)
     {
-        sum+=0.5*GetC(i)*exp(-pow(GetT(i)-t-mu,2)/(2*pow(stdev,2)))/(sqrt(2*3.1415)*stdev)*(GetT(i+1)-GetT(i));
-        sum+=0.5*GetC(i+1)*exp(-pow(GetT(i+1)-t-mu,2)/(2*pow(stdev,2)))/(sqrt(2*3.1415)*stdev)*(GetT(i+1)-GetT(i));
+        double t1 = GetT(i);
+        double t2 = GetT(i+1);
+        double weight1 = exp(-pow(t1-t-mu,2)/(2*pow(stdev,2)))/(sqrt(2*3.1415)*stdev);
+        double weight2 = exp(-pow(t2-t-mu,2)/(2*pow(stdev,2)))/(sqrt(2*3.1415)*stdev);
+        sum+=0.5*GetC(i)*weight1*(GetT(i+1)-GetT(i));
+        sum+=0.5*GetC(i+1)*weight2*(GetT(i+1)-GetT(i));
     }
     return sum;
 }
