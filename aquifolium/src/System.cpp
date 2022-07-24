@@ -3600,7 +3600,9 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Expression::timing::present,transport);
     SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma jacobian(BlockCount());
-//#pragma omp parallel for
+#ifndef NO_OPENMP
+#pragma omp parallel for
+#endif
     for (unsigned int i=0; i<LinksCount(); i++)
     {
         if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
