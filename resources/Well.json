@@ -165,7 +165,7 @@
 	        "flow" : {
 		      	"type": "expression",
 			"description": "Flow rate",
-                        "expression" : "K_sat.e*hydraulic_gradient*area.s*_mon(depth.s;0.01)",
+                        "expression" : "K_sat.e*hydraulic_gradient*area.s*_mbs(depth.s;0.01)",
                         "description": "Flow (m~^3/day)",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
