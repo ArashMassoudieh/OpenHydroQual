@@ -78,3 +78,7 @@ QAquifolium.vcxproj
 .DS_Store
 
 Ubuntu_setup/
+
+.vs/OpenHydroQual/FileContentIndex/
+
+.vs/OpenHydroQual/v17/
