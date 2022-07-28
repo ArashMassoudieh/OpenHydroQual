@@ -82,3 +82,5 @@ Ubuntu_setup/
 .vs/OpenHydroQual/FileContentIndex/
 
 .vs/OpenHydroQual/v17/
+
+*.user

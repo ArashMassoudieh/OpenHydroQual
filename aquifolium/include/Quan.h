@@ -34,7 +34,7 @@ class Quan
 
         string GetStringValue() {return _string_value;}
         Quan& operator=(const Quan& other);
-        enum class _type {constant, value, balance, expression, timeseries, prec_timeseries, global_quan, rule, source, string};
+        enum class _type {constant, value, balance, expression, timeseries, prec_timeseries, global_quan, rule, source, string, not_assigned};
         enum class _role {none, copytoblocks, copytolinks, copytosources, copytoreactions};
         double CalcVal(Object *, const Expression::timing &tmg=Expression::timing::past);
         double CalcVal(const Expression::timing &tmg=Expression::timing::past);
@@ -115,7 +115,7 @@ class Quan
             return role;
         }
 		void SetName(const string &name) {_var_name=name;}
-		bool AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code);
+		bool AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code) const;
         bool SetProperty(const string &val, bool force_value = false, bool check_criteria=true);
         string GetProperty(bool force_value = false);
 		string SourceName() { return sourcename;}
@@ -140,8 +140,8 @@ class Quan
         void SetInitialValueExpression(const Expression &expression);
         Expression &InitialValueExpression() {return initial_value_expression;}
         bool calcinivalue() {return calculate_initial_value_from_expression;}
-        vector<string> AllConstituents();
-        vector<string> AllReactionParameters();
+        vector<string> AllConstituents() const;
+        vector<string> AllReactionParameters() const;
         bool RenameQuantity(const string &oldname, const string &newname);
         bool SetPrecalcIndependentVariable(const string &varname) {return precalcfunction.SetIndependentVariable(varname);}
         PreCalculatedFunction* PreCalcFunction() {return &precalcfunction;}
@@ -169,7 +169,7 @@ class Quan
         double _val=0;
         double _val_star=0;
         bool value_star_updated = false; 
-        _type type;
+        _type type = _type::not_assigned;
         bool perform_mass_balance = false;
         string corresponding_flow_quan;
         SafeVector<string> corresponding_inflow_quan;

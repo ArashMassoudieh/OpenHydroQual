@@ -3603,7 +3603,7 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
 #ifndef NO_OPENMP
 #pragma omp parallel for
 #endif
-    for (unsigned int i=0; i<LinksCount(); i++)
+    for (int i=0; i<LinksCount(); i++)
     {
         if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
         {   jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
