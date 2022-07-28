@@ -1,16 +1,9 @@
 #include "Expression.h"
-//#include "utility_funcs.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <cmath>
 #include <iostream>
 #include <Block.h>
-#include <fstream>
-#include <sstream>
-#include <cctype>
 #include "System.h"
-//#include "QDebug"
+
 
 #define SMALLNUMBER 1e-23
 using namespace std;
@@ -86,7 +79,6 @@ Expression::Expression(string S)
 
 	vector<string> out;
 	//bool inside_quote = false;
-	unsigned int paranthesis_level = 0;
     int last_operator_location = -1;
 	if (!aquiutils::parantheses_balance(S))
 	{
@@ -128,21 +120,22 @@ Expression::Expression(string S)
 	{
 		if (aquiutils::contains(S,"(") || aquiutils::contains(S,")") || aquiutils::contains(S,"+") || aquiutils::contains(S,"-") || aquiutils::contains(S,"*") || aquiutils::contains(S,"/") || aquiutils::contains(S,"^") || aquiutils::contains(S,";"))
 		{
+			unsigned int parenthesis_level = 0;
 			param_constant_expression = "expression";
 			for (unsigned int i = 0; i < S.size(); i++)
 			{
 				if (S.substr(i, 1) == "(")
-					paranthesis_level++;
+					parenthesis_level++;
 
 				if (S.substr(i, 1) == ")")
-					paranthesis_level--;
+					parenthesis_level--;
 
-				if (paranthesis_level == 0)
+				if (parenthesis_level == 0)
 					if ((S.substr(i, 1) == "+") || (S.substr(i, 1) == "-") || (S.substr(i, 1) == "*") || (S.substr(i, 1) == "/") || (S.substr(i, 1) == "^") || (S.substr(i, 1) == ";"))
 					{
 						operators.push_back(S.substr(i, 1));
 						Expression sub_exp = Expression(aquiutils::trim(S.substr(last_operator_location+1, i -1- last_operator_location)));
-						if (sub_exp.text != "")
+						if (!sub_exp.text.empty())
 						{
                             if (operators.size() > 1)
 								sub_exp.sign = operators[operators.size() - 2];
@@ -163,7 +156,7 @@ Expression::Expression(string S)
 
 			
             Expression sub_exp = Expression(aquiutils::trim(S.substr(last_operator_location+1, S.size() - last_operator_location)));
-			if (operators.size() > 0)
+			if (!operators.empty())
 				sub_exp.sign = operators[operators.size() - 1];
 			else
 				sub_exp.sign = "+";
@@ -208,7 +201,8 @@ Expression::Expression(const Expression & S)
     operators.clear();
     term_vals.clear();
 	terms_calculated.clear();
-	_errors.clear(); 
+	_errors.clear();
+    terms.clear();
 	quan = nullptr;
 	operators = S.operators;
 	constant = S.constant;
@@ -229,7 +223,9 @@ Expression::Expression(const Expression & S)
 
 Expression & Expression::operator=(const Expression &S)
 {
-    terms.clear();
+    if (this == &S)
+        return *this; 
+	terms.clear();
 	term_vals.clear();
 	terms_calculated.clear();
 	_errors.clear();
@@ -265,16 +261,16 @@ vector<string> Expression::extract_operators(string s)
 {
 	vector<string> out;
 	//bool inside_quote = false;
-	int paranthesis_level = 0;
+	int parenthesis_level = 0;
 	for (unsigned int i = 0; i < s.size(); i++)
 	{
 		if (s.substr(i, 1) == "(")
-			paranthesis_level++;
+			parenthesis_level++;
 
 		if (s.substr(i, 1) == ")")
-			paranthesis_level--;
+			parenthesis_level--;
 
-		if (paranthesis_level == 0)
+		if (parenthesis_level == 0)
 			if ((s.substr(i, 1) == "+") || (s.substr(i, 1) == "-") || (s.substr(i, 1) == "*") || (s.substr(i, 1) == "/") || (s.substr(i, 1) == "^")) out.push_back(s.substr(i, 1));
 
 
@@ -298,7 +294,10 @@ vector<string> Expression::extract_terms(string s)
 
 	}
 	vector<string> out = aquiutils::split(s,' ');
-	for (unsigned int i = 0; i < out.size(); i++) aquiutils::replace(out[i],"|", " ");
+	for (unsigned int i = 0; i < out.size(); i++)
+	{
+		aquiutils::replace(out[i],"|", " ");
+	}
 	return out;
 }
 
@@ -345,7 +344,9 @@ bool Expression::SetQuanPointers(Object *W)
     else if (param_constant_expression == "expression")
     {
         for (unsigned int i=0; i<terms.size(); i++)
-            terms[i].SetQuanPointers(W);
+        {
+	        terms[i].SetQuanPointers(W);
+        }
         return true;
     }
 
@@ -370,7 +371,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 	{
         if (terms.size()!=2)
         {
-            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Function 'ups' requiers two arguments", 7001);
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Function 'ups' requires two arguments", 7001);
             return 0;
         }
         else if ((W->GetConnectedBlock(Expression::loc::source)==nullptr) || (W->GetConnectedBlock(Expression::loc::destination)==nullptr))
@@ -380,7 +381,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
         }
         else
         {
-            double flow = terms[0].calc(W,tmg,limit);
+            const double flow = terms[0].calc(W,tmg,limit);
             if (flow>0)
             {
                 return flow*terms[1].calc(W->GetConnectedBlock(Expression::loc::source),tmg,limit);
@@ -406,7 +407,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
         }
         else
         {
-            double slope = terms[0].calc(W->GetConnectedBlock(Expression::loc::source),tmg,limit) - terms[0].calc(W->GetConnectedBlock(Expression::loc::destination),tmg,limit);
+            const double slope = terms[0].calc(W->GetConnectedBlock(Expression::loc::source),tmg,limit) - terms[0].calc(W->GetConnectedBlock(Expression::loc::destination),tmg,limit);
             if (slope>0)
             {
                 return terms[1].calc(W->GetConnectedBlock(Expression::loc::source),tmg,limit);
@@ -499,31 +500,16 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
             }
        }
 
-        if (function == "")
+        if (function.empty())
             return out;
         else if (count_operators(";")==0)
             return func(function, out);
 	}
 	if (param_constant_expression == "expression")
 	{
-        /*unsigned int seploc=0;
-        for (int i = operators.size() - 1; i >= 0; i--)
+        if (operators.empty())
         {
-            if (operators[i] == ";")
-            {
-                seploc = i;
-                if (i==0)
-                    term_vals[0] = terms[0].calc(W,tmg,limit);
-                if (i==int(operators.size()-1))
-                    term_vals[i+1] = terms[i+1].calc(W,tmg,limit);
-
-            }
-        }
-        term_sources_determined = true;
-        */
-        if (operators.size()==0)
-        {
-            CalculationStructure.CalcOrder[0].value = terms[0].calc(W,tmg,0);
+            CalculationStructure.CalcOrder[0].value = terms[0].calc(W,tmg,false);
         }
         else
         {
@@ -532,7 +518,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
                 oprt(i, CalculationStructure.CalcOrder[i].operatr,W, tmg,limit);
             }
         }
-		if (function == "")
+		if (function.empty())
             return CalculationStructure.CalcOrder[CalculationStructure.CalcOrder.size()-1].value;
 		else if (count_operators(";")==0)
             return func(function, CalculationStructure.CalcOrder[CalculationStructure.CalcOrder.size()-1].value);
@@ -553,7 +539,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 }
 
 
-double Expression::func(string &f, double val)
+double Expression::func(const string &f, const double &val)
 {
 
 	if (f == "exp")
@@ -585,7 +571,7 @@ double Expression::func(string &f, double val)
 	return val;
 }
 
-double Expression::func(string &f, double val1, double val2)
+double Expression::func(const string &f, const double &val1, const double &val2)
 {
 	if (f == "min")
 		return min(val1, val2);
@@ -600,7 +586,7 @@ double Expression::func(string &f, double val1, double val2)
 	return val1;
 }
 
-double Expression::func(string &f, double cond, double val1, double val2)
+double Expression::func(const string &f, const double &cond, const double &val1, const double &val2)
 {
 	if (f == "ups")
 	{
@@ -621,7 +607,7 @@ double Expression::func(string &f, double cond, double val1, double val2)
 }
 
 
-double Expression::oprt(string &f, double val1, double val2)
+double Expression::oprt(const string &f, const double &val1, const double &val2) const
 {
     if (f == "^")
         return pow(aquiutils::Pos(val1), val2);
@@ -636,7 +622,7 @@ double Expression::oprt(string &f, double val1, double val2)
 	return 0;
 }
 
-double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, const Expression::timing &tmg, bool limit)
+double Expression::oprt(const string &f, unsigned int i1, unsigned int i2, Object *W, const Expression::timing &tmg, bool limit)
 {
 
     for (unsigned int j = 0; j < terms_source_counter[i1]; j++)
@@ -707,7 +693,7 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
     }
     terms_calculated[i1] = true;
     terms_calculated[i2] = true;
-    int i=term_sources[i1][0];
+    const int i=term_sources[i1][0];
     return term_vals[i];
 
 }
@@ -715,8 +701,8 @@ double Expression::oprt(string &f, unsigned int i1, unsigned int i2, Object *W, 
 vector<double> Expression::argument_values(unsigned int calculation_sequence, Object *W, const Expression::timing &tmg, bool limit)
 {
     vector<double> out(2);
-    int i1 = CalculationStructure.sources[calculation_sequence*2];
-    int i2 = CalculationStructure.sources[calculation_sequence*2+1];
+    const int i1 = CalculationStructure.sources[static_cast<std::vector<int, std::allocator<int>>::size_type>(calculation_sequence) * 2];
+    const int i2 = CalculationStructure.sources[static_cast<std::vector<int, std::allocator<int>>::size_type>(calculation_sequence) * 2 + 1];
     double val1=0;
     double val2=0;
     if (i1>=0 && i2>=0)
@@ -743,8 +729,8 @@ vector<double> Expression::argument_values(unsigned int calculation_sequence, Ob
 double Expression::oprt(unsigned int calculation_sequence, string &f, Object *W, const Expression::timing &tmg, bool limit)
 {
 
-    int i1 = CalculationStructure.sources[calculation_sequence*2];
-    int i2 = CalculationStructure.sources[calculation_sequence*2+1];
+    int i1 = CalculationStructure.sources[static_cast<std::vector<int, std::allocator<int>>::size_type>(calculation_sequence) * 2];
+    int i2 = CalculationStructure.sources[static_cast<std::vector<int, std::allocator<int>>::size_type>(calculation_sequence) * 2 + 1];
     double val1=0;
     double val2=0;
     if (i1>=0 && i2>=0)
@@ -796,7 +782,7 @@ double Expression::oprt(unsigned int calculation_sequence, string &f, Object *W,
 
 }
 
-int Expression::lookup_operators(const string &s)
+int Expression::lookup_operators(const string &s) const
 {
     for (unsigned int i=0; i<operators.size(); i++)
         if (operators[i]==s)
@@ -805,12 +791,14 @@ int Expression::lookup_operators(const string &s)
 
 }
 
-int Expression::count_operators(const string &s)
+int Expression::count_operators(const string &s) const
 {
     int count = 0;
     for (unsigned int i=0; i<operators.size(); i++)
-        if (operators[i]==s)
-            count ++;
+    {
+	    if (operators[i]==s)
+		    count ++;
+    }
     return count;
 
 }
@@ -904,7 +892,7 @@ Expression Expression::RenameConstituent(const string &old_constituent_name, con
             }
 
         }
-        else if (terms[i].terms.size() > 0)
+        else if (!terms[i].terms.empty())
         {
             out.terms[i] = terms[i].RenameConstituent(old_constituent_name,new_constituent_name, quantity);
         }
@@ -961,7 +949,7 @@ string Expression::ToString() const
         out += aquiutils::numbertostring(constant);
         return out;
     }
-    if (function!="") out += "_" + function;
+    if (!function.empty()) out += "_" + function;
     out += "(";
     for (unsigned int i=0; i<terms.size();i++)
     {
@@ -1023,7 +1011,7 @@ void Expression::Setup_Calculation_Structure(){
             AppendTermToStructure(i);
         }
     }
-    if (operators.size()==0)
+    if (operators.empty())
     {
         _calculation_pattern pattern;
         pattern.operands.push_back(0);
@@ -1040,7 +1028,7 @@ int Expression::find_order_of_source_container(int j)
     if (j>=0)
     {   if (aquiutils::lookup(CalculationStructure.sources,j,true)==-1)
             return -1;
-        int i = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,j,true)];
+        const int i = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,j,true)];
         if (aquiutils::lookup(CalculationStructure.sources,-i-1000)!=-1)
         {
             return find_order_of_source_container(-i-1000);
@@ -1056,7 +1044,7 @@ int Expression::find_order_of_source_container(int j)
             if (CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,j,true)]==-j-1000)
                 return -j-1000;
             else
-                find_order_of_source_container(-CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,j,true)]-1000);
+                return find_order_of_source_container(-CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,j,true)]-1000);
         }
     }
 

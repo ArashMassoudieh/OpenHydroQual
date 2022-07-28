@@ -527,7 +527,6 @@ double Quan::GetVal(const Expression::timing &tmg)
         {
 #ifndef NO_OPENMP
             omp_lock_t writelock;
-
             omp_init_lock(&writelock);
 #endif
             if (type == _type::expression)
@@ -557,12 +556,12 @@ double Quan::GetVal(const Expression::timing &tmg)
                     _val_star = 0;
                 value_star_updated = true;
             }
-            return _val_star;
+            
 #ifndef NO_OPENMP
             omp_unset_lock(&writelock);
-
             omp_destroy_lock(&writelock);
 #endif
+            return _val_star;
         }
     }
 }
@@ -600,7 +599,7 @@ double Quan::CalcVal(const Expression::timing &tmg)
     }
     if (type == _type::expression)
     {   
-        if (precalcfunction.IndependentVariable()=="" || precalcfunction.Initiated()==false)
+        if (precalcfunction.IndependentVariable().empty() || precalcfunction.Initiated()==false)
             return _expression.calc(parent,tmg);
         else
             return InterpolateBasedonPrecalcFunction(parent->GetVal(precalcfunction.IndependentVariable(),tmg));
@@ -674,8 +673,8 @@ string tostring(const Quan::_type &typ)
 
 bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_criteria)
 {
-    double past_val = _val;
-    double past_val_star = _val;
+    const double past_val = _val;
+    const double past_val_star = _val;
     if (tmg == Expression::timing::past)
         _val = v;
     else if (tmg == Expression::timing::present)
@@ -774,8 +773,7 @@ void Quan::SetCorrespondingFlowVar(const string &s)
 
 void Quan::SetCorrespondingInflowVar(const string &s)
 {
-    SafeVector<string> corresponding_inflow_variables = SafeVector<string>::fromStdVector(aquiutils::split(s,','));
-    corresponding_inflow_quan = corresponding_inflow_variables;
+    corresponding_inflow_quan = SafeVector<string>::fromStdVector(aquiutils::split(s,','));
 }
 
 
@@ -817,7 +815,7 @@ CTimeSeries<timeseriesprecision>* Quan::TimeSeries()
 
 bool Quan::SetTimeSeries(const string &filename, bool prec)
 {
-    if (filename=="")
+    if (filename.empty())
     {
         _timeseries = CTimeSeries<double>();
         return true;
@@ -839,7 +837,7 @@ bool Quan::SetTimeSeries(const string &filename, bool prec)
 	else
 	{
 		CPrecipitation Prec;
-		if (!Prec.isFileValid(filename))
+		if (!CPrecipitation::isFileValid(filename))
 		{
 			AppendError(GetName(), "Quan", "SetTimeSeries", filename + " was not is not a valid precipitation file", 3023);
 			return false;
@@ -856,7 +854,7 @@ bool Quan::SetTimeSeries(const string &filename, bool prec)
 
 bool Quan::SetSource(const string &sourcename)
 {
-    if (sourcename=="")
+    if (sourcename.empty())
     {
         source = nullptr;
         return true;
@@ -911,14 +909,14 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
         return SetVal(aquiutils::atof(val),Expression::timing::both, check_criteria);
     if (type == _type::timeseries)
     {
-        if (parent->Parent()->InputPath() != "")
+        if (!parent->Parent()->InputPath().empty())
             return SetTimeSeries(parent->Parent()->InputPath() + val);
         else
             return SetTimeSeries(val);
     }
 	if (type == _type::prec_timeseries)
 	{
-		if (parent->Parent()->InputPath() != "")
+		if (!parent->Parent()->InputPath().empty())
 			return SetTimeSeries(parent->Parent()->InputPath() + val,true);
 		else
 			return SetTimeSeries(val,true);
@@ -960,11 +958,10 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
 
 
     return SetVal(aquiutils::atof(val),Expression::timing::both, check_criteria);
-
-    return true;
+    
 }
 
-bool Quan::AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code)
+bool Quan::AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code) const
 {
     if (!parent)
         return false;
@@ -981,8 +978,8 @@ string Quan::toCommand()
 #ifdef Q_version
         if (unit!=default_unit)
         {
-            double coefficient = XString::coefficient(QString::fromStdString(unit));
-            double _value = atof(GetProperty(true).c_str())/coefficient;
+            const double coefficient = XString::coefficient(QString::fromStdString(unit));
+            const double _value = atof(GetProperty(true).c_str())/coefficient;
             s += GetName() + "=" + aquiutils::numbertostring(_value) + "[" + unit + "]";
         }
         else
@@ -997,18 +994,18 @@ string Quan::toCommand()
 
 bool Quan::Validate()
 {
-    if (type == _type::timeseries && _timeseries.filename!="")
+    if (type == _type::timeseries && !_timeseries.filename.empty())
     {
         if (type == _type::timeseries)
         {
-            if (parent->Parent()->InputPath() != "")
+            if (!parent->Parent()->InputPath().empty())
                 return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.filename);
             else
                 return SetTimeSeries(_timeseries.filename);
         }
         if (type == _type::prec_timeseries)
         {
-            if (parent->Parent()->InputPath() != "")
+            if (!parent->Parent()->InputPath().empty())
                 return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.filename, true);
             else
                 return SetTimeSeries(_timeseries.filename, true);
@@ -1041,7 +1038,7 @@ void Quan::SetInitialValueExpression(const Expression &expression)
     initial_value_expression = expression;
 }
 
-vector<string> Quan::AllConstituents()
+vector<string> Quan::AllConstituents() const
 {
     if (parent)
         return parent->AllConstituents();
@@ -1049,7 +1046,7 @@ vector<string> Quan::AllConstituents()
         return vector<string>();
 }
 
-vector<string> Quan::AllReactionParameters()
+vector<string> Quan::AllReactionParameters() const
 {
     if (parent)
         return parent->AllReactionParameters();
@@ -1076,9 +1073,9 @@ double Quan::InterpolateBasedonPrecalcFunction(const double &val)
 }
 bool Quan::InitializePreCalcFunction(int n_inc)
 {
-    double old_independent_variable_value = parent->GetVal(precalcfunction.IndependentVariable(),Expression::timing::present);
+    const double old_independent_variable_value = parent->GetVal(precalcfunction.IndependentVariable(),Expression::timing::present);
     if (parent==nullptr) return false;
-    if (precalcfunction.IndependentVariable()=="") return false;
+    if (precalcfunction.IndependentVariable().empty()) return false;
     precalcfunction.clear();
     if (!precalcfunction.Logarithmic())
         for (double x=precalcfunction.xmin(); x<=precalcfunction.xmax(); x+=(precalcfunction.xmax()-precalcfunction.xmin())/double(n_inc))

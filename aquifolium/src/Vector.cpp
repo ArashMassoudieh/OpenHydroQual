@@ -8,6 +8,7 @@
 #include <cfloat>
 #include "Vector_arma.h"
 #include "Expression.h"
+#include "QuickSort.h"
 
 
 //////////////////////////////////////////////////////////////////////

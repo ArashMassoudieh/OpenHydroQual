@@ -1,9 +1,7 @@
 
 #pragma once
 
-#include <iostream>
 #include <vector>
-#include "QuickSort.h"
 #include "armadillo"
 
 
