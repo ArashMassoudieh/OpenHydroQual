@@ -767,11 +767,58 @@ bool System::Solve(bool applyparameters)
 
         }
     }
+#ifdef Q_version
+    if (rtw)
+    {
+        rtw->AppendText(QString("Adjusting outputs ..."));
+        QCoreApplication::processEvents();
+    }
+#endif
     Outputs.AllOutputs.adjust_size();
+#ifdef Q_version
+    if (rtw)
+    {
+        rtw->AppendText(QString("Adjusting outputs, Done!"));
+        QCoreApplication::processEvents();
+    }
+#endif
     Outputs.AllOutputs.unif = false;
+
+#ifdef Q_version
+    if (rtw)
+    {
+        rtw->AppendText(QString("Uniformizing outputs ..."));
+        QCoreApplication::processEvents();
+    }
+#endif
     Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0);
+
+#ifdef Q_version
+    if (rtw)
+    {
+        rtw->AppendText(QString("Uniformizing observations ..."));
+        QCoreApplication::processEvents();
+    }
+#endif
     Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0);
+
+#ifdef Q_version
+    if (rtw)
+    {
+        rtw->AppendText(QString("Uniformizing objective functions ...."));
+        QCoreApplication::processEvents();
+    }
+#endif
+
     MakeObjectiveFunctionExpressionUniform();
+#ifdef Q_version
+    if (rtw)
+    {
+        rtw->AppendText(QString("Uniformizing observation expressions ..."));
+        QCoreApplication::processEvents();
+    }
+#endif
+
     MakeObservationsExpressionUniform();
 #ifdef Q_version
     if (rtw)

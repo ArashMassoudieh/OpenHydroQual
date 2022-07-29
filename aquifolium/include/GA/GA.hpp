@@ -330,7 +330,7 @@ int counter=0;
 		{
 
 			FILE *FileOut;
-#ifdef NO_OPENMP
+#ifndef NO_OPENMP
 #pragma omp critical
 #endif
             {
@@ -363,7 +363,9 @@ int counter=0;
 			epochs[k] += Models[k].EpochCount();
             time_[k] = time(nullptr)-t0;
             counter++;
+#ifndef NO_OPENMP
 #pragma omp critical
+#endif
         {
 #ifdef Q_version
 			if (rtw != nullptr)
@@ -371,10 +373,10 @@ int counter=0;
 #ifndef NO_OPENMP
                 if (omp_get_thread_num() == 0)
 #endif
-				{
+                {
 					rtw->SetProgress2(double(counter + 1) / GA_params.maxpop);
-					QCoreApplication::processEvents();
-				}
+                    QCoreApplication::processEvents();
+                }
 			}
 #endif
 
