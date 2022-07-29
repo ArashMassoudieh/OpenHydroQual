@@ -168,7 +168,9 @@ void CGA<T>::setnparams(int n_params)
 	for (int i=0; i<GA_params.maxpop; i++)
 	{
 		Ind[i] = CIndividual(n_params);
+        Ind[i].fit_measures.resize(Model->ObservationsCount()*3);
 		Ind_old[i] = CIndividual(n_params);
+        Ind_old[i].fit_measures.resize(Model->ObservationsCount()*3);
 
 	}
 
@@ -193,9 +195,11 @@ void CGA<T>::setnumpop(int n)
 			Ind[i].minrange[j] = TempInd.minrange[j];
 			Ind[i].maxrange[j] = TempInd.maxrange[j];
 			Ind[i].precision[j] = TempInd.precision[j];
+            Ind[i].fit_measures.resize(Model->ObservationsCount()*3);
 			Ind_old[i].minrange[j] = TempInd.minrange[j];
 			Ind_old[i].maxrange[j] = TempInd.maxrange[j];
 			Ind_old[i].precision[j] = TempInd.precision[j];
+            Ind_old[i].fit_measures.resize(Model->ObservationsCount()*3);
 		}
 
 	}
@@ -374,7 +378,7 @@ int counter=0;
                 if (omp_get_thread_num() == 0)
 #endif
                 {
-					rtw->SetProgress2(double(counter + 1) / GA_params.maxpop);
+                    rtw->SetProgress2(double(counter + 1) / GA_params.maxpop);
                     QCoreApplication::processEvents();
                 }
 			}
@@ -562,7 +566,7 @@ int CGA<T>::optimize()
             fprintf(FileOut, "%le, %le, %i, ", Ind[j1].actual_fitness, Ind[j1].fitness, Ind[j1].rank);
             for (unsigned int i=0; i<Model->ObservationsCount();i++)
             {
-                fprintf(FileOut, "%le, %le, %le", Ind[j1].fit_measures[i*3], Ind[j1].fit_measures[i*3+1], Ind[j1].fit_measures[i*3+2]);
+                fprintf(FileOut, ",%le, %le, %le", Ind[j1].fit_measures[i*3], Ind[j1].fit_measures[i*3+1], Ind[j1].fit_measures[i*3+2]);
             }
 			fprintf(FileOut, "\n");
 		}
