@@ -1,0 +1,330 @@
+{
+  "Evapotranspiration_Aerodynamic (Soil)": {
+    "type": "source",
+    "typecategory": "Sources",
+    "icon": {
+      "filename": "Evapotranspiration_Aerodynamic_soil.png"
+    },
+    "name": {
+      "description": "Name",      
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*(Se/(Se+0.001))",
+      "ask_user": "false"
+    },
+    "wind_speed":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "wind time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "Temperature":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Temperature time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "corr_fact" : {
+    	"type": "value",
+    	"ask_user": "true",
+	    "includeinoutput": "false",
+    	"description": "Scale factor",
+    	"default": "1",
+    	"delegate": "ValueBox",
+		"estimate": "true"
+    },
+    "z2" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Wind measurement elevation",
+    	"default": "2",
+    	"criteria": "z2>0",
+        "warningmessage": "Wind reference height must be greater than zero",
+    	"delegate": "ValueBox"
+    },
+    "z0" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Roughness height",
+    	"default": "0.0003",
+    	"criteria": "z0>0",
+       "warningmessage": "Roughness height must be greater than zero",
+    	"delegate": "ValueBox"
+    },
+    "B": {
+    	"type": "expression",
+	"includeinoutput": "true",
+	"description": "B coefficient",
+	"ask_user": "false",
+	"expression": "0.000102*wind_speed/(_log(z2/z0))^2"
+    },
+    "e_as": {
+    	"type": "expression",
+    	"expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
+	"includeinoutput": "true",
+	"description": "Saturated humidity"
+    },
+    "R_h" : {
+    	"type": "timeseries",
+    	"includeinoutput": "true",
+	"description": "Relative humidity time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "rate": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "B*e_as*(R_h-1)"
+    }
+  },
+  "Evapotranspiration_Time_Series (Soil)": {
+    "type": "source",
+    "typecategory": "Sources",
+    "icon": {
+      "filename": "Evapotranspiration_timeseries_soil.png"
+    },
+    "name": {
+      "description": "Name",      
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*(Se/(Se+0.001))",
+      "ask_user": "false"
+    },
+    "corr_fact" : {
+    	"type": "value",
+    	"ask_user": "true",
+	    "includeinoutput": "false",
+    	"description": "Scale factor",
+    	"default": "1",
+    	"delegate": "ValueBox",
+		"estimate": "true"
+    },
+    "timeseries":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Evaporation time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "rate": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "corr_fact*timeseries"
+    }
+  },
+  "Evapotranspiration_Energy_Balance (Soil)": {
+    "type": "source",
+    "typecategory": "Sources",
+    "icon": {
+      "filename": "Evapotranspiration_energy_balance_soil.png"
+    },
+    "name": {
+      "description": "Name",      
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*(Se/(Se+0.001))",
+      "ask_user": "false"
+    },
+    "solar_radiation":{
+    	"type": "timeseries",
+		"includeinoutput": "true",
+		"description": "Solar Radiation (W/m^2)",
+    	"ask_user": "true",
+		"delegate": "Browser"
+    },
+    "corr_fact" : {
+    	"type": "value",
+    	"ask_user": "true",
+		"includeinoutput": "false",
+    	"description": "Scale factor",
+    	"default": "1",
+    	"delegate": "ValueBox",
+		"estimate": "true"
+    },
+    "Temperature":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Temperature time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "l_v" :
+    {
+	"type": "expression",
+	"description": "Latent Heat of Evaporation (J/kg)",
+      	"expression": "2501000-2370*Temperature",
+	"ask_user": "false"
+    },
+    "rate": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "-corr_fact*solar_radiation/(l_v*1000)*86400"
+    }
+  },
+  "Evapotranspiration_Penman (Soil)": {
+    "type": "source",
+    "typecategory": "Sources",
+    "icon": {
+      "filename": "Evapotranspiration_Priestly_Taylor_soil.png"
+    },
+    "name": {
+      "description": "Name",      
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*(Se/(Se+0.001))",
+      "ask_user": "false"
+    },
+    "solar_radiation":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Solar Radiation (W/m^2)",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "Temperature":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Temperature time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "wind_speed":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "wind time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "wind_scale_fact" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Wind scale factor",
+    	"default": "1",
+    	"delegate": "ValueBox",
+		"estimate": "true"
+    },
+    "solar_scale_fact" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Solar radiation scale factor",
+    	"default": "1",
+    	"delegate": "ValueBox",
+		"estimate": "true"
+    },
+    "R_h" : {
+    	"type": "timeseries",
+    	"includeinoutput": "true",
+	"description": "Relative humidity time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "z2" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Wind measurement elevation",
+    	"default": "2",
+    	"criteria": "z2>0",
+        "warningmessage": "Wind reference height must be greater than zero",
+        "delegate": "UnitBox",
+        "unit": "m;ft"
+    },
+    "z0" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Roughness height",
+    	"default": "0.0003",
+    	"criteria": "z0>0",
+       "warningmessage": "Roughness height must be greater than zero",
+    	"delegate": "UnitBox",
+        "unit": "m;ft"
+    },
+    "gamma" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "psychrometric constant (Pa/C)",
+    	"default": "66.8",
+    	"criteria": "gamma>0",
+       "warningmessage": "psychrometric constant must be greater than zero",
+    	"delegate": "ValueBox"
+    },
+    "B": {
+    	"type": "expression",
+	"includeinoutput": "true",
+	"description": "B coefficient",
+	"ask_user": "false",
+	"expression": "0.000102*wind_speed*wind_scale_fact/(_log(z2/z0))^2"
+    },
+    "e_as": {
+    	"type": "expression",
+    	"expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
+	"includeinoutput": "true",
+	"description": "Saturated humidity"
+    },
+    "Ea": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Aerodynamic Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "B*e_as*(R_h-1)"
+    },
+    "l_v" :
+    {
+	"type": "expression",
+	"description": "Latent Heat of Evaporation (J/kg)",
+      	"expression": "2501000-2370*Temperature",
+	"ask_user": "false"
+    },
+    "Er": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Radiation-based Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "-solar_scale_fact*solar_radiation/(l_v*1000)*86400"
+    },
+    "Delta": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Gradient of e_as vs T",
+      "ask_user": "false",
+      "expression": "4098*e_as/(237.3+Temperature)"
+    },
+    "rate": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "(Delta*Er/(Delta+gamma))+(gamma*Ea/(Delta+gamma))"
+    }
+  }
+}
