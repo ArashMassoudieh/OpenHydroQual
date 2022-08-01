@@ -53,7 +53,17 @@
 	  "criteria": "0<theta_res<theta_sat",
 	  "warningmessage": "Residual Moisture Content must be between 0 and saturated  moisture content"
     },
-    "K_sat": {
+    "K_sat_scale_factor": {
+      "type": "value",
+      "description": "Hydraulic conductivity scale factor",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "K_sat_scale_factor>0",
+      "warningmessage": "Hydraulic conductivity scale factor must be greater than zero"
+    },
+    "K_sat_original": {
       "type": "value",
       "description": "Saturated Hydraulc Conductivity",
       "ask_user": "true",
@@ -61,9 +71,15 @@
       "unit": "m/day;ft/day;m/s;ft/s",
       "includeinoutput": "true",
       "estimate": "true",
-	  "default": "1",
-	  "criteria": "K_sat>0",
-	  "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero"
+      "default": "1",
+      "criteria": "K_sat_original>0",
+      "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero"
+    },
+    "K_sat": {
+      "type": "expression",
+      "expression" : "K_sat_original*K_sat_scale_factor",
+      "description": "Scaled Saturated Hydraulic conductivity",
+      "ask_user": "false"
     },
     "bottom_elevation": {
       "type": "value",
