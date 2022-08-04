@@ -1568,7 +1568,7 @@ void MainWindow::onzoomwindowtriggered()
 void MainWindow::onsaveas()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
-            tr("Save"), "",
+            tr("Save"), workingfolder,
             tr("OpenHydroQual files (*.ohq)"),nullptr,QFileDialog::DontUseNativeDialog);
     if (fileName!="")
     {
@@ -1592,7 +1592,7 @@ void MainWindow::onsaveas()
 void MainWindow::onexporttosvg()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
-            tr("Save"), "",
+            tr("Save"), workingfolder,
             tr("svg files (*.svg)"),nullptr,QFileDialog::DontUseNativeDialog);
     QString svgfileName;
     if (fileName!="")
@@ -1638,7 +1638,7 @@ void MainWindow::onopen()
 {
 
     QString fileName = QFileDialog::getOpenFileName(this,
-            tr("Open"), "",
+            tr("Open"), workingfolder,
             tr("OpenHydroQual files (*.ohq);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
 
@@ -2012,7 +2012,7 @@ void MainWindow::onAddItemThroughTreeViewRightClick()
 void MainWindow::loadnewtemplate()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-            tr("Open"), "",
+            tr("Open"), QString::fromStdString(RESOURCE_DIRECTORY),
             tr("Script files (*.json);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
 

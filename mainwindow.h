@@ -64,6 +64,10 @@ public:
     void InactivateRedo(bool yes=true);
     void AddStatetoUndoData();
     void SetActiveUndo();
+    QString* GetWorkingFolder()
+    {
+        return &workingfolder;
+    }
 private:
     logwindow *LogWindow;
     Ui::MainWindow *ui;
