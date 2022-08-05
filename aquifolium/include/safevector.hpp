@@ -37,6 +37,22 @@ T& SafeVector<T>::operator[](int i)
 }
 
 template<class T>
+T& SafeVector<T>::operator[](unsigned int i)
+{
+
+    if (i > int(this->size()) - 1)
+    {
+        cout << int(this->size());
+        cout << "Exceeded the size" << std::endl;
+        T x;
+        return x;
+    }
+    else
+        return vector<T>::operator[](i);
+
+}
+
+template<class T>
 bool SafeVector<T>::SetVal(unsigned int i, const T &val)
 {
     if (i>int(this->size())-1)

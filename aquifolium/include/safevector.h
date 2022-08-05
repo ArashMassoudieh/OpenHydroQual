@@ -12,6 +12,7 @@ public:
     SafeVector();
     ~SafeVector();
     T& operator[](int i);
+    T& operator[](unsigned int i);
     vector<T> toStdVector()
     {
         vector<T> out = this->vector;

@@ -1130,6 +1130,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
                 }
             }
         }
+        
         if (menu)
             menu->exec( tree->mapToGlobal(pos) );
 

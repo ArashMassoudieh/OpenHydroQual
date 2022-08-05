@@ -421,6 +421,9 @@ void System::UnUpdateAllVariables()
     for (unsigned int i = 0; i < observations.size(); i++)
         observations[i].UnUpdateAllValues();
 
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+        reaction_parameters[i].UnUpdateAllValues();
+
     for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
         ObjectiveFunctions()[i]->UnUpdateAllValues();
 }
@@ -1022,6 +1025,17 @@ void System::InitiateOutputs()
             }
     }
 
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+    {
+        reaction_parameters[i].EstablishExpressionStructure();
+        for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), reaction_parameters[i].GetName() + "_" + it->first);
+                it->second.SetOutputItem(reaction_parameters[i].GetName() + "_" + it->first);
+            }
+    }
+
     for (unsigned int i=0; i<objective_function_set.size(); i++)
     {
         objective_function_set[i]->EstablishExpressionStructure();
@@ -1079,6 +1093,15 @@ void System::SetOutputItems()
             if (it->second.IncludeInOutput())
             {
                 it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
+            }
+    }
+
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+    {
+        for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                it->second.SetOutputItem(reaction_parameters[i].GetName() + "_" + it->first);
             }
     }
 
@@ -1186,6 +1209,16 @@ void System::PopulateOutputs(bool dolinks)
                 {
                     //sources[i].CalcExpressions(Expression::timing::present);
                     Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName() + "_" + it->first].append(SolverTempVars.t, objective_function_set[i]->Variable(it->first)->CalcVal(object(objective_function_set[i]->GetLocation()), Expression::timing::present));
+                }
+        }
+
+        for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+        {
+            for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
+                if (it->second.IncludeInOutput())
+                {
+                    //sources[i].CalcExpressions(Expression::timing::present);
+                    Outputs.AllOutputs[reaction_parameters[i].GetName() + "_" + it->first].append(SolverTempVars.t, reaction_parameters[i].GetVal(it->first, Expression::timing::present, true));
                 }
         }
 
@@ -1898,6 +1931,18 @@ void System::CalculateAllExpressions(Expression::timing tmg)
         }
     }
 
+    for (int i = 0; i < reaction_parameters.size(); i++)
+    {
+        for (unsigned int j = 0; j < reaction_parameters[i].QuantitOrder().size(); j++)
+        {
+            if (reaction_parameters[i].Variable(reaction_parameters[i].QuantitOrder()[j])->GetType() == Quan::_type::expression)
+            {   //links[i].Variable(links[i].QuantitOrder()[j])->GetExpression()->ClearTermSources();
+                reaction_parameters[i].Variable(reaction_parameters[i].QuantitOrder()[j])->SetVal(reaction_parameters[i].Variable(reaction_parameters[i].QuantitOrder()[j])->CalcVal(tmg), tmg);
+
+            }
+        }
+    }
+
     for (unsigned int i=0; i<sources.size(); i++)
     {
         for (unsigned int j = 0; j < sources[i].QuantitOrder().size(); j++)
@@ -2202,6 +2247,31 @@ void System::SetVariableParents()
 	{
 		sources[i].SetVariableParents();
 	}
+
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+    {
+        reaction_parameters[i].SetVariableParents();
+    }
+
+    for (unsigned int i = 0; i < reactions.size(); i++)
+    {
+        reactions[i].SetVariableParents();
+    }
+
+    for (unsigned int i = 0; i < parameter_set.size(); i++)
+    {
+        parameter_set[i]->SetVariableParents();
+    }
+
+    for (unsigned int i = 0; i < observations.size(); i++)
+    {
+        observations[i].SetVariableParents();
+    }
+
+    for (unsigned int i = 0; i < objective_function_set.size(); i++)
+    {
+        objective_function_set[i]->SetVariableParents();
+    }
 }
 
 vector<string> System::GetAllBlockTypes()
@@ -2622,6 +2692,10 @@ void System::SetAllParents()
 
     for (unsigned int i = 0; i < sources.size(); i++)
         sources[i].SetParent(this);
+
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+        reaction_parameters[i].SetParent(this);
+
     for (unsigned int i = 0; i < objective_function_set.size(); i++)
     {
         objective_function_set[i]->SetParent(this);

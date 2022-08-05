@@ -675,10 +675,40 @@
     "icon": {
       "filename": "reactionparameter.png"
     },
-    "value": {
+    "base_value": {
       "description": "Value",
       "type": "value",
       "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+	"value": {
+      "description": "Value",
+      "type": "expression",
+	  "expression": "base_value*Arrhenius_factor^(temperature-reference_temperature)",
+      "ask_user": "false",
+	  "includeinoutput": "true"
+    },
+	"reference_temperature": {
+      "description": "Reference Temperature",
+      "type": "value",
+	  "default": "0",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+	"temperature": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Temperature time-series (degrees Celsius)",
+      "ask_user": "true",
+      "delegate": "Browser" 
+    },
+	"Arrhenius_factor": {
+      "description": "Arrhenius temperature correction factor",
+      "type": "value",
+      "default": "1",
+	  "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
     }
