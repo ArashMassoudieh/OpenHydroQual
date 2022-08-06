@@ -331,7 +331,7 @@ bool QuanSet::AppendError(const string &objectname, const string &cls, const str
         return false;
     if (!parent->Parent())
         return false;
-
+#pragma omp critical (appenderror)
     parent->Parent()->errorhandler.Append(objectname,cls,funct,description,code);
     return true;
 }

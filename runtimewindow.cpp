@@ -37,13 +37,14 @@ void RunTimeWindow::AppendText(const std::string &s)
 
 void RunTimeWindow::AppendtoDetails(const QString &s)
 {
+#pragma omp critical (error_message)
     ui->textBrowserdetails->append(s);
 }
 
 
 void RunTimeWindow::AppendErrorMessage(const QString &s)
 {
-#pragma omp critical
+#pragma omp critical(_error_message)
     {   ui->textBrowser->setTextColor(Qt::red);
         ui->textBrowser->append(s);
         ui->textBrowser->setTextColor(Qt::black);

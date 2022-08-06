@@ -46,10 +46,20 @@ class ErrorHandler
                 return &errors[i];
         }
         void clear() {errors.clear();}
+        bool lookup_description(const string &description)
+        {
+            for (unsigned int i=0; i<errors.size(); i++)
+            {
+                if (errors[i].description == description)
+                    return true;
+            }
+            return false;
+        }
         bool Append(const string &objectname, const string &cls, const string &funct, const string &description, const int &code)
         {
-#pragma omp critical(LogUpdate)
-        {       _error err;
+
+            if (!lookup_description(description))
+            {   _error err;
                 err.description = description;
                 err.cls = cls;
                 err.funct = funct;
@@ -60,8 +70,10 @@ class ErrorHandler
                 if (rtw)
                     rtw->AppendErrorMessage(QString::fromStdString(description));
 #endif
+
+                return false;
             }
-            return false;
+            else return false;
         }
 #ifdef Q_version
         void SetRunTimeWindow(RunTimeWindow *_rtw) {rtw = _rtw;}

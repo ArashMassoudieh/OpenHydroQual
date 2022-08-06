@@ -364,8 +364,8 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 
 
 
-    EstablishSourceStructure();
-    ResetTermsSources();
+    //EstablishSourceStructure();
+    //ResetTermsSources();
 
 	if (function=="ups")
 	{

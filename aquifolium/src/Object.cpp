@@ -64,7 +64,8 @@ double Object::CalcVal(const string& s,const Expression::timing &tmg)
     else
     {
         if (parent)
-        Parent()->errorhandler.Append(GetName(),"Object","CalcVal","property '" + s + "' does not exist in '" + GetName() + "'" ,1001);
+#pragma omp critical (error_append_in_object)
+            Parent()->errorhandler.Append(GetName(),"Object","CalcVal","property '" + s + "' does not exist in '" + GetName() + "'" ,1001);
         last_operation_success = false;
         return 0;
     }
@@ -169,6 +170,7 @@ double Object::GetVal(const string& variable, const string& consttnt, const Expr
     }
     else
     {
+#pragma omp critical (error_message_in_object2)
         Parent()->errorhandler.Append(GetName(),"Object","GetVal","property '" + fullname + "' does not exist in '" + GetName() + "'" ,1017);
         last_operation_success = false;
         return 0;
@@ -301,10 +303,13 @@ bool Object::SetVal(const string& s, double value, const Expression::timing &tmg
     }
     else
     {
-        if (Parent())
-//#pragma omp critical (setval_error)
-        {   Parent()->errorhandler.Append(GetName(),"Object","SetVal","Variable " + s + " was not found!",1005);
-            last_error = "Variable " + s + " was not found!";
+#pragma omp critical (setval_error)
+        {
+            if (Parent())
+            {
+               Parent()->errorhandler.Append(GetName(),"Object","SetVal","Variable " + s + " was not found!",1005);
+                last_error = "Variable " + s + " was not found!";
+            }
         }
         return false;
     }
@@ -319,8 +324,13 @@ bool Object::SetVal(const string& s, const string & value, const Expression::tim
     }
     else
     {
-        Parent()->errorhandler.Append(GetName(),"Object","SetVal","Variable " + s + " was not found!",1006);
-        last_error = "Variable " + s + " was not found!";
+#pragma omp critical (setval_error)
+        {
+        if (Parent())
+            {    Parent()->errorhandler.Append(GetName(),"Object","SetVal","Variable " + s + " was not found!",1006);
+                 last_error = "Variable " + s + " was not found!";
+            }
+        }
         return false;
     }
 }
@@ -476,7 +486,8 @@ bool Object::Renew(const string & variable)
 {
 	if (!Variable(variable))
 	{
-		Parent()->errorhandler.Append(GetName(),"Object","Renew","Variable '" + variable + "' does not exist!",1011);
+#pragma omp critical (renew)
+        Parent()->errorhandler.Append(GetName(),"Object","Renew","Variable '" + variable + "' does not exist!",1011);
 		return false;
 	}
 	else
@@ -488,8 +499,9 @@ bool Object::Renew(const string & variable)
 bool Object::Update(const string & variable)
 {
 	if (!Variable(variable))
-	{
-		Parent()->errorhandler.Append(GetName(),"Object","Update","Variable '" + variable + "' does not exist!",1011);
+    {
+#pragma omp critical (update)
+        Parent()->errorhandler.Append(GetName(),"Object","Update","Variable '" + variable + "' does not exist!",1011);
 		return false;
 	}
 	else
@@ -542,8 +554,10 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
 {
     if (!HasQuantity(prop))
     {
-        if (Parent())
-            Parent()->errorhandler.Append(GetName(),"Object","SetProperty","Object '" + GetName() + "' has no property called '" + prop + "'",1012);
+#pragma omp critical (set_property)
+        {    if (Parent())
+                Parent()->errorhandler.Append(GetName(),"Object","SetProperty","Object '" + GetName() + "' has no property called '" + prop + "'",1012);
+        }
         return false;
     }
     if (var[prop].GetType() == Quan::_type::value || var[prop].GetType() == Quan::_type::balance || var[prop].GetType() == Quan::_type::constant || (var[prop].GetType() == Quan::_type::expression && (var[prop].Delegate()=="UnitBox"||var[prop].Delegate()=="ValueBox" )))
