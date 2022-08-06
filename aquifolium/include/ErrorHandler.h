@@ -48,17 +48,19 @@ class ErrorHandler
         void clear() {errors.clear();}
         bool Append(const string &objectname, const string &cls, const string &funct, const string &description, const int &code)
         {
-            _error err;
-            err.description = description;
-            err.cls = cls;
-            err.funct = funct;
-            err.objectname = objectname;
-            err.code = code;
-            errors.push_back(err);
+#pragma omp critical(LogUpdate)
+        {       _error err;
+                err.description = description;
+                err.cls = cls;
+                err.funct = funct;
+                err.objectname = objectname;
+                err.code = code;
+                errors.push_back(err);
 #ifdef Q_version
-            if (rtw)
-                rtw->AppendErrorMessage(QString::fromStdString(description));
+                if (rtw)
+                    rtw->AppendErrorMessage(QString::fromStdString(description));
 #endif
+            }
             return false;
         }
 #ifdef Q_version
