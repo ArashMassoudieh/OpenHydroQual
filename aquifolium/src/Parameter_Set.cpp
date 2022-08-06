@@ -27,7 +27,7 @@ Parameter_Set& Parameter_Set::operator=(const Parameter_Set& rhs)
 void Parameter_Set::Append(const string &name, const Parameter &param)
 {
     parameters.push_back(param);
-    parameters[unsigned int( parameters.size()-1)].SetName(name);
+    parameters[unsigned( parameters.size()-1)].SetName(name);
     return;
 }
 Parameter* Parameter_Set::operator[](string name)
