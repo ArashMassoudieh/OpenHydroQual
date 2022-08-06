@@ -467,6 +467,11 @@
       "type": "expression",
       "expression": "head",	
       "ask_user": "false"
+    },
+	"area": {
+      "type": "value",
+	  "description": "area",
+      "default": "1"
     }
   },
   "time_variable_fixed_head": {
