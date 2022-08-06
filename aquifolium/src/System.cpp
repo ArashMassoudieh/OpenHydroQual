@@ -769,6 +769,10 @@ bool System::Solve(bool applyparameters)
                 stop_triggered = true;
 
         }
+        if (rtw)
+        {   errorhandler.Flush(rtw);
+            QCoreApplication::processEvents();
+        }
     }
 #ifdef Q_version
     if (rtw)

@@ -55,9 +55,22 @@ class ErrorHandler
             }
             return false;
         }
+        void Flush(RunTimeWindow *_rtw=nullptr)
+        {
+            if (flushed_counter<errors.size())
+            {
+                for (int j=flushed_counter+1; j<errors.size(); j++)
+                {
+                    if (_rtw)
+                        _rtw->AppendErrorMessage(QString::fromStdString(errors[j].description));
+                    else if (rtw)
+                        rtw->AppendErrorMessage(QString::fromStdString(errors[j].description));
+                }
+            }
+            flushed_counter=errors.size();
+        }
         bool Append(const string &objectname, const string &cls, const string &funct, const string &description, const int &code)
         {
-
             if (!lookup_description(description))
             {   _error err;
                 err.description = description;
@@ -66,11 +79,6 @@ class ErrorHandler
                 err.objectname = objectname;
                 err.code = code;
                 errors.push_back(err);
-#ifdef Q_version
-                if (rtw)
-                    rtw->AppendErrorMessage(QString::fromStdString(description));
-#endif
-
                 return false;
             }
             else return false;
@@ -82,6 +90,7 @@ class ErrorHandler
     protected:
 
     private:
+        int flushed_counter=0;
         vector<_error> errors;
         #ifdef Q_version
         RunTimeWindow *rtw = nullptr;
