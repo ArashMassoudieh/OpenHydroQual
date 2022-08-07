@@ -603,9 +603,7 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::sort(int burnOut)
 	int counter = 0;
 	//clock_t tt0 = clock();
 
-#pragma omp parallel
-
-	#pragma omp for
+#pragma omp parallel for
 	for (int i = 0; i < nvars; i++)
 	{
 		counter++;

@@ -468,7 +468,7 @@
       "expression": "head",	
       "ask_user": "false"
     },
-    "_area": {
+    "area": {
       "type": "value",
 	  "description": "area",
       "default": "1"

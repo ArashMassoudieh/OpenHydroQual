@@ -2389,6 +2389,12 @@ void System::clear()
     observations.clear();
     constituents.clear();
     errorhandler.clear();
+    addedpropertiestoallblocks.clear();
+    addedpropertiestoalllinks.clear(); 
+    addedtemplates.clear(); 
+    alltimeseries.clear(); 
+    fit_measures.clear(); 
+    
 }
 
 void System::TransferQuantitiesFromMetaModel()
