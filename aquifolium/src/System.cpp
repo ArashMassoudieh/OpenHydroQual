@@ -998,7 +998,7 @@ bool System::SetProperty(const string &s, const string &val)
     }
 
 
-    errorhandler.Append("","System","SetProperty","Property '" + s + "' was not found!", 622);
+    //errorhandler.Append("","System","SetProperty","Property '" + s + "' was not found!", 622);
 
     return false;
 }

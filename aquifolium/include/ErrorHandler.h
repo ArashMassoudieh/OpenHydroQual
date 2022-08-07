@@ -59,7 +59,7 @@ class ErrorHandler
         {
             if (flushed_counter<errors.size())
             {
-                for (int j=flushed_counter+1; j<errors.size(); j++)
+                for (int j=flushed_counter; j<errors.size(); j++)
                 {
                     if (_rtw)
                         _rtw->AppendErrorMessage(QString::fromStdString(errors[j].description));
