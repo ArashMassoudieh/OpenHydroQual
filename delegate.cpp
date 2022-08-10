@@ -463,8 +463,8 @@ void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 void Delegate::browserClicked()
 {
     QString fileName = QFileDialog::getOpenFileName(mainwindow,
-            tr("Open"), "",
-            tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"),mainwindow->GetWorkingFolder(),QFileDialog::DontUseNativeDialog);
+            tr("Open"), *mainwindow->GetWorkingFolder(),
+            tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
     if (fileName!="")
     {
         if (QFile(fileName).exists())
@@ -483,7 +483,7 @@ void Delegate::browserClicked()
 void Delegate::browserSaveClicked()
 {
     QString fileName = QFileDialog::getSaveFileName(mainwindow,
-            tr("Save"), "",
+            tr("Save"),*mainwindow->GetWorkingFolder(),
             tr("txt files (*.txt);; csv files (*.csv);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
     mainwindow->propModel()->setData(selectedindex, fileName, CustomRoleCodes::Role::loadIndex);
 }
