@@ -17,6 +17,8 @@ linux: DEFINES +=ubuntu_version
 win32: DEFINES +=windows_version
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+DEFINES += Terminal_version
+
 TARGET = OpenHydroQual
 TEMPLATE = app
 win32:QMAKE_CXXFLAGS += /MP

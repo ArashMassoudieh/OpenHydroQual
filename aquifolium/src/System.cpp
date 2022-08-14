@@ -600,19 +600,21 @@ bool System::Solve(bool applyparameters)
 #endif
     PopulateOutputs(false);
     RestorePoint restorepoint(this);
+#ifdef Terminal_version
+    cout<<"Running from time " << SolverTempVars.t << " to " << SimulationParameters.tend << endl;
+#endif
     while (SolverTempVars.t<SimulationParameters.tend+SolverTempVars.dt && !stop_triggered)
     {
         //qDebug()<<SolverTempVars.t;
         progress_p = progress;
         progress = (SolverTempVars.t - SimulationParameters.tstart) / (SimulationParameters.tend - SimulationParameters.tstart);
         counter++;
-        //cout << "\r Simulation Time: " + aquiutils::numbertostring(SolverTempVars.t);
 		if (counter%50==0)
             SolverTempVars.SetUpdateJacobian(true);
         //qDebug()<<"First Jacobian update...";
         SolverTempVars.dt = min(SolverTempVars.dt_base,GetMinimumNextTimeStepSize());
         if (SolverTempVars.dt<SimulationParameters.dt0/ timestepminfactor) SolverTempVars.dt=SimulationParameters.dt0/ timestepminfactor;
-        #ifdef Debug_mode
+        #ifdef Terminal_version
         ShowMessage(string("t = ") + aquiutils::numbertostring(SolverTempVars.t) + ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt) + ", SolverTempVars.numiterations =" + aquiutils::numbertostring(SolverTempVars.numiterations));
         #endif // Debug_mode
 

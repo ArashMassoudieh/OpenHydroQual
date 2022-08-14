@@ -4,10 +4,16 @@
 int main(int argc, char *argv[])
 {
     cout<<"Input file: "<<argv[1]<<endl;
-    System system;
+    System *system;
     cout<<"Reading script ..."<<endl;
-    Script scr(argv[1],&system);
+    Script scr(argv[1]);
+    cout<<"Executing script ..."<<endl;
+    system = scr.CreateSystem();
+    system->SetSilent(false);
     cout<<"Solving ..."<<endl;
-    system.Solve();
+    system->Solve();
+    cout<<"Writing outputs ..."<<endl;
+    system->GetOutputs().writetofile(system->OutputFileName());
+
 
 }
