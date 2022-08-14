@@ -20,6 +20,7 @@ class Script
         virtual ~Script();
         Command* operator[](int i) {return &commands[i];}
         System *GetSystem() {return system;}
+        void SetSystem(System* _system) {system = _system;}
         void FillMustBeSpecified();
         map<string, map<string, vector<string>>> *MustBeSpecified()
         {

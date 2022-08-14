@@ -7,6 +7,7 @@ int main(int argc, char *argv[])
     System *system;
     cout<<"Reading script ..."<<endl;
     Script scr(argv[1]);
+    scr.SetSystem(system);
     cout<<"Executing script ..."<<endl;
     system = scr.CreateSystem();
     system->SetSilent(false);
