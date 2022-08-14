@@ -6,6 +6,7 @@
 #include <map>
 #include "Quan.h"
 #include "MetaModel.h"
+#include "memory"
 #ifdef Q_version
 #include <qdebug.h>
 #endif

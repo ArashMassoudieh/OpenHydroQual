@@ -55,6 +55,7 @@ class ErrorHandler
             }
             return false;
         }
+#ifdef Q_version
         void Flush(RunTimeWindow *_rtw=nullptr)
         {
             if (flushed_counter<errors.size())
@@ -69,6 +70,7 @@ class ErrorHandler
             }
             flushed_counter=errors.size();
         }
+#endif
         bool Append(const string &objectname, const string &cls, const string &funct, const string &description, const int &code)
         {
             if (!lookup_description(description))

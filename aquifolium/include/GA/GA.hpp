@@ -393,12 +393,13 @@ int counter=0;
 		}
     }
 	Model_out = Models[maxfitness()];
+#ifdef Q_version
     if (rtw != nullptr)
     {
         rtw->SetProgress2(1);
         QCoreApplication::processEvents();
     }
-
+#endif
 	inp.clear();
 	assignfitness_rank(GA_params.N);
 

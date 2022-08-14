@@ -504,8 +504,10 @@ vector<bool> System::OneStepSolve()
 void System::MakeTimeSeriesUniform(const double &increment)
 {
 
+#ifdef Q_version
     if (rtw!=nullptr)
         rtw->AppendText(string("Uniformizing of time-series..."));
+#endif
     for (unsigned int i=0; i<sources.size(); i++)
         sources[i].MakeTimeSeriesUniform(increment);
 
@@ -514,9 +516,10 @@ void System::MakeTimeSeriesUniform(const double &increment)
 
     for (unsigned int i=0; i<blocks.size(); i++)
         blocks[i].MakeTimeSeriesUniform(increment);
-
+#ifdef Q_version
     if (rtw!=nullptr)
         rtw->AppendText(string("Uniformizing of time-series (done!)"));
+#endif
 
 }
 
@@ -546,10 +549,14 @@ bool System::Solve(bool applyparameters)
     InitiateOutputs();
     //qDebug()<<"Writing objects to logger";
     WriteObjectsToLogger();
+#ifdef Q_version
     QCoreApplication::processEvents();
+#endif
     //qDebug()<<"Processes Events...";
     MakeTimeSeriesUniform(SimulationParameters.dt0);
+#ifdef Q_version
     QCoreApplication::processEvents();
+#endif
     //qDebug()<<"Made uniform done!...";
 
     SolverTempVars.dt_base = SimulationParameters.dt0;
@@ -664,9 +671,11 @@ bool System::Solve(bool applyparameters)
                 {
                     if (GetSolutionLogger())
                         GetSolutionLogger()->WriteString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t) );
+#ifdef Q_version
                     if (rtw)
                         if (rtw->detailson)
                             rtw->AppendtoDetails(QString::fromStdString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t)));
+#endif
 
                 }
             }
@@ -769,10 +778,12 @@ bool System::Solve(bool applyparameters)
                 stop_triggered = true;
 
         }
+#ifdef Q_version
         if (rtw)
         {   errorhandler.Flush(rtw);
             QCoreApplication::processEvents();
         }
+#endif
     }
 #ifdef Q_version
     if (rtw)

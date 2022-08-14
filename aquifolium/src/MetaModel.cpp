@@ -143,7 +143,6 @@ bool MetaModel::AppendFromJsonFile(const string &filename)
 
     for (Json::ValueIterator object_types=root.begin(); object_types!=root.end(); ++object_types)
     {
-       qDebug()<<QString::fromStdString(object_types.key().asString());
        QuanSet quanset(object_types);
        Append(object_types.key().asString(),quanset);
     }
