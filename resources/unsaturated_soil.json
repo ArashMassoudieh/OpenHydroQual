@@ -334,7 +334,7 @@
     "area": {
       "type": "expression",
       "description": "Interface area",
-      "expression": "area.s",
+      "expression": "_min(area.s;area.e)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
