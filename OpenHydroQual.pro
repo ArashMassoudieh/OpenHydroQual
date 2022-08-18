@@ -36,18 +36,37 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_version Aquifolium
 
 CONFIG += c++14
 
+
+
+macx: {
+    QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -I/Users/arash/Projects/clang+llvm/lib
+}
+
+macx: {
+    QMAKE_LFLAGS += -lomp
+}
+
+macx: {
+    LIBS += -L /Users/arash/Projects/clang+llvm/lib /Users/arash/Projects/clang+llvm/lib/libomp.dylib
+}
+
+macx: {
+    INCLUDEPATH += /Users/arash/Projects/clang+llvm/lib/clang/14.0.6/include
+}
+
+
 CONFIG(debug, debug|release) {
     message(Building in debug mode)
-    #QMAKE_CXXFLAGS+= -fopenmp
-    #QMAKE_LFLAGS +=  -fopenmp
-    macx: LIBS += -lgomp -lpthread
-    macx: LIBS += -lpthread
+    !macx: QMAKE_CXXFLAGS *= "-Xpreprocessor -fopenmp"
+    !macx: QMAKE_LFLAGS +=  -fopenmp
+    !macx: LIBS += -lgomp -lpthread
+    LIBS += -lpthread
     DEFINES += NO_OPENMP DEBUG
 
 } else {
     message(Building in release mode)
-    !macx:QMAKE_CXXFLAGS += -fopenmp
-    !macx:QMAKE_LFLAGS +=  -fopenmp
+    !macx: QMAKE_CXXFLAGS *= "-Xpreprocessor -fopenmp"
+    !macx: QMAKE_LFLAGS +=  -fopenmp
     # QMAKE_CFLAGS+=-pg
     # QMAKE_CXXFLAGS+=-pg
     # QMAKE_LFLAGS+=-pg

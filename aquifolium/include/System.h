@@ -456,8 +456,9 @@ class System: public Object
         unsigned int restore_interval = 200;
         void PopulateFunctionOperators();
         function_operators func_operators;
+#ifndef NO_OPENMP
         omp_lock_t lock;
-
+#endif
 #ifdef Q_version
     RunTimeWindow *rtw = nullptr;
 #endif
