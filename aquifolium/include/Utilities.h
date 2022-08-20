@@ -78,6 +78,7 @@ namespace aquiutils
     int Max(vector<int>);
     string remove_backslash_r(const string &ss);
     string GetOnlyFileName(const string &fullfilename);
+    string GetPath(const string &fullfilename);
     template<class T>
     T randompick(const vector<T> &vec)
     {
@@ -85,6 +86,8 @@ namespace aquiutils
         return vec[i];
     };
     template<typename T> bool isfinite(T arg);
+    bool FileExists(const std::string& name);
+
 
 }
 

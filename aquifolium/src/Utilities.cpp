@@ -613,6 +613,23 @@ namespace aquiutils
 
     }
 
+    string GetPath(const string &fullfilename)
+    {
+        if (fullfilename=="") return "";
+        vector<char> del;
+        del.push_back('/');
+        del.push_back('\\');
+        vector<string> splittedbyslash = split(fullfilename,del);
+        if (aquiutils::right(fullfilename,1)=="/" || aquiutils::right(fullfilename,2)=="\\")
+            splittedbyslash.push_back("");
+        return left(fullfilename,int(fullfilename.size()-splittedbyslash[splittedbyslash.size()-1].size()));
+    }
+
+    bool FileExists(const std::string& name) {
+        ifstream f(name.c_str());
+        return f.good();
+    }
+
 }
 
 

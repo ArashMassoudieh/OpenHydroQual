@@ -84,3 +84,7 @@ Ubuntu_setup/
 .vs/OpenHydroQual/v17/
 
 *.user
+
+bin-console/Debug/
+
+bin-cosole/Release/

@@ -392,6 +392,11 @@ class System: public Object
         vector<string> exp_functions() {return func_operators.funcs;}
         vector<string> exp_operators() {return func_operators.opts;}
         vector<double> fit_measures;
+        void SetWorkingFolder(const string &path)
+        {
+            paths.inputpath = path;
+        }
+        string GetWorkingFolder() {return paths.inputpath;}
     protected:
 
     private:
@@ -456,6 +461,7 @@ class System: public Object
         unsigned int restore_interval = 200;
         void PopulateFunctionOperators();
         function_operators func_operators;
+
 #ifndef NO_OPENMP
         omp_lock_t lock;
 #endif

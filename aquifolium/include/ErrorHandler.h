@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <iostream>
 
 #ifdef Q_version
     #include "runtimewindow.h"
@@ -71,6 +72,18 @@ class ErrorHandler
             flushed_counter=errors.size();
         }
 #endif
+
+        void Flush()
+        {
+            if (flushed_counter<errors.size())
+            {
+                for (int j=flushed_counter; j<errors.size(); j++)
+                {
+                    cout<<"Error: " <<errors[j].description<<endl;
+                }
+            }
+            flushed_counter=errors.size();
+        }
         bool Append(const string &objectname, const string &cls, const string &funct, const string &description, const int &code)
         {
             if (!lookup_description(description))

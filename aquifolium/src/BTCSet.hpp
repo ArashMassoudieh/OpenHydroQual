@@ -802,7 +802,7 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::make_uniform(T increment, bool assgn_d)
 					if (assgn_d)
 					{
                         T DD = (x - BTC[k].GetT(i)) / (BTC[k].GetT(i + 1) - BTC[k].GetT(i))*(BTC[k].GetD(i + 1) - BTC[k].GetD(i)) + BTC[k].GetD(i);
-						out.BTC[k].AppendD(DD);
+                        out.BTC[k].SetD(out.BTC[k].n-1,DD);
 					}
 				}
 			}

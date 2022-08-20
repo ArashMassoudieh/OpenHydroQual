@@ -1709,8 +1709,10 @@ bool MainWindow::LoadModel(QString fileName)
     {
         Script scr(fileName.toStdString(),&system);
         ResetSystem();
-        system.CreateFromScript(scr,entitiesfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
+        system.SetWorkingFolder(workingfolder.toStdString()+"/");
+        system.CreateFromScript(scr,entitiesfilename);
+
         SetFileName(fileName);
         addToRecentFiles(fileName,true);
         addedtemplatefilenames = system.addedtemplates;

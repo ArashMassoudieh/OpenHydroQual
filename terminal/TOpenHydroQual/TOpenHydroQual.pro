@@ -19,7 +19,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 DEFINES += Terminal_version
 
-TARGET = OpenHydroQual
+TARGET = OpenHydroQual-Console
 TEMPLATE = app
 win32:QMAKE_CXXFLAGS += /MP
 

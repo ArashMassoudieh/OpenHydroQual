@@ -881,11 +881,17 @@ string Quan::GetProperty(bool force_value)
         return aquiutils::numbertostring(GetVal(Expression::timing::present));
     if (type == _type::timeseries)
     {
-        return _timeseries.filename;
+        if (aquiutils::GetPath(_timeseries.filename) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
+            return aquiutils::GetOnlyFileName(_timeseries.filename);
+        else
+            return _timeseries.filename;
     }
     if (type == _type::prec_timeseries)
     {
-        return _timeseries.filename;
+        if (aquiutils::GetPath(_timeseries.filename) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
+            return aquiutils::GetOnlyFileName(_timeseries.filename);
+        else
+            return _timeseries.filename;
     }
     else if (type == _type::source)
     {
@@ -909,15 +915,17 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
         return SetVal(aquiutils::atof(val),Expression::timing::both, check_criteria);
     if (type == _type::timeseries)
     {
-        if (!parent->Parent()->InputPath().empty())
+        if (val.empty()) return false;
+        if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
             return SetTimeSeries(parent->Parent()->InputPath() + val);
         else
             return SetTimeSeries(val);
     }
 	if (type == _type::prec_timeseries)
 	{
-		if (!parent->Parent()->InputPath().empty())
-			return SetTimeSeries(parent->Parent()->InputPath() + val,true);
+        if (val.empty()) return false;
+        if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
+            return SetTimeSeries(parent->Parent()->InputPath() + val,true);
 		else
 			return SetTimeSeries(val,true);
 	}
@@ -999,15 +1007,21 @@ bool Quan::Validate()
     {
         if (type == _type::timeseries)
         {
-            if (!parent->Parent()->InputPath().empty())
-                return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.filename);
+            if (!parent->Parent()->InputPath().empty() && aquiutils::GetPath(parent->Parent()->InputPath())!=aquiutils::GetPath(_timeseries.filename))
+                if (aquiutils::FileExists(parent->Parent()->InputPath() + _timeseries.filename))
+                    return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.filename);
+                else
+                    return SetTimeSeries(_timeseries.filename);
             else
                 return SetTimeSeries(_timeseries.filename);
         }
         if (type == _type::prec_timeseries)
         {
-            if (!parent->Parent()->InputPath().empty())
-                return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.filename, true);
+            if (!parent->Parent()->InputPath().empty() && aquiutils::GetPath(parent->Parent()->InputPath())!=aquiutils::GetPath(_timeseries.filename))
+                if (aquiutils::FileExists(parent->Parent()->InputPath() + _timeseries.filename))
+                    return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.filename, true);
+                else
+                    return SetTimeSeries(_timeseries.filename, true);
             else
                 return SetTimeSeries(_timeseries.filename, true);
         }

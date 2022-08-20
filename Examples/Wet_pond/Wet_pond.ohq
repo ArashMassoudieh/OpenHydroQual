@@ -1,0 +1,113 @@
+loadtemplate; filename = /home/arash/Projects/QAquifolium/bin/Debug/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/Release/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/Release/../../resources/Pond_Plugin.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/Release/../../resources/river_processes.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/Release/../../resources/mass_transfer.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/Release/../../resources/evapotranspiration_models.json
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=0
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=simulation_end_time, value=100
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=numthreads, value=8
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=write_solution_details, value=No
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=initial_time_step, value=0.001
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=c_n_weight, value=1
+create source;type=atmospheric exchange,name=aeration,saturation=8.66[g/m~^3],rate_coefficient=2[1/day]
+create source;type=constant_source,name=DOM_source,rate_per_volume=16[g/day/m~^3]
+create source;type=Evapotranspiration_Penmam (S),z0=0.0003[m],solar_scale_fact=0.5,z2=2[m],wind_scale_fact=0.5,R_h=Humidity_wetland.csv,Temperature=Temp_wetland.csv,solar_radiation=Solar_wetland.csv,wind_speed=Wind_wetland.csv,gamma=66.8,name=Evapotranspiration_Penmam (S) (1)
+create parameter;type=Parameter,value=0.02,prior_distribution=,name=Manning_n,low=0.02,high=0.1
+create constituent;type=Constituent,name=DOM,stoichiometric_constant=0,external_source=,external_mass_flow_timeseries=,concentration=0[g/m~^3],diffusion_coefficient=0.0017[m~^2/day]
+create constituent;type=Constituent,name=O2,stoichiometric_constant=0,external_source=,external_mass_flow_timeseries=,concentration=0[g/m~^3],diffusion_coefficient=0.0017[m~^2/day]
+create constituent;type=Constituent,name=NH3,stoichiometric_constant=0,external_source=,external_mass_flow_timeseries=,concentration=0[g/m~^3],diffusion_coefficient=0.0017[m~^2/day]
+create constituent;type=Constituent,name=NOx,stoichiometric_constant=0,external_source=,external_mass_flow_timeseries=,concentration=0[g/m~^3],diffusion_coefficient=0.0017[m~^2/day]
+create reaction_parameter;type=ReactionParameter,name=mu_H,temperature=,reference_temperature=0,base_value=0,Arrhenius_factor=1
+create reaction_parameter;type=ReactionParameter,name=mu_N,temperature=,reference_temperature=0,base_value=0,Arrhenius_factor=1
+create reaction_parameter;type=ReactionParameter,name=mu_dn,temperature=,reference_temperature=0,base_value=0,Arrhenius_factor=1
+create reaction_parameter;type=ReactionParameter,name=K_dn,temperature=,reference_temperature=0,base_value=0,Arrhenius_factor=1
+create reaction_parameter;type=ReactionParameter,name=K_o,temperature=,reference_temperature=0,base_value=0,Arrhenius_factor=1
+create reaction_parameter;type=ReactionParameter,name=K_on,temperature=,reference_temperature=0,base_value=0,Arrhenius_factor=1
+create reaction_parameter;type=ReactionParameter,name=K_n,temperature=,reference_temperature=0,base_value=0,Arrhenius_factor=1
+create reaction_parameter;type=ReactionParameter,name=K_s,temperature=,reference_temperature=0,base_value=0,Arrhenius_factor=1
+create reaction_parameter;type=ReactionParameter,name=eta_on,temperature=,reference_temperature=0,base_value=0,Arrhenius_factor=1
+create reaction_parameter;type=ReactionParameter,name=eta_n,temperature=,reference_temperature=0,base_value=0,Arrhenius_factor=1
+create reaction;type=Reaction,NOx:stoichiometric_constant=0,O2:stoichiometric_constant=-1,DOM:stoichiometric_constant=-1,name=aerobic_decomposition_of_DOC,NH3:stoichiometric_constant=eta_on,rate_expression=(mu_H*DOM/(DOM+K_s)*O2/(O2+K_o))
+create reaction;type=Reaction,NOx:stoichiometric_constant=1,O2:stoichiometric_constant=-4.57,DOM:stoichiometric_constant=0,name=Nitrification,NH3:stoichiometric_constant=-1,rate_expression=(mu_N*O2/(O2+K_on)*NH3/(NH3+K_n))
+create reaction;type=Reaction,NOx:stoichiometric_constant=(0-eta_n),O2:stoichiometric_constant=0,DOM:stoichiometric_constant=-1,name=Denitrification,NH3:stoichiometric_constant=eta_on,rate_expression=(mu_dn*K_on/(K_on+O2)*NOx/(NOx+K_dn)*DOM/(DOM+K_s))
+create block;type=Pond,y=535,NOx:external_source=,name=Pond (1),bottom_elevation=-0.8[m],_height=403,DOM:external_source=,alpha=558.75,Precipitation=,inflow=inflow.txt,NOx:concentration=7[g/m~^3],beta=2,_width=432,O2:concentration=7[g/m~^3],Storage=357.6[m~^3],DOM:external_mass_flow_timeseries=DOC_loading.txt,O2:external_source=aeration,NOx:external_mass_flow_timeseries=NOX_loading.txt,DOM:concentration=25[g/m~^3],x=468,Evapotranspiration=Evapotranspiration_Penmam (S) (1),NH3:external_mass_flow_timeseries=NH3_loading.txt,O2:external_mass_flow_timeseries=DO_loading.txt,NH3:external_source=,NH3:concentration=0[g/m~^3]
+create block;type=Pond,y=540,NOx:external_source=,name=Pond (2),bottom_elevation=-0.834[m],_height=403,DOM:external_source=,alpha=362.11,Precipitation=,inflow=,NOx:concentration=7[g/m~^3],beta=2,_width=432,O2:concentration=7[g/m~^3],Storage=251.86[m~^3],DOM:external_mass_flow_timeseries=,O2:external_source=aeration,NOx:external_mass_flow_timeseries=,DOM:concentration=25[g/m~^3],x=-102,Evapotranspiration=Evapotranspiration_Penmam (S) (1),NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,NH3:concentration=0[g/m~^3]
+create block;type=Pond,y=205,NOx:external_source=,name=Pond (3),bottom_elevation=-0.861[m],_height=403,DOM:external_source=,alpha=289.77,Precipitation=,inflow=,NOx:concentration=7[g/m~^3],beta=2,_width=432,O2:concentration=7[g/m~^3],Storage=214.81[m~^3],DOM:external_mass_flow_timeseries=,O2:external_source=aeration,NOx:external_mass_flow_timeseries=,DOM:concentration=25[g/m~^3],x=-642,Evapotranspiration=Evapotranspiration_Penmam (S) (1),NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,NH3:concentration=0[g/m~^3]
+create block;type=Pond,y=-291,NOx:external_source=,name=Pond (4),bottom_elevation=-0.879[m],_height=403,DOM:external_source=,alpha=103.772,Precipitation=,inflow=,NOx:concentration=7[g/m~^3],beta=2,_width=432,O2:concentration=7[g/m~^3],Storage=103.722[m~^3],DOM:external_mass_flow_timeseries=,O2:external_source=aeration,NOx:external_mass_flow_timeseries=,DOM:concentration=25[g/m~^3],x=-340,Evapotranspiration=Evapotranspiration_Penmam (S) (1),NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,NH3:concentration=0[g/m~^3]
+create block;type=Pond,y=-272,NOx:external_source=,name=Pond (5),bottom_elevation=-0.9[m],_height=403,DOM:external_source=,alpha=190,Precipitation=,inflow=,NOx:concentration=7[g/m~^3],beta=2,_width=432,O2:concentration=7[g/m~^3],Storage=153.9[m~^3],DOM:external_mass_flow_timeseries=,O2:external_source=aeration,NOx:external_mass_flow_timeseries=,DOM:concentration=25[g/m~^3],x=240,Evapotranspiration=Evapotranspiration_Penmam (S) (1),NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,NH3:concentration=0[g/m~^3]
+create block;type=Pond,y=-290,NOx:external_source=,name=Pond (6),bottom_elevation=-0.914[m],_height=403,DOM:external_source=,alpha=26.8,Precipitation=,inflow=,NOx:concentration=7[g/m~^3],beta=2,_width=432,O2:concentration=7[g/m~^3],Storage=22.393[m~^3],DOM:external_mass_flow_timeseries=,O2:external_source=aeration,NOx:external_mass_flow_timeseries=,DOM:concentration=25[g/m~^3],x=840,Evapotranspiration=Evapotranspiration_Penmam (S) (1),NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,NH3:concentration=0[g/m~^3]
+create block;type=fixed_head,NH3:concentration=0[g/m~^3],NH3:external_source=,NH3:external_mass_flow_timeseries=,Storage=100000[m~^3],DOM:external_mass_flow_timeseries=,head=0[m],NOx:concentration=0[g/m~^3],x=1507,NOx:external_source=,O2:external_source=,y=-188,NOx:external_mass_flow_timeseries=,_height=200,name=fixed_head (1),DOM:external_source=,O2:concentration=0[g/m~^3],_width=200,O2:external_mass_flow_timeseries=,DOM:concentration=0[g/m~^3]
+create block;type=Bed_sediment,NOx:concentration=7[g/m~^3],NOx:external_source=,name=Bed_sediment (1),bottom_elevation=-0.9[m],_height=205,DOM:external_source=DOM_source,hydraulic_conductivity=1[m/day],_width=415,O2:concentration=2[g/m~^3],specific_storage=0.01[1/m],water_content=0.4,y=1021,width=10[m],DOM:external_mass_flow_timeseries=,NOx:external_mass_flow_timeseries=,O2:external_source=,DOM:concentration=45[g/m~^3],porosity=0.4,x=485,depth=0.1[m],NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,length=89.4[m],NH3:concentration=0.5[g/m~^3]
+create block;type=Bed_sediment,NOx:concentration=7[g/m~^3],NOx:external_source=,name=Bed_sediment (2),bottom_elevation=-0.934[m],_height=205,DOM:external_source=DOM_source,hydraulic_conductivity=1[m/day],_width=415,O2:concentration=2[g/m~^3],specific_storage=0.01[1/m],water_content=0.4,y=1007,width=10[m],DOM:external_mass_flow_timeseries=,NOx:external_mass_flow_timeseries=,O2:external_source=,DOM:concentration=45[g/m~^3],porosity=0.4,x=-127,depth=0.1[m],NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,length=60.4[m],NH3:concentration=0.5[g/m~^3]
+create block;type=Bed_sediment,NOx:concentration=7[g/m~^3],NOx:external_source=,name=Bed_sediment (3),bottom_elevation=-0.961[m],_height=205,DOM:external_source=DOM_source,hydraulic_conductivity=1[m/day],_width=415,O2:concentration=2[g/m~^3],specific_storage=0.01[1/m],water_content=0.4,y=716,width=10[m],DOM:external_mass_flow_timeseries=,NOx:external_mass_flow_timeseries=,O2:external_source=,DOM:concentration=45[g/m~^3],porosity=0.4,x=-636,depth=0.1[m],NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,length=49.9[m],NH3:concentration=0.5[g/m~^3]
+create block;type=Bed_sediment,NOx:concentration=7[g/m~^3],NOx:external_source=,name=Bed_sediment (4),bottom_elevation=-0.979[m],_height=205,DOM:external_source=DOM_source,hydraulic_conductivity=1[m/day],_width=415,O2:concentration=2[g/m~^3],specific_storage=0.01[1/m],water_content=0.4,y=175,width=10[m],DOM:external_mass_flow_timeseries=,NOx:external_mass_flow_timeseries=,O2:external_source=,DOM:concentration=45[g/m~^3],porosity=0.4,x=-224,depth=0.1[m],NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,length=23.6[m],NH3:concentration=0.5[g/m~^3]
+create block;type=Bed_sediment,NOx:concentration=7[g/m~^3],NOx:external_source=,name=Bed_sediment (5),bottom_elevation=-1[m],_height=205,DOM:external_source=DOM_source,hydraulic_conductivity=1[m/day],_width=415,O2:concentration=2[g/m~^3],specific_storage=0.01[1/m],water_content=0.4,y=195,width=10[m],DOM:external_mass_flow_timeseries=,NOx:external_mass_flow_timeseries=,O2:external_source=,DOM:concentration=45[g/m~^3],porosity=0.4,x=302,depth=0.1[m],NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,length=34.2[m],NH3:concentration=0.5[g/m~^3]
+create block;type=Bed_sediment,NOx:concentration=7[g/m~^3],NOx:external_source=,name=Bed_sediment (6),bottom_elevation=-1.014[m],_height=205,DOM:external_source=DOM_source,hydraulic_conductivity=1[m/day],_width=415,O2:concentration=2[g/m~^3],specific_storage=0.01[1/m],water_content=0.4,y=194,width=10[m],DOM:external_mass_flow_timeseries=,NOx:external_mass_flow_timeseries=,O2:external_source=,DOM:concentration=45[g/m~^3],porosity=0.4,x=860,depth=0.1[m],NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,length=4.9[m],NH3:concentration=0.5[g/m~^3]
+create block;type=Pond,y=-980,NOx:external_source=,name=dummy,bottom_elevation=0[m],_height=429,DOM:external_source=,alpha=1,Precipitation=,inflow=,NOx:concentration=1[g/m~^3],beta=2,_width=510,O2:concentration=2[g/m~^3],Storage=1[m~^3],DOM:external_mass_flow_timeseries=,O2:external_source=,NOx:external_mass_flow_timeseries=,DOM:concentration=100[g/m~^3],x=-453,Evapotranspiration=,NH3:external_mass_flow_timeseries=,O2:external_mass_flow_timeseries=,NH3:external_source=,NH3:concentration=1[g/m~^3]
+create block;type=fixed_head,NH3:concentration=0[g/m~^3],NH3:external_source=,NH3:external_mass_flow_timeseries=,Storage=100000[m~^3],DOM:external_mass_flow_timeseries=,head=-2[m],NOx:concentration=0[g/m~^3],x=-139,NOx:external_source=,O2:external_source=,y=1492,NOx:external_mass_flow_timeseries=,_height=200,name=fixed_head (2),DOM:external_source=,O2:concentration=0[g/m~^3],_width=200,O2:external_mass_flow_timeseries=,DOM:concentration=0[g/m~^3]
+create link;from=Pond (1),to=Pond (2),type=wide_channel,ManningCoeff=0.1,length=27.23[m],name=Pond (1) - Pond (2),width=18.15[m]
+create link;from=Pond (2),to=Pond (3),type=wide_channel,ManningCoeff=0.1,length=23.45[m],name=Pond (2) - Pond (3),width=15.63[m]
+create link;from=Pond (3),to=Pond (4),type=wide_channel,ManningCoeff=0.1,length=18.85[m],name=Pond (3) - Pond (4),width=12.56[m]
+create link;from=Pond (4),to=Pond (5),type=wide_channel,ManningCoeff=0.1,length=16.92[m],name=Pond (4) - Pond (5),width=11.28[m]
+create link;from=Pond (5),to=Pond (6),type=wide_channel,ManningCoeff=0.1,length=12.74[m],name=Pond (5) - Pond (6),width=8.49[m]
+create link;from=Pond (6),to=fixed_head (1),type=wier,beta=2.5,alpha=33000,name=Pond (6) - fixed_head (1),crest_elevation=0[m]
+create link;from=Pond (1),to=Bed_sediment (1),type=River_bed_sediment_link,name=Pond (1) - Bed_sediment (1)
+create link;from=Pond (2),to=Bed_sediment (2),type=River_bed_sediment_link,name=Pond (2) - Bed_sediment (2)
+create link;from=Pond (3),to=Bed_sediment (3),type=River_bed_sediment_link,name=Pond (3) - Bed_sediment (3)
+create link;from=Pond (4),to=Bed_sediment (4),type=River_bed_sediment_link,name=Pond (4) - Bed_sediment (4)
+create link;from=Pond (5),to=Bed_sediment (5),type=River_bed_sediment_link,name=Pond (5) - Bed_sediment (5)
+create link;from=Pond (6),to=Bed_sediment (6),type=River_bed_sediment_link,name=Pond (6) - Bed_sediment (6)
+create link;from=Bed_sediment (1),to=fixed_head (2),type=bed_sediment_to_fixedhead,length=1[m],name=Bed_sediment (1) - fixed_head (2),hydraulic_conductivity=0.001[m/day]
+create link;from=Bed_sediment (2),to=fixed_head (2),type=bed_sediment_to_fixedhead,length=1[m],name=Bed_sediment (2) - fixed_head (2),hydraulic_conductivity=0.001[m/day]
+create link;from=Bed_sediment (3),to=fixed_head (2),type=bed_sediment_to_fixedhead,length=1[m],name=Bed_sediment (3) - fixed_head (2),hydraulic_conductivity=0.001[m/day]
+create link;from=Bed_sediment (4),to=fixed_head (2),type=bed_sediment_to_fixedhead,length=1[m],name=Bed_sediment (4) - fixed_head (2),hydraulic_conductivity=0.001[m/day]
+create link;from=Bed_sediment (5),to=fixed_head (2),type=bed_sediment_to_fixedhead,length=1[m],name=Bed_sediment (5) - fixed_head (2),hydraulic_conductivity=0.001[m/day]
+create link;from=Bed_sediment (6),to=fixed_head (2),type=bed_sediment_to_fixedhead,length=1[m],name=Bed_sediment (6) - fixed_head (2),hydraulic_conductivity=0.001[m/day]
+create observation;type=Observation,object=Pond (6),name=O2_concentration,expression=O2:concentration,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Bed_sediment (6),name=O2_Concentration_sediments,expression=O2:concentration,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Pond (6),name=NH3_Concentration,expression=NH3:concentration,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Bed_sediment (6),name=NH3_concentration_sediments,expression=NH3:concentration,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Pond (6),name=NOx_concentration,expression=NOx:concentration,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Bed_sediment (6),name=NOx_Concentration_sediment,expression=NOx:concentration,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Pond (6),name=DOM_concentration,expression=DOM:concentration,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Bed_sediment (6),name=DOM_Concentration_sediments,expression=DOM:concentration,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Pond (6) - fixed_head (1),name=outflow,expression=flow,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Pond (1),name=evap,expression=Evapotranspiration,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Bed_sediment (6) - fixed_head (2),name=exfiltration,expression=flow,observed_data=,error_structure=normal,error_standard_deviation=1
+setasparameter; object= Pond (1) - Pond (2), parametername= Manning_n, quantity= ManningCoeff
+setasparameter; object= Pond (2) - Pond (3), parametername= Manning_n, quantity= ManningCoeff
+setasparameter; object= Pond (3) - Pond (4), parametername= Manning_n, quantity= ManningCoeff
+setasparameter; object= Pond (4) - Pond (5), parametername= Manning_n, quantity= ManningCoeff
+setasparameter; object= Pond (5) - Pond (6), parametername= Manning_n, quantity= ManningCoeff

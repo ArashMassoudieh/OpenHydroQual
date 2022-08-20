@@ -785,6 +785,8 @@ bool System::Solve(bool applyparameters)
         {   errorhandler.Flush(rtw);
             QCoreApplication::processEvents();
         }
+#else
+        errorhandler.Flush();
 #endif
     }
 #ifdef Q_version
@@ -793,6 +795,8 @@ bool System::Solve(bool applyparameters)
         rtw->AppendText(QString("Adjusting outputs ..."));
         QCoreApplication::processEvents();
     }
+#else
+    ShowMessage("Adjusting outputs ...");
 #endif
     Outputs.AllOutputs.adjust_size();
 #ifdef Q_version
@@ -810,6 +814,8 @@ bool System::Solve(bool applyparameters)
         rtw->AppendText(QString("Uniformizing outputs ..."));
         QCoreApplication::processEvents();
     }
+#else
+    ShowMessage("Uniformizing outputs ...");
 #endif
     Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0);
 
@@ -914,17 +920,20 @@ bool System::SetProp(const string &s, const double &val)
 
 bool System::SetSystemSettingsObjectProperties(const string &s, const string &val, bool check_criteria)
 {
+    bool out = SetProperty(s,val);
     for (unsigned int i=0; i<Settings.size(); i++)
     {
         for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
         {   if (j->first==s)
-            {   j->second.SetProperty(val,false, check_criteria);
+            {
+                j->second.SetProperty(val,false, check_criteria);
                 return true;
             }
 
         }
     }
-    errorhandler.Append("","System","SetSystemSettingsObjectProperties","Property '" + s + "' was not found!", 631);
+    if (!out)
+        errorhandler.Append("","System","SetSystemSettingsObjectProperties","Property '" + s + "' was not found!", 631);
     return false;
 
 }
