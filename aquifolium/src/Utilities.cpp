@@ -605,6 +605,7 @@ namespace aquiutils
 
     string GetOnlyFileName(const string &fullfilename)
     {
+        if (fullfilename.empty()) return "";
         vector<char> del;
         del.push_back('/');
         del.push_back('\\');

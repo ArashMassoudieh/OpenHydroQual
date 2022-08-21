@@ -116,9 +116,7 @@
       "ask_user": "true",
       "type": "value",
       "delegate": "DateTime",
-      "code": "time_min",
-      "criteria": "simulation_start_time<simulation_end_time",
-      "warningmessage": "Start time must be smaller than end time"
+      "code": "time_min"
     },
     "simulation_end_time": {
       "default": "1",

@@ -526,8 +526,8 @@ double Quan::GetVal(const Expression::timing &tmg)
         else
         {
 #ifndef NO_OPENMP
-            omp_lock_t writelock;
-            omp_init_lock(&writelock);
+//          omp_lock_t writelock;
+//          omp_init_lock(&writelock);
 #endif
             if (type == _type::expression)
             {
@@ -558,8 +558,8 @@ double Quan::GetVal(const Expression::timing &tmg)
             }
             
 #ifndef NO_OPENMP
-            omp_unset_lock(&writelock);
-            omp_destroy_lock(&writelock);
+//          omp_unset_lock(&writelock);
+//          omp_destroy_lock(&writelock);
 #endif
             return _val_star;
         }
@@ -880,10 +880,16 @@ bool Quan::SetSource(const string &sourcename)
 
 string Quan::GetProperty(bool force_value)
 {
+    qDebug()<<QString::fromStdString(this->GetName());
     if (type == _type::balance || type== _type::constant || type==_type::global_quan || type==_type::value || (type==_type::expression && force_value))
+    {
+        qDebug()<<GetVal(Expression::timing::present);
         return aquiutils::numbertostring(GetVal(Expression::timing::present));
+
+    }
     if (type == _type::timeseries)
     {
+        qDebug()<<"FileName: "<<QString::fromStdString(_timeseries.filename);
         if (aquiutils::GetPath(_timeseries.filename) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
             return aquiutils::GetOnlyFileName(_timeseries.filename);
         else

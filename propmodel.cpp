@@ -77,9 +77,15 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                     }
                     else if (quanset->GetVarAskable(index.row())->Delegate()=="UnitBox" && quanset->GetVarAskable(index.row())->Units()!="")
                     {
+                        qDebug()<<1;
                         double coefficient = XString::coefficient(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()));
+                        qDebug()<<2;
+                        qDebug()<<"Coefficient: " << coefficient;
+                        qDebug()<<QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
                         double value = atof(quanset->GetVarAskable(index.row())->GetProperty(true).c_str())/coefficient;
+                        qDebug()<<3;
                         return QString::number(value) + "["+XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()))+"]";
+                        qDebug()<<4;
                     }
                     else
                     {
