@@ -4,6 +4,10 @@
 #
 #-------------------------------------------------
 
+CONFIG -= app_bundle
+
+CONFIG += c++14
+
 QT       += core gui opengl printsupport svg
 INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
@@ -32,14 +36,12 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_version Aquifolium
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
-CONFIG += c++14 app_bundle
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0
 
 
 
 macx: {
-    QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -I/Users/arash/Projects/clang+llvm/lib
+    QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -Iusr/local/lib/
 }
 
 macx: {
@@ -47,11 +49,11 @@ macx: {
 }
 
 macx: {
-    LIBS += -L /Users/arash/Projects/clang+llvm/lib /Users/arash/Projects/clang+llvm/lib/libomp.dylib
+    LIBS += -L /usr/local/lib /usr/local/lib/libomp.dylib
 }
 
 macx: {
-    INCLUDEPATH += /Users/arash/Projects/clang+llvm/lib/clang/14.0.6/include
+    INCLUDEPATH += /usr/local/include/
 }
 
 
@@ -70,7 +72,7 @@ CONFIG(debug, debug|release) {
     # QMAKE_CFLAGS+=-pg
     # QMAKE_CXXFLAGS+=-pg
     # QMAKE_LFLAGS+=-pg
-    macx: DEFINES += NO_OPENMP
+    # macx: DEFINES += NO_OPENMP
     ! macx: LIBS += -lgomp -lpthread
     macx: LIBS += -lpthread
 }
@@ -246,6 +248,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 # LAPACK — Linear Algebra PACKage lib and include locations
 
+
 win32 {
 
     LAPACK_INCLUDE = $$PWD/include
@@ -279,6 +282,12 @@ linux {
 
 macx {
     #sudo apt-get install libblas-dev liblapack-dev
+
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
      LIBS += -llapack -lblas
+     LIBS += -L$$PWD/../Armadillo/ -larmadillo.11.2.3
+     INCLUDEPATH += $$PWD/../Armadillo/include/
+     DEPENDPATH += $$PWD/../Armadillo
 }
+
+
