@@ -31,7 +31,8 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
 {
     parent = nullptr;
     Name() = object_types.key().asString();
-	ObjectType = "Entity";
+    //qDebug()<<"Name: " << QString::fromStdString(Name());
+    ObjectType = "Entity";
 	BlockLink = blocklink::entity;
 	for (Json::ValueIterator it=object_types->begin(); it!=object_types->end(); ++it)
     {
@@ -78,8 +79,10 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
                 //qDebug()<<QString::fromStdString(it.key().asString());
                 //qDebug()<<QString::fromStdString(it.key().asString());
                 Quan Q(it);
-                //qDebug()<<QString::fromStdString(Q.ToString());
+                //qDebug()<<"Appending" << QString::fromStdString(it.key().asString());
                 Append(it.key().asString(),Q);
+                //qDebug()<<"Appended";
+                //qDebug()<<QString::fromStdString(Q.ToString());
             }
             else {
                 AppendError(it.key().asString(),"QuanSet","Constructor","Syntax error in '" + it.key().asString(),18021);
@@ -144,6 +147,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
         }
 
     }
+    //qDebug()<<QString::fromStdString(Name())<< " Done!";
 }
 
 QuanSet::QuanSet(const QuanSet& other)

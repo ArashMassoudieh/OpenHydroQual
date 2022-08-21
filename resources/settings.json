@@ -334,7 +334,7 @@
       "type": "value",
       "delegate": "ValueBox",
       "code": "number_of_threads",
-      "criteria": "record_interval>0",
+      "criteria": "number_of_threads>0",
       "warningmessage": "Number of threads must be greater than zero"
     },
     "acceptance_rate": {

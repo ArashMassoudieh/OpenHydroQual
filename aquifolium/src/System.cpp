@@ -3039,12 +3039,20 @@ bool System::ReadSystemSettingsTemplate(const string &filename)
     Settings.clear();
     for (Json::ValueIterator object_types = root.begin(); object_types != root.end(); ++object_types)
     {
+        //qDebug()<<QString::fromStdString(object_types.name());
         QuanSet quanset(object_types);
+        //qDebug()<<QString::fromStdString(object_types.key().asString());
+        //qDebug()<<1;
         Object settingsitem;
+        //qDebug()<<2;
         quanset.SetParent(this);
+        //qDebug()<<3;
         settingsitem.SetQuantities(quanset);
+        //qDebug()<<4;
         settingsitem.SetDefaults();
+        //qDebug()<<5;
         Settings.push_back(settingsitem);
+        //qDebug()<<6;
         metamodel.Append(object_types.key().asString(), quanset);
 
     }

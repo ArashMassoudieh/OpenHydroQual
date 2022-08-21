@@ -1,5 +1,7 @@
 #include "Condition.h"
-
+#ifdef Q_version
+    #include "QDebug"
+#endif
 using namespace aquiutils;
 
 Condition::Condition()
@@ -61,14 +63,18 @@ bool Condition::calc(Object *W, const Expression::timing &tmg)
     bool out = true;
     for (unsigned int i=0; i<oprtr.size(); i++)
     {
+        //qDebug()<<QString::fromStdString(this->ToString());
         if (oprtr[i] == _oprtr::greaterthan)
         {
+            //qDebug()<<QString::fromStdString(exr[i].ToString())+">"+QString::fromStdString(exr[i+1].ToString());
             if (!(exr[i].calc(W, tmg)>exr[i+1].calc(W,tmg))) out = false;
         }
         if (oprtr[i] == _oprtr::lessthan)
         {
+            //qDebug()<<QString::fromStdString(exr[i].ToString())+"<"+QString::fromStdString(exr[i+1].ToString());
             if (!(exr[i].calc(W, tmg)<exr[i+1].calc(W,tmg))) out = false;
         }
+        //qDebug()<<QString::fromStdString(this->ToString());
     }
     return out;
 }

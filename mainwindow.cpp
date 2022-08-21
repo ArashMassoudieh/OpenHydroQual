@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.1.7"
-#define last_modified "August 6, 2022"
+#define openhydroqual_version "1.1.8"
+#define last_modified "August 21, 2022"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -56,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
     qDebug()<<QString::fromStdString(maintemplatefilename);
     entitiesfilename = RESOURCE_DIRECTORY + "/settings.json";
     system.DefaultTemplatePath() = RESOURCE_DIRECTORY + "/";
-
+    qDebug()<<QString::fromStdString(entitiesfilename);
     Log("Default Template Location is set to '" + QString::fromStdString(system.DefaultTemplatePath()) + "'");
     if (system.GetQuanTemplate(maintemplatefilename)) //Read the template from modelfilename
     {
@@ -65,14 +65,18 @@ MainWindow::MainWindow(QWidget *parent) :
     else {
         LogError("Template" + QString::fromStdString(maintemplatefilename) + "' was not loaded properly");
     }
+    qDebug()<<"Main Template loaded";
     if (system.ReadSystemSettingsTemplate(entitiesfilename)) //Read the system settings
     {
+        qDebug()<<"Setting successfully loaded";
         Log("Setting was successfully loaded from '" + QString::fromStdString(entitiesfilename) + "'");
     }
     else
     {
         LogError("Failed to load the setting file '" + QString::fromStdString(entitiesfilename) + "'");
     }
+    qDebug()<<"Settings Loaded";
+    qDebug()<<"Refreshing Tree...";
     RefreshTreeView();
     //connect(ui->treeWidget, SIGNAL(closeEvent()),ui->actionObject_Browser, SLOT())
 

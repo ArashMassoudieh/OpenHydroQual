@@ -686,9 +686,12 @@ bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_cri
         value_star_updated = true;
         if (HasCriteria() && parent != nullptr)
         {
+            //qDebug()<<"Validating";
             bool validate = Criteria().calc(parent, tmg) || !check_criteria;
+            //qDebug()<<"Validated";
             if (!validate)
             {
+                //qDebug()<<"Appending error...";
                 AppendError(parent->GetName(), "Quan", "SetVal", warning_message, 8012);
                 _val = past_val;
                 _val_star = past_val_star;
