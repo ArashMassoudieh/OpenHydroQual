@@ -790,7 +790,6 @@ bool System::Solve(bool applyparameters)
         errorhandler.Flush();
 #endif
     }
-    qDebug()<<"Exited the loop ....";
     qDebug()<<"Adjusting outputs ....";
 #ifdef Q_version
     if (rtw)
