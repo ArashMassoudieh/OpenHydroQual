@@ -72,7 +72,7 @@ public:
     void ResizeIfNeeded(int _increment); //increases the size of the vectors more capacity is needed
 	CTimeSeries& operator+=(CTimeSeries &v); //adds another time-series to the existing one
 	CTimeSeries& operator%=(CTimeSeries &v); //adds another time-series by corresponding indexes
-    CTimeSeries make_uniform(T increment); //create a new time-series with uniformly distributed time-axis
+    CTimeSeries make_uniform(T increment, bool assignD = true); //create a new time-series with uniformly distributed time-axis
     CTimeSeries extract(T t1, T t2); //extracts a sub time-series from t1 to t2.
     vector<T> trend(); //calculate the slope based on regression
     T mean_t(); //mean of t values of data point

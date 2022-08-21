@@ -44,6 +44,7 @@ class Objective_Function: public Object
         void SetOutputItem(const string& s) { outputitem = s; }
         string GetOutputItem() { return outputitem; }
         vector<string> ItemswithOutput();
+        double GetObjectiveValue() {return objective_value;}
     protected:
 
     private:
@@ -55,6 +56,7 @@ class Objective_Function: public Object
         objfunctype type = objfunctype::Integrate;
         double current_value=0;
         string outputitem=""; 
+        double objective_value=0;
          //the last error that occurred
 };
 

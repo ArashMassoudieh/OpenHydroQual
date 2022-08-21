@@ -114,18 +114,35 @@ vector<string> Objective_Function::ItemswithOutput()
 double Objective_Function::GetObjective()
 {
     SetProperty("method", Variable("method")->GetProperty());
+    stored_time_series = stored_time_series.make_uniform(Parent()->dt0());
     if (type == objfunctype::Integrate)
-        return stored_time_series.integrate();
+    {   objective_value = stored_time_series.integrate();
+        return objective_value;
+    }
     else if (type == objfunctype::Value)
-        return GetValue(Expression::timing::present);
+    {
+        objective_value = GetValue(Expression::timing::present);
+        return objective_value;
+    }
     else if (type == objfunctype::Maximum)
-        return stored_time_series.maxC();
+    {
+        objective_value = stored_time_series.maxC();
+        return objective_value;
+    }
     else if (type == objfunctype::Variance)
-        return stored_time_series.variance(); 
+    {   objective_value = stored_time_series.variance();
+        return objective_value;
+
+    }
     else if (type == objfunctype::Exceedance)
-        return stored_time_series.percentile(1-Percentile());
+    {   objective_value = stored_time_series.percentile(1-Percentile());
+        return objective_value;
+
+    }
     else
-        return 0;
+    {   objective_value = 0;
+        return objective_value;
+    }
 }
 
 double Objective_Function::Weight()

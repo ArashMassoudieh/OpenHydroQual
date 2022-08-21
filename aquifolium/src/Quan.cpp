@@ -915,7 +915,11 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
         return SetVal(aquiutils::atof(val),Expression::timing::both, check_criteria);
     if (type == _type::timeseries)
     {
-        if (val.empty()) return false;
+        if (val.empty())
+        {
+            SetTimeSeries("");
+            return false;
+        }
         if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
             return SetTimeSeries(parent->Parent()->InputPath() + val);
         else
@@ -923,7 +927,11 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
     }
 	if (type == _type::prec_timeseries)
 	{
-        if (val.empty()) return false;
+        if (val.empty())
+        {
+            SetTimeSeries("");
+            return false;
+        }
         if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
             return SetTimeSeries(parent->Parent()->InputPath() + val,true);
 		else

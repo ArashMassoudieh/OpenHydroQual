@@ -19,6 +19,9 @@ class Objective_Function_Set
         Objective_Function* operator[](string name);
         Objective_Function* operator[](int i) {return &objectivefunctions[i];}
         double Calculate();
+        void ClearStoredTimeSeries();
+        CTimeSeriesSet<double> TimeSeries();
+        CVector Objective_Values();
         void Update(double t);
         string LastError() {return lasterror;}
         CTimeSeriesSet<timeseriesprecision> GetTimeSeriesSet();

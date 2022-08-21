@@ -788,7 +788,7 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::make_uniform(T increment, bool assgn_d)
 		}
 		for (int i=0; i<BTC[0].n-1; i++)
 		{
-			////qDebug() << i;
+            qDebug() << i;
             int i1 = int((BTC[0].GetT(i)-BTC[0].GetT(0))/increment);
             int i2 = int((BTC[0].GetT(i+1)-BTC[0].GetT(0))/increment);
 			for (int j=i1+1; j<=i2; j++)
@@ -824,7 +824,7 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::make_uniform(T increment, bool assgn_d)
     }
 
 	out.unif=true;
-
+    qDebug() << "Done uniformizing";
 	return out;
 
 }

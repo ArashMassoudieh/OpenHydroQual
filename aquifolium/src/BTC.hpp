@@ -1233,7 +1233,7 @@ CTimeSeries<T> operator+(CTimeSeries<T> &v1, CTimeSeries<T> &v2)
 }
 
 template<class T>
-CTimeSeries<T> CTimeSeries<T>::make_uniform(T increment)
+CTimeSeries<T> CTimeSeries<T>::make_uniform(T increment, bool assignD)
 {
     CTimeSeries<T> out;
 	assign_D();

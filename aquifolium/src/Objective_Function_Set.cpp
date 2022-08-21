@@ -48,6 +48,31 @@ double Objective_Function_Set::Calculate()
     return out;
 }
 
+void Objective_Function_Set::ClearStoredTimeSeries()
+{
+    for (unsigned int i=0; i < objectivefunctions.size(); i++)
+        objectivefunctions[i].GetTimeSeries()->clear();
+}
+
+CTimeSeriesSet<double> Objective_Function_Set::TimeSeries()
+{
+    CTimeSeriesSet<double> output(objectivefunctions.size());
+    for (unsigned int i=0; i < objectivefunctions.size(); i++)
+    {
+        output.BTC[i] = *objectivefunctions[i].GetTimeSeries();
+        output.setname(i,objectivefunctions[i].GetName());
+    }
+    return output;
+}
+
+CVector Objective_Function_Set::Objective_Values()
+{
+    CVector values(objectivefunctions.size());
+    for (unsigned int i=0; i < objectivefunctions.size(); i++)
+        values[i] = objectivefunctions[i].GetObjectiveValue();
+    return values;
+}
+
 void Objective_Function_Set::Update(double t)
 {
 

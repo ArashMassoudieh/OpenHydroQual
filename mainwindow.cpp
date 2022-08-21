@@ -1649,9 +1649,12 @@ void MainWindow::onopen()
         ResetSystem();
         Script scr(fileName.toStdString(),&system);
         system.clear();
+        system.SetWorkingFolder(QFileInfo(fileName).canonicalPath().toStdString()+"/");
+        qDebug() <<"Working Folder: " << QString::fromStdString(system.GetWorkingFolder());
         system.CreateFromScript(scr,entitiesfilename);
         workingfolder = QFileInfo(fileName).canonicalPath();
         SetFileName(fileName);
+        qDebug() <<"Main Working Folder: " << workingfolder;
         addToRecentFiles(fileName,true);
     }
     addedtemplatefilenames = system.addedtemplates; 
@@ -1710,7 +1713,9 @@ bool MainWindow::LoadModel(QString fileName)
         Script scr(fileName.toStdString(),&system);
         ResetSystem();
         workingfolder = QFileInfo(fileName).canonicalPath();
+        qDebug()<<"Main window path: " << workingfolder;
         system.SetWorkingFolder(workingfolder.toStdString()+"/");
+        qDebug()<<"System path: " << QString::fromStdString(system.GetWorkingFolder());
         system.CreateFromScript(scr,entitiesfilename);
 
         SetFileName(fileName);
@@ -1787,13 +1792,15 @@ void MainWindow::onrunmodel()
     }
     System copiedsystem(system);
     copiedsystem.SetSystemSettings();
+    qDebug()<<"Working folder: " << workingfolder;
     if (copiedsystem.GetSolverSettings().write_solution_details)
         copiedsystem.SetSolutionLogger(workingfolder.toStdString() + "/solution_details.txt");
     rtw = new RunTimeWindow(this,config::forward);
     rtw->show();
     copiedsystem.SetRunTimeWindow(rtw);
     copiedsystem.Solve(true);
-    rtw->AppendText(string("Saving output files to the hard-drive..."));
+    rtw->AppendText(string("Saving outputs in '" + workingfolder.toStdString() + "'"));
+    qDebug()<<"Working folder" << workingfolder;
     QCoreApplication::processEvents();
     if (copiedsystem.OutputFileName() != "")
     {
@@ -1809,12 +1816,17 @@ void MainWindow::onrunmodel()
         else
             copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
     }
+
+    copiedsystem.ObjectiveFunctionSet()->GetTimeSeriesSet().writetofile(workingfolder.toStdString() + "/Objective_Function_TimeSeries.txt");
+
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
     CVector FitMeasures(3*copiedsystem.ObservationsCount());
+    copiedsystem.ObjectiveFunctionSet()->Calculate();
+    CVector ObjectiveFunctionValues = copiedsystem.ObjectiveFunctionSet()->Objective_Values();
     CTimeSeriesSet<double> mapped_modeled_results;
     for (unsigned int i=0; i<copiedsystem.ObservationsCount();  i++)
     {
@@ -1825,9 +1837,10 @@ void MainWindow::onrunmodel()
         if (copiedsystem.observation(i)->GetModeledTimeSeries()!=nullptr)
             if (copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()!=nullptr)
                 mapped_modeled_results.append(copiedsystem.observation(i)->GetModeledTimeSeries()->interpol(copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()),copiedsystem.observation(i)->GetName());
+
     }
 
-
+    ObjectiveFunctionValues.writetofile(workingfolder.toStdString() + "/" + "objective_function_values.txt");
     FitMeasures.writetofile(workingfolder.toStdString() + "/" + "fit_measures.txt");
     mapped_modeled_results.writetofile(workingfolder.toStdString() + "/" + "mapped_modeled_results.txt");
     actionrun->setEnabled(true);

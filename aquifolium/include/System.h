@@ -230,6 +230,10 @@ class System: public Object
             else
                 return nullptr;
         }
+        CVector ObjectiveFunctionValues()
+        {
+            return objective_function_set.Objective_Values();
+        }
         Object *object(const string &s);
         Object *settings(const string &s);
 
@@ -397,6 +401,8 @@ class System: public Object
             paths.inputpath = path;
         }
         string GetWorkingFolder() {return paths.inputpath;}
+        double dt0() {return SimulationParameters.dt0;}
+        Objective_Function_Set *ObjectiveFunctionSet() {return &objective_function_set;}
     protected:
 
     private:
@@ -436,6 +442,7 @@ class System: public Object
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
         void InitiateOutputs();
+
         void PopulateOutputs(bool links=true);
         void TransferQuantitiesFromMetaModel();
         void AppendQuantitiesFromMetaModel();

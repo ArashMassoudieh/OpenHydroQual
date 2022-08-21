@@ -780,6 +780,7 @@ bool System::Solve(bool applyparameters)
                 stop_triggered = true;
 
         }
+
 #ifdef Q_version
         if (rtw)
         {   errorhandler.Flush(rtw);
@@ -789,6 +790,8 @@ bool System::Solve(bool applyparameters)
         errorhandler.Flush();
 #endif
     }
+    qDebug()<<"Exited the loop ....";
+    qDebug()<<"Adjusting outputs ....";
 #ifdef Q_version
     if (rtw)
     {
@@ -807,7 +810,7 @@ bool System::Solve(bool applyparameters)
     }
 #endif
     Outputs.AllOutputs.unif = false;
-
+qDebug()<<"Uniformizing outputs ....";
 #ifdef Q_version
     if (rtw)
     {
@@ -817,8 +820,8 @@ bool System::Solve(bool applyparameters)
 #else
     ShowMessage("Uniformizing outputs ...");
 #endif
-    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0);
-
+    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
+qDebug()<<"Uniformizing observations ....";
 #ifdef Q_version
     if (rtw)
     {
@@ -826,8 +829,8 @@ bool System::Solve(bool applyparameters)
         QCoreApplication::processEvents();
     }
 #endif
-    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0);
-
+    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
+qDebug()<<"Uniformizing objective functions ....";
 #ifdef Q_version
     if (rtw)
     {
@@ -835,7 +838,7 @@ bool System::Solve(bool applyparameters)
         QCoreApplication::processEvents();
     }
 #endif
-
+qDebug()<<"Making objective function expressions uniform ....";
     MakeObjectiveFunctionExpressionUniform();
 #ifdef Q_version
     if (rtw)
@@ -844,7 +847,7 @@ bool System::Solve(bool applyparameters)
         QCoreApplication::processEvents();
     }
 #endif
-
+qDebug()<<"Making observation expressions uniform ....";
     MakeObservationsExpressionUniform();
 #ifdef Q_version
     if (rtw)
@@ -860,17 +863,14 @@ bool System::Solve(bool applyparameters)
         if (GetSolutionLogger())
             GetSolutionLogger()->WriteString("Simulation finished successfully!");
 
+ShowMessage("Simulation finished!");
+#ifdef Q_version
 
-    #ifdef QT_version
-    updateProgress(true);
-    if (LogWindow())
-    {
-        LogWindow()->append("Simulation finished!");
-    }
-    #else
-    ShowMessage("Simulation finished!");
     if (GetSolutionLogger())
+    {
+        cout<<"Flushing solution logger ..."<<endl;
         GetSolutionLogger()->Flush();
+    }
     #endif
 #ifdef VALGRIND
     CALLGRIND_TOGGLE_COLLECT;

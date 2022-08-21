@@ -1,0 +1,159 @@
+loadtemplate; filename = /home/arash/Projects/QAquifolium/bin/Release/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/Release/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/Release/../../resources/pipe_pump_tank.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/Release/../../resources/unconfined_groundwater.json
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=0
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=simulation_start_time, value=40179
+setvalue; object=system, quantity=simulation_end_time, value=40180
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=numthreads, value=8
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=write_solution_details, value=Yes
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=initial_time_step, value=0.01
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=c_n_weight, value=1
+create block;type=Tank,_width=171,y=-231,name=Tank (1),x=504,bottom_elevation=20[m],_height=165,area=100[m~^2],Storage=200[m~^3]
+create block;type=junction_elastic,_height=100,_width=104,y=-299,name=junction (1),x=900,elevation=15[m],elasticity=1
+create block;type=junction_elastic,_height=77,_width=87,y=21,name=junction (2),x=900,elevation=12[m],elasticity=1
+create block;type=junction_elastic,_height=109,_width=112,y=-402,name=junction (3),x=1300,elevation=11[m],elasticity=1
+create block;type=junction_elastic,_height=94,_width=97,y=-69,name=junction (4),x=1300,elevation=8[m],elasticity=1
+create block;type=junction_elastic,_height=124,_width=132,y=225,name=junction (5),x=1300,elevation=5[m],elasticity=1
+create block;type=junction_elastic,_height=123,_width=128,y=83,name=junction (6),x=1800,elevation=2[m],elasticity=1
+create block;type=residential_user,_height=138,_width=125,y=-596.796,name=residential_user (1),x=1043.73,use_rate=Time_Variable_Water_Demand.txt,constant_use_rate=0[m~^3/day]
+create block;type=residential_user,_height=143,_width=144,y=200,name=residential_user (2),x=1050,use_rate=Time_Variable_Water_Demand.txt,constant_use_rate=0[m~^3/day]
+create block;type=residential_user,_height=128,_width=140,y=-580.865,name=residential_user (3),x=1487.6,use_rate=Time_Variable_Water_Demand.txt,constant_use_rate=0[m~^3/day]
+create block;type=residential_user,_height=112,_width=115,y=-218,name=residential_user (4),x=1450,use_rate=Time_Variable_Water_Demand.txt,constant_use_rate=0[m~^3/day]
+create block;type=residential_user,_height=125,_width=125,y=456.464,name=residential_user (5),x=1518.4,use_rate=Time_Variable_Water_Demand.txt,constant_use_rate=0[m~^3/day]
+create block;type=residential_user,_height=116,_width=120,y=-83,name=residential_user (6),x=1952,use_rate=Time_Variable_Water_Demand.txt,constant_use_rate=0[m~^3/day]
+create block;type=fixed_head,_width=200,y=623,name=fixed_head (1),x=593,head=-7[m],_height=200,Storage=100000[m~^3]
+create block;type=Unconfined Groundwater cell,x=900,piezometric_head=-7[m],Precipitation=,y=900,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(1:1),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=900,piezometric_head=-7[m],Precipitation=,y=1200,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(1:2),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=900,piezometric_head=-7[m],Precipitation=,y=1500,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(1:3),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=900,piezometric_head=-7[m],Precipitation=,y=1800,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(1:4),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=900,piezometric_head=-7[m],Precipitation=,y=2100,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(1:5),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1200,piezometric_head=-7[m],Precipitation=,y=900,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(2:1),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1200,piezometric_head=-7[m],Precipitation=,y=1200,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(2:2),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1200,piezometric_head=-7[m],Precipitation=,y=1500,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(2:3),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1200,piezometric_head=-7[m],Precipitation=,y=1800,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(2:4),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1200,piezometric_head=-7[m],Precipitation=,y=2100,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(2:5),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1500,piezometric_head=-7[m],Precipitation=,y=900,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(3:1),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1500,piezometric_head=-7[m],Precipitation=,y=1200,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(3:2),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1484,piezometric_head=-7[m],Precipitation=,y=1498,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(3:3),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1500,piezometric_head=-7[m],Precipitation=,y=1800,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(3:4),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1500,piezometric_head=-7[m],Precipitation=,y=2100,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(3:5),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1800,piezometric_head=-7[m],Precipitation=,y=900,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(4:1),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1800,piezometric_head=-7[m],Precipitation=,y=1200,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(4:2),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1800,piezometric_head=-7[m],Precipitation=,y=1500,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(4:3),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1800,piezometric_head=-7[m],Precipitation=,y=1800,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(4:4),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=1800,piezometric_head=-7[m],Precipitation=,y=2100,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(4:5),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=2100,piezometric_head=-7[m],Precipitation=,y=900,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(5:1),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=2100,piezometric_head=-7[m],Precipitation=,y=1200,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(5:2),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=2100,piezometric_head=-7[m],Precipitation=,y=1500,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(5:3),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=2100,piezometric_head=-7[m],Precipitation=,y=1800,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(5:4),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=Unconfined Groundwater cell,x=2100,piezometric_head=-7[m],Precipitation=,y=2100,area=40000[m~^2],specific_yield=0.3,base_elevation=-20[m],_height=200,name=Unconfined Groundwater cell(5:5),_width=200,hydraulic_conductivity=1.8[m/day],porosity=0.4,recharge_per_area=Recharge_rate.txt
+create block;type=water_supply_well,y=890,name=water_supply_well (1),_height=200,pumping_rate=,x=102,_width=200,diameter=2[m],depth=0[m],bottom_elevation=-20[m]
+create link;from=junction (1),to=residential_user (1),type=Flow_to_user,name=junction (1) - residential_user (1)
+create link;from=junction (3),to=residential_user (3),type=Flow_to_user,name=junction (3) - residential_user (3)
+create link;from=junction (2),to=residential_user (2),type=Flow_to_user,name=junction (2) - residential_user (2)
+create link;from=junction (4),to=residential_user (4),type=Flow_to_user,name=junction (4) - residential_user (4)
+create link;from=junction (5),to=residential_user (5),type=Flow_to_user,name=junction (5) - residential_user (5)
+create link;from=junction (6),to=residential_user (6),type=Flow_to_user,name=junction (6) - residential_user (6)
+create link;from=Tank (1),to=junction (1),type=pipe_2w,name=Tank (1) - junction (1),length=200[m],hz_coeff=100,diameter=0.2[m]
+create link;from=Tank (1),to=junction (2),type=pipe_2w,name=Tank (1) - junction (2),length=100[m],hz_coeff=100,diameter=0.15[m]
+create link;from=junction (1),to=junction (3),type=pipe_2w,name=junction (1) - junction (3),length=100[m],hz_coeff=100,diameter=0.12[m]
+create link;from=junction (1),to=junction (4),type=pipe_2w,name=junction (1) - junction (4),length=100[m],hz_coeff=100,diameter=0.1[m]
+create link;from=junction (2),to=junction (4),type=pipe_2w,name=junction (2) - junction (4),length=100[m],hz_coeff=100,diameter=0.1[m]
+create link;from=junction (2),to=junction (5),type=pipe_2w,name=junction (2) - junction (5),length=120[m],hz_coeff=100,diameter=0.15[m]
+create link;from=junction (5),to=junction (6),type=pipe_2w,name=junction (5) - junction (6),length=100[m],hz_coeff=100,diameter=0.1[m]
+create link;from=junction (4),to=junction (6),type=pipe_2w,name=junction (4) - junction (6),length=140[m],hz_coeff=100,diameter=0.1[m]
+create link;from=Unconfined Groundwater cell(1:1),to=Unconfined Groundwater cell(1:2),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(1:1)-(1:2),length=200[m]
+create link;from=Unconfined Groundwater cell(1:2),to=Unconfined Groundwater cell(1:3),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(1:2)-(1:3),length=200[m]
+create link;from=Unconfined Groundwater cell(1:3),to=Unconfined Groundwater cell(1:4),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(1:3)-(1:4),length=200[m]
+create link;from=Unconfined Groundwater cell(1:4),to=Unconfined Groundwater cell(1:5),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(1:4)-(1:5),length=200[m]
+create link;from=Unconfined Groundwater cell(2:1),to=Unconfined Groundwater cell(2:2),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(2:1)-(2:2),length=200[m]
+create link;from=Unconfined Groundwater cell(2:2),to=Unconfined Groundwater cell(2:3),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(2:2)-(2:3),length=200[m]
+create link;from=Unconfined Groundwater cell(2:3),to=Unconfined Groundwater cell(2:4),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(2:3)-(2:4),length=200[m]
+create link;from=Unconfined Groundwater cell(2:4),to=Unconfined Groundwater cell(2:5),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(2:4)-(2:5),length=200[m]
+create link;from=Unconfined Groundwater cell(3:1),to=Unconfined Groundwater cell(3:2),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(3:1)-(3:2),length=200[m]
+create link;from=Unconfined Groundwater cell(3:2),to=Unconfined Groundwater cell(3:3),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(3:2)-(3:3),length=200[m]
+create link;from=Unconfined Groundwater cell(3:3),to=Unconfined Groundwater cell(3:4),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(3:3)-(3:4),length=200[m]
+create link;from=Unconfined Groundwater cell(3:4),to=Unconfined Groundwater cell(3:5),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(3:4)-(3:5),length=200[m]
+create link;from=Unconfined Groundwater cell(4:1),to=Unconfined Groundwater cell(4:2),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(4:1)-(4:2),length=200[m]
+create link;from=Unconfined Groundwater cell(4:2),to=Unconfined Groundwater cell(4:3),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(4:2)-(4:3),length=200[m]
+create link;from=Unconfined Groundwater cell(4:3),to=Unconfined Groundwater cell(4:4),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(4:3)-(4:4),length=200[m]
+create link;from=Unconfined Groundwater cell(4:4),to=Unconfined Groundwater cell(4:5),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(4:4)-(4:5),length=200[m]
+create link;from=Unconfined Groundwater cell(5:1),to=Unconfined Groundwater cell(5:2),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(5:1)-(5:2),length=200[m]
+create link;from=Unconfined Groundwater cell(5:2),to=Unconfined Groundwater cell(5:3),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(5:2)-(5:3),length=200[m]
+create link;from=Unconfined Groundwater cell(5:3),to=Unconfined Groundwater cell(5:4),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(5:3)-(5:4),length=200[m]
+create link;from=Unconfined Groundwater cell(5:4),to=Unconfined Groundwater cell(5:5),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(5:4)-(5:5),length=200[m]
+create link;from=Unconfined Groundwater cell(1:1),to=Unconfined Groundwater cell(2:1),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(1:1)-(2:1),length=200[m]
+create link;from=Unconfined Groundwater cell(1:2),to=Unconfined Groundwater cell(2:2),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(1:2)-(2:2),length=200[m]
+create link;from=Unconfined Groundwater cell(1:3),to=Unconfined Groundwater cell(2:3),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(1:3)-(2:3),length=200[m]
+create link;from=Unconfined Groundwater cell(1:4),to=Unconfined Groundwater cell(2:4),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(1:4)-(2:4),length=200[m]
+create link;from=Unconfined Groundwater cell(1:5),to=Unconfined Groundwater cell(2:5),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(1:5)-(2:5),length=200[m]
+create link;from=Unconfined Groundwater cell(2:1),to=Unconfined Groundwater cell(3:1),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(2:1)-(3:1),length=200[m]
+create link;from=Unconfined Groundwater cell(2:2),to=Unconfined Groundwater cell(3:2),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(2:2)-(3:2),length=200[m]
+create link;from=Unconfined Groundwater cell(2:3),to=Unconfined Groundwater cell(3:3),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(2:3)-(3:3),length=200[m]
+create link;from=Unconfined Groundwater cell(2:4),to=Unconfined Groundwater cell(3:4),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(2:4)-(3:4),length=200[m]
+create link;from=Unconfined Groundwater cell(2:5),to=Unconfined Groundwater cell(3:5),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(2:5)-(3:5),length=200[m]
+create link;from=Unconfined Groundwater cell(3:1),to=Unconfined Groundwater cell(4:1),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(3:1)-(4:1),length=200[m]
+create link;from=Unconfined Groundwater cell(3:2),to=Unconfined Groundwater cell(4:2),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(3:2)-(4:2),length=200[m]
+create link;from=Unconfined Groundwater cell(3:3),to=Unconfined Groundwater cell(4:3),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(3:3)-(4:3),length=200[m]
+create link;from=Unconfined Groundwater cell(3:4),to=Unconfined Groundwater cell(4:4),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(3:4)-(4:4),length=200[m]
+create link;from=Unconfined Groundwater cell(3:5),to=Unconfined Groundwater cell(4:5),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(3:5)-(4:5),length=200[m]
+create link;from=Unconfined Groundwater cell(4:1),to=Unconfined Groundwater cell(5:1),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(4:1)-(5:1),length=200[m]
+create link;from=Unconfined Groundwater cell(4:2),to=Unconfined Groundwater cell(5:2),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(4:2)-(5:2),length=200[m]
+create link;from=Unconfined Groundwater cell(4:3),to=Unconfined Groundwater cell(5:3),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(4:3)-(5:3),length=200[m]
+create link;from=Unconfined Groundwater cell(4:4),to=Unconfined Groundwater cell(5:4),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(4:4)-(5:4),length=200[m]
+create link;from=Unconfined Groundwater cell(4:5),to=Unconfined Groundwater cell(5:5),type=UC_groundwater_link,width=200[m],name=UC_groundwater_link(4:5)-(5:5),length=200[m]
+create link;from=Unconfined Groundwater cell(1:1),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(1:1) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(1:2),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(1:2) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(1:3),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(1:3) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(1:4),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(1:4) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(1:5),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(1:5) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(5:1),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(5:1) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(5:2),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(5:2) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(5:3),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(5:3) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(5:4),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(5:4) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(5:5),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(5:5) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(2:1),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(2:1) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(3:1),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(3:1) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(4:1),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(4:1) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(2:5),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(2:5) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(3:5),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(3:5) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(4:5),to=fixed_head (1),type=unconfined_groundwater_to_fixedhead,width=200[m],name=Unconfined Groundwater cell(4:5) - fixed_head (1),length=200[m]
+create link;from=Unconfined Groundwater cell(3:3),to=water_supply_well (1),type=aquifer2well_link_pump,name=Unconfined Groundwater cell(3:3) - water_supply_well (1)
+create link;from=water_supply_well (1),to=Tank (1),type=pump,name=water_supply_well (1) - Tank (1),head_0=43[m],beta=2,alpha=0.0001
+create observation;type=Observation,object=junction (1),name=Head_junction_1,expression=head,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Tank (1),name=Tank_Storage,expression=Storage,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=Unconfined Groundwater cell(3:3),name=aq_head,expression=piezometric_head,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=water_supply_well (1),name=well_head,expression=head,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=water_supply_well (1) - Tank (1),name=pump_flow,expression=flow,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,object=junction (1) - residential_user (1),name=water_use_1,expression=flow,observed_data=,error_structure=normal,error_standard_deviation=1
