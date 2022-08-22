@@ -790,8 +790,9 @@ bool System::Solve(bool applyparameters)
         errorhandler.Flush();
 #endif
     }
-    qDebug()<<"Adjusting outputs ....";
+    
 #ifdef Q_version
+    qDebug() << "Adjusting outputs ....";
     if (rtw)
     {
         rtw->AppendText(QString("Adjusting outputs ..."));
@@ -809,9 +810,10 @@ bool System::Solve(bool applyparameters)
     }
 #endif
     Outputs.AllOutputs.unif = false;
-qDebug()<<"Uniformizing outputs ....";
+
 #ifdef Q_version
-    if (rtw)
+    qDebug() << "Uniformizing outputs ....";
+	if (rtw)
     {
         rtw->AppendText(QString("Uniformizing outputs ..."));
         QCoreApplication::processEvents();
@@ -820,8 +822,9 @@ qDebug()<<"Uniformizing outputs ....";
     ShowMessage("Uniformizing outputs ...");
 #endif
     Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
-qDebug()<<"Uniformizing observations ....";
+
 #ifdef Q_version
+    qDebug() << "Uniformizing observations ....";
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing observations ..."));
@@ -829,15 +832,17 @@ qDebug()<<"Uniformizing observations ....";
     }
 #endif
     Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
-qDebug()<<"Uniformizing objective functions ....";
+
 #ifdef Q_version
+    qDebug() << "Uniformizing objective functions ....";
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing objective functions ...."));
         QCoreApplication::processEvents();
     }
+    qDebug() << "Making objective function expressions uniform ....";
 #endif
-qDebug()<<"Making objective function expressions uniform ....";
+
     MakeObjectiveFunctionExpressionUniform();
 #ifdef Q_version
     if (rtw)
@@ -845,8 +850,9 @@ qDebug()<<"Making objective function expressions uniform ....";
         rtw->AppendText(QString("Uniformizing observation expressions ..."));
         QCoreApplication::processEvents();
     }
+    qDebug() << "Making observation expressions uniform ....";
 #endif
-qDebug()<<"Making observation expressions uniform ....";
+
     MakeObservationsExpressionUniform();
 #ifdef Q_version
     if (rtw)
