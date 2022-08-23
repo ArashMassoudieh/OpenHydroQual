@@ -778,6 +778,12 @@ bool System::Solve(bool applyparameters)
                 cout<<"The attempt to solve the problem failed!"<<std::endl;
                 SolverTempVars.SolutionFailed = true;
                 stop_triggered = true;
+#ifdef Q_version
+        if (rtw)
+        {   errorhandler.Flush(rtw);
+            QCoreApplication::processEvents();
+        }
+#endif
 
         }
 
