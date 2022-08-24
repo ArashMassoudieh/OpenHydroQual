@@ -284,7 +284,7 @@ macx {
     #sudo apt-get install libblas-dev liblapack-dev
 
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -llapack -lblas
+     LIBS += -lblas -llapack
      LIBS += -L$$PWD/../Armadillo/ -larmadillo.11.2.3
      INCLUDEPATH += $$PWD/../Armadillo/include/
      DEPENDPATH += $$PWD/../Armadillo

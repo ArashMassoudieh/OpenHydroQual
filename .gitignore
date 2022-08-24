@@ -98,3 +98,15 @@ terminal/build-TOpenHydroQual-Replacement_for_Desktop_Qt_5_15_2_clang_64bit-Debu
 terminal/TOpenHydroQual/debug/qmake/temp/
 
 terminal/TOpenHydroQual/release/
+
+terminal/TOpenHydroQual/.qtc_clangd/.cache/clangd/index/
+
+terminal/TOpenHydroQual/.qtc_clangd/
+
+terminal/TOpenHydroQual/build/.qtc_clangd/.cache/clangd/index/
+
+terminal/TOpenHydroQual/build/.qtc_clangd/
+
+terminal/TOpenHydroQual/build/debug/
+
+terminal/TOpenHydroQual/build/release/

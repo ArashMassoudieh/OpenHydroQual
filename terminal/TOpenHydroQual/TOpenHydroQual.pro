@@ -10,12 +10,11 @@ INCLUDEPATH += ../../aquifolium/src
 INCLUDEPATH += ../../aquifolium/include/GA
 INCLUDEPATH += ../../aquifolium/include/MCMC
 INCLUDEPATH += ../../../jsoncpp/include/
-INCLUDEPATH += ../../qcustomplot/
+
 if==macx:CONFIG += staticlib
 macx: DEFINES +=mac_version
 linux: DEFINES +=ubuntu_version
 win32: DEFINES +=windows_version
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 DEFINES += Terminal_version
 
@@ -23,22 +22,39 @@ TARGET = OpenHydroQual-Console
 TEMPLATE = app
 win32:QMAKE_CXXFLAGS += /MP
 
+macx: {
+    QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -Iusr/local/lib/
+}
+
+macx: {
+    QMAKE_LFLAGS += -lomp
+}
+
+macx: {
+    LIBS += -L /usr/local/lib /usr/local/lib/libomp.dylib
+}
+
+macx: {
+    INCLUDEPATH += /usr/local/include/
+}
+
+
 CONFIG(debug, debug|release) {
     message(Building in debug mode)
-    #QMAKE_CXXFLAGS+= -fopenmp
-    #QMAKE_LFLAGS +=  -fopenmp
-    macx: LIBS += -lgomp -lpthread
-    macx: LIBS += -lpthread
+    !macx: QMAKE_CXXFLAGS *= "-Xpreprocessor -fopenmp"
+    !macx: QMAKE_LFLAGS +=  -fopenmp
+    !macx: LIBS += -lgomp -lpthread
+    LIBS += -lpthread
     DEFINES += NO_OPENMP DEBUG
 
 } else {
     message(Building in release mode)
-    !macx:QMAKE_CXXFLAGS += -fopenmp
-    !macx:QMAKE_LFLAGS +=  -fopenmp
+    !macx: QMAKE_CXXFLAGS *= "-Xpreprocessor -fopenmp"
+    !macx: QMAKE_LFLAGS +=  -fopenmp
     # QMAKE_CFLAGS+=-pg
     # QMAKE_CXXFLAGS+=-pg
     # QMAKE_LFLAGS+=-pg
-    macx: DEFINES += NO_OPENMP
+    # macx: DEFINES += NO_OPENMP
     ! macx: LIBS += -lgomp -lpthread
     macx: LIBS += -lpthread
 }
@@ -194,7 +210,11 @@ linux {
 macx {
     #sudo apt-get install libblas-dev liblapack-dev
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -llapack -lblas
+     LIBS += -L$$PWD/../Armadillo/ -llapack
+     LIBS += -L$$PWD/../Armadillo/ -larmadillo
+     LIBS += -L$$PWD/../Armadillo/ -lblas
+     INCLUDEPATH += $$PWD/../Armadillo/include/
+     DEPENDPATH += $$PWD/../Armadillo
 }
 
 # Default rules for deployment.
