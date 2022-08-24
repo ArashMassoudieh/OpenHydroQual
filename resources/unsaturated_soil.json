@@ -427,6 +427,70 @@
       "default": "120,120,120"
     }
   },
+  "soil_to_fixedhead_link_H": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "soil2fixedhead.png"
+    },
+    "description": "Horizontal Soil to fixed head connector",
+    "area": {
+      "type": "value",
+      "description": "Interface area",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2"
+    },
+    "length": {
+      "type": "value",
+      "description": "Lenght",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    },
+    "Se": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "Se.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "m": {
+      "type": "expression",
+      "description": "m parameter",
+      "expression": "m.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_sat": {
+      "type": "expression",
+      "description": "Saturated Hydraulic Conductivity",
+      "expression": "K_sat.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "(head.s-head.e)*K_eff/length*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "120,120,120"
+    }
+  },
   "fixed_hydraulic_gradient_link": {
     "type": "link",
     "typecategory": "Connectors",
