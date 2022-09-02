@@ -318,7 +318,7 @@ static	QString reformBack(QString R)
 		/*	https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references	*/
 	}
 
-    QList<XString> split(QChar sep, SplitBehavior behavior = KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const{
+    QList<XString> split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const{
 		QList<XString> R;
 		QStringList QL = (*this).QString::split(sep, behavior, cs);
 		for (int i = 0; i < QL.size(); i++)	{
