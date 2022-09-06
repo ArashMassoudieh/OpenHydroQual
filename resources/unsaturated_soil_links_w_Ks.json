@@ -1,0 +1,186 @@
+{
+  "soil_to_soil_link_KS": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "Soil2Soil.png"
+    },
+    "description": "Vertical soil to soil connector",
+    "area": {
+      "type": "expression",
+      "description": "Interface area",
+      "expression": "(area.s+area.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "lenght",
+      "expression": "(depth.s+depth.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "Se": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "_min(_max(Se.s;Se.e);0.999)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "m": {
+      "type": "expression",
+      "description": "Van Genuchten m parameter",
+      "expression": "0.5*(m.s+m.e)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "K_sat_scale_factor": {
+      "type": "value",
+      "description": "Hydraulic conductivity scale factor",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "K_sat_scale_factor>0",
+      "warningmessage": "Hydraulic conductivity scale factor must be greater than zero"
+    },
+    "K_sat_original": {
+      "type": "value",
+      "description": "Saturated Hydraulc Conductivity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;m/s;ft/s",
+      "includeinoutput": "true",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "K_sat_original>0",
+      "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero"
+    },
+    "K_sat": {
+      "type": "expression",
+      "expression" : "K_sat_original*K_sat_scale_factor",
+      "description": "Scaled Saturated Hydraulic conductivity",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flux": {
+      "type": "expression",
+      "description": "Flux",
+      "expression": "(head.s-head.e)*K_eff/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "(head.s-head.e)*K_eff/length*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic gradient",
+      "expression": "(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "false",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "120,120,0"
+    }
+  },
+    "soil_to_soil_H_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "soil2soilH.png"
+    },
+    "description": "Horizontal soil to soil connector",
+    "area": {
+      "type": "value",
+      "description": "Interface area",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2"
+    },
+    "length": {
+      "type": "value",
+      "description": "lenght",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    },
+    "Se": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "_min(_max(Se.s;Se.e);0.999)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "m": {
+      "type": "expression",
+      "description": "m parameter",
+      "expression": "0.5*(m.s+m.e)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_sat_scale_factor": {
+      "type": "value",
+      "description": "Hydraulic conductivity scale factor",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "K_sat_scale_factor>0",
+      "warningmessage": "Hydraulic conductivity scale factor must be greater than zero"
+    },
+    "K_sat_original": {
+      "type": "value",
+      "description": "Saturated Hydraulc Conductivity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;m/s;ft/s",
+      "includeinoutput": "true",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "K_sat_original>0",
+      "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero"
+    },
+    "K_sat": {
+      "type": "expression",
+      "expression" : "K_sat_original*K_sat_scale_factor",
+      "description": "Scaled Saturated Hydraulic conductivity",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow (m~^3/day)",
+      "expression": "(head.s-head.e)*K_eff/length*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "120,120,0"
+    }
+  }
+}
