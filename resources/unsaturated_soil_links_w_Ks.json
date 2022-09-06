@@ -3,7 +3,7 @@
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
-      "filename": "Soil2Soil.png"
+      "filename": "Soil2Soil_KS.png"
     },
     "description": "Vertical soil to soil connector",
     "area": {
@@ -98,11 +98,11 @@
       "default": "120,120,0"
     }
   },
-    "soil_to_soil_H_link": {
+    "soil_to_soil_H_link_w_KS": {
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
-      "filename": "soil2soilH.png"
+      "filename": "soil2soilH_KS.png"
     },
     "description": "Horizontal soil to soil connector",
     "area": {
