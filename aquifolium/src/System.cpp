@@ -1200,13 +1200,13 @@ void System::PopulateOutputs(bool dolinks)
     {
         Outputs.AllOutputs.ResizeIfNeeded(1000);
 
-    #pragma omp parallel for
+     #pragma omp parallel for schedule(static)
         for (int i = 0; i < blocks.size(); i++)
             blocks[i].CalcExpressions(Expression::timing::present);
 
         if (dolinks)
         {
-    #pragma omp parallel for
+     #pragma omp parallel for schedule(static)
             for (int i = 0; i < links.size(); i++)
                 links[i].CalcExpressions(Expression::timing::present);
         }
@@ -1940,9 +1940,6 @@ void System::SetStateVariables_TR(const string &variable, CVector_arma &X, const
 
 void System::CalculateAllExpressions(Expression::timing tmg)
 {
-#ifndef NO_OPENMP
-#pragma omp parallel for
-#endif
     for (int i=0; i<blocks.size(); i++)
     {
         for (unsigned int j = 0; j < blocks[i].QuantitOrder().size(); j++)
@@ -1954,9 +1951,6 @@ void System::CalculateAllExpressions(Expression::timing tmg)
             }
         }
     }
-#ifndef NO_OPENMP
-#pragma omp parallel for
-#endif
     for (int i=0; i<links.size(); i++)
     {
         for (unsigned int j = 0; j < links[i].QuantitOrder().size(); j++)
@@ -2005,7 +1999,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
     CVector LinkFlow(links.size());
 #ifndef NO_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
 #endif
     for (int i=0; i<blocks.size(); i++)
     {
@@ -2041,7 +2035,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 {
 
 #ifndef NO_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
 #endif
     for (int i=0; i<links.size(); i++)
        LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
@@ -3699,7 +3693,7 @@ double System::Gradient(Object* obj, Object* wrt, const string &dependent_var, c
     double basevalue = obj->GetVal(dependent_var,Expression::timing::present);
     double original_state = wrt->GetVal(independent_var,Expression::timing::present);
     double u;
-    if (unitrandom()>0.5) u=1; else u=-1;
+    if (EpochCount()%2==0) u=1; else u=-1;
     double epsilon = -1e-6*u*(fabs(original_state)+1);
     wrt->SetVal(independent_var,original_state+epsilon,Expression::timing::present);
     wrt->UnUpdateAllValues();
@@ -3774,7 +3768,7 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma jacobian(BlockCount());
 #ifndef NO_OPENMP
-#pragma omp parallel for
+//#pragma omp parallel for schedule(static)
 #endif
     for (int i=0; i<LinksCount(); i++)
     {

@@ -161,6 +161,7 @@ class Object
 		double outflowlimitfactor_current = 1;
         bool limitoutflow = false;
         string primary_key = "";
+
 };
 
 #endif // OBJECT_H

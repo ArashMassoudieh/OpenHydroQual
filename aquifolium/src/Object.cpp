@@ -299,8 +299,7 @@ bool Object::SetVal(const string& s, double value, const Expression::timing &tmg
 
     if (var.find(s)!=var.end())
     {
-//#pragma omp critical (setval)
-            var[s].SetVal(value,tmg);
+        var[s].SetVal(value,tmg);
         return true;
     }
     else

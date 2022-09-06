@@ -507,7 +507,23 @@ double Quan::CalcVal(Object *block, const Expression::timing &tmg)
     if (type == _type::source)
     {
         if (source!=nullptr)
-            return source->GetValue(block);
+        {   if (value_star_updated)
+                return _val_star;
+            else
+            {
+#ifndef NO_OPENMP
+                omp_lock_t writelock;
+                omp_init_lock(&writelock);
+#endif
+                _val_star = source->GetValue(block);
+                value_star_updated=true;
+                return _val_star;
+#ifndef NO_OPENMP
+                omp_unset_lock(&writelock);
+                omp_destroy_lock(&writelock);
+#endif
+            }
+        }
         else
             return 0;
     }
@@ -526,8 +542,8 @@ double Quan::GetVal(const Expression::timing &tmg)
         else
         {
 #ifndef NO_OPENMP
-//          omp_lock_t writelock;
-//          omp_init_lock(&writelock);
+            omp_lock_t writelock;
+            omp_init_lock(&writelock);
 #endif
             if (type == _type::expression)
             {
@@ -558,8 +574,8 @@ double Quan::GetVal(const Expression::timing &tmg)
             }
             
 #ifndef NO_OPENMP
-//          omp_unset_lock(&writelock);
-//          omp_destroy_lock(&writelock);
+            omp_unset_lock(&writelock);
+            omp_destroy_lock(&writelock);
 #endif
             return _val_star;
         }
@@ -631,7 +647,23 @@ double Quan::CalcVal(const Expression::timing &tmg)
     if (type == _type::source)
     {
         if (source!=nullptr)
-            return source->GetValue(parent);
+        {   if (value_star_updated)
+                return _val_star;
+            else
+            {
+#ifndef NO_OPENMP
+                omp_lock_t writelock;
+                omp_init_lock(&writelock);
+#endif
+                _val_star = source->GetValue(parent);
+                value_star_updated=true;
+                return _val_star;
+#ifndef NO_OPENMP
+                omp_unset_lock(&writelock);
+                omp_destroy_lock(&writelock);
+#endif
+            }
+        }
         else
             return 0;
     }
@@ -675,15 +707,23 @@ bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_cri
 {
     const double past_val = _val;
     const double past_val_star = _val;
-    if (tmg == Expression::timing::past)
+    if (tmg == Expression::timing::past || tmg == Expression::timing::both)
         _val = v;
-    else if (tmg == Expression::timing::present)
-        _val_star = v;
-    else if (tmg == Expression::timing::both)
-    {
-        _val = v;
+    if (tmg == Expression::timing::present || tmg == Expression::timing::both)
+{
+#ifndef NO_OPENMP
+        omp_lock_t writelock;
+        omp_init_lock(&writelock);
+#endif
         _val_star = v;
         value_star_updated = true;
+#ifndef NO_OPENMP
+        omp_unset_lock(&writelock);
+        omp_destroy_lock(&writelock);
+#endif
+    }
+    if (tmg == Expression::timing::both)
+    {
         if (HasCriteria() && parent != nullptr)
         {
             //qDebug()<<"Validating";
@@ -700,7 +740,7 @@ bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_cri
 
         }
     }
-    value_star_updated = true;
+
     return true;
 }
 
