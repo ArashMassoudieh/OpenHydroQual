@@ -79,7 +79,7 @@ class ErrorHandler
             {
                 for (int j=flushed_counter; j<errors.size(); j++)
                 {
-                    cout<<"Error: " <<errors[j].description<<endl;
+                    cout<<"Error: " <<errors[j].description<<std::endl;
                 }
             }
             flushed_counter=errors.size();
