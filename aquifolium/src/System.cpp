@@ -879,7 +879,7 @@ ShowMessage("Simulation finished!");
 
     if (GetSolutionLogger())
     {
-        cout<<"Flushing solution logger ..."<<endl;
+        cout<<"Flushing solution logger ..."<<std::endl;
         GetSolutionLogger()->Flush();
     }
     #endif
