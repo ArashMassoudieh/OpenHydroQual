@@ -110,3 +110,9 @@ terminal/TOpenHydroQual/build/.qtc_clangd/
 terminal/TOpenHydroQual/build/debug/
 
 terminal/TOpenHydroQual/build/release/
+
+ModelWizard/x64/Debug/qmake/
+
+ModelWizard/x64/Release/qmake/temp/
+
+ModelWizard/x64/Release/qmake/
