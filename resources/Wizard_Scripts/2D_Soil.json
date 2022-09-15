@@ -1,0 +1,35 @@
+{
+  "name": "Raingarden with overflow, under drain, and aggregate storage (US)",
+  "icon": "2DSoil.png",
+  "description": "This wizard constructs a model of a rain garden system with overflow and under drain pipes. <br> The model consists of a catchment that is connected to the surface component of a rain garden, one or more layers of engineered soil, aggregate storage, and the native soil above the water table.",
+  "addtemplate": "unsaturated_soil.json",
+  "major_block": {
+    "name": "Soil",
+    "type": "Soil",
+    "n_x": "param[n_x]",
+    "n_y": "param[n_y]",
+    "K_s": "param[K_s]",
+    "alpha": "1"
+  },
+  "parameter": {
+    "name": "n_x",
+    "delegate": "UnitBox",
+    "question": "Number of cells in horizontal direction"
+  },
+  "parameter_group": {
+    "name": "g1",
+    "description": "Introduction",
+    "parameters": [
+      "n_x",
+      "n_y"
+    ],
+    "criteria": [
+      {
+        "name": "cr1",
+        "less": "0",
+        "greater": "Wind_ceoff",
+        "ErrorMessage": "Wind coefficient must be positive"
+      }
+    ]
+  }
+}
