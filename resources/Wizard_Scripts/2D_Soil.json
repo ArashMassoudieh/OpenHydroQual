@@ -6,6 +6,8 @@
   "major_block": {
     "name": "Soil",
     "type": "Soil",
+	"v_connector_type": "Soil2Soil_connector",
+	"h_connector_type": "Soil2Soil_connector_H",
     "n_x": "param[n_x]",
     "n_y": "param[n_y]",
     "K_s": "param[K_s]",
