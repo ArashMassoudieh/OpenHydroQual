@@ -9,11 +9,19 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    MajorBlock.cpp \
+    Wizard_Script.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    wizard_assigned_value.cpp \
+    wizardparameter.cpp
 
 HEADERS += \
-    mainwindow.h
+    MajorBlock.h \
+    Wizard_Script.h \
+    mainwindow.h \
+    wizard_assigned_value.h \
+    wizardparameter.h
 
 FORMS += \
     mainwindow.ui
