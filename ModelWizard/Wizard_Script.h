@@ -4,6 +4,8 @@
 #include "wizardparameter.h"
 #include <QMap>
 
+#define wizardsfolder "../../resources/Wizard_Scripts/"
+
 class WizardScript
 {
 public: 

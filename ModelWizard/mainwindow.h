@@ -17,5 +17,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    void PopulateListOfWizards();
 };
 #endif // MAINWINDOW_H

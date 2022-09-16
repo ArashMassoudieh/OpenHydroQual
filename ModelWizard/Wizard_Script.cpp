@@ -4,7 +4,7 @@
 #include "QIcon"
 #include "QJsonArray"
 
-#define wizardsfolder "../../resources/Wizard_Scripts/"
+
 
 WizardScript::WizardScript()
 {
@@ -89,6 +89,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
 QIcon WizardScript::Icon()
 {
     QIcon icon(QString(wizardsfolder) + "Wizard_Icons/" + iconfilename);
+
     return  icon;
 }
 QString WizardScript::Name()
