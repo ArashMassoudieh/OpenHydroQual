@@ -128,3 +128,11 @@ build-ModelWizard-Desktop_Qt_5_15_2_GCC_64bit-Debug/
 bin-Wizard/Debug/
 
 bin-Wizard/Release/
+
+ModelWizard/build-ModelWizard-Desktop_Qt_5_15_2_clang_64bit-Release/.qtc_clangd/.cache/clangd/index/
+
+wizard-bin/Debug/
+
+wizard-bin/Release/
+
+ModelWizard/build-ModelWizard-Desktop_Qt_5_15_2_clang_64bit-Release/.qtc_clangd/

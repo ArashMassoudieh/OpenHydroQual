@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QListWidgetItem>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,5 +19,7 @@ public:
 private:
     Ui::MainWindow *ui;
     void PopulateListOfWizards();
+public slots:
+    void itemDoubleClicked(QListWidgetItem*);
 };
 #endif // MAINWINDOW_H

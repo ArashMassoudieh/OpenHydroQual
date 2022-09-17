@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "Wizard_Script.h"
 #include "QDir"
+#include "wizarddialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //And the most important part:
     ui->listWidget->setViewMode(QListView::IconMode);
-
+    QObject::connect(ui->listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(itemDoubleClicked(QListWidgetItem*)));
     PopulateListOfWizards();
 }
 
@@ -39,10 +40,16 @@ void MainWindow::PopulateListOfWizards()
         WizardScript wiz(wizardsfolder+filename);
 
         QListWidgetItem *item = new QListWidgetItem(wiz.Icon(),wiz.Name());
-
+        item->setData(1000,wizardsfolder+filename);
         item->setToolTip(wiz.Description());
 
         ui->listWidget->addItem(item);
     }
+}
+
+void MainWindow::itemDoubleClicked(QListWidgetItem*)
+{
+    WizardDialog *wizDialog = new WizardDialog(this);
+    wizDialog->exec();
 }
 

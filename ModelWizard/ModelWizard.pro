@@ -14,6 +14,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     wizard_assigned_value.cpp \
+    wizarddialog.cpp \
     wizardparameter.cpp
 
 HEADERS += \
@@ -21,10 +22,12 @@ HEADERS += \
     Wizard_Script.h \
     mainwindow.h \
     wizard_assigned_value.h \
+    wizarddialog.h \
     wizardparameter.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    wizarddialog.ui
 
 TRANSLATIONS += \
     ModelWizard_en_US.ts
