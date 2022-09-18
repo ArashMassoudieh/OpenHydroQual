@@ -64,7 +64,24 @@ WizardScript::WizardScript(const QString& filename)
                 {
                     addedtemplates<<items[i].toString();
                 }
-
+            }
+            if (it.key() == "major_block")
+            {
+                MajorBlock mBlock(it.value().toObject());
+                QString mbname = mBlock.Name();
+                MajorBlocks[mbname] = mBlock;
+            }
+            if (it.key() == "parameter")
+            {
+                WizardParameter param(it.value().toObject());
+                QString paramname = param.Name();
+                WizardParameters[paramname] = param;
+            }
+            if (it.key() == "parameter_group")
+            {
+                WizardParameterGroup paramgroup(it.value().toObject());
+                QString paramname = paramgroup.Name();
+                WizardParameterGroups[paramname] = paramgroup;
             }
         }
 

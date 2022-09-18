@@ -14,16 +14,20 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     wizard_assigned_value.cpp \
+    wizardcriteria.cpp \
     wizarddialog.cpp \
-    wizardparameter.cpp
+    wizardparameter.cpp \
+    wizardparametergroup.cpp
 
 HEADERS += \
     MajorBlock.h \
     Wizard_Script.h \
     mainwindow.h \
     wizard_assigned_value.h \
+    wizardcriteria.h \
     wizarddialog.h \
-    wizardparameter.h
+    wizardparameter.h \
+    wizardparametergroup.h
 
 FORMS += \
     mainwindow.ui \
