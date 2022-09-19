@@ -3,50 +3,87 @@
   "icon": "soil_grid.png",
   "description": "This wizard creates a two-dimentional vertical (2DV) soil grid",
   "addtemplate": ["unsaturated_soil.json"],
-  "major_block": {
-    "name": "Soil",
-    "type": "Soil",
-    "v_connector_type": "Soil2Soil_connector",
-    "h_connector_type": "Soil2Soil_connector_H",
-    "n_x": "param[n_x]",
-    "n_y": "param[n_y]",
-    "K_s": "param[K_s]",
-    "alpha": "1"
-  },
-  "major_block": {
-    "name": "SubSoil",
-    "type": "Soil",
-    "v_connector_type": "Soil2Soil_connector",
-    "h_connector_type": "Soil2Soil_connector_H",
-    "n_x": "param[n_x]",
-    "n_y": "param[n_y]",
-    "K_s": "param[K_s]",
-    "alpha": "1"
-  },
-  "parameter": {
-    "name": "n_x",
-    "delegate": "ValueBox",
-    "question": "Number of cells in horizontal direction"
-  },
-  "parameter": {
-    "name": "n_y",
-    "delegate": "ValueBox",
-    "question": "Number of cells in vertical direction"
-  },
-  "parameter_group": {
-    "name": "g1",
-    "description": "Introduction",
-    "parameters": [
-      "n_x",
-      "n_y"
-    ],
-    "criteria": [
-      {
-        "name": "cr1",
-        "less": "0",
-        "greater": "Wind_ceoff",
-        "ErrorMessage": "Wind coefficient must be positive"
-      }
-    ]
-  }
+  "major_blocks": 
+    [
+    	{   "name": "Soil",
+	    "type": "Soil",
+	    "v_connector_type": "Soil2Soil_connector",
+	    "h_connector_type": "Soil2Soil_connector_H",
+	    "n_x": "param[n_x]",
+	    "n_y": "param[n_y]",
+	    "K_s": "param[K_s]",
+	    "alpha": "1"
+	},
+	{   
+	    "name": "Subsoil",
+	    "type": "Soil",
+	    "v_connector_type": "Soil2Soil_connector",
+	    "h_connector_type": "Soil2Soil_connector_H",
+	    "n_x": "param[n_x]",
+	    "n_y": "param[n_y]",
+	    "K_s": "param[K_s]",
+	    "alpha": "1"
+	}],
+  "parameters": [
+    	{
+	    "name": "n_x",
+	    "delegate": "ValueBox",
+	    "question": "Number of cells in horizontal direction"
+    	},
+	{
+	    "name": "n_y",
+	    "delegate": "SpinBox",
+	    "question": "Number of cells in vertical direction",
+	    "range": ["1","30"]
+    	},
+    	{
+	    "name": "length",
+	    "delegate": "UnitBox",
+	    "question": "The total length of the medium",
+	    "unit": "m;ft"
+    	},
+    	{
+	    "name": "K_s",
+	    "delegate": "UnitBox",
+	    "question": "Saturated Hydraulic Conductivity",
+	    "unit": "m/day;ft/day"
+    	},
+    	{
+	    "name": "height",
+	    "delegate": "UnitBox",
+	    "question": "The total height of the medium",
+	    "unit": "m;ft"
+    	}
+    	
+  ],
+  "parameter_groups": 
+  [
+    {
+    	"name": "geometry",
+    	"description": "Introduction",
+	"parameters": ["n_x","n_y","length","height"],
+	"criteria": [
+	      {
+		"name": "cr1",
+		"less": "0",
+		"greater": "Wind_ceoff",
+		"ErrorMessage": "Wind coefficient must be positive"
+		}
+		]
+	},
+	{
+    	"name": "physical_charachteristics",
+    	"description": "Introduction",
+	"parameters": ["K_s"],
+	"criteria": [
+	      {
+		"name": "cr1",
+		"less": "0",
+		"greater": "Wind_ceoff",
+		"ErrorMessage": "Wind coefficient must be positive"
+		}
+		]
+	}
+	
+  ]
 }

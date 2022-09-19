@@ -65,23 +65,32 @@ WizardScript::WizardScript(const QString& filename)
                     addedtemplates<<items[i].toString();
                 }
             }
-            if (it.key() == "major_block")
+            if (it.key() == "major_blocks")
             {
-                MajorBlock mBlock(it.value().toObject());
-                QString mbname = mBlock.Name();
-                MajorBlocks[mbname] = mBlock;
+                QJsonArray items = it.value().toArray();
+                for (int i=0; i<items.count(); i++)
+                {   MajorBlock mBlock(items[i].toObject());
+                    QString mbname = mBlock.Name();
+                    MajorBlocks[mbname] = mBlock;
+                }
             }
-            if (it.key() == "parameter")
+            if (it.key() == "parameters")
             {
-                WizardParameter param(it.value().toObject());
-                QString paramname = param.Name();
-                WizardParameters[paramname] = param;
+                QJsonArray items = it.value().toArray();
+                for (int i=0; i<items.count(); i++)
+                {   WizardParameter param(items[i].toObject());
+                    QString paramname = param.Name();
+                    WizardParameters[paramname] = param;
+                }
             }
-            if (it.key() == "parameter_group")
+            if (it.key() == "parameter_groups")
             {
-                WizardParameterGroup paramgroup(it.value().toObject());
-                QString paramname = paramgroup.Name();
-                WizardParameterGroups[paramname] = paramgroup;
+                QJsonArray items = it.value().toArray();
+                for (int i=0; i<items.count(); i++)
+                {   WizardParameterGroup paramgroup(items[i].toObject());
+                    QString paramgroupname = paramgroup.Name();
+                    WizardParameterGroups[paramgroupname] = paramgroup;
+                }
             }
         }
 

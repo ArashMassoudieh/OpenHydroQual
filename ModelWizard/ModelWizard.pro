@@ -9,6 +9,8 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ../UnitTextBox3.cpp \
+    ../XString.cpp \
     MajorBlock.cpp \
     Wizard_Script.cpp \
     main.cpp \
@@ -20,6 +22,8 @@ SOURCES += \
     wizardparametergroup.cpp
 
 HEADERS += \
+    ../UnitTextBox3.h \
+    ../XString.h \
     MajorBlock.h \
     Wizard_Script.h \
     mainwindow.h \
@@ -28,6 +32,8 @@ HEADERS += \
     wizarddialog.h \
     wizardparameter.h \
     wizardparametergroup.h
+
+INCLUDEPATH += ../
 
 FORMS += \
     mainwindow.ui \

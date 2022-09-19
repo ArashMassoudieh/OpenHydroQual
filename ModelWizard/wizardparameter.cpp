@@ -1,4 +1,5 @@
 #include "wizardparameter.h"
+#include "QJsonArray"
 
 WizardParameter::WizardParameter()
 {
@@ -22,6 +23,28 @@ WizardParameter::WizardParameter(const QJsonObject& json_obj)
         {
             question = json_obj["question"].toString();
         }
+        if (it.key() == "unit")
+        {
+            units.clear();
+            units=it.value().toString().split(";");
+        }
+        if (it.key() == "range")
+        {
+
+            QJsonArray items = json_obj["range"].toArray();
+            range[0]=items[0].toDouble();
+            range[1]=items[1].toDouble();
+        }
+        if (it.key() == "comboitems")
+        {
+            comboitems.clear();
+            QJsonArray items = json_obj["combotems"].toArray();
+            for (int i=0; i<items.size(); i++)
+            {
+                comboitems.append(items[i].toString());
+            }
+        }
+
     }
 }
 WizardParameter::WizardParameter(const WizardParameter& WS)
@@ -29,12 +52,18 @@ WizardParameter::WizardParameter(const WizardParameter& WS)
     name = WS.name;
     delegate = WS.delegate;
     question = WS.question;
+    range = WS.range;
+    comboitems = WS.comboitems;
+    units = WS.units;
 }
 WizardParameter& WizardParameter::operator=(const WizardParameter& WS)
 {
     name = WS.name;
     delegate = WS.delegate;
     question = WS.question;
+    range = WS.range;
+    comboitems = WS.comboitems;
+    units = WS.units;
     return *this;
 }
 QString WizardParameter::Name()
@@ -48,4 +77,17 @@ QString WizardParameter::Delegate()
 QString WizardParameter::Question()
 {
     return question;
+}
+
+QVector2D WizardParameter::Range()
+{
+    return range;
+}
+QStringList WizardParameter::Units()
+{
+    return units;
+}
+QStringList WizardParameter::ComboItems()
+{
+    return comboitems;
 }

@@ -22,6 +22,8 @@ public:
     }
     QString Name() {return name;}
     QString Description() {return description;}
+    int ParametersCount() {return parameters.count();}
+    int CriteriaCount() {return criteria.count();}
 
 private:
     QStringList parameters;

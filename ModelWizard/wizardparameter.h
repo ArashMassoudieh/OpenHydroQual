@@ -3,6 +3,7 @@
 
 #include <qstring.h>
 #include <qjsonobject.h>
+#include <QVector2D>
 
 class WizardParameter
 {
@@ -14,10 +15,16 @@ public:
     QString Name();
     QString Delegate();
     QString Question();
+    QVector2D Range();
+    QStringList Units();
+    QStringList ComboItems();
 private:
     QString name;
     QString delegate;
     QString question;
+    QVector2D range;
+    QStringList units;
+    QStringList comboitems;
 };
 
 
