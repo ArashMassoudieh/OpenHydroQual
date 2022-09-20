@@ -3,6 +3,7 @@
 #include "QFile"
 #include "QIcon"
 #include "QJsonArray"
+#include "qapplication.h"
 
 
 
@@ -114,7 +115,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
 }
 QIcon WizardScript::Icon()
 {
-    QIcon icon(QString(wizardsfolder) + "Wizard_Icons/" + iconfilename);
+    QIcon icon(QString::fromStdString(wizardsfolder) + "Wizard_Icons/" + iconfilename);
 
     return  icon;
 }

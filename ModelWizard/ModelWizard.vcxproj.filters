@@ -58,6 +58,9 @@
     <ClCompile Include="..\UnitTextBox3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="wizardcriteria.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -95,6 +98,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wizardparametergroup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wizardcriteria.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,7 +5,17 @@
 #include "wizardparametergroup.h"
 #include <QMap>
 
-#define wizardsfolder "../../resources/Wizard_Scripts/"
+#ifdef windows_version
+#define wizardsfolder qApp->applicationDirPath().toStdString()+"/../../resources/Wizard_Scripts/"
+#endif
+
+#ifdef ubuntu_version
+#define wizardsfolder qApp->applicationDirPath().toStdString()+"/../../resources/Wizard_Scripts/"
+#endif
+
+#ifdef mac_version
+#define wizardsfolder qApp->applicationDirPath().toStdString()+"/../resources/Wizard_Scripts/"
+#endif
 
 class WizardScript
 {

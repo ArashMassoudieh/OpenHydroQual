@@ -61,11 +61,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>F:\Projects\OpenHydroQual\aquifolium\include;F:\Projects\OpenHydroQual;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>windows_version;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>F:\Projects\OpenHydroQual\aquifolium\include;F:\Projects\OpenHydroQual;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>windows_version;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -97,6 +99,7 @@
   <ItemGroup>
     <ClCompile Include="..\UnitTextBox3.cpp" />
     <ClCompile Include="MajorBlock.cpp" />
+    <ClCompile Include="wizardcriteria.cpp" />
     <ClCompile Include="wizarddialog.cpp" />
     <ClCompile Include="wizardparameter.cpp" />
     <ClCompile Include="wizardparametergroup.cpp" />
@@ -117,6 +120,7 @@
     <QtMoc Include="..\UnitTextBox3.h" />
     <ClInclude Include="MajorBlock.h" />
     <QtMoc Include="wizarddialog.h" />
+    <ClInclude Include="wizardcriteria.h" />
     <ClInclude Include="wizardparameter.h" />
     <ClInclude Include="wizardparametergroup.h" />
     <ClInclude Include="Wizard_Argument.h" />

@@ -34,13 +34,14 @@ MainWindow::~MainWindow()
 void MainWindow::PopulateListOfWizards()
 {
 
-    QDir directory(wizardsfolder);
+    QDir directory(QString::fromStdString(wizardsfolder));
+    qDebug() << directory.absolutePath(); 
     QStringList wizardfiles = directory.entryList(QStringList() << "*.json" << "*.JSON",QDir::Files);
     foreach(QString filename, wizardfiles) {
-        WizardScript wiz(wizardsfolder+filename);
+        WizardScript wiz(QString::fromStdString(wizardsfolder)+filename);
 
         QListWidgetItem *item = new QListWidgetItem(wiz.Icon(),wiz.Name());
-        item->setData(1000,wizardsfolder+filename);
+        item->setData(1000,QString::fromStdString(wizardsfolder)+filename);
         item->setToolTip(wiz.Description());
 
         ui->listWidget->addItem(item);
