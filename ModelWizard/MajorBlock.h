@@ -1,7 +1,7 @@
 #pragma once
 #include <qstring.h>
 #include <qjsonobject.h>
-#include "wizard_assigned_value.h"
+#include "Wizard_Argument.h"
 
 class MajorBlock
 {
@@ -15,7 +15,7 @@ public:
     QString V_ConnectorType();
     QString H_ConnectorType();
 private:
-    QMap<QString, Wizard_Assigned_Value> Arguments;
+    QMap<QString, Wizard_Argument> Arguments;
     QString name;
     QString type;
     QString v_connector_type;

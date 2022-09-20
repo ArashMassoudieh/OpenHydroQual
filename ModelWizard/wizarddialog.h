@@ -2,7 +2,7 @@
 #define WIZARDDIALOG_H
 
 #include <QDialog>
-#include <Wizard_Script.h>
+#include "Wizard_Script.h"
 #include <QScrollArea>
 #include <QTabWidget>
 #include <QFormLayout>

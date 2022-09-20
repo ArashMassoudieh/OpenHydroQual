@@ -58,6 +58,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>F:\Projects\OpenHydroQual\aquifolium\include;F:\Projects\OpenHydroQual;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>F:\Projects\OpenHydroQual\aquifolium\include;F:\Projects\OpenHydroQual;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -85,17 +95,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\UnitTextBox3.cpp" />
+    <ClCompile Include="MajorBlock.cpp" />
+    <ClCompile Include="wizarddialog.cpp" />
+    <ClCompile Include="wizardparameter.cpp" />
+    <ClCompile Include="wizardparametergroup.cpp" />
+    <ClCompile Include="Wizard_Argument.cpp" />
     <ClCompile Include="Wizard_Script.cpp" />
     <QtRcc Include="ModelWizard.qrc" />
     <QtUic Include="mainwindow.ui" />
     <QtMoc Include="ModelWizard.h" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="main.cpp" />
+    <QtUic Include="wizarddialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\aquifolium\include\Expression.h" />
+    <QtMoc Include="..\UnitTextBox3.h" />
+    <ClInclude Include="MajorBlock.h" />
+    <QtMoc Include="wizarddialog.h" />
+    <ClInclude Include="wizardparameter.h" />
+    <ClInclude Include="wizardparametergroup.h" />
+    <ClInclude Include="Wizard_Argument.h" />
     <ClInclude Include="Wizard_Script.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -26,14 +26,8 @@ MajorBlock::MajorBlock(const QJsonObject& json_obj)
         }
         else
         {
-            Wizard_Assigned_Value arg;
-            if (it.value().toString().contains("param["))
-            {
-                arg.SetAsParam(true);
-                arg.SetParam(it.value().toString().split("[")[1].split("]")[0]);
-            }
-            else
-                arg.SetValue(it.value().toString());
+            Wizard_Argument arg(it.value().toString());
+            Arguments[it.key()] = arg; 
         }
     }
 }
