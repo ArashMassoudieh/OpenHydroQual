@@ -41,7 +41,7 @@ WizardParameter::WizardParameter(const QJsonObject& json_obj)
             QJsonArray items = json_obj["combotems"].toArray();
             for (int i=0; i<items.size(); i++)
             {
-                comboitems.append(items[i].toString());
+                comboitems = it.value().toString().split(";");
             }
         }
 

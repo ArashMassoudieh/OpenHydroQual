@@ -30,13 +30,17 @@ public:
     ~WizardDialog();
     void PopulateTab(QWidget *scrollAreaWidgetContents, QFormLayout *formLayout, WizardParameterGroup *paramgroup);
     void PopulateTab(WizardParameterGroup *paramgroup);
-    void CreateDummyPage();
+    void GenerateModel();
 
 private:
     Ui::WizardDialog *ui;
     QMap<QString,tab> tabs;
     WizardScript SelectedWizardScript;
 
+public slots:
+    void on_next_clicked();
+    void on_previous_clicked();
+    void on_TabChanged();
 };
 
 #endif // WIZARDDIALOG_H

@@ -18,6 +18,10 @@ public:
     QVector2D Range();
     QStringList Units();
     QStringList ComboItems();
+    void SetEntryItem(QWidget *item) {entryitem = item;}
+    QWidget *EntryItem() {return entryitem;}
+    void SetValue(const QString &val) {value = val;}
+    QString Value() {return value; }
 private:
     QString name;
     QString delegate;
@@ -25,6 +29,8 @@ private:
     QVector2D range;
     QStringList units;
     QStringList comboitems;
+    QWidget *entryitem = nullptr;
+    QString value;
 };
 
 
