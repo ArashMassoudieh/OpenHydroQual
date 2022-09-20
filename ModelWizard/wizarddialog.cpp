@@ -154,6 +154,20 @@ void  WizardDialog::on_TabChanged()
 
 void WizardDialog::GenerateModel()
 {
+    for (QMap<QString,WizardParameter>::iterator it=SelectedWizardScript.GetWizardParameters().begin(); it!=SelectedWizardScript.GetWizardParameters().end(); it++)
+    {
+        if (it.value().Delegate()=="ValueBox")
+            it.value().Value()=static_cast< QLineEdit*>(it.value().EntryItem())->text();
+        else if (it.value().Delegate()=="UnitBox")
+            it.value().Value()=static_cast< UnitTextBox3*>(it.value().EntryItem())->text();
+        else if (it.value().Delegate()=="SpinBox")
+            it.value().Value()=static_cast<QSpinBox*>(it.value().EntryItem())->text();
+        else if (it.value().Delegate()=="ComboBox")
+            it.value().Value()=static_cast<QComboBox*>(it.value().EntryItem())->currentText();
+
+
+
+    }
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
         tr("OpenHydroQual files (*.ohq)"),nullptr,QFileDialog::DontUseNativeDialog);
