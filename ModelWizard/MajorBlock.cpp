@@ -103,7 +103,7 @@ QStringList MajorBlock::GenerateScript(QMap<QString, WizardParameter> *params)
                 {
                     if (it.key() == "name")
                     {
-                        line += "," + it.key() + "=(" + QString::number(i) + ":" + QString::number(j) + ")";
+                        line += "," + it.key() + "=" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
                     }
                     else
                         line += "," + it.key() + "=" + QString::number(it.value().calc(params));
