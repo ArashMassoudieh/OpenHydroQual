@@ -82,44 +82,46 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
     for (int i=0; i<paramgroup->ParametersCount(); i++)
     {
         WizardParameter *parameter = &SelectedWizardScript.GetWizardParameters()[paramgroup->Parameter(i)];
-        QLabel *label = new QLabel(this_tab.scrollAreaWidgetContents);
-        label->setObjectName(paramgroup->Parameter(i)+"_label");
-        label->setText(parameter->Question());
-        if (parameter->Delegate()=="ValueBox")
-        {   QLineEdit *Editor = new QLineEdit(this_tab.scrollAreaWidgetContents);
-            Editor->setObjectName(paramgroup->Parameter(i)+"_edit");
-            this_tab.formLayout->addRow(label,Editor);
-            parameter->SetEntryItem(Editor);
-        }
-        else if (parameter->Delegate()=="UnitBox")
-        {   UnitTextBox3 *Editor = new UnitTextBox3(QStyleOptionViewItem(),this_tab.scrollAreaWidgetContents);
-            Editor->setUnitsList(parameter->Units());
-            Editor->setObjectName(paramgroup->Parameter(i)+"_edit");
-            Editor->setMinimumHeight(30);
-            Editor->setMinimumWidth(100);
-            this_tab.formLayout->addRow(label,Editor);
-            parameter->SetEntryItem(Editor);
-        }
-        else if (parameter->Delegate()=="SpinBox")
+        if (parameter->Delegate() != "")
         {
-            QSpinBox *Editor = new QSpinBox(this_tab.scrollAreaWidgetContents);
-            Editor->setObjectName(paramgroup->Parameter(i)+"_edit");
-            Editor->setRange(parameter->Range()[0],parameter->Range()[1]);
-            Editor->setMinimumWidth(100);
-            this_tab.formLayout->addRow(label,Editor);
-            parameter->SetEntryItem(Editor);
+            QLabel* label = new QLabel(this_tab.scrollAreaWidgetContents);
+            label->setObjectName(paramgroup->Parameter(i) + "_label");
+            label->setText(parameter->Question());
+            if (parameter->Delegate() == "ValueBox")
+            {
+                QLineEdit* Editor = new QLineEdit(this_tab.scrollAreaWidgetContents);
+                Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
+                this_tab.formLayout->addRow(label, Editor);
+                parameter->SetEntryItem(Editor);
+            }
+            else if (parameter->Delegate() == "UnitBox")
+            {
+                UnitTextBox3* Editor = new UnitTextBox3(QStyleOptionViewItem(), this_tab.scrollAreaWidgetContents);
+                Editor->setUnitsList(parameter->Units());
+                Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
+                Editor->setMinimumHeight(30);
+                Editor->setMinimumWidth(100);
+                this_tab.formLayout->addRow(label, Editor);
+                parameter->SetEntryItem(Editor);
+            }
+            else if (parameter->Delegate() == "SpinBox")
+            {
+                QSpinBox* Editor = new QSpinBox(this_tab.scrollAreaWidgetContents);
+                Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
+                Editor->setRange(parameter->Range()[0], parameter->Range()[1]);
+                Editor->setMinimumWidth(100);
+                this_tab.formLayout->addRow(label, Editor);
+                parameter->SetEntryItem(Editor);
+            }
+            else if (parameter->Delegate() == "ComboBox")
+            {
+                QComboBox* Editor = new QComboBox(this_tab.scrollAreaWidgetContents);
+                Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
+                Editor->addItems(parameter->ComboItems());
+                this_tab.formLayout->addRow(label, Editor);
+                parameter->SetEntryItem(Editor);
+            }
         }
-        else if (parameter->Delegate()=="ComboBox")
-        {
-            QComboBox *Editor = new QComboBox(this_tab.scrollAreaWidgetContents);
-            Editor->setObjectName(paramgroup->Parameter(i)+"_edit");
-            Editor->addItems(parameter->ComboItems());
-            this_tab.formLayout->addRow(label,Editor);
-            parameter->SetEntryItem(Editor);
-        }
-
-
-
     }
 }
 
@@ -159,18 +161,23 @@ void WizardDialog::GenerateModel()
     for (QMap<QString,WizardParameter>::iterator it=SelectedWizardScript.GetWizardParameters().begin(); it!=SelectedWizardScript.GetWizardParameters().end(); it++)
     {
         if (it.value().Delegate()=="ValueBox")
-            it.value().Value()=static_cast< QLineEdit*>(it.value().EntryItem())->text();
+            it.value().SetValue(static_cast< QLineEdit*>(it.value().EntryItem())->text());
         else if (it.value().Delegate()=="UnitBox")
-            it.value().Value()=static_cast< UnitTextBox3*>(it.value().EntryItem())->text();
+            it.value().SetValue(static_cast< UnitTextBox3*>(it.value().EntryItem())->text());
         else if (it.value().Delegate()=="SpinBox")
-            it.value().Value()=static_cast<QSpinBox*>(it.value().EntryItem())->text();
+            it.value().SetValue(static_cast<QSpinBox*>(it.value().EntryItem())->text());
         else if (it.value().Delegate()=="ComboBox")
-            it.value().Value()=static_cast<QComboBox*>(it.value().EntryItem())->currentText();
-
+            it.value().SetValue(static_cast<QComboBox*>(it.value().EntryItem())->currentText());
+        
 
 
     }
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
         tr("OpenHydroQual files (*.ohq)"),nullptr,QFileDialog::DontUseNativeDialog);
+
+    for (QMap<QString, MajorBlock>::iterator it = SelectedWizardScript.GetMajorBlocks().begin(); it != SelectedWizardScript.GetMajorBlocks().end(); it++)
+    {
+        QStringList out = it.value().GenerateScript(&SelectedWizardScript.GetWizardParameters());
+    }
 }

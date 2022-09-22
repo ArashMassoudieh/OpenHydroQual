@@ -2,6 +2,7 @@
 #include <qstring.h>
 #include <qjsonobject.h>
 #include "Wizard_Argument.h"
+#include <QVector> 
 
 class MajorBlock
 {
@@ -12,9 +13,12 @@ public:
 	MajorBlock& operator=(const MajorBlock& WS);
 	QString Name();
     QString Type();
+    QString GridType();
     QString V_ConnectorType();
     QString H_ConnectorType();
+    QStringList GenerateScript(QMap<QString, WizardParameter>* params);
 private:
+    QString gridtype; 
     QMap<QString, Wizard_Argument> Arguments;
     QString name;
     QString type;

@@ -97,6 +97,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\aquifolium\src\Utilities.cpp" />
     <ClCompile Include="..\UnitTextBox3.cpp" />
     <ClCompile Include="MajorBlock.cpp" />
     <ClCompile Include="wizardcriteria.cpp" />

@@ -1,6 +1,7 @@
 #include "Wizard_Argument.h"
 #include "Utilities.h"
 
+
 bool Wizard_Argument::func_operators_initialized =false;
 vector<string> Wizard_Argument::funcs = vector<string>();
 vector<string> Wizard_Argument::opts = vector<string>();
@@ -8,12 +9,41 @@ vector<string> Wizard_Argument::opts = vector<string>();
 
 Wizard_Argument::Wizard_Argument()
 {
+    if (Wizard_Argument::func_operators_initialized != true)
+    {
+        Wizard_Argument::funcs.push_back("_min");
+        Wizard_Argument::funcs.push_back("_max");
+        Wizard_Argument::funcs.push_back("_exp");
+        Wizard_Argument::funcs.push_back("_log");
+        Wizard_Argument::funcs.push_back("_abs");
+        Wizard_Argument::funcs.push_back("_sgn");
+        Wizard_Argument::funcs.push_back("_sqr");
+        Wizard_Argument::funcs.push_back("_sqt");
+        Wizard_Argument::funcs.push_back("_lpw");
+        Wizard_Argument::funcs.push_back("_pos");
+        Wizard_Argument::funcs.push_back("_hsd");
+        Wizard_Argument::funcs.push_back("_ups");
+        Wizard_Argument::funcs.push_back("_bkw");
+        Wizard_Argument::funcs.push_back("_mon");
+        Wizard_Argument::funcs.push_back("_mbs");
+        Wizard_Argument::funcs.push_back("_ekr");
+        Wizard_Argument::funcs.push_back("_gkr");
+        Wizard_Argument::opts.push_back("+");
+        Wizard_Argument::opts.push_back("-");
+        Wizard_Argument::opts.push_back("*");
+        Wizard_Argument::opts.push_back(";");
+        Wizard_Argument::opts.push_back("/");
+        Wizard_Argument::opts.push_back("^");
+        Wizard_Argument::func_operators_initialized = true;
+    }
 
 }
-Wizard_Argument::Wizard_Argument(const string& S)
+Wizard_Argument::Wizard_Argument(const string& _S, const string& _unit)
 {
+    string S = _S; 
     text = S;
-
+    unit = _unit; 
+    
     if (Wizard_Argument::func_operators_initialized != true)
     {   Wizard_Argument::funcs.push_back("_min");
         Wizard_Argument::funcs.push_back("_max");
@@ -132,29 +162,8 @@ Wizard_Argument::Wizard_Argument(const string& S)
         }
         else
         {
-            param_constant_Wizard_Argument = "parameter";
-            if (aquiutils::split(S,'.').size()==1)
-            {   parameter = S;
-                location = loc::self;
-            }
-            else if (aquiutils::split(S,'.').size()==2)
-            {
-                if (aquiutils::tolower(aquiutils::split(S,'.')[1]) == "s")
-                {
-                    parameter = aquiutils::split(S,'.')[0];
-                    location = loc::source;
-                }
-                if (aquiutils::tolower(aquiutils::split(S,'.')[1]) == "e")
-                {
-                    parameter = aquiutils::split(S,'.')[0];
-                    location = loc::destination;
-                }
-                if (aquiutils::tolower(aquiutils::split(S,'.')[1]) == "v")
-                {
-                    parameter = aquiutils::split(S,'.')[0];
-                    location = loc::average_of_links;
-                }
-            }
+            param_constant_expression = "parameter";
+            parameter = S; 
         }
     }
 
@@ -162,9 +171,371 @@ Wizard_Argument::Wizard_Argument(const string& S)
 }
 Wizard_Argument::Wizard_Argument(const Wizard_Argument& WA)
 {
-
+    operators = WA.operators;
+    terms = WA.terms;
+    text = WA.text;
+    funcs = WA.funcs;
+    opts = WA.opts;
+    func_operators_initialized = WA.func_operators_initialized;
+    _errors = WA._errors;
+    param_constant_expression = WA.param_constant_expression;
+    constant = WA.constant;
+    function = WA.function;
+    parameter = WA.parameter;
+    sign = WA.sign;
+    CalculationStructure = WA.CalculationStructure;
+    unit = WA.unit;
 }
 Wizard_Argument& Wizard_Argument::operator=(const Wizard_Argument& WA)
 {
-	return *this;
+    operators = WA.operators;
+    terms = WA.terms;
+    text = WA.text;
+    funcs = WA.funcs;
+    opts = WA.opts;
+    func_operators_initialized = WA.func_operators_initialized;
+    _errors = WA._errors;
+    param_constant_expression = WA.param_constant_expression;
+    constant = WA.constant;
+    function = WA.function;
+    parameter = WA.parameter;
+    sign = WA.sign;
+    CalculationStructure = WA.CalculationStructure;
+    unit = WA.unit;
+    return *this;
+}
+
+void Wizard_Argument::Setup_Calculation_Structure() {
+
+
+    CalculationStructure.CalcOrder.clear();
+    CalculationStructure.targets.clear();
+    CalculationStructure.sources.clear();
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == "^")
+            AppendTermToStructure(i);
+
+
+    }
+    for (int i = 0; i < operators.size(); i++)
+    {
+        if (operators[i] == "/")
+        {
+            AppendTermToStructure(i);
+        }
+    }
+
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == "*")
+        {
+            AppendTermToStructure(i);
+        }
+    }
+
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == "+")
+        {
+            AppendTermToStructure(i);
+        }
+    }
+
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == "-")
+        {
+            AppendTermToStructure(i);
+        }
+    }
+    for (int i = operators.size() - 1; i >= 0; i--)
+    {
+        if (operators[i] == ";")
+        {
+            AppendTermToStructure(i);
+        }
+    }
+    if (operators.empty())
+    {
+        _calculation_pattern pattern;
+        pattern.operands.push_back(0);
+        pattern.output_cell_id = 0;
+        CalculationStructure.CalcOrder.push_back(pattern);
+        CalculationStructure.sources.push_back(0);
+        CalculationStructure.targets.push_back(0);
+    }
+
+}
+
+void Wizard_Argument::AppendTermToStructure(int i)
+{
+    _calculation_pattern pattern;
+    pattern.operands.push_back(i);
+    pattern.operands.push_back(i + 1);
+    pattern.operatr = operators[i];
+    if (i > 0)
+        pattern.sign = operators[i - 1];
+    pattern.output_cell_id = CalculationStructure.CalcOrder.size();
+    int order_of_source_container1 = -1;
+    int order_of_source_container2 = -1;
+    CalculationStructure.CalcOrder.push_back(pattern);
+    if (aquiutils::lookup(CalculationStructure.sources, i, true) != -1)
+    {
+        order_of_source_container1 = get_target_item_of_term(i);
+    }
+
+    if (aquiutils::lookup(CalculationStructure.sources, i + 1, true) != -1)
+    {
+        order_of_source_container2 = get_target_item_of_term(i + 1);
+
+    }
+    if (order_of_source_container1 != -1)
+        CalculationStructure.sources.push_back(-1000 - order_of_source_container1);
+    else
+        CalculationStructure.sources.push_back(i);
+    if (order_of_source_container2 != -1)
+        CalculationStructure.sources.push_back(-1000 - order_of_source_container2);
+    else
+        CalculationStructure.sources.push_back(i + 1);
+    CalculationStructure.targets.push_back(pattern.output_cell_id);
+    CalculationStructure.targets.push_back(pattern.output_cell_id);
+}
+
+int Wizard_Argument::get_target_item_of_term(int term_id)
+{
+    int out;
+    if (aquiutils::lookup(CalculationStructure.sources, term_id, true) == -1)
+        return -1;
+    else
+    {
+        out = CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources, term_id, true)];
+        if (get_target_item_of_term(-1000 - out) != -1)
+            out = get_target_item_of_term(-1000 - out);
+    }
+    return out;
+}
+
+double Wizard_Argument::calc(QMap<QString,WizardParameter> *params)
+{
+   
+    if (param_constant_expression == "constant")
+        return constant;
+    if (param_constant_expression == "parameter")
+    {
+        double out = 0;
+        out = params->operator[](QString::fromStdString(parameter)).Value().toDouble();
+        
+
+        if (function.empty())
+            return out;
+        else if (count_operators(";") == 0)
+            return func(function, out);
+    }
+    if (param_constant_expression == "expression")
+    {
+        if (operators.empty())
+        {
+            CalculationStructure.CalcOrder[0].value = terms[0].calc(params);
+        }
+        else
+        {
+            for (unsigned int i = 0; i < CalculationStructure.CalcOrder.size(); i++)
+            {
+                oprt(i, CalculationStructure.CalcOrder[i].operatr, params);
+            }
+        }
+        if (function.empty())
+            return CalculationStructure.CalcOrder[CalculationStructure.CalcOrder.size() - 1].value;
+        else if (count_operators(";") == 0)
+            return func(function, CalculationStructure.CalcOrder[CalculationStructure.CalcOrder.size() - 1].value);
+        else if (count_operators(";") == 1)
+        {
+            vector<double> vals = argument_values(CalculationStructure.CalcOrder.size() - 1, params);
+            return func(function, vals[0], vals[1]);
+        }
+        else if (count_operators(";") == 2)
+        {
+            vector<double> vals1 = argument_values(CalculationStructure.CalcOrder.size() - 1, params);
+            vector<double> vals2 = argument_values(CalculationStructure.CalcOrder.size() - 2, params);
+            return func(function, vals1[0], vals1[1], vals2[0]);
+        }
+    }
+
+    return 0;
+}
+
+int  Wizard_Argument::count_operators(const string& s) const
+{
+    int count = 0;
+    for (unsigned int i = 0; i < operators.size(); i++)
+    {
+        if (operators[i] == s)
+            count++;
+    }
+    return count;
+
+}
+
+double Wizard_Argument::func(const string& f, const double& val)
+{
+
+    if (f == "exp")
+        return exp(val);
+    if (f == "log")
+    {
+        if (val > 0)
+            return log(val);
+        else
+            return -1e12;
+    }
+    if (f == "abs")
+        return fabs(val);
+    if (f == "sgn")
+        return (val > 0 ? +1 : -1);
+    if (f == "sqr")
+        return sqrt(aquiutils::Pos(val));
+    if (f == "sqt")
+    {
+        if (val > 0)
+            return sqrt(val * val / (fabs(val) + 1e-4));
+        else
+            return -sqrt(val * val / (fabs(val) + 1e-4));
+    }
+    if (f == "pos")
+        return (val + fabs(val)) / 2.0;
+    if (f == "hsd")
+    {
+        if (val >= 0) return 1; else return 0;
+    }
+    return val;
+}
+
+double Wizard_Argument::func(const string& f, const double& val1, const double& val2)
+{
+    if (f == "min")
+        return min(val1, val2);
+    if (f == "max")
+        return max(val1, val2);
+    if (f == "mon")
+        return val1 / (val1 + val2);
+    if (f == "mbs")
+        return abs(val1) / (abs(val1) + val2);
+    if (f == "lpw")
+        return pow(fabs(val1), 1 - (1 - val2) * val1 / (1e-6 + val1));
+    return val1;
+}
+
+double Wizard_Argument::func(const string& f, const double& cond, const double& val1, const double& val2)
+{
+    if (f == "ups")
+    {
+        if (cond >= 0)
+            return val1;
+        else
+            return val2;
+    }
+    else if (f == "bkw")
+    {
+        if (cond >= 0)
+            return val1;
+        else
+            return val2;
+    }
+
+    return val1;
+}
+
+
+double Wizard_Argument::oprt(unsigned int calculation_sequence, string& f, QMap<QString, WizardParameter>* params)
+{
+
+    int i1 = CalculationStructure.sources[static_cast<std::vector<int, std::allocator<int>>::size_type>(calculation_sequence) * 2];
+    int i2 = CalculationStructure.sources[static_cast<std::vector<int, std::allocator<int>>::size_type>(calculation_sequence) * 2 + 1];
+    double val1 = 0;
+    double val2 = 0;
+    if (i1 >= 0 && i2 >= 0)
+    {
+        val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(params);
+        val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(params);
+        if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].sign == "-")
+            val1 = -val1;
+        if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].sign == "-")
+            val2 = -val2;
+    }
+    else if (i1 < 0 && i2 >= 0)
+    {
+        val1 = CalculationStructure.CalcOrder[-i1 - 1000].value;
+        val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(params);
+        if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].sign == "-")
+            val2 = -val2;
+
+    }
+    else if (i2 < 0 && i1 >= 0)
+    {
+        val2 = CalculationStructure.CalcOrder[-i2 - 1000].value;
+        val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(params);
+        if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].sign == "-")
+            val1 = -val1;
+
+    }
+    else if (i2 < 0 && i1 < 0)
+    {
+        val2 = CalculationStructure.CalcOrder[-i2 - 1000].value;
+        val1 = CalculationStructure.CalcOrder[-i1 - 1000].value;
+    }
+
+    if (f == "^" && terms[i1].sign == "-")
+        CalculationStructure.CalcOrder[calculation_sequence].value = -oprt(f, -val1, val2);
+    else
+        CalculationStructure.CalcOrder[calculation_sequence].value = oprt(f, val1, val2);
+
+
+
+    //qDebug()<<CalculationStructure.CalcOrder[calculation_sequence].value;
+
+    return CalculationStructure.CalcOrder[calculation_sequence].value;
+
+}
+
+double Wizard_Argument::oprt(const string& f, const double& val1, const double& val2) const
+{
+    if (f == "^")
+        return pow(aquiutils::Pos(val1), val2);
+    if (f == "+") return
+        val1 + val2;
+    if (f == "-") return
+        val1 + val2;
+    if (f == "/") return
+        val1 / (val2 + 1e-23);
+    if (f == "*") return
+        val1 * val2;
+    return 0;
+}
+
+vector<double>  Wizard_Argument::argument_values(unsigned int calculation_sequence, QMap<QString, WizardParameter>* params)
+{
+    vector<double> out(2);
+    const int i1 = CalculationStructure.sources[static_cast<std::vector<int, std::allocator<int>>::size_type>(calculation_sequence) * 2];
+    const int i2 = CalculationStructure.sources[static_cast<std::vector<int, std::allocator<int>>::size_type>(calculation_sequence) * 2 + 1];
+    double val1 = 0;
+    double val2 = 0;
+    if (i1 >= 0 && i2 >= 0)
+    {
+        val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(params);
+        val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(params);
+    }
+    else if (i1 < 0 && i2 >= 0)
+    {
+        val1 = CalculationStructure.CalcOrder[-i1 - 1000].value;
+        val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(params);
+    }
+    else if (i2 < 0 && i1 >= 0)
+    {
+        val2 = CalculationStructure.CalcOrder[-i2 - 1000].value;
+        val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(params);
+    }
+    out[0] = val1;
+    out[1] = val2;
+    return out;
 }

@@ -13,6 +13,7 @@ public:
     WizardParameter(const WizardParameter& WS);
     WizardParameter& operator=(const WizardParameter& WS);
     QString Name();
+    void SetName(const QString &_name);
     QString Delegate();
     QString Question();
     QVector2D Range();

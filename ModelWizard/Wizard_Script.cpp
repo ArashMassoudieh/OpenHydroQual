@@ -83,6 +83,13 @@ WizardScript::WizardScript(const QString& filename)
                     QString paramname = param.Name();
                     WizardParameters[paramname] = param;
                 }
+                WizardParameter i; 
+                i.SetName("i");
+                WizardParameters["i"] = i;
+                WizardParameter j;
+                i.SetName("j");
+                WizardParameters["j"] = i;
+                
             }
             if (it.key() == "parameter_groups")
             {

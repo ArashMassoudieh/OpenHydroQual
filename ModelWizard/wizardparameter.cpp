@@ -30,10 +30,9 @@ WizardParameter::WizardParameter(const QJsonObject& json_obj)
         }
         if (it.key() == "range")
         {
-
             QJsonArray items = json_obj["range"].toArray();
-            range[0]=items[0].toDouble();
-            range[1]=items[1].toDouble();
+            range[0]=items[0].toString().toInt();
+            range[1]=items[1].toString().toInt();
         }
         if (it.key() == "comboitems")
         {
@@ -69,6 +68,10 @@ WizardParameter& WizardParameter::operator=(const WizardParameter& WS)
 QString WizardParameter::Name()
 {
     return name;
+}
+void WizardParameter::SetName(const QString &_name)
+{
+    name = _name; 
 }
 QString WizardParameter::Delegate()
 {

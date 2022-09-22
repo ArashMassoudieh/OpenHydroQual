@@ -5,25 +5,32 @@
   "addtemplate": ["unsaturated_soil.json"],
   "major_blocks": 
     [
-    	{   "name": "Soil",
-	    "type": "Soil",
-	    "v_connector_type": "Soil2Soil_connector",
-	    "h_connector_type": "Soil2Soil_connector_H",
-	    "n_x": "param[n_x]",
-	    "n_y": "param[n_y]",
-	    "K_s": "param[K_s]",
-	    "alpha": "1"
-	},
-	{   
-	    "name": "Subsoil",
-	    "type": "Soil",
-	    "v_connector_type": "Soil2Soil_connector",
-	    "h_connector_type": "Soil2Soil_connector_H",
-	    "n_x": "param[n_x]",
-	    "n_y": "param[n_y]",
-	    "K_s": "param[K_s]",
-	    "alpha": "1"
-	}],
+		{   "name": "Soil",
+			"type": "Soil",
+			"grid_type": "2D-Rect",
+			"v_connector_type": "Soil2Soil_connector",
+			"h_connector_type": "Soil2Soil_connector_H",
+			"n_x": "n_x",
+			"n_y": "n_y",
+			"K_sat_original": "K_s;m/day",
+			"K_sat_scale_factor" : "1",
+			"length": "lenght/n_x;m",
+			"depth": "height/n_y;m",
+			"width" : "width",
+			"alpha": "1;1/m",
+			"area": "lenght*width/n_x",
+			"bottom_elevation": "surface_elevation-j*height/n_y;m",
+			"_width": "200",
+			"_height":"200",
+			"n": "1.41",
+			"specific_storage": "0.01;1/m",
+			"theta":"0.2",
+			"theta_res":"0.05",
+			"theta_sat":"0.4",
+			"x":"900+i*250",
+			"y":"900+j*250"
+		}
+	],
   "parameters": [
     	{
 	    "name": "n_x",
@@ -53,6 +60,12 @@
 	    "delegate": "UnitBox",
 	    "question": "The total height of the medium",
 	    "unit": "m;ft"
+    	},
+		{
+	    "name": "width",
+	    "delegate": "UnitBox",
+	    "question": "The total height of the medium",
+	    "unit": "m;ft"
     	}
     	
   ],
@@ -61,7 +74,7 @@
     {
     	"name": "geometry",
     	"description": "Introduction",
-	"parameters": ["n_x","n_y","length","height"],
+	"parameters": ["n_x","n_y","length","height", "width"],
 	"criteria": [
 	      {
 		"name": "cr1",
