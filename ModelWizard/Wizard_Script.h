@@ -14,7 +14,7 @@
 #endif
 
 #ifdef mac_version
-#define wizardsfolder qApp->applicationDirPath().toStdString()+"/../resources/Wizard_Scripts/"
+#define wizardsfolder "/Users/arash/Projects/OpenHydroQual/resources/Wizard_Scripts/"
 #endif
 
 class WizardScript

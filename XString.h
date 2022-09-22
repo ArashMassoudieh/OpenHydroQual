@@ -225,7 +225,7 @@ public:
 		}
 		else{
             if (leftOperand.toDouble()) return leftOperand.toDouble();
-			QList <XString> UL;
+            QList <QString> UL;
 			QList <float> CL;
 			UL << "m" << "cm" << "mm" << "~microm" << "km" << "in" << "ft" << "yd" <<
 				"kg" << "g" << "ton" << "lb" << "kip" <<

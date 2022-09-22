@@ -96,6 +96,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
             Editor->setUnitsList(parameter->Units());
             Editor->setObjectName(paramgroup->Parameter(i)+"_edit");
             Editor->setMinimumHeight(30);
+            Editor->setMinimumWidth(100);
             this_tab.formLayout->addRow(label,Editor);
             parameter->SetEntryItem(Editor);
         }
@@ -104,6 +105,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
             QSpinBox *Editor = new QSpinBox(this_tab.scrollAreaWidgetContents);
             Editor->setObjectName(paramgroup->Parameter(i)+"_edit");
             Editor->setRange(parameter->Range()[0],parameter->Range()[1]);
+            Editor->setMinimumWidth(100);
             this_tab.formLayout->addRow(label,Editor);
             parameter->SetEntryItem(Editor);
         }

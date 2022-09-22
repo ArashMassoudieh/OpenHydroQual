@@ -36,7 +36,9 @@ void MainWindow::PopulateListOfWizards()
 
     QDir directory(QString::fromStdString(wizardsfolder));
     qDebug() << directory.absolutePath(); 
+    qDebug() << directory.exists();
     QStringList wizardfiles = directory.entryList(QStringList() << "*.json" << "*.JSON",QDir::Files);
+
     foreach(QString filename, wizardfiles) {
         WizardScript wiz(QString::fromStdString(wizardsfolder)+filename);
 
