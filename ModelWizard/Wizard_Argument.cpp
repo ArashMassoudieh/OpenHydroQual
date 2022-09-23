@@ -42,6 +42,33 @@ Wizard_Argument::Wizard_Argument(const string& _S, const string& _unit)
 {
     string S = _S; 
     text = S;
+    
+    if (QString::fromStdString(S).contains("@sp"))
+    {
+        argument_type = parameter_type::string;
+        parameter = QString::fromStdString(S).split("@")[0].toStdString();
+        return; 
+    }
+    else if (QString::fromStdString(S).contains("@sc"))
+    {
+        argument_type = parameter_type::string;
+        constant_string = QString::fromStdString(S).split("@")[0].toStdString();
+        return;
+    }
+    if (QString::fromStdString(S).contains("@dp"))
+    {
+        argument_type = parameter_type::date;
+        parameter = QString::fromStdString(S).split("@")[0].toStdString();
+        return;
+    }
+    else if (QString::fromStdString(S).contains("@dc"))
+    {
+        argument_type = parameter_type::date;
+        constant = QDate2Xldate(QDateTime::fromString(QString::fromStdString(S).split("@")[0], "MM.dd.yyyy"));
+        return;
+    }
+
+    
     unit = _unit; 
     
     if (Wizard_Argument::func_operators_initialized != true)
@@ -185,6 +212,8 @@ Wizard_Argument::Wizard_Argument(const Wizard_Argument& WA)
     sign = WA.sign;
     CalculationStructure = WA.CalculationStructure;
     unit = WA.unit;
+    argument_type = WA.argument_type;
+    constant_string = WA.constant_string;
 }
 Wizard_Argument& Wizard_Argument::operator=(const Wizard_Argument& WA)
 {
@@ -202,6 +231,8 @@ Wizard_Argument& Wizard_Argument::operator=(const Wizard_Argument& WA)
     sign = WA.sign;
     CalculationStructure = WA.CalculationStructure;
     unit = WA.unit;
+    argument_type = WA.argument_type;
+    constant_string = WA.constant_string;
     return *this;
 }
 
@@ -377,6 +408,23 @@ int  Wizard_Argument::count_operators(const string& s) const
 
 }
 
+QString Wizard_Argument::Calc(QMap<QString, WizardParameter>* params)
+{
+
+    if (param_constant_expression == "constant")
+        return QString::number(constant);
+    if (param_constant_expression == "parameter")
+    {
+        if (params->operator[](QString::fromStdString(parameter)).ParameterType() == parameter_type::string)
+        {
+            return params->operator[](QString::fromStdString(parameter)).Value();
+        }
+    }
+    return QString::number(calc(params));
+}
+
+
+
 double Wizard_Argument::func(const string& f, const double& val)
 {
 
@@ -538,4 +586,11 @@ vector<double>  Wizard_Argument::argument_values(unsigned int calculation_sequen
     out[0] = val1;
     out[1] = val2;
     return out;
+}
+
+double QDate2Xldate(const QDateTime& x)
+{
+    QDateTime base_time1 = QDateTime::fromString("1-1-1900 00:00", "M-d-yyyy hh:mm");
+    double xxx = (x.toMSecsSinceEpoch() - base_time1.toMSecsSinceEpoch()) / (1000.00 * 24.0 * 60.0 * 60.0) + 2;
+    return xxx;
 }

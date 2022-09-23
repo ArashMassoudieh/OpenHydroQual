@@ -30,7 +30,9 @@ public:
     Wizard_Argument(const Wizard_Argument& WA);
     Wizard_Argument& operator=(const Wizard_Argument& WA);
     double calc(QMap<QString, WizardParameter>* params);
+    QString Calc(QMap<QString, WizardParameter>* params);
     QString Unit() { return QString::fromStdString(unit); }
+    parameter_type ArgumentType() { return argument_type; }
 private:
     vector<string> operators;
     vector<Wizard_Argument> terms;
@@ -41,6 +43,7 @@ private:
     std::vector<std::string> _errors;
     string param_constant_expression;
     double constant = 0;
+    string constant_string; 
     string function;
     string parameter; 
     string sign; 
@@ -56,4 +59,7 @@ private:
     double oprt(const string& f, const double& val1, const double& val2) const;
     vector<double> argument_values(unsigned int calculation_sequence, QMap<QString, WizardParameter>* params);
     string unit; 
+    parameter_type argument_type = parameter_type::numeric; 
 };
+
+double QDate2Xldate(const QDateTime& x);

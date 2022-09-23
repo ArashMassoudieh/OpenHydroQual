@@ -5,6 +5,8 @@
 #include "UnitTextBox3.h"
 #include <QSpinBox>
 #include <QStandardPaths>
+#include <QDateEdit>
+ 
 
 
 WizardDialog::WizardDialog(QWidget *parent) :
@@ -121,6 +123,21 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
+            else if (parameter->Delegate() == "DateBox")
+            {
+                QDateEdit* Editor = new QDateEdit(this_tab.scrollAreaWidgetContents);
+                Editor->setDisplayFormat("MM.dd.yyyy");
+                Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
+                this_tab.formLayout->addRow(label, Editor);
+                parameter->SetEntryItem(Editor);
+            }
+            else if (parameter->Delegate() == "FileBrowser")
+            {
+                QPushButton* Editor = new QPushButton(this_tab.scrollAreaWidgetContents);
+                Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
+                this_tab.formLayout->addRow(label, Editor);
+                parameter->SetEntryItem(Editor);
+            }
         }
     }
 }
@@ -168,6 +185,10 @@ void WizardDialog::GenerateModel()
             it.value().SetValue(static_cast<QSpinBox*>(it.value().EntryItem())->text());
         else if (it.value().Delegate()=="ComboBox")
             it.value().SetValue(static_cast<QComboBox*>(it.value().EntryItem())->currentText());
+        else if (it.value().Delegate() == "DateBox")
+            it.value().SetValue(static_cast<QDateEdit*>(it.value().EntryItem())->text());
+        else if (it.value().Delegate() == "FileBrowser")
+            it.value().SetValue(static_cast<QPushButton*>(it.value().EntryItem())->text());
         
 
 
@@ -175,11 +196,7 @@ void WizardDialog::GenerateModel()
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
         tr("OpenHydroQual files (*.ohq)"),nullptr,QFileDialog::DontUseNativeDialog);
-    QStringList script;
-    for (QMap<QString, MajorBlock>::iterator it = SelectedWizardScript.GetMajorBlocks().begin(); it != SelectedWizardScript.GetMajorBlocks().end(); it++)
-    {
-        QStringList out = it.value().GenerateScript(&SelectedWizardScript.GetWizardParameters());
-        script.append(out);
-    }
+    QStringList script = SelectedWizardScript.Script();
 
 }
+

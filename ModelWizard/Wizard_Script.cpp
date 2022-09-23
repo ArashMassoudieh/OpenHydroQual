@@ -75,6 +75,16 @@ WizardScript::WizardScript(const QString& filename)
                     MajorBlocks[mbname] = mBlock;
                 }
             }
+            if (it.key() == "entities")
+            {
+                QJsonArray items = it.value().toArray();
+                for (int i = 0; i < items.count(); i++)
+                {
+                    Wizard_Entity entity(items[i].toObject());
+                    QString enname = entity.Name();
+                    Entities[enname] = entity;
+                }
+            }
             if (it.key() == "parameters")
             {
                 QJsonArray items = it.value().toArray();
@@ -110,6 +120,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     description = WS.description;
     MajorBlocks = WS.MajorBlocks;
     WizardParameters = WS.WizardParameters;
+    Entities = WS.Entities;
 }
 WizardScript& WizardScript::operator=(const WizardScript& WS)
 {
@@ -118,6 +129,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     description = WS.description;
     MajorBlocks = WS.MajorBlocks;
     WizardParameters = WS.WizardParameters;
+    Entities = WS.Entities;
     return *this;
 }
 QIcon WizardScript::Icon()
@@ -133,4 +145,19 @@ QString WizardScript::Name()
 QString WizardScript::Description()
 {
     return description;
+}
+
+QStringList WizardScript::Script()
+{
+    QStringList script;
+    for (int i = 0; i < addedtemplates.size(); i++)
+        script.append("addtemplate; filename = " + addedtemplates[i]); 
+    
+    
+    for (QMap<QString, MajorBlock>::iterator it = GetMajorBlocks().begin(); it != GetMajorBlocks().end(); it++)
+    {
+        QStringList out = it.value().GenerateScript(&GetWizardParameters());
+        script.append(out);
+    }
+    return script; 
 }

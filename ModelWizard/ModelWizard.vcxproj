@@ -60,13 +60,13 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>F:\Projects\OpenHydroQual\aquifolium\include;F:\Projects\OpenHydroQual;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\Projects\OpenHydroQual\aquifolium\include;F:\Projects\OpenHydroQual;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>windows_version;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>F:\Projects\OpenHydroQual\aquifolium\include;F:\Projects\OpenHydroQual;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\Projects\OpenHydroQual\aquifolium\include;F:\Projects\OpenHydroQual;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>windows_version;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -99,12 +99,14 @@
   <ItemGroup>
     <ClCompile Include="..\aquifolium\src\Utilities.cpp" />
     <ClCompile Include="..\UnitTextBox3.cpp" />
+    <ClCompile Include="FilePushButton.cpp" />
     <ClCompile Include="MajorBlock.cpp" />
     <ClCompile Include="wizardcriteria.cpp" />
     <ClCompile Include="wizarddialog.cpp" />
     <ClCompile Include="wizardparameter.cpp" />
     <ClCompile Include="wizardparametergroup.cpp" />
     <ClCompile Include="Wizard_Argument.cpp" />
+    <ClCompile Include="Wizard_Entity.cpp" />
     <ClCompile Include="Wizard_Script.cpp" />
     <QtRcc Include="ModelWizard.qrc" />
     <QtUic Include="mainwindow.ui" />
@@ -119,12 +121,14 @@
   <ItemGroup>
     <ClInclude Include="..\aquifolium\include\Expression.h" />
     <QtMoc Include="..\UnitTextBox3.h" />
+    <QtMoc Include="FilePushButton.h" />
     <ClInclude Include="MajorBlock.h" />
     <QtMoc Include="wizarddialog.h" />
     <ClInclude Include="wizardcriteria.h" />
     <ClInclude Include="wizardparameter.h" />
     <ClInclude Include="wizardparametergroup.h" />
     <ClInclude Include="Wizard_Argument.h" />
+    <ClInclude Include="Wizard_Entity.h" />
     <ClInclude Include="Wizard_Script.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

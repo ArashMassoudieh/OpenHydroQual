@@ -5,6 +5,8 @@
 #include <qjsonobject.h>
 #include <QVector2D>
 
+enum class parameter_type {numeric, string, date};
+
 class WizardParameter
 {
 public:
@@ -23,6 +25,7 @@ public:
     QWidget *EntryItem() {return entryitem;}
     void SetValue(const QString &val) {value = val;}
     QString Value() {return value; }
+    parameter_type ParameterType() { return Parameter_Type; }
 private:
     QString name;
     QString delegate;
@@ -32,6 +35,7 @@ private:
     QStringList comboitems;
     QWidget *entryitem = nullptr;
     QString value;
+    parameter_type Parameter_Type = parameter_type::numeric; 
 };
 
 

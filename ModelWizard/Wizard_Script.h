@@ -3,6 +3,7 @@
 #include "MajorBlock.h" 
 #include "wizardparameter.h"
 #include "wizardparametergroup.h"
+#include "Wizard_Entity.h"
 #include <QMap>
 
 #ifdef windows_version
@@ -30,10 +31,12 @@ public:
     QMap<QString, MajorBlock> &GetMajorBlocks() {return MajorBlocks;}
     QMap<QString, WizardParameter> &GetWizardParameters() {return WizardParameters;}
     QMap<QString, WizardParameterGroup> &GetWizardParameterGroups() {return WizardParameterGroups;}
+    QStringList Script();
 private:
 	QMap<QString, MajorBlock> MajorBlocks;
     QMap<QString, WizardParameter> WizardParameters;
     QMap<QString, WizardParameterGroup> WizardParameterGroups;
+    QMap<QString, Wizard_Entity> Entities;
     QString iconfilename;
     QString wizardname;
     QString description;

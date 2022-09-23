@@ -18,6 +18,14 @@ WizardParameter::WizardParameter(const QJsonObject& json_obj)
         if (it.key()=="delegate")
         {
             delegate = json_obj["delegate"].toString();
+            if (delegate == "FileBrowser" || "ComboBox")
+            {
+                Parameter_Type = parameter_type::string;
+            }
+            else if (delegate == "DateBox")
+            {
+                Parameter_Type = parameter_type::date;
+            }
         }
         if (it.key() == "question")
         {
@@ -53,6 +61,7 @@ WizardParameter::WizardParameter(const WizardParameter& WS)
     question = WS.question;
     range = WS.range;
     comboitems = WS.comboitems;
+    Parameter_Type = WS.Parameter_Type;
     units = WS.units;
 }
 WizardParameter& WizardParameter::operator=(const WizardParameter& WS)
@@ -63,6 +72,7 @@ WizardParameter& WizardParameter::operator=(const WizardParameter& WS)
     range = WS.range;
     comboitems = WS.comboitems;
     units = WS.units;
+    Parameter_Type = WS.Parameter_Type;
     return *this;
 }
 QString WizardParameter::Name()

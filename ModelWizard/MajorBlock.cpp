@@ -1,10 +1,10 @@
 #include "MajorBlock.h"
 
-MajorBlock::MajorBlock()
+MajorBlock::MajorBlock():Wizard_Entity()
 {
 
 }
-MajorBlock::MajorBlock(const QJsonObject& json_obj)
+MajorBlock::MajorBlock(const QJsonObject& json_obj) :Wizard_Entity(json_obj)
 {
     for (QJsonObject::const_iterator it = json_obj.begin(); it!=json_obj.end(); it++)
     {
@@ -54,8 +54,9 @@ MajorBlock::MajorBlock(const QJsonObject& json_obj)
         }
     }
 }
-MajorBlock::MajorBlock(const MajorBlock& MB)
+MajorBlock::MajorBlock(const MajorBlock& MB) :Wizard_Entity(MB)
 {
+    
     name = MB.name;
     type = MB.type;
     v_connector_type = MB.v_connector_type;
@@ -67,25 +68,15 @@ MajorBlock::MajorBlock(const MajorBlock& MB)
 }
 MajorBlock& MajorBlock::operator=(const MajorBlock& MB)
 {
-    name = MB.name;
-    type = MB.type;
+    Wizard_Entity::operator=(MB);
     v_connector_type = MB.v_connector_type;
     h_connector_type = MB.h_connector_type;
-    Arguments = MB.Arguments;
     gridtype = MB.gridtype;
     Arguments_H = MB.Arguments_H;
     Arguments_V = MB.Arguments_V;
     return *this;
 }
-QString MajorBlock::Name()
-{
-    return name;
-}
 
-QString MajorBlock::Type()
-{
-    return type;
-}
 QString MajorBlock::V_ConnectorType()
 {
     return v_connector_type;
