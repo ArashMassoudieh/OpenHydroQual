@@ -38,8 +38,19 @@ MajorBlock::MajorBlock(const QJsonObject& json_obj)
                 unit = full_expression_string.split(";")[1];
                 expression = full_expression_string.split(";")[0];
             }
+            QString key = it.key();
+
             Wizard_Argument arg(expression.toStdString(), unit.toStdString());
-            Arguments[it.key()] = arg; 
+            if (key.contains("."))
+            {
+                key=it.key().split(".")[0];
+                if (it.key().split(".")[1]=="h")
+                    Arguments_H[key] = arg;
+                else if (it.key().split(".")[1]=="v")
+                    Arguments_V[key] = arg;
+            }
+            else
+                Arguments[key] = arg;
         }
     }
 }
@@ -51,6 +62,8 @@ MajorBlock::MajorBlock(const MajorBlock& MB)
     h_connector_type = MB.h_connector_type;
     gridtype = MB.gridtype;
     Arguments = MB.Arguments;
+    Arguments_H = MB.Arguments_H;
+    Arguments_V = MB.Arguments_V;
 }
 MajorBlock& MajorBlock::operator=(const MajorBlock& MB)
 {
@@ -60,6 +73,8 @@ MajorBlock& MajorBlock::operator=(const MajorBlock& MB)
     h_connector_type = MB.h_connector_type;
     Arguments = MB.Arguments;
     gridtype = MB.gridtype;
+    Arguments_H = MB.Arguments_H;
+    Arguments_V = MB.Arguments_V;
     return *this;
 }
 QString MajorBlock::Name()
@@ -109,6 +124,54 @@ QStringList MajorBlock::GenerateScript(QMap<QString, WizardParameter> *params)
                         line += "," + it.key() + "=" + QString::number(it.value().calc(params));
                 }
                 output << line; 
+            }
+        }
+        for (int i = 0; i < Arguments["n_x"].calc(params)-1; i++)
+        {
+            params->operator[]("i").SetValue(QString::number(i+0.5));
+            for (int j = 0; j < Arguments["n_y"].calc(params); j++)
+            {
+                params->operator[]("j").SetValue(QString::number(j));
+                QString line;
+                line += "create link;";
+                line += "from = " + Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
+                line += "to = " + Name() + "(" + QString::number(i+1) + ":" + QString::number(j) + ")";
+                line += "type = " + H_ConnectorType();
+                for (QMap<QString, Wizard_Argument>::iterator it = Arguments_H.begin(); it != Arguments_H.end(); it++)
+                {
+
+                    if (it.key() == "name")
+                    {
+                        line += "," + it.key() + "=" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")-(" + QString::number(i+1) + ":" + QString::number(j) + ")";
+                    }
+                    else
+                        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                }
+                output << line;
+            }
+        }
+        for (int i = 0; i < Arguments["n_x"].calc(params); i++)
+        {
+            params->operator[]("i").SetValue(QString::number(i));
+            for (int j = 0; j < Arguments["n_y"].calc(params)-1; j++)
+            {
+                params->operator[]("j").SetValue(QString::number(j+0.5));
+                QString line;
+                line += "create link;";
+                line += "from = " + Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
+                line += "to = " + Name() + "(" + QString::number(i) + ":" + QString::number(j+1) + ")";
+                line += "type = " + V_ConnectorType();
+                for (QMap<QString, Wizard_Argument>::iterator it = Arguments_V.begin(); it != Arguments_V.end(); it++)
+                {
+
+                    if (it.key() == "name")
+                    {
+                        line += "," + it.key() + "=" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")-(" + QString::number(i) + ":" + QString::number(j+1) + ")";
+                    }
+                    else
+                        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                }
+                output << line;
             }
         }
     }

@@ -20,6 +20,8 @@ public:
 private:
     QString gridtype; 
     QMap<QString, Wizard_Argument> Arguments;
+    QMap<QString, Wizard_Argument> Arguments_H;
+    QMap<QString, Wizard_Argument> Arguments_V;
     QString name;
     QString type;
     QString v_connector_type;

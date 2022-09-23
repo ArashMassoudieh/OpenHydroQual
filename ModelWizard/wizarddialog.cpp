@@ -175,9 +175,11 @@ void WizardDialog::GenerateModel()
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
         tr("OpenHydroQual files (*.ohq)"),nullptr,QFileDialog::DontUseNativeDialog);
-
+    QStringList script;
     for (QMap<QString, MajorBlock>::iterator it = SelectedWizardScript.GetMajorBlocks().begin(); it != SelectedWizardScript.GetMajorBlocks().end(); it++)
     {
         QStringList out = it.value().GenerateScript(&SelectedWizardScript.GetWizardParameters());
+        script.append(out);
     }
+
 }
