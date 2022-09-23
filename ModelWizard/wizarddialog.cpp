@@ -6,6 +6,7 @@
 #include <QSpinBox>
 #include <QStandardPaths>
 #include <QDateEdit>
+#include "FilePushButton.h"
  
 
 
@@ -133,7 +134,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
             }
             else if (parameter->Delegate() == "FileBrowser")
             {
-                QPushButton* Editor = new QPushButton(this_tab.scrollAreaWidgetContents);
+                FilePushButton* Editor = new FilePushButton(this_tab.scrollAreaWidgetContents);
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
@@ -188,7 +189,7 @@ void WizardDialog::GenerateModel()
         else if (it.value().Delegate() == "DateBox")
             it.value().SetValue(static_cast<QDateEdit*>(it.value().EntryItem())->text());
         else if (it.value().Delegate() == "FileBrowser")
-            it.value().SetValue(static_cast<QPushButton*>(it.value().EntryItem())->text());
+            it.value().SetValue(static_cast<FilePushButton*>(it.value().EntryItem())->text());
         
 
 

@@ -41,7 +41,7 @@ public slots:
     void on_next_clicked();
     void on_previous_clicked();
     void on_TabChanged();
-    void browserClicked();
+    
 };
 
 #endif // WIZARDDIALOG_H
