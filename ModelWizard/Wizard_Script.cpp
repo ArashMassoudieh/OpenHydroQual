@@ -85,6 +85,16 @@ WizardScript::WizardScript(const QString& filename)
                     Entities[enname] = entity;
                 }
             }
+            if (it.key() == "setvals")
+            {
+                QJsonArray items = it.value().toArray();
+                for (int i = 0; i < items.count(); i++)
+                {
+                    SetVal_Entity entity(items[i].toObject());
+                    QString enname = entity.Name();
+                    SetValEntities[enname] = entity;
+                }
+            }
             if (it.key() == "parameters")
             {
                 QJsonArray items = it.value().toArray();
@@ -120,6 +130,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     description = WS.description;
     MajorBlocks = WS.MajorBlocks;
     WizardParameters = WS.WizardParameters;
+    SetValEntities = WS.SetValEntities;
     Entities = WS.Entities;
 }
 WizardScript& WizardScript::operator=(const WizardScript& WS)
@@ -130,6 +141,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     MajorBlocks = WS.MajorBlocks;
     WizardParameters = WS.WizardParameters;
     Entities = WS.Entities;
+    SetValEntities = WS.SetValEntities;
     return *this;
 }
 QIcon WizardScript::Icon()
@@ -153,7 +165,19 @@ QStringList WizardScript::Script()
     for (int i = 0; i < addedtemplates.size(); i++)
         script.append("addtemplate; filename = " + addedtemplates[i]); 
     
+    for (QMap<QString, SetVal_Entity>::iterator it = SetValEntities.begin(); it != SetValEntities.end(); it++)
+    {
+        QStringList out = it.value().GenerateScript(&GetWizardParameters());
+        script.append(out);
+    }
+
+    for (QMap<QString, Wizard_Entity>::iterator it = Entities.begin(); it != Entities.end(); it++)
+    {
+        QStringList out = it.value().GenerateScript(&GetWizardParameters());
+        script.append(out);
+    }
     
+
     for (QMap<QString, MajorBlock>::iterator it = GetMajorBlocks().begin(); it != GetMajorBlocks().end(); it++)
     {
         QStringList out = it.value().GenerateScript(&GetWizardParameters());

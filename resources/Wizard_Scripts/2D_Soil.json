@@ -14,6 +14,20 @@
       "timeseries": "TimeSeriesFileName@sp"
     }
   ],
+  "setvals": [
+    {
+      "name": "start_date",
+      "object": "system@sc",
+      "quantity": "simulation_start_time@sc",
+      "value": "StartTime@dp"
+    },
+	{
+      "name": "end_date",
+      "object": "system@sc",
+      "quantity": "simulation_end_time@sc",
+      "value": "EndTime@dp"
+    }
+  ],
   "major_blocks": [
     {
       "name": "Soil",
@@ -85,6 +99,16 @@
       "name": "TimeSeriesFileName",
       "delegate": "FileBrowser",
       "question": "Precipitation file name"
+    },
+	{
+      "name": "StartTime",
+      "delegate": "DateBox",
+      "question": "Simulation Start Date"
+    },
+	{
+      "name": "EndTime",
+      "delegate": "DateBox",
+      "question": "Simulation End Date"
     }
   ],
   "parameter_groups": [
@@ -92,7 +116,9 @@
       "name": "general",
       "description": "General Model parameters",
       "parameters": [
-        "TimeSeriesFileName"
+        "TimeSeriesFileName",
+		"StartTime",
+		"EndTime"
       ],
       "criteria": [
         {

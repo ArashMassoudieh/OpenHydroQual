@@ -187,7 +187,7 @@ void WizardDialog::GenerateModel()
         else if (it.value().Delegate()=="ComboBox")
             it.value().SetValue(static_cast<QComboBox*>(it.value().EntryItem())->currentText());
         else if (it.value().Delegate() == "DateBox")
-            it.value().SetValue(static_cast<QDateEdit*>(it.value().EntryItem())->text());
+            it.value().SetValue(QString::number(QString2Xldate(static_cast<QDateEdit*>(it.value().EntryItem())->text())));
         else if (it.value().Delegate() == "FileBrowser")
             it.value().SetValue(static_cast<FilePushButton*>(it.value().EntryItem())->text());
         
@@ -198,6 +198,24 @@ void WizardDialog::GenerateModel()
         tr("Save"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
         tr("OpenHydroQual files (*.ohq)"),nullptr,QFileDialog::DontUseNativeDialog);
     QStringList script = SelectedWizardScript.Script();
+
+    if (fileName != "")
+    {
+        if (!fileName.contains("."))
+            fileName = fileName + ".ohq";
+        else if (fileName.split('.')[fileName.split('.').size() - 1] != "ohq")
+        {
+            fileName = fileName + ".ohq";
+        }
+
+        QFile file(fileName);
+        file.open(QIODevice::WriteOnly);
+        QTextStream qout(&file);
+        for (int i = 0; i < script.count(); i++)
+            qout << script[i] + "\n";
+
+        file.close();
+    }
 
 }
 

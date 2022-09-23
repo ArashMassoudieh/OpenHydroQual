@@ -4,6 +4,7 @@
 #include "wizardparameter.h"
 #include "wizardparametergroup.h"
 #include "Wizard_Entity.h"
+#include "SetValEntity.h"
 #include <QMap>
 
 #ifdef windows_version
@@ -37,6 +38,7 @@ private:
     QMap<QString, WizardParameter> WizardParameters;
     QMap<QString, WizardParameterGroup> WizardParameterGroups;
     QMap<QString, Wizard_Entity> Entities;
+    QMap<QString, SetVal_Entity> SetValEntities;
     QString iconfilename;
     QString wizardname;
     QString description;

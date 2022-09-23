@@ -4,7 +4,7 @@ MajorBlock::MajorBlock():Wizard_Entity()
 {
 
 }
-MajorBlock::MajorBlock(const QJsonObject& json_obj) :Wizard_Entity(json_obj)
+MajorBlock::MajorBlock(const QJsonObject& json_obj)
 {
     for (QJsonObject::const_iterator it = json_obj.begin(); it!=json_obj.end(); it++)
     {
@@ -125,9 +125,9 @@ QStringList MajorBlock::GenerateScript(QMap<QString, WizardParameter> *params)
                 params->operator[]("j").SetValue(QString::number(j));
                 QString line;
                 line += "create link;";
-                line += "from = " + Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
-                line += "to = " + Name() + "(" + QString::number(i+1) + ":" + QString::number(j) + ")";
-                line += "type = " + H_ConnectorType();
+                line += " from = " + Name() + "(" + QString::number(i) + ":" + QString::number(j) + "),";
+                line += " to = " + Name() + "(" + QString::number(i+1) + ":" + QString::number(j) + "),";
+                line += " type = " + H_ConnectorType();
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments_H.begin(); it != Arguments_H.end(); it++)
                 {
 

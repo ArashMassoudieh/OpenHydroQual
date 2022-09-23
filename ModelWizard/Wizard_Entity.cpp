@@ -70,8 +70,8 @@ QStringList Wizard_Entity::GenerateScript(QMap<QString, WizardParameter>* params
     line += "create " + entity + "; type = " + Type() + ", name = " + Name();
     for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
     {
-        if (it.key() != "name")
-            line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+        if (it.key() != "name" && it.key()!="entity")
+            line += "," + it.key() + "=" + it.value().Calc(params);
     }
     out << line; 
     return out; 

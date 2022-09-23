@@ -101,6 +101,7 @@
     <ClCompile Include="..\UnitTextBox3.cpp" />
     <ClCompile Include="FilePushButton.cpp" />
     <ClCompile Include="MajorBlock.cpp" />
+    <ClCompile Include="SetValEntity.cpp" />
     <ClCompile Include="wizardcriteria.cpp" />
     <ClCompile Include="wizarddialog.cpp" />
     <ClCompile Include="wizardparameter.cpp" />
@@ -124,6 +125,7 @@
     <QtMoc Include="FilePushButton.h" />
     <ClInclude Include="MajorBlock.h" />
     <QtMoc Include="wizarddialog.h" />
+    <ClInclude Include="SetValEntity.h" />
     <ClInclude Include="wizardcriteria.h" />
     <ClInclude Include="wizardparameter.h" />
     <ClInclude Include="wizardparametergroup.h" />

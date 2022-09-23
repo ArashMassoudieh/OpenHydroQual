@@ -63,3 +63,4 @@ private:
 };
 
 double QDate2Xldate(const QDateTime& x);
+double QString2Xldate(const QString& x);

@@ -40,39 +40,9 @@ Wizard_Argument::Wizard_Argument()
 }
 Wizard_Argument::Wizard_Argument(const string& _S, const string& _unit)
 {
-    string S = _S; 
-    text = S;
-    
-    if (QString::fromStdString(S).contains("@sp"))
-    {
-        argument_type = parameter_type::string;
-        parameter = QString::fromStdString(S).split("@")[0].toStdString();
-        return; 
-    }
-    else if (QString::fromStdString(S).contains("@sc"))
-    {
-        argument_type = parameter_type::string;
-        constant_string = QString::fromStdString(S).split("@")[0].toStdString();
-        return;
-    }
-    if (QString::fromStdString(S).contains("@dp"))
-    {
-        argument_type = parameter_type::date;
-        parameter = QString::fromStdString(S).split("@")[0].toStdString();
-        return;
-    }
-    else if (QString::fromStdString(S).contains("@dc"))
-    {
-        argument_type = parameter_type::date;
-        constant = QDate2Xldate(QDateTime::fromString(QString::fromStdString(S).split("@")[0], "MM.dd.yyyy"));
-        return;
-    }
-
-    
-    unit = _unit; 
-    
     if (Wizard_Argument::func_operators_initialized != true)
-    {   Wizard_Argument::funcs.push_back("_min");
+    {
+        Wizard_Argument::funcs.push_back("_min");
         Wizard_Argument::funcs.push_back("_max");
         Wizard_Argument::funcs.push_back("_exp");
         Wizard_Argument::funcs.push_back("_log");
@@ -97,8 +67,41 @@ Wizard_Argument::Wizard_Argument(const string& _S, const string& _unit)
         Wizard_Argument::opts.push_back("^");
         Wizard_Argument::func_operators_initialized = true;
     }
+    string S = _S; 
+    text = S;
+    
+    if (QString::fromStdString(S).contains("@sp"))
+    {
+        argument_type = parameter_type::string;
+        parameter = QString::fromStdString(S).split("@")[0].toStdString();
+        param_constant_expression = "parameter"; 
+        return; 
+    }
+    else if (QString::fromStdString(S).contains("@sc"))
+    {
+        argument_type = parameter_type::string;
+        constant_string = QString::fromStdString(S).split("@")[0].toStdString();
+        param_constant_expression = "constant";
+        return;
+    }
+    if (QString::fromStdString(S).contains("@dp"))
+    {
+        argument_type = parameter_type::date;
+        parameter = QString::fromStdString(S).split("@")[0].toStdString();
+        param_constant_expression = "parameter";
+        return;
+    }
+    else if (QString::fromStdString(S).contains("@dc"))
+    {
+        argument_type = parameter_type::date;
+        constant = QDate2Xldate(QDateTime::fromString(QString::fromStdString(S).split("@")[0], "MM.dd.yyyy"));
+        param_constant_expression = "constant";
+        return;
+    }
 
-
+    
+    unit = _unit; 
+    
     QVector<QString> out;
     //bool inside_quote = false;
     int last_operator_location = -1;
@@ -412,7 +415,12 @@ QString Wizard_Argument::Calc(QMap<QString, WizardParameter>* params)
 {
 
     if (param_constant_expression == "constant")
-        return QString::number(constant);
+    {
+        if (argument_type == parameter_type::string)
+            return QString::fromStdString(constant_string);
+        else
+            return QString::number(constant);
+    }
     if (param_constant_expression == "parameter")
     {
         if (params->operator[](QString::fromStdString(parameter)).ParameterType() == parameter_type::string)
@@ -593,4 +601,10 @@ double QDate2Xldate(const QDateTime& x)
     QDateTime base_time1 = QDateTime::fromString("1-1-1900 00:00", "M-d-yyyy hh:mm");
     double xxx = (x.toMSecsSinceEpoch() - base_time1.toMSecsSinceEpoch()) / (1000.00 * 24.0 * 60.0 * 60.0) + 2;
     return xxx;
+}
+
+double QString2Xldate(const QString& x)
+{
+    QDateTime time = QDateTime::fromString(x, "MM.dd.YYYY");
+    return QDate2Xldate(time);
 }
