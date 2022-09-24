@@ -15,8 +15,11 @@ SOURCES += \
     ../UnitTextBox3.cpp \
     ../XString.cpp \
     ../aquifolium/src/Utilities.cpp \
+    FilePushButton.cpp \
     MajorBlock.cpp \
+    SetValEntity.cpp \
     Wizard_Argument.cpp \
+    Wizard_Entity.cpp \
     Wizard_Script.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -30,8 +33,11 @@ HEADERS += \
     ../UnitTextBox3.h \
     ../XString.h \
     ../aquifolium/src/Utilities.cpp \
+    FilePushButton.h \
     MajorBlock.h \
+    SetValEntity.h \
     Wizard_Argument.h \
+    Wizard_Entity.h \
     Wizard_Script.h \
     mainwindow.h \
     wizard_assigned_value.h \

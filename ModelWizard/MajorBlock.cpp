@@ -12,19 +12,19 @@ MajorBlock::MajorBlock(const QJsonObject& json_obj)
         {
             name = json_obj["name"].toString();
         }
-        if (it.key()=="type")
+        else if (it.key()=="type")
         {
             type = json_obj["type"].toString();
         }
-        if (it.key() == "v_connector_type")
+        else if (it.key() == "v_connector_type")
         {
             v_connector_type = json_obj["v_connector_type"].toString();
         }
-        if (it.key() == "h_connector_type")
+        else if (it.key() == "h_connector_type")
         {
             h_connector_type = json_obj["h_connector_type"].toString();
         }
-        if (it.key() == "grid_type")
+        else if (it.key() == "grid_type")
         {
             gridtype = json_obj["grid_type"].toString();
         }
@@ -105,14 +105,10 @@ QStringList MajorBlock::GenerateScript(QMap<QString, WizardParameter> *params)
                 QString line; 
                 line += "create block;";
                 line += "type = " + Type();
+                line += ", name =" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
-                    if (it.key() == "name")
-                    {
-                        line += "," + it.key() + "=" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
-                    }
-                    else
-                        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
                 }
                 output << line; 
             }

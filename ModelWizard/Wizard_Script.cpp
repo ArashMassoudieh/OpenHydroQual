@@ -131,6 +131,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     MajorBlocks = WS.MajorBlocks;
     WizardParameters = WS.WizardParameters;
     SetValEntities = WS.SetValEntities;
+    addedtemplates = WS.addedtemplates;
     Entities = WS.Entities;
 }
 WizardScript& WizardScript::operator=(const WizardScript& WS)
@@ -141,6 +142,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     MajorBlocks = WS.MajorBlocks;
     WizardParameters = WS.WizardParameters;
     Entities = WS.Entities;
+    addedtemplates = WS.addedtemplates;
     SetValEntities = WS.SetValEntities;
     return *this;
 }
