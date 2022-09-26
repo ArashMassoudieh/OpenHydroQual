@@ -100,7 +100,6 @@
     <ClCompile Include="..\aquifolium\src\Utilities.cpp" />
     <ClCompile Include="..\UnitTextBox3.cpp" />
     <ClCompile Include="FilePushButton.cpp" />
-    <ClCompile Include="MajorBlock.cpp" />
     <ClCompile Include="SetValEntity.cpp" />
     <ClCompile Include="wizardcriteria.cpp" />
     <ClCompile Include="wizarddialog.cpp" />
@@ -109,6 +108,9 @@
     <ClCompile Include="Wizard_Argument.cpp" />
     <ClCompile Include="Wizard_Entity.cpp" />
     <ClCompile Include="Wizard_Script.cpp" />
+    <ClCompile Include="WizBlockArray.cpp" />
+    <ClCompile Include="WizConnector.cpp" />
+    <ClCompile Include="WizSingleBlock.cpp" />
     <QtRcc Include="ModelWizard.qrc" />
     <QtUic Include="mainwindow.ui" />
     <QtMoc Include="ModelWizard.h" />
@@ -121,9 +123,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\aquifolium\include\Expression.h" />
+    <ClInclude Include="WizBlockArray.h" />
+    <ClInclude Include="WizConnector.h" />
+    <ClInclude Include="WizSingleBlock.h" />
     <QtMoc Include="..\UnitTextBox3.h" />
     <QtMoc Include="FilePushButton.h" />
-    <ClInclude Include="MajorBlock.h" />
     <QtMoc Include="wizarddialog.h" />
     <ClInclude Include="SetValEntity.h" />
     <ClInclude Include="wizardcriteria.h" />

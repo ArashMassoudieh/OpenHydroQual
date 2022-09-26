@@ -5,22 +5,26 @@
 #include <QVector> 
 #include "Wizard_Entity.h"
 
-class MajorBlock: public Wizard_Entity
+class BlockArray: public Wizard_Entity
 {
 public:
-	MajorBlock();
-    MajorBlock(const QJsonObject& jsonobject);
-	MajorBlock(const MajorBlock& WS);
-	MajorBlock& operator=(const MajorBlock& WS);
+    BlockArray();
+    BlockArray(const QJsonObject& jsonobject);
+    BlockArray(const BlockArray& WS);
+    BlockArray& operator=(const BlockArray& WS);
     QString GridType();
     QString V_ConnectorType();
     QString H_ConnectorType();
     QStringList GenerateScript(QMap<QString, WizardParameter>* params);
+    int Nx() { return nx; }
+    int Ny() { return ny; }
 private:
     QString gridtype; 
     QMap<QString, Wizard_Argument> Arguments_H;
     QMap<QString, Wizard_Argument> Arguments_V;
     QString v_connector_type;
     QString h_connector_type;
+    int nx = 0; 
+    int ny = 0; 
 
 };

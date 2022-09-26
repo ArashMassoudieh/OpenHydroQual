@@ -1,10 +1,12 @@
 #pragma once
 #include <qstring.h>
-#include "MajorBlock.h" 
+#include "WizBlockArray.h"
+#include "WizSingleBlock.h"
 #include "wizardparameter.h"
 #include "wizardparametergroup.h"
 #include "Wizard_Entity.h"
 #include "SetValEntity.h"
+#include "WizConnector.h"
 #include <QMap>
 
 #ifdef windows_version
@@ -25,20 +27,25 @@ public:
 	WizardScript(); 
 	WizardScript(const QString& filename);
 	WizardScript(const WizardScript &WS);
+    void SetAllParents();
 	WizardScript& operator=(const WizardScript& WS);
     QIcon Icon();
 	QString Name();
 	QString Description(); 
-    QMap<QString, MajorBlock> &GetMajorBlocks() {return MajorBlocks;}
+    QMap<QString, BlockArray> &GetBlockArrays() {return BlockArrays;}
+    QMap<QString, SingleBlock> &GetSingleBlocks() {return SingleBlocks;}
     QMap<QString, WizardParameter> &GetWizardParameters() {return WizardParameters;}
     QMap<QString, WizardParameterGroup> &GetWizardParameterGroups() {return WizardParameterGroups;}
+    QMap<QString, Connector>& GetConnectors() { return Connectors; }
     QStringList Script();
 private:
-	QMap<QString, MajorBlock> MajorBlocks;
+    QMap<QString, BlockArray> BlockArrays;
+    QMap<QString, SingleBlock> SingleBlocks;
     QMap<QString, WizardParameter> WizardParameters;
     QMap<QString, WizardParameterGroup> WizardParameterGroups;
     QMap<QString, Wizard_Entity> Entities;
     QMap<QString, SetVal_Entity> SetValEntities;
+    QMap<QString, Connector> Connectors;
     QString iconfilename;
     QString wizardname;
     QString description;

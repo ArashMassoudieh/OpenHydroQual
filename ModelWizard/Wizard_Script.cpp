@@ -66,13 +66,24 @@ WizardScript::WizardScript(const QString& filename)
                     addedtemplates<<items[i].toString();
                 }
             }
-            if (it.key() == "major_blocks")
+            if (it.key() == "blockarrays")
             {
                 QJsonArray items = it.value().toArray();
                 for (int i=0; i<items.count(); i++)
-                {   MajorBlock mBlock(items[i].toObject());
+                {   BlockArray mBlock(items[i].toObject());
                     QString mbname = mBlock.Name();
-                    MajorBlocks[mbname] = mBlock;
+                    BlockArrays[mbname] = mBlock;
+                    BlockArrays[mbname].SetWizardScript(this);
+                }
+            }
+            if (it.key() == "singleblock")
+            {
+                QJsonArray items = it.value().toArray();
+                for (int i=0; i<items.count(); i++)
+                {   SingleBlock mBlock(items[i].toObject());
+                    QString mbname = mBlock.Name();
+                    SingleBlocks[mbname] = mBlock;
+                    SingleBlocks[mbname].SetWizardScript(this);
                 }
             }
             if (it.key() == "entities")
@@ -83,6 +94,7 @@ WizardScript::WizardScript(const QString& filename)
                     Wizard_Entity entity(items[i].toObject());
                     QString enname = entity.Name();
                     Entities[enname] = entity;
+                    Entities[enname].SetWizardScript(this);
                 }
             }
             if (it.key() == "setvals")
@@ -93,6 +105,7 @@ WizardScript::WizardScript(const QString& filename)
                     SetVal_Entity entity(items[i].toObject());
                     QString enname = entity.Name();
                     SetValEntities[enname] = entity;
+                    SetValEntities[enname].SetWizardScript(this);
                 }
             }
             if (it.key() == "parameters")
@@ -128,20 +141,59 @@ WizardScript::WizardScript(const WizardScript &WS)
     iconfilename = WS.iconfilename;
     wizardname = WS.wizardname;
     description = WS.description;
-    MajorBlocks = WS.MajorBlocks;
+    BlockArrays = WS.BlockArrays;
+    SingleBlocks = WS.SingleBlocks;
     WizardParameters = WS.WizardParameters;
     SetValEntities = WS.SetValEntities;
+    addedtemplates = WS.addedtemplates;
     Entities = WS.Entities;
+    Connectors = WS.Connectors; 
+    SetAllParents(); 
+
+
 }
+
+void WizardScript::SetAllParents()
+{
+    for (QMap<QString, BlockArray>::iterator it = BlockArrays.begin(); it != BlockArrays.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+    for (QMap<QString, SingleBlock>::iterator it = SingleBlocks.begin(); it != SingleBlocks.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+    for (QMap<QString, SetVal_Entity>::iterator it = SetValEntities.begin(); it != SetValEntities.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+    for (QMap<QString, Wizard_Entity>::iterator it = Entities.begin(); it != Entities.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+    for (QMap<QString, Wizard_Entity>::iterator it = Entities.begin(); it != Entities.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+    for (QMap<QString, Connector>::iterator it = Connectors.begin(); it != Connectors.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+}
+
 WizardScript& WizardScript::operator=(const WizardScript& WS)
 {
     iconfilename = WS.iconfilename;
     wizardname = WS.wizardname;
     description = WS.description;
-    MajorBlocks = WS.MajorBlocks;
+    BlockArrays = WS.BlockArrays;
+    SingleBlocks = WS.SingleBlocks;
     WizardParameters = WS.WizardParameters;
     Entities = WS.Entities;
+    addedtemplates = WS.addedtemplates;
     SetValEntities = WS.SetValEntities;
+    Connectors = WS.Connectors;
+    SetAllParents();
     return *this;
 }
 QIcon WizardScript::Icon()
@@ -178,7 +230,12 @@ QStringList WizardScript::Script()
     }
     
 
-    for (QMap<QString, MajorBlock>::iterator it = GetMajorBlocks().begin(); it != GetMajorBlocks().end(); it++)
+    for (QMap<QString, BlockArray>::iterator it = GetBlockArrays().begin(); it != GetBlockArrays().end(); it++)
+    {
+        QStringList out = it.value().GenerateScript(&GetWizardParameters());
+        script.append(out);
+    }
+    for (QMap<QString, SingleBlock>::iterator it = GetSingleBlocks().begin(); it != GetSingleBlocks().end(); it++)
     {
         QStringList out = it.value().GenerateScript(&GetWizardParameters());
         script.append(out);

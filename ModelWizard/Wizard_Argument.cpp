@@ -605,6 +605,6 @@ double QDate2Xldate(const QDateTime& x)
 
 double QString2Xldate(const QString& x)
 {
-    QDateTime time = QDateTime::fromString(x, "MM.dd.YYYY");
+    QDateTime time = QDateTime::fromString(x, "MM.dd.yyyy");
     return QDate2Xldate(time);
 }
