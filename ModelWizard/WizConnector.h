@@ -19,7 +19,8 @@ public:
     connector_config GetConnectorConfig() {return ConnectorConfig;}
     QString From() {return from;}
     QString To() {return to;}
-    Wizard_Entity GetFromEntity() { return wiz_script.Entity(from); }
+    Wizard_Entity *GetFromEntity();
+    Wizard_Entity *GetToEntity();
 private:
     connector_type ConnectorType;
     connector_config ConnectorConfig;

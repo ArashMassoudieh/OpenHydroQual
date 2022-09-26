@@ -38,6 +38,7 @@ public:
     QMap<QString, WizardParameterGroup> &GetWizardParameterGroups() {return WizardParameterGroups;}
     QMap<QString, Connector>& GetConnectors() { return Connectors; }
     QStringList Script();
+    Wizard_Entity* FindEntity(QString name);
 private:
     QMap<QString, BlockArray> BlockArrays;
     QMap<QString, SingleBlock> SingleBlocks;

@@ -242,3 +242,17 @@ QStringList WizardScript::Script()
     }
     return script; 
 }
+
+Wizard_Entity* WizardScript::FindEntity(QString name)
+{
+    if (SingleBlocks.count(name) == 1)
+    {
+        return &SingleBlocks[name];
+    }
+    else if (BlockArrays.count(name) == 1)
+    {
+        return &BlockArrays[name];
+    }
+    else
+        return nullptr;
+}

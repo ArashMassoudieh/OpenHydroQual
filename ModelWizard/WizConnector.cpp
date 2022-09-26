@@ -1,4 +1,5 @@
 #include "WizConnector.h"
+#include "Wizard_Script.h"
 
 Connector::Connector():Wizard_Entity()
 {
@@ -70,10 +71,29 @@ Connector& Connector::operator=(const Connector& MB)
 QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
 {
     QStringList output;    
-    QString line;
-    line += "create link;";
-    line += "type = " + Type();
-    line += ", name =" +Name();
+    
+    
+    if (ConnectorType == connector_type::m2m && ConnectorConfig==connector_config::u2d)
+    {
+        if (static_cast<BlockArray*>(GetFromEntity())->Nx() != static_cast<BlockArray*>(GetToEntity())->Nx())
+        {
+            qDebug() << "Number of columns in the connected arrays must be the same";
+            return QStringList();
+        }
+        else
+        {
+            for (int i = 0; i < static_cast<BlockArray*>(GetFromEntity())->Nx(); i++)
+            {
+                QString line;
+                line += "create link;"; 
+                line += " from = " + static_cast<BlockArray*>(GetFromEntity())->Name() + "(" + i + 
+                line += "type = " + Type();
+                line += ", name =" + Name();
+            }
+        }
+
+    }
+
     for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
     {
         line += "," + it.key() + "=" + QString::number(it.value().calc(params));
@@ -82,6 +102,16 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
     qDebug() << output; 
     return output; 
     
+}
+
+Wizard_Entity *Connector::GetFromEntity()
+{
+    return GetWizardScript()->FindEntity(from);
+}
+
+Wizard_Entity *Connector::GetToEntity()
+{
+    return GetWizardScript()->FindEntity(to);
 }
 
 connector_type ConnectType(QString x)
