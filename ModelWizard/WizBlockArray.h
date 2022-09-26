@@ -5,13 +5,13 @@
 #include <QVector> 
 #include "Wizard_Entity.h"
 
-class MajorBlock: public Wizard_Entity
+class BlockArray: public Wizard_Entity
 {
 public:
-	MajorBlock();
-    MajorBlock(const QJsonObject& jsonobject);
-	MajorBlock(const MajorBlock& WS);
-	MajorBlock& operator=(const MajorBlock& WS);
+    BlockArray();
+    BlockArray(const QJsonObject& jsonobject);
+    BlockArray(const BlockArray& WS);
+    BlockArray& operator=(const BlockArray& WS);
     QString GridType();
     QString V_ConnectorType();
     QString H_ConnectorType();

@@ -1,6 +1,6 @@
 #pragma once
 #include <qstring.h>
-#include "MajorBlock.h" 
+#include "WizBlockArray.h"
 #include "wizardparameter.h"
 #include "wizardparametergroup.h"
 #include "Wizard_Entity.h"
@@ -29,12 +29,12 @@ public:
     QIcon Icon();
 	QString Name();
 	QString Description(); 
-    QMap<QString, MajorBlock> &GetMajorBlocks() {return MajorBlocks;}
+    QMap<QString, BlockArray> &GetBlockArrays() {return BlockArrays;}
     QMap<QString, WizardParameter> &GetWizardParameters() {return WizardParameters;}
     QMap<QString, WizardParameterGroup> &GetWizardParameterGroups() {return WizardParameterGroups;}
     QStringList Script();
 private:
-	QMap<QString, MajorBlock> MajorBlocks;
+    QMap<QString, BlockArray> BlockArrays;
     QMap<QString, WizardParameter> WizardParameters;
     QMap<QString, WizardParameterGroup> WizardParameterGroups;
     QMap<QString, Wizard_Entity> Entities;

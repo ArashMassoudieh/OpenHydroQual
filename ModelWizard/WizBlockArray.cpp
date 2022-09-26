@@ -1,10 +1,10 @@
-#include "MajorBlock.h"
+#include "WizBlockArray.h"
 
-MajorBlock::MajorBlock():Wizard_Entity()
+BlockArray::BlockArray():Wizard_Entity()
 {
 
 }
-MajorBlock::MajorBlock(const QJsonObject& json_obj)
+BlockArray::BlockArray(const QJsonObject& json_obj)
 {
     for (QJsonObject::const_iterator it = json_obj.begin(); it!=json_obj.end(); it++)
     {
@@ -54,7 +54,7 @@ MajorBlock::MajorBlock(const QJsonObject& json_obj)
         }
     }
 }
-MajorBlock::MajorBlock(const MajorBlock& MB) :Wizard_Entity(MB)
+BlockArray::BlockArray(const BlockArray& MB) :Wizard_Entity(MB)
 {
     
     name = MB.name;
@@ -66,7 +66,7 @@ MajorBlock::MajorBlock(const MajorBlock& MB) :Wizard_Entity(MB)
     Arguments_H = MB.Arguments_H;
     Arguments_V = MB.Arguments_V;
 }
-MajorBlock& MajorBlock::operator=(const MajorBlock& MB)
+BlockArray& BlockArray::operator=(const BlockArray& MB)
 {
     Wizard_Entity::operator=(MB);
     v_connector_type = MB.v_connector_type;
@@ -77,21 +77,21 @@ MajorBlock& MajorBlock::operator=(const MajorBlock& MB)
     return *this;
 }
 
-QString MajorBlock::V_ConnectorType()
+QString BlockArray::V_ConnectorType()
 {
     return v_connector_type;
 }
-QString MajorBlock::H_ConnectorType()
+QString BlockArray::H_ConnectorType()
 {
     return h_connector_type;
 }
 
-QString MajorBlock::GridType()
+QString BlockArray::GridType()
 {
     return gridtype; 
 }
 
-QStringList MajorBlock::GenerateScript(QMap<QString, WizardParameter> *params)
+QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
 {
     QStringList output; 
     if (gridtype == "2D-Rect")
@@ -108,7 +108,8 @@ QStringList MajorBlock::GenerateScript(QMap<QString, WizardParameter> *params)
                 line += ", name =" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                    if (it.key()!="n_x" && it.key()!="n_y")
+                        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
                 }
                 output << line; 
             }
@@ -124,15 +125,11 @@ QStringList MajorBlock::GenerateScript(QMap<QString, WizardParameter> *params)
                 line += " from = " + Name() + "(" + QString::number(i) + ":" + QString::number(j) + "),";
                 line += " to = " + Name() + "(" + QString::number(i+1) + ":" + QString::number(j) + "),";
                 line += " type = " + H_ConnectorType();
+                line += ", name =" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")-(" + QString::number(i+1) + ":" + QString::number(j) + ")";
+
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments_H.begin(); it != Arguments_H.end(); it++)
                 {
-
-                    if (it.key() == "name")
-                    {
-                        line += "," + it.key() + "=" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")-(" + QString::number(i+1) + ":" + QString::number(j) + ")";
-                    }
-                    else
-                        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
                 }
                 output << line;
             }
@@ -145,18 +142,14 @@ QStringList MajorBlock::GenerateScript(QMap<QString, WizardParameter> *params)
                 params->operator[]("j").SetValue(QString::number(j+0.5));
                 QString line;
                 line += "create link;";
-                line += "from = " + Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
-                line += "to = " + Name() + "(" + QString::number(i) + ":" + QString::number(j+1) + ")";
-                line += "type = " + V_ConnectorType();
+                line += " from = " + Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
+                line += ", to = " + Name() + "(" + QString::number(i) + ":" + QString::number(j+1) + ")";
+                line += ", type = " + V_ConnectorType();
+                line += ", name =" + Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")-(" + QString::number(i) + ":" + QString::number(j+1) + ")";
+
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments_V.begin(); it != Arguments_V.end(); it++)
                 {
-
-                    if (it.key() == "name")
-                    {
-                        line += "," + it.key() + "=" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")-(" + QString::number(i) + ":" + QString::number(j+1) + ")";
-                    }
-                    else
-                        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
                 }
                 output << line;
             }

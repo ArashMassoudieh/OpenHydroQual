@@ -70,9 +70,9 @@ WizardScript::WizardScript(const QString& filename)
             {
                 QJsonArray items = it.value().toArray();
                 for (int i=0; i<items.count(); i++)
-                {   MajorBlock mBlock(items[i].toObject());
+                {   BlockArray mBlock(items[i].toObject());
                     QString mbname = mBlock.Name();
-                    MajorBlocks[mbname] = mBlock;
+                    BlockArrays[mbname] = mBlock;
                 }
             }
             if (it.key() == "entities")
@@ -128,7 +128,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     iconfilename = WS.iconfilename;
     wizardname = WS.wizardname;
     description = WS.description;
-    MajorBlocks = WS.MajorBlocks;
+    BlockArrays = WS.BlockArrays;
     WizardParameters = WS.WizardParameters;
     SetValEntities = WS.SetValEntities;
     addedtemplates = WS.addedtemplates;
@@ -139,7 +139,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     iconfilename = WS.iconfilename;
     wizardname = WS.wizardname;
     description = WS.description;
-    MajorBlocks = WS.MajorBlocks;
+    BlockArrays = WS.BlockArrays;
     WizardParameters = WS.WizardParameters;
     Entities = WS.Entities;
     addedtemplates = WS.addedtemplates;
@@ -180,7 +180,7 @@ QStringList WizardScript::Script()
     }
     
 
-    for (QMap<QString, MajorBlock>::iterator it = GetMajorBlocks().begin(); it != GetMajorBlocks().end(); it++)
+    for (QMap<QString, BlockArray>::iterator it = GetBlockArrays().begin(); it != GetBlockArrays().end(); it++)
     {
         QStringList out = it.value().GenerateScript(&GetWizardParameters());
         script.append(out);

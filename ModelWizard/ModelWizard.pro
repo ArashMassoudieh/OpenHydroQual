@@ -16,7 +16,7 @@ SOURCES += \
     ../XString.cpp \
     ../aquifolium/src/Utilities.cpp \
     FilePushButton.cpp \
-    MajorBlock.cpp \
+    WizBlockArray.cpp \
     SetValEntity.cpp \
     Wizard_Argument.cpp \
     Wizard_Entity.cpp \
@@ -34,7 +34,7 @@ HEADERS += \
     ../XString.h \
     ../aquifolium/src/Utilities.cpp \
     FilePushButton.h \
-    MajorBlock.h \
+    WizBlockArray.h \
     SetValEntity.h \
     Wizard_Argument.h \
     Wizard_Entity.h \
