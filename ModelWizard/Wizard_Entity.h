@@ -16,6 +16,8 @@ public:
     QString Type();
     virtual QStringList GenerateScript(QMap<QString, WizardParameter>* params);
     void SetWizardScript(WizardScript* wizscript) { wiz_script = wizscript; }
+    WizardScript* GetWizardScript() { return wiz_script; }
+
 protected:
     QMap<QString, Wizard_Argument> Arguments;
     QString name;
