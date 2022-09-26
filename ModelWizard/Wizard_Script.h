@@ -1,6 +1,7 @@
 #pragma once
 #include <qstring.h>
 #include "WizBlockArray.h"
+#include "WizSingleBlock.h"
 #include "wizardparameter.h"
 #include "wizardparametergroup.h"
 #include "Wizard_Entity.h"
@@ -30,11 +31,13 @@ public:
 	QString Name();
 	QString Description(); 
     QMap<QString, BlockArray> &GetBlockArrays() {return BlockArrays;}
+    QMap<QString, SingleBlock> &GetSingleBlocks() {return SingleBlocks;}
     QMap<QString, WizardParameter> &GetWizardParameters() {return WizardParameters;}
     QMap<QString, WizardParameterGroup> &GetWizardParameterGroups() {return WizardParameterGroups;}
     QStringList Script();
 private:
     QMap<QString, BlockArray> BlockArrays;
+    QMap<QString, SingleBlock> SingleBlocks;
     QMap<QString, WizardParameter> WizardParameters;
     QMap<QString, WizardParameterGroup> WizardParameterGroups;
     QMap<QString, Wizard_Entity> Entities;

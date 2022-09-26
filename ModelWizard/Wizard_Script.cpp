@@ -66,13 +66,22 @@ WizardScript::WizardScript(const QString& filename)
                     addedtemplates<<items[i].toString();
                 }
             }
-            if (it.key() == "major_blocks")
+            if (it.key() == "blockarrays")
             {
                 QJsonArray items = it.value().toArray();
                 for (int i=0; i<items.count(); i++)
                 {   BlockArray mBlock(items[i].toObject());
                     QString mbname = mBlock.Name();
                     BlockArrays[mbname] = mBlock;
+                }
+            }
+            if (it.key() == "singleblock")
+            {
+                QJsonArray items = it.value().toArray();
+                for (int i=0; i<items.count(); i++)
+                {   SingleBlock mBlock(items[i].toObject());
+                    QString mbname = mBlock.Name();
+                    SingleBlocks[mbname] = mBlock;
                 }
             }
             if (it.key() == "entities")
@@ -129,6 +138,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     wizardname = WS.wizardname;
     description = WS.description;
     BlockArrays = WS.BlockArrays;
+    SingleBlocks = WS.SingleBlocks;
     WizardParameters = WS.WizardParameters;
     SetValEntities = WS.SetValEntities;
     addedtemplates = WS.addedtemplates;
@@ -140,6 +150,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     wizardname = WS.wizardname;
     description = WS.description;
     BlockArrays = WS.BlockArrays;
+    SingleBlocks = WS.SingleBlocks;
     WizardParameters = WS.WizardParameters;
     Entities = WS.Entities;
     addedtemplates = WS.addedtemplates;
@@ -181,6 +192,11 @@ QStringList WizardScript::Script()
     
 
     for (QMap<QString, BlockArray>::iterator it = GetBlockArrays().begin(); it != GetBlockArrays().end(); it++)
+    {
+        QStringList out = it.value().GenerateScript(&GetWizardParameters());
+        script.append(out);
+    }
+    for (QMap<QString, SingleBlock>::iterator it = GetSingleBlocks().begin(); it != GetSingleBlocks().end(); it++)
     {
         QStringList out = it.value().GenerateScript(&GetWizardParameters());
         script.append(out);

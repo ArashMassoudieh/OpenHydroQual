@@ -28,7 +28,7 @@
       "value": "EndTime@dp"
     }
   ],
-  "major_blocks": [
+  "blockarrays": [
     {
       "name": "Soil",
       "type": "Soil",
