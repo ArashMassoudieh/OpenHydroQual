@@ -18,6 +18,7 @@ public:
     QStringList GenerateScript(QMap<QString, WizardParameter>* params);
     int Nx() { return nx; }
     int Ny() { return ny; }
+    QString BlockName(int i, int j);
 private:
     QString gridtype; 
     QMap<QString, Wizard_Argument> Arguments_H;

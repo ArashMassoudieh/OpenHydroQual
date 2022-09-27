@@ -73,7 +73,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
     QStringList output;    
     
     
-    if (ConnectorType == connector_type::m2m && ConnectorConfig==connector_config::u2d)
+    if (ConnectorType == connector_type::m2m && (ConnectorConfig==connector_config::u2d || ConnectorConfig==connector_config::d2u) )
     {
         if (static_cast<BlockArray*>(GetFromEntity())->Nx() != static_cast<BlockArray*>(GetToEntity())->Nx())
         {
@@ -82,23 +82,32 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
         }
         else
         {
+            BlockArray *fromBlock = static_cast<BlockArray*>(GetFromEntity());
+            BlockArray *toBlock = static_cast<BlockArray*>(GetToEntity());
             for (int i = 0; i < static_cast<BlockArray*>(GetFromEntity())->Nx(); i++)
             {
                 QString line;
-                line += "create link;"; 
-                line += " from = " + static_cast<BlockArray*>(GetFromEntity())->Name() + "(" + i + 
-                line += "type = " + Type();
+                line += "create link;";
+                if (ConnectorConfig==connector_config::u2d) {
+                    line += " from = " + fromBlock->BlockName(i,fromBlock->Ny()-1);
+                    line += ", to = " + toBlock->BlockName(i,0);
+                }
+                else if (ConnectorConfig==connector_config::d2u) {
+                    line += " from = " + fromBlock->BlockName(i,0);
+                    line += ", to = " + toBlock->BlockName(i,toBlock->Ny()-1);
+                }
+                line += ", type = " + Type();
                 line += ", name =" + Name();
+                for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
+                {
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                }
+                output << line;
             }
         }
 
     }
 
-    for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
-    {
-        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
-    }
-    output << line;
     qDebug() << output; 
     return output; 
     
