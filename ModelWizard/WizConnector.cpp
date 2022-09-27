@@ -107,6 +107,40 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
         }
 
     }
+    else if (ConnectorType == connector_type::m2m && (ConnectorConfig==connector_config::l2r || ConnectorConfig==connector_config::r2l) )
+    {
+        if (static_cast<BlockArray*>(GetFromEntity())->Ny() != static_cast<BlockArray*>(GetToEntity())->Ny())
+        {
+            qDebug() << "Number of rows in the connected arrays must be the same";
+            return QStringList();
+        }
+        else
+        {
+            BlockArray *fromBlock = static_cast<BlockArray*>(GetFromEntity());
+            BlockArray *toBlock = static_cast<BlockArray*>(GetToEntity());
+            for (int j = 0; j < static_cast<BlockArray*>(GetFromEntity())->Ny(); j++)
+            {
+                QString line;
+                line += "create link;";
+                if (ConnectorConfig==connector_config::l2r) {
+                    line += " from = " + fromBlock->BlockName(fromBlock->Nx()-1,j);
+                    line += ", to = " + toBlock->BlockName(0,j);
+                }
+                else if (ConnectorConfig==connector_config::r2l) {
+                    line += " from = " + fromBlock->BlockName(0,j);
+                    line += ", to = " + toBlock->BlockName(toBlock->Nx()-1,j);
+                }
+                line += ", type = " + Type();
+                line += ", name =" + Name();
+                for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
+                {
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                }
+                output << line;
+            }
+        }
+
+    }
 
     qDebug() << output; 
     return output; 
