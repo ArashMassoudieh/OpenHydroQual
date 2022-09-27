@@ -73,28 +73,93 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
     QStringList output;    
     
     
-    if (ConnectorType == connector_type::m2m && (ConnectorConfig==connector_config::u2d || ConnectorConfig==connector_config::d2u) )
-    {
-        if (static_cast<BlockArray*>(GetFromEntity())->Nx() != static_cast<BlockArray*>(GetToEntity())->Nx())
+    if (ConnectorType == connector_type::m2m)
+    {   if (ConnectorConfig==connector_config::u2d || ConnectorConfig==connector_config::d2u)
         {
-            qDebug() << "Number of columns in the connected arrays must be the same";
-            return QStringList();
+            if (static_cast<BlockArray*>(GetFromEntity())->Nx() != static_cast<BlockArray*>(GetToEntity())->Nx())
+            {
+                qDebug() << "Number of columns in the connected arrays must be the same";
+                return QStringList();
+            }
+            else
+            {
+                BlockArray *fromBlock = static_cast<BlockArray*>(GetFromEntity());
+                BlockArray *toBlock = static_cast<BlockArray*>(GetToEntity());
+                for (int i = 0; i < static_cast<BlockArray*>(GetFromEntity())->Nx(); i++)
+                {
+                    QString line;
+                    line += "create link;";
+                    if (ConnectorConfig==connector_config::u2d) {
+                        line += " from = " + fromBlock->BlockName(i,fromBlock->Ny()-1);
+                        line += ", to = " + toBlock->BlockName(i,0);
+                    }
+                    else if (ConnectorConfig==connector_config::d2u) {
+                        line += " from = " + fromBlock->BlockName(i,0);
+                        line += ", to = " + toBlock->BlockName(i,toBlock->Ny()-1);
+                    }
+                    line += ", type = " + Type();
+                    line += ", name =" + Name();
+                    for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
+                    {
+                        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                    }
+                    output << line;
+                }
+            }
+
         }
-        else
+        else if (ConnectorConfig == connector_config::l2r || ConnectorConfig == connector_config::r2l)
         {
-            BlockArray *fromBlock = static_cast<BlockArray*>(GetFromEntity());
-            BlockArray *toBlock = static_cast<BlockArray*>(GetToEntity());
+            if (static_cast<BlockArray*>(GetFromEntity())->Ny() != static_cast<BlockArray*>(GetToEntity())->Ny())
+            {
+                qDebug() << "Number of rows in the connected arrays must be the same";
+                return QStringList();
+            }
+            else
+            {
+                BlockArray* fromBlock = static_cast<BlockArray*>(GetFromEntity());
+                BlockArray* toBlock = static_cast<BlockArray*>(GetToEntity());
+                for (int j = 0; j < static_cast<BlockArray*>(GetFromEntity())->Ny(); j++)
+                {
+                    QString line;
+                    line += "create link;";
+                    if (ConnectorConfig == connector_config::l2r) {
+                        line += " from = " + fromBlock->BlockName(fromBlock->Nx() - 1, j);
+                        line += ", to = " + toBlock->BlockName(0, j);
+                    }
+                    else if (ConnectorConfig == connector_config::r2l) {
+                        line += " from = " + fromBlock->BlockName(0, j);
+                        line += ", to = " + toBlock->BlockName(toBlock->Nx() - 1, j);
+                    }
+                    line += ", type = " + Type();
+                    line += ", name =" + Name();
+                    for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
+                    {
+                        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                    }
+                    output << line;
+                }
+            }
+        }
+    }
+    if (ConnectorType == connector_type::m2o)
+    {
+        if (ConnectorConfig == connector_config::u2d || ConnectorConfig == connector_config::d2u)
+        {
+            
+            BlockArray* fromBlock = static_cast<BlockArray*>(GetFromEntity());
+            SingleBlock* toBlock = static_cast<SingleBlock*>(GetToEntity());
             for (int i = 0; i < static_cast<BlockArray*>(GetFromEntity())->Nx(); i++)
             {
                 QString line;
                 line += "create link;";
-                if (ConnectorConfig==connector_config::u2d) {
-                    line += " from = " + fromBlock->BlockName(i,fromBlock->Ny()-1);
-                    line += ", to = " + toBlock->BlockName(i,0);
+                if (ConnectorConfig == connector_config::u2d) {
+                    line += " from = " + fromBlock->BlockName(i, fromBlock->Ny() - 1);
+                    line += ", to = " + toBlock->Name();
                 }
-                else if (ConnectorConfig==connector_config::d2u) {
-                    line += " from = " + fromBlock->BlockName(i,0);
-                    line += ", to = " + toBlock->BlockName(i,toBlock->Ny()-1);
+                else if (ConnectorConfig == connector_config::d2u) {
+                    line += " from = " + fromBlock->BlockName(i, 0);
+                    line += ", to = " + toBlock->Name();
                 }
                 line += ", type = " + Type();
                 line += ", name =" + Name();
@@ -105,30 +170,76 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
                 output << line;
             }
         }
+        else if (ConnectorConfig == connector_config::r2l || ConnectorConfig == connector_config::l2r)
+        {
 
-    }
-    else if (ConnectorType == connector_type::m2m && (ConnectorConfig==connector_config::l2r || ConnectorConfig==connector_config::r2l) )
-    {
-        if (static_cast<BlockArray*>(GetFromEntity())->Ny() != static_cast<BlockArray*>(GetToEntity())->Ny())
-        {
-            qDebug() << "Number of rows in the connected arrays must be the same";
-            return QStringList();
-        }
-        else
-        {
-            BlockArray *fromBlock = static_cast<BlockArray*>(GetFromEntity());
-            BlockArray *toBlock = static_cast<BlockArray*>(GetToEntity());
+            BlockArray* fromBlock = static_cast<BlockArray*>(GetFromEntity());
+            SingleBlock* toBlock = static_cast<SingleBlock*>(GetToEntity());
             for (int j = 0; j < static_cast<BlockArray*>(GetFromEntity())->Ny(); j++)
             {
                 QString line;
                 line += "create link;";
-                if (ConnectorConfig==connector_config::l2r) {
-                    line += " from = " + fromBlock->BlockName(fromBlock->Nx()-1,j);
-                    line += ", to = " + toBlock->BlockName(0,j);
+                if (ConnectorConfig == connector_config::l2r) {
+                    line += " from = " + fromBlock->BlockName(fromBlock->Nx() - 1, j);
+                    line += ", to = " + toBlock->Name();
                 }
-                else if (ConnectorConfig==connector_config::r2l) {
-                    line += " from = " + fromBlock->BlockName(0,j);
-                    line += ", to = " + toBlock->BlockName(toBlock->Nx()-1,j);
+                else if (ConnectorConfig == connector_config::r2l) {
+                    line += " from = " + fromBlock->BlockName(0, j);
+                    line += ", to = " + toBlock->Name();
+                }
+                line += ", type = " + Type();
+                line += ", name =" + Name();
+                for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
+                {
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                }
+                output << line;
+            }
+        }
+    }
+    if (ConnectorType == connector_type::o2m)
+    {
+        if (ConnectorConfig == connector_config::u2d || ConnectorConfig == connector_config::d2u)
+        {
+            
+            SingleBlock* fromBlock = static_cast<SingleBlock*>(GetFromEntity());
+            BlockArray* toBlock = static_cast<BlockArray*>(GetToEntity());
+            for (int i = 0; i < static_cast<BlockArray*>(GetFromEntity())->Nx(); i++)
+            {
+                QString line;
+                line += "create link;";
+                if (ConnectorConfig == connector_config::u2d) {
+                    line += " from = " + fromBlock->Name();
+                    line += ", to = " + toBlock->BlockName(i, 0);
+                }
+                else if (ConnectorConfig == connector_config::d2u) {
+                    line += " from = " + fromBlock->Name();
+                    line += ", to = " + toBlock->BlockName(i, toBlock->Ny() - 1);
+                }
+                line += ", type = " + Type();
+                line += ", name =" + Name();
+                for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
+                {
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                }
+                output << line;
+            }
+        }
+        else if (ConnectorConfig == connector_config::l2r || ConnectorConfig == connector_config::r2l)
+        {
+            SingleBlock* fromBlock = static_cast<SingleBlock*>(GetFromEntity());
+            BlockArray* toBlock = static_cast<BlockArray*>(GetToEntity());
+            for (int j = 0; j < static_cast<BlockArray*>(GetFromEntity())->Ny(); j++)
+            {
+                QString line;
+                line += "create link;";
+                if (ConnectorConfig == connector_config::l2r) {
+                    line += " from = " + fromBlock->Name();
+                    line += ", to = " + toBlock->BlockName(0, j);
+                }
+                else if (ConnectorConfig == connector_config::r2l) {
+                    line += " from = " + fromBlock->Name();
+                    line += ", to = " + toBlock->BlockName(toBlock->Nx() - 1, j);
                 }
                 line += ", type = " + Type();
                 line += ", name =" + Name();
@@ -141,7 +252,30 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
         }
 
     }
+    if (ConnectorType == connector_type::o2o)
+    {
+        SingleBlock* fromBlock = static_cast<SingleBlock*>(GetFromEntity());
+        SingleBlock* toBlock = static_cast<SingleBlock*>(GetToEntity());
 
+        QString line;
+        line += "create link;";
+        if (ConnectorConfig == connector_config::l2r) {
+            line += " from = " + fromBlock->Name();
+            line += ", to = " + toBlock->Name();
+        }
+        else if (ConnectorConfig == connector_config::r2l) {
+            line += " from = " + fromBlock->Name();
+            line += ", to = " + toBlock->Name();
+        }
+        line += ", type = " + Type();
+        line += ", name =" + Name();
+        for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
+        {
+            line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+        }
+        output << line;
+        
+    }
     qDebug() << output; 
     return output; 
     
