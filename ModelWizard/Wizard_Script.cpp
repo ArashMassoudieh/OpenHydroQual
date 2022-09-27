@@ -50,6 +50,10 @@ WizardScript::WizardScript(const QString& filename)
             {
                 iconfilename = json_obj["icon"].toString();
             }
+            if (it.key() == "diagram")
+            {
+                diagramfilename = json_obj["diagram"].toString();
+            }
             if (it.key()=="name")
             {
                 wizardname = json_obj["name"].toString();
@@ -159,6 +163,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     addedtemplates = WS.addedtemplates;
     Entities = WS.Entities;
     Connectors = WS.Connectors; 
+    diagramfilename = WS.diagramfilename; 
     SetAllParents(); 
 
 
@@ -204,6 +209,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     addedtemplates = WS.addedtemplates;
     SetValEntities = WS.SetValEntities;
     Connectors = WS.Connectors;
+    diagramfilename = WS.diagramfilename;
     SetAllParents();
     return *this;
 }

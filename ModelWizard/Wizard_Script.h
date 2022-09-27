@@ -48,6 +48,7 @@ private:
     QMap<QString, SetVal_Entity> SetValEntities;
     QMap<QString, Connector> Connectors;
     QString iconfilename;
+    QString diagramfilename; 
     QString wizardname;
     QString description;
     QStringList addedtemplates;
