@@ -73,6 +73,7 @@ WizardScript::WizardScript(const QString& filename)
                 {   BlockArray mBlock(items[i].toObject());
                     QString mbname = mBlock.Name();
                     BlockArrays[mbname] = mBlock;
+                    BlockArrays[mbname].SetWizardScript(this);
                 }
             }
             if (it.key() == "singleblock")
@@ -82,6 +83,18 @@ WizardScript::WizardScript(const QString& filename)
                 {   SingleBlock mBlock(items[i].toObject());
                     QString mbname = mBlock.Name();
                     SingleBlocks[mbname] = mBlock;
+                    SingleBlocks[mbname].SetWizardScript(this);
+                }
+            }
+            if (it.key() == "connector")
+            {
+                QJsonArray items = it.value().toArray();
+                for (int i = 0; i < items.count(); i++)
+                {
+                    Connector connector(items[i].toObject());
+                    QString mbname = connector.Name();
+                    Connectors[mbname] = connector;
+                    Connectors[mbname].SetWizardScript(this);
                 }
             }
             if (it.key() == "entities")
@@ -92,6 +105,7 @@ WizardScript::WizardScript(const QString& filename)
                     Wizard_Entity entity(items[i].toObject());
                     QString enname = entity.Name();
                     Entities[enname] = entity;
+                    Entities[enname].SetWizardScript(this);
                 }
             }
             if (it.key() == "setvals")
@@ -102,6 +116,7 @@ WizardScript::WizardScript(const QString& filename)
                     SetVal_Entity entity(items[i].toObject());
                     QString enname = entity.Name();
                     SetValEntities[enname] = entity;
+                    SetValEntities[enname].SetWizardScript(this);
                 }
             }
             if (it.key() == "parameters")
@@ -143,7 +158,40 @@ WizardScript::WizardScript(const WizardScript &WS)
     SetValEntities = WS.SetValEntities;
     addedtemplates = WS.addedtemplates;
     Entities = WS.Entities;
+    Connectors = WS.Connectors; 
+    SetAllParents(); 
+
+
 }
+
+void WizardScript::SetAllParents()
+{
+    for (QMap<QString, BlockArray>::iterator it = BlockArrays.begin(); it != BlockArrays.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+    for (QMap<QString, SingleBlock>::iterator it = SingleBlocks.begin(); it != SingleBlocks.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+    for (QMap<QString, SetVal_Entity>::iterator it = SetValEntities.begin(); it != SetValEntities.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+    for (QMap<QString, Wizard_Entity>::iterator it = Entities.begin(); it != Entities.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+    for (QMap<QString, Wizard_Entity>::iterator it = Entities.begin(); it != Entities.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+    for (QMap<QString, Connector>::iterator it = Connectors.begin(); it != Connectors.end(); it++)
+    {
+        it.value().SetWizardScript(this);
+    }
+}
+
 WizardScript& WizardScript::operator=(const WizardScript& WS)
 {
     iconfilename = WS.iconfilename;
@@ -155,6 +203,8 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     Entities = WS.Entities;
     addedtemplates = WS.addedtemplates;
     SetValEntities = WS.SetValEntities;
+    Connectors = WS.Connectors;
+    SetAllParents();
     return *this;
 }
 QIcon WizardScript::Icon()
@@ -202,4 +252,18 @@ QStringList WizardScript::Script()
         script.append(out);
     }
     return script; 
+}
+
+Wizard_Entity* WizardScript::FindEntity(QString name)
+{
+    if (SingleBlocks.count(name) == 1)
+    {
+        return &SingleBlocks[name];
+    }
+    else if (BlockArrays.count(name) == 1)
+    {
+        return &BlockArrays[name];
+    }
+    else
+        return nullptr;
 }

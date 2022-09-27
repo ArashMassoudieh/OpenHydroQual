@@ -94,6 +94,8 @@ QString BlockArray::GridType()
 QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
 {
     QStringList output; 
+    nx = Arguments["n_x"].calc(params);
+    ny = Arguments["n_y"].calc(params);
     if (gridtype == "2D-Rect")
     {
         for (int i = 0; i < Arguments["n_x"].calc(params); i++)
@@ -105,7 +107,7 @@ QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
                 QString line; 
                 line += "create block;";
                 line += "type = " + Type();
-                line += ", name =" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
+                line += ", name =" + BlockName(i,j);
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
                     if (it.key()!="n_x" && it.key()!="n_y")
@@ -122,10 +124,10 @@ QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
                 params->operator[]("j").SetValue(QString::number(j));
                 QString line;
                 line += "create link;";
-                line += " from = " + Name() + "(" + QString::number(i) + ":" + QString::number(j) + "),";
-                line += " to = " + Name() + "(" + QString::number(i+1) + ":" + QString::number(j) + "),";
+                line += " from = " + BlockName(i,j)+",";
+                line += " to = " + BlockName(i+1,j)+",";
                 line += " type = " + H_ConnectorType();
-                line += ", name =" +Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")-(" + QString::number(i+1) + ":" + QString::number(j) + ")";
+                line += ", name =" +BlockName(i,j) + "-" + BlockName (i+1,j);
 
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments_H.begin(); it != Arguments_H.end(); it++)
                 {
@@ -142,10 +144,10 @@ QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
                 params->operator[]("j").SetValue(QString::number(j+0.5));
                 QString line;
                 line += "create link;";
-                line += " from = " + Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
-                line += ", to = " + Name() + "(" + QString::number(i) + ":" + QString::number(j+1) + ")";
+                line += " from = " + BlockName(i,j);
+                line += ", to = " + BlockName(i,j+1);
                 line += ", type = " + V_ConnectorType();
-                line += ", name =" + Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")-(" + QString::number(i) + ":" + QString::number(j+1) + ")";
+                line += ", name =" + BlockName(i,j) + "-" + BlockName (i,j+1);
 
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments_V.begin(); it != Arguments_V.end(); it++)
                 {
@@ -158,4 +160,12 @@ QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
     qDebug() << output; 
     return output; 
     
+}
+
+QString BlockArray::BlockName(int i, int j)
+{
+    if (i>=0 && i<Nx() && j>=0 && j<Ny())
+        return Wizard_Entity::Name() + "(" + QString::number(i) + ":" + QString::number(j) + ")";
+    else
+        return "";
 }

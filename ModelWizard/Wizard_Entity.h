@@ -2,6 +2,9 @@
 #include <qstring.h>
 #include "Wizard_Argument.h"
 #include "qjsonarray.h"
+
+class WizardScript;
+
 class Wizard_Entity
 {
 public:
@@ -12,12 +15,16 @@ public:
     QString Name();
     QString Type();
     virtual QStringList GenerateScript(QMap<QString, WizardParameter>* params);
+    void SetWizardScript(WizardScript* wizscript) { wiz_script = wizscript; }
+    WizardScript* GetWizardScript() { return wiz_script; }
+    
 protected:
     QMap<QString, Wizard_Argument> Arguments;
     QString name;
     QString type;
     QString entity; 
 private:
+    WizardScript* wiz_script; 
     
 };
 

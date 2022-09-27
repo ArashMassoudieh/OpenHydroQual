@@ -6,6 +6,7 @@
 #include "wizardparametergroup.h"
 #include "Wizard_Entity.h"
 #include "SetValEntity.h"
+#include "WizConnector.h"
 #include <QMap>
 
 #ifdef windows_version
@@ -26,6 +27,7 @@ public:
 	WizardScript(); 
 	WizardScript(const QString& filename);
 	WizardScript(const WizardScript &WS);
+    void SetAllParents();
 	WizardScript& operator=(const WizardScript& WS);
     QIcon Icon();
 	QString Name();
@@ -34,7 +36,9 @@ public:
     QMap<QString, SingleBlock> &GetSingleBlocks() {return SingleBlocks;}
     QMap<QString, WizardParameter> &GetWizardParameters() {return WizardParameters;}
     QMap<QString, WizardParameterGroup> &GetWizardParameterGroups() {return WizardParameterGroups;}
+    QMap<QString, Connector>& GetConnectors() { return Connectors; }
     QStringList Script();
+    Wizard_Entity* FindEntity(QString name);
 private:
     QMap<QString, BlockArray> BlockArrays;
     QMap<QString, SingleBlock> SingleBlocks;
@@ -42,6 +46,7 @@ private:
     QMap<QString, WizardParameterGroup> WizardParameterGroups;
     QMap<QString, Wizard_Entity> Entities;
     QMap<QString, SetVal_Entity> SetValEntities;
+    QMap<QString, Connector> Connectors;
     QString iconfilename;
     QString wizardname;
     QString description;
