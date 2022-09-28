@@ -11,6 +11,11 @@ CONFIG += c++17
 macx:{
 DEFINES += mac_version
 }
+
+linux:
+{
+DEFINES += ubuntu_version
+}
 SOURCES += \
     ../UnitTextBox3.cpp \
     ../XString.cpp \

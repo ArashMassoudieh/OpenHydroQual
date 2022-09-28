@@ -65,7 +65,7 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
         PopulateTab(&it.value());
     }
     on_TabChanged();
-    diagram_pix = new QPixmap(QString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+    diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
     QGraphicsScene* scene = new QGraphicsScene();
     ui->graphicsView->setScene(scene);
     resizeEvent();
@@ -104,6 +104,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
             {
                 QLineEdit* Editor = new QLineEdit(this_tab.scrollAreaWidgetContents);
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
+                Editor->setText(parameter->Default());
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
@@ -114,6 +115,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
                 Editor->setMinimumHeight(30);
                 Editor->setMinimumWidth(100);
+                Editor->setText(parameter->Default());
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
@@ -123,6 +125,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
                 Editor->setRange(parameter->Range()[0], parameter->Range()[1]);
                 Editor->setMinimumWidth(100);
+                Editor->setValue(parameter->Default().toInt());
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
@@ -131,6 +134,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 QComboBox* Editor = new QComboBox(this_tab.scrollAreaWidgetContents);
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
                 Editor->addItems(parameter->ComboItems());
+                Editor->setCurrentText(parameter->Default());
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
@@ -188,18 +192,20 @@ void WizardDialog::GenerateModel()
 {
     for (QMap<QString,WizardParameter>::iterator it=SelectedWizardScript.GetWizardParameters().begin(); it!=SelectedWizardScript.GetWizardParameters().end(); it++)
     {
-        if (it.value().Delegate()=="ValueBox")
-            it.value().SetValue(static_cast< QLineEdit*>(it.value().EntryItem())->text());
-        else if (it.value().Delegate()=="UnitBox")
-            it.value().SetValue(static_cast< UnitTextBox3*>(it.value().EntryItem())->text());
-        else if (it.value().Delegate()=="SpinBox")
-            it.value().SetValue(static_cast<QSpinBox*>(it.value().EntryItem())->text());
-        else if (it.value().Delegate()=="ComboBox")
-            it.value().SetValue(static_cast<QComboBox*>(it.value().EntryItem())->currentText());
-        else if (it.value().Delegate() == "DateBox")
-            it.value().SetValue(QString::number(QString2Xldate(static_cast<QDateEdit*>(it.value().EntryItem())->text())));
-        else if (it.value().Delegate() == "FileBrowser")
-            it.value().SetValue(static_cast<FilePushButton*>(it.value().EntryItem())->text());
+        if (it.value().EntryItem()!=nullptr)
+        {   if (it.value().Delegate()=="ValueBox")
+                it.value().SetValue(static_cast< QLineEdit*>(it.value().EntryItem())->text());
+            else if (it.value().Delegate()=="UnitBox")
+                it.value().SetValue(static_cast< UnitTextBox3*>(it.value().EntryItem())->text());
+            else if (it.value().Delegate()=="SpinBox")
+                it.value().SetValue(static_cast<QSpinBox*>(it.value().EntryItem())->text());
+            else if (it.value().Delegate()=="ComboBox")
+                it.value().SetValue(static_cast<QComboBox*>(it.value().EntryItem())->currentText());
+            else if (it.value().Delegate() == "DateBox")
+                it.value().SetValue(QString::number(QString2Xldate(static_cast<QDateEdit*>(it.value().EntryItem())->text())));
+            else if (it.value().Delegate() == "FileBrowser")
+                it.value().SetValue(static_cast<FilePushButton*>(it.value().EntryItem())->text());
+        }
         
 
 

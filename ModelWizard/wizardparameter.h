@@ -18,6 +18,7 @@ public:
     void SetName(const QString &_name);
     QString Delegate();
     QString Question();
+    QString Default();
     QVector2D Range();
     QStringList Units();
     QStringList ComboItems();
@@ -30,6 +31,7 @@ private:
     QString name;
     QString delegate;
     QString question;
+    QString default_value;
     QVector2D range;
     QStringList units;
     QStringList comboitems;
