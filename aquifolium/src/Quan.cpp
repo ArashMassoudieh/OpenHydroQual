@@ -513,14 +513,21 @@ double Quan::CalcVal(Object *block, const Expression::timing &tmg)
             {
 #ifndef NO_OPENMP
                 omp_lock_t writelock;
-                omp_init_lock(&writelock);
+                if (omp_get_num_threads() > 1)
+                {
+                    omp_init_lock(&writelock);
+                    omp_set_lock(&writelock);
+                }
 #endif
                 _val_star = source->GetValue(block);
                 value_star_updated=true;
                 return _val_star;
 #ifndef NO_OPENMP
-                omp_unset_lock(&writelock);
-                omp_destroy_lock(&writelock);
+                if (omp_get_num_threads() > 1)
+                {
+                    omp_unset_lock(&writelock);
+                    omp_destroy_lock(&writelock);
+                }
 #endif
             }
         }
@@ -543,7 +550,11 @@ double Quan::GetVal(const Expression::timing &tmg)
         {
 #ifndef NO_OPENMP
             omp_lock_t writelock;
-            omp_init_lock(&writelock);
+            if (omp_get_num_threads() > 1)
+            {
+                omp_init_lock(&writelock);
+                omp_set_lock(&writelock);
+            }
 #endif
             if (type == _type::expression)
             {
@@ -574,8 +585,11 @@ double Quan::GetVal(const Expression::timing &tmg)
             }
             
 #ifndef NO_OPENMP
-            omp_unset_lock(&writelock);
-            omp_destroy_lock(&writelock);
+            if (omp_get_num_threads() > 1)
+            {
+                omp_unset_lock(&writelock);
+                omp_destroy_lock(&writelock);
+            }
 #endif
             return _val_star;
         }
@@ -653,14 +667,21 @@ double Quan::CalcVal(const Expression::timing &tmg)
             {
 #ifndef NO_OPENMP
                 omp_lock_t writelock;
-                omp_init_lock(&writelock);
+                if (omp_get_num_threads() > 1)
+                {
+                    omp_init_lock(&writelock);
+                    omp_set_lock(&writelock);
+                }
 #endif
                 _val_star = source->GetValue(parent);
                 value_star_updated=true;
                 return _val_star;
 #ifndef NO_OPENMP
-                omp_unset_lock(&writelock);
-                omp_destroy_lock(&writelock);
+                if (omp_get_num_threads() > 1)
+                {
+                    omp_unset_lock(&writelock);
+                    omp_destroy_lock(&writelock);
+                }
 #endif
             }
         }
@@ -713,13 +734,20 @@ bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_cri
 {
 #ifndef NO_OPENMP
         omp_lock_t writelock;
-        omp_init_lock(&writelock);
+        if (omp_get_num_threads() > 1)
+        {
+            omp_init_lock(&writelock);
+            omp_set_lock(&writelock);
+        }
 #endif
         _val_star = v;
         value_star_updated = true;
 #ifndef NO_OPENMP
-        omp_unset_lock(&writelock);
-        omp_destroy_lock(&writelock);
+        if (omp_get_num_threads() > 1)
+        {
+            omp_unset_lock(&writelock);
+            omp_destroy_lock(&writelock);
+        }
 #endif
     }
     if (tmg == Expression::timing::both)

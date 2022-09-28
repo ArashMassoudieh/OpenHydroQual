@@ -38,11 +38,13 @@ vector<T> QSort(const vector<T> &V1)
     vector<T> less, greater;
     greater.push_back(V[end - 1]);
     for (int i = 0; i<end - 1; i++)
-        if (V[i]<V[end - 1]) less.push_back(V[i]);
-        else greater.push_back(V[i]);
+        if (V[i]<V[end - 1]) 
+            less.push_back(V[i]);
+        else 
+            greater.push_back(V[i]);
 
 
-        if ((V == greater) && (less.size() == 0))
+        if ((V.size() == greater.size()) && (less.size() == 0))
             return greater;
         vector<T> res = QSort(less);
         vector<T> x2 = QSort(greater);
