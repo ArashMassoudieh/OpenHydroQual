@@ -1097,7 +1097,8 @@ T CTimeSeries<T>::slope()
 template<class T>
 T CTimeSeries<T>::percentile(T x)
 {
-    vector<T> X = QSort(C);
+	//writefile("to_be_sorted.txt");
+	vector<T> X = QSort(C);
 	int i = int(x*X.size());
 	return X[i];
 
