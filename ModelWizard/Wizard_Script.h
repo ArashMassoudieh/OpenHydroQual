@@ -32,6 +32,7 @@ public:
     QIcon Icon();
 	QString Name();
 	QString Description(); 
+    QString DiagramFileName() {return diagramfilename;}
     QMap<QString, BlockArray> &GetBlockArrays() {return BlockArrays;}
     QMap<QString, SingleBlock> &GetSingleBlocks() {return SingleBlocks;}
     QMap<QString, WizardParameter> &GetWizardParameters() {return WizardParameters;}

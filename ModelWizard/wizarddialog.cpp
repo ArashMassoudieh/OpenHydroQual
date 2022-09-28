@@ -7,6 +7,8 @@
 #include <QStandardPaths>
 #include <QDateEdit>
 #include "FilePushButton.h"
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
  
 
 
@@ -19,6 +21,8 @@ WizardDialog::WizardDialog(QWidget *parent) :
     connect(ui->Next, SIGNAL(clicked()),this, SLOT(on_next_clicked()));
     connect(ui->Previous, SIGNAL(clicked()),this, SLOT(on_previous_clicked()));
     connect(ui->tabWidget,SIGNAL(currentChanged(int)), this, SLOT(on_TabChanged()));
+    connect(ui->graphicsView,SIGNAL(resizeevent()),this, SLOT(fit_diagram()));
+
 
 }
 
@@ -61,6 +65,11 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
         PopulateTab(&it.value());
     }
     on_TabChanged();
+    diagram_pix = new QPixmap(QString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+    QGraphicsScene* scene = new QGraphicsScene();
+    ui->graphicsView->setScene(scene);
+    resizeEvent();
+
 }
 
 void WizardDialog::PopulateTab(QWidget *scrollAreaWidgetContents, QFormLayout *formLayout, WizardParameterGroup *paramgroup)
@@ -74,6 +83,7 @@ void WizardDialog::PopulateTab(QWidget *scrollAreaWidgetContents, QFormLayout *f
         QLineEdit *lineEdit = new QLineEdit(scrollAreaWidgetContents);
         lineEdit->setObjectName(paramgroup->Parameter(i)+"_lineedit");
         formLayout->addRow(label,lineEdit);
+
 
 
     }
@@ -219,3 +229,19 @@ void WizardDialog::GenerateModel()
 
 }
 
+void WizardDialog::resizeEvent(QResizeEvent *)
+{
+    qInfo() << "Resize event occurred";
+    QSize gvs  = ui->graphicsView->size();
+    QSize mvs  =  diagram_pix->size();   // Just for interest
+
+    qInfo() << "About to scale";
+    qInfo() << "mvs is " << mvs;
+    qInfo() << "gvs is " << gvs;
+    QPixmap scaled_img = diagram_pix->scaled(gvs, Qt::IgnoreAspectRatio);
+    ui->graphicsView->scene()->clear();
+    ui->graphicsView->scene()->addPixmap(scaled_img);
+
+
+
+}
