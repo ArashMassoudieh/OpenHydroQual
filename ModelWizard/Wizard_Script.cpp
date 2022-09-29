@@ -257,6 +257,11 @@ QStringList WizardScript::Script()
         QStringList out = it.value().GenerateScript(&GetWizardParameters());
         script.append(out);
     }
+    for (QMap<QString, Connector>::iterator it = GetConnectors().begin(); it != GetConnectors().end(); it++)
+    {
+        QStringList out = it.value().GenerateScript(&GetWizardParameters());
+        script.append(out);
+    }
     return script; 
 }
 

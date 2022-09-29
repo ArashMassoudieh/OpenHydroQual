@@ -103,6 +103,28 @@
       "y": "900+j*250"
     }
   ],
+  "connector": [
+  	{
+  		"name": "Eng to native left",
+  		"from": "Bioswale Engineered Soil",
+  		"to": "Left top native soil",
+  		"type": "soil_to_soil_H_link",
+  		"connectiontype": "m2m",
+  		"connectionconfig": "l2r",
+  		"area": "eng_soil_height/eng_soil_n_y*length;m~^2",
+  		"length": "eng_soil_width/2+native_soil_width/native_soil_lateral_nx/2;m"
+  	},
+  	{
+  		"name": "Eng to native right",
+  		"from": "Bioswale Engineered Soil",
+  		"to": "Right top native soil",
+  		"type": "soil_to_soil_H_link",
+  		"connectiontype": "m2m",
+  		"connectionconfig": "l2r",
+  		"area": "eng_soil_height/eng_soil_n_y*length;m~^2",
+  		"length": "eng_soil_width/2+native_soil_width/native_soil_lateral_nx/2;m"
+  	}
+  ],
   "parameters": [
     {
       "name": "eng_soil_n_y",

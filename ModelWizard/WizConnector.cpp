@@ -31,7 +31,7 @@ Connector::Connector(const QJsonObject& json_obj)
         }
         else if (it.key() == "to")
         {
-            from = json_obj["to"].toString();
+            to = json_obj["to"].toString();
         }
         else
         {
@@ -97,11 +97,19 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
                         line += " from = " + fromBlock->BlockName(i,0);
                         line += ", to = " + toBlock->BlockName(i,toBlock->Ny()-1);
                     }
+                    else if (ConnectorConfig==connector_config::d2d) {
+                        line += " from = " + fromBlock->BlockName(i,fromBlock->Ny()-1);
+                        line += ", to = " + toBlock->BlockName(i,toBlock->Ny()-1);
+                    }
+                    else if (ConnectorConfig==connector_config::u2u) {
+                        line += " from = " + fromBlock->BlockName(i,0);
+                        line += ", to = " + toBlock->BlockName(i,0);
+                    }
                     line += ", type = " + Type();
-                    line += ", name =" + Name();
+                    line += ", name =" + Name() + "(" + QString::number(i) + ")";
                     for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                     {
-                        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                        line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
                     }
                     output << line;
                 }
@@ -131,11 +139,19 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
                         line += " from = " + fromBlock->BlockName(0, j);
                         line += ", to = " + toBlock->BlockName(toBlock->Nx() - 1, j);
                     }
+                    else if (ConnectorConfig == connector_config::r2r) {
+                        line += " from = " + fromBlock->BlockName(0, j);
+                        line += ", to = " + toBlock->BlockName(0, j);
+                    }
+                    else if (ConnectorConfig == connector_config::l2l) {
+                        line += " from = " + fromBlock->BlockName(fromBlock->Nx() - 1, j);
+                        line += ", to = " + toBlock->BlockName(toBlock->Nx() - 1, j);
+                    }
                     line += ", type = " + Type();
-                    line += ", name =" + Name();
+                    line += ", name =" + Name()+ "(" + QString::number(j) + ")";
                     for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                     {
-                        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                        line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
                     }
                     output << line;
                 }
@@ -153,19 +169,20 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
             {
                 QString line;
                 line += "create link;";
-                if (ConnectorConfig == connector_config::u2d) {
+                if (ConnectorConfig == connector_config::u2d || ConnectorConfig == connector_config::d2d) {
                     line += " from = " + fromBlock->BlockName(i, fromBlock->Ny() - 1);
                     line += ", to = " + toBlock->Name();
                 }
-                else if (ConnectorConfig == connector_config::d2u) {
+                else if (ConnectorConfig == connector_config::d2u || ConnectorConfig == connector_config::u2u) {
                     line += " from = " + fromBlock->BlockName(i, 0);
                     line += ", to = " + toBlock->Name();
                 }
+
                 line += ", type = " + Type();
-                line += ", name =" + Name();
+                line += ", name =" + Name()+ "(" + QString::number(i) + ")";
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
                 }
                 output << line;
             }
@@ -179,11 +196,11 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
             {
                 QString line;
                 line += "create link;";
-                if (ConnectorConfig == connector_config::l2r) {
+                if (ConnectorConfig == connector_config::l2r || ConnectorConfig == connector_config::l2l) {
                     line += " from = " + fromBlock->BlockName(fromBlock->Nx() - 1, j);
                     line += ", to = " + toBlock->Name();
                 }
-                else if (ConnectorConfig == connector_config::r2l) {
+                else if (ConnectorConfig == connector_config::r2l || ConnectorConfig == connector_config::r2r) {
                     line += " from = " + fromBlock->BlockName(0, j);
                     line += ", to = " + toBlock->Name();
                 }
@@ -191,7 +208,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
                 line += ", name =" + Name();
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
                 }
                 output << line;
             }
@@ -208,19 +225,19 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
             {
                 QString line;
                 line += "create link;";
-                if (ConnectorConfig == connector_config::u2d) {
+                if (ConnectorConfig == connector_config::u2d || ConnectorConfig == connector_config::d2d) {
                     line += " from = " + fromBlock->Name();
                     line += ", to = " + toBlock->BlockName(i, 0);
                 }
-                else if (ConnectorConfig == connector_config::d2u) {
+                else if (ConnectorConfig == connector_config::d2u || ConnectorConfig == connector_config::u2u) {
                     line += " from = " + fromBlock->Name();
                     line += ", to = " + toBlock->BlockName(i, toBlock->Ny() - 1);
                 }
                 line += ", type = " + Type();
-                line += ", name =" + Name();
+                line += ", name =" + Name()+ "(" + QString::number(i) + ")";
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
                 }
                 output << line;
             }
@@ -233,19 +250,19 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
             {
                 QString line;
                 line += "create link;";
-                if (ConnectorConfig == connector_config::l2r) {
+                if (ConnectorConfig == connector_config::l2r || ConnectorConfig == connector_config::r2r) {
                     line += " from = " + fromBlock->Name();
                     line += ", to = " + toBlock->BlockName(0, j);
                 }
-                else if (ConnectorConfig == connector_config::r2l) {
+                else if (ConnectorConfig == connector_config::r2l || ConnectorConfig == connector_config::l2l) {
                     line += " from = " + fromBlock->Name();
                     line += ", to = " + toBlock->BlockName(toBlock->Nx() - 1, j);
                 }
                 line += ", type = " + Type();
-                line += ", name =" + Name();
+                line += ", name =" + Name()+ "(" + QString::number(j) + ")";
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
                 }
                 output << line;
             }
@@ -271,7 +288,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
         line += ", name =" + Name();
         for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
         {
-            line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+            line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
         }
         output << line;
         
@@ -313,5 +330,13 @@ connector_config ConnectConfig(QString x)
         return connector_config::l2r;
     if (x == "r2l")
         return connector_config::r2l;
+    if (x == "u2u")
+        return connector_config::u2u;
+    if (x == "d2d")
+        return connector_config::d2d;
+    if (x == "r2r")
+        return connector_config::r2r;
+    if (x == "l2l")
+        return connector_config::l2l;
 
 }
