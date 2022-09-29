@@ -3,6 +3,8 @@
 
 #include <QString>
 #include <QJsonObject>
+#include "wizardparameter.h"
+#include "Wizard_Argument.h"
 
 class WizardCriteria
 {
@@ -13,11 +15,12 @@ public:
     WizardCriteria& operator=(const WizardCriteria& WPG);
     QString Name() {return name;}
     QString ErrorMessage() {return errormessage;}
-    QString Less() {return less;}
-    QString Greater() {return greater;}
+    Wizard_Argument Less() {return less;}
+    Wizard_Argument Greater() {return greater;}
+    bool Check(QMap<QString, WizardParameter> *Parameters);
 private:
-    QString less;
-    QString greater;
+    Wizard_Argument less;
+    Wizard_Argument greater;
     QString name;
     QString errormessage;
 

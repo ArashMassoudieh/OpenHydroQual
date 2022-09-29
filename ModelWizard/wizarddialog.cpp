@@ -9,6 +9,7 @@
 #include "FilePushButton.h"
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
+#include <QMessageBox>
  
 
 
@@ -60,9 +61,11 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
         ui->tabWidget->addTab(this_tab.tab,it->Description());
 
         ui->tabWidget->setTabText(ui->tabWidget->indexOf(this_tab.tab), it->Description());
+        ui->tabWidget->widget(ui->tabWidget->indexOf(this_tab.tab))->setObjectName(it.value().Name());
         tabs[it->Name()] = this_tab;
-        //PopulateTab(this_tab.scrollAreaWidgetContents,this_tab.formLayout,&it.value());
         PopulateTab(&it.value());
+        tabs[it->Name()].parametergroup = &it.value();
+
     }
     on_TabChanged();
     diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
@@ -177,6 +180,13 @@ void WizardDialog::on_previous_clicked()
 
 void  WizardDialog::on_TabChanged()
 {
+    QStringList Errors = SelectedWizardScript.GetWizardParameterGroups()[ui->tabWidget->widget(currenttabindex)->objectName()].CheckCriteria(&SelectedWizardScript.GetWizardParameters());
+    if (Errors.count()>0)
+    {   QMessageBox::information(this, "Invalid parameter value!", Errors[0], QMessageBox::Ok, QMessageBox::StandardButton::Ok);
+        ui->tabWidget->setCurrentIndex(currenttabindex);
+        return;
+    }
+
     if (ui->tabWidget->currentIndex()==0)
         ui->Previous->setEnabled(false);
     else
@@ -185,31 +195,12 @@ void  WizardDialog::on_TabChanged()
         ui->Next->setText("Create Model");
     else
         ui->Next->setText("Next");
-
+    currenttabindex = ui->tabWidget->currentIndex();
 }
 
 void WizardDialog::GenerateModel()
 {
-    for (QMap<QString,WizardParameter>::iterator it=SelectedWizardScript.GetWizardParameters().begin(); it!=SelectedWizardScript.GetWizardParameters().end(); it++)
-    {
-        if (it.value().EntryItem()!=nullptr)
-        {   if (it.value().Delegate()=="ValueBox")
-                it.value().SetValue(static_cast< QLineEdit*>(it.value().EntryItem())->text());
-            else if (it.value().Delegate()=="UnitBox")
-                it.value().SetValue(static_cast< UnitTextBox3*>(it.value().EntryItem())->text());
-            else if (it.value().Delegate()=="SpinBox")
-                it.value().SetValue(static_cast<QSpinBox*>(it.value().EntryItem())->text());
-            else if (it.value().Delegate()=="ComboBox")
-                it.value().SetValue(static_cast<QComboBox*>(it.value().EntryItem())->currentText());
-            else if (it.value().Delegate() == "DateBox")
-                it.value().SetValue(QString::number(QString2Xldate(static_cast<QDateEdit*>(it.value().EntryItem())->text())));
-            else if (it.value().Delegate() == "FileBrowser")
-                it.value().SetValue(static_cast<FilePushButton*>(it.value().EntryItem())->text());
-        }
-        
-
-
-    }
+    SelectedWizardScript.AssignParameterValues();
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
         tr("OpenHydroQual files (*.ohq)"),nullptr,QFileDialog::DontUseNativeDialog);

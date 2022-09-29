@@ -24,12 +24,14 @@ public:
     QString Description() {return description;}
     int ParametersCount() {return parameters.count();}
     int CriteriaCount() {return criteria.count();}
-
+    QStringList CheckCriteria(QMap<QString, WizardParameter> *Parameters);
 private:
     QStringList parameters;
     QList<WizardCriteria> criteria;
     QString name;
     QString description;
 };
+
+
 
 #endif // WIZARDPARAMETERGROUP_H

@@ -15,6 +15,7 @@ struct tab {
     QHBoxLayout *horizontalLayout;
     QWidget *scrollAreaWidgetContents;
     QFormLayout *formLayout;
+    WizardParameterGroup *parametergroup;
 };
 
 namespace Ui {
@@ -39,6 +40,7 @@ private:
     QMap<QString,tab> tabs;
     WizardScript SelectedWizardScript;
     QPixmap* diagram_pix;
+    int currenttabindex=0;
 
 public slots:
     void on_next_clicked();

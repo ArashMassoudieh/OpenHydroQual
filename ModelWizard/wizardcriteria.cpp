@@ -15,11 +15,11 @@ WizardCriteria::WizardCriteria(const QJsonObject& json_obj)
         }
         if (it.key()=="less")
         {
-            less = json_obj["less"].toString();
+            less = Wizard_Argument(json_obj["less"].toString().toStdString());
         }
         if (it.key() == "greater")
         {
-            greater = json_obj["greater"].toString();
+            greater = Wizard_Argument(json_obj["greater"].toString().toStdString());
         }
         if (it.key() == "errormessage")
         {
@@ -44,4 +44,12 @@ WizardCriteria& WizardCriteria::operator=(const WizardCriteria& WPG)
     name = WPG.name;
     errormessage = WPG.errormessage;
     return *this;
+}
+
+bool WizardCriteria::Check(QMap<QString, WizardParameter> *Parameters)
+{
+    if (less.calc(Parameters)<greater.calc(Parameters))
+        return true;
+    else
+        return false;
 }

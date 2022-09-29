@@ -4,6 +4,11 @@
 #include "QIcon"
 #include "QJsonArray"
 #include "qapplication.h"
+#include <QLineEdit>
+#include "UnitTextBox3.h"
+#include <QSpinBox>
+#include "FilePushButton.h"
+#include "QDateEdit"
 
 
 
@@ -277,4 +282,36 @@ Wizard_Entity* WizardScript::FindEntity(QString name)
     }
     else
         return nullptr;
+}
+
+bool WizardScript::AssignParameterValues()
+{
+    for (QMap<QString,WizardParameter>::iterator it=GetWizardParameters().begin(); it!=GetWizardParameters().end(); it++)
+    {
+        if (it.value().EntryItem()!=nullptr)
+        {   if (it.value().Delegate()=="ValueBox")
+                it.value().SetValue(static_cast< QLineEdit*>(it.value().EntryItem())->text());
+            else if (it.value().Delegate()=="UnitBox")
+                it.value().SetValue(static_cast< UnitTextBox3*>(it.value().EntryItem())->text());
+            else if (it.value().Delegate()=="SpinBox")
+                it.value().SetValue(static_cast<QSpinBox*>(it.value().EntryItem())->text());
+            else if (it.value().Delegate()=="ComboBox")
+                it.value().SetValue(static_cast<QComboBox*>(it.value().EntryItem())->currentText());
+            else if (it.value().Delegate() == "DateBox")
+                it.value().SetValue(QString::number(QString2Xldate(static_cast<QDateEdit*>(it.value().EntryItem())->text())));
+            else if (it.value().Delegate() == "FileBrowser")
+                it.value().SetValue(static_cast<FilePushButton*>(it.value().EntryItem())->text());
+        }
+    }
+    return true;
+}
+
+QStringList WizardScript::CheckParameters()
+{
+    QStringList Errors;
+    for (QMap<QString, WizardParameterGroup>::iterator it = WizardParameterGroups.begin(); it!=WizardParameterGroups.end(); it++)
+    {
+        Errors.append(it.value().CheckCriteria(&WizardParameters));
+    }
+    return Errors;
 }

@@ -40,6 +40,8 @@ public:
     QMap<QString, Connector>& GetConnectors() { return Connectors; }
     QStringList Script();
     Wizard_Entity* FindEntity(QString name);
+    QStringList CheckParameters();
+    bool AssignParameterValues();
 private:
     QMap<QString, BlockArray> BlockArrays;
     QMap<QString, SingleBlock> SingleBlocks;
