@@ -40,11 +40,11 @@
       "n_y": "eng_soil_n_y",
       "K_sat_original": "eng_soil_K_s;m/day",
       "K_sat_scale_factor": "1",
-      "depth": "eng_soil_height/n_y;m",
+      "depth": "eng_soil_height/eng_soil_n_y;m",
       "alpha": "eng_soil_alpha;1/m",
       "n": "eng_soil_n",
-      "area": "length*eng_soil_width",
-      "bottom_elevation": "surface_elevation-j*eng_soil_height/eng_soil_n_y;m",
+      "area": "length*eng_soil_width;m~^2",
+      "bottom_elevation": "surface_elevation-(j+1)*eng_soil_height/eng_soil_n_y;m",
       "_width": "200",
       "_height": "200",
       "specific_storage": "0.01;1/m",
@@ -67,8 +67,8 @@
       "depth": "eng_soil_height/eng_soil_n_y;m",
       "alpha": "native_soil_alpha;1/m",
       "n": "native_soil_n",
-      "area": "length*native_soil_width/native_soil_lateral_nx",
-      "bottom_elevation": "surface_elevation-j*eng_soil_height/eng_soil_n_y;m",
+      "area": "length*native_soil_width/native_soil_lateral_nx;m~^2",
+      "bottom_elevation": "surface_elevation-(j+1)*eng_soil_height/eng_soil_n_y;m",
       "_width": "200",
       "_height": "200",
       "specific_storage": "0.01;1/m",
@@ -91,8 +91,8 @@
       "depth": "eng_soil_height/eng_soil_n_y;m",
       "alpha": "native_soil_alpha;1/m",
       "n": "native_soil_n",
-      "area": "length*native_soil_width/native_soil_lateral_nx",
-      "bottom_elevation": "surface_elevation-j*eng_soil_height/eng_soil_n_y;m",
+      "area": "length*native_soil_width/native_soil_lateral_nx;m~^2",
+      "bottom_elevation": "surface_elevation-(j+1)*eng_soil_height/eng_soil_n_y;m",
       "_width": "200",
       "_height": "200",
       "specific_storage": "0.01;1/m",
@@ -101,6 +101,78 @@
       "theta_sat": "native_soil_theta_sat",
       "x": "1000+(i+1)*250",
       "y": "900+j*250"
+    },
+    {
+      "name": "Native soil underneath the engineered soil",
+      "type": "Soil",
+      "grid_type": "2D-Rect",
+      "v_connector_type": "soil_to_soil_link",
+      "h_connector_type": "soil_to_soil_H_link",
+      "n_x": "1",
+      "n_y": "native_soil_n_y",
+      "K_sat_original": "native_soil_K_s;m/day",
+      "K_sat_scale_factor": "1",
+      "depth": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "alpha": "native_soil_alpha;1/m",
+      "n": "native_soil_n",
+      "area": "length*eng_soil_width;m~^2",
+      "bottom_elevation": "-eng_soil_height-surface_elevation-(j+1)*(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "_width": "200",
+      "_height": "200",
+      "specific_storage": "0.01;1/m",
+      "theta": "0.2",
+      "theta_res": "native_soil_theta_res",
+      "theta_sat": "native_soil_theta_sat",
+      "x": "1000",
+      "y": "900+(eng_soil_n_y+j)*250"
+    },
+    {
+      "name": "Left low native soil",
+      "type": "Soil",
+      "grid_type": "2D-Rect",
+      "v_connector_type": "soil_to_soil_link",
+      "h_connector_type": "soil_to_soil_H_link",
+      "n_x": "native_soil_lateral_nx",
+      "n_y": "native_soil_n_y",
+      "K_sat_original": "native_soil_K_s;m/day",
+      "K_sat_scale_factor": "1",
+      "depth": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "alpha": "native_soil_alpha;1/m",
+      "n": "native_soil_n",
+      "area": "length*native_soil_width/native_soil_lateral_nx;m~^2",
+      "bottom_elevation": "-eng_soil_height-surface_elevation-(j+1)*(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "_width": "200",
+      "_height": "200",
+      "specific_storage": "0.01;1/m",
+      "theta": "0.2",
+      "theta_res": "native_soil_theta_res",
+      "theta_sat": "native_soil_theta_sat",
+      "x": "1000-(i+1)*250",
+      "y": "900+(eng_soil_n_y+j)*250"
+    },
+    {
+      "name": "Right low native soil",
+      "type": "Soil",
+      "grid_type": "2D-Rect",
+      "v_connector_type": "soil_to_soil_link",
+      "h_connector_type": "soil_to_soil_H_link",
+      "n_x": "native_soil_lateral_nx",
+      "n_y": "native_soil_n_y",
+      "K_sat_original": "native_soil_K_s;m/day",
+      "K_sat_scale_factor": "1",
+      "depth": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "alpha": "native_soil_alpha;1/m",
+      "n": "native_soil_n",
+      "area": "length*native_soil_width/native_soil_lateral_nx;m~^2",
+      "bottom_elevation": "-eng_soil_height-surface_elevation-(j+1)*(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "_width": "200",
+      "_height": "200",
+      "specific_storage": "0.01;1/m",
+      "theta": "0.2",
+      "theta_res": "native_soil_theta_res",
+      "theta_sat": "native_soil_theta_sat",
+      "x": "1000+(i+1)*250",
+      "y": "900+(eng_soil_n_y+j)*250"
     }
   ],
   "connector": [
@@ -123,6 +195,50 @@
   		"connectionconfig": "l2r",
   		"area": "eng_soil_height/eng_soil_n_y*length;m~^2",
   		"length": "eng_soil_width/2+native_soil_width/native_soil_lateral_nx/2;m"
+  	},
+  	{
+  		"name": "Bottom center to native left",
+  		"from": "Native soil underneath the engineered soil",
+  		"to": "Left low native soil",
+  		"type": "soil_to_soil_H_link",
+  		"connectiontype": "m2m",
+  		"connectionconfig": "l2r",
+  		"area": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y*length;m~^2",
+  		"length": "eng_soil_width/2+native_soil_width/native_soil_lateral_nx/2;m"
+  	},
+  	{
+ 		"name": "Bottom center to native right",
+  		"from": "Native soil underneath the engineered soil",
+  		"to": "Right low native soil",
+  		"type": "soil_to_soil_H_link",
+  		"connectiontype": "m2m",
+  		"connectionconfig": "l2r",
+  		"area": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y*length;m~^2",
+  		"length": "eng_soil_width/2+native_soil_width/native_soil_lateral_nx/2;m"
+  	},
+  	{
+ 		"name": "Center engineered to native",
+  		"from": "Bioswale Engineered Soil",
+  		"to": "Native soil underneath the engineered soil",
+  		"type": "soil_to_soil_link",
+  		"connectiontype": "m2m",
+  		"connectionconfig": "u2d"
+  	},
+  	{
+ 		"name": "Left top to bottom native",
+  		"from": "Left top native soil",
+  		"to": "Left low native soil",
+  		"type": "soil_to_soil_link",
+  		"connectiontype": "m2m",
+  		"connectionconfig": "u2d"
+  	},
+  	{
+ 		"name": "Right top to bottom native",
+  		"from": "Right top native soil",
+  		"to": "Right low native soil",
+  		"type": "soil_to_soil_link",
+  		"connectiontype": "m2m",
+  		"connectionconfig": "u2d"
   	}
   ],
   "parameters": [
@@ -135,6 +251,16 @@
         "5"
       ],
       "default": "2"
+    },
+    {
+      "name": "native_soil_n_y",
+      "delegate": "SpinBox",
+      "question": "Number of cells layers underneath the engineered soil",
+      "range": [
+        "1",
+        "10"
+      ],
+      "default": "3"
     },
     {
       "name": "native_soil_lateral_nx",
@@ -158,6 +284,13 @@
       "delegate": "UnitBox",
       "question": "The total length of the bioswale",
       "unit": "m"
+    },
+    {
+      "name": "depth_to_groundwater",
+      "delegate": "UnitBox",
+      "question": "Depth to groundwater",
+      "unit": "m",
+      "default": "3"
     },
     {
       "name": "eng_soil_K_s",
@@ -266,9 +399,11 @@
       "description": "Geometrical parameters",
       "parameters": [
         "eng_soil_n_y",
+        "native_soil_n_y",
         "length",
         "eng_soil_height",
         "eng_soil_width",
+        "depth_to_groundwater",
         "native_soil_lateral_nx"
       ],
       "criteria": [
@@ -277,6 +412,24 @@
           "less": "0",
           "greater": "length",
           "errormessage": "Bioswale length must be greater than zero!"
+        },
+        {
+          "name": "eng_soil_height_crit",
+          "less": "0",
+          "greater": "eng_soil_height",
+          "errormessage": "Engineered soil height must be greater than zero!"
+        },
+        {
+          "name": "depth_to_groundwater_crit",
+          "less": "eng_soil_height",
+          "greater": "depth_to_groundwater",
+          "errormessage": "Engineered soil depth must be smaller than depth to groundwater"
+        },
+        {
+          "name": "eng_soil_width_crit",
+          "less": "0",
+          "greater": "eng_soil_width",
+          "errormessage": "Engineered soil width must be greater than zero!"
         }
       ]
     },

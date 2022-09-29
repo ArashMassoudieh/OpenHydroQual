@@ -608,3 +608,11 @@ double QString2Xldate(const QString& x)
     QDateTime time = QDateTime::fromString(x, "MM.dd.yyyy");
     return QDate2Xldate(time);
 }
+
+QString Wizard_Argument::UnitText()
+{
+    if (unit=="")
+        return "";
+    else
+        return QString::fromStdString("[" + unit + "]");
+}

@@ -109,7 +109,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
                     line += ", name =" + Name() + "(" + QString::number(i) + ")";
                     for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                     {
-                        line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
+                        line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
                     }
                     output << line;
                 }
@@ -151,7 +151,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
                     line += ", name =" + Name()+ "(" + QString::number(j) + ")";
                     for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                     {
-                        line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
+                        line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
                     }
                     output << line;
                 }
@@ -182,7 +182,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
                 line += ", name =" + Name()+ "(" + QString::number(i) + ")";
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
                 }
                 output << line;
             }
@@ -208,7 +208,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
                 line += ", name =" + Name();
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
                 }
                 output << line;
             }
@@ -237,7 +237,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
                 line += ", name =" + Name()+ "(" + QString::number(i) + ")";
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
                 }
                 output << line;
             }
@@ -262,7 +262,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
                 line += ", name =" + Name()+ "(" + QString::number(j) + ")";
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
+                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
                 }
                 output << line;
             }
@@ -288,7 +288,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
         line += ", name =" + Name();
         for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
         {
-            line += "," + it.key() + "=" + QString::number(it.value().calc(params))+"["+it.value().Unit()+"]";
+            line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
         }
         output << line;
         
