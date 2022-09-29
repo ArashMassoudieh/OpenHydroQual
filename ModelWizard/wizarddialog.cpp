@@ -180,6 +180,9 @@ void WizardDialog::on_previous_clicked()
 
 void  WizardDialog::on_TabChanged()
 {
+    if (currenttabindex==ui->tabWidget->currentIndex())
+        return;
+    SelectedWizardScript.AssignParameterValues();
     QStringList Errors = SelectedWizardScript.GetWizardParameterGroups()[ui->tabWidget->widget(currenttabindex)->objectName()].CheckCriteria(&SelectedWizardScript.GetWizardParameters());
     if (Errors.count()>0)
     {   QMessageBox::information(this, "Invalid parameter value!", Errors[0], QMessageBox::Ok, QMessageBox::StandardButton::Ok);

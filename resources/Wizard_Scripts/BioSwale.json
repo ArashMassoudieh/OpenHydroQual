@@ -259,14 +259,6 @@
         "TimeSeriesFileName",
 		"StartTime",
 		"EndTime"
-      ],
-      "criteria": [
-        {
-          "name": "cr1",
-          "less": "0",
-          "greater": "Wind_ceoff",
-          "ErrorMessage": "Wind coefficient must be positive"
-        }
       ]
     },
 	{
@@ -281,10 +273,10 @@
       ],
       "criteria": [
         {
-          "name": "cr1",
+          "name": "length_crit",
           "less": "0",
-          "greater": "Wind_ceoff",
-          "ErrorMessage": "Wind coefficient must be positive"
+          "greater": "length",
+          "errormessage": "Bioswale length must be greater than zero!"
         }
       ]
     },
@@ -297,14 +289,6 @@
         "eng_soil_n",
         "eng_soil_theta_sat",
         "eng_soil_theta_res"
-      ],
-      "criteria": [
-        {
-          "name": "cr1",
-          "less": "0",
-          "greater": "Wind_ceoff",
-          "ErrorMessage": "Wind coefficient must be positive"
-        }
       ]
     },
     {
@@ -316,14 +300,6 @@
         "native_soil_n",
         "native_soil_theta_sat",
         "eng_soil_theta_res"
-      ],
-      "criteria": [
-        {
-          "name": "cr1",
-          "less": "0",
-          "greater": "Wind_ceoff",
-          "ErrorMessage": "Wind coefficient must be positive"
-        }
       ]
     }
   ]

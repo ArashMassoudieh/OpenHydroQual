@@ -164,6 +164,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     BlockArrays = WS.BlockArrays;
     SingleBlocks = WS.SingleBlocks;
     WizardParameters = WS.WizardParameters;
+    WizardParameterGroups = WS.WizardParameterGroups;
     SetValEntities = WS.SetValEntities;
     addedtemplates = WS.addedtemplates;
     Entities = WS.Entities;
@@ -215,6 +216,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     SetValEntities = WS.SetValEntities;
     Connectors = WS.Connectors;
     diagramfilename = WS.diagramfilename;
+    WizardParameterGroups = WS.WizardParameterGroups;
     SetAllParents();
     return *this;
 }
