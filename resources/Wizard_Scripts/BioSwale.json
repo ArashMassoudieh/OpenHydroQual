@@ -39,7 +39,7 @@
   		"ManningCoeff": "Catchment_Manning_coefficient",
   		"Width": "Catchment_mean_width",
   		"x": "500",
-  		"y": "500",
+  		"y": "450",
   		"_width": "500"
   	},
   	{
@@ -51,8 +51,16 @@
   		"ManningCoeff": "0.12",
   		"Width": "eng_soil_width",
   		"x": "900",
-  		"y": "700",
+  		"y": "650",
   		"_width": "200"
+  	},
+  	{
+  		"name": "Groundwater",
+		"head": "-depth_to_groundwater",
+  		"type": "fixed_head",
+  		"x": "600",
+  		"y": "900 + (eng_soil_n_y + native_soil_n_y)*250",
+  		"_width": "800"
   	}
   ],
   "blockarrays": [
@@ -281,6 +289,14 @@
   		"type": "surfacewater_to_soil_link",
   		"connectiontype": "o2m",
   		"connectionconfig": "u2d"
+  	},
+  	{
+ 		"name": "Soil to Groundwater center",
+  		"from": "Native soil underneath the engineered soil",
+  		"to": "Groundwater",
+  		"type": "soil_to_fixedhead_link",
+  		"connectiontype": "m2o",
+  		"connectionconfig": "u2d"
   	}
   ],
   "parameters": [
@@ -421,7 +437,7 @@
     {
       "name": "native_soil_theta_sat",
       "delegate": "ValueBox",
-      "question": "Native soil residual moisture content",
+      "question": "Native soil saturated moisture content",
       "default": "0.4"
     },
     {
@@ -482,6 +498,7 @@
         "eng_soil_height",
         "eng_soil_width",
         "depth_to_groundwater",
+        "native_soil_width",
         "native_soil_lateral_nx"
       ],
       "criteria": [
@@ -530,7 +547,7 @@
         "native_soil_alpha",
         "native_soil_n",
         "native_soil_theta_sat",
-        "eng_soil_theta_res"
+        "native_soil_theta_res"
       ]
     }
   ]
