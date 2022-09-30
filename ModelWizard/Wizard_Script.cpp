@@ -4,6 +4,11 @@
 #include "QIcon"
 #include "QJsonArray"
 #include "qapplication.h"
+#include <QLineEdit>
+#include "UnitTextBox3.h"
+#include <QSpinBox>
+#include "FilePushButton.h"
+#include "QDateEdit"
 
 
 
@@ -80,7 +85,7 @@ WizardScript::WizardScript(const QString& filename)
                     BlockArrays[mbname].SetWizardScript(this);
                 }
             }
-            if (it.key() == "singleblock")
+            if (it.key() == "singleblocks")
             {
                 QJsonArray items = it.value().toArray();
                 for (int i=0; i<items.count(); i++)
@@ -90,7 +95,7 @@ WizardScript::WizardScript(const QString& filename)
                     SingleBlocks[mbname].SetWizardScript(this);
                 }
             }
-            if (it.key() == "connector")
+            if (it.key() == "connectors")
             {
                 QJsonArray items = it.value().toArray();
                 for (int i = 0; i < items.count(); i++)
@@ -159,6 +164,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     BlockArrays = WS.BlockArrays;
     SingleBlocks = WS.SingleBlocks;
     WizardParameters = WS.WizardParameters;
+    WizardParameterGroups = WS.WizardParameterGroups;
     SetValEntities = WS.SetValEntities;
     addedtemplates = WS.addedtemplates;
     Entities = WS.Entities;
@@ -210,6 +216,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     SetValEntities = WS.SetValEntities;
     Connectors = WS.Connectors;
     diagramfilename = WS.diagramfilename;
+    WizardParameterGroups = WS.WizardParameterGroups;
     SetAllParents();
     return *this;
 }
@@ -257,6 +264,11 @@ QStringList WizardScript::Script()
         QStringList out = it.value().GenerateScript(&GetWizardParameters());
         script.append(out);
     }
+    for (QMap<QString, Connector>::iterator it = GetConnectors().begin(); it != GetConnectors().end(); it++)
+    {
+        QStringList out = it.value().GenerateScript(&GetWizardParameters());
+        script.append(out);
+    }
     return script; 
 }
 
@@ -272,4 +284,36 @@ Wizard_Entity* WizardScript::FindEntity(QString name)
     }
     else
         return nullptr;
+}
+
+bool WizardScript::AssignParameterValues()
+{
+    for (QMap<QString,WizardParameter>::iterator it=GetWizardParameters().begin(); it!=GetWizardParameters().end(); it++)
+    {
+        if (it.value().EntryItem()!=nullptr)
+        {   if (it.value().Delegate()=="ValueBox")
+                it.value().SetValue(static_cast< QLineEdit*>(it.value().EntryItem())->text());
+            else if (it.value().Delegate()=="UnitBox")
+                it.value().SetValue(static_cast< UnitTextBox3*>(it.value().EntryItem())->text());
+            else if (it.value().Delegate()=="SpinBox")
+                it.value().SetValue(static_cast<QSpinBox*>(it.value().EntryItem())->text());
+            else if (it.value().Delegate()=="ComboBox")
+                it.value().SetValue(static_cast<QComboBox*>(it.value().EntryItem())->currentText());
+            else if (it.value().Delegate() == "DateBox")
+                it.value().SetValue(QString::number(QString2Xldate(static_cast<QDateEdit*>(it.value().EntryItem())->text())));
+            else if (it.value().Delegate() == "FileBrowser")
+                it.value().SetValue(static_cast<FilePushButton*>(it.value().EntryItem())->text());
+        }
+    }
+    return true;
+}
+
+QStringList WizardScript::CheckParameters()
+{
+    QStringList Errors;
+    for (QMap<QString, WizardParameterGroup>::iterator it = WizardParameterGroups.begin(); it!=WizardParameterGroups.end(); it++)
+    {
+        Errors.append(it.value().CheckCriteria(&WizardParameters));
+    }
+    return Errors;
 }

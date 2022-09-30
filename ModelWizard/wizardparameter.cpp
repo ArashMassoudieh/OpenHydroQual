@@ -31,6 +31,10 @@ WizardParameter::WizardParameter(const QJsonObject& json_obj)
         {
             question = json_obj["question"].toString();
         }
+        if (it.key() == "default")
+        {
+            default_value = json_obj["default"].toString();
+        }
         if (it.key() == "unit")
         {
             units.clear();
@@ -62,6 +66,7 @@ WizardParameter::WizardParameter(const WizardParameter& WS)
     range = WS.range;
     comboitems = WS.comboitems;
     Parameter_Type = WS.Parameter_Type;
+    default_value = WS.default_value;
     units = WS.units;
 }
 WizardParameter& WizardParameter::operator=(const WizardParameter& WS)
@@ -73,6 +78,7 @@ WizardParameter& WizardParameter::operator=(const WizardParameter& WS)
     comboitems = WS.comboitems;
     units = WS.units;
     Parameter_Type = WS.Parameter_Type;
+    default_value = WS.default_value;
     return *this;
 }
 QString WizardParameter::Name()
@@ -86,6 +92,10 @@ void WizardParameter::SetName(const QString &_name)
 QString WizardParameter::Delegate()
 {
     return delegate;
+}
+QString WizardParameter::Default()
+{
+    return default_value;
 }
 QString WizardParameter::Question()
 {

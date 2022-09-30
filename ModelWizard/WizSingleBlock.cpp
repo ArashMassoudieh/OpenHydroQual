@@ -53,7 +53,7 @@ QStringList SingleBlock::GenerateScript(QMap<QString, WizardParameter> *params)
     line += ", name =" +Name();
     for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
     {
-        line += "," + it.key() + "=" + QString::number(it.value().calc(params));
+        line += "," + it.key() + "=" + it.value().Calc(params)+it.value().UnitText();
     }
     output << line;
     qDebug() << output; 

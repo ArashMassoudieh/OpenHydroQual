@@ -32,6 +32,7 @@ public:
     double calc(QMap<QString, WizardParameter>* params);
     QString Calc(QMap<QString, WizardParameter>* params);
     QString Unit() { return QString::fromStdString(unit); }
+    QString UnitText();
     parameter_type ArgumentType() { return argument_type; }
 private:
     vector<string> operators;

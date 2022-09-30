@@ -277,7 +277,7 @@
     },
     "length": {
       "type": "value",
-      "description": "lenght",
+      "description": "length",
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",

@@ -53,3 +53,17 @@ WizardParameterGroup& WizardParameterGroup::operator=(const WizardParameterGroup
     description = WPG.description;
     return *this;
 }
+
+QStringList WizardParameterGroup::CheckCriteria(QMap<QString, WizardParameter> *Parameters)
+{
+    QStringList Errors;
+    for (int i=0; i<criteria.count(); i++)
+    {
+        if (!criteria[i].Check(Parameters))
+        {
+            Errors.append(criteria[i].ErrorMessage());
+        }
+    }
+    return Errors;
+
+}

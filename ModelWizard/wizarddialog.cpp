@@ -9,6 +9,7 @@
 #include "FilePushButton.h"
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
+#include <QMessageBox>
  
 
 
@@ -60,12 +61,14 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
         ui->tabWidget->addTab(this_tab.tab,it->Description());
 
         ui->tabWidget->setTabText(ui->tabWidget->indexOf(this_tab.tab), it->Description());
+        ui->tabWidget->widget(ui->tabWidget->indexOf(this_tab.tab))->setObjectName(it.value().Name());
         tabs[it->Name()] = this_tab;
-        //PopulateTab(this_tab.scrollAreaWidgetContents,this_tab.formLayout,&it.value());
         PopulateTab(&it.value());
+        tabs[it->Name()].parametergroup = &it.value();
+
     }
     on_TabChanged();
-    diagram_pix = new QPixmap(QString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+    diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
     QGraphicsScene* scene = new QGraphicsScene();
     ui->graphicsView->setScene(scene);
     resizeEvent();
@@ -104,6 +107,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
             {
                 QLineEdit* Editor = new QLineEdit(this_tab.scrollAreaWidgetContents);
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
+                Editor->setText(parameter->Default());
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
@@ -114,6 +118,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
                 Editor->setMinimumHeight(30);
                 Editor->setMinimumWidth(100);
+                Editor->setText(parameter->Default());
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
@@ -123,6 +128,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
                 Editor->setRange(parameter->Range()[0], parameter->Range()[1]);
                 Editor->setMinimumWidth(100);
+                Editor->setValue(parameter->Default().toInt());
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
@@ -131,6 +137,7 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 QComboBox* Editor = new QComboBox(this_tab.scrollAreaWidgetContents);
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
                 Editor->addItems(parameter->ComboItems());
+                Editor->setCurrentText(parameter->Default());
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
@@ -173,6 +180,16 @@ void WizardDialog::on_previous_clicked()
 
 void  WizardDialog::on_TabChanged()
 {
+    if (currenttabindex==ui->tabWidget->currentIndex())
+        return;
+    SelectedWizardScript.AssignParameterValues();
+    QStringList Errors = SelectedWizardScript.GetWizardParameterGroups()[ui->tabWidget->widget(currenttabindex)->objectName()].CheckCriteria(&SelectedWizardScript.GetWizardParameters());
+    if (Errors.count()>0)
+    {   QMessageBox::information(this, "Invalid parameter value!", Errors[0], QMessageBox::Ok, QMessageBox::StandardButton::Ok);
+        ui->tabWidget->setCurrentIndex(currenttabindex);
+        return;
+    }
+
     if (ui->tabWidget->currentIndex()==0)
         ui->Previous->setEnabled(false);
     else
@@ -181,29 +198,12 @@ void  WizardDialog::on_TabChanged()
         ui->Next->setText("Create Model");
     else
         ui->Next->setText("Next");
-
+    currenttabindex = ui->tabWidget->currentIndex();
 }
 
 void WizardDialog::GenerateModel()
 {
-    for (QMap<QString,WizardParameter>::iterator it=SelectedWizardScript.GetWizardParameters().begin(); it!=SelectedWizardScript.GetWizardParameters().end(); it++)
-    {
-        if (it.value().Delegate()=="ValueBox")
-            it.value().SetValue(static_cast< QLineEdit*>(it.value().EntryItem())->text());
-        else if (it.value().Delegate()=="UnitBox")
-            it.value().SetValue(static_cast< UnitTextBox3*>(it.value().EntryItem())->text());
-        else if (it.value().Delegate()=="SpinBox")
-            it.value().SetValue(static_cast<QSpinBox*>(it.value().EntryItem())->text());
-        else if (it.value().Delegate()=="ComboBox")
-            it.value().SetValue(static_cast<QComboBox*>(it.value().EntryItem())->currentText());
-        else if (it.value().Delegate() == "DateBox")
-            it.value().SetValue(QString::number(QString2Xldate(static_cast<QDateEdit*>(it.value().EntryItem())->text())));
-        else if (it.value().Delegate() == "FileBrowser")
-            it.value().SetValue(static_cast<FilePushButton*>(it.value().EntryItem())->text());
-        
-
-
-    }
+    SelectedWizardScript.AssignParameterValues();
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
         tr("OpenHydroQual files (*.ohq)"),nullptr,QFileDialog::DontUseNativeDialog);

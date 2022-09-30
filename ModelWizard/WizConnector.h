@@ -5,7 +5,7 @@
 #include "Wizard_Entity.h"
 
 enum class connector_type {m2o,o2m,o2o,m2m};
-enum class connector_config {d2u, u2d,l2r, r2l};
+enum class connector_config {d2u, u2d,l2r, r2l, d2d, u2u, l2l,r2r};
 
 class Connector: public Wizard_Entity
 {

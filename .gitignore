@@ -155,4 +155,6 @@ ModelWizard/build-ModelWizard-Replacement_for_Qt_6_3_1_for_macOS-Profile/
 
 ModelWizard/build-ModelWizard-Replacement_for_Qt_6_3_1_for_macOS-Release/
 
+model_wizard_bin/debug/
+
 to_be_sorted.txt
