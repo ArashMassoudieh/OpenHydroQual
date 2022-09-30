@@ -26,9 +26,6 @@
     <QtRcc Include="ModelWizard.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtMoc Include="ModelWizard.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
