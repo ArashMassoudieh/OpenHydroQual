@@ -3768,7 +3768,7 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma jacobian(BlockCount());
 #ifndef NO_OPENMP
-//#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static)
 #endif
     for (int i=0; i<LinksCount(); i++)
     {
@@ -3792,7 +3792,10 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
             jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
         }
     }
-    for (unsigned int i=0; i<BlockCount(); i++)
+#ifndef NO_OPENMP
+#pragma omp parallel for schedule(static)
+#endif   
+    for (int i=0; i<BlockCount(); i++)
     {
         if (!block(i)->GetLimitedOutflow() && !block(i)->isrigid(variable))
             jacobian(i,i) += 1/SolverTempVars.dt;
