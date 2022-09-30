@@ -221,7 +221,7 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
             
             SingleBlock* fromBlock = static_cast<SingleBlock*>(GetFromEntity());
             BlockArray* toBlock = static_cast<BlockArray*>(GetToEntity());
-            for (int i = 0; i < static_cast<BlockArray*>(GetFromEntity())->Nx(); i++)
+            for (int i = 0; i < static_cast<BlockArray*>(GetToEntity())->Nx(); i++)
             {
                 QString line;
                 line += "create link;";
@@ -276,14 +276,10 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
 
         QString line;
         line += "create link;";
-        if (ConnectorConfig == connector_config::l2r) {
-            line += " from = " + fromBlock->Name();
-            line += ", to = " + toBlock->Name();
-        }
-        else if (ConnectorConfig == connector_config::r2l) {
-            line += " from = " + fromBlock->Name();
-            line += ", to = " + toBlock->Name();
-        }
+
+        line += " from = " + fromBlock->Name();
+        line += ", to = " + toBlock->Name();
+
         line += ", type = " + Type();
         line += ", name =" + Name();
         for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)

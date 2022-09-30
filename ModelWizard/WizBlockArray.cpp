@@ -111,7 +111,7 @@ QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
                 {
                     if (it.key()!="n_x" && it.key()!="n_y")
-                        line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
+                        line += "," + it.key() + "=" + it.value().Calc(params)+it.value().UnitText();
                 }
                 output << line; 
             }
@@ -131,7 +131,7 @@ QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
 
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments_H.begin(); it != Arguments_H.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
+                    line += "," + it.key() + "=" + it.value().Calc(params)+it.value().UnitText();
                 }
                 output << line;
             }
@@ -151,7 +151,7 @@ QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
 
                 for (QMap<QString, Wizard_Argument>::iterator it = Arguments_V.begin(); it != Arguments_V.end(); it++)
                 {
-                    line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
+                    line += "," + it.key() + "=" + it.value().Calc(params)+it.value().UnitText();
                 }
                 output << line;
             }

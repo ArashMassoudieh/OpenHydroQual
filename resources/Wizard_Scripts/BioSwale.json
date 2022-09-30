@@ -29,6 +29,32 @@
       "value": "EndTime@dp"
     }
   ],
+  "singleblocks": [
+  	{
+  		"name": "Impervious contributing catchment",
+  		"area": "Catchment_area;m~^2",
+  		"Precipitation": "Rain@sc",
+  		"type": "Catchment",
+  		"Slope": "Catchment_slope",
+  		"ManningCoeff": "Catchment_Manning_coefficient",
+  		"Width": "Catchment_mean_width",
+  		"x": "500",
+  		"y": "500",
+  		"_width": "500"
+  	},
+  	{
+  		"name": "Bioswale ponding zone",
+  		"area": "length*eng_soil_width",
+  		"Precipitation": "Rain@sc",
+  		"type": "Catchment",
+  		"Slope": "0.01",
+  		"ManningCoeff": "0.12",
+  		"Width": "eng_soil_width",
+  		"x": "900",
+  		"y": "700",
+  		"_width": "200"
+  	}
+  ],
   "blockarrays": [
     {
       "name": "Bioswale Engineered Soil",
@@ -175,7 +201,7 @@
       "y": "900+(eng_soil_n_y+j)*250"
     }
   ],
-  "connector": [
+  "connectors": [
   	{
   		"name": "Eng to native left",
   		"from": "Bioswale Engineered Soil",
@@ -239,6 +265,22 @@
   		"type": "soil_to_soil_link",
   		"connectiontype": "m2m",
   		"connectionconfig": "u2d"
+  	},
+  	{
+ 		"name": "Catchment to bioswale",
+  		"from": "Impervious contributing catchment",
+  		"to": "Bioswale ponding zone",
+  		"type": "Catchment_link",
+  		"connectiontype": "o2o",
+  		"connectionconfig": "u2d"
+  	},
+  	{
+ 		"name": "Bioswale pond to soil",
+  		"from": "Bioswale ponding zone",
+  		"to": "Bioswale Engineered Soil",
+  		"type": "surfacewater_to_soil_link",
+  		"connectiontype": "o2m",
+  		"connectionconfig": "u2d"
   	}
   ],
   "parameters": [
@@ -299,6 +341,32 @@
       "unit": "m/day",
       "default": "10"
     },
+    {
+      "name": "Catchment_area",
+      "delegate": "UnitBox",
+      "question": "The area of impervious contributing area",
+      "unit": "m~^2",
+      "default": "1000"
+    },
+    {
+      "name": "Catchment_slope",
+      "delegate": "ValueBox",
+      "question": "The slope of the impervious contributing area",
+      "default": "0.01"
+    },
+    {
+      "name": "Catchment_Manning_coefficient",
+      "delegate": "ValueBox",
+      "question": "Effective Manning's roughness coefficient of the impervious contributing area",
+      "default": "0.011"
+    },
+    {
+      "name": "Catchment_mean_width",
+      "delegate": "UnitBox",
+      "question": "Catchment average width",
+      "unit": "m",
+      "default": "30"
+    },      
     {
       "name": "eng_soil_alpha",
       "delegate": "UnitBox",
@@ -389,9 +457,19 @@
       "name": "general",
       "description": "General Model parameters",
       "parameters": [
-        "TimeSeriesFileName",
 		"StartTime",
 		"EndTime"
+      ]
+    },
+    {
+      "name": "catchment",
+      "description": "Contributing area",
+      "parameters": [
+        "TimeSeriesFileName",
+		"Catchment_area",
+		"Catchment_slope",
+		"Catchment_Manning_coefficient",
+		"Catchment_mean_width"
       ]
     },
 	{

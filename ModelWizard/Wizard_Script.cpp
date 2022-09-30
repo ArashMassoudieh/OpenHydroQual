@@ -85,7 +85,7 @@ WizardScript::WizardScript(const QString& filename)
                     BlockArrays[mbname].SetWizardScript(this);
                 }
             }
-            if (it.key() == "singleblock")
+            if (it.key() == "singleblocks")
             {
                 QJsonArray items = it.value().toArray();
                 for (int i=0; i<items.count(); i++)
@@ -95,7 +95,7 @@ WizardScript::WizardScript(const QString& filename)
                     SingleBlocks[mbname].SetWizardScript(this);
                 }
             }
-            if (it.key() == "connector")
+            if (it.key() == "connectors")
             {
                 QJsonArray items = it.value().toArray();
                 for (int i = 0; i < items.count(); i++)
