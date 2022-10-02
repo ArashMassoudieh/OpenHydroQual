@@ -10,6 +10,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QMessageBox>
+
  
 
 
@@ -68,9 +69,30 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
 
     }
     on_TabChanged();
-    diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
     QGraphicsScene* scene = new QGraphicsScene();
     ui->graphicsView->setScene(scene);
+    if (wizscript->DiagramFileName().split(".")[1]=="png")
+        diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+    else if (wizscript->DiagramFileName().split(".")[1]=="svg")
+    {   svgitem = new QGraphicsSvgItem(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+        qDebug()<<scene->sceneRect();
+        ui->graphicsView->scene()->clear();
+        ui->graphicsView->scene()->addItem(svgitem);
+        qDebug()<<svgitem->boundingRect();
+        QRectF bounds = scene->itemsBoundingRect();
+        qDebug()<<bounds;
+        bounds.setWidth(bounds.width()*0.9);
+        bounds.setHeight(bounds.height()*0.9);
+        qDebug()<<bounds;
+        scene->setSceneRect(bounds);
+        qDebug()<<scene->sceneRect();
+        ui->graphicsView->fitInView(bounds);
+
+        ui->graphicsView->centerOn(0, 0);
+        repaint();
+    }
+
+
     resizeEvent();
 
 }
@@ -231,17 +253,17 @@ void WizardDialog::GenerateModel()
 
 void WizardDialog::resizeEvent(QResizeEvent *)
 {
-    qInfo() << "Resize event occurred";
+
     QSize gvs  = ui->graphicsView->size();
-    QSize mvs  =  diagram_pix->size();   // Just for interest
-
-    qInfo() << "About to scale";
-    qInfo() << "mvs is " << mvs;
-    qInfo() << "gvs is " << gvs;
-    QPixmap scaled_img = diagram_pix->scaled(gvs, Qt::IgnoreAspectRatio);
-    ui->graphicsView->scene()->clear();
-    ui->graphicsView->scene()->addPixmap(scaled_img);
-
-
-
+    if (diagram_pix!=nullptr)
+    {   QPixmap scaled_img = diagram_pix->scaled(gvs, Qt::IgnoreAspectRatio);
+        ui->graphicsView->scene()->clear();
+        ui->graphicsView->scene()->addPixmap(scaled_img);
+    }
+    else if (svgitem!=nullptr)
+    {
+        //ui->graphicsView->scene()->clear();
+        //ui->graphicsView->scene()->addItem(svgitem);
+        //ui->graphicsView->fitInView(svgitem,Qt::AspectRatioMode::KeepAspectRatio);
+    }
 }

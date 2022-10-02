@@ -7,6 +7,7 @@
 #include <QTabWidget>
 #include <QFormLayout>
 #include <QGraphicsPixmapItem>
+#include <QGraphicsSvgItem>
 
 struct tab {
     QScrollArea *scrollArea;
@@ -39,7 +40,8 @@ private:
     Ui::WizardDialog *ui;
     QMap<QString,tab> tabs;
     WizardScript SelectedWizardScript;
-    QPixmap* diagram_pix;
+    QPixmap* diagram_pix = nullptr;
+    QGraphicsSvgItem *svgitem = nullptr;
     int currenttabindex=0;
 
 public slots:
