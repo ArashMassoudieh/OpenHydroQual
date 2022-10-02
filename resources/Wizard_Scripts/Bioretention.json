@@ -1,11 +1,12 @@
 {
   "name": "Bioretention (SI)",
-  "icon": "bioretention.png",
+  "icon": "Bioretention.png",
   "description": "This wizard create a bioretention model with underdrain",
   "diagram" : "Bioretention.svg", 
   "addtemplate": [
     "main_components.json",
-    "unsaturated_soil.json"
+    "unsaturated_soil.json",
+    "Pond_Plugin.json"
   ],
   "entities": [
     {
@@ -43,13 +44,12 @@
   		"_width": "500"
   	},
   	{
-  		"name": "Bioswale ponding zone",
-  		"area": "length*eng_soil_width",
+  		"name": "Pond",
+  		"type": "Pond",
+  		"alpha": "pond_coefficient_alpha",
+  		"beta": "pond_exponent_beta",
+  		"Evapotranspiration": "Eval@sc",
   		"Precipitation": "Rain@sc",
-  		"type": "Catchment",
-  		"Slope": "0.01",
-  		"ManningCoeff": "0.12",
-  		"Width": "eng_soil_width",
   		"x": "900",
   		"y": "650",
   		"_width": "200"
@@ -301,6 +301,18 @@
   ],
   "parameters": [
     {
+      "name": "pond_coefficient_alpha",
+      "delegate": "ValueBox",
+      "question": "Pond storage-depth coefficient 'a' in relationship S=a*h^b",
+      "default": "1000"
+    },
+    {
+      "name": "pond_exponent_beta",
+      "delegate": "ValueBox",
+      "question": "Pond storage-depth exponent 'b' in relationship S=a*h^b",
+      "default": "2"
+    },
+    {
       "name": "eng_soil_n_y",
       "delegate": "SpinBox",
       "question": "Number of cells adjacent to the engineered soil",
@@ -488,9 +500,17 @@
 		"Catchment_mean_width"
       ]
     },
+    {
+      "name": "Pond",
+      "description": "Pond properties",
+      "parameters": [
+        "pond_coefficient_alpha",
+		"pond_exponent_beta"
+      ]
+    },
 	{
       "name": "geometry",
-      "description": "Geometrical parameters",
+      "description": "Model geometry",
       "parameters": [
         "eng_soil_n_y",
         "native_soil_n_y",

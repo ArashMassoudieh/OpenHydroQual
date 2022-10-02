@@ -25,7 +25,6 @@ WizardDialog::WizardDialog(QWidget *parent) :
     connect(ui->tabWidget,SIGNAL(currentChanged(int)), this, SLOT(on_TabChanged()));
     connect(ui->graphicsView,SIGNAL(resizeevent()),this, SLOT(fit_diagram()));
 
-
 }
 
 WizardDialog::~WizardDialog()
@@ -78,22 +77,10 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
         qDebug()<<scene->sceneRect();
         ui->graphicsView->scene()->clear();
         ui->graphicsView->scene()->addItem(svgitem);
-        qDebug()<<svgitem->boundingRect();
-        QRectF bounds = scene->itemsBoundingRect();
-        qDebug()<<bounds;
-        bounds.setWidth(bounds.width()*0.9);
-        bounds.setHeight(bounds.height()*0.9);
-        qDebug()<<bounds;
-        scene->setSceneRect(bounds);
-        qDebug()<<scene->sceneRect();
-        ui->graphicsView->fitInView(bounds);
-
-        ui->graphicsView->centerOn(0, 0);
-        repaint();
     }
 
-
     resizeEvent();
+    repaint();
 
 }
 
@@ -262,8 +249,17 @@ void WizardDialog::resizeEvent(QResizeEvent *)
     }
     else if (svgitem!=nullptr)
     {
-        //ui->graphicsView->scene()->clear();
-        //ui->graphicsView->scene()->addItem(svgitem);
-        //ui->graphicsView->fitInView(svgitem,Qt::AspectRatioMode::KeepAspectRatio);
+        QRectF newRect = ui->graphicsView->scene()->itemsBoundingRect();
+        float width = float(newRect.width());
+        float height = float(newRect.height());
+        float scale = float(1.05);
+        newRect.setLeft(newRect.left() - float(scale - 1) / 2 * float(width));
+        newRect.setTop(newRect.top() - (scale - 1) / 2 * height);
+        newRect.setWidth(qreal(width * scale));
+        newRect.setHeight(qreal(height * scale));
+        if (width>ui->graphicsView->scene()->sceneRect().width() || height>ui->graphicsView->scene()->sceneRect().height())
+            ui->graphicsView->scene()->setSceneRect(newRect);
+        ui->graphicsView->fitInView(newRect,Qt::KeepAspectRatio);
+        ui->graphicsView->repaint();
     }
 }

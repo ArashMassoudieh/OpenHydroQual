@@ -55,6 +55,7 @@ void MainWindow::itemDoubleClicked(QListWidgetItem* wizitem)
     WizardDialog *wizDialog = new WizardDialog(this);
     WizardScript wiz(wizitem->data(1000).toString());
     wizDialog->CreateItems(&wiz);
-    wizDialog->exec();
+    wizDialog->show();
+    wizDialog->resizeEvent();
 }
 
