@@ -24,9 +24,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.28403876"
-     inkscape:cx="204.19748"
-     inkscape:cy="674.20376"
+     inkscape:zoom="0.60329275"
+     inkscape:cx="218.79925"
+     inkscape:cy="511.36037"
      inkscape:window-width="1440"
      inkscape:window-height="763"
      inkscape:window-x="0"
@@ -257,7 +257,7 @@
        inkscape:collect="always"
        xlink:href="#pattern100175-8-0"
        id="pattern100279-0-6"
-       patternTransform="matrix(0.02123169,0,0,0.02528495,25.497962,249.84297)" />
+       patternTransform="matrix(0.01266663,0,0,0.01538818,30.680518,220.29862)" />
     <pattern
        patternUnits="userSpaceOnUse"
        width="747.70187"
@@ -316,316 +316,312 @@
     <g
        id="g136729"
        transform="matrix(3.3159118,0,0,3.3606556,22.600975,-590.93164)">
+      <path
+         id="rect99037-2-8"
+         style="fill:#ac9393;stroke:#000000;stroke-width:0.120509;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+         d="m 21.209661,201.49542 v 3.47063 c 0,0.0201 0.0352,0.0361 0.07892,0.0361 H 40.07246 c 0.04373,0 0.07892,-0.0161 0.07892,-0.0361 v -3.37692 a 17.822368,4.246249 0 0 1 -9.154856,0.60507 17.822368,4.246249 0 0 1 -9.786866,-0.69878 z"
+         inkscape:export-filename="../Wizard_Icons/Bioretention.png"
+         inkscape:export-xdpi="23.239536"
+         inkscape:export-ydpi="23.239536" />
+      <path
+         id="path99013-4-2-3"
+         style="fill:#0000ff;stroke:#000000;stroke-width:0.109597;stroke-linejoin:round"
+         d="m 22.641077,201.78192 a 17.822368,4.246249 0 0 0 7.571143,0.40442 17.822368,4.246249 0 0 0 7.571447,-0.40442 z"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <rect
+         style="fill:url(#pattern100279-0-6);fill-opacity:1;stroke:#000000;stroke-width:0.120509;stroke-linejoin:round"
+         id="rect99314-0-4"
+         width="18.941727"
+         height="4.0253758"
+         x="21.209663"
+         y="205.00221"
+         rx="0"
+         ry="3.0952979e-06"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <rect
+         style="fill:#d4aa00;stroke:#000000;stroke-width:0.107787;stroke-linejoin:round"
+         id="rect100383-6-4"
+         width="18.941729"
+         height="12.881192"
+         x="21.209663"
+         y="209.02757"
+         rx="0.078924179"
+         ry="0.064406216"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.159674;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.479024, 0.479024;stroke-dashoffset:0;stroke-opacity:1"
+         d="M 21.209661,212.24788 H 40.151383"
+         id="path100520-3-9"
+         inkscape:path-effect="#path-effect100522-01-8"
+         inkscape:original-d="M 21.209661,212.24788 H 40.151383"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.159674;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.479024, 0.479024;stroke-dashoffset:0;stroke-opacity:1"
+         d="M 21.209661,215.46818 H 40.151383"
+         id="path100524-6-1"
+         inkscape:path-effect="#path-effect100526-3-8"
+         inkscape:original-d="M 21.209661,215.46818 H 40.151383"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.159674;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.479024, 0.479024;stroke-dashoffset:0;stroke-opacity:1"
+         d="M 21.209661,218.68848 H 40.151383"
+         id="path100528-1-7"
+         inkscape:path-effect="#path-effect100530-4-4"
+         inkscape:original-d="M 21.209661,218.68848 H 40.151383"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <rect
+         style="fill:#b3b3b3;stroke:#000000;stroke-width:0.0466729;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+         id="rect101102-0-5"
+         width="4.3408127"
+         height="4.8304448"
+         x="42.519096"
+         y="202.18446"
+         rx="0.078924179"
+         ry="0.048304647"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <path
+         id="rect101228-5-7"
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.120509;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+         d="m 36.794658,201.40454 c -0.09893,0 -0.197799,1.5e-4 -0.272844,3.1e-4 l -0.273155,6.1e-4 0.02774,0.0202 c 0.132162,0.0965 0.245711,0.24523 0.311378,0.40725 l 0.01205,0.0296 v 0.21478 0.18775 0.0274 3.11244 H 23.656318 c -0.04373,0 -0.07892,0.0359 -0.07892,0.0805 v 0.24153 c 0,0.0446 0.0352,0.0805 0.07892,0.0805 h 20.914823 0.236769 c 0.0054,0 0.01086,-5.1e-4 0.01605,-0.002 0.0054,-0.001 0.01008,-0.002 0.0148,-0.005 0.0048,-0.002 0.0091,-0.005 0.01324,-0.008 0.0042,-0.003 0.0082,-0.006 0.01169,-0.01 0.0036,-0.004 0.0067,-0.008 0.0095,-0.0119 0.003,-0.004 0.0054,-0.009 0.0074,-0.0135 0.0018,-0.005 0.0036,-0.01 0.0048,-0.0151 0.0012,-0.005 0.0018,-0.0108 0.0018,-0.0164 v -0.24147 -2.49573 h -0.394621 v 2.41523 h -7.497828 v -3.13979 c 0,-0.0102 -0.0018,-0.02 -0.0054,-0.0289 v -0.15882 -0.21479 l 0.01205,-0.0296 c 0.06503,-0.16099 0.179874,-0.311 0.311679,-0.40726 l 0.02744,-0.0201 -0.272844,-6.1e-4 c -0.07505,-1.6e-4 -0.173918,-3.1e-4 -0.272845,-3.1e-4 z"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <rect
+         style="fill:#8fbbdd;fill-opacity:1;stroke:#000000;stroke-width:0.0602545;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+         id="rect103118-74-6"
+         width="18.941729"
+         height="2.4152236"
+         x="21.209663"
+         y="221.90877"
+         rx="0.078924179"
+         ry="0.080507785"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.159423"
+         x="22.76458"
+         y="199.15633"
+         id="text107359-8-4-4"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022"
+         transform="scale(0.99011612,1.0099825)"><tspan
+           sodipodi:role="line"
+           id="tspan107357-0-9-2"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.159423"
+           x="22.76458"
+           y="199.15633">Surface ponding</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.159423"
+         x="22.230549"
+         y="202.28986"
+         id="text107359-8-4-4-5"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022"
+         transform="scale(0.99011611,1.0099826)"><tspan
+           sodipodi:role="line"
+           id="tspan107357-0-9-2-5"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.159423"
+           x="22.230549"
+           y="202.28986">Engineered soil</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.159423"
+         x="37.776512"
+         y="196.54262"
+         id="text107359-8-4-4-5-0"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022"
+         transform="scale(0.99011611,1.0099826)"><tspan
+           sodipodi:role="line"
+           id="tspan107357-0-9-2-5-5"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.159423"
+           x="37.776512"
+           y="196.54262">Overflow</tspan></text>
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.0903817;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 36.994428,200.97683 0.39462,-2.01268 h 5.52467"
+         id="path129094"
+         inkscape:path-effect="#path-effect129096"
+         inkscape:original-d="m 36.994428,200.97683 0.39462,-2.01268 h 5.52467"
+         sodipodi:nodetypes="ccc"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
       <g
-         id="g235"
-         transform="matrix(0.59659091,0,0,0.60859032,15.468666,68.246606)">
-        <path
-           id="rect99037-2-8"
-           style="fill:#ac9393;stroke:#000000;stroke-width:0.199994;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
-           d="m 9.6230011,218.94665 v 5.70274 c 0,0.033 0.059,0.0594 0.1322898,0.0594 H 41.240645 c 0.0733,0 0.13229,-0.0264 0.13229,-0.0594 v -5.54875 a 29.873683,6.9771878 0 0 1 -15.345283,0.99421 29.873683,6.9771878 0 0 1 -16.4046509,-1.1482 z"
-           inkscape:export-filename="../Wizard_Icons/Bioretention.png"
-           inkscape:export-xdpi="23.239536"
-           inkscape:export-ydpi="23.239536" />
-        <path
-           id="path99013-4-2-3"
-           style="fill:#0000ff;stroke:#000000;stroke-width:0.181886;stroke-linejoin:round"
-           d="m 12.022327,219.41741 a 29.873683,6.9771878 0 0 0 12.690677,0.66452 29.873683,6.9771878 0 0 0 12.691188,-0.66452 z"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
+         id="g131943"
+         transform="matrix(0.59658986,0,0,0.60856029,30.2859,48.415208)"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022">
         <rect
-           style="fill:url(#pattern100279-0-6);fill-opacity:1;stroke:#000000;stroke-width:0.199994;stroke-linejoin:round"
-           id="rect99314-0-4"
-           width="31.749943"
-           height="6.6142621"
-           x="9.6230059"
-           y="224.70882"
-           rx="0"
-           ry="5.0860122e-06"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <rect
-           style="fill:#d4aa00;stroke:#000000;stroke-width:0.178881;stroke-linejoin:round"
-           id="rect100383-6-4"
-           width="31.749945"
-           height="21.165621"
-           x="9.6230059"
-           y="231.32304"
-           rx="0.13229196"
-           ry="0.10582852"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <path
-           style="fill:none;stroke:#000000;stroke-width:0.264993;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.79498, 0.79498;stroke-dashoffset:0;stroke-opacity:1"
-           d="M 9.6230011,236.61446 H 41.372935"
-           id="path100520-3-9"
-           inkscape:path-effect="#path-effect100522-01-8"
-           inkscape:original-d="M 9.6230011,236.61446 H 41.372935"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <path
-           style="fill:none;stroke:#000000;stroke-width:0.264993;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.79498, 0.79498;stroke-dashoffset:0;stroke-opacity:1"
-           d="M 9.6230011,241.90588 H 41.372935"
-           id="path100524-6-1"
-           inkscape:path-effect="#path-effect100526-3-8"
-           inkscape:original-d="M 9.6230011,241.90588 H 41.372935"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <path
-           style="fill:none;stroke:#000000;stroke-width:0.264993;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.79498, 0.79498;stroke-dashoffset:0;stroke-opacity:1"
-           d="M 9.6230011,247.19728 H 41.372935"
-           id="path100528-1-7"
-           inkscape:path-effect="#path-effect100530-4-4"
-           inkscape:original-d="M 9.6230011,247.19728 H 41.372935"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <rect
-           style="fill:#b3b3b3;stroke:#000000;stroke-width:0.0774576;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
-           id="rect101102-0-5"
-           width="7.2760286"
-           height="7.9371042"
-           x="45.341675"
-           y="220.07884"
-           rx="0.13229196"
-           ry="0.07937137"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <path
-           id="rect101228-5-7"
-           style="fill:#ffffff;stroke:#000000;stroke-width:0.199994;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
-           d="m 35.746425,218.79732 c -0.165819,0 -0.33155,2.5e-4 -0.457339,5.2e-4 l -0.457859,0.001 0.0465,0.0331 c 0.221529,0.15858 0.411859,0.40296 0.521929,0.66918 l 0.0202,0.0486 v 0.35292 0.3085 0.045 5.11417 H 13.724064 c -0.0733,0 -0.13229,0.059 -0.13229,0.13228 v 0.39687 c 0,0.0733 0.059,0.13227 0.13229,0.13227 h 35.057228 0.396869 c 0.009,0 0.0182,-8.3e-4 0.0269,-0.003 0.009,-0.002 0.0169,-0.004 0.0248,-0.008 0.008,-0.003 0.0152,-0.008 0.0222,-0.0124 0.007,-0.005 0.0137,-0.01 0.0196,-0.016 0.006,-0.006 0.0113,-0.0126 0.016,-0.0196 0.005,-0.007 0.009,-0.0143 0.0124,-0.0222 0.003,-0.008 0.006,-0.0162 0.008,-0.0248 0.002,-0.009 0.003,-0.0177 0.003,-0.0269 v -0.39676 -4.10084 h -0.661459 v 3.96856 H 36.081814 v -5.15911 c 0,-0.0168 -0.003,-0.0328 -0.009,-0.0475 v -0.26095 -0.35293 l 0.0202,-0.0486 c 0.109003,-0.26452 0.301503,-0.51102 0.522433,-0.66918 l 0.046,-0.0331 -0.457339,-0.001 c -0.12579,-2.6e-4 -0.291519,-5.1e-4 -0.45734,-5.1e-4 z"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <rect
-           style="fill:#8fbbdd;fill-opacity:1;stroke:#000000;stroke-width:0.0999974;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
-           id="rect103118-74-6"
-           width="31.749945"
-           height="3.9685543"
-           x="9.6230059"
-           y="252.48866"
-           rx="0.13229196"
-           ry="0.13228568"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
+           style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.15;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect131836"
+           width="18.520834"
+           height="1.984375"
+           x="-13.890625"
+           y="261.27603"
+           rx="0.1322922"
+           ry="0.07937526" />
         <text
            xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264576"
-           x="11.851912"
-           y="218.37511"
-           id="text107359-8-4-4"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022"
-           transform="scale(1.0000238,0.99997621)"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95908px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583;stroke-opacity:1"
+           x="-13.952326"
+           y="262.76233"
+           id="text107359-8-4-4-5-0-2"><tspan
              sodipodi:role="line"
-             id="tspan107357-0-9-2"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.264576"
-             x="11.851912"
-             y="218.37511">Surface ponding</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264576"
-           x="10.965644"
-           y="223.57545"
-           id="text107359-8-4-4-5"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022"
-           transform="scale(1.0000238,0.99997622)"><tspan
-             sodipodi:role="line"
-             id="tspan107357-0-9-2-5"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.264576"
-             x="10.965644"
-             y="223.57545">Engineered soil</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264576"
-           x="36.765472"
-           y="214.03743"
-           id="text107359-8-4-4-5-0"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022"
-           transform="scale(1.0000238,0.99997622)"><tspan
-             sodipodi:role="line"
-             id="tspan107357-0-9-2-5-5"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.264576"
-             x="36.765472"
-             y="214.03743">Overflow</tspan></text>
-        <path
-           style="fill:none;stroke:#000000;stroke-width:0.149996;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-           d="m 36.081277,218.09454 0.661458,-3.30712 h 9.2604"
-           id="path129094"
-           inkscape:path-effect="#path-effect129096"
-           inkscape:original-d="m 36.081277,218.09454 0.661458,-3.30712 h 9.2604"
-           sodipodi:nodetypes="ccc"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <g
-           id="g131943"
-           transform="matrix(0.99999824,0,0,0.99995066,24.836506,-32.585793)"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022">
-          <rect
-             style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.15;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-             id="rect131836"
-             width="18.520834"
-             height="1.984375"
-             x="-13.890625"
-             y="261.27603"
-             rx="0.1322922"
-             ry="0.07937526" />
-          <text
-             xml:space="preserve"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95908px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583;stroke-opacity:1"
+             id="tspan107357-0-9-2-5-5-9"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95908px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;stroke:none;stroke-width:0.264583;stroke-opacity:1"
              x="-13.952326"
-             y="262.76233"
-             id="text107359-8-4-4-5-0-2"><tspan
-               sodipodi:role="line"
-               id="tspan107357-0-9-2-5-5-9"
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95908px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;stroke:none;stroke-width:0.264583;stroke-opacity:1"
-               x="-13.952326"
-               y="262.76233">Aggregate Storage</tspan></text>
-        </g>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264576"
-           x="11.103956"
-           y="235.54109"
-           id="text107359-8-4-4-5-7"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022"
-           transform="scale(1.0000238,0.99997622)"><tspan
-             sodipodi:role="line"
-             id="tspan107357-0-9-2-5-7"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.264576"
-             x="11.103956"
-             y="235.54109">Native Soil</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264576"
-           x="10.548272"
-           y="254.64485"
-           id="text107359-8-4-4-5-7-6"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022"
-           transform="scale(1.0000238,0.99997622)"><tspan
-             sodipodi:role="line"
-             id="tspan107357-0-9-2-5-7-8"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.264576"
-             x="10.548272"
-             y="254.64485">Groundwater</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264576"
-           x="45.234798"
-           y="219.40823"
-           id="text107359-8-4-4-5-7-6-1"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022"
-           transform="scale(1.0000238,0.99997622)"><tspan
-             sodipodi:role="line"
-             id="tspan107357-0-9-2-5-7-8-2"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.264576"
-             x="45.234798"
-             y="219.40823">Catch-basin</tspan></text>
-        <path
-           style="fill:none;stroke:#000000;stroke-width:0.149996;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-           d="m 13.591734,226.03164 -5.9531145,1.32287"
-           id="path135605"
-           inkscape:path-effect="#path-effect135607"
-           inkscape:original-d="m 13.591734,226.03164 -5.9531145,1.32287"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264576"
-           x="-8.8283358"
-           y="228.30855"
-           id="text107359-8-4-4-0"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022"
-           transform="scale(1.0000238,0.99997621)"><tspan
-             sodipodi:role="line"
-             id="tspan107357-0-9-2-3"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.264576"
-             x="-8.8283358"
-             y="228.30855">Underdrain</tspan></text>
-        <path
-           id="rect136383"
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.199994;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           d="m 52.075622,226.69877 c -0.07301,0.004 -0.132405,0.0437 -0.143143,0.10231 l -0.07183,0.39014 c -0.01322,0.0721 0.05315,0.1443 0.148311,0.16174 l 6.561862,1.20296 v -0.67227 l -6.443007,-1.18126 c -0.01784,-0.003 -0.03534,-0.004 -0.05219,-0.004 z"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect136614"
-           width="0.26458353"
-           height="1.3228507"
-           x="58.438526"
-           y="227.61909"
-           rx="0.02035266"
-           ry="0.26457104"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <path
-           style="fill:#b3b3b3;stroke-width:0.0792591"
-           d="m -2.0402841,217.13792 15.4505731,-4.71205 -30.620227,-33.81588 -18.259768,17.73948"
-           id="path7743" />
-        <path
-           style="fill:none;stroke:#000000;stroke-width:0.264576px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           d="m 4.9927909,212.14171 4.1681603,3.25993 0.8150207,-1.04198 0.4540331,3.71393 -3.7141216,0.45402 0.8150284,-1.042 -4.1681554,-3.25992 z"
-           id="path103409-2-2"
-           inkscape:path-effect="#path-effect103411-8-9"
-           inkscape:original-d="m 4.9927909,212.14171 4.1681603,3.25993 0.8150207,-1.04198 0.4540331,3.71393 -3.7141216,0.45402 0.8150284,-1.042 -4.1681554,-3.25992 z"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022" />
-        <ellipse
-           style="fill:#0000ff;stroke-width:0.0792591"
-           id="path7986"
-           cx="61.166607"
-           cy="228.2251"
-           rx="2.2473562"
-           ry="2.4946141" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264576"
-           x="137.41423"
-           y="147.33177"
-           id="text107359-8-4-4-5-7-7"
-           inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
-           inkscape:export-xdpi="300.022"
-           inkscape:export-ydpi="300.022"
-           transform="matrix(0.70013768,0.70453444,-0.72364179,0.70010436,0,0)"><tspan
-             sodipodi:role="line"
-             id="tspan107357-0-9-2-5-7-3"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';text-align:center;text-anchor:middle;stroke-width:0.264576"
-             x="137.41423"
-             y="147.33177">Contributing Impervious</tspan><tspan
-             sodipodi:role="line"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.95901px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';text-align:center;text-anchor:middle;stroke-width:0.264576"
-             x="137.41423"
-             y="151.03053"
-             id="tspan8169">Surface</tspan></text>
+             y="262.76233">Aggregate Storage</tspan></text>
       </g>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.159423"
+         x="22.31389"
+         y="209.49988"
+         id="text107359-8-4-4-5-7"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022"
+         transform="scale(0.99011611,1.0099826)"><tspan
+           sodipodi:role="line"
+           id="tspan107357-0-9-2-5-7"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.159423"
+           x="22.31389"
+           y="209.49988">Native Soil</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.159423"
+         x="21.979057"
+         y="221.32288"
+         id="text107359-8-4-4-5-7-6"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022"
+         transform="scale(0.99011608,1.0099826)"><tspan
+           sodipodi:role="line"
+           id="tspan107357-0-9-2-5-7-8"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.159423"
+           x="21.979057"
+           y="221.32288">Groundwater</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.159423"
+         x="42.879799"
+         y="199.77885"
+         id="text107359-8-4-4-5-7-6-1"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022"
+         transform="scale(0.99011611,1.0099826)"><tspan
+           sodipodi:role="line"
+           id="tspan107357-0-9-2-5-7-8-2"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.159423"
+           x="42.879799"
+           y="199.77885">Catch-basin</tspan></text>
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.0903817;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 23.577371,205.80727 -3.551574,0.80509"
+         id="path135605"
+         inkscape:path-effect="#path-effect135607"
+         inkscape:original-d="m 23.577371,205.80727 -3.551574,0.80509"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.159423"
+         x="10.303474"
+         y="205.14183"
+         id="text107359-8-4-4-0"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022"
+         transform="scale(0.99011612,1.0099825)"><tspan
+           sodipodi:role="line"
+           id="tspan107357-0-9-2-3"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';stroke-width:0.159423"
+           x="10.303474"
+           y="205.14183">Underdrain</tspan></text>
+      <path
+         id="rect136383"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.120509;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         d="m 46.536509,206.21328 c -0.04356,0.002 -0.07899,0.0266 -0.0854,0.0623 l -0.04285,0.23743 c -0.0079,0.0439 0.03171,0.0878 0.08848,0.0984 l 3.914747,0.73211 v -0.40914 l -3.843839,-0.7189 c -0.01064,-0.002 -0.02108,-0.002 -0.03114,-0.002 z"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect136614"
+         width="0.15784813"
+         height="0.80507416"
+         x="50.332558"
+         y="206.77338"
+         rx="0.012142212"
+         ry="0.16101538"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <path
+         style="fill:#b3b3b3;stroke-width:0.0477584"
+         d="M 14.251451,200.39464 23.469123,197.52693 5.2013734,176.94692 -5.6922382,187.74299"
+         id="path7743" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.159423px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 18.44732,197.354 2.486686,1.98396 0.486234,-0.63414 0.270872,2.26026 -2.215811,0.27631 0.486239,-0.63415 -2.486684,-1.98395 z"
+         id="path103409-2-2"
+         inkscape:path-effect="#path-effect103411-8-9"
+         inkscape:original-d="m 18.44732,197.354 2.486686,1.98396 0.486234,-0.63414 0.270872,2.26026 -2.215811,0.27631 0.486239,-0.63415 -2.486684,-1.98395 z"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022" />
+      <ellipse
+         style="fill:#0000ff;stroke-width:0.0477584"
+         id="path7986"
+         cx="51.960106"
+         cy="207.1422"
+         rx="1.3407522"
+         ry="1.518198" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;line-height:1.25;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.159423"
+         x="142.63527"
+         y="125.07771"
+         id="text107359-8-4-4-5-7-7"
+         inkscape:export-filename="/home/arash/Dropbox/OpenHydroQual_paper/Figures/Bioretention_single.png"
+         inkscape:export-xdpi="300.022"
+         inkscape:export-ydpi="300.022"
+         transform="matrix(0.69320111,0.71158442,-0.71647234,0.70711001,0,0)"><tspan
+           sodipodi:role="line"
+           id="tspan107357-0-9-2-5-7-3"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';text-align:center;text-anchor:middle;stroke-width:0.159423"
+           x="142.63527"
+           y="125.07771">Contributing Impervious</tspan><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.78298px;font-family:'TeX Gyre Bonum';-inkscape-font-specification:'TeX Gyre Bonum';text-align:center;text-anchor:middle;stroke-width:0.159423"
+           x="142.63527"
+           y="127.30643"
+           id="tspan8169">Surface</tspan></text>
     </g>
   </g>
 </svg>

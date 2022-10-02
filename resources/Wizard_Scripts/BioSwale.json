@@ -2,7 +2,7 @@
   "name": "Bioswale (SI)",
   "icon": "bioswale.png",
   "description": "This wizard create a 2D-vertical bioswale model",
-  "diagram" : "Bioswale.png", 
+  "diagram" : "Bioswale.svg", 
   "addtemplate": [
     "main_components.json",
     "unsaturated_soil.json"
