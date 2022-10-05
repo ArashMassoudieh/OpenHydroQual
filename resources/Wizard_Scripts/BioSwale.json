@@ -405,7 +405,7 @@
     {
       "name": "eng_soil_theta_sat",
       "delegate": "ValueBox",
-      "question": "Engineered soil residual moisture content",
+      "question": "Engineered soil saturated moisture content",
       "default": "0.4"
     },
     {
