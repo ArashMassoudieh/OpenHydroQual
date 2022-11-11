@@ -10,6 +10,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QMessageBox>
+
  
 
 
@@ -23,7 +24,6 @@ WizardDialog::WizardDialog(QWidget *parent) :
     connect(ui->Previous, SIGNAL(clicked()),this, SLOT(on_previous_clicked()));
     connect(ui->tabWidget,SIGNAL(currentChanged(int)), this, SLOT(on_TabChanged()));
     connect(ui->graphicsView,SIGNAL(resizeevent()),this, SLOT(fit_diagram()));
-
 
 }
 
@@ -68,10 +68,19 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
 
     }
     on_TabChanged();
-    diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
     QGraphicsScene* scene = new QGraphicsScene();
     ui->graphicsView->setScene(scene);
+    if (wizscript->DiagramFileName().split(".")[1]=="png")
+        diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+    else if (wizscript->DiagramFileName().split(".")[1]=="svg")
+    {   svgitem = new QGraphicsSvgItem(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+        qDebug()<<scene->sceneRect();
+        ui->graphicsView->scene()->clear();
+        ui->graphicsView->scene()->addItem(svgitem);
+    }
+
     resizeEvent();
+    repaint();
 
 }
 
@@ -231,17 +240,26 @@ void WizardDialog::GenerateModel()
 
 void WizardDialog::resizeEvent(QResizeEvent *)
 {
-    qInfo() << "Resize event occurred";
+
     QSize gvs  = ui->graphicsView->size();
-    QSize mvs  =  diagram_pix->size();   // Just for interest
-
-    qInfo() << "About to scale";
-    qInfo() << "mvs is " << mvs;
-    qInfo() << "gvs is " << gvs;
-    QPixmap scaled_img = diagram_pix->scaled(gvs, Qt::IgnoreAspectRatio);
-    ui->graphicsView->scene()->clear();
-    ui->graphicsView->scene()->addPixmap(scaled_img);
-
-
-
+    if (diagram_pix!=nullptr)
+    {   QPixmap scaled_img = diagram_pix->scaled(gvs, Qt::IgnoreAspectRatio);
+        ui->graphicsView->scene()->clear();
+        ui->graphicsView->scene()->addPixmap(scaled_img);
+    }
+    else if (svgitem!=nullptr)
+    {
+        QRectF newRect = ui->graphicsView->scene()->itemsBoundingRect();
+        float width = float(newRect.width());
+        float height = float(newRect.height());
+        float scale = float(1.05);
+        newRect.setLeft(newRect.left() - float(scale - 1) / 2 * float(width));
+        newRect.setTop(newRect.top() - (scale - 1) / 2 * height);
+        newRect.setWidth(qreal(width * scale));
+        newRect.setHeight(qreal(height * scale));
+        if (width>ui->graphicsView->scene()->sceneRect().width() || height>ui->graphicsView->scene()->sceneRect().height())
+            ui->graphicsView->scene()->setSceneRect(newRect);
+        ui->graphicsView->fitInView(newRect,Qt::KeepAspectRatio);
+        ui->graphicsView->repaint();
+    }
 }

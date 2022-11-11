@@ -158,3 +158,15 @@ ModelWizard/build-ModelWizard-Replacement_for_Qt_6_3_1_for_macOS-Release/
 model_wizard_bin/debug/
 
 to_be_sorted.txt
+
+build-ModelWizard-Desktop_Qt_5_15_2_GCC_64bit-Release/.qtc_clangd/.cache/clangd/index/
+
+build-ModelWizard-Desktop_Qt_5_15_2_GCC_64bit-Release/.qtc_clangd/
+
+wizard_bin/debug/.qtc_clangd/.cache/clangd/index/
+
+wizard_bin/release/.qtc_clangd/.cache/clangd/index/
+
+wizard_bin/debug/.qtc_clangd/
+
+wizard_bin/release/

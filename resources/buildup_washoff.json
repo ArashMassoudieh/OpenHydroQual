@@ -115,6 +115,7 @@
 	      "description": "Build up rate (mass/time/area)",
 	      "ask_user": "true",
 	      "delegate": "UnitBox",
+		"estimate": "true",
 	      "unit": "g/day/m~^2"
 	    },
 	    "coefficient": {

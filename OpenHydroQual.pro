@@ -183,7 +183,6 @@ HEADERS += \
     ./aquifolium/include/Quan.h \
     ./aquifolium/include/QuanSet.h \
     ./aquifolium/include/QuickSort.h \
-    ./aquifolium/include/StringOP.h \
     ./aquifolium/include/System.h \
     ./aquifolium/include/Vector.h \
     ./aquifolium/include/Vector_arma.h \
@@ -282,9 +281,10 @@ linux {
 
 macx {
     #sudo apt-get install libblas-dev liblapack-dev
-
+    message( $$PWD )
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -lblas -llapack
+     LIBS += -L$$PWD/../Armadillo/ -llapack.3.10.1
+     LIBS += -L$$PWD/../Armadillo/ -lblas.3.10.1
      LIBS += -L$$PWD/../Armadillo/ -larmadillo.11.2.3
      INCLUDEPATH += $$PWD/../Armadillo/include/
      DEPENDPATH += $$PWD/../Armadillo
