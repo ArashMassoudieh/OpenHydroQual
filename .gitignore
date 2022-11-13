@@ -196,3 +196,25 @@ observed.txt
 observedoutput.txt
 
 output.txt
+
+bin_console/.qtc_clangd/.cache/clangd/index/
+
+bin_console/.qtc_clangd/
+
+bin_console/Debug/
+
+bin_console/Release/.qtc_clangd/.cache/clangd/index/
+
+bin_console/Release/.qtc_clangd/
+
+terminal/build-TOpenHydroQual-Desktop_Qt_5_15_2_GCC_64bit-Debug/.qtc_clangd/.cache/clangd/index/
+
+terminal/build-TOpenHydroQual-Desktop_Qt_5_15_2_GCC_64bit-Release/.qtc_clangd/.cache/clangd/index/
+
+terminal/TOpenHydroQual/c/.qtc_clangd/.cache/clangd/index/
+
+terminal/build-TOpenHydroQual-Desktop_Qt_5_15_2_GCC_64bit-Debug/.qtc_clangd/
+
+terminal/build-TOpenHydroQual-Desktop_Qt_5_15_2_GCC_64bit-Release/.qtc_clangd/
+
+terminal/TOpenHydroQual/c/.qtc_clangd/
