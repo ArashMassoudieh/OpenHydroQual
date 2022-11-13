@@ -170,3 +170,29 @@ wizard_bin/release/.qtc_clangd/.cache/clangd/index/
 wizard_bin/debug/.qtc_clangd/
 
 wizard_bin/release/
+
+aquifolium/build-Aquifolium-Desktop-Debug/errors.txt
+
+aquifolium/armadillo-header/How to Add Armadillo Library.txt
+
+aquifolium/build-Aquifolium-Desktop-Debug/output.txt
+
+aquifolium/build-Aquifolium-Desktop-Debug/script.txt
+
+aquifolium/lapack-blas_lib_win64/
+
+fit_measures.txt
+
+GA_output.txt
+
+mapped_modeled_results.txt
+
+Objective_Function_TimeSeries.txt
+
+objective_function_values.txt
+
+observed.txt
+
+observedoutput.txt
+
+output.txt

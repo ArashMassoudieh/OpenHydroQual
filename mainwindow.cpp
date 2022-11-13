@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.1.10"
-#define last_modified "September 30, 2022"
+#define openhydroqual_version "1.1.11"
+#define last_modified "November 10, 2022"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     QIcon mainicon(QString::fromStdString(RESOURCE_DIRECTORY) + "/Icons/Aquifolium.png");
-
+    workingfolder = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     setWindowIcon(mainicon);
     dView = new DiagramView(ui->centralWidget,this);
     dView->setObjectName(QStringLiteral("graphicsView"));
@@ -1573,8 +1573,9 @@ void MainWindow::onzoomwindowtriggered()
 void MainWindow::onsaveas()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
-            tr("Save"), workingfolder,
+            tr("Save As"), workingfolder,
             tr("OpenHydroQual files (*.ohq)"),nullptr,QFileDialog::DontUseNativeDialog);
+    qDebug() << workingfolder;
     if (fileName!="")
     {
         //qDebug() << fileName.split('.');
@@ -1785,6 +1786,7 @@ void MainWindow::RecreateGraphicItemsFromSystem(bool zoom_all)
 
 void MainWindow::onrunmodel()
 {
+    onsave();
     actionrun->setEnabled(false);
     ErrorHandler errs = system.VerifyAllQuantities();
     if (errs.Count()!=0)
