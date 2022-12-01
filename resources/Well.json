@@ -8,21 +8,22 @@
 		},
 		"Storage": {
 			"description": "Storage",
-                        "type": "balance",
-                        "massbalance": "true",
-                        "flow": "flow",
-                        "initial_value_expression": "(diameter^2)/4*3.1415*depth",
-                        "ask_user": "false",
-                        "delegate": "ValueBox",
-                        "estimate": "false",
-                        "includeinoutput" : "true"
+			"type": "balance",
+			"massbalance": "true",
+			"flow": "flow",
+			"initial_value_expression": "(diameter^2)/4*3.1415*depth",
+			"ask_user": "false",
+			"delegate": "ValueBox",
+			"estimate": "false",
+			"includeinoutput" : "true"
 		},
 		"diameter": {
 			"type": "value",
-	      		"description": "Well Diameter",
-	      		"ask_user": "true",
-	      		"delegate": "ValueBox",
-	      		"default": "1"
+			"description": "Well Diameter",
+			"ask_user": "true",
+			"delegate": "UnitBox",
+			"default": "1",
+			"unit": "m;ft"
 		},
 		"area": {
 			"type": "expression",
@@ -37,13 +38,14 @@
 			 "description": "Water depth",
 			 "ask_user": "true",
 			 "includeinoutput": "true",
-  		         "delegate": "ValueBox"  
+  		     "delegate": "ValueBox"  
 		},
 		"bottom_elevation": {
 		     "type": "value",
 		      "description": "Bottom elevation of the well",
 		      "ask_user": "true",
-		      "delegate": "ValueBox"
+		      "delegate": "UnitBox",
+			  "unit": "m;ft"
 		},
 		"head": {
 		 	"type": "expression",
@@ -51,35 +53,7 @@
 		        "description" : "Hydraulic head",
 		        "ask_user": "false",
 		        "includeinoutput" : "true"
-		},
-              "x": {
-		      "type": "value",
-		      "description": "x",
-		      "default": "900",
-		      "ask_user": "true",
-		      "delegate": "ValueBox"
-		    },
-		"y": {
-		      "type": "value",
-		      "description": "y",
-		      "default": "900",
-		      "ask_user": "true",
-		      "delegate": "ValueBox"
-		    },
-		    "_width": {
-		      "type": "value",
-		      "description": "_width",
-		      "default": "200",
-		      "ask_user": "true",
-		      "delegate": "ValueBox"
-		    },
-		    "_height": {
-		      "type": "value",
-		      "description": "_height",
-		      "default": "200",
-		      "ask_user": "true",
-		      "delegate": "ValueBox"
-                    }
+		}
 	},
         "Well2soil horizontal link":{
 		"type": "link",
@@ -215,5 +189,67 @@
 			"applylimit": "true",
 			"ask_user": "false"
 		}  	
+	},
+	"Well_aggregate": {
+		"type": "block",
+		"typecategory": "Blocks",
+        "description": "Well-filled with aggregates",
+		"icon": {
+			"filename": "Well_aggregate.png"		
+		},
+		"Storage": {
+			"description": "Storage",
+			"type": "balance",
+			"massbalance": "true",
+			"flow": "flow",
+			"initial_value_expression": "(diameter^2)/4*3.1415*depth",
+			"ask_user": "false",
+			"delegate": "ValueBox",
+			"estimate": "false",
+			"includeinoutput" : "true"
+		},
+		"diameter": {
+			"type": "value",
+	      		"description": "Well Diameter",
+	      		"ask_user": "true",
+	      		"delegate": "UnitBox",
+	      		"default": "1",
+				"unit": "m;ft"
+		},
+		"area": {
+			"type": "expression",
+			"description": "Well cross-sectional area",
+			"expression": "(diameter^2)/4*3.1415",
+			"description": "Cross-sectional area",
+			"includeinoutput": "true"
+		},
+		"depth": {
+			 "type": "expression",
+			 "expression" : "Storage/(area*porosity)",
+			 "description": "Water depth",
+			 "ask_user": "true",
+			 "includeinoutput": "true",
+  		         "delegate": "ValueBox"  
+		},
+		"bottom_elevation": {
+		     "type": "value",
+		      "description": "Bottom elevation of the well",
+		      "ask_user": "true",
+		      "delegate": "UnitBox",
+			  "unit": "m;ft"
+		},
+		"porosity": {
+		     "type": "value",
+		      "description": "Porosity",
+		      "ask_user": "true",
+		      "delegate": "ValueBox"
+		},
+		"head": {
+		 	"type": "expression",
+			"expression": "depth+bottom_elevation",
+			"description" : "Hydraulic head",
+			"ask_user": "false",
+			"includeinoutput" : "true"
+		}
 	}
 }
