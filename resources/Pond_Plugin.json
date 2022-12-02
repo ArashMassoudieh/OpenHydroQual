@@ -6,12 +6,6 @@
 		"icon": {
 			"filename": "stormwaterpond.png"		
 		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String"
-		},
 		"Storage": {
 			"description": "Initial Storage;Storage",
 		        "type": "balance",
