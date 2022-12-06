@@ -28,9 +28,15 @@
 #include "plotter.h"
 #include <QInputDialog>
 #include "wizard_select_dialog.h"
+#ifndef Qt6
 #include <QtSvg/QGraphicsSvgItem>
 #include <QtSvg/QSvgGenerator>
 #include <QtSvg/QSvgRenderer>
+#else
+#include <QGraphicsSvgItem>
+#include <QSvgGenerator>
+#include <QSvgRenderer>
+#endif
 #include "options.h"
 #include <QFileInfo>
 #include "gridgenerator.h"

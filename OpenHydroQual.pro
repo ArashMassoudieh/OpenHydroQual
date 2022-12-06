@@ -9,8 +9,7 @@
 CONFIG += c++14
 
 lessThan(QT_MAJOR_VERSION, 6): QT += core gui opengl printsupport svg
-greaterThan(QT_MAJOR_VERSION, 5):
-{
+greaterThan(QT_MAJOR_VERSION, 5): {
     QT += core gui opengl printsupport svgwidgets
     DEFINES += Qt6
 }

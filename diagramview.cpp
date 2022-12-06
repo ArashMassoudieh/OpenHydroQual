@@ -42,7 +42,7 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
     Edge *edge=nullptr;
     Node *node=nullptr;
     if (nodeedges.size()>0)
-    {   int i=qrand()%nodeedges.size();
+    {   int i=rand()%nodeedges.size();
         if (nodeedges[i]->type()==65537)
         {   node = qgraphicsitem_cast<Node*> (nodeedges[i]); //Get the item at the position
             //qDebug()<<i<<nodeedges[i]->type()<<node->Name();
@@ -417,7 +417,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         if (nodeedges.size()>0)
         {
             for (unsigned int i=0; i<nodeedges.size(); i++) {nodeedges[i]->setSelected(false);nodeedges[i]->setZValue(-2);}
-            int i=qrand()%nodeedges.size();
+            int i=rand()%nodeedges.size();
             if (nodeedges[i]->type()==65537)
             {   node = qgraphicsitem_cast<Node*> (nodeedges[i]); //Get the item at the position
                 //qDebug()<<i<<nodeedges[i]->type()<<node->Name();
@@ -558,8 +558,8 @@ void DiagramView::wheelEvent(QWheelEvent* pWheelEvent)
         double angle = pWheelEvent->angleDelta().y();
         double factor = qPow(1.0015, angle);
 
-        auto targetViewportPos = pWheelEvent->pos();
-        auto targetScenePos = mapToScene(pWheelEvent->pos());
+        auto targetViewportPos = pWheelEvent->position();
+        auto targetScenePos = mapToScene(pWheelEvent->position().toPoint());
 
         scale(factor, factor);
         centerOn(targetScenePos);

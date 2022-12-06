@@ -14,7 +14,9 @@ public:
 	{
 		setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 		QHBoxLayout *layout = new QHBoxLayout(this);
-		layout->setMargin(0);
+#ifndef Qt6
+        layout->setMargin(0);
+#endif
 		layout->setSizeConstraint(QLayout::SetMaximumSize);
 		textBox = new QLineEdit(this);
 		unitBox = new QComboBox(textBox);

@@ -56,8 +56,8 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     QColor Color1, Color2;
     painter->setBrush(Qt::white);
     QRadialGradient radialGrad(QPointF(width / 2, height / 2), min(width, height));
-    radialGrad.setColorAt(0, QColor(Qt::lightGray).light(300));
-    radialGrad.setColorAt(1, QColor(Qt::lightGray).light(120));
+    radialGrad.setColorAt(0, QColor(Qt::lightGray).lighter(300));
+    radialGrad.setColorAt(1, QColor(Qt::lightGray).lighter(120));
     QPixmap pixmap;
     if (!object())
     {
@@ -84,7 +84,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         painter->setBrush(radialGrad);
 
     painter->setPen(QPen(Qt::white, (bold) ? 2 : 0));
-    painter->drawRoundRect(0, 0, width, height,10,10);
+    painter->drawRoundedRect(0, 0, width, height,10,10);
     painter->setPen(QPen(Qt::black, (bold) ? 2 : 0));
     qreal factor = parent->transform().scale(1, 1).mapRect(QRectF(0, 0, 1, 1)).width();
     int size = int(4 + 6 / factor)*fontfactor();
@@ -111,7 +111,7 @@ void Node::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     QPointF p = QPointF(x() + event->pos().x(), y() + event->pos().y());
     parent->nodeContextMenuRequested(this, p);
-    this->setZValue(qrand()%100-50);
+    this->setZValue(rand()%100-50);
 
 }
 
