@@ -232,3 +232,7 @@ terminal/build-TOpenHydroQual-Replacement_for_Qt_6_3_1_for_macOS-Debug/
 terminal/build-TOpenHydroQual-Replacement_for_Qt_6_3_1_for_macOS-Release/.qtc_clangd/.cache/clangd/index/
 
 terminal/build-TOpenHydroQual-Replacement_for_Qt_6_3_1_for_macOS-Release/.qtc_clangd/
+
+.qtc_clangd/.cache/clangd/index/
+
+.qtc_clangd/
