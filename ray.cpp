@@ -10,7 +10,7 @@ static double TwoPi = 2.0 * Pi;
 Ray::Ray()
 : arrowSize(10)
 {
-    setAcceptedMouseButtons(0);
+    setAcceptedMouseButtons(Qt::NoButton);
     itemType = Object_Types::RayLine;
     GUI = "Ray";
 

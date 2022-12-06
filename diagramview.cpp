@@ -6,6 +6,7 @@
 #include "QDebug"
 #include "QMenu"
 #include "QStatusBar"
+#include "QRandomGenerator"
 
 
 DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsView(parent)

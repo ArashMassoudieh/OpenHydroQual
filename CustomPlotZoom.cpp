@@ -1,6 +1,7 @@
 #include <QRubberBand>
 #include "CustomPlotZoom.h"
- 
+
+
 CustomPlotZoom::CustomPlotZoom(QWidget * parent)
     : QCustomPlot(parent)
     , mZoomMode(true)
@@ -41,7 +42,7 @@ void CustomPlotZoom::mouseMoveEvent(QMouseEvent * event)
 }
 void CustomPlotZoom::wheelEvent(QWheelEvent *event)
 {
-	double scale = pow((double)2, event->delta() / 360.0);
+    double scale = pow((double)2, event->angleDelta().y() / 360.0);
 	xAxis->scaleRange(scale, xAxis->range().center()); 
 	yAxis->scaleRange(scale, yAxis->range().center());	
 	replot();
