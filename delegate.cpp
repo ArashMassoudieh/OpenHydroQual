@@ -124,7 +124,9 @@ QWidget *Delegate::createEditor(QWidget *parent,
         QStringList DefaultValues = index.data(CustomRoleCodes::Role::DefaultValuesListRole).toStringList();
 
         editor->addItems(DefaultValues);
+#ifndef Qt6
         editor->setAutoCompletion(true);
+#endif
         return editor;
     }
     if (delegateType.contains("Memo"))

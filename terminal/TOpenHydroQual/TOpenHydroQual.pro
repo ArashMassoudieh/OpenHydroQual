@@ -209,13 +209,11 @@ linux {
 }
 
 macx {
-    #sudo apt-get install libblas-dev liblapack-dev
-     DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -L$$PWD/../Armadillo/ -llapack
-     LIBS += -L$$PWD/../Armadillo/ -larmadillo
-     LIBS += -L$$PWD/../Armadillo/ -lblas
-     INCLUDEPATH += $$PWD/../Armadillo/include/
-     DEPENDPATH += $$PWD/../Armadillo
+
+    LIBS += /opt/homebrew/Cellar/armadillo/11.4.2/lib/libarmadillo.dylib
+    INCLUDEPATH += $$PWD/../../../../opt/homebrew/Cellar/armadillo/11.4.2/include
+    DEPENDPATH += $$PWD/../../../../opt/homebrew/Cellar/armadillo/11.4.2/include
+
 }
 
 # Default rules for deployment.

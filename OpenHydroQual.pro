@@ -8,14 +8,19 @@
 
 CONFIG += c++14
 
-QT       += core gui opengl printsupport svg
+lessThan(QT_MAJOR_VERSION, 6): QT += core gui opengl printsupport svg
+greaterThan(QT_MAJOR_VERSION, 5): {
+    QT += core gui opengl printsupport svgwidgets
+    DEFINES += Qt6
+}
+
 INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
 INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
-INCLUDEPATH += ../qcustomplot/
+INCLUDEPATH += ../qcustomplot6/
 if==macx:CONFIG += staticlib
 macx: DEFINES +=mac_version
 linux: DEFINES +=ubuntu_version
@@ -135,7 +140,7 @@ SOURCES += \
     ./aquifolium/src/GA/DistributionNUnif.cpp \
     ./aquifolium/src/GA/Distribution.cpp \
     runtimewindow.cpp \
-    ../qcustomplot/qcustomplot.cpp \
+    ../qcustomplot6/qcustomplot.cpp \
     plotter.cpp \
     expEditor.cpp \
     statusviewer.cpp \
@@ -216,7 +221,7 @@ HEADERS += \
     ./aquifolium/include/GA/DistributionNUnif.h \
     ./aquifolium/include/GA/Individual.h \
     runtimewindow.h \
-    ../qcustomplot/qcustomplot.h \
+    ../qcustomplot6/qcustomplot.h \
     plotter.h \
     ./aquifolium/include/Objective_Function.h \
     ./aquifolium/include/Objective_Function_Set.h \

@@ -85,8 +85,13 @@ bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, bool allowti
 
     if (format[format.size()-1].xAxisTimeFormat)
     {
+#ifndef Qt6
         QDateTime start = QDateTime::fromTime_t(xtoTime(BTC.GetT(0)), QTimeZone(0));
         QDateTime end = QDateTime::fromTime_t(xtoTime(BTC.GetT(BTC.n - 1)), QTimeZone(0));
+#else
+        QDateTime start = QDateTime::fromSecsSinceEpoch(xtoTime(BTC.GetT(0)));
+        QDateTime end = QDateTime::fromSecsSinceEpoch(xtoTime(BTC.n - 1));
+#endif
         QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
         dateTicker->setTickCount(10);
 
@@ -289,7 +294,11 @@ void Plotter::contextMenuEvent(QContextMenuEvent *event)
                 QPalette mypalette = this->palette();
                 mypalette.setColor(QPalette::Window, Qt::white);
                 plot->setPalette(mypalette);
-                QPixmap pixmap = QPixmap::grabWidget(this);
+#ifndef Qt6
+              QPixmap pixmap = QPixmap::grabWidget(this);
+#else
+              QPixmap pixmap = this->grab();
+#endif
                 clipboard->setPixmap(pixmap);
             }
 
@@ -352,8 +361,15 @@ void Plotter::refreshFormat()
 
     if (format[format.size()-1].xAxisTimeFormat)
     {
+#ifndef Qt6
         QDateTime start = QDateTime::fromTime_t(minx,QTimeZone(0));
         QDateTime end = QDateTime::fromTime_t(maxx, QTimeZone(0));
+#else
+        QDateTime start = QDateTime::fromSecsSinceEpoch(minx);
+        QDateTime end = QDateTime::fromSecsSinceEpoch(maxx);
+#endif
+
+
         QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
         dateTicker->setTickCount(10);
         double timeinsecs = start.secsTo(end)*86400;
@@ -417,9 +433,14 @@ bool Plotter::AddData(const CTimeSeries<timeseriesprecision>& BTC, bool allowtim
         format[format.size()-1].xAxisTimeFormat = false;
     if (format[format.size()-1].xAxisTimeFormat)
     {
+#ifndef Qt6
         QDateTime start = QDateTime::fromTime_t(xtoTime(BTC.GetT(0)), QTimeZone(0));
         QDateTime end = QDateTime::fromTime_t(xtoTime(BTC.GetT(BTC.n - 1)), QTimeZone(0));
-        QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+#else
+        QDateTime start = QDateTime::fromSecsSinceEpoch(BTC.GetT(0));
+        QDateTime end = QDateTime::fromSecsSinceEpoch(BTC.GetT(BTC.n - 1));
+#endif
+                QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
         dateTicker->setTickCount(10);
 
         QString dformat;
@@ -645,7 +666,11 @@ void Plotter::contextMenuRequest(QPoint pos)
               QPalette mypalette = this->palette();
               mypalette.setColor(QPalette::Window, Qt::white);
               plot->setPalette(mypalette);
+#ifndef Qt6
               QPixmap pixmap = QPixmap::grabWidget(this);
+#else
+              QPixmap pixmap = this->grab();
+#endif
               clipboard->setPixmap(pixmap);
           }
           if (selectedAction->text().contains("Zoom Extends"))

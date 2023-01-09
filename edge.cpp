@@ -18,7 +18,7 @@ Edge::Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramVie
 {
     parent = _parent;
     system = _parent->mainWindow()->GetSystem();
-    setAcceptedMouseButtons(nullptr);
+    setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton | Qt::MiddleButton);
 
     source = sourceNode;
     dest = destNode;
@@ -59,7 +59,7 @@ Edge::Edge(Node *sourceNode, Node *destNode, DiagramView *_parent)
 {
     parent = _parent;
     system = _parent->mainWindow()->GetSystem();
-    setAcceptedMouseButtons(nullptr);
+    setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton | Qt::MiddleButton);
 
     source = sourceNode;
     dest = destNode;
@@ -267,7 +267,7 @@ void Edge::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     QPointF p = QPointF(x() + event->pos().x(), y() + event->pos().y());
     parent->edgeContextMenuRequested(this, p);
-    this->setZValue(qrand()%100-50);
+    this->setZValue(rand()%100-50);
 
 }
 
