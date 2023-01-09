@@ -6,6 +6,12 @@
 		"icon": {
 			"filename": "stormwaterpond.png"		
 		},
+		"name": {
+		      "description": "Name",
+		      "type": "string",
+		      "ask_user": "true",
+		      "delegate": "String"
+		},
 		"Storage": {
 			"description": "Initial Storage;Storage",
 		        "type": "balance",
@@ -204,6 +210,42 @@
                         "expression" : "86400*3.47*_pos(head.s-crest_elevation)^(0.5)/((head_loss_coefficient+1)^0.5)*(pipe_diameter^2)",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
+		}  	
+	},
+	"darcy_connector":{
+		"type": "link",
+		"typecategory": "Connectors",
+                "description": "Darcy connector",
+		"icon": {
+			"filename": "darcy_connector.png"
+		},
+		"name": {
+		      "description": "Name",
+		      "type": "string",
+		      "ask_user": "true",
+		      "delegate": "String" 
+		},
+                "color": {
+      			"type": "string",
+      			"default": "0,70,200"
+  		},
+		"Transmissivity": {
+		      "type": "value",
+		      "description": "Head-loss coefficient",
+		      "ask_user": "true",
+		      "delegate": "UnitBox",
+			  "unit": "m~^3/day",
+		      "estimate": "true",
+		      "default": "0.6",
+		      "criteria": "Transmissivity>0",
+		      "warningmessage": "Transmissivity must be positive"
+    		},
+	        "flow" : {
+				"type": "expression",
+				"description": "Flow rate (m~^3/day)",
+				"expression" : "Transmissivity*(head.s-_max(bottom_elevation.s;head.e))",
+				"includeinoutput" : "true",
+				"applylimit": "true"	
 		}  	
 	},
 	"wide_channel":{

@@ -31,14 +31,9 @@ Edge::Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramVie
     }
     if (list.contains(dest))
     {
-        //_parent->log(QString("Duplicate connector from %1 to %2.").arg(source->Name()).arg(dest->Name()));
         delete this;
         return;
     }
-    
-
-//	sourceID = source->ID;
-//	destID = dest->ID;
 
     setFlag(ItemIsSelectable);
     setFlag(ItemSendsGeometryChanges);
@@ -85,9 +80,6 @@ Edge::Edge(Node *sourceNode, Node *destNode, DiagramView *_parent)
     dest->addEdge(this);
     adjust();
 
-//	sourceID = source->ID;
-//	destID = dest->ID;
-
     setFlag(ItemIsSelectable);
     setFlag(ItemSendsGeometryChanges);
 
@@ -97,7 +89,6 @@ Edge::Edge(Node *sourceNode, Node *destNode, DiagramView *_parent)
     parent->MainGraphicsScene->addItem(this);
     name = QString("%1 - %2").arg(sourceNode->Name()).arg(destNode->Name());
 
-    //changed();
 }
 
 

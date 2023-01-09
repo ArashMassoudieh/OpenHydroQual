@@ -261,6 +261,11 @@
       "unit": "m;ft",
       "estimate": "true"
     },
+	"bottom_elevation": {
+      "type": "expression",
+      "description": "Elevation",
+      "expression": "elevation"
+    },
     "elasticity": {
       "type": "value",
       "description": "Elasticity (d head/d storage)",
