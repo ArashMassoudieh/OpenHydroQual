@@ -411,5 +411,33 @@
       "type": "string",
       "default": "150,0,200"
     }
+  },
+   "Water Transfer (constant max flow)": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Water Transfer (constant max flow)",
+    "icon": {
+      "filename": "Water_Transfer.png"
+    },
+	"maximum_transfer_rate": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Maximum transfer rate",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+	  "unit": "m~^3/day"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "maximum_transfer_rate*_exp(-0.05*Storage.e/_pos(capacity.e-Storage.e))*Storage.s/(Storage.s+0.001*capacity.s)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    }
   }
 }
