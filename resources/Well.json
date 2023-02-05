@@ -11,11 +11,21 @@
 			"type": "balance",
 			"massbalance": "true",
 			"flow": "flow",
+			"inflow": "inflow",
 			"initial_value_expression": "(diameter^2)/4*3.1415*depth",
 			"ask_user": "false",
 			"delegate": "ValueBox",
 			"estimate": "false",
 			"includeinoutput" : "true"
+		},
+		"inflow": {
+		      "type": "timeseries",
+		      "includeinoutput": "true",
+		      "applylimit": "true",
+		      "helptext": "The time series containing the inflow rate into the pond", 
+		      "description": "Inflow rate time series",
+		      "ask_user": "true",
+		      "delegate": "Browser"
 		},
 		"diameter": {
 			"type": "value",
