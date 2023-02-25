@@ -1,0 +1,46 @@
+loadtemplate; filename = /home/arash/Projects/QAquifolium/bin/Debug/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/QAquifolium/bin/Debug/../../resources/mass_transfer.json
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=0
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=simulation_end_time, value=5
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=numthreads, value=8
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=write_solution_details, value=No
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=initial_time_step, value=0.001
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=c_n_weight, value=1
+create constituent;type=Constituent,name=A,stoichiometric_constant=0,external_source=,inflow_concentration=,external_mass_flow_timeseries=,concentration=0[g/m~^3],diffusion_coefficient=0[m~^2/s]
+create reaction_parameter;type=ReactionParameter,name=decay_coefficient,temperature=,reference_temperature=0,base_value=0.7,Arrhenius_factor=1
+create reaction;type=Reaction,A:stoichiometric_constant=-1,name=decay,rate_expression=(decay_coefficient*A)
+create block;type=Reactor,A:external_source=,_height=68,_width=84,y=925.037,name=Reactor (1),x=850.624,inflow_timeseries=/home/arash/Projects/QAquifolium/validation/CSTR/inflow.csv,A:inflow_concentration=/home/arash/Projects/QAquifolium/validation/CSTR/inflow_concentration.csv,A:external_mass_flow_timeseries=,A:concentration=0[g/m~^3],Storage=1[m~^3]
+create block;type=fixed_head,A:external_source=,A:concentration=0[g/m~^3],Storage=100000[m~^3],head=0[m],x=986.354,A:inflow_concentration=,_height=76,name=fixed_head (1),y=958.972,A:external_mass_flow_timeseries=,_width=83
+create link;from=Reactor (1),to=fixed_head (1),type=Fixed flow,name=Reactor (1) - fixed_head (1),flow=0.4[m~^3/day]
+create observation;type=Observation,object=Reactor (1),name=exact_solution,expression=A:concentration,observed_data=/home/arash/Projects/QAquifolium/validation/CSTR/exact_solution.csv,error_structure=normal,error_standard_deviation=1

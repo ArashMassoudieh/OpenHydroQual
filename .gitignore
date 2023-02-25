@@ -236,3 +236,5 @@ terminal/build-TOpenHydroQual-Replacement_for_Qt_6_3_1_for_macOS-Release/.qtc_cl
 .qtc_clangd/.cache/clangd/index/
 
 .qtc_clangd/
+
+validation/first order decay in a batch reactor/errors.txt

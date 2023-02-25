@@ -1,0 +1,2 @@
+class, object name, function, description, error code
+Object,fixed_head (1),GetVal,property 'inflow_timeseries' does not exist in 'fixed_head (1)',1002
