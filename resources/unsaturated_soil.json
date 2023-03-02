@@ -15,7 +15,7 @@
       "description": "Storage",
       "ask_user": "false",
       "initial_value_expression": "area*depth*theta",
-      "unit": "m~^3",
+      "unit": "m~^3;ft~^3",
       "estimate": "true"
     },
     "Evapotranspiration": {
