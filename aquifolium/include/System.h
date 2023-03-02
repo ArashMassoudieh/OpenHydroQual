@@ -107,6 +107,7 @@ struct solvertemporaryvars
     CVector_arma Jacobia_Diagonal;
     time_t time_start; //simulation start time
     time_t simulation_duration = 0; //simulation duration
+    bool first_write = true; //Has the results been written or not
 
 };
 
@@ -115,6 +116,8 @@ struct simulationparameters
     double tstart = 0; //start time of simulation
     double tend = 1; //end time of simulation
     double dt0 = 0.01; // initial time-step size
+    double write_interval = 1000; // the interval at which the outputs are written
+    bool write_outputs_intermittently = false; //whether to write the outputs intermittently or not
 };
 
 struct _directories
@@ -268,6 +271,7 @@ class System: public Object
         QuanSet* GetModel(const string &type) {if (metamodel.Count(type)==1) return metamodel[type]; else return nullptr;}
         void clear();
         int EpochCount() {return SolverTempVars.epoch_count;}
+        bool WriteIntermittently() {return SimulationParameters.write_outputs_intermittently;}
         ErrorHandler *GetErrorHandler() {return &errorhandler;}
         void UpdateObservations(double t);
         double CalcMisfit(); //calculates the difference between modeled and measured data
@@ -403,6 +407,7 @@ class System: public Object
         string GetWorkingFolder() {return paths.inputpath;}
         double dt0() {return SimulationParameters.dt0;}
         Objective_Function_Set *ObjectiveFunctionSet() {return &objective_function_set;}
+        bool WriteOutPuts();
     protected:
 
     private:
@@ -467,6 +472,7 @@ class System: public Object
         CVector GetLinkssOutflowFactors(const Expression::timing &tmg);
         unsigned int restore_interval = 200;
         void PopulateFunctionOperators();
+
         function_operators func_operators;
 
 #ifndef NO_OPENMP

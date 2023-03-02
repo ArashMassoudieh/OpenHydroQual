@@ -148,6 +148,35 @@ void CTimeSeriesSet<T>::writetofile(string outputfile, bool writeColumnNameHeade
 }
 
 template <class T>
+void CTimeSeriesSet<T>::appendtofile(string outputfile, bool skipfirstrow)
+{
+    FILE *Fil;
+    Fil = fopen(outputfile.c_str() , "a");
+    if (!Fil)
+    {
+        cout << "File '" + outputfile +"' cannot be opened!"<<std::endl;
+        return;
+    }
+    int starting_row = 0;
+    if (skipfirstrow) starting_row = 1;
+    for (int j = starting_row; j<maxnumpoints(); j++)
+    {
+        for (int i=0; i<nvars; i++)
+        {
+            if (j<BTC[i].n)
+                fprintf(Fil, "%lf, %le,", BTC[i].GetT(j), BTC[i].GetC(j));
+            else
+                fprintf(Fil, ", ,");
+
+        }
+        fprintf(Fil, "\n");
+    }
+
+    fclose(Fil);
+
+}
+
+template <class T>
 void CTimeSeriesSet<T>::writetofile(string outputfile, int outputwriteinterval)
 {
 	FILE *Fil;
@@ -933,6 +962,30 @@ void CTimeSeriesSet<T>::clear()
 }
 
 template <class T>
+void CTimeSeriesSet<T>::clearContents()
+{
+    for (int i=0; i<nvars; i++)
+        BTC[i].clear();
+
+}
+
+template <class T>
+void CTimeSeriesSet<T>::clearContentsExceptLastRow()
+{
+    vector<double> t_lasts;
+    vector<double> C_lasts;
+    for (int i=0; i<nvars; i++)
+    {   t_lasts.push_back(BTC[i].lastt());
+        C_lasts.push_back(BTC[i].lastC());
+    }
+    for (int i=0; i<nvars; i++)
+    {   BTC[i].clear();
+        BTC[i].append(t_lasts[i],C_lasts[i]);
+    }
+
+}
+
+template <class T>
 vector<T> CTimeSeriesSet<T>::max_wiggle()
 {
     T max_wig=0;
@@ -1128,6 +1181,63 @@ void CTimeSeriesSet<T>::adjust_size()
     for (unsigned int i = 0; i < BTC.size(); i++)
         BTC[i].adjust_size();
 }
+
+template <class T>
+bool CTimeSeriesSet<T>::ReadContentFromFile(string _filename, bool varytime)
+{
+    clearContents();
+    unif = false;
+    vector<string> units;
+    filename = _filename;
+    ifstream file(filename);
+    vector<string> s;
+
+    if (file.good() == false)
+    {
+        file_not_found = true;
+        return false;
+    }
+    if (varytime == false)
+        while (file.eof() == false)
+        {
+            s = aquiutils::getline(file);
+            if (s.size())
+            {
+                if ((s[0].substr(0, 2) != "//") && (aquiutils::tail(s[0],5) != "names") && (aquiutils::tail(s[0],5) != "units"))
+                {
+                    if (int(s.size()) == nvars + 1)
+                        for (int i = 0; i < nvars; i++)
+                        {
+                            BTC[i].append(atof(s[0].c_str()),atof(s[i + 1].c_str()));
+                        }
+
+                }
+            }
+        }
+    else
+        while (file.eof() == false)
+        {
+            s = aquiutils::getline(file);
+            if (s.size() > 0)
+            {
+                if ((s[0].substr(0, 2) != "//") && (aquiutils::tail(s[0],5) != "names") && (aquiutils::tail(s[0],5) != "units"))
+                {
+                    for (int i = 0; i < nvars; i++)
+                    {
+                        if (int(s.size()) >= 2 * (i + 1))
+                            if ((aquiutils::trim(s[2 * i]) != "") && (aquiutils::trim(s[2 * i + 1]) != ""))
+                            {
+                                BTC[i].append(atof(s[2 * i].c_str()),atof(s[2 * i + 1].c_str()));
+                            }
+                    }
+                }
+            }
+        }
+    file.close();
+
+}
+
+
 
 
 #ifdef QT_version

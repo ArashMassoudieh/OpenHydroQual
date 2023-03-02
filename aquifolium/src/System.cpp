@@ -708,6 +708,8 @@ bool System::Solve(bool applyparameters)
                 if (GetSolutionLogger())
                     GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
             }
+            if (aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart,SimulationParameters.write_interval)<aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart-SolverTempVars.dt,SimulationParameters.write_interval))
+                WriteOutPuts();
             QCoreApplication::processEvents();
             //cout<<"Processes Events...";
         }
@@ -924,6 +926,16 @@ bool System::SetProp(const string &s, const double &val)
     {   SimulationParameters.tend = val; return true;}
     if (s=="tend")
     {   SimulationParameters.dt0 = val; return true;}
+    if (s=="write_intermittently")
+    {
+        SimulationParameters.write_outputs_intermittently = bool(val);
+        return true;
+    }
+    if (s=="write_interval")
+    {
+        SimulationParameters.write_interval = val;
+        return true;
+    }
 
     errorhandler.Append("","System","SetProp","Property '" + s + "' was not found!", 621);
     return false;
@@ -1027,6 +1039,20 @@ bool System::SetProperty(const string &s, const string &val)
             SolverSettings.write_solution_details = true;
         else
             SolverSettings.write_solution_details = false;
+        return true;
+    }
+    if (s=="write_intermittently")
+    {
+        if(aquiutils::trim(aquiutils::tolower(val))=="yes")
+            SimulationParameters.write_outputs_intermittently = true;
+        else
+            SimulationParameters.write_outputs_intermittently = false;
+        return true;
+    }
+    if (s=="write_interval")
+    {
+
+        SimulationParameters.write_interval = aquiutils::atof(val);
         return true;
     }
 
@@ -3879,4 +3905,45 @@ void System::PopulateFunctionOperators()
     func_operators.opts.push_back(";");
     func_operators.opts.push_back("/");
     func_operators.opts.push_back("^");
+}
+
+bool System::WriteOutPuts()
+{
+    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
+    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
+    if (OutputFileName() != "")
+    {
+        if (QString::fromStdString(OutputFileName()).contains("/") || QString::fromStdString(OutputFileName()).contains("\\"))
+            if (SolverTempVars.first_write)
+                GetOutputs().writetofile(OutputFileName());
+            else
+                GetOutputs().appendtofile(OutputFileName());
+        else
+            if (SolverTempVars.first_write)
+                GetOutputs().writetofile(paths.inputpath + "/" + OutputFileName());
+            else
+                GetOutputs().appendtofile(paths.inputpath + "/" + OutputFileName());
+    }
+    if (ObservedOutputFileName() != "")
+    {
+        if (QString::fromStdString(ObservedOutputFileName()).contains("/") || QString::fromStdString(ObservedOutputFileName()).contains("\\"))
+            if (SolverTempVars.first_write)
+                GetObservedOutputs().writetofile(ObservedOutputFileName());
+            else
+                GetObservedOutputs().appendtofile(ObservedOutputFileName(),true);
+        else
+            if (SolverTempVars.first_write)
+                GetObservedOutputs().writetofile(paths.inputpath + "/" + ObservedOutputFileName());
+            else
+                GetObservedOutputs().appendtofile(paths.inputpath + "/" + ObservedOutputFileName(),true);
+    }
+
+    GetOutputs().clearContentsExceptLastRow();
+    GetObservedOutputs().clearContentsExceptLastRow();
+
+
+    SolverTempVars.first_write = false;
+    if (SolverTempVars.first_write)
+        errorhandler.Write(paths.inputpath + "/errors.txt");
+    return true;
 }

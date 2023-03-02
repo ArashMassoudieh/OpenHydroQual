@@ -1817,20 +1817,45 @@ void MainWindow::onrunmodel()
     if (copiedsystem.OutputFileName() != "")
     {
         if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
-            copiedsystem.GetOutputs().writetofile(copiedsystem.OutputFileName());
+            if (copiedsystem.WriteIntermittently())
+                copiedsystem.GetOutputs().appendtofile(copiedsystem.OutputFileName(),true);
+            else
+                copiedsystem.GetOutputs().writetofile(copiedsystem.OutputFileName());
         else
-            copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName());
+            if (copiedsystem.WriteIntermittently())
+                copiedsystem.GetOutputs().appendtofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName(),true);
+            else
+                copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName());
     }
     if (copiedsystem.ObservedOutputFileName() != "")
     {
         if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
-            copiedsystem.GetObservedOutputs().writetofile(copiedsystem.ObservedOutputFileName());
+            if (copiedsystem.WriteIntermittently())
+                copiedsystem.GetObservedOutputs().appendtofile(copiedsystem.ObservedOutputFileName(),true);
+            else
+                copiedsystem.GetObservedOutputs().writetofile(copiedsystem.ObservedOutputFileName());
+
         else
-            copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
+            if (copiedsystem.WriteIntermittently())
+                copiedsystem.GetObservedOutputs().appendtofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName(),true);
+            else
+                copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
     }
 
     copiedsystem.ObjectiveFunctionSet()->GetTimeSeriesSet().writetofile(workingfolder.toStdString() + "/Objective_Function_TimeSeries.txt");
+    if (copiedsystem.WriteIntermittently())
+    {
+        if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
+            copiedsystem.GetOutputs().ReadContentFromFile(copiedsystem.OutputFileName(),true);
+        else
+            copiedsystem.GetOutputs().ReadContentFromFile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName(),true);
 
+
+        if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
+            copiedsystem.GetObservedOutputs().ReadContentFromFile(copiedsystem.ObservedOutputFileName(),true);
+        else
+            copiedsystem.GetObservedOutputs().ReadContentFromFile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName(),true);
+    }
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();

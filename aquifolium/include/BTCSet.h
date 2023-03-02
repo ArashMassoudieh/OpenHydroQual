@@ -23,6 +23,7 @@ public:
 	vector<string> names;
 	bool unif = false;
 	void writetofile(string outputfile, bool writeColumnHeaders = false);
+    void appendtofile(string outputfile, bool skipfirstrow = false);
 	void writetofile(string outputfile, int writeinterval);
     vector<T> interpolate(T t);
     vector<T> interpolate(T t, int fnvars);
@@ -52,6 +53,8 @@ public:
 	CTimeSeriesSet distribution(int n_bins, int n_columns, int limit);
     CTimeSeriesSet add_noise(vector<T> std, bool logd);
 	void clear();
+    void clearContents(); //clear the values stored in the time-series without clearing the structure
+    void clearContentsExceptLastRow(); //clear the values stored in the time-series without clearing the structure, keep the last row
     vector<T> max_wiggle();
     vector<T> max_wiggle_corr(int _n = 10);
     vector<int> max_wiggle_sl(int ii, T tol);
@@ -69,6 +72,7 @@ public:
     CTimeSeries<T> operator[](int index) const;
     CTimeSeries<T> operator[](string BTCName) const;
     bool Contains(string BTCName);
+    bool ReadContentFromFile(string _filename, bool varytime);
 #ifdef QT_version
 	CTimeSeries &operator[](QString BTCName) {
 		return operator[](BTCName.toStdString());}

@@ -631,6 +631,12 @@ namespace aquiutils
         return f.good();
     }
 
+    double mod(double x, double y)
+    {
+        return x - int(x/y)*y;
+    }
+
 }
+
 
 
