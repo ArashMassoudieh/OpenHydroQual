@@ -708,8 +708,9 @@ bool System::Solve(bool applyparameters)
                 if (GetSolutionLogger())
                     GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
             }
-            if (aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart,SimulationParameters.write_interval)<aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart-SolverTempVars.dt,SimulationParameters.write_interval))
-                WriteOutPuts();
+            if (SimulationParameters.write_outputs_intermittently)
+                if (aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart,SimulationParameters.write_interval)<aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart-SolverTempVars.dt,SimulationParameters.write_interval))
+                    WriteOutPuts();
             QCoreApplication::processEvents();
             //cout<<"Processes Events...";
         }
