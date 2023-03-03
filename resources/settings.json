@@ -114,7 +114,7 @@
       "delegate": "UnitBox",
       "unit" : "day",
       "code": "write_interval"
-    },
+    }
   },
   "general_parameters": {
     "type": "setting",
