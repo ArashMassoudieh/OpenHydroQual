@@ -41,7 +41,7 @@
     },
     "production_rate": {
       "type": "expression",
-      "expression": "(maximum_production_rate+constant_production_rate)*_pos(storage_capacity-Storage)/storage_capacity",
+      "expression": "(maximum_production_rate+constant_production_rate)*_exp(-0.05*Storage/_pos(storage_capacity-Storage))",
       "includeinoutput": "true",
       "description": "Net production",
       "ask_user": "false"
@@ -53,148 +53,6 @@
       "delegate": "UnitBox",
       "unit": "m~^3;ft~^3",
       "criteria": "storage_capacity>0.001",
-      "warningmessage": "Storage capacity must be greater than zero" 
-    },
-    "elevation": {
-      "type": "value",
-      "description": "Mean elevation of the plant",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft"
-    },
-    "head": {
-      "type": "expression",
-      "expression": "elevation",
-      "description": "Hydraulic head",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    }
-  },
-  "Groundwater_Supply_wells": {
-    "type": "block",
-    "typecategory": "Blocks",
-    "description" : "Groundwater_Supply_wells",    
-    "icon": {
-      "filename": "Groundwater_Supply_Wells.png"
-    },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String"
-    },
-    "Storage": {
-      "type": "balance",
-      "massbalance": "true",
-      "flow": "flow",
-      "inflow": "production_rate",
-      "includeinoutput": "true",
-      "description": "Initial Storage;Storage",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3"
-    },
-    "constant_production_rate": {
-      "type": "value",
-      "includeinoutput": "true",
-      "description": "Constant production rate",
-      "ask_user": "true",
-	  "unit": "m~^3/day;ft~^3/day",
-      "delegate": "UnitBox"
-    },
-      "maximum_production_rate": {
-      "type": "timeseries",
-      "includeinoutput": "true",
-      "description": "Maximum production rate time series",
-      "ask_user": "true",
-      "delegate": "Browser"
-    },
-    "production_rate": {
-      "type": "expression",
-      "expression": "(maximum_production_rate+constant_production_rate)*_pos(storage_capacity-Storage)/storage_capacity",
-      "includeinoutput": "true",
-      "description": "Net production",
-      "ask_user": "false"
-    },
-    "storage_capacity": {
-      "type": "value",
-      "description": "Storage capacity",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3",
-      "criteria": "storage_capacity>0.001",
-      "warningmessage": "Storage capacity must be greater than zero" 
-    },
-    "elevation": {
-      "type": "value",
-      "description": "Mean elevation of the plant",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft"
-    },
-    "head": {
-      "type": "expression",
-      "expression": "elevation",
-      "description": "Hydraulic head",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    }
-  },
-  "Wastewater_Treatment_plant": {
-    "type": "block",
-    "typecategory": "Blocks",
-    "description" : "Wastewater_Treatment_plant",    
-    "icon": {
-      "filename": "Wastewater_Treatment_plant.png"
-    },
-    "Storage": {
-      "type": "balance",
-      "massbalance": "true",
-      "flow": "flow",
-      "inflow": "discard_rate",
-      "includeinoutput": "true",
-      "description": "Initial Storage;Storage",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3"
-    },
-    "constant_production_rate": {
-      "type": "value",
-      "includeinoutput": "true",
-      "description": "Constant production rate",
-      "ask_user": "true",
-	  "unit": "m~^3/day;ft~^3/day",
-      "delegate": "UnitBox"
-    },
-      "maximum_production_rate": {
-      "type": "timeseries",
-      "includeinoutput": "true",
-      "description": "Maximum production rate time series",
-      "ask_user": "true",
-      "delegate": "Browser"
-    },
-    "production_rate": {
-      "type": "expression",
-      "expression": "(maximum_production_rate+constant_production_rate)",
-      "includeinoutput": "true",
-      "description": "Net production",
-      "ask_user": "false"
-    },
-	"discard_rate":
-	{
-      "type": "expression",
-      "expression": "-1000*_pos(Storage-capacity)",
-      "includeinoutput": "true",
-      "description": "Loss rate",
-      "ask_user": "false"
-	},
-    "capacity": {
-      "type": "value",
-      "description": "Storage capacity",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3",
-      "criteria": "capacity>0.001",
       "warningmessage": "Storage capacity must be greater than zero" 
     },
     "elevation": {
@@ -223,6 +81,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
+      "inflow": "net_use_rate",
       "includeinoutput": "false",
       "description": "Initial Storage;Storage",
       "default":"1000"
@@ -245,11 +104,11 @@
     "net_use_rate": {
       "type": "expression",
       "expression": "-(use_rate+constant_use_rate)",
-      "includeinoutput": "true",
-      "description": "Net Use",
+      "includeinoutput": "false",
+      "description": "Net production",
       "ask_user": "false"
     }
-	},
+  },
   "commertial_user": {
     "type": "block",
     "typecategory": "Blocks",
@@ -267,6 +126,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
+      "inflow": "net_use_rate",
       "includeinoutput": "false",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
@@ -293,7 +153,7 @@
       "type": "expression",
       "expression": "-use_rate-constant_use_rate",
       "includeinoutput": "true",
-      "description": "Net Use",
+      "description": "Net use",
       "ask_user": "false"
     }
   },
@@ -314,6 +174,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
+      "inflow": "net_use_rate",
       "includeinoutput": "false",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
@@ -339,55 +200,8 @@
     "net_use_rate": {
       "type": "expression",
       "expression": "-use_rate-constant_use_rate",
-      "includeinoutput": "true",
-      "description": "Net Use",
-      "ask_user": "false"
-    }
-  },
-  "Amenities": {
-    "type": "block",
-    "typecategory": "Blocks",
-    "description" : "Amenities User",
-    "icon": {
-      "filename": "Amenities.png"
-    },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String"
-    },
-    "Storage": {
-      "type": "balance",
-      "massbalance": "false",
-      "flow": "flow",
       "includeinoutput": "false",
-      "description": "Initial Storage;Storage",
-      "ask_user": "false",
-      "unit": "m~^3;ft~^3",
-      "default":"1000",
-      "delegate": "UnitBox"
-    },
-    "use_rate": {
-      "type": "timeseries",
-      "includeinoutput": "true",
-      "description": "Use rate time series",
-      "ask_user": "true",
-      "delegate": "Browser"
-    },
-    "constant_use_rate": {
-      "type": "value",
-      "includeinoutput": "true",
-      "description": "Constant use rate",
-      "ask_user": "true",
-      "unit": "m~^3/day;ft~^3/day",
-      "delegate": "UnitBox"
-    },
-    "net_use_rate": {
-      "type": "expression",
-      "expression": "-use_rate-constant_use_rate",
-      "includeinoutput": "true",
-      "description": "Net Use",
+      "description": "Net production",
       "ask_user": "false"
     }
   },
@@ -408,6 +222,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
+      "inflow": "net_use_rate",
       "includeinoutput": "false",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
@@ -433,24 +248,17 @@
     "net_use_rate": {
       "type": "expression",
       "expression": "-use_rate-constant_use_rate",
-      "includeinoutput": "true",
-      "description": "Net Use",
+      "includeinoutput": "false",
+      "description": "Net production",
       "ask_user": "false"
-    },
-    "deficit": {
-      "type": "expression",
-      "expression": "-net_use_rate.e-Storage.e*10",
-      "includeinoutput": "true",
-      "description": "Deficit",
-      "applylimit": "true"
     }
   },
-  "Governmental_user": {
+  "public_user": {
     "type": "block",
     "typecategory": "Blocks",
-    "description" : "Governmental User",
+    "description" : "Public User",
     "icon": {
-      "filename": "Governmental_user.png"
+      "filename": "public.png"
     },
     "name": {
       "description": "Name",
@@ -462,6 +270,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
+      "inflow": "net_use_rate",
       "includeinoutput": "false",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
@@ -487,8 +296,8 @@
     "net_use_rate": {
       "type": "expression",
       "expression": "-use_rate-constant_use_rate",
-      "includeinoutput": "true",
-      "description": "Net Use",
+      "includeinoutput": "false",
+      "description": "Net production",
       "ask_user": "false"
     }
   },
@@ -499,137 +308,19 @@
     "icon": {
       "filename": "arrow_to_user.png"
     },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
     "flow": {
       "type": "expression",
-      "expression": "(use_rate.e+constant_use_rate.e)*_pos(Storage.s)/(_pos(Storage.s)+0.1)",
+      "expression": "use_rate.e+constant_use_rate.e",
       "includeinoutput": "true",
       "description": "Flow",
-      "applylimit": "true"
-    },
-	"deficit": {
-      "type": "expression",
-      "expression": "flow-use_rate.e-constant_use_rate.e",
-      "includeinoutput": "true",
-      "description": "Deficit",
-      "applylimit": "true"
-     }
-  },
-  "Wastewater_flow": {
-    "type": "link",
-    "typecategory": "Connectors",
-    "description" : "Flow to water recycling plant",    
-    "icon": {
-      "filename": "Wastewater_flow.png"
-    },
-    "flow": {
-      "type": "expression",
-      "expression": "(use_rate.s+constant_use_rate.s)*Recycling_coeff*Treatment_plant_efficiency",
-      "includeinoutput": "true",
-      "description": "Flow",
-      "applylimit": "true"
-    },
-	"Recycling_coeff": {
-		"type": "value",
-		"includeinoutput": "false",
-		"description": "The fraction of demand that will be recycled",
-		"ask_user": "true",
-		"estimate": "true",
-		"delegate": "ValueBox",
-		"criteria": "Recycling_coeff<1",
-		"default": "0.3"
-    },
-	"Treatment_plant_efficiency": {
-		"type": "value",
-		"includeinoutput": "false",
-		"description": "Treatment Plant Efficiency",
-		"ask_user": "true",
-		"estimate": "true",
-		"delegate": "ValueBox",
-		"criteria": "Treatment_plant_efficiency<1.000001",
-		"default": "0.95"
-    }
-  },
-  "Infiltration_and_inflow": {
-    "type": "link",
-    "typecategory": "Connectors",
-    "description" : "Infiltration and inflow",    
-    "icon": {
-      "filename": "Infiltration and Inflow.png"
-    },
-    "flow": {
-      "type": "expression",
-      "expression": "(use_rate.s+constant_use_rate.s)*fraction",
-      "includeinoutput": "true",
-      "description": "Flow",
-      "applylimit": "true"
-    },
-	"fraction": {
-		"type": "value",
-		"includeinoutput": "false",
-		"description": "Fraction infiltration and inflow",
-		"ask_user": "true",
-		"delegate": "ValueBox",
-		"criteria": "fraction<1",
-		"default": "0.1"
-    }
-  },
-  "Recycled_flow": {
-    "type": "link",
-    "typecategory": "Connectors",
-    "description" : "Flow of recycled water",    
-    "icon": {
-      "filename": "Flow of recycled water.png"
-    },
-    "flow": {
-      "type": "expression",
-      "expression": "_min(demand;Maximum_rate)",
-      "includeinoutput": "true",
-      "description": "Flow",
-      "applylimit": "true"
-    },
-	"demand": {
-      "type": "expression",
-      "expression": "-net_use_rate.e",
-      "includeinoutput": "true",
-      "description": "Demand",
-      "applylimit": "true"
-    },
-	"Maximum_rate": {
-      "type": "expression",
-      "expression": "production_rate.s*Storage.s/(Storage.s+1)",
-      "includeinoutput": "true",
-      "description": "Maximum flow available",
-      "applylimit": "true"
-    }
-  },
-  "Flow_to_user_low_priority": {
-    "type": "link",
-    "typecategory": "Connectors",
-    "description" : "Flow link to user (Low priority)",    
-    "icon": {
-      "filename": "arrow_to_user.png"
-    },
-    "flow": {
-      "type": "expression",
-      "expression": "(use_rate.e+constant_use_rate.e)*_pos(Storage.s-storage_threshold)^2/(_pos(Storage.s-storage_threshold)^2+1)",
-      "includeinoutput": "true",
       "applylimit": "true",
       "description": "Flow rate"
-    },
-	"deficit": {
-      "type": "expression",
-      "expression": "flow-use_rate.e-constant_use_rate.e",
-      "includeinoutput": "true",
-      "description": "Deficit",
-      "applylimit": "true"
-     },
-	"storage_threshold": {
-      "type": "value",
-      "default": "0",
-	  "description": "Minimum Storage Threshold",
-      "ask_user": "true",
-	  "unit": "m~^3",
-      "delegate": "UnitBox"
     }
   },
   "Water Storage": {
@@ -754,9 +445,9 @@
     "typecategory": "Connectors",
     "description": "Transfer to groundwater",
     "icon": {
-      "filename": "Transfer to groundwater.png"
+      "filename": "Water_Transfer_to_Groundwater.png"
     },
-	"maximum_transfer_rate": {
+      "maximum_transfer_rate": {
       "type": "value",
       "includeinoutput": "true",
       "description": "Maximum transfer rate",
