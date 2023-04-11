@@ -304,7 +304,8 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             QStringList allItems;
             if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("Sources"))
             {
-                allItems = toQStringList(mainwindow->GetSystem()->GetAllSourceNames());
+                allItems.append("");
+                allItems.append(toQStringList(mainwindow->GetSystem()->GetAllSourceNames()));
             }
             if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("BlockLinks"))
             {
@@ -344,7 +345,8 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             QStringList allItems;
             if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("Sources"))
             {
-                allItems = toQStringList(mainwindow->GetSystem()->GetAllSourceNames());
+                allItems.append("");
+                allItems.append(toQStringList(mainwindow->GetSystem()->GetAllSourceNames()));
             }
             if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("BlockLinks"))
             {
