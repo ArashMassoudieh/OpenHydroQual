@@ -549,7 +549,7 @@ int CGA<T>::optimize()
         fprintf(FileOut, "%s, %s, %s, ", "likelihood", "Fitness", "Rank");
         for (unsigned int i=0; i<Model->ObservationsCount();i++)
         {
-            fprintf(FileOut, "%s, %s, %s", (Model->observation(i)->GetName()+"_MSE").c_str(), (Model->observation(i)->GetName()+"_R2").c_str(), (Model->observation(i)->GetName()+"_NSE").c_str());
+            fprintf(FileOut, "%s, %s, %s,", (Model->observation(i)->GetName()+"_MSE").c_str(), (Model->observation(i)->GetName()+"_R2").c_str(), (Model->observation(i)->GetName()+"_NSE").c_str());
         }
         fprintf(FileOut, "\n");
         write_to_detailed_GA("Generation: " + aquiutils::numbertostring(current_generation));
