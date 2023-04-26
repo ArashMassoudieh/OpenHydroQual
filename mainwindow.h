@@ -45,6 +45,7 @@ public:
     UndoData undoData;
     void PopulatePropertyTable(QuanSet* quanset);
     void RecreateGraphicItemsFromSystem(bool zoom_all=true);
+    void SetPropertyWindowTitle(const QString &title);
     void RefreshTreeView();
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);

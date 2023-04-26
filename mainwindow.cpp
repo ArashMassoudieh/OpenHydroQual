@@ -1790,6 +1790,14 @@ void MainWindow::RecreateGraphicItemsFromSystem(bool zoom_all)
         onzoomall(true);
 }
 
+void MainWindow::SetPropertyWindowTitle(const QString &title)
+{
+    int width = ui->dockWidget_3->size().width();
+    ui->SelectedObjectDescription->setText(title);
+    ui->SelectedObjectDescription->setWordWrap(true);
+    ui->SelectedObjectDescription->setMaximumSize(width,200);
+}
+
 void MainWindow::onrunmodel()
 {
     onsave();

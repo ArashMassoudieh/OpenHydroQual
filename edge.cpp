@@ -276,7 +276,11 @@ QVariant Edge::itemChange(GraphicsItemChange change, const QVariant &value)
     switch (change) {
     case QGraphicsItem::ItemSelectedChange:
         if (value==true)
-            parent->mainWindow()->PopulatePropertyTable(object()->GetVars());
+        {   parent->mainWindow()->PopulatePropertyTable(object()->GetVars());
+            parent->mainWindow()->SetPropertyWindowTitle(QString::fromStdString(object()->GetName())+":"+QString::fromStdString(object()->GetVars()->Description()));
+        }
+        else
+            parent->mainWindow()->SetPropertyWindowTitle("");
         break;
     default:
         break;
