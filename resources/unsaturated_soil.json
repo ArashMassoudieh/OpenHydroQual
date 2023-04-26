@@ -504,10 +504,18 @@
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "(head.s-head.e)*K_eff/length*area",
+      "expression": "(head.s-_max(outlet_head;head.e))*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
+    },
+     "outlet_head": {
+      "type": "value",
+      "description": "Outlet head",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
     },
     "color": {
       "type": "string",
