@@ -1350,7 +1350,9 @@ void MainWindow::PopulatePropertyTable(QuanSet* quanset)
     if (propmodel != nullptr)
         delete  propmodel;
     if (quanset!=nullptr)
-        propmodel = new PropModel(quanset,this,this);
+    {   propmodel = new PropModel(quanset,this,this);
+        SetPropertyWindowTitle(QString::fromStdString(quanset->Parent()->GetName())+":"+QString::fromStdString(quanset->Description()));
+    }
     else
         propmodel = nullptr;
     ui->tableView->setModel(propmodel);
