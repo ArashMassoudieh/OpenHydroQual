@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     }
     
     string defaulttemppath = qApp->applicationDirPath().toStdString() + "/../../resources/";
-    cout << "Default Template path = " + defaulttemppath;
+    cout << "Default Template path = " + defaulttemppath +"\n";
     system->SetDefaultTemplatePath(defaulttemppath);
     system->SetWorkingFolder(QFileInfo(QString::fromStdString(argv[1])).canonicalPath().toStdString() + "/");
     string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";

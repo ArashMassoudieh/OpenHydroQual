@@ -12,7 +12,7 @@ namespace aquiutils
                 return i;
         return -1;
     }
-
+    
     int lookup(const vector<int> &s, const int &s1, bool backward)
     {
         if (!backward)

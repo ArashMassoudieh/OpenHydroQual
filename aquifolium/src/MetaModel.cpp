@@ -73,7 +73,7 @@ bool MetaModel::GetFromJsonFile(const string &filename)
     std::ifstream file(filename);
 	if (!file.good())
 	{
-		cout << "File " + filename + " was not found!";
+		//cout << "File " + filename + " was not found!";
 		return false;
 	}
     //else
