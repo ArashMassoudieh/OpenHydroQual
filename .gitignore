@@ -238,3 +238,13 @@ terminal/build-TOpenHydroQual-Replacement_for_Qt_6_3_1_for_macOS-Release/.qtc_cl
 .qtc_clangd/
 
 validation/first order decay in a batch reactor/errors.txt
+
+terminal/.vs/TOpenHydroQual/FileContentIndex/
+
+terminal/.vs/TOpenHydroQual/v17/
+
+terminal/OHQTerminal/x64/Debug/qmake/temp/
+
+terminal/OHQTerminal/x64/Release/qmake/temp/
+
+terminal/OHQConsole/x64/Debug/
