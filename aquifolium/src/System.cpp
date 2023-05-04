@@ -3027,8 +3027,7 @@ System::System(Script& scr)
 bool System::CreateFromScript(Script& scr, const string& settingsfilename)
 {
     bool success = true;
-    if (settingsfilename != "")
-        ReadSystemSettingsTemplate(settingsfilename);
+
     for (int i=0; i<scr.CommandsCount(); i++)
     {
         if (!scr[i]->Execute(this))
@@ -3039,7 +3038,8 @@ bool System::CreateFromScript(Script& scr, const string& settingsfilename)
         }
         if (scr[i]->Keyword() == "loadtemplate")
         {
-            
+            if (settingsfilename != "")
+                ReadSystemSettingsTemplate(settingsfilename);
         }
     }
     PopulateOperatorsFunctions();
