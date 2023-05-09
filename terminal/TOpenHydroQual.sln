@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TOpenHydroQual", "TOpenHydroQual\TOpenHydroQual.vcxproj", "{199209B9-B27D-3835-B727-6276E4C9987F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OHQTerminal", "OHQTerminal\OHQTerminal.vcxproj", "{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{199209B9-B27D-3835-B727-6276E4C9987F}.Debug|x64.ActiveCfg = Debug|x64
-		{199209B9-B27D-3835-B727-6276E4C9987F}.Debug|x64.Build.0 = Debug|x64
-		{199209B9-B27D-3835-B727-6276E4C9987F}.Release|x64.ActiveCfg = Release|x64
-		{199209B9-B27D-3835-B727-6276E4C9987F}.Release|x64.Build.0 = Release|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Debug|x64.ActiveCfg = Debug|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Debug|x64.Build.0 = Debug|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Release|x64.ActiveCfg = Release|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

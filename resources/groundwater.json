@@ -239,7 +239,7 @@
     "typecategory": "Connectors",
     "description": "Soil to groundwater link",
     "icon": {
-      "filename": "soil2gw_link.png"
+      "filename": "soil2GW_link.png"
     },
     "length": {
       "type": "expression",

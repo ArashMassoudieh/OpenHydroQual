@@ -1,5 +1,6 @@
 #include "System.h"
 #include <fstream>
+#include <qstring.h>
 #pragma warning(pop)
 #pragma warning(disable : 4996)
 #include <json/json.h>
@@ -3026,6 +3027,7 @@ System::System(Script& scr)
 bool System::CreateFromScript(Script& scr, const string& settingsfilename)
 {
     bool success = true;
+
     for (int i=0; i<scr.CommandsCount(); i++)
     {
         if (!scr[i]->Execute(this))
@@ -3036,7 +3038,7 @@ bool System::CreateFromScript(Script& scr, const string& settingsfilename)
         }
         if (scr[i]->Keyword() == "loadtemplate")
         {
-            if (settingsfilename!="")
+            if (settingsfilename != "")
                 ReadSystemSettingsTemplate(settingsfilename);
         }
     }

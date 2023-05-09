@@ -306,6 +306,9 @@ class System: public Object
             cout<<paths.default_template_path;
             return paths.default_template_path;
         }
+        void SetDefaultTemplatePath(const string &path) {
+            paths.default_template_path = path;
+        }
 		string InputPath() {return paths.inputpath;}
         string OutputPath() {return paths.outputpath;}
         string ObservedOutputFileName() {return paths.observedoutputfilename;}
