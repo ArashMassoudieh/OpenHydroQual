@@ -108,11 +108,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAddPlugin,SIGNAL(triggered()),this,SLOT(addplugin()));
     connect(ui->actionAdd_plugin,SIGNAL(triggered()),this,SLOT(adddefaultpluging()));
     connect(ui->actionOptions,SIGNAL(triggered()),this,SLOT(optionsdialog()));
-    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
-    connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
 
-    ui->tableView->setItemDelegateForColumn(1,new Delegate(this,this));
+    connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
+    PropertiesWidget = new ItemPropertiesWidget(ui->dockWidgetContents_3);
+    PropertiesWidget->tableView()->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->verticalLayout->addWidget(PropertiesWidget);
+    connect(PropertiesWidget->tableView(), SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
+
+    PropertiesWidget->tableView()->setItemDelegateForColumn(1,new Delegate(this,this));
     Populate_General_ToolBar();
     readRecentFilesList();
     undoData = UndoData(this);
@@ -180,7 +183,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::tablePropShowContextMenu(const QPoint&pos)
 {
-    QModelIndex i1 = ui->tableView->indexAt(pos);
+    QModelIndex i1 = PropertiesWidget->tableView()->indexAt(pos);
     int row = i1.row();
     QModelIndex i2 = i1.sibling(row, 1);
     tableitemrightckicked = i2;
@@ -200,49 +203,49 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
             estimatesMenu->setEnabled(true);
         }
 
-        menu->exec(ui->tableView->mapToGlobal(pos));
+        menu->exec(PropertiesWidget->tableView()->mapToGlobal(pos));
     }
     if (i1.column() == 1)
     {
         menu = std::unique_ptr<QMenu>(new QMenu(this));
 
-        if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("ComboBox"))
+        if (PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("ComboBox"))
         {
             QAction* action = menu->addAction("Clear");
             connect(action,SIGNAL(triggered()),this, SLOT(clearcombobox()));
-            menu->exec(ui->tableView->mapToGlobal(pos));
+            menu->exec(PropertiesWidget->tableView()->mapToGlobal(pos));
         }
-        if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("DateTime"))
+        if (PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("DateTime"))
         {
             QAction* action = menu->addAction("Insert in numeric format");
             connect(action,SIGNAL(triggered()),this, SLOT(insertnumberasdate()));
-            menu->exec(ui->tableView->mapToGlobal(pos));
+            menu->exec(PropertiesWidget->tableView()->mapToGlobal(pos));
         }
-        if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("Browser"))
+        if (PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("Browser"))
         {
             QAction* action = menu->addAction("Plot");
             connect(action,SIGNAL(triggered()),this, SLOT(PlotTimeSeries()));
-            menu->exec(ui->tableView->mapToGlobal(pos));
+            menu->exec(PropertiesWidget->tableView()->mapToGlobal(pos));
         }
     }
 }
 
 void MainWindow::clearcombobox()
 {
-    ui->tableView->model()->setData(tableitemrightckicked, "");
+    PropertiesWidget->tableView()->model()->setData(tableitemrightckicked, "");
 }
 
 void MainWindow::insertnumberasdate()
 {
-    double x = QInputDialog::getDouble(this,"Date/Time Value: ","Date/Time value", ui->tableView->model()->data(tableitemrightckicked).toDouble(),0,20000,2);
-    ui->tableView->model()->setData(tableitemrightckicked, QString::number(x));
+    double x = QInputDialog::getDouble(this,"Date/Time Value: ","Date/Time value", PropertiesWidget->tableView()->model()->data(tableitemrightckicked).toDouble(),0,20000,2);
+    PropertiesWidget->tableView()->model()->setData(tableitemrightckicked, QString::number(x));
 }
 
 void MainWindow::PlotTimeSeries()
 {
-    QString timeseriesfilename = ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::fullFileNameRole).toString();
-    QString objectname = ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::ObjectName).toString();
-    QString varname = ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::VariableName).toString();
+    QString timeseriesfilename = PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::fullFileNameRole).toString();
+    QString objectname = PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::ObjectName).toString();
+    QString varname = PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::VariableName).toString();
 
     if (GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries() != nullptr)
     {
@@ -257,7 +260,7 @@ void MainWindow::PlotTimeSeries()
 void MainWindow::addParameter(QAction* item)
 {
     QString parameter = item->text();
-    ui->tableView->model()->setData(tableitemrightckicked, parameter, CustomRoleCodes::setParamRole);
+    PropertiesWidget->tableView()->model()->setData(tableitemrightckicked, parameter, CustomRoleCodes::setParamRole);
     menu->hide();
     menu->setVisible(false);
 
@@ -1352,10 +1355,11 @@ void MainWindow::PopulatePropertyTable(QuanSet* quanset)
     if (quanset!=nullptr)
     {   propmodel = new PropModel(quanset,this,this);
         SetPropertyWindowTitle(QString::fromStdString(quanset->Parent()->GetName())+":"+QString::fromStdString(quanset->Description()));
+
     }
     else
         propmodel = nullptr;
-    ui->tableView->setModel(propmodel);
+    PropertiesWidget->tableView()->setModel(propmodel);
 }
 
 void MainWindow::Populate_General_ToolBar()
@@ -1795,9 +1799,8 @@ void MainWindow::RecreateGraphicItemsFromSystem(bool zoom_all)
 void MainWindow::SetPropertyWindowTitle(const QString &title)
 {
     int width = ui->dockWidget_3->size().width();
-    ui->SelectedObjectDescription->setText(title);
-    ui->SelectedObjectDescription->setWordWrap(true);
-    ui->SelectedObjectDescription->setMaximumSize(width,200);
+    PropertiesWidget->SetTitleText(title);
+
 }
 
 void MainWindow::onrunmodel()

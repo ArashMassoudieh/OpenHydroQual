@@ -13,6 +13,7 @@
 #include "logwindow.h"
 #include "aboutdialog.h"
 #include "undodata.h"
+#include "ItemPropertiesWidget.h"
 
 #ifdef windows_version
     #define RESOURCE_DIRECTORY qApp->applicationDirPath().toStdString()+"/../../resources"
@@ -104,6 +105,7 @@ private:
     void saveSceneToSvg(const QString &filename);
     bool CreateFileIfDoesNotExist(QString fileName);
     QAction* actionrun = nullptr;
+    ItemPropertiesWidget *PropertiesWidget = nullptr;
 private slots:
     void on_check_object_browser();
     void on_check_showlogwindow();
