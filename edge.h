@@ -26,6 +26,7 @@ public:
     qreal arrowSize = 10;
     Object_Types itemType = Object_Types::Connector;
     QRectF boundingRect() const override;
+    QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
     bool bold = false;
     void setBold(const bool _Bold = true);
