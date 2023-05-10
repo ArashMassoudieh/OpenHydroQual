@@ -66,6 +66,7 @@ public:
     void InactivateRedo(bool yes=true);
     void AddStatetoUndoData();
     void SetActiveUndo();
+    void SetPropertyWindowIcon(const QString &iconfilename);
     QString* GetWorkingFolder()
     {
         return &workingfolder;

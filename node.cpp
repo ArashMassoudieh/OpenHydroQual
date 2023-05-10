@@ -126,9 +126,27 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
         if (value==true)
         {   parent->mainWindow()->PopulatePropertyTable(object()->GetVars());
             parent->mainWindow()->SetPropertyWindowTitle(QString::fromStdString(object()->GetName())+":"+QString::fromStdString(object()->GetVars()->Description()));
+            QString iconfilename;
+            if (object()->GetVars()->IconFileName()!="")
+            {
+                if (QString::fromStdString(object()->GetVars()->IconFileName()).contains("/"))
+                {
+                    if (QFile::exists(QString::fromStdString(object()->GetVars()->IconFileName())))
+                        iconfilename = QString::fromStdString(object()->GetVars()->IconFileName());
+                }
+                else
+                {
+                    if (QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + object()->GetVars()->IconFileName())))
+                        iconfilename = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + object()->GetVars()->IconFileName());
+                }
+
+                parent->mainWindow()->SetPropertyWindowIcon(iconfilename);
+            }
         }
         else
-            parent->mainWindow()->SetPropertyWindowTitle("");
+        {   parent->mainWindow()->SetPropertyWindowTitle("");
+            parent->mainWindow()->SetPropertyWindowIcon("");
+        }
         break;
     default:
         break;

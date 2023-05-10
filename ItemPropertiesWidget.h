@@ -33,6 +33,7 @@ public:
 
     QSize minimumSizeHint() const override;
     void SetTitleText(const QString &title);
+    void setIcon(const QString &IconFileName);
 signals:
     void showTimeSeries(QStringView item_name, QStringView prop_name,
         QStringView ts_path, ItemNavigatorPtr item_navigator);

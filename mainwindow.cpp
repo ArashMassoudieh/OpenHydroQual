@@ -1355,11 +1355,35 @@ void MainWindow::PopulatePropertyTable(QuanSet* quanset)
     if (quanset!=nullptr)
     {   propmodel = new PropModel(quanset,this,this);
         SetPropertyWindowTitle(QString::fromStdString(quanset->Parent()->GetName())+":"+QString::fromStdString(quanset->Description()));
+        QString iconfilename;
+        if (quanset->IconFileName()!="")
+        {
+            if (QString::fromStdString(quanset->IconFileName()).contains("/"))
+            {
+                if (!QFile::exists(QString::fromStdString(quanset->IconFileName())))
+                    LogError("Icon file '" + QString::fromStdString(quanset->IconFileName()) + "' was not found!");
+                else
+                    iconfilename = QString::fromStdString(quanset->IconFileName());
+            }
+            else
+            {
+                if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + quanset->IconFileName())))
+                    LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + quanset->IconFileName() + "' was not found!"));
+                else
+                    iconfilename = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + quanset->IconFileName());
+            }
 
+            SetPropertyWindowIcon(iconfilename);
+        }
     }
     else
         propmodel = nullptr;
     PropertiesWidget->tableView()->setModel(propmodel);
+}
+
+void MainWindow::SetPropertyWindowIcon(const QString &iconfilename)
+{
+    PropertiesWidget->setIcon(iconfilename);
 }
 
 void MainWindow::Populate_General_ToolBar()
@@ -1800,6 +1824,7 @@ void MainWindow::SetPropertyWindowTitle(const QString &title)
 {
     int width = ui->dockWidget_3->size().width();
     PropertiesWidget->SetTitleText(title);
+
 
 }
 

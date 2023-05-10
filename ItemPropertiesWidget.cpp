@@ -224,3 +224,14 @@ void ItemPropertiesWidget::SetTitleText(const QString &title)
     ui->Title->setMaximumSize(width,200);
     ui->Title->setText(title);
 }
+
+void ItemPropertiesWidget::setIcon(const QString &IconFileName)
+{
+    if (IconFileName.isEmpty())
+    {
+        ui->pushButton->setIcon(QIcon());
+        return;
+    }
+    QIcon icon = QIcon(IconFileName);
+    ui->pushButton->setIcon(icon);
+}
