@@ -108,7 +108,7 @@ ItemPropertiesWidget::ItemPropertiesWidget(QWidget* parent):
         "QLineEdit:hover {border-width: 0; border-style: solid; "
         "border-top-width: 1px; border-bottom-width: 0;}");
 
-    setStyleSheet("QFrame {border: none;}");
+    //setStyleSheet("QFrame {border: none;}");
 
     setupControls();
     _parent = parent;
@@ -222,6 +222,7 @@ void ItemPropertiesWidget::SetTitleText(const QString &title)
     ui->Title->setWordWrap(true);
     ui->Title->setMaximumSize(width,200);
     ui->Title->setText(title);
+
 }
 
 void ItemPropertiesWidget::setIcon(const QString &IconFileName)
