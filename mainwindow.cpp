@@ -1375,6 +1375,8 @@ void MainWindow::PopulatePropertyTable(QuanSet* quanset)
 
             SetPropertyWindowIcon(iconfilename);
         }
+        else
+            SetPropertyWindowIcon("");
     }
     else
         propmodel = nullptr;
