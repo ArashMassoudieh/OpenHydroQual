@@ -30,11 +30,17 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QLabel" name="lblicon">
+       <property name="minimumSize">
+        <size>
+         <width>30</width>
+         <height>30</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
-         <width>24</width>
-         <height>24</height>
+         <width>30</width>
+         <height>30</height>
         </size>
        </property>
        <property name="text">

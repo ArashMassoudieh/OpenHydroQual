@@ -114,7 +114,6 @@ ItemPropertiesWidget::ItemPropertiesWidget(QWidget* parent):
     _parent = parent;
     int width = parent->width();
     ui->edtFilter->hide();
-    ui->pushButton->setEnabled(false);
     ui->Title->setWordWrap(true);
     ui->Title->setMaximumSize(width,200);
 }
@@ -229,9 +228,17 @@ void ItemPropertiesWidget::setIcon(const QString &IconFileName)
 {
     if (IconFileName.isEmpty())
     {
-        ui->pushButton->setIcon(QIcon());
+        ui->lblicon->setPixmap(QPixmap());
         return;
     }
-    QIcon icon = QIcon(IconFileName);
-    ui->pushButton->setIcon(icon);
+
+    ui->lblicon->setAlignment(Qt::AlignCenter);
+    QPixmap pix;
+
+
+    if(pix.load(IconFileName)){
+        pix = pix.scaled(ui->lblicon->size(),Qt::KeepAspectRatio);
+        ui->lblicon->setPixmap(pix);
+    }
+
 }
