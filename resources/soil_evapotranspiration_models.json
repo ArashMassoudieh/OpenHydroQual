@@ -5,6 +5,7 @@
     "icon": {
       "filename": "Evapotranspiration_Aerodynamic_soil.png"
     },
+    "description": "Aerodynamic Evapotranspiration model for soil",
     "name": {
       "description": "Name",      
       "type": "string",
@@ -93,6 +94,7 @@
     "icon": {
       "filename": "Evapotranspiration_timeseries_soil.png"
     },
+    "description": "Evapotranspiration time-series for soil",
     "name": {
       "description": "Name",      
       "type": "string",
@@ -134,6 +136,7 @@
     "icon": {
       "filename": "Evapotranspiration_energy_balance_soil.png"
     },
+    "description": "Energy Evapotranspiration model for soil",
     "name": {
       "description": "Name",      
       "type": "string",
@@ -189,6 +192,7 @@
     "icon": {
       "filename": "Evapotranspiration_Priestly_Taylor_soil.png"
     },
+    "description": "Penman Evapotranspiration model for soil",
     "name": {
       "description": "Name",      
       "type": "string",
