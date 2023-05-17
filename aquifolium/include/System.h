@@ -30,6 +30,7 @@
 #include "QTime"
 #endif
 
+#define unordered_map map
 
 using namespace std;
 
