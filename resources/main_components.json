@@ -11,14 +11,14 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation,Evapotranspiration,loss,inflow_timeseries",
+      "inflow": "Precipitation,Evapotranspiration,loss,inflow",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "false",
       "initial_value_expression": "area*depth",
       "estimate": "true"
     },
-    "inflow_timeseries":{
+    "inflow":{
     	"type": "timeseries",
 	"includeinoutput": "true",
 	"description": "Inflow",
@@ -592,8 +592,8 @@
     },
     "inflow_loading": {
       "type": "expression",
-      "expression": "inflow_concentration*inflow_timeseries",
-      "includeinoutput": "false",
+      "expression": "inflow_concentration*inflow",
+      "includeinoutput": "true",
       "description": "Inflow loading",
       "role": "copytoblocks"
     },

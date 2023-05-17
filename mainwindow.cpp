@@ -1885,11 +1885,12 @@ void MainWindow::onrunmodel()
     copiedsystem.ObjectiveFunctionSet()->GetTimeSeriesSet().writetofile(workingfolder.toStdString() + "/Objective_Function_TimeSeries.txt");
     if (copiedsystem.WriteIntermittently())
     {
-        if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
-            copiedsystem.GetOutputs().ReadContentFromFile(copiedsystem.OutputFileName(),true);
-        else
-            copiedsystem.GetOutputs().ReadContentFromFile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName(),true);
-
+        if (copiedsystem.OutputFileName() != "")
+        {   if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
+                copiedsystem.GetOutputs().ReadContentFromFile(copiedsystem.OutputFileName(),true);
+            else
+                copiedsystem.GetOutputs().ReadContentFromFile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName(),true);
+        }
 
         if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
             copiedsystem.GetObservedOutputs().ReadContentFromFile(copiedsystem.ObservedOutputFileName(),true);

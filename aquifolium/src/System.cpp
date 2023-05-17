@@ -1676,8 +1676,13 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             {
                 SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": number of iterations exceeded the maximum threshold, state_variable:" + aquiutils::numbertostring(statevarno));
                 if (GetSolutionLogger())
-                {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
-                    GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
+                {   if (!transport)
+                    {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
+                        GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
+                    }
+                    else
+                        GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at state variable '" + aquiutils::numbertostring(F.abs_max_elems())+"', dt = "  + aquiutils::numbertostring(dt()));
+
                     GetSolutionLogger()->WriteString("Error criteria number: " + aquiutils::numbertostring(err/(err_ini+1e-10*X_norm)));
                     GetSolutionLogger()->WriteString("X_norm: " + aquiutils::numbertostring(X_norm));
                     GetSolutionLogger()->WriteString("Block outflow factors: " + GetBlocksOutflowFactors(Expression::timing::present).toString());

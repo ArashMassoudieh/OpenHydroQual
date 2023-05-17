@@ -61,6 +61,12 @@
       </property>
       <item>
        <widget class="QLabel" name="Title">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="palette">
          <palette>
           <active>
