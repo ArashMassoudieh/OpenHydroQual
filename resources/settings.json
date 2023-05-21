@@ -97,6 +97,23 @@
       "ask_user": "true",
       "delegate": "ComboBox, items: Inverse Jacobian, Direct",
       "code": "write_solution_details"
+    },
+    "write_intermittently": {
+      "type": "string",
+      "default": "No",
+      "description": "Write the outputs intermittently",
+      "ask_user": "true",
+      "delegate": "ComboBox, items: Yes, No",
+      "code": "write_intermittently"
+    },
+    "write_interval": {
+      "type": "value",
+      "default": "100",
+      "description": "Output write interval",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit" : "day",
+      "code": "write_interval"
     }
   },
   "general_parameters": {

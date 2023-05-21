@@ -94,6 +94,8 @@ SOURCES += \
     ../jsoncpp/src/lib_json/json_value.cpp \
     ../jsoncpp/src/lib_json/json_writer.cpp \
     CustomPlotZoom.cpp \
+    ItemNavigator.cpp \
+    ItemPropertiesWidget.cpp \
     UnitTextBox3.cpp \
     XString.cpp \
     aboutdialog.cpp \
@@ -160,6 +162,8 @@ HEADERS += \
     ./aquifolium/include/precalculatedfunction.h \
     ./aquifolium/include/solutionlogger.h \
     CustomPlotZoom.h \
+    ItemNavigator.h \
+    ItemPropertiesWidget.h \
     UnitTextBox.h \
     UnitTextBox3.h \
     XString.h \
@@ -239,6 +243,7 @@ FORMS += \
     Options.ui \
     aboutdialog.ui \
     gridgenerator.ui \
+    itempropertieswidget.ui \
         mainwindow.ui \
     runtimewindow.ui \
     plotter.ui \
@@ -294,5 +299,7 @@ macx {
      INCLUDEPATH += $$PWD/../Armadillo/include/
      DEPENDPATH += $$PWD/../Armadillo
 }
+
+RESOURCES +=
 
 

@@ -8,7 +8,10 @@
 
 #include <map>
 #include <unordered_map>
+#include <map>
 #include <Quan.h>
+
+#define unordered_map map
 
 class Object;
 

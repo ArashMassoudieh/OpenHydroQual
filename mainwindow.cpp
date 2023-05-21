@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.1.12"
-#define last_modified "January, 24, 2023"
+#define openhydroqual_version "1.1.13"
+#define last_modified "April, 28, 2023"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -108,11 +108,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAddPlugin,SIGNAL(triggered()),this,SLOT(addplugin()));
     connect(ui->actionAdd_plugin,SIGNAL(triggered()),this,SLOT(adddefaultpluging()));
     connect(ui->actionOptions,SIGNAL(triggered()),this,SLOT(optionsdialog()));
-    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
-    connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
 
-    ui->tableView->setItemDelegateForColumn(1,new Delegate(this,this));
+    connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
+    PropertiesWidget = new ItemPropertiesWidget(ui->dockWidgetContents_3);
+    PropertiesWidget->tableView()->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->verticalLayout->addWidget(PropertiesWidget);
+    connect(PropertiesWidget->tableView(), SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
+
+    PropertiesWidget->tableView()->setItemDelegateForColumn(1,new Delegate(this,this));
     Populate_General_ToolBar();
     readRecentFilesList();
     undoData = UndoData(this);
@@ -180,7 +183,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::tablePropShowContextMenu(const QPoint&pos)
 {
-    QModelIndex i1 = ui->tableView->indexAt(pos);
+    QModelIndex i1 = PropertiesWidget->tableView()->indexAt(pos);
     int row = i1.row();
     QModelIndex i2 = i1.sibling(row, 1);
     tableitemrightckicked = i2;
@@ -200,49 +203,49 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
             estimatesMenu->setEnabled(true);
         }
 
-        menu->exec(ui->tableView->mapToGlobal(pos));
+        menu->exec(PropertiesWidget->tableView()->mapToGlobal(pos));
     }
     if (i1.column() == 1)
     {
         menu = std::unique_ptr<QMenu>(new QMenu(this));
 
-        if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("ComboBox"))
+        if (PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("ComboBox"))
         {
             QAction* action = menu->addAction("Clear");
             connect(action,SIGNAL(triggered()),this, SLOT(clearcombobox()));
-            menu->exec(ui->tableView->mapToGlobal(pos));
+            menu->exec(PropertiesWidget->tableView()->mapToGlobal(pos));
         }
-        if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("DateTime"))
+        if (PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("DateTime"))
         {
             QAction* action = menu->addAction("Insert in numeric format");
             connect(action,SIGNAL(triggered()),this, SLOT(insertnumberasdate()));
-            menu->exec(ui->tableView->mapToGlobal(pos));
+            menu->exec(PropertiesWidget->tableView()->mapToGlobal(pos));
         }
-        if (ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("Browser"))
+        if (PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::TypeRole).toString().contains("Browser"))
         {
             QAction* action = menu->addAction("Plot");
             connect(action,SIGNAL(triggered()),this, SLOT(PlotTimeSeries()));
-            menu->exec(ui->tableView->mapToGlobal(pos));
+            menu->exec(PropertiesWidget->tableView()->mapToGlobal(pos));
         }
     }
 }
 
 void MainWindow::clearcombobox()
 {
-    ui->tableView->model()->setData(tableitemrightckicked, "");
+    PropertiesWidget->tableView()->model()->setData(tableitemrightckicked, "");
 }
 
 void MainWindow::insertnumberasdate()
 {
-    double x = QInputDialog::getDouble(this,"Date/Time Value: ","Date/Time value", ui->tableView->model()->data(tableitemrightckicked).toDouble(),0,20000,2);
-    ui->tableView->model()->setData(tableitemrightckicked, QString::number(x));
+    double x = QInputDialog::getDouble(this,"Date/Time Value: ","Date/Time value", PropertiesWidget->tableView()->model()->data(tableitemrightckicked).toDouble(),0,20000,2);
+    PropertiesWidget->tableView()->model()->setData(tableitemrightckicked, QString::number(x));
 }
 
 void MainWindow::PlotTimeSeries()
 {
-    QString timeseriesfilename = ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::fullFileNameRole).toString();
-    QString objectname = ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::ObjectName).toString();
-    QString varname = ui->tableView->model()->data(tableitemrightckicked,CustomRoleCodes::VariableName).toString();
+    QString timeseriesfilename = PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::fullFileNameRole).toString();
+    QString objectname = PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::ObjectName).toString();
+    QString varname = PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::VariableName).toString();
 
     if (GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries() != nullptr)
     {
@@ -257,7 +260,7 @@ void MainWindow::PlotTimeSeries()
 void MainWindow::addParameter(QAction* item)
 {
     QString parameter = item->text();
-    ui->tableView->model()->setData(tableitemrightckicked, parameter, CustomRoleCodes::setParamRole);
+    PropertiesWidget->tableView()->model()->setData(tableitemrightckicked, parameter, CustomRoleCodes::setParamRole);
     menu->hide();
     menu->setVisible(false);
 
@@ -1350,10 +1353,39 @@ void MainWindow::PopulatePropertyTable(QuanSet* quanset)
     if (propmodel != nullptr)
         delete  propmodel;
     if (quanset!=nullptr)
-        propmodel = new PropModel(quanset,this,this);
+    {   propmodel = new PropModel(quanset,this,this);
+        SetPropertyWindowTitle(QString::fromStdString(quanset->Parent()->GetName())+":"+QString::fromStdString(quanset->Description()));
+        QString iconfilename;
+        if (quanset->IconFileName()!="")
+        {
+            if (QString::fromStdString(quanset->IconFileName()).contains("/"))
+            {
+                if (!QFile::exists(QString::fromStdString(quanset->IconFileName())))
+                    LogError("Icon file '" + QString::fromStdString(quanset->IconFileName()) + "' was not found!");
+                else
+                    iconfilename = QString::fromStdString(quanset->IconFileName());
+            }
+            else
+            {
+                if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + quanset->IconFileName())))
+                    LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + quanset->IconFileName() + "' was not found!"));
+                else
+                    iconfilename = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + quanset->IconFileName());
+            }
+
+            SetPropertyWindowIcon(iconfilename);
+        }
+        else
+            SetPropertyWindowIcon("");
+    }
     else
         propmodel = nullptr;
-    ui->tableView->setModel(propmodel);
+    PropertiesWidget->tableView()->setModel(propmodel);
+}
+
+void MainWindow::SetPropertyWindowIcon(const QString &iconfilename)
+{
+    PropertiesWidget->setIcon(iconfilename);
 }
 
 void MainWindow::Populate_General_ToolBar()
@@ -1790,6 +1822,14 @@ void MainWindow::RecreateGraphicItemsFromSystem(bool zoom_all)
         onzoomall(true);
 }
 
+void MainWindow::SetPropertyWindowTitle(const QString &title)
+{
+    int width = ui->dockWidget_3->size().width();
+    PropertiesWidget->SetTitleText(title);
+
+
+}
+
 void MainWindow::onrunmodel()
 {
     onsave();
@@ -1817,20 +1857,46 @@ void MainWindow::onrunmodel()
     if (copiedsystem.OutputFileName() != "")
     {
         if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
-            copiedsystem.GetOutputs().writetofile(copiedsystem.OutputFileName());
+            if (copiedsystem.WriteIntermittently())
+                copiedsystem.GetOutputs().appendtofile(copiedsystem.OutputFileName(),true);
+            else
+                copiedsystem.GetOutputs().writetofile(copiedsystem.OutputFileName());
         else
-            copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName());
+            if (copiedsystem.WriteIntermittently())
+                copiedsystem.GetOutputs().appendtofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName(),true);
+            else
+                copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName());
     }
     if (copiedsystem.ObservedOutputFileName() != "")
     {
         if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
-            copiedsystem.GetObservedOutputs().writetofile(copiedsystem.ObservedOutputFileName());
+            if (copiedsystem.WriteIntermittently())
+                copiedsystem.GetObservedOutputs().appendtofile(copiedsystem.ObservedOutputFileName(),true);
+            else
+                copiedsystem.GetObservedOutputs().writetofile(copiedsystem.ObservedOutputFileName());
+
         else
-            copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
+            if (copiedsystem.WriteIntermittently())
+                copiedsystem.GetObservedOutputs().appendtofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName(),true);
+            else
+                copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
     }
 
     copiedsystem.ObjectiveFunctionSet()->GetTimeSeriesSet().writetofile(workingfolder.toStdString() + "/Objective_Function_TimeSeries.txt");
+    if (copiedsystem.WriteIntermittently())
+    {
+        if (copiedsystem.OutputFileName() != "")
+        {   if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
+                copiedsystem.GetOutputs().ReadContentFromFile(copiedsystem.OutputFileName(),true);
+            else
+                copiedsystem.GetOutputs().ReadContentFromFile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName(),true);
+        }
 
+        if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
+            copiedsystem.GetObservedOutputs().ReadContentFromFile(copiedsystem.ObservedOutputFileName(),true);
+        else
+            copiedsystem.GetObservedOutputs().ReadContentFromFile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName(),true);
+    }
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();

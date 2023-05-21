@@ -276,8 +276,29 @@ QVariant Edge::itemChange(GraphicsItemChange change, const QVariant &value)
     switch (change) {
     case QGraphicsItem::ItemSelectedChange:
         if (value==true)
-            parent->mainWindow()->PopulatePropertyTable(object()->GetVars());
-        break;
+        {   parent->mainWindow()->PopulatePropertyTable(object()->GetVars());
+            parent->mainWindow()->SetPropertyWindowTitle(QString::fromStdString(object()->GetName())+":"+QString::fromStdString(object()->GetVars()->Description()));
+            QString iconfilename;
+            if (object()->GetVars()->IconFileName()!="")
+            {
+                if (QString::fromStdString(object()->GetVars()->IconFileName()).contains("/"))
+                {
+                    if (QFile::exists(QString::fromStdString(object()->GetVars()->IconFileName())))
+                        iconfilename = QString::fromStdString(object()->GetVars()->IconFileName());
+                }
+                else
+                {
+                    if (QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + object()->GetVars()->IconFileName())))
+                        iconfilename = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + object()->GetVars()->IconFileName());
+                }
+
+                parent->mainWindow()->SetPropertyWindowIcon(iconfilename);
+            }
+        }
+        else
+        {   parent->mainWindow()->SetPropertyWindowTitle("");
+            parent->mainWindow()->SetPropertyWindowIcon("");
+        }
     default:
         break;
     }
@@ -299,3 +320,49 @@ QColor Edge::GetColor(const string &clrstring)
 
     return clr;
 }
+
+QPainterPath Edge::shape() const {
+    auto path = QPainterPath{};
+
+    auto line = QLineF{sourcePoint, destPoint};
+
+    if (qFuzzyCompare(line.length(), qreal(0.))) {
+        path.addRect(boundingRect());
+        return path;
+    }
+
+    auto polygon = QPolygonF{};
+
+    if (std::abs(line.dx()) > std::abs(line.dy())) {
+        auto half_height = parent->linkthickness + arrowSize;
+
+        // Points 1 and 2
+        polygon.append({sourcePoint.x(), sourcePoint.y() - half_height});
+        polygon.append({sourcePoint.x(), sourcePoint.y() + half_height});
+
+        // Points 3 and 4
+        polygon.append({destPoint.x(), destPoint.y() + half_height});
+        polygon.append({destPoint.x(), destPoint.y() - half_height});
+
+        // Point 5 = point 1
+        polygon.append({sourcePoint.x(), sourcePoint.y() - half_height});
+    } else {
+        auto half_width = parent->linkthickness + arrowSize;
+
+        // Points 1 and 2
+        polygon.append({sourcePoint.x() - half_width, sourcePoint.y()});
+        polygon.append({sourcePoint.x() + half_width, sourcePoint.y()});
+
+        // Points 3 and 4
+        polygon.append({destPoint.x() + half_width, destPoint.y()});
+        polygon.append({destPoint.x() - half_width, destPoint.y()});
+
+        // Point 5 = point 1
+        polygon.append({sourcePoint.x() - half_width, sourcePoint.y()});
+    }
+
+    path.addPolygon(polygon);
+    return path;
+}
+
+

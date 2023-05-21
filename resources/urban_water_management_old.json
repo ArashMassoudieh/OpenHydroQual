@@ -439,5 +439,40 @@
       "type": "string",
       "default": "0,0,200"
     }
+  }, 
+  "Transfer to groundwater": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Transfer to groundwater",
+    "icon": {
+      "filename": "Water_Transfer_to_Groundwater.png"
+    },
+      "maximum_transfer_rate": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Maximum transfer rate",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+	  "unit": "m~^3/day"
+    },
+	"source_treshold_storage": {
+      "type": "value",
+      "description": "Source minimum storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+	  "unit": "m~^3"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "maximum_transfer_rate*_hsd(Storage.s-source_treshold_storage)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    }
   }
 }

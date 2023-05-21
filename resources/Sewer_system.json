@@ -87,10 +87,17 @@
       "criteria": "length>0",
       "warningmessage": "Length must be greater than zero"
     },
-    "area": {
+    "xsectionarea": {
       "type": "expression",
       "expression": "diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
-      "description": "Cross-sectional area",
+      "description": "Flow cross-sectional area",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "length*diameter",
+      "description": "Planeview area",
       "ask_user": "false",
       "includeinoutput": "true"
     },
@@ -308,7 +315,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "_max(_bkw(head;area);0)",
+      "expression": "_max(_bkw(head;xsectionarea);0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -359,7 +366,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "_max(area.s;0)",
+      "expression": "_max(xsectionarea.s;0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -455,7 +462,7 @@
     "area_1": {
       "type": "expression",
       "description": "Upstream cross-sectional area",
-      "expression": "_max(area.s;0)",
+      "expression": "_max(xsectionarea.s;0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },

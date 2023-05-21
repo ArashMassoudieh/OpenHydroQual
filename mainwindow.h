@@ -13,6 +13,7 @@
 #include "logwindow.h"
 #include "aboutdialog.h"
 #include "undodata.h"
+#include "ItemPropertiesWidget.h"
 
 #ifdef windows_version
     #define RESOURCE_DIRECTORY qApp->applicationDirPath().toStdString()+"/../../resources"
@@ -45,6 +46,7 @@ public:
     UndoData undoData;
     void PopulatePropertyTable(QuanSet* quanset);
     void RecreateGraphicItemsFromSystem(bool zoom_all=true);
+    void SetPropertyWindowTitle(const QString &title);
     void RefreshTreeView();
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);
@@ -64,6 +66,7 @@ public:
     void InactivateRedo(bool yes=true);
     void AddStatetoUndoData();
     void SetActiveUndo();
+    void SetPropertyWindowIcon(const QString &iconfilename);
     QString* GetWorkingFolder()
     {
         return &workingfolder;
@@ -103,6 +106,7 @@ private:
     void saveSceneToSvg(const QString &filename);
     bool CreateFileIfDoesNotExist(QString fileName);
     QAction* actionrun = nullptr;
+    ItemPropertiesWidget *PropertiesWidget = nullptr;
 private slots:
     void on_check_object_browser();
     void on_check_showlogwindow();

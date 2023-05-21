@@ -63,6 +63,29 @@
       "criteria": "K_sat_scale_factor>0",
       "warningmessage": "Hydraulic conductivity scale factor must be greater than zero"
     },
+	 "MC_to_EC_exponent": {
+      "type": "value",
+      "description": "beta in EC = alpha*Se^beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0"
+    },
+	"MC_to_EC_coefficient": {
+      "type": "value",
+      "description": "alpha in EC = alpha*Se^beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0"
+    },
+	"Electrical_Conductivity": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "expression" : "MC_to_EC_coefficient*_pos(Se)^MC_to_EC_exponent",
+      "description": "Electric Conductivity",
+      "ask_user": "false"
+    },
     "K_sat_original": {
       "type": "value",
       "description": "Saturated Hydraulc Conductivity",
@@ -481,10 +504,18 @@
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "(head.s-head.e)*K_eff/length*area",
+      "expression": "(head.s-_max(outlet_head;head.e))*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
+    },
+     "outlet_head": {
+      "type": "value",
+      "description": "Outlet head",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
     },
     "color": {
       "type": "string",

@@ -87,6 +87,7 @@ namespace aquiutils
     };
     template<typename T> bool isfinite(T arg);
     bool FileExists(const std::string& name);
+    double mod(double x, double y);
 
 
 }

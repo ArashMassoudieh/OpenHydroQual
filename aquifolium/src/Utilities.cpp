@@ -12,7 +12,7 @@ namespace aquiutils
                 return i;
         return -1;
     }
-
+    
     int lookup(const vector<int> &s, const int &s1, bool backward)
     {
         if (!backward)
@@ -631,6 +631,12 @@ namespace aquiutils
         return f.good();
     }
 
+    double mod(double x, double y)
+    {
+        return x - int(x/y)*y;
+    }
+
 }
+
 
 

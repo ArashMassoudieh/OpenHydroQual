@@ -1,5 +1,6 @@
 #include "System.h"
 #include <fstream>
+#include <qstring.h>
 #pragma warning(pop)
 #pragma warning(disable : 4996)
 #include <json/json.h>
@@ -16,6 +17,7 @@
 #ifdef Q_version
     #include <QDebug>
 #endif
+
 
 
 
@@ -708,6 +710,9 @@ bool System::Solve(bool applyparameters)
                 if (GetSolutionLogger())
                     GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
             }
+            if (SimulationParameters.write_outputs_intermittently)
+                if (aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart,SimulationParameters.write_interval)<aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart-SolverTempVars.dt,SimulationParameters.write_interval))
+                    WriteOutPuts();
             QCoreApplication::processEvents();
             //cout<<"Processes Events...";
         }
@@ -924,6 +929,16 @@ bool System::SetProp(const string &s, const double &val)
     {   SimulationParameters.tend = val; return true;}
     if (s=="tend")
     {   SimulationParameters.dt0 = val; return true;}
+    if (s=="write_intermittently")
+    {
+        SimulationParameters.write_outputs_intermittently = bool(val);
+        return true;
+    }
+    if (s=="write_interval")
+    {
+        SimulationParameters.write_interval = val;
+        return true;
+    }
 
     errorhandler.Append("","System","SetProp","Property '" + s + "' was not found!", 621);
     return false;
@@ -1027,6 +1042,20 @@ bool System::SetProperty(const string &s, const string &val)
             SolverSettings.write_solution_details = true;
         else
             SolverSettings.write_solution_details = false;
+        return true;
+    }
+    if (s=="write_intermittently")
+    {
+        if(aquiutils::trim(aquiutils::tolower(val))=="yes")
+            SimulationParameters.write_outputs_intermittently = true;
+        else
+            SimulationParameters.write_outputs_intermittently = false;
+        return true;
+    }
+    if (s=="write_interval")
+    {
+
+        SimulationParameters.write_interval = aquiutils::atof(val);
         return true;
     }
 
@@ -1648,8 +1677,13 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             {
                 SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": number of iterations exceeded the maximum threshold, state_variable:" + aquiutils::numbertostring(statevarno));
                 if (GetSolutionLogger())
-                {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
-                    GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
+                {   if (!transport)
+                    {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
+                        GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
+                    }
+                    else
+                        GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at state variable '" + aquiutils::numbertostring(F.abs_max_elems())+"', dt = "  + aquiutils::numbertostring(dt()));
+
                     GetSolutionLogger()->WriteString("Error criteria number: " + aquiutils::numbertostring(err/(err_ini+1e-10*X_norm)));
                     GetSolutionLogger()->WriteString("X_norm: " + aquiutils::numbertostring(X_norm));
                     GetSolutionLogger()->WriteString("Block outflow factors: " + GetBlocksOutflowFactors(Expression::timing::present).toString());
@@ -2999,6 +3033,7 @@ System::System(Script& scr)
 bool System::CreateFromScript(Script& scr, const string& settingsfilename)
 {
     bool success = true;
+
     for (int i=0; i<scr.CommandsCount(); i++)
     {
         if (!scr[i]->Execute(this))
@@ -3009,7 +3044,7 @@ bool System::CreateFromScript(Script& scr, const string& settingsfilename)
         }
         if (scr[i]->Keyword() == "loadtemplate")
         {
-            if (settingsfilename!="")
+            if (settingsfilename != "")
                 ReadSystemSettingsTemplate(settingsfilename);
         }
     }
@@ -3879,4 +3914,45 @@ void System::PopulateFunctionOperators()
     func_operators.opts.push_back(";");
     func_operators.opts.push_back("/");
     func_operators.opts.push_back("^");
+}
+
+bool System::WriteOutPuts()
+{
+    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
+    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
+    if (OutputFileName() != "")
+    {
+        if (QString::fromStdString(OutputFileName()).contains("/") || QString::fromStdString(OutputFileName()).contains("\\"))
+            if (SolverTempVars.first_write)
+                GetOutputs().writetofile(OutputFileName());
+            else
+                GetOutputs().appendtofile(OutputFileName());
+        else
+            if (SolverTempVars.first_write)
+                GetOutputs().writetofile(paths.inputpath + "/" + OutputFileName());
+            else
+                GetOutputs().appendtofile(paths.inputpath + "/" + OutputFileName());
+    }
+    if (ObservedOutputFileName() != "")
+    {
+        if (QString::fromStdString(ObservedOutputFileName()).contains("/") || QString::fromStdString(ObservedOutputFileName()).contains("\\"))
+            if (SolverTempVars.first_write)
+                GetObservedOutputs().writetofile(ObservedOutputFileName());
+            else
+                GetObservedOutputs().appendtofile(ObservedOutputFileName(),true);
+        else
+            if (SolverTempVars.first_write)
+                GetObservedOutputs().writetofile(paths.inputpath + "/" + ObservedOutputFileName());
+            else
+                GetObservedOutputs().appendtofile(paths.inputpath + "/" + ObservedOutputFileName(),true);
+    }
+
+    GetOutputs().clearContentsExceptLastRow();
+    GetObservedOutputs().clearContentsExceptLastRow();
+
+
+    SolverTempVars.first_write = false;
+    if (SolverTempVars.first_write)
+        errorhandler.Write(paths.inputpath + "/errors.txt");
+    return true;
 }

@@ -140,6 +140,7 @@ class Object
         string GetCurrentCorrespondingConstituent() {return current_corresponding_constituent; }
         object_type ObjectType() {return Object_Type;}
         void SetObjectType(object_type typ) {Object_Type = typ;}
+
     protected:
 
     private:
