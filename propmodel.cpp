@@ -77,15 +77,9 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                     }
                     else if (quanset->GetVarAskable(index.row())->Delegate()=="UnitBox" && quanset->GetVarAskable(index.row())->Units()!="")
                     {
-                        qDebug()<<1;
                         double coefficient = XString::coefficient(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()));
-                        qDebug()<<2;
-                        qDebug()<<"Coefficient: " << coefficient;
-                        qDebug()<<QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
                         double value = atof(quanset->GetVarAskable(index.row())->GetProperty(true).c_str())/coefficient;
-                        qDebug()<<3;
                         return QString::number(value) + "["+XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()))+"]";
-                        qDebug()<<4;
                     }
                     else
                     {
@@ -112,7 +106,6 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                 {
                     if (quanset->GetVarAskable(index.row())->Delegate()=="expressionEditor")
                     {
-                        //qDebug()<<"In propmodel: " << QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(false));
                     }
                     else
@@ -142,8 +135,12 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
            return QBrush(Qt::lightGray);
        break;
    case Qt::CheckStateRole:
-       //if (row == 1 && col == 0) //add a checkbox to cell(1,0)
-       //    return Qt::Checked;
+       if (quanset->GetVarAskable(index.row())->Delegate()=="CheckBox" && col==1)
+       {   if (quanset->GetVarAskable(index.row())->GetVal()==1)
+               return Qt::CheckState::Checked;
+           else
+               return Qt::CheckState::Unchecked;
+       }
        break;
    case CustomRoleCodes::UnitsListRole:
        return  XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Units())).split(";");
