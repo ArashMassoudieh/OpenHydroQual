@@ -542,5 +542,41 @@
       "type": "string",
       "default": "0,0,180"
     }
-  }
+  },
+  "aggregate2aggregate_H_Link": {
+	    "type": "link",
+	    "typecategory": "Connectors",
+	    "icon": {
+	      "filename": "aggregate2aggregate_H.png"
+	    },
+	    "description": "Aggregate to aggregate horizontal link",
+	    "area": {
+	      "type": "value",
+	      "description": "Interface area",
+	      "delegate": "UnitBox",
+	      "unit": "m~^2;ft~^2",
+	      "includeinoutput": "false",
+	      "ask_user": "true"
+	    },
+	    "length": {
+	      "type": "value",
+	      "description": "Lenght",
+	      "delegate": "UnitBox",
+	      "unit": "m;ft",
+	      "includeinoutput": "false",
+	      "ask_user": "true"
+	    },
+	    "flow": {
+	      "type": "expression",
+	      "description": "Flow",
+	      "expression": "(head.s-head.e)*(K_sat.s+K_sat.e)/(2*length*area)",
+	      "includeinoutput": "true",
+	      "applylimit": "true",
+	      "ask_user": "false"
+	    },
+	    "color": {
+	      "type": "string",
+	      "default": "130,20,220"
+	    }
+	  }
 }
