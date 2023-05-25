@@ -77,7 +77,7 @@ bool Plotter::PlotData(const CTimeSeries<timeseriesprecision>& BTC, bool allowti
     plot->clearGraphs();
     QVector<double> x, y; // initialize with entries 0..100
     format.push_back(plotformat());
-    if (format[format.size()-1].xAxisTimeFormat && ((BTC.GetT(BTC.n - 1) - BTC.GetT(0)) < 5 || BTC.GetT(BTC.n - 1)< 18264))
+    if (format[format.size()-1].xAxisTimeFormat && (BTC.GetT(BTC.n - 1)< 18264))
         format[format.size()-1].xAxisTimeFormat = false;
 
     if (!allowtime)
@@ -426,7 +426,7 @@ bool Plotter::AddData(const CTimeSeries<timeseriesprecision>& BTC, bool allowtim
     plot->legend->setVisible(showlegend);
     QVector<double> x, y; // initialize with entries 0..100
     format.push_back(plotformat());
-    if (format[format.size()-1].xAxisTimeFormat && ((BTC.GetT(BTC.n - 1) - BTC.GetT(0)) < 5 || BTC.GetT(BTC.n - 1)< 18264))
+    if (format[format.size()-1].xAxisTimeFormat && (BTC.GetT(BTC.n - 1)< 18264))
         format[format.size()-1].xAxisTimeFormat = false;
 
     if (!allowtime)
