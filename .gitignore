@@ -248,3 +248,5 @@ terminal/OHQTerminal/x64/Debug/qmake/temp/
 terminal/OHQTerminal/x64/Release/qmake/temp/
 
 terminal/OHQConsole/x64/Debug/
+
+model_wizard_wasm_bin/debug/
