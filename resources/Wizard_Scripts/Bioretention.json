@@ -197,23 +197,6 @@
       "default": "3"
     },
     {
-      "name": "native_soil_lateral_nx",
-      "delegate": "SpinBox",
-      "question": "Number of cell columns adjacent to the bioswale",
-      "range": [
-        "1",
-        "5"
-      ],
-      "default": "3"
-    },
-    {
-      "name": "native_soil_width",
-      "delegate": "UnitBox",
-      "question": "The width of the soil medium adjacent to the bioswale",
-      "unit": "m",	
-      "default": "1"
-    },
-    {
       "name": "length",
       "delegate": "UnitBox",
       "question": "The total length of the bioswale",
@@ -381,9 +364,7 @@
         "length",
         "eng_soil_height",
         "eng_soil_width",
-        "depth_to_groundwater",
-        "native_soil_width",
-        "native_soil_lateral_nx"
+        "depth_to_groundwater"
       ],
       "criteria": [
         {
