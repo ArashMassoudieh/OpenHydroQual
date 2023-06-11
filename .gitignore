@@ -251,4 +251,18 @@ terminal/OHQConsole/x64/Debug/
 
 model_wizard_wasm_bin/debug/
 
-AppImage/
+
+
+AppImage/AppDir/AppRun
+
+AppImage/AppDir/etc/ld.so.conf.d/x86_64-linux-gnu.conf
+
+AppImage/AppDir/resources/
+
+AppImage/AppDir/runtime/compat/lib/x86_64-linux-gnu/
+
+AppImage/AppDir/
+
+*.AppImage
+
+*.zsync
