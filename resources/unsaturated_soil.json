@@ -39,9 +39,9 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
-	  "criteria": "theta_res<theta_sat<1",
-	  "default": "0.4",
-	  "warningmessage": "Saturated Moisture Content must be between 0 and 1 and larger than the residual moisture content"
+      "criteria": "theta_res<theta_sat<1",
+      "default": "0.4",
+      "warningmessage": "Saturated Moisture Content must be between 0 and 1 and larger than the residual moisture content"
     },
     "theta_res": {
       "type": "value",
@@ -49,9 +49,9 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
-	  "default": "0.05",
-	  "criteria": "0<theta_res<theta_sat",
-	  "warningmessage": "Residual Moisture Content must be between 0 and saturated  moisture content"
+      "default": "0.05",
+      "criteria": "0<theta_res<theta_sat",
+      "warningmessage": "Residual Moisture Content must be between 0 and saturated  moisture content"
     },
     "K_sat_scale_factor": {
       "type": "value",
@@ -63,26 +63,34 @@
       "criteria": "K_sat_scale_factor>0",
       "warningmessage": "Hydraulic conductivity scale factor must be greater than zero"
     },
-	 "MC_to_EC_exponent": {
+    "MC_to_EC_exponent": {
       "type": "value",
-      "description": "beta in EC = alpha*Se^beta",
+      "description": "beta in EC = alpha*(theta-theta_t)^beta",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
       "default": "0"
     },
-	"MC_to_EC_coefficient": {
+    "MC_to_EC_coefficient": {
       "type": "value",
-      "description": "alpha in EC = alpha*Se^beta",
+      "description": "alpha in EC = alpha*(theta-theta_t)^beta",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
       "default": "0"
     },
-	"Electrical_Conductivity": {
+    "MC_to_EC_Threshold_Moisture": {
+      "type": "value",
+      "description": "theta_t in EC = alpha*(theta-theta_t)^beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0"
+    },
+    "Electrical_Conductivity": {
       "type": "expression",
       "includeinoutput": "true",
-      "expression" : "MC_to_EC_coefficient*_pos(Se)^MC_to_EC_exponent",
+      "expression": "MC_to_EC_coefficient*_pos(theta-MC_to_EC_Threshold_Moisture)^MC_to_EC_exponent",
       "description": "Electric Conductivity",
       "ask_user": "false"
     },
@@ -100,11 +108,10 @@
     },
     "K_sat": {
       "type": "expression",
-      "expression" : "K_sat_original*K_sat_scale_factor",
+      "expression": "K_sat_original*K_sat_scale_factor",
       "description": "Scaled Saturated Hydraulic conductivity",
       "ask_user": "false",
-      "includeinoutput": "true",
-      "description": "Saturated Hydraulc Conductivity"
+      "includeinoutput": "true"
     },
     "bottom_elevation": {
       "type": "value",
@@ -114,22 +121,22 @@
       "unit": "m;ft",
       "estimate": "true"
     },
-      "area": {
+    "area": {
       "type": "value",
       "description": "Bottom Area of the soil block",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^2;ft~^2",
       "estimate": "true",
-	  "default": "1",
-	  "criteria": "area>0",
-	  "warningmessage": "Area must be greater than zero"
+      "default": "1",
+      "criteria": "area>0",
+      "warningmessage": "Area must be greater than zero"
     },
-	"volume": {
+    "volume": {
       "type": "expression",
-      "expression" : "depth*area",
+      "expression": "depth*area",
       "description": "volume",
-	  "includeinoutput": "true",
+      "includeinoutput": "true",
       "ask_user": "false"
     },
     "alpha": {
@@ -139,9 +146,9 @@
       "delegate": "UnitBox",
       "unit": "1/m;1/ft;1/cm",
       "estimate": "true",
-	  "default": "1",
-	  "criteria": "alpha>0",
-	  "warningmessage": "Van Genuchten's alpha must be greater than zero"
+      "default": "1",
+      "criteria": "alpha>0",
+      "warningmessage": "Van Genuchten's alpha must be greater than zero"
     },
     "n": {
       "type": "value",
@@ -156,13 +163,13 @@
     },
     "m": {
       "type": "expression",
-      "expression" : "1-(1/n)",
+      "expression": "1-(1/n)",
       "description": "Van Genuchten's m parameter",
       "ask_user": "false"
     },
     "theta": {
       "type": "expression",
-      "expression" : "Storage/(area*depth)",
+      "expression": "Storage/(area*depth)",
       "description": "Initial Moisture Content; Moisture Content",
       "ask_user": "true",
       "estimate": "true",
@@ -171,7 +178,7 @@
     },
     "Se": {
       "type": "expression",
-      "expression" : "_max(_min((theta-theta_res)/(theta_sat-theta_res);0.999);0.001)",
+      "expression": "_max(_min((theta-theta_res)/(theta_sat-theta_res);0.999);0.001)",
       "description": "Effective Moisture content",
       "ask_user": "false",
       "delegate": "ValueBox",
@@ -179,17 +186,17 @@
       "estimate": "true",
       "includeinoutput": "true"
     },
-    "specific_storage" : {
+    "specific_storage": {
       "type": "value",
       "description": "Specific storage",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "1/m;1/ft",
       "estimate": "true",
-	  "default": "0.01",
-	  "criteria": "specific_storage>0",
-	  "warningmessage": "Specific storage must be non-zero and positive"
-	},
+      "default": "0.01",
+      "criteria": "specific_storage>0",
+      "warningmessage": "Specific storage must be non-zero and positive"
+    },
     "pressure_head": {
       "type": "expression",
       "expression": "-_min((1/alpha)*(Se^(-1/m)-1)^(1/n);10000) + theta_sat*_pos((theta-theta_res)/(theta_sat-theta_res)-0.999)/specific_storage",
@@ -285,7 +292,7 @@
       "default": "120,120,0"
     }
   },
-    "soil_to_soil_H_link": {
+  "soil_to_soil_H_link": {
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
@@ -349,7 +356,7 @@
       "default": "120,120,0"
     }
   },
-"surfacewater_to_soil_link": {
+  "surfacewater_to_soil_link": {
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
@@ -511,7 +518,7 @@
       "applylimit": "true",
       "ask_user": "false"
     },
-     "outlet_head": {
+    "outlet_head": {
       "type": "value",
       "description": "Outlet head",
       "ask_user": "true",
@@ -566,7 +573,7 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
-	"Hydraulic_Gradient": {
+    "Hydraulic_Gradient": {
       "type": "value",
       "description": "Hydraulic Gradient",
       "includeinoutput": "true",
@@ -647,7 +654,7 @@
     },
     "K_sat": {
       "type": "expression",
-      "expression" : "K_sat_original*K_sat_scale_factor",
+      "expression": "K_sat_original*K_sat_scale_factor",
       "description": "Scaled Saturated Hydraulic conductivity",
       "ask_user": "false"
     },
