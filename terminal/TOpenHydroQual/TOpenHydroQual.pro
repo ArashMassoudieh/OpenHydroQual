@@ -1,5 +1,5 @@
 QT -= gui
-QT -= core
+QT += core widgets
 
 CONFIG += console
 CONFIG -= app_bundle

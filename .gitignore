@@ -266,3 +266,5 @@ AppImage/AppDir/
 *.AppImage
 
 *.zsync
+
+bin-console/Release/
