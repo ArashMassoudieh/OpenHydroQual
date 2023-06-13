@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "Vector.h"
 
 using namespace std;
 class CQuickSort
@@ -31,6 +32,8 @@ template <class T>
 vector<T> QSort(const vector<T> &V1)
 {
 
+    if (CVector(V1).max()==CVector(V1).min())
+        return V1;
     if (V1.size() <= 1) return V1;
     vector<T> V = V1;
     int end = V.size();
@@ -38,7 +41,7 @@ vector<T> QSort(const vector<T> &V1)
     vector<T> less, greater;
     greater.push_back(V[end - 1]);
     for (int i = 0; i<end - 1; i++)
-        if (V[i]<V[end - 1]) 
+        if (V[i]<=V[end - 1])
             less.push_back(V[i]);
         else 
             greater.push_back(V[i]);
