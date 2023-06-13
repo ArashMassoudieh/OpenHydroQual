@@ -34,7 +34,7 @@ class Quan
 
         string GetStringValue() {return _string_value;}
         Quan& operator=(const Quan& other);
-        enum class _type {constant, value, balance, expression, timeseries, prec_timeseries, global_quan, rule, source, string, not_assigned};
+        enum class _type {constant, value, balance, expression, timeseries, prec_timeseries, global_quan, rule, source, string, not_assigned, boolean};
         enum class _role {none, copytoblocks, copytolinks, copytosources, copytoreactions};
         double CalcVal(Object *, const Expression::timing &tmg=Expression::timing::past);
         double CalcVal(const Expression::timing &tmg=Expression::timing::past);

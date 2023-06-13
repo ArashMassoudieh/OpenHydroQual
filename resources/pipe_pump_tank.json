@@ -148,6 +148,13 @@
       "ask_user": "false",
       "default": "1"
     },
+    "closed": {
+      "type": "boolean",
+      "description": "Closed",
+      "ask_user": "true",
+      "delegate": "CheckBox",
+      "default": "0"
+    },
     "head_loss": {
       "type": "expression",
       "description": "Hydraulic Gradient",
@@ -158,7 +165,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow rate (m~^3/day)",
-      "expression": "300575*_sqt(-head_loss/K_factor)*diameter^2",
+      "expression": "300575*_sqt(-head_loss/K_factor)*diameter^2*(1-closed)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
