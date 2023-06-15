@@ -1,6 +1,6 @@
 #include "System.h"
 #include "Script.h"
-#include "qapplication.h"
+#include <QApplication>
 #include "qfileinfo.h"
 
  

@@ -102,6 +102,21 @@
 	      "expression": "concentration_dependence_rate_expression*release_coefficient*depth^exponent_of_depth"
     	    }
     	},
+    	"aging": {
+	    "type": "Reaction",
+	    "description": "Aging",
+	    "typecategory": "Reactions",
+	    "normalizing_quantity": "area",
+	    "icon": {
+	      "filename": "aging.png"
+	    },
+	    "rate_expression": {
+	      "description": "Rate Expression",
+	      "type": "expression",
+	      "ask_user": "true",
+	      "delegate": "expressionEditor"
+	    }
+	  },
     "Build up": {
 	    "type": "source",
 	    "typecategory": "Sources",

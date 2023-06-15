@@ -58,6 +58,8 @@ Quan::Quan(Json::ValueIterator &it)
         SetType(Quan::_type::value);
 	if ((*it)["type"].asString() == "string")
 		SetType(Quan::_type::string);
+    if ((*it)["type"].asString() == "boolean")
+        SetType(Quan::_type::boolean);
     if (it->isMember("includeinoutput"))
     {
         if ((*it)["includeinoutput"].asString()=="true")
@@ -220,6 +222,8 @@ Quan::Quan(QJsonObject& it)
 		}
 		if (it.value("type").toString() == "constant")
 			SetType(Quan::_type::constant);
+        if (it.value("type").toString() == "boolean")
+            SetType(Quan::_type::boolean);
         if (it.value("type").toString() == "expression")
         {
             SetType(Quan::_type::expression);
@@ -489,7 +493,7 @@ Quan& Quan::operator=(const Quan& rhs)
 
 double Quan::CalcVal(Object *block, const Expression::timing &tmg)
 {
-    if (type == _type::constant)
+    if (type == _type::constant || type== _type::boolean)
         return _val;
     if (type == _type::expression)
         return _expression.calc(block,tmg);
@@ -620,7 +624,7 @@ bool Quan::EstablishExpressionStructure()
 double Quan::CalcVal(const Expression::timing &tmg)
 {
 
-    if (type == _type::constant)
+    if (type == _type::constant || type == _type::boolean)
     {
         if (tmg==Expression::timing::past)
             return _val;
@@ -951,7 +955,6 @@ string Quan::GetProperty(bool force_value)
     //qDebug()<<QString::fromStdString(this->GetName());
     if (type == _type::balance || type== _type::constant || type==_type::global_quan || type==_type::value || (type==_type::expression && force_value))
     {
-        //qDebug()<<GetVal(Expression::timing::present);
         return aquiutils::numbertostring(GetVal(Expression::timing::present));
 
     }
@@ -981,6 +984,13 @@ string Quan::GetProperty(bool force_value)
     else if (type == _type::expression)
     {
         return this->GetExpression()->ToString();
+    }
+    else if (type == _type::boolean)
+    {
+        if (aquiutils::numbertostring(GetVal(Expression::timing::present))=="1")
+            return "Yes";
+        else
+            return "No";
     }
     return "";
 
@@ -1047,6 +1057,13 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
         else
             return false; 
 	}
+    if (type == _type::boolean)
+    {
+        if (val=="1")
+            SetVal(1,Expression::timing::both, check_criteria);
+        else
+            SetVal(0,Expression::timing::both, check_criteria);
+    }
     _string_value = val;
 
 

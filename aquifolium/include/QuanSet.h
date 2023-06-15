@@ -79,7 +79,10 @@ class QuanSet
         bool AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code);
 		string ObjectType; 
 		string& CategoryType() { return typecategory; }
-        string& Normalizing_Quantity() {return normalizing_quantity;}
+        string& Normalizing_Quantity()
+        {
+            return normalizing_quantity;
+        }
         vector<string>& Quantity_Order() {
             return quantity_order;
         }

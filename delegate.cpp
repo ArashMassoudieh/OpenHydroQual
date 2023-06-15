@@ -97,6 +97,10 @@ QWidget *Delegate::createEditor(QWidget *parent,
     if (delegateType.contains("CheckBox"))
     {
         QCheckBox *editor = new QCheckBox(parent);
+        if (index.data(Qt::DisplayRole).toString()=="Yes")
+            editor->setCheckState(Qt::CheckState::Checked);
+        else
+            editor->setCheckState(Qt::CheckState::Unchecked);
         return editor;
     }
     if (delegateType.contains("DirBrowser"))
@@ -165,10 +169,6 @@ void Delegate::setEditorData(QWidget *editor,
     {
         QString thisdate = index.model()->data(index, Qt::DisplayRole).toString();
         QDate date = QDate::fromString(thisdate, "MMM dd yyyy");
-        //qint64 selectedDate = index.model()->data(index, Qt::DisplayRole).toDouble();
-        //qint64 julianDate = xldate2julian(selectedDate);// currentDate += 2415020;// QDate(1900, 1, 1).toJulianDay();
-        //QDate date = QDate::fromJulianDay(julianDate);
-
         QDateEdit *textBox = static_cast<QDateEdit*>(editor);
         textBox->setDate(date);
         textBox->show();
@@ -221,7 +221,10 @@ void Delegate::setEditorData(QWidget *editor,
     if (delegateType.contains("CheckBox"))
     {
         QCheckBox *checkBox = static_cast<QCheckBox*>(editor);
-        checkBox->setCheckState((index.model()->data(index, Qt::CheckStateRole).toBool()) ? Qt::Checked : Qt::Unchecked);
+        if (index.data(Qt::DisplayRole).toString()=="Yes")
+            checkBox->setCheckState(Qt::CheckState::Checked);
+        else
+            checkBox->setCheckState(Qt::CheckState::Unchecked);
         return;
     }
     if (delegateType.contains("DirBrowser"))
@@ -336,6 +339,8 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     if (delegateType.contains("CheckBox"))
     {
         QCheckBox *checkBox = static_cast<QCheckBox*>(editor);
+        qDebug()<<model->data(index, Qt::CheckStateRole).toBool();
+        qDebug()<<checkBox->checkState();
         if (model->data(index, Qt::CheckStateRole).toBool() != checkBox->checkState())
             if (model->setData(index, (checkBox->checkState()) ? 1 : 0, Qt::EditRole))
                 mainwindow->AddStatetoUndoData();
