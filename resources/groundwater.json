@@ -74,9 +74,10 @@
     "moisture_content": {
       "type": "expression",
       "expression": "Storage/(depth*area)",      
-      "description": "Moisture content",
+      "description": "Initial Moisture Content; Moisture content",
       "ask_user": "true",
       "delegate": "ValueBox",
+      "estimate":"true",
       "includeinoutput": "true"
     },
     "head": {
