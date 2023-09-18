@@ -10,412 +10,227 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "inflow,ag_withdrawal,non_ag_withdrawal",
+      "inflow": "transpiration",
+      "initial_value_expression": "Biomass/1000000",
       "includeinoutput": "true",
-      "description": "Storage",
-      "initial_value_expression": "length*(base_width+side_slope*depth)*depth",
-      "ask_user": "false",
-      "estimate": "true"
+      "description": "Water Storage",
+      "ask_user": "false"
     },
-    "base_width": {
+    "Biomass": {
       "type": "value",
-      "description": "Base Width",
-      "ask_user": "true",
+      "includeinoutput": "true",
+      "description": "Initial Biomass; Biomass",
+      "unit": "kg;g",
+      "includeinoutput": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft;cm",
-      "estimate": "true"
+      "ask_user": "true"
     },
-    "side_slope": {
+    "Leaf_area_index": {
       "type": "value",
-      "description": "Side Slope",
-      "ask_user": "true",
+      "includeinoutput": "true",
+      "description": "Leaf area index",
       "delegate": "ValueBox",
-      "estimate": "true",
-      "criteria": "side_slope>0",
-      "warningmessage": "Side slope must be greater than zero"
+      "ask_user": "true"
     },
-    "ManningCoeff": {
-      "type": "value",
-      "description": "Manning's Roughness Coefficient",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "estimate": "true"
+    "solar_radiation":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Solar Radiation (W/m^2)",
+    	"ask_user": "true",
+	"delegate": "Browser"
     },
-    "bottom_elevation": {
-      "type": "value",
-      "description": "Bottom Elevation",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft;cm",
-      "estimate": "true"
+    "Temperature":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Temperature time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
     },
-    "depth": {
+    "wind_speed":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Wind time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "wind_scale_fact" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Wind scale factor",
+    	"default": "1",
+    	"delegate": "ValueBox",
+		"estimate": "true"
+    },
+    "solar_scale_fact" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Solar radiation scale factor",
+    	"default": "1",
+    	"delegate": "ValueBox",
+	"estimate": "true"
+    },
+    "R_h" : {
+    	"type": "timeseries",
+    	"includeinoutput": "true",
+	"description": "Relative humidity time series",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "z2" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Wind measurement elevation",
+    	"default": "2",
+    	"criteria": "z2>0",
+        "warningmessage": "Wind reference height must be greater than zero",
+    	"delegate": "UnitBox",
+    	"unit": "m;ft;cm;in"
+    },
+    "z0" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Roughness height",
+    	"default": "0.0003",
+    	"criteria": "z0>0",
+       "warningmessage": "Roughness height must be greater than zero",
+    	"delegate": "UnitBox",
+    	"unit": "m;ft;cm;in"
+    },
+    "gamma" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "psychrometric constant (Pa/C)",
+    	"default": "66.8",
+    	"criteria": "gamma>0",
+       "warningmessage": "psychrometric constant must be greater than zero",
+    	"delegate": "ValueBox"
+    },
+    "area" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Planted area",
+    	"default": "1",
+    	"criteria": "area>0",
+       "warningmessage": "planted area must be greater than zero",
+    	"delegate": "UnitBox",
+    	"unit": "m~^2; ft~^2"
+    },
+    "B": {
+    	"type": "expression",
+	"includeinoutput": "true",
+	"description": "B coefficient",
+	"ask_user": "false",
+	"expression": "0.000102*wind_speed*wind_scale_fact/(_log(z2/z0))^2"
+    },
+    "e_as": {
+    	"type": "expression",
+    	"expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
+	"includeinoutput": "true",
+	"description": "Saturated humidity"
+    },
+    "Ea": {
       "type": "expression",
-      "expression": "(-base_width+_sqt(base_width^2+4*side_slope*Storage/length))/(2*side_slope)",
-      "description": "Initial Water Depth; Water Depth",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft;cm",
       "includeinoutput": "true",
-      "criteria": "depth>-0.0000001",
-      "warningmessage": "Depth must be non-negative"
-    },
-    "head": {
-      "type": "expression",
-      "expression": "depth+bottom_elevation",      
-      "description": "Hydraulc Head",
+      "description": "Aerodynamic Evapotranspiration rate",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "expression": "B*e_as*(R_h-1)"
     },
-    "length": {
-      "type": "value",
-      "description": "Segment length",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft;cm",
-      "estimate": "true",
-      "criteria": "length>0",
-      "warningmessage": "Length must be greater than zero"
+    "l_v" :
+    {
+	"type": "expression",
+	"description": "Latent Heat of Evaporation (J/kg)",
+      	"expression": "2501000-2370*Temperature",
+	"ask_user": "false"
     },
-    "area": {
+    "Er": {
       "type": "expression",
-      "expression": "(base_width+side_slope*depth)*depth",
-      "description": "Cross-sectional area",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    },
-    "perimeter": {
-      "type": "expression",
-      "expression": "base_width+2*_sqt(1+side_slope^2)*depth",
-      "description": "Wetted Perimeter",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    },
-    "inflow": {
-      "type": "timeseries",
       "includeinoutput": "true",
-      "applylimit": "true",
-      "description": "Inflow time series",
-      "ask_user": "true",
-      "delegate": "Browser"
-    },
-    "ag_area": {
-      "type": "value",
-      "description": "Area of agriculural land",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m~^2",
-      "estimate": "true"
-    },
-    "non_ag_area": {
-      "type": "value",
-      "description": "Area of non-agriculural activity",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m~^2",
-      "estimate": "true"
-    },
-    "ag_withdrawal": {
-      "type": "expression",
-      "expression": "-ag_area*ag_withdrawal_per_unit_area*depth/(depth+0.05)",
-      "description": "Agricultural Withdrawal",
+      "description": "Radiation-based Evapotranspiration rate",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "expression": "-solar_scale_fact*solar_radiation/(l_v*1000)*86400"
     },
-    "non_ag_withdrawal": {
+    "Delta": {
       "type": "expression",
-      "expression": "-non_ag_area*non_ag_withdrawal_per_unit_area*depth/(depth+0.05)",
-      "description": "Non-Agricultural Withdrawal",
+      "includeinoutput": "true",
+      "description": "Gradient of e_as vs T",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "expression": "4098*e_as/(237.3+Temperature)"
     },
-	"ag_withdrawal_per_unit_area": {
-      "type": "timeseries",
+    "transpiration": {
+      "type": "expression",
       "includeinoutput": "true",
-      "applylimit": "true",
-      "description": "Agricultural Withdrawal per unit area",
-      "ask_user": "true",
-      "delegate": "Browser"
+      "description": "Transpiration rate",
+      "ask_user": "false",
+      "expression": "((Delta*Er/(Delta+gamma))+(gamma*Ea/(Delta+gamma)))*Storage*1000000/Biomass*Leaf_area_index*area"
     },
-    "non_ag_withdrawal_per_unit_area": {
-      "type": "timeseries",
+    "pressure_head": {
+      "type": "expression",
       "includeinoutput": "true",
-      "applylimit": "true",
-      "description": "Non-Agricultural Withdrawal per unit area",
-      "ask_user": "true",
-      "delegate": "Browser"
+      "description": "Pressure Head (m)",
+      "ask_user": "false",
+      "expression": "-plant_alpha*(1-Storage*1000000/Biomass)^plant_beta"
+    },
+    "plant_alpha" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Coefficient for calculating plant matric suction",
+    	"default": "1000",
+    	"delegate": "ValueBox",
+	"estimate": "true"
+    },
+    "plant_beta" : {
+    	"type": "value",
+    	"ask_user": "true",
+	"includeinoutput": "false",
+    	"description": "Exponent for calculating plant matric suction",
+    	"default": "2",
+    	"delegate": "ValueBox",
+	"estimate": "true"
     }
   },
-  "Trapezoidal_Channel_link": {
+  "Soil_to_plant_link":
+  {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Link from a channel segment to another",
     "icon": {
-      "filename": "Trapezoidal_Channel_Link.png"
+      "filename": "Soil2Plant.png"
     },
-    "area": {
-      "type": "expression",
-      "description": "Cross-sectional area",
-      "expression": "_max(_bkw(head;area);0)",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "perimeter": {
-      "type": "expression",
-      "description": "Wetted Perimeter",
-      "expression": "(perimeter.s+perimeter.e)/2",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "hydraulic_radious": {
-      "type": "expression",
-      "description": "Hydraulic Radius",
-      "expression": "area/perimeter",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "ManningCoeff": {
-      "type": "expression",
-      "description": "Manning's roughness coefficient",
-      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
-      "includeinoutput": "true",
-      "ask_user": "false"
+    "description": "Soil to Plant Connector",
+    "Transmissivity_Coefficient": {
+      "type": "value",
+      "description": "Transmissivity coefficient",
+      "delegate": "UnitBox",
+      "default": "1",
+      "unit": "1/day",
+      "ask_user": "true"
     },
     "length": {
-      "type": "expression",
-      "description": "Connector length",
-      "expression": "(length.s+length.e)/2",
-      "includeinoutput": "true",
+      "type": "value",
+      "description": "lenght",
+      "default": "1",
+      "unit": "m",
+      "includeinoutput": "false",
       "ask_user": "false"
     },
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "expression": "Transmissivity_Coefficient*(pressure_head.s-pressure_head.e)*(area.e+area.s)/2",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
-    }
-  },
-  "Fixedhead_to_channel": {
-    "type": "link",
-    "typecategory": "Connectors",
-    "description": "Link from a fixed head boundary to a channel segment",
-    "icon": {
-      "filename": "fixed2channel.png"
     },
-    "name": {
-      "description": "Name",
+    "color": {
       "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
-    },
-    "area": {
-      "type": "expression",
-      "description": "Cross-sectional area",
-      "expression": "(base_width.e+side_slope.e*_pos(head.s-bottom_elevation.e))*_pos(head.s-bottom_elevation.e)",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "perimeter": {
-      "type": "expression",
-      "description": "Wetted Perimeter",
-      "expression": "base_width.e+2*_sqt(1+side_slope.e^2)*_pos(head.s-bottom_elevation.e)",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "hydraulic_radious": {
-      "type": "expression",
-      "description": "Hydraulic Radius",
-      "expression": "area/perimeter",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "ManningCoeff": {
-      "type": "expression",
-      "description": "Manning's roughness coefficient",
-      "expression": "ManningCoeff.e",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "length": {
-      "type": "expression",
-      "description": "Connector length",
-      "expression": "length.e",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "flow": {
-      "type": "expression",
-      "description": "Flow",
-      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
-      "includeinoutput": "true",
-      "applylimit": "true",
-      "ask_user": "false"
-    }
-  },
-  "channel2fixed": {
-    "type": "link",
-    "typecategory": "Connectors",
-    "description": "Link from a channel segment to fixed head boundary",
-    "icon": {
-      "filename": "channel2fixed.png"
-    },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String" 
-    },
-    "area": {
-      "type": "expression",
-      "description": "Cross-sectional area",
-      "expression": "_max(area.s;0)",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "perimeter": {
-      "type": "expression",
-      "description": "Wetted Perimeter",
-      "expression": "perimeter.s",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "hydraulic_radious": {
-      "type": "expression",
-      "description": "Hydraulic Radius",
-      "expression": "area/perimeter",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "ManningCoeff": {
-      "type": "expression",
-      "description": "Manning's roughness coefficient",
-      "expression": "ManningCoeff.s",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "length": {
-      "type": "expression",
-      "description": "Connector length",
-      "expression": "length.s",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "flow": {
-      "type": "expression",
-      "description": "Flow",
-      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
-      "includeinoutput": "true",
-      "applylimit": "true",
-      "ask_user": "false"
-    }
-  },
-   "Sewer_channel_segment": {
-    "type": "block",
-    "typecategory": "Blocks",
-    "description": "Sewer Channel Segment", 
-    "icon": {
-      "filename": "Sewer_pipe.png"
-    },
-    "Storage": {
-      "type": "balance",
-      "massbalance": "true",
-      "flow": "flow",
-      "inflow": "inflow,ag_withdrawal,non_ag_withdrawal",
-      "includeinoutput": "true",
-      "description": "Storage",
-      "initial_value_expression": "length*diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
-      "ask_user": "false",
-      "estimate": "true"
-    },
-    "ManningCoeff": {
-      "type": "value",
-      "description": "Manning's Roughness Coefficient",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "estimate": "true"
-    },
-    "bottom_elevation": {
-      "type": "value",
-      "description": "Bottom Elevation",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft;cm",
-      "estimate": "true"
-    },
-    "diameter": {
-      "type": "value",
-      "description": "Diameter",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft;cm;in",
-      "estimate": "true",
-      "criteria": "diameter>0",
-      "warningmessage": "Diameter cannot be zero"
-    },
-    "depth": {
-      "type": "expression",
-      "expression": "normalized_depth*diameter",
-      "precalcbasedon": "Storage:log:0.000001:1000000",
-      "description": "Initial Water Depth; Water Depth",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft;cm",
-      "includeinoutput": "true",
-      "criteria": "depth>-0.0000001",
-      "warningmessage": "Depth must be non-negative"
-    },
-    "normalized_area": {
-      "type": "expression",
-      "expression": "Storage/(length*diameter^2)",
-      "description": "Normalized area",
-      "ask_user": "false"
-    },
-    "normalized_depth": {
-      "type": "expression",
-      "expression": "2.2298958*normalized_area^3-2.7110899*normalized_area^2+2.027012721*normalized_area",
-      "description": "Normalized water depth",
-      "ask_user": "false"
-    },
-    "head": {
-      "type": "expression",
-      "expression": "depth+bottom_elevation+_pos(depth-diameter)*10000",      
-      "description": "Hydraulc Head",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    },
-    "length": {
-      "type": "value",
-      "description": "Segment length",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft;cm",
-      "estimate": "true",
-      "criteria": "length>0",
-      "warningmessage": "Length must be greater than zero"
-    },
-    "area": {
-      "type": "expression",
-      "expression": "diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
-      "description": "Cross-sectional area",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    },
-    "perimeter": {
-      "type": "expression",
-      "expression": "diameter*(5.486583*(depth/diameter)^3-8.60202*(depth/diameter)^2+6.1081605*(depth/diameter))",
-      "description": "Wetted Perimeter",
-      "ask_user": "false",
-      "includeinoutput": "true"
-    },
-    "inflow": {
-      "type": "timeseries",
-      "includeinoutput": "true",
-      "applylimit": "true",
-      "description": "Inflow time series",
-      "ask_user": "true",
-      "delegate": "Browser"
+      "default": "120,120,0"
     }
   }
 }
+
