@@ -212,6 +212,17 @@
       "precalcbasedon": "theta::0:1",
       "ask_user": "false",
       "includeinoutput": "true"
+    },
+    "aniso_ratio":{
+      "type": "value",
+      "description": "Anisotropy ratio Kx/Ky",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "unit": "",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "aniso_ratio>-0.000001",
+      "warningmessage": "Anisotropy ratio cannot be negative"
     }
   },
   "soil_to_soil_link": {
@@ -332,7 +343,7 @@
     "K_sat": {
       "type": "expression",
       "description": "Saturated Hydraulic Conductivity",
-      "expression": "0.5*(K_sat.s+K_sat.e)",
+      "expression": "0.5*(K_sat.s*aniso_ratio.s+K_sat.e*aniso_ratio.e)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
