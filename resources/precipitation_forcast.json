@@ -296,7 +296,7 @@
     "valve_K": {
       "type": "expression",
       "description": "Headloss coefficient for valve",
-      "includeinoutput": "false",
+      "includeinoutput": "true",
       "expression": "flow_scale/(kernel_smoothed_forcast+0.0000001)"
     },
      "flow_scale": {
