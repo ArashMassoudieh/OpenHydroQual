@@ -88,6 +88,7 @@ class QuanSet
         }
         vector<string> ReviseQuanityOrder(const vector<string> &quantity, const string &constituent);
         bool InitializePrecalcFunctions();
+        void CreateCPPcode(const string &source, const string header);
     protected:
 
     private:

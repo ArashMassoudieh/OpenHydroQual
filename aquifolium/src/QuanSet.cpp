@@ -2,7 +2,7 @@
 #include "Object.h"
 #include "System.h"
 #include <json/json.h>
-
+#include <list>
 
 #ifdef Q_version
     #include <QDebug>
@@ -636,5 +636,35 @@ bool QuanSet::RenameConstituents(const string &oldname, const string &newname)
     }
 
     return succeed;
+}
+
+void QuanSet::CreateCPPcode(const string &source, const string header)
+{
+    ofstream sourcefile(source);
+    ofstream headerfile(header);
+
+    headerfile<<"class "<<this->Name()<<"\n";
+    headerfile<<"{\n";
+    headerfile<<"public:"<<"\n";
+    headerfile<<"\t"<<this->Name()<<"();\n";
+    headerfile<<"\tvirtual ~"<<this->Name()<<"();\n";
+    headerfile<<"\t"<<this->Name()<<"(const "<<this->Name()<<"& other);\n";
+    for (map<string,Quan>::iterator it=begin(); it!=end(); it++)
+    {
+        if (it->second.GetType()==Quan::_type::expression)
+        {
+            headerfile<<"\tdouble "<<it->first<<"() const;\n";
+        }
+    }
+    for (map<string,Quan>::iterator it=begin(); it!=end(); it++)
+    {
+        if (it->second.GetType()==Quan::_type::value)
+        {
+            headerfile<<"\tdouble "<<it->first<<";\n";
+        }
+    }
+    headerfile<<"}\n";
+    headerfile.close();
+    sourcefile.close();
 }
 
