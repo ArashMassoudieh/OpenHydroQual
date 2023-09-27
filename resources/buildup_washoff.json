@@ -102,6 +102,110 @@
 	      "expression": "concentration_dependence_rate_expression*release_coefficient*depth^exponent_of_depth"
     	    }
     	},
+	  "surface_release_threshold_precip_based": {
+	    "type": "Reaction",
+	    "description": "Release from surface (Threshold based on precipitation)",
+	    "normalizing_quantity": "area",
+	    "typecategory": "Reactions",
+	    "icon": {
+	      "filename": "surface_release.png"
+	    },
+	    "concentration_dependence_rate_expression": {
+	      "description": "Concentration dependence function",
+	      "type": "expression",
+	      "helptext": "This expression indicates the dependence of the release rate to the concentration of attached constituent per surface area",
+	      "ask_user": "true",
+	      "delegate": "expressionEditor"
+	    },
+	    "release_coefficient": {
+	      "description": "Release coefficient",
+	      "type": "value",
+	      "ask_user": "true",
+	      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
+	      "role": "copytoblocks",
+	      "estimate": "true",
+	      "default": "1"
+	    },
+		"i_min": {
+	      "description": "Threshold Precipitation",
+	      "type": "value",
+	      "ask_user": "true",
+	      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
+	      "role": "copytoblocks",
+	      "delegate": "UnitBox",
+		  "unit": "m/day",
+		  "estimate": "true",
+	      "default": "0"
+	    },
+	    "exponent_of_depth":
+	    {
+	      "description": "Depth exponent",
+	      "type": "value",
+	      "ask_user": "true",
+	      "estimate": "true",
+	      "role": "copytoblocks",
+	      "helptext": "Indicates the exponent in the power function relating the release rate and water depth (alpha*d^beta)",
+	      "default": "0"
+	    },
+	    "rate_expression": {
+	      "description": "Release rate",
+	      "type": "expression",
+	      "ask_user": "false",
+	      "expression": "concentration_dependence_rate_expression*release_coefficient*(Precipitation/area)^exponent_of_depth*_hsd(Precipitation/area-i_min)"
+    	    }
+    	},
+		"surface_release_threshold": {
+	    "type": "Reaction",
+	    "description": "Release from surface (Threshold)",
+	    "normalizing_quantity": "area",
+	    "typecategory": "Reactions",
+	    "icon": {
+	      "filename": "surface_release.png"
+	    },
+	    "concentration_dependence_rate_expression": {
+	      "description": "Concentration dependence function",
+	      "type": "expression",
+	      "helptext": "This expression indicates the dependence of the release rate to the concentration of attached constituent per surface area",
+	      "ask_user": "true",
+	      "delegate": "expressionEditor"
+	    },
+	    "release_coefficient": {
+	      "description": "Release coefficient",
+	      "type": "value",
+	      "ask_user": "true",
+	      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
+	      "role": "copytoblocks",
+	      "estimate": "true",
+	      "default": "1"
+	    },
+		"i_min": {
+	      "description": "Threshold Precipitation",
+	      "type": "value",
+	      "ask_user": "true",
+	      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
+	      "role": "copytoblocks",
+	      "delegate": "UnitBox",
+		  "unit": "m/day",
+		  "estimate": "true",
+	      "default": "0"
+	    },
+	    "exponent_of_depth":
+	    {
+	      "description": "Depth exponent",
+	      "type": "value",
+	      "ask_user": "true",
+	      "estimate": "true",
+	      "role": "copytoblocks",
+	      "helptext": "Indicates the exponent in the power function relating the release rate and water depth (alpha*d^beta)",
+	      "default": "0"
+	    },
+	    "rate_expression": {
+	      "description": "Release rate",
+	      "type": "expression",
+	      "ask_user": "false",
+	      "expression": "concentration_dependence_rate_expression*release_coefficient*depth^exponent_of_depth*_hsd(Precipitation/area-i_min)"
+    	    }
+    	},
     	"aging": {
 	    "type": "Reaction",
 	    "description": "Aging",
