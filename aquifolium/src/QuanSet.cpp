@@ -654,6 +654,10 @@ void QuanSet::CreateCPPcode(const string &source, const string header)
         if (it->second.GetType()==Quan::_type::expression)
         {
             headerfile<<"\tdouble "<<it->first<<"() const;\n";
+            sourcefile<<"double "<<this->name<<"::"<<it->first<<"() const;\n";
+            sourcefile<<"{\n";
+
+            sourcefile<<"}\n";
         }
     }
     for (map<string,Quan>::iterator it=begin(); it!=end(); it++)
