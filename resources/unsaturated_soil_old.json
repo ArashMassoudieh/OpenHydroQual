@@ -447,6 +447,7 @@
       "description": "Lenght",
       "includeinoutput": "true",
       "ask_user": "true",
+      "estimate": "true",
       "delegate": "UnitBox",
       "unit": "m;ft"
     },

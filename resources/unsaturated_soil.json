@@ -212,6 +212,17 @@
       "precalcbasedon": "theta::0:1",
       "ask_user": "false",
       "includeinoutput": "true"
+    },
+    "aniso_ratio":{
+      "type": "value",
+      "description": "Anisotropy ratio Kx/Ky",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "unit": "",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "aniso_ratio>-0.000001",
+      "warningmessage": "Anisotropy ratio cannot be negative"
     }
   },
   "soil_to_soil_link": {
@@ -252,7 +263,7 @@
     "K_sat": {
       "type": "expression",
       "description": "Saturated Hydraulic Conductivity",
-      "expression": "0.5*(K_sat.s+K_sat.e)",
+      "expression": "_min(K_sat.s;K_sat.e)",
       "includeinoutput": "false",
       "ask_user": "false"
     },
@@ -332,9 +343,76 @@
     "K_sat": {
       "type": "expression",
       "description": "Saturated Hydraulic Conductivity",
-      "expression": "0.5*(K_sat.s+K_sat.e)",
+      "expression": "0.5*(K_sat.s*aniso_ratio.s+K_sat.e*aniso_ratio.e)",
       "includeinoutput": "true",
       "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow (m~^3/day)",
+      "expression": "(head.s-head.e)*K_eff/length*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "120,120,0"
+    }
+  },
+  "soil_to_soil_H_link_w_K": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "soil2soilH.png"
+    },
+    "description": "Horizontal soil to soil connector (with Ksat)",
+    "area": {
+      "type": "value",
+      "description": "Interface area",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2"
+    },
+    "length": {
+      "type": "value",
+      "description": "length",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    },
+    "Se": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "_min(_max(Se.s;Se.e);0.999)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "m": {
+      "type": "expression",
+      "description": "m parameter",
+      "expression": "0.5*(m.s+m.e)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_sat": {
+      "type": "value",
+      "description": "Saturated Hydraulic Conductivity",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day",
+      "default":"1",
+      "estimate": "true"
     },
     "K_eff": {
       "type": "expression",
@@ -397,48 +475,6 @@
       "default": "0,0,180"
     }
   },
-  "surfacewater_to_soil_link_2": {
-    "type": "link",
-    "typecategory": "Connectors",
-    "icon": {
-      "filename": "surface2soil.png"
-    },
-    "description": "Surfacewater to soil connector (surface storage limit)",
-    "area": {
-      "type": "expression",
-      "description": "Interface area",
-      "expression": "_min(area.s;area.e)",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "length": {
-      "type": "expression",
-      "description": "Lenght",
-      "expression": "depth.e/2",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "K_eff": {
-      "type": "expression",
-      "description": "Effective Hydraulic Conductivity",
-      "expression": "K_sat.e",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
-    "flow": {
-      "type": "expression",
-      "description": "Flow",
-      "expression": "(head.s-head.e)*K_eff/length*area*_pos(depth.s-depression_storage.s)/_pos(depth.s-depression_storage.s+0.000001)",
-      "includeinoutput": "true",
-      "applylimit": "true",
-      "ask_user": "false"
-    },
-    "color": {
-      "type": "string",
-      "default": "0,0,180"
-    }
-  },
-
   "soil_to_fixedhead_link": {
     "type": "link",
     "typecategory": "Connectors",
@@ -521,6 +557,7 @@
       "description": "Lenght",
       "includeinoutput": "true",
       "ask_user": "true",
+      "estimate": "true",
       "delegate": "UnitBox",
       "unit": "m;ft"
     },
@@ -555,7 +592,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "_pos(head.s-_max(outlet_head;head.e))*K_eff/length*area",
+      "expression": "(head.s-_max(outlet_head;head.e))*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
@@ -655,6 +692,7 @@
       "description": "Lenght",
       "includeinoutput": "true",
       "ask_user": "true",
+      "estimate": "true",
       "delegate": "UnitBox",
       "unit": "m;ft"
     },
@@ -719,5 +757,46 @@
       "type": "string",
       "default": "20,180,50"
     }
+  },
+  "surfacewater_to_soil_link_2": { 
+    "type": "link", 
+    "typecategory": "Connectors", 
+    "icon": { 
+      "filename": "surface2soil.png" 
+    }, 
+    "description": "Surfacewater to soil connector (surface storage limit)", 
+    "area": { 
+      "type": "expression", 
+      "description": "Interface area", 
+      "expression": "_min(area.s;area.e)", 
+      "includeinoutput": "true", 
+      "ask_user": "false" 
+    }, 
+    "length": { 
+      "type": "expression", 
+      "description": "Lenght", 
+      "expression": "depth.e/2", 
+      "includeinoutput": "true", 
+      "ask_user": "false" 
+    }, 
+    "K_eff": { 
+      "type": "expression", 
+      "description": "Effective Hydraulic Conductivity", 
+      "expression": "K_sat.e", 
+      "includeinoutput": "true", 
+      "ask_user": "false" 
+    }, 
+    "flow": { 
+      "type": "expression", 
+      "description": "Flow", 
+      "expression": "(head.s-head.e)*K_eff/length*area*_pos(depth.s-depression_storage.s)/_pos(depth.s-depression_storage.s+0.000001)", 
+      "includeinoutput": "true", 
+      "applylimit": "true", 
+      "ask_user": "false" 
+    }, 
+    "color": { 
+      "type": "string", 
+      "default": "0,0,180" 
+    } 
   }
 }
