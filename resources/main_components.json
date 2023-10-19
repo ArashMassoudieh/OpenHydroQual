@@ -645,7 +645,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "masstransfer",
-      "inflow": "external_mass_flow_timeseries,external_source",
+      "inflow": "external_mass_flow_timeseries,external_source,inflow_loading",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytoblocks",
@@ -674,6 +674,21 @@
       "ask_user": "true",
       "role": "copytoblocks",
       "delegate": "ComboBox;Sources"
+    },
+    "inflow_concentration": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Inflow concentration",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "Browser"
+    },
+    "inflow_loading": {
+      "type": "expression",
+      "expression": "inflow_concentration*inflow",
+      "includeinoutput": "true",
+      "description": "Inflow loading",
+      "role": "copytoblocks"
     }
   },
   "Reaction": {
