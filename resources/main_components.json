@@ -106,7 +106,7 @@
     },
     "head": {
       "type": "expression",
-      "expression": "elevation+depth-depression_storage/(depth+0.000001)",
+      "expression": "elevation+depth",
       "description": "Average water head",
       "ask_user": "false",
       "includeinoutput": "true"
@@ -515,7 +515,7 @@
     "concentration": {
       "description": "Concentration",
       "type": "expression",
-      "expression": "mass/(Storage+0.0000001)",
+      "expression": "mass/Storage",
       "ask_user": "true",
       "role": "copytoblocks",
       "includeinoutput": "true",
@@ -675,7 +675,7 @@
       "role": "copytoblocks",
       "delegate": "ComboBox;Sources"
     },
-    "inflow_concentration": {
+	"inflow_concentration": {
       "type": "timeseries",
       "includeinoutput": "true",
       "description": "Inflow concentration",

@@ -139,28 +139,12 @@
       "unit": "m~^3;ft~^3",
       "estimate": "true"
     },
-     "inflow_timeseries":{
+    "inflow":{
     	"type": "timeseries",
 	"includeinoutput": "true",
-	"description": "Time-variable Inflow",
+	"description": "Inflow",
     	"ask_user": "true",
 	"delegate": "Browser"
-    },
-    "constant_inflow":{
-    	"type": "value",
-	"includeinoutput": "true",
-	"description": "Constant Inflow",
-    	"ask_user": "true",
-	"delegate": "UnitBox",
-	"unit": "m~^3/day;ft~^3/day"
-    },
-    "inflow":{
-    	"type": "expression",
-	"expression": "constant_inflow+inflow_timeseries",
-	"includeinoutput": "true",
-	"description": "Total Inflow",
-    	"ask_user": "false",
-	"unit": "m~^3/day"
     }
   },
   "Settling element": {
@@ -174,7 +158,6 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "inflow",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
@@ -189,29 +172,6 @@
     	"description": "Bottom elevation",
     	"delegate": "UnitBox",
     	"unit": "m;ft"
-    },
-    "inflow_timeseries":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Time-variable Inflow",
-    	"ask_user": "true",
-	"delegate": "Browser"
-    },
-    "constant_inflow":{
-    	"type": "value",
-	"includeinoutput": "true",
-	"description": "Constant Inflow",
-    	"ask_user": "true",
-	"delegate": "UnitBox",
-	"unit": "m~^3/day;ft~^3/day"
-    },
-    "inflow":{
-    	"type": "expression",
-	"expression": "constant_inflow+inflow_timeseries",
-	"includeinoutput": "true",
-	"description": "Total Inflow",
-    	"ask_user": "false",
-	"unit": "m~^3/day"
     }
   },
   "Fixed flow": {
@@ -239,7 +199,7 @@
     },
     "area": {
       "type": "expression",
-      "expression": "1",
+      "expression": "0.00000001",
       "includeinoutput": "false",
       "description": "1",
       "ask_user": "false"
