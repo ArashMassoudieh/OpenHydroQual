@@ -233,6 +233,119 @@
       "estimate": "true"
     }
   },
+  "Flow_control_device (function)": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Flow control device (function)",
+    "icon": {
+      "filename": "control_valve.png"
+    },
+    "timeseries": {
+      "type": "timeseries_prec",
+      "includeinoutput": "true",
+      "description": "Precipitation intensity",
+      "ask_user": "true",
+      "delegate": "Browser;time series"
+   },
+   "flow_coefficient": {
+      "type": "value",
+      "default": "1",
+      "description": "Flow multiplier",
+      "delegate": "ValueBox",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "This coefficient is multiplied by the Qmin and Qmax for flow control, often to correct for contributing catchment area", 
+      "criteria": "flow_coefficient>0",
+      "warningmessage": "flow_coefficient must be greater than zero"
+    },
+   "kernel_delay_parameter": {
+      "type": "value",
+      "default": "5",
+      "description": "Mean kernel delay time",
+      "delegate": "UnitBox",
+      "unit": "day",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "The mean time of the exponential kernel function for precipitation forcast", 
+      "criteria": "kernel_delay_parameter>0",
+      "warningmessage": "Mean kernel delay time must be greater than zero"
+    },
+    "diameter": {
+      "type": "value",
+      "default": "0.2",
+      "description": "Diameter",
+      "delegate": "UnitBox",
+      "unit": "m;ft;in;cm",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "Valve Diameter", 
+      "criteria": "diameter>0",
+      "warningmessage": "Diameter must be greater than zero"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Area",
+      "expression": "3.1415*(diameter^2)/4"
+    },
+    "max_flow": {
+      "type": "expression",
+      "description": "Maximum flow",
+      "includeinoutput": "true",
+      "expression": "86400*_sqr(2*9.81*_pos(head.s-head.e)/valve_K)*area"
+    },
+    "valve_K": {
+      "type": "expression",
+      "description": "Headloss coefficient for valve",
+      "includeinoutput": "true",
+      "expression": "flow_scale/(kernel_smoothed_forcast+0.0000001)"
+    },
+     "flow_scale": {
+      "type": "value",
+      "default": "20",
+      "description": "Valve Flow factor",
+      "delegate": "UnitBox",
+      "unit": "m~^3/day",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "The scale factor detemining the flow as a function of rain forcast", 
+      "criteria": "flow_scale>0",
+      "warningmessage": "Flow scale must be greater than zero"
+    },
+   "lambda": {
+	"type": "expression",
+	"expression": "1/kernel_delay_parameter",
+	"description": "lambda",
+	"includeinoutput": "false",
+        "ask_user": "false"
+   }, 
+   "kernel_smoothed_forcast": {
+	"type": "expression",
+	"expression": "_ekr(timeseries;lambda)",
+	"description": "Kernel Smoothed Forcast",
+	"includeinoutput": "true",
+        "ask_user": "false"
+   },
+    "flow": {
+      "type": "rule",
+      "description": "Flow",
+      "rule": {
+	      "kernel_smoothed_forcast<threshold": "0",
+	      "kernel_smoothed_forcast>threshold": "max_flow"
+    	},
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "threshold": {
+      "type": "value",
+      "default": "0",
+      "description": "Threshold",
+      "delegate": "UnitBox",
+      "unit": "m/day",
+      "ask_user": "true",
+      "estimate": "true"
+    }
+  },
   "Flow_control_device (binary)": {
     "type": "link",
     "typecategory": "Connectors",
@@ -329,15 +442,6 @@
       "applylimit": "true",
       "ask_user": "false"
     },
-    "Q": {
-      "type": "value",
-      "default": "100",
-      "description": "Maximum flow",
-      "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day",
-      "ask_user": "true",
-      "estimate": "true"
-    },
     "threshold": {
       "type": "value",
       "default": "0",
@@ -348,4 +452,5 @@
       "estimate": "true"
     }
   }
+  
 }

@@ -131,7 +131,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "inflow_timeseries",
+      "inflow": "inflow",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
@@ -139,7 +139,7 @@
       "unit": "m~^3;ft~^3",
       "estimate": "true"
     },
-    "inflow_timeseries":{
+    "inflow":{
     	"type": "timeseries",
 	"includeinoutput": "true",
 	"description": "Inflow",
@@ -199,7 +199,7 @@
     },
     "area": {
       "type": "expression",
-      "expression": "1",
+      "expression": "0.00000001",
       "includeinoutput": "false",
       "description": "1",
       "ask_user": "false"
