@@ -141,8 +141,8 @@
     },
     "inflow":{
     	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Inflow",
+		"includeinoutput": "true",
+		"description": "Inflow",
     	"ask_user": "true",
 	"delegate": "Browser"
     }
@@ -199,7 +199,41 @@
     },
     "area": {
       "type": "expression",
-      "expression": "0.00000001",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    }
+  },
+  "Time-Dependent flow": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Time-Dependent flow",
+    "icon": {
+      "filename": "timedependent_flow.png"
+    },
+    "flow": {
+      "type": "timeseries",
+      "description": "Flow rate",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "true",
+	   "delegate": "Browser"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "1",
       "includeinoutput": "false",
       "description": "1",
       "ask_user": "false"
@@ -224,6 +258,34 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    },
+    "area":
+    {
+    	"type": "value",
+    	"ask_user": "true",
+    	"description": "Interface area",
+    	"delegate": "UnitBox",
+    	"unit": "m~^2;ft~^2"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    }
+ },
+ "Settling element interface (time variable)": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Settling element interface (Time variable)",
+    "icon": {
+      "filename": "Settling_element_link.png"
+    },
+    "flow": {
+      "type": "timeseries",
+      "description": "Flow rate",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "true",
+	   "delegate": "Browser"
     },
     "area":
     {
