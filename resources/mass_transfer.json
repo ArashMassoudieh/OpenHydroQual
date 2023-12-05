@@ -277,7 +277,7 @@
     "typecategory": "Connectors",
     "description": "Settling element interface (Time variable)",
     "icon": {
-      "filename": "Settling_element_link.png"
+      "filename": "Settling_element_link_time_variable.png"
     },
     "flow": {
       "type": "timeseries",
