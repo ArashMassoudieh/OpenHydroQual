@@ -515,7 +515,7 @@
     "concentration": {
       "description": "Concentration",
       "type": "expression",
-      "expression": "mass/Storage",
+      "expression": "mass/(Storage+0.00001)",
       "ask_user": "true",
       "role": "copytoblocks",
       "includeinoutput": "true",

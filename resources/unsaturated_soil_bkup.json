@@ -31,9 +31,7 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true",
-      "criteria": "depth>0",
-      "warningmessage": "The depth of the soil block must be greater than zero"
+      "estimate": "true"
     },
     "theta_sat": {
       "type": "value",
