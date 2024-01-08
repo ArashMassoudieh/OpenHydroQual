@@ -119,6 +119,8 @@ public:
     T Exponential_Kernel(const T &t,const T &lambda) const;
     T Gaussian_Kernel(const T &t,const T &mu, const T &stdev) const;
     int GetElementNumberAt(const T &t) const;
+    CTimeSeries AutoCorrelation(const T &span, const T &increment);
+    T AutoCorrelation(const T &distance);
 private:
     vector<T> t;
     vector<T> C;

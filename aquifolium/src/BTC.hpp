@@ -1509,10 +1509,37 @@ T CTimeSeries<T>::AutoCor1(int k)
 	for (int i = n - k; i < n - 1; i++)
 	{
 		sum_product += (C[i] - mean1)*(C[i + 1] - mean1);
-		sum_sq += (C[i] - mean1);
+        sum_sq += pow(C[i] - mean1,2);
 	}
 	return sum_product / sum_sq;
 
+}
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::AutoCorrelation(const T &span, const T &increment)
+{
+    CTimeSeries<T> out;
+    for (double x = 0; x<span; x+=increment)
+    {
+        out.append(x,AutoCorrelation(x));
+    }
+    return out;
+}
+
+template<class T>
+T CTimeSeries<T>::AutoCorrelation(const T &distance)
+{
+    T sum_product = 0;
+    T sum_sq = 0;
+    T mean1 = mean();
+    for (int i = 0; i<n-1; i++)
+    {
+        if (t[i]+distance<GetLastItemTime())
+        {   sum_product += (C[i] - mean1)*(interpol(t[i]+distance) - mean1);
+            sum_sq += pow(C[i] - mean1,2);
+        }
+    }
+    return sum_product / sum_sq;
 }
 
 template<class T>

@@ -429,6 +429,14 @@
       "includeinoutput": "false",
       "ask_user": "true"
     },
+    "comparison_method": {
+      "type": "string",
+      "delegate": "ComboBox;items:Least Squared,Similarity",
+      "description": "Comparison Method",
+      "default": "Least Squared",
+      "includeinoutput": "false",
+      "ask_user": "true"
+    },
     "error_standard_deviation": {
       "type": "value",
       "description": "Error standard deviation",
@@ -436,6 +444,14 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
+    },
+    "autocorrelation_time-span": {
+      "type": "value",
+      "description": "Auto-correlation time-span",
+      "default": "1",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "false"
     }
   },
   "fixed_head": {
