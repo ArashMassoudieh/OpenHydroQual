@@ -1,5 +1,5 @@
 #include "observation.h"
-
+#include "BTC.h"
 #include "System.h"
 
 
@@ -91,8 +91,10 @@ double Observation::CalcMisfit()
 {
     if (Variable("observed_data")->GetTimeSeries()!=nullptr)
     {
+
         if (Variable("comparison_method")->GetProperty()=="Least Squared")
-        {   double fit_mse = 0;
+        {
+            double fit_mse = 0;
             double _R2 = 0;
             double Nash_Sutcliffe_efficiency = 0;
             if (Variable("error_structure")->GetProperty()=="normal")
@@ -123,11 +125,26 @@ double Observation::CalcMisfit()
         }
         else
         {
+            double auto_correlation_diff = 0;
+            double CDF_diff = 0;
             double time_span = Variable("autocorrelation_time-span")->GetVal();
             double increment = time_span/20.0;
-            CTimeSeries<double> autocorr_measured = Variable("observed_data")->GetTimeSeries()->AutoCorrelation(time_span,increment);
-            CTimeSeries<double> autocorr_modeled = modeled_time_series.AutoCorrelation(time_span,increment);
-            return diff2(autocorr_measured, autocorr_modeled);
+            CTimeSeries<double> autocorr_measured = Variable("observed_data")->GetTimeSeries()->ConverttoNormalScore().AutoCorrelation(time_span,increment);
+            CTimeSeries<double> autocorr_modeled = modeled_time_series.ConverttoNormalScore().AutoCorrelation(time_span,increment);
+            auto_correlation_diff =  diff2(autocorr_measured, autocorr_modeled);
+            if (Variable("error_structure")->GetProperty()=="normal")
+            {
+                CDF_diff = KolmogorovSmirnov(Variable("observed_data")->GetTimeSeries(),&modeled_time_series);
+
+            }
+            else
+            {
+                CDF_diff = KolmogorovSmirnov(Variable("observed_data")->GetTimeSeries()->Log(1e-8),modeled_time_series.Log(1e-8));
+            }
+            fit_measures.push_back(auto_correlation_diff + CDF_diff);
+            fit_measures.push_back(auto_correlation_diff);
+            fit_measures.push_back(CDF_diff);
+            return auto_correlation_diff + CDF_diff;
         }
     }
     else return 0;
