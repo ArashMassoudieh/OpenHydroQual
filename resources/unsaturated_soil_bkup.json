@@ -31,9 +31,7 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true",
-      "criteria": "depth>0",
-      "warningmessage": "The depth of the soil block must be greater than zero"
+      "estimate": "true"
     },
     "theta_sat": {
       "type": "value",
@@ -246,7 +244,7 @@
       "description": "lenght",
       "expression": "(depth.s+depth.e)/2",
       "includeinoutput": "false",
-      "ask_user": "false",
+      "ask_user": "false"
     },
     "Se": {
       "type": "expression",
@@ -326,9 +324,7 @@
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft",
-      "criteria": "length>0",
-      "warningmessage": "Length has to be greater than zero"
+      "unit": "m;ft"
     },
     "Se": {
       "type": "expression",
@@ -563,9 +559,7 @@
       "ask_user": "true",
       "estimate": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft",
-      "criteria": "length>0",
-      "warningmessage": "Length has to be greater than zero"
+      "unit": "m;ft"
     },
     "Se": {
       "type": "expression",
@@ -700,9 +694,7 @@
       "ask_user": "true",
       "estimate": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft",
-      "criteria": "length>0",
-      "warningmessage": "Length has to be greater than zero"
+      "unit": "m;ft"
     },
     "Se": {
       "type": "expression",

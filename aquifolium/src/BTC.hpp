@@ -16,6 +16,7 @@
 #include "qfile.h"
 #include "qdatastream.h"
 #include <qdebug.h>
+#include <gsl/gsl_cdf.h>
 #endif
 
 
@@ -869,6 +870,20 @@ CTimeSeries<T> operator-(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 	return S;
 }
 
+template<class T> T KolmogorovSmirnov(const CTimeSeries<T> &BTC1, const CTimeSeries<T> &BTC2)
+{
+    CTimeSeries<T> CDF1 = BTC1.GetCummulativeDistribution();
+    CTimeSeries<T> CDF2 = BTC2.GetCummulativeDistribution();
+    return max(fabs((CDF1-CDF2).maxC()),fabs((CDF1-CDF2).minC()));
+}
+
+template<class T> T KolmogorovSmirnov(CTimeSeries<T> *BTC1, CTimeSeries<T> *BTC2)
+{
+    CTimeSeries<T> CDF1 = BTC1->GetCummulativeDistribution();
+    CTimeSeries<T> CDF2 = BTC2->GetCummulativeDistribution();
+    return max(fabs((CDF1-CDF2).maxC()),fabs((CDF1-CDF2).minC()));
+}
+
 template<class T>
 CTimeSeries<T> operator*(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 {
@@ -1509,14 +1524,78 @@ T CTimeSeries<T>::AutoCor1(int k)
 	for (int i = n - k; i < n - 1; i++)
 	{
 		sum_product += (C[i] - mean1)*(C[i + 1] - mean1);
-		sum_sq += (C[i] - mean1);
+        sum_sq += pow(C[i] - mean1,2);
 	}
 	return sum_product / sum_sq;
 
 }
 
 template<class T>
-CTimeSeries<T> CTimeSeries<T>::getcummulative()
+CTimeSeries<T> CTimeSeries<T>::AutoCorrelation(const T &span, const T &increment)
+{
+    CTimeSeries<T> out;
+    for (double x = 0; x<span; x+=increment)
+    {
+        out.append(x,AutoCorrelation(x));
+    }
+    return out;
+}
+
+template<class T>
+T CTimeSeries<T>::AutoCorrelation(const T &distance)
+{
+    T sum_product = 0;
+    T sum_sq = 0;
+    T mean1 = mean();
+    for (int i = 0; i<n-1; i++)
+    {
+        if (t[i]+distance<GetLastItemTime())
+        {   sum_product += (C[i] - mean1)*(interpol(t[i]+distance) - mean1);
+            sum_sq += pow(C[i] - mean1,2);
+        }
+    }
+    return sum_product / sum_sq;
+}
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::ConvertToRanks()
+{
+    CTimeSeries<T> out;
+    for (int i=0; i<n; i++)
+        out.append(GetT(i),Score(GetC(i)));
+
+    return out;
+}
+
+template<class T>
+T CTimeSeries<T>::Score(const double val)
+{
+    double score = 0.5/double(n);
+    for (int i=0; i<n; i++)
+    {
+        if (GetC(i)<val)
+            score += 1.0/double(n);
+    }
+    return score;
+}
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::ConverttoNormalScore()
+{
+    CTimeSeries<T> ranked = ConvertToRanks();
+    CTimeSeries<T> normal_scored;
+    for (int i=0; i<n; i++)
+    {
+        normal_scored.append(i,gsl_cdf_gaussian_Pinv(ranked.GetC(i),1.0));
+    }
+    return normal_scored;
+
+}
+
+
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::getcummulative() const
 {
 	CTimeSeries X(n);
 	X.t = t;
@@ -1528,7 +1607,19 @@ CTimeSeries<T> CTimeSeries<T>::getcummulative()
 }
 
 template<class T>
-CTimeSeries<T> CTimeSeries<T>::Exp()
+CTimeSeries<T> CTimeSeries<T>::GetCummulativeDistribution() const
+{
+    vector<T> sorted = QSort(C);
+    CTimeSeries<T> out;
+    for (int i = 0; i<sorted.size(); i++)
+    {
+        out.append(sorted[i],(i+0.5)/double(n));
+    }
+    return out;
+}
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::Exp() const
 {
     CTimeSeries<T> BTC(n);
 	for (int i = 0; i<n; i++)
@@ -1540,7 +1631,7 @@ CTimeSeries<T> CTimeSeries<T>::Exp()
 }
 
 template<class T>
-CTimeSeries<T> CTimeSeries<T>::fabs()
+CTimeSeries<T> CTimeSeries<T>::fabs() const
 {
     CTimeSeries<T> BTC = CTimeSeries<T>(n);
 	for (int i = 0; i<n; i++)
