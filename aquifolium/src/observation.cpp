@@ -92,6 +92,7 @@ double Observation::CalcMisfit()
     if (Variable("observed_data")->GetTimeSeries()!=nullptr)
     {
 
+        fit_measures.clear();
         if (Variable("comparison_method")->GetProperty()=="Least Squared")
         {
             double fit_mse = 0;
@@ -102,7 +103,6 @@ double Observation::CalcMisfit()
                 fit_mse = diff2(modeled_time_series,Variable("observed_data")->GetTimeSeries());
                 _R2 = R2(&modeled_time_series,Variable("observed_data")->GetTimeSeries());
                 Nash_Sutcliffe_efficiency = NSE(&modeled_time_series,Variable("observed_data")->GetTimeSeries());
-                fit_measures.clear();
                 fit_measures.push_back(fit_mse);
                 fit_measures.push_back(_R2);
                 fit_measures.push_back(Nash_Sutcliffe_efficiency);
@@ -114,7 +114,6 @@ double Observation::CalcMisfit()
                 fit_mse = diff2(modeled_time_series.Log(1e-8),Variable("observed_data")->GetTimeSeries()->Log(1e-8));
                 _R2 = R2(modeled_time_series.Log(1e-8),Variable("observed_data")->GetTimeSeries()->Log(1e-8));
                 Nash_Sutcliffe_efficiency = NSE(modeled_time_series.Log(1e-8),Variable("observed_data")->GetTimeSeries()->Log(1e-8));
-                fit_measures.clear();
                 fit_measures.push_back(fit_mse);
                 fit_measures.push_back(_R2);
                 fit_measures.push_back(Nash_Sutcliffe_efficiency);
@@ -147,7 +146,11 @@ double Observation::CalcMisfit()
             return auto_correlation_diff + CDF_diff;
         }
     }
-    else return 0;
+    else
+    {
+        fit_measures.resize(3);
+        return 0;
+    }
 
 }
 
