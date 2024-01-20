@@ -89,6 +89,7 @@ double Observation::GetValue(const Expression::timing &tmg)
 
 double Observation::CalcMisfit()
 {
+    //qDebug()<<"Inside the misfit function";
     if (Variable("observed_data")->GetTimeSeries()!=nullptr)
     {
 
@@ -133,16 +134,21 @@ double Observation::CalcMisfit()
             auto_correlation_diff =  diff2(autocorr_measured, autocorr_modeled);
             if (Variable("error_structure")->GetProperty()=="normal")
             {
+
+                //qDebug()<<"Calculating Misfit Normal";
                 CDF_diff = KolmogorovSmirnov(Variable("observed_data")->GetTimeSeries(),&modeled_time_series);
 
             }
             else
             {
+                //qDebug()<<"Calculating Misfit Log-Normal";
                 CDF_diff = KolmogorovSmirnov(Variable("observed_data")->GetTimeSeries()->Log(1e-8),modeled_time_series.Log(1e-8));
+                //qDebug()<<"CDF diff calculated";
             }
             fit_measures.push_back(auto_correlation_diff + CDF_diff);
             fit_measures.push_back(auto_correlation_diff);
             fit_measures.push_back(CDF_diff);
+            //qDebug()<<"Misfit vector populated";
             return auto_correlation_diff + CDF_diff;
         }
     }
