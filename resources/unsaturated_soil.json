@@ -326,7 +326,9 @@
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft"
+      "unit": "m;ft",
+      "criteria": "length>0",
+      "warningmessage": "Length has to be greater than zero"
     },
     "Se": {
       "type": "expression",
@@ -561,7 +563,9 @@
       "ask_user": "true",
       "estimate": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft"
+      "unit": "m;ft",
+      "criteria": "length>0",
+      "warningmessage": "Length has to be greater than zero"
     },
     "Se": {
       "type": "expression",
@@ -696,7 +700,9 @@
       "ask_user": "true",
       "estimate": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft"
+      "unit": "m;ft",
+      "criteria": "length>0",
+      "warningmessage": "Length has to be greater than zero"
     },
     "Se": {
       "type": "expression",
