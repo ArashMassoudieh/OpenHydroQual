@@ -246,7 +246,7 @@
       "description": "lenght",
       "expression": "(depth.s+depth.e)/2",
       "includeinoutput": "false",
-      "ask_user": "false",
+      "ask_user": "false"
     },
     "Se": {
       "type": "expression",

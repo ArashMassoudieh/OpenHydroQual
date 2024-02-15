@@ -68,7 +68,9 @@ template<class T>
 bool CTimeSeries<T>::SetT(int i, const T &value)
 {
     if (i<t.size())
-        t[i] = value;
+    {   t[i] = value;
+        return true;
+    }
     else
         return false;
 }
@@ -77,7 +79,9 @@ template<class T>
 bool CTimeSeries<T>::SetC(int i, const T &value)
 {
     if (i<C.size())
-        C[i] = value;
+    {   C[i] = value;
+        return true;
+    }
     else
         return false;
 }
@@ -86,7 +90,9 @@ template<class T>
 bool CTimeSeries<T>::SetD(int i, const T& value)
 {
 	if (i < D.size())
-		D[i] = value;
+    {	D[i] = value;
+        return true;
+    }
 	else
 		return false;
 }
@@ -257,33 +263,33 @@ CTimeSeries<T> CTimeSeries<T>::Log(T m)
 template<class T>
 T CTimeSeries<T>::interpol(const T &x) const
 {
-	if (n==0)
+    double out = C[0];
+    if (n==0)
         return 0;
-	if (n>1)
+    else if (n>1)
 	{
-
 		if (structured == false)
-		{	for (int i=0; i<n-1; i++)
+        {
+            for (int i=0; i<n-1; i++)
 			{
 				if (t[i] <= x && t[i+1] >= x)
-					return (C[i+1]-C[i])/(t[i+1]-t[i])*(x-t[i]) + C[i];
+                    out = (C[i+1]-C[i])/(t[i+1]-t[i])*(x-t[i]) + C[i];
 			}
-			if (x>t[n-1]) return C[n-1];
-			if (x<t[0]) return C[0];
+            if (x>t[n-1]) out = C[n-1];
+            if (x<t[0]) out = C[0];
 		}
 		else
 		{
-			if (x < t[0]) return C[0];
-			if (x > t[n - 1]) return C[n - 1];
+            if (x < t[0]) out = C[0];
+            if (x > t[n - 1]) out = C[n - 1];
 			int i = int((x-t[0])/(t[1]-t[0]));
-			if (i>=n-1) return C[n-1];
-			else if (i<0) return C[0];
-			else return (C[i+1]-C[i])/(t[i+1]-t[i])*(x-t[i]) + C[i];
+            if (i>=n-1) out = C[n-1];
+            else if (i<0) out = C[0];
+            else out = (C[i+1]-C[i])/(t[i+1]-t[i])*(x-t[i]) + C[i];
 		}
 	}
-	else
-		return C[0];
 
+    return out;
 
 }
 
@@ -863,24 +869,39 @@ CTimeSeries<T> operator/(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 template<class T>
 CTimeSeries<T> operator-(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 {
+    //qDebug()<<"Inside Operator -";
     CTimeSeries<T> S = BTC1;
 	for (int i=0; i<BTC1.n; i++)
-        S.SetC(i, BTC1.GetC(i)-BTC2.interpol(BTC1.GetT(i)));
+    {
+        //qDebug()<<i;
+        double interp2 = BTC2.interpol(BTC1.GetT(i));
+        //qDebug()<<interp2;
+        S.SetC(i, BTC1.GetC(i)-interp2);
 
+    }
+    //qDebug()<<"Diffentiation done!";
 	return S;
 }
 
 template<class T> T KolmogorovSmirnov(const CTimeSeries<T> &BTC1, const CTimeSeries<T> &BTC2)
 {
+    //qDebug()<<"Inside the KS function";
     CTimeSeries<T> CDF1 = BTC1.GetCummulativeDistribution();
     CTimeSeries<T> CDF2 = BTC2.GetCummulativeDistribution();
-    return max(fabs((CDF1-CDF2).maxC()),fabs((CDF1-CDF2).minC()));
+    //qDebug()<<"CDFs calculated";
+    //qDebug()<<CDF1.n<<","<<CDF1.maxC();
+    //qDebug()<<CDF2.n<<","<<CDF2.maxC();
+    T out = max(fabs((CDF1-CDF2).maxC()),fabs((CDF1-CDF2).minC()));
+    //qDebug()<<out;
+    return out;
 }
 
 template<class T> T KolmogorovSmirnov(CTimeSeries<T> *BTC1, CTimeSeries<T> *BTC2)
 {
+    //qDebug()<<"Inside the KS function";
     CTimeSeries<T> CDF1 = BTC1->GetCummulativeDistribution();
     CTimeSeries<T> CDF2 = BTC2->GetCummulativeDistribution();
+    //qDebug()<<"CDFs calculated";
     return max(fabs((CDF1-CDF2).maxC()),fabs((CDF1-CDF2).minC()));
 }
 
