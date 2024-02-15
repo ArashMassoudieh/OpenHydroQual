@@ -86,12 +86,11 @@
     },
     "dam_area": {
       "type": "expression",
-      "expression": "(base_width+side_slope*(dam_elevation-bottom_elevation))*_pos(dam_elevation-bottom_elevation)",
+      "expression": "(base_width+side_slope*(dam_elevation-bottom_elevation))*_pos(dam_height)",
       "description": "Obstacle cross-sectional area",
       "ask_user": "false",
       "includeinoutput": "true"
     },
-
     "perimeter": {
       "type": "expression",
       "expression": "base_width+2*_sqt(1+side_slope^2)*depth",
@@ -153,15 +152,16 @@
       "ask_user": "true",
       "delegate": "Browser"
     },
-    "dam_elevation":
+    "dam_height":
     {
       "type": "value",
-      "description": "Obstacle elevation",
+      "description": "Obstacle height",
       "ask_user": "true",
+      "helptext": "The water depth below which the flow ceases",
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
       "estimate": "true",
-      "default": "-1000"	
+      "default": "0"	
     }
   },
   "Trapezoidal_Channel_link": {
