@@ -27,6 +27,7 @@ setvalue; object=system, quantity=numthreads, value=8
 setvalue; object=system, quantity=outputfile, value=GA_output.txt
 setvalue; object=system, quantity=pcross, value=1
 setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=write_interval, value=100
 setvalue; object=system, quantity=maximum_time_allowed, value=86400
 setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
 setvalue; object=system, quantity=initial_time_step, value=0.001
@@ -37,11 +38,12 @@ setvalue; object=system, quantity=minimum_timestep, value=1e-06
 setvalue; object=system, quantity=n_threads, value=8
 setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
 setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=write_intermittently, value=No
 setvalue; object=system, quantity=write_solution_details, value=No
 create constituent;type=Constituent,external_source=,diffusion_coefficient=0[m~^2/s],concentration=0[g/m~^3],external_mass_flow_timeseries=,inflow_concentration=,stoichiometric_constant=0,name=A
 create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=0.7,reference_temperature=0,temperature=,name=decay_coefficient
 create reaction;type=Reaction,rate_expression=(decay_coefficient*A),name=decay,A:stoichiometric_constant=-1
-create block;type=Reactor,Storage=1[m~^3],name=Reactor (1),A:external_source=,inflow_timeseries=inflow.csv,x=850,y=925,_width=84,_height=68,A:concentration=0[g/m~^3],A:external_mass_flow_timeseries=,A:inflow_concentration=inflow_concentration.csv
-create block;type=fixed_head,Storage=100000[m~^3],name=fixed_head (1),y=958,head=0[m],x=986,_width=83,_height=76,A:external_source=,A:concentration=0[g/m~^3],A:external_mass_flow_timeseries=,A:inflow_concentration=
+create block;type=Reactor,name=Reactor (1),Storage=1[m~^3],A:external_source=,inflow_timeseries=inflow.csv,x=850,y=925,_width=84,_height=68,A:concentration=0[g/m~^3],A:external_mass_flow_timeseries=,A:inflow_concentration=inflow_concentration.csv
+create block;type=fixed_head,Storage=100000[m~^3],name=fixed_head (1),y=957.848,head=0[m],x=986,_width=83,_height=76,A:external_source=,A:concentration=0[g/m~^3],A:external_mass_flow_timeseries=,A:inflow_concentration=
 create link;from=Reactor (1),to=fixed_head (1),type=Fixed flow,flow=0.4[m~^3/day],name=Reactor (1) - fixed_head (1)
 create observation;type=Observation,error_standard_deviation=1,expression=A:concentration,error_structure=normal,name=exact_solution,observed_data=exact_solution.csv,object=Reactor (1)
