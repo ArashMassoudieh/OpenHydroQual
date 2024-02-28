@@ -176,7 +176,10 @@
       "ask_user": "true",
       "estimate": "true",
       "includeinoutput": "true",
-      "delegate": "ValueBox"
+      "delegate": "ValueBox",
+      "default": "0.2",
+      "criteria": "theta_res<theta<theta_sat",
+      "warningmessage": "Initial Moisture Content must be between residual and saturated moisture contents"
     },
     "Se": {
       "type": "expression",
