@@ -1274,7 +1274,7 @@ CTimeSeries<T> CTimeSeries<T>::make_uniform(T increment, bool assignD)
 {
     CTimeSeries<T> out;
 	assign_D();
-    if (structured)
+    if (true)
     {   if (t.size() >1 && C.size() > 1)
         {
             out.append(t[0], C[0]);
