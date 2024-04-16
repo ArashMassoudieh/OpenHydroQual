@@ -3453,6 +3453,24 @@ bool System::AddAllConstituentRelateProperties(Block *blk)
     {   for (unsigned int i=0; i<quantityordertobechanged.size(); i++)
             blk->GetVars()->Quantity_Order().push_back(quantityordertobechanged[i]);
     }
+    for (unsigned int i=0; i<reaction_parameters.size();i++)
+    {
+        vector<Quan> quanstobecopied = GetToBeCopiedQuantities(reactionparameter(i),object_type::block);
+        for (unsigned int j=0; j<quanstobecopied.size(); j++)
+        {
+            if (blk)
+            {   if (blk->GetVars()->Count(quanstobecopied[j].GetName())==0)
+                {   blk->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
+                    blk->Variable(quanstobecopied[j].GetName())->SetParent(blk);
+                    quantityordertobechanged.push_back(quanstobecopied[j].GetName());
+                }
+            }
+        }
+    }
+    if (blk)
+    {   for (unsigned int i=0; i<quantityordertobechanged.size(); i++)
+            blk->GetVars()->Quantity_Order().push_back(quantityordertobechanged[i]);
+    }
     return true;
 }
 

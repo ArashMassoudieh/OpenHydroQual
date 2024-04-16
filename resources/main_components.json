@@ -691,7 +691,7 @@
       "role": "copytoblocks",
       "delegate": "ComboBox;Sources"
     },
-	"inflow_concentration": {
+      "inflow_concentration": {
       "type": "timeseries",
       "includeinoutput": "true",
       "description": "Inflow concentration",
@@ -743,7 +743,7 @@
       "ask_user": "false",
 	  "includeinoutput": "true"
     },
-	"reference_temperature": {
+      "reference_temperature": {
       "description": "Reference Temperature",
       "type": "value",
 	  "default": "0",
@@ -765,6 +765,37 @@
 	  "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
+    }
+  },
+  "TimeDependent_ReactionParameter_Global": {
+    "type": "ReactionParameter",
+    "description": "Time Dependent Reaction Parameter (Global)",
+    "typecategory": "Reaction Parameters",
+    "icon": {
+      "filename": "timedependentreactionparameterglobal.png"
+    },
+    "value": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time-dependent value",
+      "ask_user": "true",
+      "delegate": "Browser" 
+    }
+  },
+  "TimeDependent_ReactionParameter": {
+    "type": "ReactionParameter",
+    "description": "Time Dependent Reaction Parameter",
+    "typecategory": "Reaction Parameters",
+    "icon": {
+      "filename": "timedependentreactionparameter.png"
+    },
+    "value": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time-dependent value",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "Browser" 
     }
   }
 }
