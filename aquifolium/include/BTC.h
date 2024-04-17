@@ -88,9 +88,10 @@ public:
     T AutoCor1(int i=0);
 	bool file_not_found = false;
     bool file_not_correct = false;
-	CTimeSeries getcummulative();
-	CTimeSeries Exp();
-	CTimeSeries fabs();
+    CTimeSeries<T> getcummulative() const ;
+    CTimeSeries<T> GetCummulativeDistribution() const;
+    CTimeSeries<T> Exp() const;
+    CTimeSeries<T> fabs() const;
     void adjust_size();
 	//GUI
 	//QList <QMap <QVariant, QVariant>> compact() const;
@@ -119,6 +120,11 @@ public:
     T Exponential_Kernel(const T &t,const T &lambda) const;
     T Gaussian_Kernel(const T &t,const T &mu, const T &stdev) const;
     int GetElementNumberAt(const T &t) const;
+    CTimeSeries AutoCorrelation(const T &span, const T &increment);
+    T AutoCorrelation(const T &distance);
+    CTimeSeries<T> ConvertToRanks();
+    T Score(const double val);
+    CTimeSeries<T> ConverttoNormalScore();
 private:
     vector<T> t;
     vector<T> C;
@@ -154,6 +160,8 @@ template<class T> CTimeSeries<T> operator*(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator/(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator+(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator-(CTimeSeries<T>&, CTimeSeries<T>&);
+template<class T> T KolmogorovSmirnov(const CTimeSeries<T>&, const CTimeSeries<T>&);
+template<class T> T KolmogorovSmirnov(CTimeSeries<T>*, CTimeSeries<T>*);
 template<class T> CTimeSeries<T> operator%(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator&(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator/(CTimeSeries<T> &CTimeSeries_T, T alpha);

@@ -92,7 +92,12 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
         }
         if (Parent()->reactionparameter(s)!=nullptr)
         {
-            return Parent()->reactionparameter(s)->GetVal("value",tmg);
+            if (var.Count(s+":value"))
+            {
+                return var[s+":value"].GetVal(tmg);
+            }
+            else
+                return Parent()->reactionparameter(s)->GetVal("value",tmg);
         }
         if (Parent()->source(GetCurrentCorrespondingSource())!=nullptr)
         {

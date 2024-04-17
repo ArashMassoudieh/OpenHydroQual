@@ -429,6 +429,14 @@
       "includeinoutput": "false",
       "ask_user": "true"
     },
+    "comparison_method": {
+      "type": "string",
+      "delegate": "ComboBox;items:Least Squared,Similarity",
+      "description": "Comparison Method",
+      "default": "Least Squared",
+      "includeinoutput": "false",
+      "ask_user": "true"
+    },
     "error_standard_deviation": {
       "type": "value",
       "description": "Error standard deviation",
@@ -436,6 +444,14 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
+    },
+    "autocorrelation_time-span": {
+      "type": "value",
+      "description": "Auto-correlation time-span",
+      "default": "1",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "false"
     }
   },
   "fixed_head": {
@@ -515,7 +531,7 @@
     "concentration": {
       "description": "Concentration",
       "type": "expression",
-      "expression": "mass/Storage",
+      "expression": "mass/(Storage+0.00001)",
       "ask_user": "true",
       "role": "copytoblocks",
       "includeinoutput": "true",
@@ -675,7 +691,7 @@
       "role": "copytoblocks",
       "delegate": "ComboBox;Sources"
     },
-    "inflow_concentration": {
+      "inflow_concentration": {
       "type": "timeseries",
       "includeinoutput": "true",
       "description": "Inflow concentration",
@@ -727,7 +743,7 @@
       "ask_user": "false",
 	  "includeinoutput": "true"
     },
-	"reference_temperature": {
+      "reference_temperature": {
       "description": "Reference Temperature",
       "type": "value",
 	  "default": "0",
@@ -749,6 +765,37 @@
 	  "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
+    }
+  },
+  "TimeDependent_ReactionParameter_Global": {
+    "type": "ReactionParameter",
+    "description": "Time Dependent Reaction Parameter (Global)",
+    "typecategory": "Reaction Parameters",
+    "icon": {
+      "filename": "timedependentreactionparameterglobal.png"
+    },
+    "value": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time-dependent value",
+      "ask_user": "true",
+      "delegate": "Browser" 
+    }
+  },
+  "TimeDependent_ReactionParameter": {
+    "type": "ReactionParameter",
+    "description": "Time Dependent Reaction Parameter",
+    "typecategory": "Reaction Parameters",
+    "icon": {
+      "filename": "timedependentreactionparameter.png"
+    },
+    "value": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time-dependent value",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "Browser" 
     }
   }
 }
