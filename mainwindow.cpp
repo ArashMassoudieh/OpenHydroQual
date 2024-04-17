@@ -855,6 +855,7 @@ void MainWindow::onaddreactionparameter()
     undoData.SetActiveSystem(&system);
     system.AddReactionParameter(reactionparameter);
     system.object(name)->SetName(name);
+    system.AddConstituentRelateProperties(system.reactionparameter(name));
     //qDebug() << "Reaction Parameter added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();

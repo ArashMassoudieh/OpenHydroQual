@@ -3199,6 +3199,7 @@ bool System::Delete(const string& objectname)
     for (unsigned int i = 0; i < ReactionParametersCount(); i++)
         if (reactionparameter(i)->GetName() == objectname)
         {
+            EraseConstituentRelatedProperties(objectname);
             reaction_parameters.erase(reaction_parameters.begin() + i);
         }
 
