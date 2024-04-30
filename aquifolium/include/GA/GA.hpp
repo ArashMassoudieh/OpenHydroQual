@@ -358,7 +358,7 @@ int counter=0;
 #endif
             Models[k].Solve();
             Ind[k].actual_fitness = Models[k].GetObjectiveFunctionValue();
-            if (Models[k].GetSolutionFailed())
+            if (Models[k].GetSolutionFailed() && Ind[k].parents.size()==2)
                 Ind[k].actual_fitness = (Ind_old[Ind[k].parents[0]].actual_fitness+Ind_old[Ind[k].parents[1]].actual_fitness)/2.0;
             for (unsigned int i=0; i<Models[k].fit_measures.size(); i++)
                 Ind[k].fit_measures[i] = Models[k].fit_measures[i];
