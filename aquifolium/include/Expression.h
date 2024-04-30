@@ -80,6 +80,7 @@ class Expression
         bool SetQuanPointers(Object *W);
         static bool func_operators_initialized;
         void Setup_Calculation_Structure();
+
     protected:
 
     private:

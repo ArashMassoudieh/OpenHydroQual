@@ -11,6 +11,7 @@ public:
     RxnParameter(const RxnParameter& other);
     RxnParameter& operator=(const RxnParameter& rhs);
     virtual ~RxnParameter();
+    bool SetName(const string &newname, bool setprop=true);
 };
 
 #endif // RXNPARAMETER_H

@@ -118,7 +118,12 @@ void expEditor::keyPressEvent(QKeyEvent *e)
             setText(d->OldExpression); return;
         }
     }
-
+    qDebug()<<e->key();
+    qDebug()<<e->text();
+    if (e->key()==Qt::Key_Backspace || e->key()==Qt::Key_Return || e->key()>1000 )
+    {
+        return;
+    }
     QChar ck (e->key());
 	QStringList Brackets;	Brackets << "(" << ")";
 	QStringList BinaryOperators;	BinaryOperators << "^" << "*" << "/" << "+" << "-";
