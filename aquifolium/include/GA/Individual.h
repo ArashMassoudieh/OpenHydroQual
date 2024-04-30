@@ -26,6 +26,9 @@ public:
 	int rank;
     void shake(double shakescale);
     vector<double> fit_measures;
+    vector<int> parents;
+    void SetParents(int i);
+    void SetParents(int i, int j);
 
 };
 

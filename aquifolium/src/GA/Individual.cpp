@@ -66,6 +66,7 @@ CIndividual::CIndividual(const CIndividual &C)
 	precision.resize(nParams);
 	minrange.resize(nParams);
 	maxrange.resize(nParams);
+    parents = C.parents;
 	for (int i=0; i<nParams; i++)
 	{	
 		pert[i] = C.pert[i];
@@ -94,6 +95,7 @@ CIndividual CIndividual::operator = (const CIndividual &C)
 	precision.resize(nParams);
 	minrange.resize(nParams);
 	maxrange.resize(nParams);
+    parents = C.parents;
 	for (int i=0; i<nParams; i++)
 	{	
 		pert[i] = C.pert[i];
@@ -126,6 +128,19 @@ void CIndividual::initialize()
 double GetRndUnif(double xmin, double xmax)
 {
 	return double(rand())/double(RAND_MAX)*(xmax-xmin) + xmin;
+}
+
+void CIndividual::SetParents(int i)
+{
+    parents.clear();
+    parents.push_back(i);
+    parents.push_back(i);
+}
+void CIndividual::SetParents(int i, int j)
+{
+    parents.clear();
+    parents.push_back(i);
+    parents.push_back(j);
 }
 
 void cross(const CIndividual &I1, const CIndividual &I2, CIndividual &IR1, CIndividual &IR2)
