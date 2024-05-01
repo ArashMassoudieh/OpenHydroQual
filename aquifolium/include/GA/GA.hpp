@@ -359,7 +359,20 @@ int counter=0;
             Models[k].Solve();
             Ind[k].actual_fitness = Models[k].GetObjectiveFunctionValue();
             if (Models[k].GetSolutionFailed() && Ind[k].parents.size()==2)
-                Ind[k].actual_fitness = (Ind_old[Ind[k].parents[0]].actual_fitness+Ind_old[Ind[k].parents[1]].actual_fitness)/2.0;
+            {   Ind[k].actual_fitness = (Ind_old[Ind[k].parents[0]].actual_fitness+Ind_old[Ind[k].parents[1]].actual_fitness)/2.0;
+                FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
+                fprintf(FileOut, "Simulation failed: %i, parent1=%i, parent2=%i, parent1_fitness=%e, parent2_fitness=%e, fitness=%e\n", k, Ind[k].parents[0], Ind[k].parents[1], Ind_old[Ind[k].parents[0]].actual_fitness, Ind_old[Ind[k].parents[1]].actual_fitness, Ind[k].actual_fitness);
+                fclose(FileOut);
+            }
+            else if (Ind[k].parents.size()!=2){
+                FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
+                fprintf(FileOut, "Simulation failed: %i\n:", Ind[k].parents.size());
+                fclose(FileOut);
+            }
+            if (Ind[k].actual_fitness == 0)
+            {
+                cout<<"Zero!"<<endl;
+            }
             for (unsigned int i=0; i<Models[k].fit_measures.size(); i++)
                 Ind[k].fit_measures[i] = Models[k].fit_measures[i];
 #ifdef Debug_GA
@@ -422,9 +435,8 @@ void CGA<T>::crossover()
 	{
         ////qDebug()<<"i = "<< i;
 		int j1 = fitdist.GetRand();
-		int j2 = fitdist.GetRand();
-        Ind[i].SetParents(j1,j2);
-        Ind[min(i+1,GA_params.maxpop-1)].SetParents(j1,j2);
+        int j2 = fitdist.GetRand();
+
 		double x = GetRndUniF(0,1);
 		if (x<GA_params.pcross)
 			if (GA_params.cross_over_type == 1)
@@ -436,7 +448,8 @@ void CGA<T>::crossover()
 			Ind[i] = Ind_old[j1];
 			Ind[i+1] = Ind_old[j2];
 		}
-
+        Ind[i].SetParents(j1,j2);
+        Ind[min(i+1,GA_params.maxpop-1)].SetParents(j1,j2);
 	}
 
 }
