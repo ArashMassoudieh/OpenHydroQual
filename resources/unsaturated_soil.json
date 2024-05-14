@@ -234,7 +234,7 @@
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
-      "filename": "Soil2Soil.png"
+      "filename": "soil2soil.png"
     },
     "description": "Vertical soil to soil connector",
     "area": {
@@ -378,7 +378,7 @@
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
-      "filename": "soil2soilH.png"
+      "filename": "soil2soilH_KS.png"
     },
     "description": "Horizontal soil to soil connector (with Ksat)",
     "area": {
@@ -486,7 +486,7 @@
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
-      "filename": "soil2fixedhead.png"
+      "filename": "soil2fixedhead-v.png"
     },
     "description": "Soil to fixed head connector",
     "area": {
@@ -548,7 +548,7 @@
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
-      "filename": "soil2fixedhead.png"
+      "filename": "soil2fixedhead-h.png"
     },
     "description": "Horizontal Soil to fixed head connector",
     "area": {
@@ -687,7 +687,7 @@
     "icon": {
       "filename": "soilfreeflow.png"
     },
-    "description": "Horizontal Soil to fixed head connector",
+    "description": "Horizontal Soil to fixed head connector - Free flow",
     "area": {
       "type": "value",
       "description": "Interface area",
@@ -773,7 +773,7 @@
     "type": "link", 
     "typecategory": "Connectors", 
     "icon": { 
-      "filename": "surface2soil.png" 
+      "filename": "surface2soil2.png" 
     }, 
     "description": "Surfacewater to soil connector (surface storage limit)", 
     "area": { 
