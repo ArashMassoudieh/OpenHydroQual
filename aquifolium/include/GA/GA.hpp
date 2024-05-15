@@ -371,7 +371,7 @@ int counter=0;
             }
             if (Ind[k].actual_fitness == 0)
             {
-                cout<<"Zero!"<<endl;
+                cout<<"Zero!"<<std::endl;
             }
             for (unsigned int i=0; i<Models[k].fit_measures.size(); i++)
                 Ind[k].fit_measures[i] = Models[k].fit_measures[i];
