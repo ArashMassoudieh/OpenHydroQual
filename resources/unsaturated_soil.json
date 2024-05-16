@@ -627,11 +627,12 @@
     },
     "description": "Fixed Hydraulic Gradient link",
     "area": {
-      "type": "expression",
+      "type": "value",
       "description": "Interface area",
-      "expression": "area.s",
-      "includeinoutput": "false",
-      "ask_user": "false"
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2"
     },
     "Se": {
       "type": "expression",
