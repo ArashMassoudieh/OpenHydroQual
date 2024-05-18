@@ -336,7 +336,7 @@
     "typecategory": "Connectors",
     "description": "Lake to groundwater link",
     "icon": {
-      "filename": "Surface2GW_link.png"
+      "filename": "Lake2GWlink.png"
     },
     "length": {
       "type": "value",
