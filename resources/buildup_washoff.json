@@ -274,7 +274,8 @@
 	    	"ask_user": "true",
 	    	"description": "Saturation Concentration Level",
 	    	"delegate": "UnitBox",
-	    	"unit": "g/m~^2"
+	    	"unit": "g/m~^2",
+	    	"estimate": "true"
 	    },
 	    "coefficient": {
 	      "type": "expression",
