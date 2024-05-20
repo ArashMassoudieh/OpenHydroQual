@@ -154,7 +154,7 @@
 	      "expression": "concentration_dependence_rate_expression*release_coefficient*(Precipitation/area)^exponent_of_depth*_hsd(Precipitation/area-i_min)"
     	    }
     	},
-		"surface_release_threshold": {
+	"surface_release_threshold": {
 	    "type": "Reaction",
 	    "description": "Release from surface (Threshold)",
 	    "normalizing_quantity": "area",
@@ -240,6 +240,45 @@
 	    "coefficient": {
 	      "type": "expression",
 	      "expression": "area*build_up_rate",
+	      "includeinoutput": "false",
+	      "description": "Build-up rate",
+	      "ask_user": "false"
+	    },
+	    "timeseries": {
+	      "type": "expression",
+	      "expression": "1",
+	      "includeinoutput": "false",
+	      "description": "1",
+	      "ask_user": "false"
+	    }
+	},
+	"Build up (Saturation)": {
+	    "type": "source",
+	    "typecategory": "Sources",
+	    "description": "Buildup exponential model",
+	    "icon": {
+	      "filename": "build_up_sat.png"
+	    },
+	    "build_up_rate": {
+	      "type": "value",
+	      "includeinoutput": "false",
+	      "description": "Build up rate (mass/time/area)",
+	      "ask_user": "true",
+	      "delegate": "UnitBox",
+		"estimate": "true",
+	      "unit": "g/day/m~^2"
+	    },
+	    "saturation":
+	    {
+	    	"type": "value",
+	    	"ask_user": "true",
+	    	"description": "Saturation Concentration Level",
+	    	"delegate": "UnitBox",
+	    	"unit": "g/m~^2"
+	    },
+	    "coefficient": {
+	      "type": "expression",
+	      "expression": "area*build_up_rate*(saturation-concentration)",
 	      "includeinoutput": "false",
 	      "description": "Build-up rate",
 	      "ask_user": "false"
