@@ -7,7 +7,11 @@
 #include "propmodel.h"
 #include "diagramview.h"
 #include "runtimewindow.h"
+#ifndef QCharts
 #include "plotter.h"
+#else
+#include "qplotwindow.h"
+#endif
 #include "GA.h"
 #include "MCMC.h"
 #include "logwindow.h"
@@ -48,16 +52,26 @@ public:
     void RecreateGraphicItemsFromSystem(bool zoom_all=true);
     void SetPropertyWindowTitle(const QString &title);
     void RefreshTreeView();
+#ifndef QCharts
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);
     Plotter* Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime=true);
+#else
+    QPlotWindow* Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
+    QPlotWindow* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);
+    QPlotWindow* Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime=true);
+#endif
     string CreateNewName(string type, bool allow_paranthesis = true);
     DiagramView* GetDiagramView() { return dView; }
     bool Log(const QString &s);
     bool LogError(const QString &s);
     bool LogAddDelete(const QString &s);
     void LogAllSystemErrors(ErrorHandler *errs=nullptr);
+#ifndef QCharts
     QMap<QCPGraph *, plotformat> graphsClipboard;
+#else
+    QMap<QString, CTimeSeries<timeseriesprecision>*> graphsClipboard = QMap<QString, CTimeSeries<timeseriesprecision>*>();
+#endif
     void SetPan(bool panmode) {actionpan->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
     void SetZoomWindow(bool panmode) {actionzoomwindow->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
     void addplugin(const QString &fileName);

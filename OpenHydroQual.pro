@@ -8,12 +8,14 @@
 
 CONFIG += c++14
 
-lessThan(QT_MAJOR_VERSION, 6): QT += core gui opengl printsupport svg
+lessThan(QT_MAJOR_VERSION, 6): QT += core gui opengl printsupport svg charts
 greaterThan(QT_MAJOR_VERSION, 5): {
-    QT += core gui opengl printsupport svgwidgets
+    QT += core gui opengl printsupport svgwidgets charts
     DEFINES += Qt6
 }
 
+
+DEFINES += QCharts
 INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
@@ -21,6 +23,7 @@ INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
 INCLUDEPATH += ../qcustomplot6/
+INCLUDEPATH += ../TimeSeriesPlotter/
 if==macx:CONFIG += staticlib
 macx: DEFINES +=mac_version
 linux: DEFINES +=ubuntu_version
@@ -85,6 +88,9 @@ CONFIG(debug, debug|release) {
 
 
 SOURCES += \
+    ../TimeSeriesPlotter/chartview.cpp \
+    ../TimeSeriesPlotter/qplotter.cpp \
+    ../TimeSeriesPlotter/qplotwindow.cpp \
     ./aquifolium/src/RxnParameter.cpp \
     ./aquifolium/src/constituent.cpp \
     ./aquifolium/src/observation.cpp \
@@ -143,7 +149,6 @@ SOURCES += \
     ./aquifolium/src/GA/Distribution.cpp \
     runtimewindow.cpp \
     ../qcustomplot6/qcustomplot.cpp \
-    plotter.cpp \
     expEditor.cpp \
     statusviewer.cpp \
     expressioneditor.cpp \
@@ -153,6 +158,9 @@ SOURCES += \
     wizard_select_dialog.cpp
 
 HEADERS += \
+    ../TimeSeriesPlotter/chartview.h \
+    ../TimeSeriesPlotter/qplotter.h \
+    ../TimeSeriesPlotter/qplotwindow.h \
     ./aquifolium/include/Objective_Function.h \
     ./aquifolium/include/Objective_Function_Set.h \
     ./aquifolium/include/Precipitation.h \
@@ -226,7 +234,6 @@ HEADERS += \
     ./aquifolium/include/GA/Individual.h \
     runtimewindow.h \
     ../qcustomplot6/qcustomplot.h \
-    plotter.h \
     ./aquifolium/include/Objective_Function.h \
     ./aquifolium/include/Objective_Function_Set.h \
     expEditor.h \
@@ -240,13 +247,13 @@ HEADERS += \
     wizard_select_dialog.h
 
 FORMS += \
+    ../TimeSeriesPlotter/qplotwindow.ui \
     Options.ui \
     aboutdialog.ui \
     gridgenerator.ui \
     itempropertieswidget.ui \
         mainwindow.ui \
     runtimewindow.ui \
-    plotter.ui \
     logwindow.ui \
     wizard_select_dialog.ui
 

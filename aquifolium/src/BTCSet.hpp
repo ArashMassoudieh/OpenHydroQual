@@ -451,16 +451,38 @@ void CTimeSeriesSet<T>::getfromfile(string _filename, bool varytime)
 }
 
 template <class T>
-T CTimeSeriesSet<T>::maxtime()
+T CTimeSeriesSet<T>::maxtime() const
 {
-	return BTC[0].GetT(BTC[0].n-1);
-
+    double _maxtime = -1e12;
+    for (int i=0; i<nvars; i++)
+        _maxtime = max(BTC[i].maxt(),_maxtime);
+    return _maxtime;
 }
 
 template <class T>
-T CTimeSeriesSet<T>::mintime()
+T CTimeSeriesSet<T>::maxval() const
 {
-	return BTC[0].GetT(0);
+    double _maxval = -1e12;
+    for (int i=0; i<nvars; i++)
+        _maxval = max(BTC[i].maxC(),_maxval);
+    return _maxval;
+}
+template <class T>
+T CTimeSeriesSet<T>::minval() const
+{
+    double _minval = 1e12;
+    for (int i=0; i<nvars; i++)
+        _minval = min(BTC[i].minC(),_minval);
+    return _minval;
+}
+
+template <class T>
+T CTimeSeriesSet<T>::mintime() const
+{
+    double _mintime = 1e12;
+    for (int i=0; i<nvars; i++)
+        _mintime = min(BTC[i].mint(),_mintime);
+    return _mintime;
 
 }
 

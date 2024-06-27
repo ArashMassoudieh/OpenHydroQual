@@ -28,8 +28,10 @@ public:
     vector<T> interpolate(T t);
     vector<T> interpolate(T t, int fnvars);
 	void getfromfile(string filename, bool varytime);
-    T maxtime();
-    T mintime();
+    T maxtime() const;
+    T mintime() const;
+    T maxval() const;
+    T minval() const;
     vector<T> getrandom();
     vector<T> percentile(T x);
     vector<T> mean(int limit);

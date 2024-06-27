@@ -25,7 +25,11 @@
 #include "Script.h"
 #include "QFileDialog"
 #include "runtimewindow.h"
+#ifndef QCharts
 #include "plotter.h"
+#else
+#include "qplotwindow.h"
+#endif
 #include <QInputDialog>
 #include "wizard_select_dialog.h"
 #ifndef Qt6
@@ -122,6 +126,8 @@ MainWindow::MainWindow(QWidget *parent) :
     undoData.AppendtoLast(&system);
     if (undoData.active==0) InactivateUndo();
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
+    qDebug()<<graphsClipboard.size();
+    graphsClipboard.clear();
 
 }
 
@@ -249,7 +255,11 @@ void MainWindow::PlotTimeSeries()
 
     if (GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries() != nullptr)
     {
+#ifndef QCharts
         Plotter* plot = Plot(*GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries());
+#else
+        QPlotWindow* plot = Plot(*GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries());
+#endif
         plot->SetYAxisTitle(varname);
     }
 
@@ -1232,7 +1242,11 @@ void MainWindow::showgraph()
     {
         if (GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries() != nullptr)
         {
+#ifndef QCharts
             Plotter* plot = Plot(*GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries());
+#else
+            QPlotWindow* plot = Plot(*GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries());
+#endif
             plot->SetYAxisTitle(act->text());
         }
     return;
@@ -1244,18 +1258,31 @@ void MainWindow::showgraph()
         {
             if (GetSystem()->GetOutputs().Contains(item.toStdString()))
             {
+#ifndef QCharts
                 Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()],*GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries());
+#else
+                QPlotWindow* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()],*GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries());
+#endif
                 plot->SetYAxisTitle(act->text());
             }
             else
             {
-                Plotter* plot = Plot(*GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries());
+#ifndef QCharts
+                Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()],*GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries());
+#else
+                QPlotWindow* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()],*GetSystem()->observation(object.toStdString())->Variable("observed_data")->GetTimeSeries());
+#endif
+
                 plot->SetYAxisTitle(act->text());
             }
         }
         else if (GetSystem()->GetOutputs().Contains(item.toStdString()))
         {
+#ifndef QCharts
             Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
+#else
+            QPlotWindow* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
+#endif
             plot->SetYAxisTitle(act->text());
         }
     }
@@ -1263,14 +1290,22 @@ void MainWindow::showgraph()
     {
         if (act->text()=="Distribution")
         {
+#ifndef QCharts
             Plotter* plot = Plot(GetSystem()->parameter(item.toStdString())->GetPosteriorDistribution(),false);
+#else
+            QPlotWindow* plot = Plot(GetSystem()->parameter(item.toStdString())->GetPosteriorDistribution(),false);
+#endif
             plot->AddData(GetSystem()->parameter(item.toStdString())->PriorDistribution());
             plot->SetYAxisTitle("Density");
             plot->SetXAxisTitle(item);
         }
         else if (act->text()=="Marcov Chain")
         {
+#ifndef QCharts
             Plotter* plot = Plot(GetSystem()->parameter(item.toStdString())->GetMCMCSamples(),false);
+#else
+            QPlotWindow* plot = Plot(GetSystem()->parameter(item.toStdString())->GetMCMCSamples(),false);
+#endif
             plot->SetYAxisTitle(item);
             plot->SetXAxisTitle("Sample");
         }
@@ -1279,15 +1314,23 @@ void MainWindow::showgraph()
     {
         if (act->text()=="Realizations")
         {
+#ifndef QCharts
             Plotter* plot = Plot(GetSystem()->observation(item.toStdString())->Realizations());
+#else
+            QPlotWindow* plot = Plot(GetSystem()->observation(item.toStdString())->Realizations());
+#endif
             plot->SetYAxisTitle(QString::fromStdString(GetSystem()->observation(item.toStdString())->GetName()));
             plot->SetLegend(false);
             plot->SetXAxisTitle("t");
         }
         else if (act->text()=="95 percent bracket")
         {
-            qDebug()<<"Attempting to plot ...";
+#ifndef QCharts
             Plotter* plot = Plot(GetSystem()->observation(item.toStdString())->Percentile95());
+#else
+            QPlotWindow* plot = Plot(GetSystem()->observation(item.toStdString())->Percentile95());
+#endif
+
             qDebug()<<"Aadding axis titles";
             plot->SetYAxisTitle(QString::fromStdString(GetSystem()->observation(item.toStdString())->GetName()));
             plot->SetXAxisTitle("t");
@@ -1300,7 +1343,11 @@ void MainWindow::showgraph()
             QMessageBox::question(this, "Time Series is empty!", "The result for this quantity is empty!", QMessageBox::Ok);
             return;
         }
+#ifndef QCharts
         Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
+#else
+        QPlotWindow* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
+#endif
         plot->SetYAxisTitle(act->text());
     }
 
@@ -2050,7 +2097,7 @@ void MainWindow::onmcmc()
     rtw->AppendText(string("Parameter Estimation Finished!"));
 }
 
-
+#ifndef QCharts
 Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime)
 {
     Plotter* plotter = new Plotter(this);
@@ -2079,6 +2126,37 @@ Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSe
     plotter->show();
     return plotter;
 }
+#else
+QPlotWindow* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime)
+{
+    QPlotWindow* plotter = new QPlotWindow(this);
+    plotter->PlotData(plotitem,allowtime);
+    plotter->show();
+    return plotter;
+}
+
+QPlotWindow* MainWindow::Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime)
+{
+    QPlotWindow* plotter = new QPlotWindow(this);
+    qDebug()<<"plotting ...";
+    plotter->PlotData(plotitem, allowtime);
+    qDebug()<<"Showing plot";
+    plotter->show();
+    return plotter;
+}
+
+QPlotWindow* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved)
+{
+    QPlotWindow* plotter = new QPlotWindow(this);
+    if (plotmodeled.n>0)
+        plotter->PlotData(plotmodeled,false, "line");
+    if (plotobserved.n>0)
+    plotter->AddData(plotobserved,false, "dots");
+    plotter->show();
+    return plotter;
+}
+#endif
+
 
 void MainWindow::onAddItemThroughTreeViewRightClick()
 {
