@@ -52,6 +52,7 @@ public:
     void RecreateGraphicItemsFromSystem(bool zoom_all=true);
     void SetPropertyWindowTitle(const QString &title);
     void RefreshTreeView();
+    QString resource_directory;
 #ifndef QCharts
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
     Plotter* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);
