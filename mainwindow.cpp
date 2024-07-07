@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     resource_directory = QString::fromStdString(RESOURCE_DIRECTORY);
+    qDebug()<<"Resource Directory: " << resource_directory;
     QIcon mainicon(QString::fromStdString(RESOURCE_DIRECTORY) + "/Icons/Aquifolium.png");
     workingfolder = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     setWindowIcon(mainicon);

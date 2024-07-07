@@ -6,7 +6,7 @@
 
 #CONFIG -= app_bundle
 
-CONFIG += c++14
+CONFIG += c++17
 
 lessThan(QT_MAJOR_VERSION, 6): QT += core gui opengl printsupport svg charts
 greaterThan(QT_MAJOR_VERSION, 5): {
@@ -23,7 +23,7 @@ INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
 INCLUDEPATH += ../qcustomplot6/
-INCLUDEPATH += ../TimeSeriesPlotter/
+
 if==macx:CONFIG += staticlib
 macx: DEFINES +=mac_version
 linux: DEFINES +=ubuntu_version
@@ -88,9 +88,6 @@ CONFIG(debug, debug|release) {
 
 
 SOURCES += \
-    ../TimeSeriesPlotter/chartview.cpp \
-    ../TimeSeriesPlotter/qplotter.cpp \
-    ../TimeSeriesPlotter/qplotwindow.cpp \
     ./aquifolium/src/RxnParameter.cpp \
     ./aquifolium/src/constituent.cpp \
     ./aquifolium/src/observation.cpp \
@@ -107,6 +104,7 @@ SOURCES += \
     aboutdialog.cpp \
     aquifolium/src/Utilities.cpp \
     aquifolium/src/restorepoint.cpp \
+    chartview.cpp \
     diagramview.cpp \
     edge.cpp \
     gridgenerator.cpp \
@@ -138,6 +136,8 @@ SOURCES += \
     options.cpp \
     propmodel.cpp \
     delegate.cpp \
+    qplotter.cpp \
+    qplotwindow.cpp \
     ray.cpp \
     undodata.cpp \
     utilityfuncs.cpp \
@@ -183,6 +183,7 @@ HEADERS += \
     aquifolium/include/restorepoint.h \
     aquifolium/include/safevector.h \
     aquifolium/include/safevector.hpp \
+    chartview.h \
     diagramview.h \
     edge.h \
     gridgenerator.h \
@@ -221,6 +222,8 @@ HEADERS += \
     options.h \
     propmodel.h \
     delegate.h \
+    qplotter.h \
+    qplotwindow.h \
     ray.h \
     undodata.h \
     utilityfuncs.h \
@@ -247,12 +250,12 @@ HEADERS += \
     wizard_select_dialog.h
 
 FORMS += \
-    ../TimeSeriesPlotter/qplotwindow.ui \
     Options.ui \
     aboutdialog.ui \
     gridgenerator.ui \
     itempropertieswidget.ui \
-        mainwindow.ui \
+    mainwindow.ui \
+    qplotwindow.ui \
     runtimewindow.ui \
     logwindow.ui \
     wizard_select_dialog.ui
