@@ -36,8 +36,8 @@ bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeser
     if (x_max_val<20000)
         allowtime = false;
 #ifndef Qt6
-        QDateTime start = QDateTime::fromTime_t(xtoTime(timeseries.GetT(0)), QTimeZone(0));
-        QDateTime end = QDateTime::fromTime_t(xtoTime(timeseries.GetT(timeseries.n - 1)), QTimeZone(0));
+    start = QDateTime::fromSecsSinceEpoch(xtoTime(x_min_val));
+    end = QDateTime::fromSecsSinceEpoch(xtoTime(x_max_val));
 #else
         QDateTime start = QDateTime::fromSecsSinceEpoch(xtoTime(timeseries.GetT(0)));
         QDateTime end = QDateTime::fromSecsSinceEpoch(xtoTime(timeseries.GetT(timeseries.n-1)));
@@ -140,8 +140,8 @@ bool QPlotWindow::PlotData(const CTimeSeriesSet<outputtimeseriesprecision>& time
         allowtime = false;
 
 #ifndef Qt6
-        start = QDateTime::fromTime_t(xtoTime(x_min_val), QTimeZone(0));
-        end = QDateTime::fromTime_t(xtoTime(x_max_val), QTimeZone(0));
+        start = QDateTime::fromSecsSinceEpoch(xtoTime(x_min_val));
+        end = QDateTime::fromSecsSinceEpoch(xtoTime(x_max_val));
 #else
         start = QDateTime::fromSecsSinceEpoch(xtoTime(x_min_val));
         end = QDateTime::fromSecsSinceEpoch(xtoTime(x_max_val));
@@ -203,9 +203,9 @@ bool QPlotWindow::PlotData(const CTimeSeriesSet<outputtimeseriesprecision>& time
         {
             if (allowtime)
 #ifndef Qt6
-            lineseries->append(QDateTime::fromTime_t(xtoTime(timeseriesset.BTC[i].GetT(j))).toMSecsSinceEpoch(),timeseriesset.BTC[i].GetC(j));
+            lineseries->append(xtoTime(timeseriesset.BTC[i].GetT(j))*1000,timeseriesset.BTC[i].GetC(j));
 #else
-            lineseries->append(QDateTime::fromSecsSinceEpoch(xtoTime(timeseriesset.BTC[i].GetT(j))).toMSecsSinceEpoch(),timeseriesset.BTC[i].GetC(j));
+            lineseries->append(xtoTime(timeseriesset.BTC[i].GetT(j))*1000,timeseriesset.BTC[i].GetC(j));
 #endif
             else
                 lineseries->append(timeseriesset.BTC[i].GetT(j),timeseriesset.BTC[i].GetC(j));
@@ -242,8 +242,8 @@ bool QPlotWindow::AddData(const CTimeSeries<outputtimeseriesprecision>& timeseri
     y_max_val = max(timeseries.maxC(),y_max_val);
 
 #ifndef Qt6
-        start = QDateTime::fromTime_t(xtoTime(x_min_val), QTimeZone(0));
-        end = QDateTime::fromTime_t(xtoTime(x_max_val), QTimeZone(0));
+    start = QDateTime::fromSecsSinceEpoch(xtoTime(x_min_val));
+    end = QDateTime::fromSecsSinceEpoch(xtoTime(x_max_val));
 #else
         start = QDateTime::fromSecsSinceEpoch(xtoTime(x_min_val));
         end = QDateTime::fromSecsSinceEpoch(xtoTime(x_max_val));

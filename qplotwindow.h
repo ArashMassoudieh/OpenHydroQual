@@ -83,6 +83,7 @@ private:
     ChartView *chartview;
     double xtoTime(const double &x) {
         return x * 86400 - 2209161600;
+
     }
     double timetoX(const double &time) {
         return (time + 2209161600) / 86400;
