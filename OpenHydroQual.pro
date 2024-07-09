@@ -89,7 +89,6 @@ CONFIG(debug, debug|release) {
 SOURCES += \
     chartview.cpp \
     qplotter.cpp \
-    qplotwindow.cpp \
     ./aquifolium/src/RxnParameter.cpp \
     ./aquifolium/src/constituent.cpp \
     ./aquifolium/src/observation.cpp \
@@ -106,12 +105,11 @@ SOURCES += \
     aboutdialog.cpp \
     aquifolium/src/Utilities.cpp \
     aquifolium/src/restorepoint.cpp \
-    chartview.cpp \
     diagramview.cpp \
     edge.cpp \
     gridgenerator.cpp \
-        main.cpp \
-        mainwindow.cpp \
+    main.cpp \
+    mainwindow.cpp \
     ./aquifolium/src/Block.cpp \
     ./aquifolium/src/Expression.cpp \
     ./aquifolium/src/Matrix.cpp \
@@ -138,7 +136,6 @@ SOURCES += \
     options.cpp \
     propmodel.cpp \
     delegate.cpp \
-    qplotter.cpp \
     qplotwindow.cpp \
     ray.cpp \
     undodata.cpp \
