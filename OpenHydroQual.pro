@@ -23,7 +23,6 @@ INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
 INCLUDEPATH += ../qcustomplot6/
-
 if==macx:CONFIG += staticlib
 macx: DEFINES +=mac_version
 linux: DEFINES +=ubuntu_version
@@ -88,6 +87,9 @@ CONFIG(debug, debug|release) {
 
 
 SOURCES += \
+    chartview.cpp \
+    qplotter.cpp \
+    qplotwindow.cpp \
     ./aquifolium/src/RxnParameter.cpp \
     ./aquifolium/src/constituent.cpp \
     ./aquifolium/src/observation.cpp \
@@ -158,9 +160,9 @@ SOURCES += \
     wizard_select_dialog.cpp
 
 HEADERS += \
-    ../TimeSeriesPlotter/chartview.h \
-    ../TimeSeriesPlotter/qplotter.h \
-    ../TimeSeriesPlotter/qplotwindow.h \
+    chartview.h \
+    qplotter.h \
+    qplotwindow.h \
     ./aquifolium/include/Objective_Function.h \
     ./aquifolium/include/Objective_Function_Set.h \
     ./aquifolium/include/Precipitation.h \
@@ -250,12 +252,12 @@ HEADERS += \
     wizard_select_dialog.h
 
 FORMS += \
+    qplotwindow.ui \
     Options.ui \
     aboutdialog.ui \
     gridgenerator.ui \
     itempropertieswidget.ui \
     mainwindow.ui \
-    qplotwindow.ui \
     runtimewindow.ui \
     logwindow.ui \
     wizard_select_dialog.ui

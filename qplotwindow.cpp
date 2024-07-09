@@ -13,10 +13,12 @@ QPlotWindow::QPlotWindow(MainWindow *parent) :
     chartview = new ChartView(chart, this, parent);
     ui->verticalLayout->addWidget(chartview);
     qDebug()<<parent->resource_directory;
-    QString iconfilename = parent->resource_directory + "/Icons/export.png";
-    QIcon icon = QIcon(parent->resource_directory + "/Icons/export.png");
-    connect(ui->toolButton,SIGNAL(clicked()),this, SLOT(ExportToPNG()));
-    ui->toolButton->setIcon(icon);
+    QIcon icon_png = QIcon(parent->resource_directory + "/Icons/Graph.png");
+    QIcon icon_csv = QIcon(parent->resource_directory + "/Icons/export.png");
+    connect(ui->ExportToPNG,SIGNAL(clicked()),this, SLOT(ExportToPNG()));
+    ui->ExportToPNG->setIcon(icon_png);
+    connect(ui->ExporttoCSV,SIGNAL(clicked()),this, SLOT(ExportToCSV()));
+    ui->ExporttoCSV->setIcon(icon_csv);
     //chart->setContextMenuPolicy(Qt::CustomContextMenu);
 
 }
@@ -36,11 +38,13 @@ bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeser
     if (x_max_val<20000)
         allowtime = false;
 #ifndef Qt6
-        QDateTime start = QDateTime::fromTime_t(xtoTime(timeseries.GetT(0)), QTimeZone(0));
-        QDateTime end = QDateTime::fromTime_t(xtoTime(timeseries.GetT(timeseries.n - 1)), QTimeZone(0));
+    //QDateTime _date = QDateTime::fromSecsSinceEpoch(xtoTime(25569),QTimeZone::utc());
+    //QDateTime _date2 = QDateTime::fromSecsSinceEpoch(0);
+    start = xToDateTime(x_min_val);
+    end = xToDateTime(x_max_val);
 #else
-        QDateTime start = QDateTime::fromSecsSinceEpoch(xtoTime(timeseries.GetT(0)));
-        QDateTime end = QDateTime::fromSecsSinceEpoch(xtoTime(timeseries.GetT(timeseries.n-1)));
+    start = xToDateTime(x_min_val);
+    end = xToDateTime(x_max_val);
 #endif
 
     QString xAxisTitle = x_Axis_Title;
@@ -53,7 +57,7 @@ bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeser
     if (!allowtime)
     {   axisX_normal->setTitleText("X");
         chart->addAxis(axisX_normal, Qt::AlignBottom);
-        axisX_normal->setObjectName("axisX");
+        axisX_normal->setObjectName("axisX_normal");
         axisX_normal->setTitleText(xAxisTitle);
         axisX_normal->setRange(x_min_val ,x_max_val);
     }
@@ -61,7 +65,7 @@ bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeser
     {
         axisX_date->setTitleText("X");
         chart->addAxis(axisX_date, Qt::AlignBottom);
-        axisX_date->setObjectName("axisX");
+        axisX_date->setObjectName("axisX_date");
         axisX_date->setTitleText(xAxisTitle);
         axisX_date->setRange(start ,end);
     }
@@ -69,7 +73,7 @@ bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeser
     if (!chartview->Ylog())
     {
         axisY = new QValueAxis();
-        axisY->setObjectName("axisY");
+        axisY->setObjectName("axisY_normal");
         axisY->setTitleText(yAxisTitle);
         axisY->setRange(y_min_val,y_max_val);
         chart->addAxis(axisY, Qt::AlignLeft);
@@ -77,7 +81,7 @@ bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeser
     else
     {
         axisY_log = new QLogValueAxis();
-        axisY_log->setObjectName("axisY");
+        axisY_log->setObjectName("axisY_log");
         axisY_log->setTitleText(yAxisTitle);
         axisY_log->setRange(y_min_val,y_max_val);
         axisY_log->setMinorTickCount(8);
@@ -86,7 +90,20 @@ bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeser
 
 
     QLineSeries *lineseries = new QLineSeries();
+
+    for (int j=0; j<timeseries.n; j++)
+    {
+        if (allowtime)
+#ifndef Qt6
+            lineseries->append(xToDateTime(timeseries.GetT(j)).toMSecsSinceEpoch(),timeseries.GetC(j));
+#else
+            lineseries->append(xToDateTime(timeseries.GetT(j)).toMSecsSinceEpoch(),timeseries.GetC(j));
+#endif
+        else
+            lineseries->append(timeseries.GetT(j),timeseries.GetC(j));
+    }
     chart->addSeries(lineseries);
+
     if (allowtime)
         lineseries->attachAxis(axisX_date);
     else
@@ -96,17 +113,6 @@ bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeser
     else
         lineseries->attachAxis(axisY_log);
 
-    for (int j=0; j<timeseries.n; j++)
-    {
-        if (allowtime)
-#ifndef Qt6
-            lineseries->append(QDateTime::fromTime_t(xtoTime(timeseries.GetT(j))).toMSecsSinceEpoch(),timeseries.GetC(j));
-#else
-            lineseries->append(QDateTime::fromSecsSinceEpoch(xtoTime(timeseries.GetT(j))).toMSecsSinceEpoch(),timeseries.GetC(j));
-#endif
-        else
-            lineseries->append(timeseries.GetT(j),timeseries.GetC(j));
-    }
     QPen pen = lineseries->pen();
     pen.setWidth(2);
     pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
@@ -140,11 +146,11 @@ bool QPlotWindow::PlotData(const CTimeSeriesSet<outputtimeseriesprecision>& time
         allowtime = false;
 
 #ifndef Qt6
-        start = QDateTime::fromTime_t(xtoTime(x_min_val), QTimeZone(0));
-        end = QDateTime::fromTime_t(xtoTime(x_max_val), QTimeZone(0));
+        start = xToDateTime(x_min_val);
+        end = xToDateTime(x_max_val);
 #else
-        start = QDateTime::fromSecsSinceEpoch(xtoTime(x_min_val));
-        end = QDateTime::fromSecsSinceEpoch(xtoTime(x_max_val));
+    start = xToDateTime(x_min_val);
+    end = xToDateTime(x_max_val);
 #endif
 
     QString xAxisTitle = x_Axis_Title;
@@ -203,9 +209,9 @@ bool QPlotWindow::PlotData(const CTimeSeriesSet<outputtimeseriesprecision>& time
         {
             if (allowtime)
 #ifndef Qt6
-            lineseries->append(QDateTime::fromTime_t(xtoTime(timeseriesset.BTC[i].GetT(j))).toMSecsSinceEpoch(),timeseriesset.BTC[i].GetC(j));
+            lineseries->append(xToDateTime(timeseriesset.BTC[i].GetT(j)).toMSecsSinceEpoch(),timeseriesset.BTC[i].GetC(j));
 #else
-            lineseries->append(QDateTime::fromSecsSinceEpoch(xtoTime(timeseriesset.BTC[i].GetT(j))).toMSecsSinceEpoch(),timeseriesset.BTC[i].GetC(j));
+            lineseries->append(xToDateTime(timeseriesset.BTC[i].GetT(j)).toMSecsSinceEpoch(),timeseriesset.BTC[i].GetC(j));
 #endif
             else
                 lineseries->append(timeseriesset.BTC[i].GetT(j),timeseriesset.BTC[i].GetC(j));
@@ -237,20 +243,20 @@ bool QPlotWindow::PlotData(const CTimeSeriesSet<outputtimeseriesprecision>& time
 bool QPlotWindow::AddData(const CTimeSeries<outputtimeseriesprecision>& timeseries,bool allowtime, string style)
 {
     x_min_val = min(timeseries.mint(),x_min_val);
-    x_max_val = max(timeseries.mint(),x_max_val);
+    x_max_val = max(timeseries.maxt(),x_max_val);
     y_min_val = min(timeseries.minC(),y_min_val);
     y_max_val = max(timeseries.maxC(),y_max_val);
 
 #ifndef Qt6
-        start = QDateTime::fromTime_t(xtoTime(x_min_val), QTimeZone(0));
-        end = QDateTime::fromTime_t(xtoTime(x_max_val), QTimeZone(0));
+    start = xToDateTime(x_min_val);
+    end = xToDateTime(x_max_val);
 #else
-        start = QDateTime::fromSecsSinceEpoch(xtoTime(x_min_val));
-        end = QDateTime::fromSecsSinceEpoch(xtoTime(x_max_val));
+    start = xToDateTime(x_min_val);
+    end = xToDateTime(x_max_val);
 #endif
 
-
     QLineSeries *lineseries = new QLineSeries();
+    lineseries->setName(QString::fromStdString(timeseries.name));
     chart->addSeries(lineseries);
     if (allowtime)
     {   lineseries->attachAxis(axisX_date);
@@ -263,28 +269,24 @@ bool QPlotWindow::AddData(const CTimeSeries<outputtimeseriesprecision>& timeseri
     axisY->setRange(y_min_val,y_max_val);
     lineseries->attachAxis(axisY);
 
-
     for (int j=0; j<timeseries.n; j++)
     {
         if (allowtime)
 #ifndef Qt6
-            lineseries->append(QDateTime::fromTime_t(xtoTime(timeseries.GetT(j))).toMSecsSinceEpoch(),timeseries.GetC(j));
+            lineseries->append(xToDateTime(timeseries.GetT(j)).toMSecsSinceEpoch(),timeseries.GetC(j));
 #else
-            lineseries->append(QDateTime::fromSecsSinceEpoch(xtoTime(timeseries.GetT(j))).toMSecsSinceEpoch(),timeseries.GetC(j));
+            lineseries->append(xToDateTime(timeseries.GetT(j)).toMSecsSinceEpoch(),timeseries.GetC(j));
 #endif
         else
             lineseries->append(timeseries.GetT(j),timeseries.GetC(j));
     }
 
 
-
     QPen pen = lineseries->pen();
     pen.setWidth(2);
     pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
     lineseries->setPen(pen);
-    lineseries->setName(QString::fromStdString(timeseries.name));
     TimeSeries.insert(lineseries->name(),timeseries);
-
 
     return true;
 }
@@ -352,4 +354,22 @@ void QPlotWindow::ExportToPNG()
 
     chartview->grab().save(fileName);
     this->resize(rect.size());
+}
+
+void QPlotWindow::ExportToCSV()
+{
+    QRect rect = QDialog::frameGeometry();
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Save"), "",
+        tr("csv file (*.csv)"));
+
+    if (!fileName.contains("."))
+        fileName+=".csv";
+
+    CTimeSeriesSet<double> towrite;
+    for (QMap<QString, CTimeSeries<double>>::iterator it = TimeSeries.begin(); it!=TimeSeries.end(); it++)
+        towrite.append(it.value(),it.key().toStdString());
+
+    towrite.writetofile(fileName.toStdString());
 }

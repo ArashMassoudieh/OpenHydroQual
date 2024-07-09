@@ -79,13 +79,23 @@ public:
     bool SetYAxis(bool log);
 private:
     Ui::QPlotWindow *ui;
-    QPlotter* chart;
-    ChartView *chartview;
+    QPlotter* chart = nullptr;
+    ChartView *chartview = nullptr;
     double xtoTime(const double &x) {
         return x * 86400 - 2209161600;
+
     }
     double timetoX(const double &time) {
         return (time + 2209161600) / 86400;
+    }
+    QDateTime xToDateTime(const double &xltime)
+    {
+        QDateTime temp_time = QDateTime::fromSecsSinceEpoch(xtoTime(xltime));
+        int local_offset = temp_time.offsetFromUtc();
+        int fixed_timestamp = xtoTime(xltime) - local_offset;
+        QDateTime out = QDateTime::fromSecsSinceEpoch(fixed_timestamp);
+        return out;
+
     }
     QMap<QString,CTimeSeries<double>> TimeSeries;
     QValueAxis* axisY = nullptr;
@@ -105,6 +115,7 @@ private:
 private slots:
      void contextMenuRequest(QPoint pos);
      void ExportToPNG();
+     void ExportToCSV();
 
 };
 
