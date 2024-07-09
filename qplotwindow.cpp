@@ -13,10 +13,12 @@ QPlotWindow::QPlotWindow(MainWindow *parent) :
     chartview = new ChartView(chart, this, parent);
     ui->verticalLayout->addWidget(chartview);
     qDebug()<<parent->resource_directory;
-    QString iconfilename = parent->resource_directory + "/Icons/export.png";
-    QIcon icon = QIcon(parent->resource_directory + "/Icons/export.png");
-    connect(ui->toolButton,SIGNAL(clicked()),this, SLOT(ExportToPNG()));
-    ui->toolButton->setIcon(icon);
+    QIcon icon_png = QIcon(parent->resource_directory + "/Icons/Graph.png");
+    QIcon icon_csv = QIcon(parent->resource_directory + "/Icons/export.png");
+    connect(ui->ExportToPNG,SIGNAL(clicked()),this, SLOT(ExportToPNG()));
+    ui->ExportToPNG->setIcon(icon_png);
+    connect(ui->ExporttoCSV,SIGNAL(clicked()),this, SLOT(ExportToCSV()));
+    ui->ExporttoCSV->setIcon(icon_csv);
     //chart->setContextMenuPolicy(Qt::CustomContextMenu);
 
 }
@@ -241,7 +243,7 @@ bool QPlotWindow::PlotData(const CTimeSeriesSet<outputtimeseriesprecision>& time
 bool QPlotWindow::AddData(const CTimeSeries<outputtimeseriesprecision>& timeseries,bool allowtime, string style)
 {
     x_min_val = min(timeseries.mint(),x_min_val);
-    x_max_val = max(timeseries.mint(),x_max_val);
+    x_max_val = max(timeseries.maxt(),x_max_val);
     y_min_val = min(timeseries.minC(),y_min_val);
     y_max_val = max(timeseries.maxC(),y_max_val);
 
@@ -249,12 +251,23 @@ bool QPlotWindow::AddData(const CTimeSeries<outputtimeseriesprecision>& timeseri
     start = xToDateTime(x_min_val);
     end = xToDateTime(x_max_val);
 #else
-        start = QDateTime::fromSecsSinceEpoch(xtoTime(x_min_val));
-        end = QDateTime::fromSecsSinceEpoch(xtoTime(x_max_val));
+    start = xToDateTime(x_min_val);
+    end = xToDateTime(x_max_val);
 #endif
 
-
-    QLineSeries *lineseries = new QLineSeries(chartview);
+    QLineSeries *lineseries = new QLineSeries();
+    lineseries->setName(QString::fromStdString(timeseries.name));
+    chart->addSeries(lineseries);
+    if (allowtime)
+    {   lineseries->attachAxis(axisX_date);
+        axisX_date->setRange(start ,end);
+    }
+    else
+    {   lineseries->attachAxis(axisX_normal);
+        axisX_normal->setRange(x_min_val ,x_max_val);
+    }
+    axisY->setRange(y_min_val,y_max_val);
+    lineseries->attachAxis(axisY);
 
     for (int j=0; j<timeseries.n; j++)
     {
@@ -268,25 +281,12 @@ bool QPlotWindow::AddData(const CTimeSeries<outputtimeseriesprecision>& timeseri
             lineseries->append(timeseries.GetT(j),timeseries.GetC(j));
     }
 
-    //chart->addSeries(lineseries);
-    if (allowtime)
-    {   lineseries->attachAxis(axisX_date);
-        axisX_date->setRange(start ,end);
-    }
-    else
-    {   lineseries->attachAxis(axisX_normal);
-        axisX_normal->setRange(x_min_val ,x_max_val);
-    }
-    axisY->setRange(y_min_val,y_max_val);
-    lineseries->attachAxis(axisY);
 
     QPen pen = lineseries->pen();
     pen.setWidth(2);
     pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
     lineseries->setPen(pen);
-    lineseries->setName(QString::fromStdString(timeseries.name));
     TimeSeries.insert(lineseries->name(),timeseries);
-    QList<QAbstractAxis*> axes = chart->axes(Qt::Horizontal);
 
     return true;
 }
@@ -354,4 +354,22 @@ void QPlotWindow::ExportToPNG()
 
     chartview->grab().save(fileName);
     this->resize(rect.size());
+}
+
+void QPlotWindow::ExportToCSV()
+{
+    QRect rect = QDialog::frameGeometry();
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Save"), "",
+        tr("csv file (*.csv)"));
+
+    if (!fileName.contains("."))
+        fileName+=".csv";
+
+    CTimeSeriesSet<double> towrite;
+    for (QMap<QString, CTimeSeries<double>>::iterator it = TimeSeries.begin(); it!=TimeSeries.end(); it++)
+        towrite.append(it.value(),it.key().toStdString());
+
+    towrite.writetofile(fileName.toStdString());
 }
