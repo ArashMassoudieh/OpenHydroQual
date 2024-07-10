@@ -31,10 +31,10 @@ QPlotWindow::~QPlotWindow()
 
 bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeseries, bool allowtime, string style)
 {
-    double x_min_val = timeseries.mint();
-    double x_max_val = timeseries.maxt();
-    double y_min_val = timeseries.minC();
-    double y_max_val = timeseries.maxC();
+    x_min_val = timeseries.mint();
+    x_max_val = timeseries.maxt();
+    y_min_val = timeseries.minC();
+    y_max_val = timeseries.maxC();
     if (x_max_val<20000)
         allowtime = false;
 #ifndef Qt6
@@ -83,6 +83,7 @@ bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeser
         axisY_log = new QLogValueAxis();
         axisY_log->setObjectName("axisY_log");
         axisY_log->setTitleText(yAxisTitle);
+        axisY_log->setLabelFormat("e");
         axisY_log->setRange(y_min_val,y_max_val);
         axisY_log->setMinorTickCount(8);
         chart->addAxis(axisY_log, Qt::AlignLeft);
@@ -266,9 +267,17 @@ bool QPlotWindow::AddData(const CTimeSeries<outputtimeseriesprecision>& timeseri
     {   lineseries->attachAxis(axisX_normal);
         axisX_normal->setRange(x_min_val ,x_max_val);
     }
-    axisY->setRange(y_min_val,y_max_val);
-    lineseries->attachAxis(axisY);
 
+    if (!chartview->Ylog())
+    {
+        lineseries->attachAxis(axisY);
+        axisY->setRange(y_min_val,y_max_val);
+    }
+    else
+    {
+        lineseries->attachAxis(axisY_log);
+        axisY->setRange(max(y_min_val,1e-6),max(y_max_val,1e-6));
+    }
     for (int j=0; j<timeseries.n; j++)
     {
         if (allowtime)
@@ -313,6 +322,7 @@ bool QPlotWindow::SetYAxis(bool log)
         axisY->setObjectName("axisY");
         axisY->setTitleText(x_Axis_Title);
         axisY->setRange(y_min_val,y_max_val);
+
         chart->addAxis(axisY, Qt::AlignLeft);
         chart->removeAxis(axisY_log);
         for (int i=0; i<chart->series().size(); i++)
@@ -325,7 +335,9 @@ bool QPlotWindow::SetYAxis(bool log)
         axisY_log = new QLogValueAxis();
         axisY_log->setObjectName("axisY");
         axisY_log->setTitleText(y_Axis_Title);
-        axisY_log->setRange(y_min_val,y_max_val);
+        axisY_log->setRange(max(y_min_val,1e-6),y_max_val);
+        axisY_log->setLabelFormat("%.0e");
+
         axisY_log->setMinorTickCount(8);
         chart->addAxis(axisY_log, Qt::AlignLeft);
         chart->removeAxis(axisY);

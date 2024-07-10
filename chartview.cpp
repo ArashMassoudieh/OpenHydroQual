@@ -100,6 +100,7 @@ void ChartView::mouseReleaseEvent(QMouseEvent *event)
         QMenu *subMenuY = menu->addMenu("Y-axis");
         QAction *Ylog_action = subMenuY->addAction("Log-scale");
         Ylog_action->setCheckable(true);
+        Ylog_action->setChecked(Ylog());
         QAction *selectedAction = menu->exec(mapToGlobal(event->pos()));
         if (!selectedAction)
             return;
