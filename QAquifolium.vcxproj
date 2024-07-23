@@ -1,0 +1,543 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5A90F65E-A732-3F51-9E7E-690233E2FA3A}</ProjectGuid>
+    <RootNamespace>QAquifolium</RootNamespace>
+    <Keyword>QtVS_v302</Keyword>
+    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+    <ProjectName>OpenHydroQual</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <PlatformToolSet>v143</PlatformToolSet>
+    <OutputDirectory>release\</OutputDirectory>
+    <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
+    <ConfigurationType>Application</ConfigurationType>
+    <IntermediateDirectory>release\</IntermediateDirectory>
+    <PrimaryOutput>QAquifolium</PrimaryOutput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <PlatformToolSet>v143</PlatformToolSet>
+    <OutputDirectory>release\</OutputDirectory>
+    <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
+    <ConfigurationType>Application</ConfigurationType>
+    <IntermediateDirectory>release\</IntermediateDirectory>
+    <PrimaryOutput>QAquifolium</PrimaryOutput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <PlatformToolSet>v143</PlatformToolSet>
+    <OutputDirectory>debug\</OutputDirectory>
+    <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
+    <ConfigurationType>Application</ConfigurationType>
+    <IntermediateDirectory>debug\</IntermediateDirectory>
+    <PrimaryOutput>QAquifolium</PrimaryOutput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <PlatformToolSet>v143</PlatformToolSet>
+    <OutputDirectory>debug\</OutputDirectory>
+    <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
+    <ConfigurationType>Application</ConfigurationType>
+    <IntermediateDirectory>debug\</IntermediateDirectory>
+    <PrimaryOutput>QAquifolium</PrimaryOutput>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(QtMsBuild)'=='' or !Exists('$(QtMsBuild)\qt.targets')">
+    <QtMsBuild>$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
+  </PropertyGroup>
+  <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
+    <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
+  </Target>
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt_defaults.props')">
+    <Import Project="$(QtMsBuild)\qt_defaults.props" />
+  </ImportGroup>
+  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <QtInstall>5.6.1</QtInstall>
+    <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="QtSettings">
+    <QtInstall>5.15.1_msvc2019_64</QtInstall>
+    <QtModules>core;opengl;gui;svg;widgets;printsupport;charts</QtModules>
+  </PropertyGroup>
+  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <QtInstall>5.6.1</QtInstall>
+    <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="QtSettings">
+    <QtInstall>5.15.1_msvc2019_64</QtInstall>
+    <QtModules>core;opengl;gui;svg;widgets;printsupport;charts</QtModules>
+  </PropertyGroup>
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
+    <Import Project="$(QtMsBuild)\qt.props" />
+  </ImportGroup>
+  <PropertyGroup>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">QAquifolium</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">OpenHydroQual</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</IgnoreImportLibrary>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</IgnoreImportLibrary>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">QAquifolium</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">OpenHydroQual</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</IgnoreImportLibrary>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</IgnoreImportLibrary>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\QT\QT5.6.1\5.6\MSVC2015_64\include;release;C:\QT\QT5.6.1\5.6\MSVC2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerListingLocation>release\</AssemblerListingLocation>
+      <BrowseInformation>false</BrowseInformation>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <DisableSpecificWarnings>4577;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_version;Aquifolium;DEBUG;NO_OPENMP;ARMA_USE_LAPACK;ARMA_USE_BLAS;QT_NO_DEBUG;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level3</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\QT\QT5.6.1\5.6\MSVC2015_64\lib;C:\utils\postgresql\pgsql\lib;C:\utils\my_sql\my_sql\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>-fopenmp "/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreImportLibrary>true</IgnoreImportLibrary>
+      <LinkIncremental>false</LinkIncremental>
+      <OutputFile>$(OutDir)\QAquifolium.exe</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Link>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_version;Aquifolium;DEBUG;NO_OPENMP;ARMA_USE_LAPACK;ARMA_USE_BLAS;QT_NO_DEBUG;QT_OPENGL_LIB;QT_PRINTSUPPORT_LIB;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <QtMoc>
+      <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
+      <DynamicSource>output</DynamicSource>
+      <QtMocDir>$(Configuration)</QtMocDir>
+      <QtMocFileName>moc_%(Filename).cpp</QtMocFileName>
+    </QtMoc>
+    <QtUic>
+      <ExecutionDescription>Uic'ing %(Identity)...</ExecutionDescription>
+      <QtUicDir>$(ProjectDir)</QtUicDir>
+      <QtUicFileName>ui_%(Filename).h</QtUicFileName>
+    </QtUic>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\vcpkg\packages\gsl_x64-windows\include;aquifolium\include\MCMC;aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;release;C:\Qt\5.15.1\msvc2019_64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerListingLocation>release\</AssemblerListingLocation>
+      <BrowseInformation>false</BrowseInformation>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <DisableSpecificWarnings>4577;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_version;Aquifolium;ARMA_USE_LAPACK;ARMA_USE_BLAS;QT_NO_DEBUG;NDEBUG;WIN64;windows_version;%(PreprocessorDefinitions);QCharts</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level3</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OpenMPSupport>true</OpenMPSupport>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>shell32.lib;blas_win64_MT.lib;lapack_win64_MT.lib;gsl.lib;gslcblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\Projects\vcpkg\packages\gsl_x64-windows\lib;.\libs\lapack-blas_lib_win64;C:\Qt\5.15.1\msvc2019_64\lib;C:\utils\postgresql\pgsql\lib;C:\utils\my_sql\my_sql\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>-fopenmp "/MANIFESTDEPENDENCY:type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27 processorArchitecture=%27*%27"  /SUBSYSTEM:WINDOWS %(AdditionalOptions)</AdditionalOptions>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreImportLibrary>true</IgnoreImportLibrary>
+      <LinkIncremental>false</LinkIncremental>
+      <OutputFile>$(OutDir)\OpenHydroQual.exe</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_version;Aquifolium;DEBUG;NO_OPENMP;ARMA_USE_LAPACK;ARMA_USE_BLAS;QT_NO_DEBUG;QT_OPENGL_LIB;QT_PRINTSUPPORT_LIB;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <QtMoc>
+      <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
+      <DynamicSource>output</DynamicSource>
+      <QtMocDir>$(Configuration)</QtMocDir>
+      <QtMocFileName>moc_%(Filename).cpp</QtMocFileName>
+    </QtMoc>
+    <QtUic>
+      <ExecutionDescription>Uic'ing %(Identity)...</ExecutionDescription>
+      <QtUicDir>$(ProjectDir)</QtUicDir>
+      <QtUicFileName>ui_%(Filename).h</QtUicFileName>
+    </QtUic>
+    <PostBuildEvent>
+      <Command>copy libs\lapack-blas_lib_win64\*.dll $(OutDir)
+copy libs\gsl\*.dll $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copying DLLs</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\QT\QT5.6.1\5.6\MSVC2015_64\include;debug;C:\QT\QT5.6.1\5.6\MSVC2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerListingLocation>debug\</AssemblerListingLocation>
+      <BrowseInformation>false</BrowseInformation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4577;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_version;Aquifolium;DEBUG;NO_OPENMP;ARMA_USE_LAPACK;ARMA_USE_BLAS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level3</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\QT\QT5.6.1\5.6\MSVC2015_64\lib;C:\utils\postgresql\pgsql\lib;C:\utils\my_sql\my_sql\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>-fopenmp "/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreImportLibrary>true</IgnoreImportLibrary>
+      <OutputFile>$(OutDir)\QAquifolium.exe</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Link>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_version;Aquifolium;DEBUG;NO_OPENMP;ARMA_USE_LAPACK;ARMA_USE_BLAS;QT_OPENGL_LIB;QT_PRINTSUPPORT_LIB;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <QtUic>
+      <ExecutionDescription>Uic'ing %(Identity)...</ExecutionDescription>
+      <QtUicDir>$(ProjectDir)</QtUicDir>
+      <QtUicFileName>ui_%(Filename).h</QtUicFileName>
+    </QtUic>
+    <QtMoc>
+      <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
+      <DynamicSource>output</DynamicSource>
+      <QtMocDir>$(Configuration)</QtMocDir>
+      <QtMocFileName>moc_%(Filename).cpp</QtMocFileName>
+    </QtMoc>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\vcpkg\packages\gsl_x64-windows\include;aquifolium\include\MCMC;aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\Qt\5.15.1\msvc2019_64\include;debug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerListingLocation>debug\</AssemblerListingLocation>
+      <BrowseInformation>false</BrowseInformation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4577;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_version;Aquifolium;DEBUG;NO_OPENMP;ARMA_USE_LAPACK;ARMA_USE_BLAS;WIN64;windows_version;%(PreprocessorDefinitions);QCharts</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level3</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <OpenMPSupport>true</OpenMPSupport>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>shell32.lib;blas_win64_MT.lib;lapack_win64_MT.lib;gsl.lib;gslcblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\Projects\vcpkg\packages\gsl_x64-windows\lib;.\libs\lapack-blas_lib_win64;C:\Qt\5.15.1\msvc2019_64\lib;C:\utils\postgresql\pgsql\lib;C:\utils\my_sql\my_sql\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>-fopenmp "/MANIFESTDEPENDENCY:type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27 processorArchitecture=%27*%27"  /SUBSYSTEM:WINDOWS %(AdditionalOptions)</AdditionalOptions>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreImportLibrary>true</IgnoreImportLibrary>
+      <OutputFile>$(OutDir)\OpenHydroQual.exe</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_version;Aquifolium;DEBUG;NO_OPENMP;ARMA_USE_LAPACK;ARMA_USE_BLAS;QT_OPENGL_LIB;QT_PRINTSUPPORT_LIB;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <QtUic>
+      <ExecutionDescription>Uic'ing %(Identity)...</ExecutionDescription>
+      <QtUicDir>$(ProjectDir)</QtUicDir>
+      <QtUicFileName>ui_%(Filename).h</QtUicFileName>
+    </QtUic>
+    <QtMoc>
+      <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
+      <DynamicSource>output</DynamicSource>
+      <QtMocDir>$(Configuration)</QtMocDir>
+      <QtMocFileName>moc_%(Filename).cpp</QtMocFileName>
+    </QtMoc>
+    <PostBuildEvent>
+      <Command>copy libs\lapack-blas_lib_win64\*.dll $(OutDir)
+copy libs\gsl\*.dll $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copying DLLs</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="aquifolium\src\constituent.cpp" />
+    <ClCompile Include="aquifolium\src\GA\Binary.cpp" />
+    <ClCompile Include="aquifolium\src\Block.cpp" />
+    <ClCompile Include="aquifolium\src\Command.cpp" />
+    <ClCompile Include="aquifolium\src\Condition.cpp" />
+    <ClCompile Include="aquifolium\src\GA\Distribution.cpp" />
+    <ClCompile Include="aquifolium\src\GA\DistributionNUnif.cpp" />
+    <ClCompile Include="aquifolium\src\ErrorHandler.cpp" />
+    <ClCompile Include="aquifolium\src\Expression.cpp" />
+    <ClCompile Include="aquifolium\src\GA\Individual.cpp" />
+    <ClCompile Include="aquifolium\src\Link.cpp" />
+    <ClCompile Include="aquifolium\src\Matrix.cpp" />
+    <ClCompile Include="aquifolium\src\Matrix_arma.cpp" />
+    <ClCompile Include="aquifolium\src\MetaModel.cpp" />
+    <ClCompile Include="aquifolium\src\NormalDist.cpp" />
+    <ClCompile Include="aquifolium\src\Object.cpp" />
+    <ClCompile Include="aquifolium\src\Objective_Function.cpp" />
+    <ClCompile Include="aquifolium\src\Objective_Function_Set.cpp" />
+    <ClCompile Include="aquifolium\src\observation.cpp" />
+    <ClCompile Include="aquifolium\src\Parameter.cpp" />
+    <ClCompile Include="aquifolium\src\Parameter_Set.cpp" />
+    <ClCompile Include="aquifolium\src\precalculatedfunction.cpp" />
+    <ClCompile Include="aquifolium\src\Precipitation.cpp" />
+    <ClCompile Include="aquifolium\src\Quan.cpp" />
+    <ClCompile Include="aquifolium\src\QuanSet.cpp" />
+    <ClCompile Include="aquifolium\src\QuickSort.cpp" />
+    <ClCompile Include="aquifolium\src\reaction.cpp" />
+    <ClCompile Include="aquifolium\src\restorepoint.cpp" />
+    <ClCompile Include="aquifolium\src\Rule.cpp" />
+    <ClCompile Include="aquifolium\src\RxnParameter.cpp" />
+    <ClCompile Include="aquifolium\src\Script.cpp" />
+    <ClCompile Include="aquifolium\src\solutionlogger.cpp" />
+    <ClCompile Include="aquifolium\src\Source.cpp" />
+    <ClCompile Include="aquifolium\src\System.cpp" />
+    <ClCompile Include="aquifolium\src\Utilities.cpp" />
+    <ClCompile Include="aquifolium\src\Vector.cpp" />
+    <ClCompile Include="aquifolium\src\Vector_arma.cpp" />
+    <ClCompile Include="aboutdialog.cpp" />
+    <ClCompile Include="chartview.cpp" />
+    <ClCompile Include="CustomPlotZoom.cpp" />
+    <ClCompile Include="delegate.cpp" />
+    <ClCompile Include="diagramview.cpp" />
+    <ClCompile Include="edge.cpp" />
+    <ClCompile Include="..\jsoncpp\src\lib_json\json_reader.cpp" />
+    <ClCompile Include="..\jsoncpp\src\lib_json\json_value.cpp" />
+    <ClCompile Include="..\jsoncpp\src\lib_json\json_writer.cpp" />
+    <ClCompile Include="expEditor.cpp" />
+    <ClCompile Include="expressioneditor.cpp" />
+    <ClCompile Include="gridgenerator.cpp" />
+    <ClCompile Include="ItemNavigator.cpp" />
+    <ClCompile Include="ItemPropertiesWidget.cpp" />
+    <ClCompile Include="logwindow.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="mainwindow.cpp" />
+    <ClCompile Include="node.cpp" />
+    <ClCompile Include="options.cpp" />
+    <ClCompile Include="propmodel.cpp" />
+    <ClCompile Include="..\qcustomplot\qcustomplot.cpp" />
+    <ClCompile Include="qplotter.cpp" />
+    <ClCompile Include="qplotwindow.cpp" />
+    <ClCompile Include="ray.cpp" />
+    <ClCompile Include="runtimewindow.cpp" />
+    <ClCompile Include="undodata.cpp" />
+    <ClCompile Include="UnitTextBox3.cpp" />
+    <ClCompile Include="utilityfuncs.cpp" />
+    <ClCompile Include="wizard_select_dialog.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="aquifolium\include\BTC.h" />
+    <ClInclude Include="aquifolium\include\BTCSet.h" />
+    <ClInclude Include="aquifolium\include\Condition.h" />
+    <ClInclude Include="aquifolium\include\constituent.h" />
+    <ClInclude Include="aquifolium\include\GA\Binary.h" />
+    <ClInclude Include="aquifolium\include\Block.h" />
+    <ClInclude Include="aquifolium\include\Command.h" />
+    <ClInclude Include="aquifolium\include\GA\Distribution.h" />
+    <ClInclude Include="aquifolium\include\GA\DistributionNUnif.h" />
+    <ClInclude Include="aquifolium\include\Expression.h" />
+    <ClInclude Include="aquifolium\include\GA\GA.hpp" />
+    <ClInclude Include="aquifolium\include\GA\Individual.h" />
+    <ClInclude Include="aquifolium\include\Link.h" />
+    <ClInclude Include="aquifolium\include\Matrix.h" />
+    <ClInclude Include="aquifolium\include\Matrix_arma.h" />
+    <ClInclude Include="aquifolium\include\MCMC\MCMC.h" />
+    <ClInclude Include="aquifolium\include\MCMC\MCMC.hpp" />
+    <ClInclude Include="aquifolium\include\MetaModel.h" />
+    <ClInclude Include="aquifolium\include\NormalDist.h" />
+    <ClInclude Include="aquifolium\include\Object.h" />
+    <ClInclude Include="aquifolium\include\observation.h" />
+    <ClInclude Include="aquifolium\include\ordered_hash.h" />
+    <ClInclude Include="aquifolium\include\ordered_map.h" />
+    <ClInclude Include="aquifolium\include\Parameter.h" />
+    <ClInclude Include="aquifolium\include\Parameter_Set.h" />
+    <ClInclude Include="aquifolium\include\precalculatedfunction.h" />
+    <ClInclude Include="aquifolium\include\Precipitation.h" />
+    <ClInclude Include="aquifolium\include\Quan.h" />
+    <ClInclude Include="aquifolium\include\QuanSet.h" />
+    <ClInclude Include="aquifolium\include\QuickSort.h" />
+    <ClInclude Include="aquifolium\include\reaction.h" />
+    <ClInclude Include="aquifolium\include\restorepoint.h" />
+    <ClInclude Include="aquifolium\include\Rule.h" />
+    <ClInclude Include="aquifolium\include\RxnParameter.h" />
+    <ClInclude Include="aquifolium\include\Script.h" />
+    <ClInclude Include="aquifolium\include\solutionlogger.h" />
+    <ClInclude Include="aquifolium\include\StringOP.h" />
+    <ClInclude Include="aquifolium\include\System.h" />
+    <ClInclude Include="aquifolium\include\Vector.h" />
+    <ClInclude Include="aquifolium\include\Vector_arma.h" />
+    <ClInclude Include="..\jsoncpp\include\json\allocator.h" />
+    <ClInclude Include="..\jsoncpp\include\json\assertions.h" />
+    <ClInclude Include="..\jsoncpp\include\json\autolink.h" />
+    <ClInclude Include="..\jsoncpp\include\json\config.h" />
+    <QtMoc Include="wizard_select_dialog.h" />
+    <QtMoc Include="delegate.h">
+    </QtMoc>
+    <QtMoc Include="diagramview.h">
+    </QtMoc>
+    <QtMoc Include="aboutdialog.h" />
+    <ClInclude Include="aquifolium\src\BTC.hpp" />
+    <ClInclude Include="aquifolium\src\BTCSet.hpp" />
+    <ClInclude Include="chartview.h" />
+    <ClInclude Include="CustomPlotZoom.h" />
+    <ClInclude Include="edge.h" />
+    <ClInclude Include="enums.h" />
+    <ClInclude Include="..\jsoncpp\include\json\features.h" />
+    <ClInclude Include="..\jsoncpp\include\json\forwards.h" />
+    <ClInclude Include="..\jsoncpp\include\json\json.h" />
+    <ClInclude Include="..\jsoncpp\src\lib_json\json_tool.h" />
+    <QtMoc Include="mainwindow.h">
+    </QtMoc>
+    <QtMoc Include="expEditor.h" />
+    <QtMoc Include="expressioneditor.h" />
+    <QtMoc Include="logwindow.h" />
+    <QtMoc Include="gridgenerator.h" />
+    <ClInclude Include="ItemNavigator.h" />
+    <QtMoc Include="ItemPropertiesWidget.h" />
+    <ClInclude Include="node.h" />
+    <QtMoc Include="propmodel.h">
+    </QtMoc>
+    <QtMoc Include="..\qcustomplot\qcustomplot.h">
+    </QtMoc>
+    <QtMoc Include="options.h" />
+    <ClInclude Include="qplotter.h" />
+    <QtMoc Include="qplotwindow.h" />
+    <ClInclude Include="ray.h" />
+    <ClInclude Include="..\jsoncpp\include\json\reader.h" />
+    <QtMoc Include="runtimewindow.h">
+    </QtMoc>
+    <ClInclude Include="undodata.h" />
+    <QtMoc Include="UnitTextBox3.h" />
+    <ClInclude Include="utilityfuncs.h" />
+    <ClInclude Include="..\jsoncpp\include\json\value.h" />
+    <ClInclude Include="..\jsoncpp\include\json\version.h" />
+    <ClInclude Include="..\jsoncpp\src\lib_json\version.h.in" />
+    <ClInclude Include="..\jsoncpp\include\json\writer.h" />
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="aboutdialog.ui" />
+    <QtUic Include="gridgenerator.ui" />
+    <QtUic Include="itempropertieswidget.ui" />
+    <QtUic Include="logwindow.ui" />
+    <QtUic Include="mainwindow.ui">
+    </QtUic>
+    <QtUic Include="Options.ui" />
+    <QtUic Include="qplotwindow.ui" />
+    <QtUic Include="runtimewindow.ui">
+    </QtUic>
+    <QtUic Include="wizard_select_dialog.ui" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
+    <Import Project="$(QtMsBuild)\qt.targets" />
+  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
+</Project>
