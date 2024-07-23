@@ -268,3 +268,5 @@ AppImage/AppDir/
 *.zsync
 
 bin-console/Release/
+
+.vs/QAquifolium/v17/
