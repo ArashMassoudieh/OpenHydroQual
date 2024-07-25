@@ -268,3 +268,9 @@ AppImage/AppDir/
 bin-console/Release/
 
 .vs/QAquifolium/v17/
+
+.vs/QAquifolium/FileContentIndex/
+
+OpenHydroQual/x64/Debug/qmake/
+
+OpenHydroQual/x64/Release/qmake/
