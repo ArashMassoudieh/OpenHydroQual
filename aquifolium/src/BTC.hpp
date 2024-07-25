@@ -368,6 +368,7 @@ template<class T>
 CTimeSeries<T> CTimeSeries<T>::interpol(CTimeSeries<T> *x) const
 {
     CTimeSeries<T> BTCout;
+    if (n==0) return BTCout;
     for (int i=0; i<x->n; i++)
         BTCout.append(x->GetT(i),interpol(x->GetT(i)));
     return BTCout;
