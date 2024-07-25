@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>617</width>
-    <height>440</height>
+    <height>525</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,9 +15,9 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="60,20,0,0,0,20">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_graphs" stretch="">
+    <layout class="QVBoxLayout" name="verticalLayout_graphs">
      <property name="sizeConstraint">
-      <enum>QLayout::SetMaximumSize</enum>
+      <enum>QLayout::SizeConstraint::SetMaximumSize</enum>
      </property>
     </layout>
    </item>
@@ -37,6 +37,12 @@
    </item>
    <item>
     <widget class="QProgressBar" name="optprogressBar">
+     <property name="baseSize">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="value">
       <number>0</number>
      </property>

@@ -73,8 +73,6 @@ QAquifolium.vcxproj.user
 
 modeled.txt
 
-QAquifolium.vcxproj
-
 .DS_Store
 
 Ubuntu_setup/
@@ -268,3 +266,11 @@ AppImage/AppDir/
 *.zsync
 
 bin-console/Release/
+
+.vs/QAquifolium/v17/
+
+.vs/QAquifolium/FileContentIndex/
+
+OpenHydroQual/x64/Debug/qmake/
+
+OpenHydroQual/x64/Release/qmake/
