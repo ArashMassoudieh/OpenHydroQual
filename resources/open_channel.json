@@ -86,7 +86,7 @@
     },
     "dam_area": {
       "type": "expression",
-      "expression": "(base_width+side_slope*dam_height)*dam_height",
+      "expression": "(base_width+side_slope*dam_height)*_pos(dam_height)",
       "description": "Obstacle cross-sectional area",
       "ask_user": "false",
       "includeinoutput": "true"
