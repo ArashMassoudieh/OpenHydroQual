@@ -358,7 +358,7 @@ int counter=0;
 #endif
             Models[k].Solve();
             Ind[k].actual_fitness = Models[k].GetObjectiveFunctionValue();
-            if (Models[k].GetSolutionFailed() && Ind[k].parents.size()==2)
+            if (Models[k].GetSolutionFailed() && false)
             {   Ind[k].actual_fitness = (Ind_old[Ind[k].parents[0]].actual_fitness+Ind_old[Ind[k].parents[1]].actual_fitness)/2.0;
                 FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
                 fprintf(FileOut, "Simulation failed: %i, parent1=%i, parent2=%i, parent1_fitness=%e, parent2_fitness=%e, fitness=%e\n", k, Ind[k].parents[0], Ind[k].parents[1], Ind_old[Ind[k].parents[0]].actual_fitness, Ind_old[Ind[k].parents[1]].actual_fitness, Ind[k].actual_fitness);
