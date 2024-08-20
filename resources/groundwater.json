@@ -10,11 +10,27 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
+      "inflow":"inflow",
       "includeinoutput": "true",
       "description": "Initial Storage; Storage",
       "initial_value_expression": "area*depth*moisture_content",
       "ask_user": "false",
       "estimate": "true"
+    },
+    "volume": {
+       "type": "expression",
+       "expression": "depth*area",      
+       "description": "volume",
+       "ask_user": "false",
+       "includeinoutput": "false"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
     "hydraulic_conductivity": {
       "type": "value",

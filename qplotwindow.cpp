@@ -35,6 +35,13 @@ bool QPlotWindow::PlotData(const CTimeSeries<outputtimeseriesprecision>& timeser
     x_max_val = timeseries.maxt();
     y_min_val = timeseries.minC();
     y_max_val = timeseries.maxC();
+    if (y_min_val==y_max_val)
+    {
+        y_min_val*=0.8;
+        y_max_val*=1.2;
+        if (y_max_val==0)
+            y_max_val=1.0;
+    }
     if (x_max_val<20000)
         allowtime = false;
 #ifndef Qt6
@@ -142,7 +149,13 @@ bool QPlotWindow::PlotData(const CTimeSeriesSet<outputtimeseriesprecision>& time
     x_max_val = timeseriesset.maxtime();
     y_min_val = timeseriesset.minval();
     y_max_val = timeseriesset.maxval();
-
+    if (y_min_val==y_max_val)
+    {
+        y_min_val*=0.8;
+        y_max_val*=1.2;
+        if (y_max_val==0)
+            y_max_val=1.0;
+    }
     if (x_max_val<20000)
         allowtime = false;
 
@@ -247,7 +260,16 @@ bool QPlotWindow::AddData(const CTimeSeries<outputtimeseriesprecision>& timeseri
     x_max_val = max(timeseries.maxt(),x_max_val);
     y_min_val = min(timeseries.minC(),y_min_val);
     y_max_val = max(timeseries.maxC(),y_max_val);
+    if (y_min_val==y_max_val)
+    {
+        y_min_val*=0.8;
+        y_max_val*=1.2;
+        if (y_max_val==0)
+            y_max_val=1.0;
+    }
 
+    if (x_max_val<20000)
+        allowtime = false;
 #ifndef Qt6
     start = xToDateTime(x_min_val);
     end = xToDateTime(x_max_val);
