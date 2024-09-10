@@ -203,7 +203,7 @@
     "typecategory": "Connectors",
     "description": "Groundwater to stream",
     "icon": {
-      "filename": "gw_2_fixed_head.png"
+      "filename": "GW_to_Stream.png"
     },
     "name": {
       "description": "Name",
@@ -352,7 +352,7 @@
     "typecategory": "Connectors",
     "description": "Lake to groundwater link",
     "icon": {
-      "filename": "Lake2GWlink.png"
+      "filename": "GW_to_lake.png"
     },
     "length": {
       "type": "value",
