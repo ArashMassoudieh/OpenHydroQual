@@ -39,6 +39,8 @@
       "description": "Manning's Roughness Coefficient",
       "ask_user": "true",
       "delegate": "ValueBox",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness must be greater than zero",
       "estimate": "true"
     },
     "bottom_elevation": {
