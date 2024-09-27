@@ -1,6 +1,6 @@
 #include "System.h"
 #include "Script.h"
-#include <QApplication>
+#include <QCoreApplication>
 #include "qfileinfo.h"
 
  
@@ -8,7 +8,7 @@
 int main(int argc, char *argv[])
 {
 
-    QApplication a(argc,argv);
+    QCoreApplication a(argc,argv);
     if (argc<2)
     {
         cout<<"The name of the input file must be provided\n";
