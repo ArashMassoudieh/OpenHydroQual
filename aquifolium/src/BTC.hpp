@@ -16,8 +16,9 @@
 #include "qfile.h"
 #include "qdatastream.h"
 #include <qdebug.h>
-#include <gsl/gsl_cdf.h>
 #endif
+
+#include <gsl/gsl_cdf.h>
 
 
 using namespace std;

@@ -202,7 +202,7 @@ bool System::AddObservation(Observation &obs)
 
 }
 
-bool System::AddLink(Link &lnk, const string &source, const string &destination)
+bool System::AddLink(Link &lnk, const string &source, const string &destination, bool SetQuantities)
 {
 	if (!block(source))
 	{
@@ -227,7 +227,8 @@ bool System::AddLink(Link &lnk, const string &source, const string &destination)
     link(lnk.GetName())->SetConnectedBlock(Expression::loc::destination, destination);
 	block(source)->AppendLink(links.size()-1,Expression::loc::source);
 	block(destination)->AppendLink(links.size()-1,Expression::loc::destination);
-	link(lnk.GetName())->SetQuantities(metamodel, lnk.GetType());
+    if (SetQuantities)
+        link(lnk.GetName())->SetQuantities(metamodel, lnk.GetType());
 	link(lnk.GetName())->SetParent(this);
 	return true;
 }
@@ -2939,6 +2940,7 @@ QStringList System::QGetAllObjectsofTypeCategory(QString _type)
 
 bool System::SavetoScriptFile(const string &filename, const string &templatefilename, const vector<string> &_addedtemplates)
 {
+    SetVariableParents();
     if (_addedtemplates.size()!=0)
         addedtemplates = _addedtemplates;
     fstream file(filename,ios_base::out);

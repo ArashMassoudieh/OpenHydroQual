@@ -65,34 +65,42 @@
       "criteria": "K_sat_scale_factor>0",
       "warningmessage": "Hydraulic conductivity scale factor must be greater than zero"
     },
-    "MC_to_EC_exponent": {
+    "EC_min": {
       "type": "value",
-      "description": "beta in EC = alpha*(theta-theta_t)^beta",
+      "description": "Minimum EC",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
       "default": "0"
     },
-    "MC_to_EC_coefficient": {
+    "EC_max": {
       "type": "value",
-      "description": "alpha in EC = alpha*(theta-theta_t)^beta",
+      "description": "Maximum EC",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
       "default": "0"
     },
-    "MC_to_EC_Threshold_Moisture": {
+    "EC_ref_theta": {
       "type": "value",
-      "description": "theta_t in EC = alpha*(theta-theta_t)^beta",
+      "description": "Reference moinsture content for EC calculation",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
       "default": "0"
+    },
+    "MC_to_EC_slope": {
+      "type": "value",
+      "description": "Coefficient in the logistic regression",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1"
     },
     "Electrical_Conductivity": {
       "type": "expression",
       "includeinoutput": "true",
-      "expression": "MC_to_EC_coefficient*_pos(theta-MC_to_EC_Threshold_Moisture)^MC_to_EC_exponent",
+      "expression": "_exp(MC_to_EC_slope*(theta-EC_ref_theta))/(_exp(MC_to_EC_slope*(theta-EC_ref_theta))+1)*(EC_max-EC_min)+EC_min",
       "description": "Electric Conductivity",
       "ask_user": "false"
     },
@@ -162,16 +170,6 @@
       "default": "1.41",
       "criteria": "n>0",
       "warningmessage": "Van Genuchten's n must be greater than zero"
-    },
-    "act_X": {
-      "type": "value",
-      "description": "Actual x",
-      "ask_user": "true"
-    },
-    "act_Y": {
-      "type": "value",
-      "description": "Actual y",
-      "ask_user": "true"
     },
     "m": {
       "type": "expression",

@@ -146,7 +146,7 @@ class System: public Object
         }
         bool AddBlock(Block &blk, bool SetQuantities=true);
         bool AddSource(Source &src);
-        bool AddLink(Link &lnk, const string &source, const string &destination);
+        bool AddLink(Link &lnk, const string &source, const string &destination, bool SetQuantities=true);
         bool AddConstituent(Constituent &cnst);
         bool AddReaction(Reaction &rxn);
         bool AddObservation(Observation &obs);
