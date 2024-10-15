@@ -940,7 +940,11 @@ bool System::SetProp(const string &s, const double &val)
         SimulationParameters.write_interval = val;
         return true;
     }
-
+    if (s=="dt" || s=="initial_time_step")
+    {
+        SimulationParameters.dt0 = val;
+        return true;
+    }
     errorhandler.Append("","System","SetProp","Property '" + s + "' was not found!", 621);
     return false;
 }
