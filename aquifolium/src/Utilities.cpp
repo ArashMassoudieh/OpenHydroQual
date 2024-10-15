@@ -550,6 +550,21 @@ namespace aquiutils
         return Result;
     }
 
+    std::string numbertostring(unsigned int x, int number_of_digits)
+    {
+        std::string Result;          // std::string which will contain the result
+        std::ostringstream convert;   // stream used for the conversion
+        convert << x;      // insert the textual representation of 'Number' in the characters in the stream
+
+        Result = convert.str();
+        if (Result.size() < number_of_digits)
+        {
+            for (int i = 0; i < Result.size() - number_of_digits; i++)
+                Result = "0" + Result;
+        }
+        return Result;
+    }
+
     string numbertostring(const vector<int> &x, bool scientific)
     {
         string Result = "[";
