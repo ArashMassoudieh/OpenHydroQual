@@ -655,6 +655,7 @@ bool System::Solve(bool applyparameters)
                 GetSolutionLogger()->WriteString(SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1] + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt));
 
             SolverTempVars.dt_base *= SolverSettings.NR_timestep_reduction_factor_fail;
+            SolverTempVars.dt_base = max(SolverTempVars.dt_base,SimulationParameters.dt0/(2*timestepminfactor));
             SolverTempVars.SetUpdateJacobian(true);
 
             if (fail_counter > 20)

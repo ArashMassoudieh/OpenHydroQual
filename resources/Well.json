@@ -48,7 +48,8 @@
 			"description": "Water depth",
 			"ask_user": "true",
 			"includeinoutput": "true",
-			"delegate": "ValueBox"  
+			"delegate": "ValueBox",
+			"unit": "m;ft"  
 		},
 		"bottom_elevation": {
 		     "type": "value",
@@ -118,7 +119,7 @@
 	        "flow" : {
 		      	"type": "expression",
 			"description": "Flow rate",
-                        "expression" : "K_sat.e*(_pos(hydraulic_gradient)*interface_area - _pos(pressure_head.e)/length*interface_area_reverse)*_mbs(depth.s;0.01)",
+                        "expression" : "K_sat.e*(_pos(hydraulic_gradient)*interface_area - _pos(pressure_head.e)/length*interface_area_reverse)*depth.s/(depth.s+0.01)",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
 		}  	
@@ -161,7 +162,7 @@
 	        "flow" : {
 		      	"type": "expression",
 			"description": "Flow rate",
-                        "expression" : "K_sat.e*hydraulic_gradient*area.s*_mbs(depth.s;0.01)",
+                        "expression" : "K_sat.e*hydraulic_gradient*area.s*depth.s/(depth.s+0.01)",
                         "description": "Flow (m~^3/day)",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
@@ -261,7 +262,8 @@
 			 "description": "Water depth",
 			 "ask_user": "true",
 			 "includeinoutput": "true",
-  		         "delegate": "ValueBox"  
+  		         "delegate": "ValueBox",
+			 "unit": "m;ft"    
 		},
 		"bottom_elevation": {
 		     "type": "value",

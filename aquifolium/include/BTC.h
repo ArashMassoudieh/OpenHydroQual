@@ -161,6 +161,7 @@ template<class T> T NSE(const CTimeSeries<T> *modeled, const CTimeSeries<T> *obs
 template<class T> T R(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, int nlimit);
 template<class T> CTimeSeries<T> operator*(T, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator*(CTimeSeries<T>&, double);
+template<class T> CTimeSeries<T> operator-(const CTimeSeries<T>&, double);
 template<class T> CTimeSeries<T> operator*(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator/(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator+(CTimeSeries<T>&, CTimeSeries<T>&);

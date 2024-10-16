@@ -918,6 +918,16 @@ CTimeSeries<T> operator*(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 }
 
 template<class T>
+CTimeSeries<T> operator-(const CTimeSeries<T> &BTC1, double a)
+{
+    CTimeSeries<T> S = BTC1;
+    for (int i=0; i<BTC1.n; i++)
+        S.SetC(i, BTC1.GetC(i)-a);
+
+    return S;
+}
+
+template<class T>
 CTimeSeries<T> operator%(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 {
     CTimeSeries<T> S = BTC1;
