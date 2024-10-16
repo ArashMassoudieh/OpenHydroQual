@@ -34,6 +34,10 @@
 
 using namespace std;
 
+#ifdef SUPER_LU
+#include "Matrix_arma_sp.h"
+#endif
+
 
 #ifdef DEBUG
 #define CVector_arma CVector
@@ -147,7 +151,7 @@ class System: public Object
         bool AddBlock(Block &blk, bool SetQuantities=true);
         bool AddSource(Source &src);
         bool AddLink(Link &lnk, const string &source, const string &destination, bool SetQuantities=true);
-        bool AddConstituent(Constituent &cnst);
+        bool AddConstituent(Constituent &cnst, bool SetQuantities=true);
         bool AddReaction(Reaction &rxn);
         bool AddObservation(Observation &obs);
         bool AddReactionParameter(RxnParameter &rxn);
@@ -431,7 +435,7 @@ class System: public Object
         CVector_arma GetResiduals_TR(const string &variable, CVector_arma &X);
         double Gradient(Object* obj, Object* wrt, const string &dependent_var, const string &independent_var);
         CVector_arma Gradient(Object* obj, const string &independent_var);
-        CMatrix_arma JacobianDirect(const string &variable, CVector_arma &X, bool transport);
+
 		void CorrectStoragesBasedonFluxes(const string& variable);
         CVector_arma CalcStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past);
         CVector_arma GetStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past, bool transport=false);
@@ -440,7 +444,13 @@ class System: public Object
         simulationparameters SimulationParameters;
         vector<bool> OneStepSolve();
         CMatrix_arma Jacobian(const string &variale, CVector_arma &X, bool transport=false);
+        CMatrix_arma JacobianDirect(const string &variable, CVector_arma &X, bool transport);
         CVector_arma Jacobian(const string &variable, CVector_arma &V, CVector_arma &F0, int i, bool transport=false);
+#ifdef SUPER_LU
+        CMatrix_arma_sp Jacobian_SP(const string &variable, CVector_arma &X, bool transport = false);
+        CMatrix_arma_sp JacobianDirect_SP(const string &variable, CVector_arma &X, bool transport);
+#endif
+
         bool CalculateFlows(const string &var, const Expression::timing &tmg = Expression::timing::present);
         void SetStateVariables(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present, bool transport=false);
         void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport);

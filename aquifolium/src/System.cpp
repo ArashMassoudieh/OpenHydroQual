@@ -18,6 +18,10 @@
     #include <QDebug>
 #endif
 
+#ifdef SUPER_LU
+    #include "Matrix_arma_sp.h"
+#endif
+
 
 
 
@@ -165,11 +169,12 @@ bool System::AddSource(Source &src)
 	return true;
 }
 
-bool System::AddConstituent(Constituent &cnst)
+bool System::AddConstituent(Constituent &cnst, bool SetQuantities)
 {
     constituents.push_back(cnst);
     constituent(cnst.GetName())->SetParent(this);
-    constituent(cnst.GetName())->SetQuantities(metamodel, cnst.GetType());
+    if (SetQuantities)
+        constituent(cnst.GetName())->SetQuantities(metamodel, cnst.GetType());
     constituent(cnst.GetName())->SetParent(this);
     return true;
 }
@@ -1434,13 +1439,24 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             SolverTempVars.numiterations[statevarno]++;
             if (SolverTempVars.updatejacobian[statevarno])
             {
+#ifdef SUPER_LU
+                CMatrix_arma_sp J;
+#else
                 CMatrix_arma J;
-                CMatrix_arma J_direct;
-                CMatrix_arma J_trad;
+#endif
+
                 if (transport)
+#ifdef SUPER_LU
+                    J = Jacobian_SP(variable, X, transport);
+#else
                     J = Jacobian(variable, X, transport);
+#endif
                 else
+#ifdef SUPER_LU
+                    J = JacobianDirect_SP(variable, X, transport);
+#else
                     J = JacobianDirect(variable, X, transport);
+#endif
                 //J_direct = JacobianDirect(variable, X, transport);
                 //J_direct.writetofile("jacob_direct.txt");
                 //J.writetofile("jacob_traditional.txt");
@@ -2267,6 +2283,28 @@ CMatrix_arma System::Jacobian(const string &variable, CVector_arma &X, bool tran
   return Transpose(M);
 }
 
+#ifdef SUPER_LU
+CMatrix_arma_sp System::Jacobian_SP(const string &variable, CVector_arma &X, bool transport)
+{
+    CMatrix_arma_sp M(X.num);
+    CVector_arma F0;
+
+    F0 = GetResiduals(variable, X, transport);
+
+
+    for (int i=0; i < X.num; i++)
+    {
+        CVector_arma V = Jacobian(variable, X, F0, i,transport);
+        for (int j=0; j<X.num; j++)
+            if (V[j]!=0)
+                M(i,j) = V[j];
+
+
+    }
+
+  return Transpose(M);
+}
+#endif
 
 CVector_arma System::Jacobian(const string &variable, CVector_arma &V, CVector_arma &F0, int i, bool transport)
 {
@@ -3583,7 +3621,7 @@ bool System::AddConstituentRelateProperties(Object *consttnt)
     for (map<string, QuanSet>::iterator it = metamodel.begin(); it!=metamodel.end(); it++)
     {
         for (unsigned int j=0; j<quanstobecopied.size(); j++)
-        {   if (it->second.Count(quanstobecopied[j].GetName())==0 &&aquiutils::tolower(metamodel.GetItem(it->first)->ObjectType) == "link")
+        {   if (it->second.Count(quanstobecopied[j].GetName())==0 && (aquiutils::tolower(metamodel.GetItem(it->first)->ObjectType) == "link" || aquiutils::tolower(metamodel.GetItem(it->first)->ObjectType) == "connector"))
             {
                 metamodel.GetItem(it->first)->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
             }
@@ -3903,6 +3941,101 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     return jacobian;
 }
 
+#ifdef SUPER_LU
+CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &X, bool transport)
+{
+    for (unsigned int i=0; i<links.size(); i++)
+    {
+        if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) > 0)
+        {   links[i].SetOutflowLimitFactor(blocks[links[i].s_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
+            links[i].SetLimitedOutflow(true);
+        }
+        else if (blocks[links[i].e_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)<0)
+        {   links[i].SetOutflowLimitFactor(blocks[links[i].e_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
+            links[i].SetLimitedOutflow(true);
+        }
+        else
+        {   links[i].SetOutflowLimitFactor(1, Expression::timing::present);
+            links[i].SetLimitedOutflow(false);
+        }
+
+    }
+    CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Expression::timing::present,transport);
+    SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
+    CMatrix_arma_sp jacobian_sp(BlockCount());
+#ifndef NO_OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+    for (int i=0; i<LinksCount(); i++)
+    {
+        if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
+        {   jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+        }
+        else
+        {
+            jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+        }
+        if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
+        {
+            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+        }
+        else
+        {
+            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) -= aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+        }
+    }
+#ifndef NO_OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+    for (int i=0; i<BlockCount(); i++)
+    {
+        if (!block(i)->GetLimitedOutflow() && !block(i)->isrigid(variable))
+            jacobian_sp(i,i) += 1/SolverTempVars.dt;
+        for (unsigned int j=0; j<block(i)->Variable(variable)->GetCorrespondingInflowVar().size(); j++)
+        {
+            if (block(i)->Variable(variable)->GetCorrespondingInflowVar()[j] != "")
+            {
+                if (Variable(block(i)->Variable(variable)->GetCorrespondingInflowVar()[j]))
+                {
+                    if (!block(i)->GetLimitedOutflow())
+                        jacobian_sp(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
+                    else
+                    {   double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
+                        if (inflow<0) jacobian_sp(i,i) -= inflow;
+                    }
+                }
+            }
+        }
+    }
+
+    for (unsigned int i = 0; i < blocks.size(); i++)
+    {
+        if (blocks[i].GetLimitedOutflow())
+        {
+            if (!OutFlowCanOccur(i,variable))
+            {
+                for (unsigned int j=0; j<blocks.size(); j++) jacobian_sp(j,i)=0;
+                jacobian_sp(i,i)=1;
+            }
+        }
+    }
+
+    /*for (unsigned int i = 0; i < blocks.size(); i++)
+    {
+        if (blocks[i].GetOutflowLimitFactor(Expression::timing::present)<0 && blocks[i].GetLimitedOutflow() )
+        {
+            jacobian(i,i) = -2.0*blocks[i].GetOutflowLimitFactor(Expression::timing::present);
+        }
+    }*/
+
+    SetStateVariables_for_direct_Jacobian(variable,current_state,Expression::timing::present,transport);
+    return jacobian_sp;
+}
+#endif
 CTimeSeriesSet<timeseriesprecision> System::GetModeledObjectiveFunctions()
 {
     CTimeSeriesSet<timeseriesprecision> out;
