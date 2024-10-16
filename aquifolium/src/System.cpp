@@ -1233,14 +1233,17 @@ void System::PopulateOutputs(bool dolinks)
     if (RecordResults())
     {
         Outputs.AllOutputs.ResizeIfNeeded(1000);
-
+#ifndef NO_OPENMP
      #pragma omp parallel for schedule(static)
+#endif
         for (int i = 0; i < blocks.size(); i++)
             blocks[i].CalcExpressions(Expression::timing::present);
 
         if (dolinks)
         {
-     #pragma omp parallel for schedule(static)
+#ifndef NO_OPENMP
+#pragma omp parallel for schedule(static)
+#endif
             for (int i = 0; i < links.size(); i++)
                 links[i].CalcExpressions(Expression::timing::present);
         }
