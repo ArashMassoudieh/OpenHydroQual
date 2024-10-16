@@ -1928,3 +1928,26 @@ int CTimeSeries<T>::GetElementNumberAt(const T &x) const
     else
         return 0;
 }
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::inverse_cumulative_uniform(int nintervals)
+{
+    CTimeSeries<T> out;
+    out.t = C;
+    out.C = t;
+    out.n = n;
+
+    return out.make_uniform(1/double(nintervals));
+
+}
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::LogTransformX()
+{
+    CTimeSeries<T> out = *this;
+    for (int i=0; i<n; i++)
+    {
+        out.t[i] = log(t[i]);
+    }
+    return out;
+}

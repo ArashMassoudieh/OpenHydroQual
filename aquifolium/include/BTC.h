@@ -22,6 +22,9 @@ template<class T>
 class CTimeSeries
 {
 public:
+#ifdef _arma
+    CTimeSeries(arma::mat &x, arma::mat &y); //build timeseries from arma::mat
+#endif
     bool structured=true;
 	CTimeSeries();
 	CTimeSeries(int n);
@@ -125,6 +128,8 @@ public:
     CTimeSeries<T> ConvertToRanks();
     T Score(const double val);
     CTimeSeries<T> ConverttoNormalScore();
+    CTimeSeries<T> inverse_cumulative_uniform(int nintervals);
+    CTimeSeries<T> LogTransformX();
 private:
     vector<T> t;
     vector<T> C;
@@ -179,7 +184,6 @@ template<class T> T sum_interpolate(vector<CTimeSeries<T>>, double t);
 template<class T> T R2_c(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d);
 template<class T> T norm2(CTimeSeries<T> BTC1);
 template<class T> CTimeSeries<T> max(CTimeSeries<T> A, T b);
-//GUI
 template<class T> map<string, T> regression(vector<T> &x, vector<T> &y);
 
 #include "BTC.hpp"
