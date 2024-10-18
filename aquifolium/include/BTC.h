@@ -61,6 +61,7 @@ public:
     T std(int nlimit); // standard deviation of the data after excluding "limit" data points
     T mean_log(int limit); //mean of log transformed data after excluding "limit" data points
     T integrate(); // integral of the time series
+    CTimeSeries<T> derivative();
     T variance(); //calculates the variance of the value of the timeseries
     T integrate(T t); //integral from the begining to time t
     T integrate(T t1, T t2); //integral between time t1 and t2
@@ -130,6 +131,7 @@ public:
     CTimeSeries<T> ConverttoNormalScore();
     CTimeSeries<T> inverse_cumulative_uniform(int nintervals);
     CTimeSeries<T> LogTransformX();
+    void CreatePeriodicStepFunction(const T &t_start, const T &t_end, const T &duration, const T &gap, const T &magnitude);
 private:
     vector<T> t;
     vector<T> C;
@@ -162,6 +164,7 @@ template<class T> T R(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, int nlimit);
 template<class T> CTimeSeries<T> operator*(T, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator*(CTimeSeries<T>&, double);
 template<class T> CTimeSeries<T> operator-(const CTimeSeries<T>&, double);
+template<class T> CTimeSeries<T> operator/(const CTimeSeries<T>&, double);
 template<class T> CTimeSeries<T> operator*(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator/(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator+(CTimeSeries<T>&, CTimeSeries<T>&);

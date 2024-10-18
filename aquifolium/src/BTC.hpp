@@ -928,6 +928,16 @@ CTimeSeries<T> operator-(const CTimeSeries<T> &BTC1, double a)
 }
 
 template<class T>
+CTimeSeries<T> operator/(const CTimeSeries<T> &BTC1, double a)
+{
+    CTimeSeries<T> S = BTC1;
+    for (int i=0; i<BTC1.n; i++)
+        S.SetC(i, BTC1.GetC(i)/a);
+
+    return S;
+}
+
+template<class T>
 CTimeSeries<T> operator%(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 {
     CTimeSeries<T> S = BTC1;
@@ -1057,6 +1067,17 @@ T CTimeSeries<T>::integrate()
 		sum+= (C[i]+C[i-1])/2.0*(t[i]-t[i-1]);
 	}
 	return sum;
+}
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::derivative()
+{
+    CTimeSeries<T> out;
+    for (int i=1; i<n; i++)
+    {
+        out.append((t[i]+t[i-1])/2.0,(C[i]-C[i-1])/(t[i]-t[i-1]));
+    }
+    return out;
 }
 
 template<class T>
@@ -1960,4 +1981,19 @@ CTimeSeries<T> CTimeSeries<T>::LogTransformX()
         out.t[i] = log(t[i]);
     }
     return out;
+}
+
+template<class T>
+void CTimeSeries<T>::CreatePeriodicStepFunction(const T &t_start, const T &t_end, const T &duration, const T &gap, const T &magnitude)
+{
+    double t = t_start;
+    while (t<=t_end)
+    {
+        append(t-1e-6,0);
+        append(t,magnitude);
+        append(t+duration,magnitude);
+        append(t+duration+1e-6,0);
+        t+=duration+gap;
+    }
+    assign_D();
 }

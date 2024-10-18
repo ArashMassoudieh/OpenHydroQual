@@ -166,7 +166,7 @@ CTimeSeriesSet<double> CPrecipitation::getflow (double A, double dt)
 	return Rainflowout;
 }
 
-CTimeSeriesSet<double> CPrecipitation::getflow(double A)
+CTimeSeriesSet<double> CPrecipitation::getflow(double A) const
 {
     CTimeSeriesSet<double> Rainflowout(1);
     Rainflowout.filename = filename;

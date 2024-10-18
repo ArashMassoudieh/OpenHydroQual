@@ -927,6 +927,19 @@ bool Quan::SetTimeSeries(const string &filename, bool prec)
 	}
 }
 
+bool Quan::SetTimeSeries(const CTimeSeries<double> &timeseries)
+{
+    _timeseries = timeseries;
+    return true;
+}
+
+
+bool Quan::SetTimeSeries(const CPrecipitation &timeseries)
+{
+    _timeseries = timeseries.getflow(1).BTC[0];
+
+}
+
 bool Quan::SetSource(const string &sourcename)
 {
     if (sourcename.empty())
