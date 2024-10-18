@@ -153,12 +153,12 @@ class System: public Object
             return SolverTempVars.t;
         }
         bool AddBlock(Block &blk, bool SetQuantities=true);
-        bool AddSource(Source &src);
+        bool AddSource(Source &src, bool SetQuantities=true);
         bool AddLink(Link &lnk, const string &source, const string &destination, bool SetQuantities=true);
         bool AddConstituent(Constituent &cnst, bool SetQuantities=true);
-        bool AddReaction(Reaction &rxn);
-        bool AddObservation(Observation &obs);
-        bool AddReactionParameter(RxnParameter &rxn);
+        bool AddReaction(Reaction &rxn, bool SetQuantities=true);
+        bool AddObservation(Observation &obs, bool SetQuantities=true);
+        bool AddReactionParameter(RxnParameter &rxn, bool SetQuantities=true);
         Block *block(const string &s);
         Block *block(unsigned int i)
         {

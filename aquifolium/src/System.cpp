@@ -160,11 +160,12 @@ bool System::AddBlock(Block &blk, bool SetQuantities)
 	return true;
 }
 
-bool System::AddSource(Source &src)
+bool System::AddSource(Source &src, bool SetQuantities)
 {
     sources.push_back(src);
     source(src.GetName())->SetParent(this);
-    source(src.GetName())->SetQuantities(metamodel, src.GetType());
+    if (SetQuantities)
+        source(src.GetName())->SetQuantities(metamodel, src.GetType());
     source(src.GetName())->SetParent(this);
 	return true;
 }
@@ -179,29 +180,32 @@ bool System::AddConstituent(Constituent &cnst, bool SetQuantities)
     return true;
 }
 
-bool System::AddReaction(Reaction &rxn)
+bool System::AddReaction(Reaction &rxn, bool SetQuantities)
 {
     reactions.push_back(rxn);
     reaction(rxn.GetName())->SetParent(this);
-    reaction(rxn.GetName())->SetQuantities(metamodel, rxn.GetType());
+     if (SetQuantities)
+        reaction(rxn.GetName())->SetQuantities(metamodel, rxn.GetType());
     reaction(rxn.GetName())->SetParent(this);
     return true;
 }
 
-bool System::AddReactionParameter(RxnParameter &rxnparam)
+bool System::AddReactionParameter(RxnParameter &rxnparam, bool SetQuantities)
 {
     reaction_parameters.push_back(rxnparam);
     reactionparameter(rxnparam.GetName())->SetParent(this);
-    reactionparameter(rxnparam.GetName())->SetQuantities(metamodel, rxnparam.GetType());
+     if (SetQuantities)
+        reactionparameter(rxnparam.GetName())->SetQuantities(metamodel, rxnparam.GetType());
     reactionparameter(rxnparam.GetName())->SetParent(this);
     return true;
 }
 
-bool System::AddObservation(Observation &obs)
+bool System::AddObservation(Observation &obs, bool SetQuantities)
 {
     observations.push_back(obs);
     observation(obs.GetName())->SetParent(this);
-    observation(obs.GetName())->SetQuantities(metamodel, obs.GetType());
+    if (SetQuantities)
+        observation(obs.GetName())->SetQuantities(metamodel, obs.GetType());
     observation(obs.GetName())->SetParent(this);
     return true;
 
