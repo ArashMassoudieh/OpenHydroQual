@@ -1438,31 +1438,16 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
         while ((err/(err_ini+1e-8*X_norm)>SolverSettings.NRtolerance && err>1e-12 && dx_norm/X_norm>1e-10))
         {
             SolverTempVars.numiterations[statevarno]++;
+
             if (SolverTempVars.updatejacobian[statevarno])
             {
-#ifdef SUPER_LU
-                CMatrix_arma_sp J;
-#else
                 CMatrix_arma J;
-#endif
-
                 if (transport)
-#ifdef SUPER_LU
-                    J = Jacobian_SP(variable, X, transport);
-#else
                     J = Jacobian(variable, X, transport);
-#endif
+
                 else
-#ifdef SUPER_LU
-                    J = JacobianDirect_SP(variable, X, transport);
-#else
                     J = JacobianDirect(variable, X, transport);
-#endif
-                //J_direct = JacobianDirect(variable, X, transport);
-                //J_direct.writetofile("jacob_direct.txt");
-                //J.writetofile("jacob_traditional.txt");
-                //J_trad = Jacobian(variable, X, transport);
-                //J_trad.writetofile("jacob_traditional.txt");
+
 
                 SolverTempVars.epoch_count ++;
                 if (SolverSettings.scalediagonal)
@@ -1538,7 +1523,6 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 }
             }
 #else
-
 
                 if (!SolverSettings.direct_jacobian)
                 {   if (!Invert(J,SolverTempVars.Inverse_Jacobian[statevarno]))

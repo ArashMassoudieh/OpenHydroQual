@@ -88,7 +88,11 @@ struct outputs
 
 struct solvertemporaryvars
 {
+#ifdef SUPER_LU
+    vector<CMatrix_arma_sp> Inverse_Jacobian;
+#else
     vector<CMatrix_arma> Inverse_Jacobian;
+#endif
     vector<double> NR_coefficient;
     vector<bool> updatejacobian;
 	int MaxNumberOfIterations()
