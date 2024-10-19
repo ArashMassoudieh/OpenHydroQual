@@ -157,6 +157,7 @@ bool System::AddBlock(Block &blk, bool SetQuantities)
     if (SetQuantities)
         block(blk.GetName())->SetQuantities(metamodel, blk.GetType());
     block(blk.GetName())->SetParent(this);
+    AddAllConstituentRelateProperties(block(blk.GetName()));
 	return true;
 }
 
@@ -167,6 +168,7 @@ bool System::AddSource(Source &src, bool SetQuantities)
     if (SetQuantities)
         source(src.GetName())->SetQuantities(metamodel, src.GetType());
     source(src.GetName())->SetParent(this);
+    AddAllConstituentRelateProperties(source(src.GetName()));
 	return true;
 }
 
@@ -177,6 +179,8 @@ bool System::AddConstituent(Constituent &cnst, bool SetQuantities)
     if (SetQuantities)
         constituent(cnst.GetName())->SetQuantities(metamodel, cnst.GetType());
     constituent(cnst.GetName())->SetParent(this);
+    AddConstituentRelateProperties(constituent(cnst.GetName()));
+    AddConstituentRelatePropertiestoMetalModel();
     return true;
 }
 
@@ -187,6 +191,8 @@ bool System::AddReaction(Reaction &rxn, bool SetQuantities)
      if (SetQuantities)
         reaction(rxn.GetName())->SetQuantities(metamodel, rxn.GetType());
     reaction(rxn.GetName())->SetParent(this);
+    AddAllConstituentRelateProperties(reaction(rxn.GetName()));
+    AddConstituentRelateProperties(reaction(rxn.GetName()));
     return true;
 }
 
@@ -239,6 +245,7 @@ bool System::AddLink(Link &lnk, const string &source, const string &destination,
     if (SetQuantities)
         link(lnk.GetName())->SetQuantities(metamodel, lnk.GetType());
 	link(lnk.GetName())->SetParent(this);
+    AddAllConstituentRelateProperties(link(lnk.GetName()));
 	return true;
 }
 

@@ -452,7 +452,7 @@ bool Command::Execute(System *_sys)
                 B.SetName(assignments["name"]);
                 B.SetType(assignments["type"]);
                 sys->AddBlock(B);
-                sys->AddAllConstituentRelateProperties(sys->block(assignments["name"]));
+
                 for (map<string,string>::iterator it=assignments.begin(); it!=assignments.end(); it++)
                 {
                     if (it->first!="type" && it->first!="to" && it->first!="from")
@@ -472,7 +472,7 @@ bool Command::Execute(System *_sys)
                 L.SetType(assignments["type"]);
 
 				if (sys->AddLink(L, assignments["from"], assignments["to"]))
-                {	sys->AddAllConstituentRelateProperties(sys->link(assignments["name"]));
+                {
                     L.SetName(assignments["name"]);
 					for (map<string, string>::iterator it = assignments.begin(); it != assignments.end(); it++)
 					{
@@ -545,7 +545,7 @@ bool Command::Execute(System *_sys)
                 B.SetName(assignments["name"]);
                 B.SetType(assignments["type"]);
                 sys->AddSource(B);
-                sys->AddAllConstituentRelateProperties(sys->source(assignments["name"]));
+
                 for (map<string,string>::iterator it=assignments.begin(); it!=assignments.end(); it++)
                 {
                     if (it->first!="type" && it->first!="to" && it->first!="from")
@@ -584,7 +584,7 @@ bool Command::Execute(System *_sys)
                 {
                     B.SetType(assignments["type"]);
                     sys->AddConstituent(B);
-                    sys->AddConstituentRelateProperties(sys->constituent(assignments["name"]));
+
                     for (map<string, string>::iterator it = assignments.begin(); it != assignments.end(); it++)
                     {
                         if (it->first != "type")
@@ -626,8 +626,7 @@ bool Command::Execute(System *_sys)
                 B.SetName(assignments["name"]);
                 B.SetType(assignments["type"]);
                 sys->AddReaction(B);
-                sys->AddAllConstituentRelateProperties(sys->reaction(assignments["name"]));
-                sys->AddConstituentRelateProperties(sys->reaction(assignments["name"]));
+
                 for (map<string,string>::iterator it=assignments.begin(); it!=assignments.end(); it++)
                 {
                     if (it->first!="type")
