@@ -284,6 +284,25 @@ bool Object::SetQuantities(MetaModel *m, const string& typ )
     return true;
 }
 
+bool Object::SetQuantities(System *sys, const string& typ )
+{
+    SetType(typ);
+    MetaModel *m = sys->GetMetaModel();
+    if (m->Count(typ)==0)
+    {
+        if (Parent())
+            Parent()->errorhandler.Append(GetName(),"Object","SetQuantities","Type " + typ + "was not found!",1004);
+        last_error = "Type " + typ + "was not found";
+        return false;
+    }
+    else
+        var = *(m->GetItem(typ));
+    SetDefaults();
+    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+        var[s->first].SetParent(this);
+    return true;
+}
+
 void Object::SetDefaults()
 {
     for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
