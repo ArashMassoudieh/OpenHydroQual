@@ -14,6 +14,9 @@
 #include "qvariant.h"
 #endif // QT_version
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+
 //#define CBTC CTimeSeries
 
 using namespace std;
@@ -132,10 +135,13 @@ public:
     CTimeSeries<T> inverse_cumulative_uniform(int nintervals);
     CTimeSeries<T> LogTransformX();
     void CreatePeriodicStepFunction(const T &t_start, const T &t_end, const T &duration, const T &gap, const T &magnitude);
+    void CreateOUProcess(const T &t_start, const T &t_end, const T &dt, const T &theta);
 private:
     vector<T> t;
     vector<T> C;
     vector<T> D;
+    const gsl_rng_type * A;
+    gsl_rng * r;
 #ifdef QT_version
 	CTimeSeries(QList <QMap <QVariant, QVariant>> data);
 	void compact(QDataStream &data) const;

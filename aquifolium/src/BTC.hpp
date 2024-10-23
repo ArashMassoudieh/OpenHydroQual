@@ -30,6 +30,9 @@ CTimeSeries<T>::CTimeSeries()
 	n = 0;
 	structured = true;
 	max_fabs = 0;
+
+    A = gsl_rng_default;
+    r = gsl_rng_alloc(A);
 }
 
 template<class T>
@@ -40,6 +43,9 @@ CTimeSeries<T>::CTimeSeries(int n1)
 	C.resize(n);
 	structured = true;
 	max_fabs = 0;
+
+    A = gsl_rng_default;
+    r = gsl_rng_alloc(A);
 }
 
 template<class T>
@@ -54,6 +60,9 @@ CTimeSeries<T>::CTimeSeries(vector<T> &data, int writeInterval)
 			t.push_back(i);
 			C.push_back(data[i]);
 		}
+
+    A = gsl_rng_default;
+    r = gsl_rng_alloc(A);
 }
 template<class T>
 void CTimeSeries<T>::setnumpoints(int n1)
@@ -1996,4 +2005,15 @@ void CTimeSeries<T>::CreatePeriodicStepFunction(const T &t_start, const T &t_end
         t+=duration+gap;
     }
     assign_D();
+}
+
+template<class T>
+void CTimeSeries<T>::CreateOUProcess(const T &t_start, const T &t_end, const T &dt, const T &theta)
+{
+    T x = 0;
+    for (T t = t_start; t<=t_end; t+=dt)
+    {
+        x += -theta*x*dt + sqrt(2*theta*dt)*gsl_ran_gaussian(r,1);
+        append(t,x);
+    }
 }

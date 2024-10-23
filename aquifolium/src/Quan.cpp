@@ -1020,7 +1020,9 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
             SetTimeSeries("");
             return false;
         }
-        if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
+        if (!parent->Parent())
+            return SetTimeSeries(val);
+        else if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
             return SetTimeSeries(parent->Parent()->InputPath() + val);
         else
             return SetTimeSeries(val);
