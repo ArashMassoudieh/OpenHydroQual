@@ -136,6 +136,7 @@ public:
     CTimeSeries<T> LogTransformX();
     void CreatePeriodicStepFunction(const T &t_start, const T &t_end, const T &duration, const T &gap, const T &magnitude);
     void CreateOUProcess(const T &t_start, const T &t_end, const T &dt, const T &theta);
+    CTimeSeries<T> MapfromNormalScoreToDistribution(const string& , const vector<double>&);
 private:
     vector<T> t;
     vector<T> C;

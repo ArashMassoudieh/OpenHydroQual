@@ -2017,3 +2017,29 @@ void CTimeSeries<T>::CreateOUProcess(const T &t_start, const T &t_end, const T &
         append(t,x);
     }
 }
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::MapfromNormalScoreToDistribution(const string &distribution, const vector<double> &parameters)
+{
+    CTimeSeries<T> out;
+    for (int i=0; i<n; i++)
+    {
+        if (distribution=="lognormal" || distribution=="Lognormal" )
+        {
+            out.append(t[i],exp(parameters[0]+parameters[1]*C[i]));
+        }
+        else if (distribution == "exp" || distribution == "Exp")
+        {
+            double u = gsl_cdf_ugaussian_P(C[i]);
+            out.append(t[i],-parameters[0]*log(1.0-u));
+        }
+        else if (distribution == "normal" || distribution == "Normal")
+        {
+            out.append(t[i],parameters[0]+parameters[1]*C[i]);
+        }
+        else
+            out.append(t[i],0);
+    }
+
+    return out;
+}
