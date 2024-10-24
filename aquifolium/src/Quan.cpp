@@ -937,6 +937,7 @@ bool Quan::SetTimeSeries(const CTimeSeries<double> &timeseries)
 bool Quan::SetTimeSeries(const CPrecipitation &timeseries)
 {
     _timeseries = timeseries.getflow(1).BTC[0];
+    return true; 
 
 }
 
