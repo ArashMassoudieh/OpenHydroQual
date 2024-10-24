@@ -12,6 +12,8 @@
 //#include "StringOP.h"
 #include "Utilities.h"
 #include "NormalDist.h"
+#include <chrono>
+#include <ctime>
 #ifdef Q_version
 #include "qfile.h"
 #include "qdatastream.h"
@@ -33,6 +35,9 @@ CTimeSeries<T>::CTimeSeries()
 
     A = gsl_rng_default;
     r = gsl_rng_alloc(A);
+
+    unsigned long seed = static_cast<unsigned long>(std::time(nullptr));
+    gsl_rng_set(r, seed);
 }
 
 template<class T>
@@ -46,6 +51,9 @@ CTimeSeries<T>::CTimeSeries(int n1)
 
     A = gsl_rng_default;
     r = gsl_rng_alloc(A);
+
+    unsigned long seed = static_cast<unsigned long>(std::time(nullptr));
+    gsl_rng_set(r, seed);
 }
 
 template<class T>
@@ -63,6 +71,9 @@ CTimeSeries<T>::CTimeSeries(vector<T> &data, int writeInterval)
 
     A = gsl_rng_default;
     r = gsl_rng_alloc(A);
+
+    unsigned long seed = static_cast<unsigned long>(std::time(nullptr));
+    gsl_rng_set(r, seed);
 }
 template<class T>
 void CTimeSeries<T>::setnumpoints(int n1)
