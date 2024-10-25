@@ -328,6 +328,7 @@ class System: public Object
         bool SavetoScriptFile(const string &filename, const string &templatefilename="", const vector<string> &addedtemplates = vector<string>());
         bool ReadSystemSettingsTemplate(const string &filename);
         void SetSystemSettings();
+        void SetSettingsParameter(const string &name, const double &value);
         void DisconnectLink(const string linkname);
         bool SetSystemSettingsObjectProperties(const string &s, const string &val, bool checkcritetia = false);
         bool Delete(const string& objectname);

@@ -75,6 +75,7 @@ public:
 	CTimeSeries distribution(int n_bins, int limit); //extract the histogram of values
     bool append(T x); //appends a data point with value x
     bool append(T tt, T xx); //appends a datapoint with value xx at time tt
+    void CreateConstant(const T &t_start, const T &t_end, const T &magnitude); //creates a constant timeseries
 	void append(CTimeSeries &CC);// appends a time-series to the time-series
     void ResizeIfNeeded(int _increment); //increases the size of the vectors more capacity is needed
 	CTimeSeries& operator+=(CTimeSeries &v); //adds another time-series to the existing one

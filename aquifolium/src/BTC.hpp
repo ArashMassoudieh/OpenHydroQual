@@ -1275,6 +1275,14 @@ bool CTimeSeries<T>::append(T tt, T xx)
 }
 
 template<class T>
+void CTimeSeries<T>::CreateConstant(const T &t_start, const T &t_end, const T &magnitude)
+{
+    clear();
+    append(t_start,magnitude);
+    append(t_end, magnitude);
+}
+
+template<class T>
 void CTimeSeries<T>::ResizeIfNeeded(int _increment)
 {
     if (C.size()==n)

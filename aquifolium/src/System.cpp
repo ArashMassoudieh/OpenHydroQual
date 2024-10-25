@@ -3154,6 +3154,19 @@ void System::SetSystemSettings()
 
 }
 
+void System::SetSettingsParameter(const string &name, const double &value)
+{
+    for (unsigned int i=0; i<Settings.size(); i++)
+    {
+        for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
+            if (j->first == name)
+                j->second.SetVal(value,Expression::timing::both);
+
+    }
+
+}
+
+
 void System::DisconnectLink(const string linkname)
 {
     for (unsigned int i = 0; i < links.size(); i++)
