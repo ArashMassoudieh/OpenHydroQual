@@ -132,18 +132,22 @@ public:
     T AutoCorrelation(const T &distance);
     CTimeSeries<T> ConvertToRanks();
     T Score(const double val);
-    CTimeSeries<T> ConverttoNormalScore();
     CTimeSeries<T> inverse_cumulative_uniform(int nintervals);
     CTimeSeries<T> LogTransformX();
     void CreatePeriodicStepFunction(const T &t_start, const T &t_end, const T &duration, const T &gap, const T &magnitude);
+#ifdef GSL
     void CreateOUProcess(const T &t_start, const T &t_end, const T &dt, const T &theta);
     CTimeSeries<T> MapfromNormalScoreToDistribution(const string& , const vector<double>&);
+    CTimeSeries<T> ConverttoNormalScore();
+#endif
 private:
     vector<T> t;
     vector<T> C;
     vector<T> D;
+#ifdef GSL
     const gsl_rng_type * A;
     gsl_rng * r;
+#endif
 #ifdef QT_version
 	CTimeSeries(QList <QMap <QVariant, QVariant>> data);
 	void compact(QDataStream &data) const;

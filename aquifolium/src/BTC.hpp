@@ -20,7 +20,9 @@
 #include <qdebug.h>
 #endif
 
+#ifdef GSL
 #include <gsl/gsl_cdf.h>
+#endif
 
 
 using namespace std;
@@ -33,11 +35,13 @@ CTimeSeries<T>::CTimeSeries()
 	structured = true;
 	max_fabs = 0;
 
+#ifdef GSL
     A = gsl_rng_default;
     r = gsl_rng_alloc(A);
 
     unsigned long seed = static_cast<unsigned long>(std::time(nullptr));
     gsl_rng_set(r, seed);
+#endif
 }
 
 template<class T>
@@ -48,12 +52,13 @@ CTimeSeries<T>::CTimeSeries(int n1)
 	C.resize(n);
 	structured = true;
 	max_fabs = 0;
-
+#ifdef GSL
     A = gsl_rng_default;
     r = gsl_rng_alloc(A);
 
     unsigned long seed = static_cast<unsigned long>(std::time(nullptr));
     gsl_rng_set(r, seed);
+#endif
 }
 
 template<class T>
@@ -68,12 +73,13 @@ CTimeSeries<T>::CTimeSeries(vector<T> &data, int writeInterval)
 			t.push_back(i);
 			C.push_back(data[i]);
 		}
-
+#ifdef GSL
     A = gsl_rng_default;
     r = gsl_rng_alloc(A);
 
     unsigned long seed = static_cast<unsigned long>(std::time(nullptr));
     gsl_rng_set(r, seed);
+#endif
 }
 template<class T>
 void CTimeSeries<T>::setnumpoints(int n1)
@@ -1674,6 +1680,7 @@ T CTimeSeries<T>::Score(const double val)
     return score;
 }
 
+#ifdef GSL
 template<class T>
 CTimeSeries<T> CTimeSeries<T>::ConverttoNormalScore()
 {
@@ -1686,6 +1693,7 @@ CTimeSeries<T> CTimeSeries<T>::ConverttoNormalScore()
     return normal_scored;
 
 }
+#endif
 
 
 
@@ -2026,6 +2034,7 @@ void CTimeSeries<T>::CreatePeriodicStepFunction(const T &t_start, const T &t_end
     assign_D();
 }
 
+#ifdef GSL
 template<class T>
 void CTimeSeries<T>::CreateOUProcess(const T &t_start, const T &t_end, const T &dt, const T &theta)
 {
@@ -2036,6 +2045,7 @@ void CTimeSeries<T>::CreateOUProcess(const T &t_start, const T &t_end, const T &
         append(t,x);
     }
 }
+
 
 template<class T>
 CTimeSeries<T> CTimeSeries<T>::MapfromNormalScoreToDistribution(const string &distribution, const vector<double> &parameters)
@@ -2062,3 +2072,4 @@ CTimeSeries<T> CTimeSeries<T>::MapfromNormalScoreToDistribution(const string &di
 
     return out;
 }
+#endif
