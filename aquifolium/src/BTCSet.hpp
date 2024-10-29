@@ -1315,24 +1315,24 @@ template <class T>
 arma::mat CTimeSeriesSet<T>::ToArmaMat(const vector<string> &columns)
 {
     if (columns.size()==0)
-    {   arma::mat out(maxnumpoints() , nvars);
+    {   arma::mat out(nvars, maxnumpoints());
         for (int i=0; i<maxnumpoints(); i++)
         {
             for (int j=0; j<nvars; j++)
             {
-                out(i,j) = BTC[j].GetC(i);
+                out(j,i) = BTC[j].GetC(i);
             }
         }
         return out;
     }
     else
     {
-        arma::mat out(maxnumpoints() , columns.size());
+        arma::mat out(columns.size(), maxnumpoints());
         for (int i=0; i<maxnumpoints(); i++)
         {
             for (int j=0; j<columns.size(); j++)
             {
-                out(i,j) = operator[](columns[j]).GetC(i);
+                out(j,i) = operator[](columns[j]).GetC(i);
             }
         }
         return out;
@@ -1343,12 +1343,12 @@ template <class T>
 arma::mat CTimeSeriesSet<T>::ToArmaMat(const vector<int> &columns)
 {
 
-    arma::mat out(maxnumpoints() , columns.size());
+    arma::mat out(columns.size(), maxnumpoints());
     for (int i=0; i<maxnumpoints(); i++)
     {
         for (int j=0; j<columns.size(); j++)
         {
-            out(i,j) = operator[](columns[j]).GetC(i);
+            out(j,i) = operator[](columns[j]).GetC(i);
         }
     }
     return out;
