@@ -311,10 +311,9 @@ CTimeSeriesSet<T>::CTimeSeriesSet(string _filename, bool varytime)
 					if (int(s.size()) == nvars + 1)
 						for (int i = 0; i < nvars; i++)
 						{
-							BTC[i].t.push_back(atof(s[0].c_str()));
-							BTC[i].C.push_back(atof(s[i + 1].c_str()));
-							BTC[i].n++;
-							if (BTC[i].t.size()>2)
+                            BTC[i].append(atof(s[0].c_str()),atof(s[i + 1].c_str()));
+
+                            if (BTC[i].n>2)
                                 if ((BTC[i].GetT(BTC[i].tSize() - 1) - BTC[i].GetT(BTC[i].tSize() - 2)) != (BTC[i].GetT(BTC[i].tSize() - 2) - BTC[i].GetT(BTC[i].tSize() - 3)))
 									BTC[i].structured = false;
 
@@ -342,11 +341,9 @@ CTimeSeriesSet<T>::CTimeSeriesSet(string _filename, bool varytime)
 						if (int(s.size()) >= 2 * (i + 1))
 							if ((aquiutils::trim(s[2 * i]) != "") && (aquiutils::trim(s[2 * i + 1]) != ""))
 							{
-								BTC[i].t.push_back(atof(s[2 * i].c_str()));
-								BTC[i].C.push_back(atof(s[2 * i + 1].c_str()));
-								BTC[i].n++;
-								if (BTC[i].t.size()>2)
-									if ((BTC[i].GetT(BTC[i].t.size() - 1) - BTC[i].GetT(BTC[i].t.size() - 2)) != (BTC[i].GetT(BTC[i].t.size() - 2) - BTC[i].GetT(BTC[i].t.size() - 3)))
+                                BTC[i].append(atof(s[0].c_str()),atof(s[i + 1].c_str()));
+                                if (BTC[i].n>2)
+                                    if ((BTC[i].GetT(BTC[i].n - 1) - BTC[i].GetT(BTC[i].n - 2)) != (BTC[i].GetT(BTC[i].n - 2) - BTC[i].GetT(BTC[i].n - 3)))
 										BTC[i].structured = false;
 							}
 					}
@@ -1310,5 +1307,51 @@ CTimeSeriesSet CTimeSeriesSet<T>::unCompact(QDataStream &data)
 	}
 
 	return c;
+}
+#endif
+
+#ifdef _ARMA
+template <class T>
+arma::mat CTimeSeriesSet<T>::ToArmaMat(const vector<string> &columns)
+{
+    if (columns.size()==0)
+    {   arma::mat out(maxnumpoints() , nvars);
+        for (int i=0; i<maxnumpoints(); i++)
+        {
+            for (int j=0; j<nvars; j++)
+            {
+                out(i,j) = BTC[j].GetC(i);
+            }
+        }
+        return out;
+    }
+    else
+    {
+        arma::mat out(maxnumpoints() , columns.size());
+        for (int i=0; i<maxnumpoints(); i++)
+        {
+            for (int j=0; j<columns.size(); j++)
+            {
+                out(i,j) = operator[](columns[j]).GetC(i);
+            }
+        }
+        return out;
+    }
+}
+
+template <class T>
+arma::mat CTimeSeriesSet<T>::ToArmaMat(const vector<int> &columns)
+{
+
+    arma::mat out(maxnumpoints() , columns.size());
+    for (int i=0; i<maxnumpoints(); i++)
+    {
+        for (int j=0; j<columns.size(); j++)
+        {
+            out(i,j) = operator[](columns[j]).GetC(i);
+        }
+    }
+    return out;
+
 }
 #endif

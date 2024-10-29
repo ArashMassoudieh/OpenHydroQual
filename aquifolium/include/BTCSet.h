@@ -75,6 +75,10 @@ public:
     CTimeSeries<T> operator[](string BTCName) const;
     bool Contains(string BTCName);
     bool ReadContentFromFile(string _filename, bool varytime);
+#ifdef _ARMA
+    arma::mat ToArmaMat(const vector<string> &columns = vector<string>());
+    arma::mat ToArmaMat(const vector<int> &columns);
+#endif
 #ifdef QT_version
 	CTimeSeries &operator[](QString BTCName) {
 		return operator[](BTCName.toStdString());}
