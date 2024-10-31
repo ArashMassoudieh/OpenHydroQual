@@ -332,7 +332,9 @@ CTimeSeriesSet<T>::CTimeSeriesSet(string _filename, bool varytime)
 					for (unsigned int i = 1; i < s.size(); i++) if (aquiutils::trim(s[i])!="") names.push_back(s[i]);
 				if (aquiutils::tail(s[0],5) == "units" || aquiutils::tail(s[0], 4) == "unit")
 					for (unsigned int i = 1; i < s.size(); i++) units.push_back(s[i]);
-				if ((s[0].substr(0, 2) != "//") && (aquiutils::tail(s[0],5) != "names") && (aquiutils::tail(s[0],5) != "units"))
+                if ((s[0].substr(0, 2) == "//"))
+                    for (unsigned int i = 1; i < s.size(); i+=2) if (aquiutils::trim(s[i])!="") names.push_back(s[i]);
+                if ((s[0].substr(0, 2) != "//") && (aquiutils::tail(s[0],5) != "names") && (aquiutils::tail(s[0],5) != "units"))
 				{
 					if (nvars == 0) { nvars = s.size() / 2; BTC.resize(nvars); }
 
@@ -341,7 +343,7 @@ CTimeSeriesSet<T>::CTimeSeriesSet(string _filename, bool varytime)
 						if (int(s.size()) >= 2 * (i + 1))
 							if ((aquiutils::trim(s[2 * i]) != "") && (aquiutils::trim(s[2 * i + 1]) != ""))
 							{
-                                BTC[i].append(atof(s[0].c_str()),atof(s[i + 1].c_str()));
+                                BTC[i].append(atof(s[i*2].c_str()),atof(s[i*2 + 1].c_str()));
                                 if (BTC[i].n>2)
                                     if ((BTC[i].GetT(BTC[i].n - 1) - BTC[i].GetT(BTC[i].n - 2)) != (BTC[i].GetT(BTC[i].n - 2) - BTC[i].GetT(BTC[i].n - 3)))
 										BTC[i].structured = false;
