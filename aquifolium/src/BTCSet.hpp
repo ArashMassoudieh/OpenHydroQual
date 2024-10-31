@@ -1356,4 +1356,51 @@ arma::mat CTimeSeriesSet<T>::ToArmaMat(const vector<int> &columns)
     return out;
 
 }
+
+template <class T>
+arma::mat CTimeSeriesSet<T>::ToArmaMatShifter(const vector<int> &columns, const vector<vector<int>> &lag)
+{
+    int total_number_of_columns =0;
+    int maximum_lag=0;
+    for (int j=0; j<columns.size(); j++)
+    {   total_number_of_columns+=lag[j].size();
+        for (int i=0; i<lag[j].size(); i++)
+            maximum_lag = max(maximum_lag, lag[j][i]);
+    }
+    arma::mat out(total_number_of_columns, maxnumpoints()-maximum_lag);
+    for (int i=maximum_lag; i<maxnumpoints(); i++)
+    {
+        int counter = 0;
+        for (int j=0; j<columns.size(); j++)
+        {
+            for (int k=0; k<lag[j].size(); k++)
+            {
+                out(counter,i-maximum_lag) = operator[](columns[j]).GetC(i-lag[j][k]);
+                counter++;
+            }
+        }
+    }
+    return out;
+
+}
+
+template <class T>
+CTimeSeriesSet<T>::CTimeSeriesSet(const mat &m, const double &dt)
+{
+    nvars = m.n_rows;
+    BTC.resize(nvars);
+    names.resize(nvars);
+    for (int i=0; i<nvars; i++) BTC[i] = CTimeSeries<T>();
+    unif = true;
+
+    for (int i=0; i<m.n_rows; i++)
+    {
+        for (int j=0; j<m.n_cols; j++)
+        {
+            BTC[i].append(j*dt,m(i,j));
+        }
+    }
+
+
+}
 #endif

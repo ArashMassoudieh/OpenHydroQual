@@ -13,6 +13,7 @@ public:
     CTimeSeriesSet(const CTimeSeriesSet<T> &BTC);
     CTimeSeriesSet(const CTimeSeries<T> &BTC);
 	CTimeSeriesSet(string filename, bool varytime);
+
 	int nvars;
     string name;
     string filename;
@@ -78,6 +79,8 @@ public:
 #ifdef _ARMA
     arma::mat ToArmaMat(const vector<string> &columns = vector<string>());
     arma::mat ToArmaMat(const vector<int> &columns);
+    CTimeSeriesSet(const mat &m, const double &dt);
+    arma::mat ToArmaMatShifter(const vector<int> &columns, const vector<vector<int>> &lag);
 #endif
 #ifdef QT_version
 	CTimeSeries &operator[](QString BTCName) {
