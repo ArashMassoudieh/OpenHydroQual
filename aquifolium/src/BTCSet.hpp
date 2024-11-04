@@ -1385,11 +1385,41 @@ arma::mat CTimeSeriesSet<T>::ToArmaMatShifter(const vector<int> &columns, const 
 }
 
 template <class T>
-CTimeSeriesSet<T>::CTimeSeriesSet(const mat &m, const double &dt)
+arma::mat CTimeSeriesSet<T>::ToArmaMatShifterOutput(const vector<int> &columns, const vector<vector<int>> &lag)
+{
+
+    int maximum_lag=0;
+    for (int j=0; j<lag.size(); j++)
+    {
+        for (int i=0; i<lag[j].size(); i++)
+            maximum_lag = max(maximum_lag, lag[j][i]);
+    }
+    arma::mat out(columns.size(), maxnumpoints()-maximum_lag);
+    for (int i=maximum_lag; i<maxnumpoints(); i++)
+    {
+        int counter = 0;
+        for (int j=0; j<columns.size(); j++)
+        {
+            out(counter,i-maximum_lag) = operator[](columns[j]).GetC(i);
+            counter++;
+        }
+    }
+    return out;
+
+}
+
+template <class T>
+CTimeSeriesSet<T>::CTimeSeriesSet(const mat &m, const double &dt, const vector<vector<int>> &lag)
 {
     nvars = m.n_rows;
     BTC.resize(nvars);
     names.resize(nvars);
+    int maximum_lag=0;
+    for (int j=0; j<lag.size(); j++)
+    {
+        for (int i=0; i<lag[j].size(); i++)
+            maximum_lag = max(maximum_lag, lag[j][i]);
+    }
     for (int i=0; i<nvars; i++) BTC[i] = CTimeSeries<T>();
     unif = true;
 
@@ -1397,10 +1427,35 @@ CTimeSeriesSet<T>::CTimeSeriesSet(const mat &m, const double &dt)
     {
         for (int j=0; j<m.n_cols; j++)
         {
-            BTC[i].append(j*dt,m(i,j));
+            BTC[i].append((j+maximum_lag)*dt,m(i,j));
         }
     }
 
 
+}
+
+template <class T>
+CTimeSeriesSet<T> CTimeSeriesSet<T>::ShiftOutput(const mat &m, const double &dt, const vector<vector<int>> &lag)
+{
+
+    CTimeSeriesSet<T> out(m.n_rows);
+
+    int maximum_lag=0;
+    for (int j=0; j<lag.size(); j++)
+    {
+        for (int i=0; i<lag[j].size(); i++)
+            maximum_lag = max(maximum_lag, lag[j][i]);
+    }
+
+    out.unif = true;
+
+    for (int i=0; i<m.n_rows; i++)
+    {
+        for (int j=0; j<m.n_cols; j++)
+        {
+            out.BTC[i].append((j+maximum_lag)*dt,m(i,j));
+        }
+    }
+    return out;
 }
 #endif
