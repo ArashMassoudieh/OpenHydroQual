@@ -80,7 +80,7 @@ public:
     arma::mat ToArmaMat(const vector<string> &columns = vector<string>());
     arma::mat ToArmaMat(const vector<int> &columns);
     CTimeSeriesSet(const mat &m, const double &dt, const vector<vector<int>> &lag = vector<vector<int>>());
-    static CTimeSeriesSet ShiftOutput(const mat &m, const double &dt, const vector<vector<int>> &lag);
+    static CTimeSeriesSet OutputShifter(const mat &m, const double &dt, const vector<vector<int>> &lag);
     arma::mat ToArmaMatShifter(const vector<int> &columns, const vector<vector<int>> &lag);
     arma::mat ToArmaMatShifterOutput(const vector<int> &columns, const vector<vector<int>> &lag);
 #endif

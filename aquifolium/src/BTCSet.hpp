@@ -1435,7 +1435,7 @@ CTimeSeriesSet<T>::CTimeSeriesSet(const mat &m, const double &dt, const vector<v
 }
 
 template <class T>
-CTimeSeriesSet<T> CTimeSeriesSet<T>::ShiftOutput(const mat &m, const double &dt, const vector<vector<int>> &lag)
+CTimeSeriesSet<T> CTimeSeriesSet<T>::OutputShifter(const mat &m, const double &dt, const vector<vector<int>> &lag)
 {
 
     CTimeSeriesSet<T> out(m.n_rows);
