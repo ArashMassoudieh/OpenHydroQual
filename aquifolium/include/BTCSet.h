@@ -13,6 +13,7 @@ public:
     CTimeSeriesSet(const CTimeSeriesSet<T> &BTC);
     CTimeSeriesSet(const CTimeSeries<T> &BTC);
 	CTimeSeriesSet(string filename, bool varytime);
+
 	int nvars;
     string name;
     string filename;
@@ -75,6 +76,14 @@ public:
     CTimeSeries<T> operator[](string BTCName) const;
     bool Contains(string BTCName);
     bool ReadContentFromFile(string _filename, bool varytime);
+#ifdef _ARMA
+    arma::mat ToArmaMat(const vector<string> &columns = vector<string>());
+    arma::mat ToArmaMat(const vector<int> &columns);
+    CTimeSeriesSet(const mat &m, const double &dt, const vector<vector<int>> &lag = vector<vector<int>>());
+    static CTimeSeriesSet OutputShifter(const mat &m, const double &dt, const vector<vector<int>> &lag);
+    arma::mat ToArmaMatShifter(const vector<int> &columns, const vector<vector<int>> &lag);
+    arma::mat ToArmaMatShifterOutput(const vector<int> &columns, const vector<vector<int>> &lag);
+#endif
 #ifdef QT_version
 	CTimeSeries &operator[](QString BTCName) {
 		return operator[](BTCName.toStdString());}

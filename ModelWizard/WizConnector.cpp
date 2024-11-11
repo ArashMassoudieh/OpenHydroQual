@@ -1,5 +1,6 @@
 #include "WizConnector.h"
 #include "Wizard_Script.h"
+#include <QDebug>
 
 Connector::Connector():Wizard_Entity()
 {

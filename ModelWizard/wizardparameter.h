@@ -4,6 +4,7 @@
 #include <qstring.h>
 #include <qjsonobject.h>
 #include <QVector2D>
+#include <QStringList>
 
 enum class parameter_type {numeric, string, date};
 

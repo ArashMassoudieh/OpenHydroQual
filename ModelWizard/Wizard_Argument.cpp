@@ -1,5 +1,8 @@
 #include "Wizard_Argument.h"
 #include "Utilities.h"
+#include <QDateTime>
+#include <QVector>
+#include <QString>
 
 
 bool Wizard_Argument::func_operators_initialized =false;

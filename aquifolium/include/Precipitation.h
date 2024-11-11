@@ -31,7 +31,7 @@ public:
 	//MM
     //CBTCSet getflow_Evap(double A);
 	
-    CTimeSeriesSet<double> getflow (double A);
+    CTimeSeriesSet<double> getflow (double A) const;
     CTimeSeriesSet<double> getflow(double A, double dt);
     void writefile(string Filename);
 

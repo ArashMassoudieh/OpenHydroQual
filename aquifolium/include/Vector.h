@@ -57,7 +57,7 @@ public:
     double max();
     double min();
     double norm2();
-    double sum();
+    double sum() const;
     double abs_max();
 	int abs_max_elems();
     CMatrix T();
@@ -80,6 +80,8 @@ public:
     bool is_finite();
     string toString() const;
     vector<int> negative_elements();
+    double mean() const;
+    double stdev() const;
 
 
 };

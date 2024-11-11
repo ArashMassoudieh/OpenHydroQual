@@ -15,7 +15,7 @@
 
 class Object;
 
-enum class blocklink {block, link, source, entity};
+enum class blocklink {block, link, source, reaction, entity};
 
 class QuanSet
 {

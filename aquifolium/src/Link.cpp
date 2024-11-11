@@ -14,7 +14,7 @@ Link::~Link()
 
 Link::Link(const Link& other):Object::Object(other)
 {
-    //copy ctor
+
 }
 
 Link& Link::operator=(const Link& rhs)

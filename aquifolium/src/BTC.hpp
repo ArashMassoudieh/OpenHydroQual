@@ -12,12 +12,18 @@
 //#include "StringOP.h"
 #include "Utilities.h"
 #include "NormalDist.h"
+#include <chrono>
+#include <ctime>
 #ifdef Q_version
 #include "qfile.h"
 #include "qdatastream.h"
 #include <qdebug.h>
 #endif
+
+#ifdef GSL
 #include <gsl/gsl_cdf.h>
+#endif
+
 
 
 using namespace std;
@@ -29,6 +35,14 @@ CTimeSeries<T>::CTimeSeries()
 	n = 0;
 	structured = true;
 	max_fabs = 0;
+
+#ifdef GSL
+    A = gsl_rng_default;
+    r = gsl_rng_alloc(A);
+
+    unsigned long seed = static_cast<unsigned long>(std::time(nullptr));
+    gsl_rng_set(r, seed);
+#endif
 }
 
 template<class T>
@@ -39,6 +53,13 @@ CTimeSeries<T>::CTimeSeries(int n1)
 	C.resize(n);
 	structured = true;
 	max_fabs = 0;
+#ifdef GSL
+    A = gsl_rng_default;
+    r = gsl_rng_alloc(A);
+
+    unsigned long seed = static_cast<unsigned long>(std::time(nullptr));
+    gsl_rng_set(r, seed);
+#endif
 }
 
 template<class T>
@@ -53,6 +74,13 @@ CTimeSeries<T>::CTimeSeries(vector<T> &data, int writeInterval)
 			t.push_back(i);
 			C.push_back(data[i]);
 		}
+#ifdef GSL
+    A = gsl_rng_default;
+    r = gsl_rng_alloc(A);
+
+    unsigned long seed = static_cast<unsigned long>(std::time(nullptr));
+    gsl_rng_set(r, seed);
+#endif
 }
 template<class T>
 void CTimeSeries<T>::setnumpoints(int n1)
@@ -917,6 +945,26 @@ CTimeSeries<T> operator*(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 }
 
 template<class T>
+CTimeSeries<T> operator-(const CTimeSeries<T> &BTC1, double a)
+{
+    CTimeSeries<T> S = BTC1;
+    for (int i=0; i<BTC1.n; i++)
+        S.SetC(i, BTC1.GetC(i)-a);
+
+    return S;
+}
+
+template<class T>
+CTimeSeries<T> operator/(const CTimeSeries<T> &BTC1, double a)
+{
+    CTimeSeries<T> S = BTC1;
+    for (int i=0; i<BTC1.n; i++)
+        S.SetC(i, BTC1.GetC(i)/a);
+
+    return S;
+}
+
+template<class T>
 CTimeSeries<T> operator%(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 {
     CTimeSeries<T> S = BTC1;
@@ -1046,6 +1094,17 @@ T CTimeSeries<T>::integrate()
 		sum+= (C[i]+C[i-1])/2.0*(t[i]-t[i-1]);
 	}
 	return sum;
+}
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::derivative()
+{
+    CTimeSeries<T> out;
+    for (int i=1; i<n; i++)
+    {
+        out.append((t[i]+t[i-1])/2.0,(C[i]-C[i-1])/(t[i]-t[i-1]));
+    }
+    return out;
 }
 
 template<class T>
@@ -1220,6 +1279,14 @@ bool CTimeSeries<T>::append(T tt, T xx)
 	max_fabs = max(max_fabs,std::fabs(xx));
 
     return increase;
+}
+
+template<class T>
+void CTimeSeries<T>::CreateConstant(const T &t_start, const T &t_end, const T &magnitude)
+{
+    clear();
+    append(t_start,magnitude);
+    append(t_end, magnitude);
 }
 
 template<class T>
@@ -1614,6 +1681,7 @@ T CTimeSeries<T>::Score(const double val)
     return score;
 }
 
+#ifdef GSL
 template<class T>
 CTimeSeries<T> CTimeSeries<T>::ConverttoNormalScore()
 {
@@ -1626,6 +1694,7 @@ CTimeSeries<T> CTimeSeries<T>::ConverttoNormalScore()
     return normal_scored;
 
 }
+#endif
 
 
 
@@ -1927,3 +1996,81 @@ int CTimeSeries<T>::GetElementNumberAt(const T &x) const
     else
         return 0;
 }
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::inverse_cumulative_uniform(int nintervals)
+{
+    CTimeSeries<T> out;
+    out.t = C;
+    out.C = t;
+    out.n = n;
+
+    return out.make_uniform(1/double(nintervals));
+
+}
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::LogTransformX()
+{
+    CTimeSeries<T> out = *this;
+    for (int i=0; i<n; i++)
+    {
+        out.t[i] = log(t[i]);
+    }
+    return out;
+}
+
+template<class T>
+void CTimeSeries<T>::CreatePeriodicStepFunction(const T &t_start, const T &t_end, const T &duration, const T &gap, const T &magnitude)
+{
+    double t = t_start;
+    while (t<=t_end)
+    {
+        append(t-1e-6,0);
+        append(t,magnitude);
+        append(t+duration,magnitude);
+        append(t+duration+1e-6,0);
+        t+=duration+gap;
+    }
+    assign_D();
+}
+
+#ifdef GSL
+template<class T>
+void CTimeSeries<T>::CreateOUProcess(const T &t_start, const T &t_end, const T &dt, const T &theta)
+{
+    T x = 0;
+    for (T t = t_start; t<=t_end; t+=dt)
+    {
+        x += -theta*x*dt + sqrt(2*theta*dt)*gsl_ran_gaussian(r,1);
+        append(t,x);
+    }
+}
+
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::MapfromNormalScoreToDistribution(const string &distribution, const vector<double> &parameters)
+{
+    CTimeSeries<T> out;
+    for (int i=0; i<n; i++)
+    {
+        if (distribution=="lognormal" || distribution=="Lognormal" )
+        {
+            out.append(t[i],exp(parameters[0]+parameters[1]*C[i]));
+        }
+        else if (distribution == "exp" || distribution == "Exp")
+        {
+            double u = gsl_cdf_ugaussian_P(C[i]);
+            out.append(t[i],-parameters[0]*log(1.0-u));
+        }
+        else if (distribution == "normal" || distribution == "Normal")
+        {
+            out.append(t[i],parameters[0]+parameters[1]*C[i]);
+        }
+        else
+            out.append(t[i],0);
+    }
+
+    return out;
+}
+#endif

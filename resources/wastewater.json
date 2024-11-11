@@ -29,6 +29,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
+      "inflow": "inflow",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
@@ -43,6 +44,14 @@
     	"description": "Bottom elevation",
     	"delegate": "UnitBox",
     	"unit": "m;ft"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     }
   },
   "Fixed flow": {

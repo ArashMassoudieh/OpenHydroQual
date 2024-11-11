@@ -22,7 +22,7 @@
 		      "type": "timeseries",
 		      "includeinoutput": "true",
 		      "applylimit": "true",
-		      "helptext": "The time series containing the inflow rate into the pond", 
+		      "helptext": "The time series containing the inflow rate into the well", 
 		      "description": "Inflow rate time series",
 		      "ask_user": "true",
 		      "delegate": "Browser"
@@ -43,12 +43,13 @@
 			"includeinoutput": "true"
 		},
 		"depth": {
-			 "type": "expression",
-			 "expression" : "Storage/area",
-			 "description": "Water depth",
-			 "ask_user": "true",
-			 "includeinoutput": "true",
-  		     "delegate": "ValueBox"  
+			"type": "expression",
+			"expression" : "Storage/area",
+			"description": "Water depth",
+			"ask_user": "true",
+			"includeinoutput": "true",
+			"delegate": "ValueBox",
+			"unit": "m;ft"  
 		},
 		"bottom_elevation": {
 		     "type": "value",
@@ -97,6 +98,12 @@
 			"expression":"_min(_max(0;head.s-bottom_elevation.e);depth.e)*3.14*diameter.s",
 			"includeinoutput" : "true"
 		},
+		"area":{
+			"type": "expression",
+			"description":"Interface area between well and soil/gw",
+			"expression":"_hsd(hydraulic_gradient)*interface_area + (1-_hsd(hydraulic_gradient))*interface_area_reverse",
+			"includeinoutput" : "true"
+		},
         	"interface_area_reverse":{
 			"type": "expression",
 			"description":"Interface area between well and soil/gw",
@@ -112,7 +119,7 @@
 	        "flow" : {
 		      	"type": "expression",
 			"description": "Flow rate",
-                        "expression" : "K_sat.e*(hydraulic_gradient*interface_area - _pos(pressure_head.e)/length*interface_area_reverse)",
+                        "expression" : "K_sat.e*(_pos(hydraulic_gradient)*interface_area - _pos(pressure_head.e)/length*interface_area_reverse)*depth.s/(depth.s+0.01)",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
 		}  	
@@ -146,10 +153,16 @@
 			"expression":"(head.s-head.e)/length",
 			"includeinoutput" : "true"
 		},	
+		"area":{
+			"type": "expression",
+			"description":"Interface area between well and soil/gw",
+			"expression":"area.s",
+			"includeinoutput" : "true"
+		},
 	        "flow" : {
 		      	"type": "expression",
 			"description": "Flow rate",
-                        "expression" : "K_sat.e*hydraulic_gradient*area.s*_mbs(depth.s;0.01)",
+                        "expression" : "K_sat.e*hydraulic_gradient*area.s*depth.s/(depth.s+0.01)",
                         "description": "Flow (m~^3/day)",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
@@ -203,7 +216,7 @@
 	"Well_aggregate": {
 		"type": "block",
 		"typecategory": "Blocks",
-        "description": "Well-filled with aggregates",
+        	"description": "Well-filled with aggregates",
 		"icon": {
 			"filename": "Well_aggregate.png"		
 		},
@@ -212,11 +225,21 @@
 			"type": "balance",
 			"massbalance": "true",
 			"flow": "flow",
+			"inflow": "inflow",
 			"initial_value_expression": "(diameter^2)/4*3.1415*depth",
 			"ask_user": "false",
 			"delegate": "ValueBox",
 			"estimate": "false",
 			"includeinoutput" : "true"
+		},
+		"inflow": {
+		      "type": "timeseries",
+		      "includeinoutput": "true",
+		      "applylimit": "true",
+		      "helptext": "The time series containing the inflow rate into the well", 
+		      "description": "Inflow rate time series",
+		      "ask_user": "true",
+		      "delegate": "Browser"
 		},
 		"diameter": {
 			"type": "value",
@@ -239,7 +262,8 @@
 			 "description": "Water depth",
 			 "ask_user": "true",
 			 "includeinoutput": "true",
-  		         "delegate": "ValueBox"  
+  		         "delegate": "ValueBox",
+			 "unit": "m;ft"    
 		},
 		"bottom_elevation": {
 		     "type": "value",

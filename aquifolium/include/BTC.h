@@ -14,6 +14,9 @@
 #include "qvariant.h"
 #endif // QT_version
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+
 //#define CBTC CTimeSeries
 
 using namespace std;
@@ -22,6 +25,9 @@ template<class T>
 class CTimeSeries
 {
 public:
+#ifdef _arma
+    CTimeSeries(arma::mat &x, arma::mat &y); //build timeseries from arma::mat
+#endif
     bool structured=true;
 	CTimeSeries();
 	CTimeSeries(int n);
@@ -58,6 +64,7 @@ public:
     T std(int nlimit); // standard deviation of the data after excluding "limit" data points
     T mean_log(int limit); //mean of log transformed data after excluding "limit" data points
     T integrate(); // integral of the time series
+    CTimeSeries<T> derivative();
     T variance(); //calculates the variance of the value of the timeseries
     T integrate(T t); //integral from the begining to time t
     T integrate(T t1, T t2); //integral between time t1 and t2
@@ -68,6 +75,7 @@ public:
 	CTimeSeries distribution(int n_bins, int limit); //extract the histogram of values
     bool append(T x); //appends a data point with value x
     bool append(T tt, T xx); //appends a datapoint with value xx at time tt
+    void CreateConstant(const T &t_start, const T &t_end, const T &magnitude); //creates a constant timeseries
 	void append(CTimeSeries &CC);// appends a time-series to the time-series
     void ResizeIfNeeded(int _increment); //increases the size of the vectors more capacity is needed
 	CTimeSeries& operator+=(CTimeSeries &v); //adds another time-series to the existing one
@@ -124,11 +132,22 @@ public:
     T AutoCorrelation(const T &distance);
     CTimeSeries<T> ConvertToRanks();
     T Score(const double val);
+    CTimeSeries<T> inverse_cumulative_uniform(int nintervals);
+    CTimeSeries<T> LogTransformX();
+    void CreatePeriodicStepFunction(const T &t_start, const T &t_end, const T &duration, const T &gap, const T &magnitude);
+#ifdef GSL
+    void CreateOUProcess(const T &t_start, const T &t_end, const T &dt, const T &theta);
+    CTimeSeries<T> MapfromNormalScoreToDistribution(const string& , const vector<double>&);
     CTimeSeries<T> ConverttoNormalScore();
+#endif
 private:
     vector<T> t;
     vector<T> C;
     vector<T> D;
+#ifdef GSL
+    const gsl_rng_type * A;
+    gsl_rng * r;
+#endif
 #ifdef QT_version
 	CTimeSeries(QList <QMap <QVariant, QVariant>> data);
 	void compact(QDataStream &data) const;
@@ -156,6 +175,8 @@ template<class T> T NSE(const CTimeSeries<T> *modeled, const CTimeSeries<T> *obs
 template<class T> T R(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, int nlimit);
 template<class T> CTimeSeries<T> operator*(T, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator*(CTimeSeries<T>&, double);
+template<class T> CTimeSeries<T> operator-(const CTimeSeries<T>&, double);
+template<class T> CTimeSeries<T> operator/(const CTimeSeries<T>&, double);
 template<class T> CTimeSeries<T> operator*(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator/(CTimeSeries<T>&, CTimeSeries<T>&);
 template<class T> CTimeSeries<T> operator+(CTimeSeries<T>&, CTimeSeries<T>&);
@@ -179,7 +200,6 @@ template<class T> T sum_interpolate(vector<CTimeSeries<T>>, double t);
 template<class T> T R2_c(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d);
 template<class T> T norm2(CTimeSeries<T> BTC1);
 template<class T> CTimeSeries<T> max(CTimeSeries<T> A, T b);
-//GUI
 template<class T> map<string, T> regression(vector<T> &x, vector<T> &y);
 
 #include "BTC.hpp"

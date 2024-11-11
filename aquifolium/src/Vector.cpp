@@ -408,7 +408,7 @@ double CVector::norm2()
 
 }
 
-double CVector::sum()
+double CVector::sum() const
 {
 		double a = 0;
 	for (int i=0;i<num; i++)
@@ -718,5 +718,33 @@ vector<int> CVector::negative_elements()
             out.push_back(i);
     return out;
 
+}
+
+double CVector::mean() const
+{
+    return sum()/double(num);
+}
+
+double CVector::stdev() const
+{
+    double average = mean();
+    double sumsquared = 0;
+    for (int i=0; i<num; i++)
+    {
+        sumsquared += pow(vec[i]-average,2);
+    }
+    return sqrt(sumsquared/num);
+}
+
+
+double stdev(CVector &V)
+{
+    double average = V.mean();
+    double sumsquared = 0;
+    for (int i=0; i<V.num; i++)
+    {
+        sumsquared += pow(V[i]-average,2);
+    }
+    return sqrt(sumsquared/V.num);
 }
 

@@ -163,6 +163,16 @@
       "criteria": "n>0",
       "warningmessage": "Van Genuchten's n must be greater than zero"
     },
+    "act_X": {
+      "type": "value",
+      "description": "Actual x",
+      "ask_user": "true"
+    },
+    "act_Y": {
+      "type": "value",
+      "description": "Actual y",
+      "ask_user": "true"
+    },
     "m": {
       "type": "expression",
       "expression": "1-(1/n)",

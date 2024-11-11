@@ -62,7 +62,12 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
 				BlockLink = blocklink::source;
 				ObjectType = "Source";
 			}
-			else
+            else if (_type == "Reaction")
+            {
+                BlockLink = blocklink::reaction;
+                ObjectType = "Reaction";
+            }
+            else
 			{
 				BlockLink = blocklink::entity;
 				ObjectType = "Entity";

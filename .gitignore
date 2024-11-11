@@ -274,3 +274,5 @@ bin-console/Release/
 OpenHydroQual/x64/Debug/qmake/
 
 OpenHydroQual/x64/Release/qmake/
+
+build/Desktop_Qt_5_15_2_GCC_64bit-Debug/

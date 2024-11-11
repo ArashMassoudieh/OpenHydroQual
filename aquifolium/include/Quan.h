@@ -19,6 +19,7 @@ class System;
 class Object;
 class Source;
 class QuanSet;
+class CPrecipitation;
 
 
 class Quan
@@ -73,6 +74,8 @@ class Quan
         CTimeSeries<timeseriesprecision>* TimeSeries();
         bool IncludeInOutput() {return includeinoutput;}
 		bool SetTimeSeries(const string &filename, bool prec=false);
+        bool SetTimeSeries(const CTimeSeries<double> &timeseries);
+        bool SetTimeSeries(const CPrecipitation &timeseries);
         string &Description(bool graph=false)
         {
             if (!graph)

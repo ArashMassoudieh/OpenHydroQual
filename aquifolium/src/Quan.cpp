@@ -927,6 +927,20 @@ bool Quan::SetTimeSeries(const string &filename, bool prec)
 	}
 }
 
+bool Quan::SetTimeSeries(const CTimeSeries<double> &timeseries)
+{
+    _timeseries = timeseries;
+    return true;
+}
+
+
+bool Quan::SetTimeSeries(const CPrecipitation &timeseries)
+{
+    _timeseries = timeseries.getflow(1).BTC[0];
+    return true; 
+
+}
+
 bool Quan::SetSource(const string &sourcename)
 {
     if (sourcename.empty())
@@ -1007,7 +1021,9 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
             SetTimeSeries("");
             return false;
         }
-        if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
+        if (!parent->Parent())
+            return SetTimeSeries(val);
+        else if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
             return SetTimeSeries(parent->Parent()->InputPath() + val);
         else
             return SetTimeSeries(val);
