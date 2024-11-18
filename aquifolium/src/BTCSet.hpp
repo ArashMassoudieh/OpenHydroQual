@@ -1434,6 +1434,46 @@ CTimeSeriesSet<T>::CTimeSeriesSet(const mat &m, const double &dt, const vector<v
 
 }
 
+
+
+template <class T>
+vector<CTimeSeriesSet<T>> CTimeSeriesSet<T>::GetFromArmaMatandSplit(const arma::mat &m, const double &dt, const vector<vector<int>> &lag, const vector<int> &splitsizes)
+{
+    vector<int> split_sizes = splitsizes;
+    if (split_sizes.size()==0)
+    {
+        split_sizes.push_back(m.n_cols);
+    }
+    CTimeSeriesSet<T> FullTimeSeries(m.n_rows);
+    int maximum_lag=0;
+    for (int j=0; j<lag.size(); j++)
+    {
+        for (int i=0; i<lag[j].size(); i++)
+            maximum_lag = max(maximum_lag, lag[j][i]);
+    }
+    for (int i=0; i<FullTimeSeries.nvars; i++) FullTimeSeries.BTC[i] = CTimeSeries<T>();
+    FullTimeSeries.unif = true;
+
+    for (int i=0; i<m.n_rows; i++)
+    {
+        for (int j=0; j<m.n_cols; j++)
+        {
+            FullTimeSeries.BTC[i].append((j+maximum_lag)*dt,m(i,j));
+        }
+    }
+    vector<CTimeSeriesSet<double>> Splited = FullTimeSeries.Split(split_sizes);
+    for (unsigned int i=0; i<Splited.size(); i++)
+    {
+        for (unsigned int j=0; j<Splited[i].nvars; j++)
+        {
+            for (unsigned int k=0; k<Splited[i].BTC[j].n; k++)
+                Splited[i].BTC[j].SetT(k,(k+maximum_lag)*dt);
+        }
+    }
+    return Splited;
+
+}
+
 template <class T>
 CTimeSeriesSet<T> CTimeSeriesSet<T>::OutputShifter(const mat &m, const double &dt, const vector<vector<int>> &lag)
 {
@@ -1459,3 +1499,44 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::OutputShifter(const mat &m, const double &d
     return out;
 }
 #endif
+
+
+template <class T>
+vector<CTimeSeriesSet<T>> CTimeSeriesSet<T>::Split(const vector<int> &splitsizes)
+{
+    vector<CTimeSeriesSet<T>> out;
+
+    if (splitsizes.size()==0)
+    {
+        out.push_back(*this);
+        return out;
+    }
+    int cum_split_point = splitsizes[0];
+    int split_counter = 0;
+    CTimeSeriesSet<T> segment(nvars);
+    segment.names = names;
+    for (unsigned int i=0; i<maxnumpoints(); i++)
+    {
+        if (i<cum_split_point)
+        {
+            for (unsigned int j=0; j<nvars; j++)
+            {
+                segment.BTC[j].append(BTC[j].GetT(i),BTC[j].GetC(i) );
+            }
+        }
+        else
+        {
+            i--;
+            out.push_back(segment);
+            split_counter+=1;
+            segment = CTimeSeriesSet<double>(nvars);
+            segment.names = names;
+            if (split_counter<splitsizes.size())
+                cum_split_point+=splitsizes[split_counter];
+            else
+                cum_split_point = maxnumpoints();
+        }
+    }
+    out.push_back(segment);
+    return out;
+}

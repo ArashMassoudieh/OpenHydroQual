@@ -7,28 +7,28 @@ template <class T>
 class CTimeSeriesSet
 {
 public:
-	CTimeSeriesSet(void); //default constructor
-	CTimeSeriesSet(int n); //construction with number of variables (timeseries)
-	CTimeSeriesSet(int numberofBTCs, int sizeofBTCvector);
+    CTimeSeriesSet(void); //default constructor
+    CTimeSeriesSet(int n); //construction with number of variables (timeseries)
+    CTimeSeriesSet(int numberofBTCs, int sizeofBTCvector);
     CTimeSeriesSet(const CTimeSeriesSet<T> &BTC);
     CTimeSeriesSet(const CTimeSeries<T> &BTC);
-	CTimeSeriesSet(string filename, bool varytime);
+    CTimeSeriesSet(string filename, bool varytime);
 
-	int nvars;
+    int nvars;
     string name;
     string filename;
     vector<CTimeSeries<T>> BTC;
-	void writetofile(char outputfile[]);
-	int maxnumpoints();
-	CTimeSeriesSet& operator = (const CTimeSeriesSet &C);
-	vector<string> names;
-	bool unif = false;
-	void writetofile(string outputfile, bool writeColumnHeaders = false);
+    void writetofile(char outputfile[]);
+    int maxnumpoints();
+    CTimeSeriesSet& operator = (const CTimeSeriesSet &C);
+    vector<string> names;
+    bool unif = false;
+    void writetofile(string outputfile, bool writeColumnHeaders = false);
     void appendtofile(string outputfile, bool skipfirstrow = false);
-	void writetofile(string outputfile, int writeinterval);
+    void writetofile(string outputfile, int writeinterval);
     vector<T> interpolate(T t);
     vector<T> interpolate(T t, int fnvars);
-	void getfromfile(string filename, bool varytime);
+    void getfromfile(string filename, bool varytime);
     T maxtime() const;
     T mintime() const;
     T maxval() const;
@@ -39,7 +39,7 @@ public:
     vector<T> mean(int limit, vector<int> index);
     vector<T> std(int limit);
     vector<T> std(int limit, vector<int> index);
-	CMatrix correlation(int limit, int n);
+    CMatrix correlation(int limit, int n);
     vector<T> integrate();
     vector<T> average();
     vector<T> percentile(T x, int limit);
@@ -53,9 +53,9 @@ public:
     CTimeSeriesSet make_uniform(T increment, bool assgn_d=true);
     CTimeSeriesSet getpercentiles(vector<T> percents);
     CVector out_of_limit(T limit);
-	CTimeSeriesSet distribution(int n_bins, int n_columns, int limit);
+    CTimeSeriesSet distribution(int n_bins, int n_columns, int limit);
     CTimeSeriesSet add_noise(vector<T> std, bool logd);
-	void clear();
+    void clear();
     void clearContents(); //clear the values stored in the time-series without clearing the structure
     void clearContentsExceptLastRow(); //clear the values stored in the time-series without clearing the structure, keep the last row
     vector<T> max_wiggle();
@@ -63,13 +63,13 @@ public:
     vector<int> max_wiggle_sl(int ii, T tol);
     CTimeSeriesSet getflow (T A);
     void knockout(T t);
-	int lookup(string S);
+    int lookup(string S);
     vector<T> getrow(int a);
-	void setname(int i, string name);
+    void setname(int i, string name);
     void resize(unsigned int _size);
     void ResizeIfNeeded(unsigned int _increment);
     void adjust_size();
-	bool file_not_found=false;
+    bool file_not_found=false;
     CTimeSeries<T> &operator[](int index);
     CTimeSeries<T> &operator[](string BTCName);
     CTimeSeries<T> operator[](int index) const;
@@ -83,7 +83,9 @@ public:
     static CTimeSeriesSet OutputShifter(const mat &m, const double &dt, const vector<vector<int>> &lag);
     arma::mat ToArmaMatShifter(const vector<int> &columns, const vector<vector<int>> &lag);
     arma::mat ToArmaMatShifterOutput(const vector<int> &columns, const vector<vector<int>> &lag);
+    static vector<CTimeSeriesSet<T>> GetFromArmaMatandSplit(const arma::mat &Mat, const double &dt, const vector<vector<int>> &lag, const vector<int> &splitsizes);
 #endif
+    vector<CTimeSeriesSet<T>> Split(const vector<int> &splitsizes);
 #ifdef QT_version
 	CTimeSeries &operator[](QString BTCName) {
 		return operator[](BTCName.toStdString());}
