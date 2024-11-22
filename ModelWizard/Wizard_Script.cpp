@@ -67,6 +67,10 @@ WizardScript::WizardScript(const QString& filename)
             {
                 description = json_obj["description"].toString();
             }
+            if (it.key() == "url")
+            {
+                url = json_obj["url"].toString();
+            }
             if (it.key() == "addtemplate")
             {
                 QJsonArray items = it.value().toArray();
@@ -170,6 +174,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     Entities = WS.Entities;
     Connectors = WS.Connectors; 
     diagramfilename = WS.diagramfilename; 
+    url = WS.url;
     SetAllParents(); 
 
 
@@ -217,6 +222,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     Connectors = WS.Connectors;
     diagramfilename = WS.diagramfilename;
     WizardParameterGroups = WS.WizardParameterGroups;
+    url = WS.url;
     SetAllParents();
     return *this;
 }
@@ -233,6 +239,10 @@ QString WizardScript::Name()
 QString WizardScript::Description()
 {
     return description;
+}
+QString WizardScript::Url()
+{
+    return url;
 }
 
 QStringList WizardScript::Script()

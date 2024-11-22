@@ -10,6 +10,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QMessageBox>
+#include <QDesktopServices>
 
  
 
@@ -24,7 +25,7 @@ WizardDialog::WizardDialog(QWidget *parent) :
     connect(ui->Previous, SIGNAL(clicked()),this, SLOT(on_previous_clicked()));
     connect(ui->tabWidget,SIGNAL(currentChanged(int)), this, SLOT(on_TabChanged()));
     connect(ui->graphicsView,SIGNAL(resizeevent()),this, SLOT(fit_diagram()));
-
+    connect(ui->OpenHTML, SIGNAL(clicked()),this,SLOT(open_html()));
 }
 
 WizardDialog::~WizardDialog()
@@ -36,6 +37,8 @@ WizardDialog::~WizardDialog()
 void WizardDialog::CreateItems(WizardScript *wizscript)
 {
     SelectedWizardScript = *wizscript;
+    if (SelectedWizardScript.Url().isEmpty())
+        ui->OpenHTML->setEnabled(false);
     for (QMap<QString,WizardParameterGroup>::Iterator it=wizscript->GetWizardParameterGroups().begin(); it!=wizscript->GetWizardParameterGroups().end(); it++)
     {
         tab this_tab;
@@ -70,13 +73,15 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
     on_TabChanged();
     QGraphicsScene* scene = new QGraphicsScene();
     ui->graphicsView->setScene(scene);
-    if (wizscript->DiagramFileName().split(".")[1]=="png")
-        diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
-    else if (wizscript->DiagramFileName().split(".")[1]=="svg")
-    {   svgitem = new QGraphicsSvgItem(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
-        qDebug()<<scene->sceneRect();
-        ui->graphicsView->scene()->clear();
-        ui->graphicsView->scene()->addItem(svgitem);
+    if (wizscript->DiagramFileName().split(".").size()>1)
+    {   if (wizscript->DiagramFileName().split(".")[1]=="png")
+            diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+        else if (wizscript->DiagramFileName().split(".")[1]=="svg")
+        {   svgitem = new QGraphicsSvgItem(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+            qDebug()<<scene->sceneRect();
+            ui->graphicsView->scene()->clear();
+            ui->graphicsView->scene()->addItem(svgitem);
+        }
     }
 
     resizeEvent();
@@ -237,6 +242,12 @@ void WizardDialog::GenerateModel()
     }
 
 }
+
+void WizardDialog::open_html()
+{
+    QDesktopServices::openUrl(QUrl(SelectedWizardScript.Url()));
+}
+
 
 void WizardDialog::resizeEvent(QResizeEvent *)
 {

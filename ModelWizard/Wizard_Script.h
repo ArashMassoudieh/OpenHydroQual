@@ -42,6 +42,7 @@ public:
     Wizard_Entity* FindEntity(QString name);
     QStringList CheckParameters();
     bool AssignParameterValues();
+    QString Url();
 private:
     QMap<QString, BlockArray> BlockArrays;
     QMap<QString, SingleBlock> SingleBlocks;
@@ -55,6 +56,7 @@ private:
     QString wizardname;
     QString description;
     QStringList addedtemplates;
+    QString url;
 
 };
 

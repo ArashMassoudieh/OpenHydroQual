@@ -48,6 +48,7 @@ public slots:
     void on_next_clicked();
     void on_previous_clicked();
     void on_TabChanged();
+    void open_html();
 
 };
 

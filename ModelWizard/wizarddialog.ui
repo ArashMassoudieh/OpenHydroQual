@@ -41,6 +41,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="OpenHTML">
+       <property name="text">
+        <string>I need more explanation</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="Next">
        <property name="text">
         <string>Next -&gt;</string>
