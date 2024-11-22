@@ -139,12 +139,35 @@
       "unit": "m~^3;ft~^3",
       "estimate": "true"
     },
-    "inflow":{
+    "time_variable_inflow":{
     	"type": "timeseries",
-		"includeinoutput": "true",
-		"description": "Inflow",
+	"includeinoutput": "true",
+	"description": "Time variable inflow",
     	"ask_user": "true",
 	"delegate": "Browser"
+    },
+    "constant_inflow":{
+    	"type": "value",
+	"includeinoutput": "true",
+	"description": "Constant Inflow",
+    	"ask_user": "true",
+	"delegate": "UnitBox",
+	"unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    },
+    "inflow":{
+    	"type": "expression",
+	"expression": "time_variable_inflow+constant_inflow",
+	"includeinoutput": "true",
+	"description": "Inflow",
+    	"ask_user": "false"
+    },
+    "bottom_elevation":
+    {
+    	"type": "value",
+    	"ask_user": "true",
+    	"description": "Bottom elevation",
+    	"delegate": "UnitBox",
+    	"unit": "m;ft"
     }
   },
   "Settling element": {

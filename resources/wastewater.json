@@ -18,10 +18,10 @@
       "estimate": "true"
     }
   },
-  "Settling element": {
+  "Settling compartment": {
     "type": "block",
     "typecategory": "Blocks",
-    "description": "Settling element",
+    "description": "Settling compartment",
     "icon": {
       "filename": "sedimentation_tank_element.png"
     },
