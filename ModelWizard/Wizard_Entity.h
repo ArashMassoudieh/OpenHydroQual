@@ -2,6 +2,7 @@
 #include <qstring.h>
 #include "Wizard_Argument.h"
 #include "qjsonarray.h"
+#include <QMap>
 
 class WizardScript;
 

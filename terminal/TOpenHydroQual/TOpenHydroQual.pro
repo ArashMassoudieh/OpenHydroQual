@@ -1,5 +1,5 @@
 QT -= gui
-QT += core widgets
+QT += core
 
 CONFIG += console
 CONFIG -= app_bundle
@@ -137,7 +137,6 @@ HEADERS += \
     ../../aquifolium/include/Quan.h \
     ../../aquifolium/include/QuanSet.h \
     ../../aquifolium/include/QuickSort.h \
-    ../../aquifolium/include/StringOP.h \
     ../../aquifolium/include/System.h \
     ../../aquifolium/include/Vector.h \
     ../../aquifolium/include/Vector_arma.h \
@@ -205,7 +204,7 @@ win32 {
 linux {
     #sudo apt-get install libblas-dev liblapack-dev
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -larmadillo -llapack -lblas
+     LIBS += -larmadillo -llapack -lblas -lgsl
 }
 
 macx {
