@@ -1,6 +1,7 @@
 {
   "name": "Stormwater Pond (SI)",
   "icon": "Stormwater.png",
+  "url": "https://openhydroqual.com/wp-content/Wizards/Stormwater_Pond/Stormwater_Pond.html",
   "description": "This wizard create a stormwater detention pond",
   "diagram": "pond.svg",
   "addtemplate": [

@@ -1,7 +1,7 @@
 {
   "name": "Bioretention (SI)",
   "icon": "Bioretention.png",
-  "url": "https://stackoverflow.com/questions/27380316/svg-image-pattern-fill-doesnt-render-in-html",
+  "url": "https://openhydroqual.com/wp-content/Wizards/Bioretention/Bioretention.html",
   "description": "This wizard create a bioretention model with underdrain",
   "diagram" : "Bioretention.svg", 
   "addtemplate": [
