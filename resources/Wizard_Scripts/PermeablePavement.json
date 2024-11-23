@@ -36,7 +36,7 @@
   "singleblocks": [
     {
       "name": "Contributing impervious catchment",
-      "area": "lenght*width;m~^2",
+      "area": "length*width;m~^2",
       "Precipitation": "Rain@sc",
       "type": "Catchment",
       "Slope": "Catchment_slope",
@@ -49,7 +49,7 @@
     },
     {
       "name": "Ponded water",
-      "area": "lenght*width;m~^2",
+      "area": "length*width;m~^2",
       "Precipitation": "Rain@sc",
       "type": "Catchment",
       "Slope": "Catchment_slope",
@@ -67,14 +67,14 @@
       "y": "50",
       "bottom_elevation": "-pavement_thickness-storage_layer_height;m",
       "porosity": "aggregate_porosity",
-      "area": "lenght*width;m~^2",
+      "area": "length*width;m~^2",
       "_width": "500",
       "_height": "200"
     },
     {
       "name": "Permeable pavement",
       "type": "Groundwater cell",
-      "area": "lenght*width;m~^2",
+      "area": "length*width;m~^2",
       "depth": "pavement_thickness",
       "bottom_elevation": "-pavement_thickness",
       "hydraulic_conductivity": "permeable_pavement_hydraulic_conductivity",
@@ -126,7 +126,7 @@
       "depth": "(depth_to_groundwater-pavement_thickness-storage_layer_height)/native_soil_n_y;m",
       "alpha": "native_soil_alpha;1/m",
       "n": "native_soil_n",
-      "area": "lenght*width;m~^2",
+      "area": "length*width;m~^2",
       "bottom_elevation": "-pavement_thickness-storage_layer_height-(j+1)*(depth_to_groundwater-pavement_thickness-storage_layer_height)/native_soil_n_y;m",
       "_width": "500",
       "_height": "200",
@@ -189,7 +189,7 @@
       "from": "Ponded water",
       "to": "Permeable pavement",
       "type": "surface2groundwater_link",
-      "area": "lenght*width;m~^2",
+      "area": "length*width;m~^2",
       "length": "pavement_thickness/2",
       "hydraulic_conductivity": "permeable_pavement_hydraulic_conductivity",
       "connectiontype": "o2o",
@@ -200,7 +200,7 @@
       "from": "Permeable pavement",
       "to": "Aggregate storage",
       "type": "surface2groundwater_link",
-      "area": "lenght*width;m~^2",
+      "area": "length*width;m~^2",
       "hydraulic_conductivity": "permeable_pavement_hydraulic_conductivity",
       "length": "0.5*pavement_thickness",
       "connectiontype": "o2o",
@@ -270,9 +270,9 @@
       "default": "0.4"
     },
     {
-      "name": "lenght",
+      "name": "length",
       "delegate": "UnitBox",
-      "question": "Lenght",
+      "question": "Length",
       "default": "100",
       "unit": "m~^2"
     },
@@ -346,7 +346,7 @@
     {
       "name": "diameter_aggregate",
       "delegate": "UnitBox",
-      "question": "Underdrain line diameter from aggregate soil to catch basin",
+      "question": "Underdrain pipe diameter",
       "unit": "m",
       "default": "0.2"
     },
@@ -381,13 +381,13 @@
     {
       "name": "Catch_Basin_Depth",
       "delegate": "UnitBox",
-      "question": "Catchbasin invert from the surface",
+      "question": "Catch basin invert from the surface",
       "unit": "m"
     },
     {
       "name": "Catch_Basin_Area",
       "delegate": "UnitBox",
-      "question": "The base area of the catchbasin",
+      "question": "The base area of the catch basin",
       "default": "1",
       "unit": "m~^2"
     }
@@ -404,7 +404,7 @@
     },
     {
       "name": "4_Sewer",
-      "description": "Sewer pipe properties ",
+      "description": "Underdrain pipe properties ",
       "parameters": [
         "ManningCoeff_aggregate",
         "diameter_aggregate",
@@ -422,7 +422,7 @@
         "depth_to_groundwater",
         "pavement_thickness",
         "width",
-        "lenght",
+        "length",
         "Catchment_area",
         "Catchment_slope",
         "Catchment_Manning_coefficient",
