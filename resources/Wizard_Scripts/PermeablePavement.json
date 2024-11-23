@@ -44,8 +44,8 @@
       "Width": "Catchment_mean_width",
       "x": "-26.66",
       "y": "-650.80",
-      "_width": "300",
-      "_height": "300"
+      "_width": "500",
+      "_height": "200"
     },
     {
       "name": "Ponded water",
@@ -55,45 +55,48 @@
       "Slope": "Catchment_slope",
       "ManningCoeff": "Catchment_Manning_coefficient",
       "Width": "Catchment_mean_width",
-      "x": "922.616",
-      "y": "-498.05",
-      "_width": "300",
-      "_height": "300"
+      "x": "1000",
+      "y": "-500",
+      "_width": "500",
+      "_height": "100"
     },
     {
       "name": "Aggregate storage",
       "type": "Aggregate_storage_layer",
       "x": "1000",
-      "y": "750",
-      "bottom_elevation": "-eng_soil_height-storage_layer_height;m",
+      "y": "50",
+      "bottom_elevation": "-pavement_thickness-storage_layer_height;m",
       "porosity": "aggregate_porosity",
       "area": "lenght*width;m~^2",
-      "_width": "200",
+      "_width": "500",
       "_height": "200"
     },
     {
       "name": "Permeable pavement",
       "type": "Groundwater cell",
       "area": "lenght*width;m~^2",
-      "x": "943.82",
-      "y": "53.95",
-      "_width": "300",
-      "_height": "300"
+      "depth": "pavement_thickness",
+      "bottom_elevation": "-pavement_thickness",
+      "hydraulic_conductivity": "permeable_pavement_hydraulic_conductivity",
+      "x": "1000",
+      "y": "-200",
+      "_width": "500",
+      "_height": "100"
     },
     {
       "name": "Ground_Water",
       "type": "fixed_head",
-      "x": "1050",
-      "y": "1000 + native_soil_n_y*250",
-      "_width": "100",
+      "x": "1000",
+      "y": "300 + native_soil_n_y*250",
+      "_width": "500",
       "_height": "100",
       "head": "-depth_to_groundwater"
     },
     {
       "name": "Receiving_sewer_pipe",
       "type": "fixed_head",
-      "x": "1913",
-      "y": "336",
+      "x": "1900",
+      "y": "300",
       "_width": "200",
       "_height": "200",
       "head": "-Catch_Basin_Depth - 0.2;m"
@@ -103,10 +106,8 @@
       "type": "Catch basin",
       "bottom_elevation": "-Catch_Basin_Depth;m",
       "area": "Catch_Basin_Area",
-      "depth":"Depth_of_Catch",
-      "ManningCoeff":"ManningCoeff_aggregate",
-      "x": "1789.71",
-      "y": "-179.08",
+      "x": "1600",
+      "y": "-100",
       "_width": "200",
       "_height": "200"
     }
@@ -122,19 +123,19 @@
       "n_y": "native_soil_n_y",
       "K_sat_original": "native_soil_K_s;m/day",
       "K_sat_scale_factor": "1",
-      "depth": "(depth_to_groundwater-eng_soil_height-storage_layer_height)/native_soil_n_y;m",
+      "depth": "(depth_to_groundwater-pavement_thickness-storage_layer_height)/native_soil_n_y;m",
       "alpha": "native_soil_alpha;1/m",
       "n": "native_soil_n",
       "area": "lenght*width;m~^2",
-      "bottom_elevation": "surface_elevation-eng_soil_height-storage_layer_height-(j+1)*(depth_to_groundwater-eng_soil_height-storage_layer_height)/native_soil_n_y;m",
-      "_width": "200",
+      "bottom_elevation": "-pavement_thickness-storage_layer_height-(j+1)*(depth_to_groundwater-pavement_thickness-storage_layer_height)/native_soil_n_y;m",
+      "_width": "500",
       "_height": "200",
       "specific_storage": "0.01;1/m",
       "theta": "0.2",
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
       "x": "1000",
-      "y": "1000+j*250"
+      "y": "300+j*250"
     }
   ],
   "connectors": [
@@ -175,47 +176,58 @@
       "from": "Aggregate storage",
       "to": "Catch basin",
       "type": "Sewer_pipe",
-      "diameter":"diameter_aggregate",
-      "ManningCoeff" :"ManningCoeff_aggregate",
-      "length" : "length_aggregate",
-      "start_elevation":"-pipe_start_invert;m",
-      "end_elevation":"-Catch_Basin_Depth + 0.1;m",
+      "diameter": "diameter_aggregate",
+      "ManningCoeff": "ManningCoeff_aggregate",
+      "length": "length_aggregate",
+      "start_elevation": "-pipe_start_invert;m",
+      "end_elevation": "-Catch_Basin_Depth + 0.1;m",
       "connectiontype": "o2o",
       "connectionconfig": "u2d"
     },
     {
-     "name": "Ponded water to Permeable pavement",
-     "from": "Ponded water",
-     "to": "Permeable pavement",
-     "type":"surface2groundwater_link",
-     "connectiontype": "o2o",
-     "connectionconfig": "u2d"
+      "name": "Ponded water to Permeable pavement",
+      "from": "Ponded water",
+      "to": "Permeable pavement",
+      "type": "surface2groundwater_link",
+      "area": "lenght*width;m~^2",
+      "length": "pavement_thickness/2",
+      "hydraulic_conductivity": "permeable_pavement_hydraulic_conductivity",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
     },
     {
-     "name": "Permeable pavement to Aggregate storage",
-     "from": "Permeable pavement",
-     "to": "Aggregate storage",
-     "type":"surface2groundwater_link",
-     "connectiontype": "o2o",
-     "connectionconfig": "u2d"
+      "name": "Permeable pavement to Aggregate storage",
+      "from": "Permeable pavement",
+      "to": "Aggregate storage",
+      "type": "surface2groundwater_link",
+      "area": "lenght*width;m~^2",
+      "hydraulic_conductivity": "permeable_pavement_hydraulic_conductivity",
+      "length": "0.5*pavement_thickness",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
     },
     {
       "name": "Catch basin to Receiving_sewer_pipe",
       "from": "Catch basin",
       "to": "Receiving_sewer_pipe",
       "type": "Sewer_pipe",
+      "start_elevation":"-Catch_Basin_Depth+0.1",
+      "end_elevation":"-Catch_Basin_Depth-0.1",
+      "ManningCoeff": "ManningCoeff_aggregate",
+      "diameter": "diameter_aggregate",
+      "length": "length_aggregate",
       "connectiontype": "o2o",
       "connectionconfig": "u2d"
     }
   ],
   "parameters": [
-  {
+    {
       "name": "pipe_start_invert",
       "delegate": "UnitBox",
       "question": "Invert of the start of the underdrain pipe",
       "unit": "m"
-  },
-   {
+    },
+    {
       "name": "native_soil_n_y",
       "delegate": "SpinBox",
       "question": " Number of soil layers of the native soil",
@@ -228,7 +240,7 @@
     {
       "name": "native_soil_K_s",
       "delegate": "UnitBox",
-      "question": "Nagtive soil hydraulic conductivity",
+      "question": "Native soil hydraulic conductivity",
       "unit": "m/day",
       "default": "0.2"
     },
@@ -258,20 +270,20 @@
       "default": "0.4"
     },
     {
-     "name": "lenght",
-     "delegate": "UnitBox",
-     "question":"Lenght",
-     "default": "100",
-     "unit": "m~^2"
+      "name": "lenght",
+      "delegate": "UnitBox",
+      "question": "Lenght",
+      "default": "100",
+      "unit": "m~^2"
     },
     {
-     "name": "width",
-     "delegate": "UnitBox",
-     "question":"Width ",
-     "default": "20",
-     "unit": "m~^2"
+      "name": "width",
+      "delegate": "UnitBox",
+      "question": "Width ",
+      "default": "20",
+      "unit": "m~^2"
     },
-    {  
+    {
       "name": "TimeSeriesFileName",
       "delegate": "FileBrowser",
       "question": "Precipitation file name"
@@ -311,28 +323,28 @@
       "question": "The average width of the impervious contributing area perpendicular to the flow direction",
       "unit": "m",
       "default": "30"
-    }, 
-     {
+    },
+    {
       "name": "storage_layer_height",
       "delegate": "UnitBox",
       "question": "Depth of the Aggregate soil",
       "unit": "m",
       "default": "0.4"
     },
-     {
+    {
       "name": "aggregate_porosity",
       "delegate": "ValueBox",
       "question": "Porosity",
       "default": "0.4"
     },
-     {
+    {
       "name": "ManningCoeff_aggregate",
       "delegate": "ValueBox",
       "question": "Manning's roughness coefficient of the drainage pipe ",
       "default": "0.01"
     },
     {
-     "name": "diameter_aggregate",
+      "name": "diameter_aggregate",
       "delegate": "UnitBox",
       "question": "Underdrain line diameter from aggregate soil to catch basin",
       "unit": "m",
@@ -341,60 +353,100 @@
     {
       "name": "length_aggregate",
       "delegate": "UnitBox",
-      "question": "Underdrain length from aggregate soil to catch basin",
+      "question": "The length of the underdrain pipe",
       "unit": "m",
       "default": "20"
     },
-       {
-      "name": "Depth_of_Catch",
+    {
+      "name": "depth_to_groundwater",
       "delegate": "UnitBox",
-      "question": " Depth of catch-basin from the surface",
+      "question": "Depth to groundwater",
+      "unit": "m",
+      "default": "3"
+    },
+    {
+      "name": "pavement_thickness",
+      "delegate": "UnitBox",
+      "question": "Permeable pavement thickness",
+      "unit": "m",
+      "default": "0.2"
+    },
+    {
+      "name": "permeable_pavement_hydraulic_conductivity",
+      "delegate": "UnitBox",
+      "question": "Permeable pavement hydraulic conductivity",
+      "unit": "m/day",
+      "default": "20"
+    },
+    {
+      "name": "Catch_Basin_Depth",
+      "delegate": "UnitBox",
+      "question": "Catchbasin invert from the surface",
       "unit": "m"
+    },
+    {
+      "name": "Catch_Basin_Area",
+      "delegate": "UnitBox",
+      "question": "The base area of the catchbasin",
+      "default": "1",
+      "unit": "m~^2"
     }
   ],
   "parameter_groups": [
-   {
+    {
       "name": "1_general",
       "description": "General Model parameters",
       "parameters": [
-		"StartTime",
-		"EndTime"
+        "StartTime",
+        "EndTime",
+        "TimeSeriesFileName"
       ]
     },
     {
-    "name": "4_Sewer",
-    "description": "Sewer pipe properties ",
-    "parameters": [
-      "ManningCoeff_aggregate",
-      "diameter_aggregate",
-      "length_aggregate",
-      "Depth_of_Catch",
-      "pipe_start_invert"
-     ]
+      "name": "4_Sewer",
+      "description": "Sewer pipe properties ",
+      "parameters": [
+        "ManningCoeff_aggregate",
+        "diameter_aggregate",
+        "length_aggregate",
+        "pipe_start_invert",
+        "Catch_Basin_Depth",
+        "Catch_Basin_Area"
+      ]
     },
-  {
+    {
       "name": "2_geometry",
       "description": "Model geometry",
       "parameters": [
         "native_soil_n_y",
         "depth_to_groundwater",
+        "pavement_thickness",
         "width",
         "lenght",
         "Catchment_area",
         "Catchment_slope",
         "Catchment_Manning_coefficient",
-        "Catchment_mean_width",
-        "TimeSeriesFileName"
-     ]
+        "Catchment_mean_width"
+      ]
     },
     {
       "name": "3_Aggregate storage",
-      "description": "Soil aggregate properties",
+      "description": "Aggregate storage properties",
       "parameters": [
         "storage_layer_height",
-        "aggregate_porosity"
-        
-      
+        "aggregate_porosity",
+        "permeable_pavement_hydraulic_conductivity"
+      ]
+    },
+    {
+      "name": "4_Native Soil",
+      "description": "Native soil properties",
+      "parameters": [
+        "native_soil_K_s",
+        "native_soil_alpha",
+        "native_soil_n",
+        "native_soil_theta_res",
+        "native_soil_theta_sat"
       ]
     }
   ],
