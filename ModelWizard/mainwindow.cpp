@@ -24,6 +24,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->listWidget->setViewMode(QListView::IconMode);
     QObject::connect(ui->listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(itemDoubleClicked(QListWidgetItem*)));
     PopulateListOfWizards();
+    QIcon mainicon(QString::fromStdString(wizardsfolder) + "/../Icons/wizard blue.png");
+    
+    setWindowIcon(mainicon);
 }
 
 MainWindow::~MainWindow()
