@@ -169,8 +169,8 @@
     {
       "name": "CrestElevation",
       "delegate": "UnitBox",
-      "question": "Crest Elevation",
-      "unit": "m;ft"
+      "question": "Crest elevation",
+      "unit": "m"
     },
     {
       "name": "alpha_overflow_wier",
@@ -199,7 +199,6 @@
       "name": "2_catchment",
       "description": "Contributing area",
       "parameters": [
-        "TimeSeriesFileName",
         "Catchment_area",
         "Catchment_slope",
         "Catchment_Manning_coefficient",
@@ -222,16 +221,15 @@
     },
     {
       "name": "3_pond",
-      "description": "Pond area",
+      "description": "Pond",
       "parameters": [
-        "TimeSeriesFileName",
         "Area_10",
         "beta"
       ]
     },
     {
       "name": "4_Overflow wier",
-      "description": "Overflow Wier",
+      "description": "Overflow wier",
       "parameters": [
         "CrestElevation",
         "alpha_overflow_wier",
