@@ -1,0 +1,395 @@
+{
+  "name": "Infiltration Trench (IT)",
+  "icon": "Infiltration_trench.png",
+  "description": "This wizard create a Infiltration Trench ",
+  "diagram": "",
+  "url": "",
+  "addtemplate": [
+    "main_components.json",
+    "Pond_Plugin.json",
+    "groundwater.json",
+    "unsaturated_soil.json",
+    "Sewer_system.json"
+  ],
+  "entities": [
+    {
+      "name": "Rain",
+      "entity": "source",
+      "type": "Precipitation",
+      "timeseries": "TimeSeriesFileName@sp"
+    }
+  ],
+  "setvals": [
+    {
+      "name": "start_date",
+      "object": "system@sc",
+      "quantity": "simulation_start_time@sc",
+      "value": "StartTime@dp"
+    },
+    {
+      "name": "end_date",
+      "object": "system@sc",
+      "quantity": "simulation_end_time@sc",
+      "value": "EndTime@dp"
+    }
+  ],
+  "singleblocks": [
+    {
+      "name": "Contributing impervious catchment",
+      "area": "length*width;m~^2",
+      "Precipitation": "Rain@sc",
+      "type": "Catchment",
+      "Slope": "Catchment_slope",
+      "ManningCoeff": "Catchment_Manning_coefficient",
+      "Width": "Catchment_mean_width",
+      "x": "-26.66",
+      "y": "-650.80",
+      "_width": "500",
+      "_height": "200"
+    },
+    {
+      "name": "Aggregate storage",
+      "type": "Aggregate_storage_layer",
+      "x": "1000",
+      "y": "50",
+      "bottom_elevation": "-pavement_thickness-storage_layer_height;m",
+      "porosity": "aggregate_porosity",
+      "area": "length*width;m~^2",
+      "_width": "500",
+      "_height": "200"
+    },
+    {
+      "name": "Ground_Water",
+      "type": "fixed_head",
+      "x": "1000",
+      "y": "300 + native_soil_n_y*250",
+      "_width": "500",
+      "_height": "100",
+      "head": "-depth_to_groundwater"
+    },
+    {
+      "name": "Receiving_sewer_pipe",
+      "type": "fixed_head",
+      "x": "1900",
+      "y": "300",
+      "_width": "200",
+      "_height": "200",
+      "head": "-Catch_Basin_Depth - 0.2;m"
+    },
+    {
+      "name": "Catch basin",
+      "type": "Catch basin",
+      "bottom_elevation": "-Catch_Basin_Depth;m",
+      "area": "Catch_Basin_Area",
+      "x": "1600",
+      "y": "-100",
+      "_width": "200",
+      "_height": "200"
+    }
+  ],
+  "blockarrays": [
+    {
+      "name": "Native soil",
+      "type": "Soil",
+      "grid_type": "2D-Rect",
+      "v_connector_type": "soil_to_soil_link",
+      "h_connector_type": "soil_to_soil_H_link",
+      "n_x": "1",
+      "n_y": "native_soil_n_y",
+      "K_sat_original": "native_soil_K_s;m/day",
+      "K_sat_scale_factor": "1",
+      "depth": "(depth_to_groundwater-pavement_thickness-storage_layer_height)/native_soil_n_y;m",
+      "alpha": "native_soil_alpha;1/m",
+      "n": "native_soil_n",
+      "area": "length*width;m~^2",
+      "bottom_elevation": "-pavement_thickness-storage_layer_height-(j+1)*(depth_to_groundwater-pavement_thickness-storage_layer_height)/native_soil_n_y;m",
+      "_width": "500",
+      "_height": "200",
+      "specific_storage": "0.01;1/m",
+      "theta": "0.2",
+      "theta_res": "native_soil_theta_res",
+      "theta_sat": "native_soil_theta_sat",
+      "x": "1000",
+      "y": "300+j*250"
+    }
+  ],
+  "connectors": [
+    {
+      "name": "Aggregate storage to Native soil",
+      "from": "Aggregate storage",
+      "to": "Native soil",
+      "type": "aggregate_to_soil_link",
+      "connectiontype": "o2m",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Soil to Groundwater",
+      "from": "Native soil",
+      "to": "Ground_Water",
+      "type": "soil_to_fixedhead_link",
+      "connectiontype": "m2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Contributing impervious catchment to Catch basin ",
+      "from": "Contributing impervious catchment",
+      "to": "Catch basin",
+      "type": "Catchment_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Aggregate storage to Catch basin",
+      "from": "Aggregate storage",
+      "to": "Catch basin",
+      "type": "Sewer_pipe",
+      "diameter": "diameter_aggregate",
+      "ManningCoeff": "ManningCoeff_aggregate",
+      "length": "length_aggregate",
+      "start_elevation": "-pipe_start_invert;m",
+      "end_elevation": "-Catch_Basin_Depth + 0.1;m",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Contributing impervious catchment to Aggregate storage",
+      "from": "Contributing impervious catchment",
+      "to": "Aggregate storage",
+      "type": "Catchment_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Catch basin to Receiving_sewer_pipe",
+      "from": "Catch basin",
+      "to": "Receiving_sewer_pipe",
+      "type": "Sewer_pipe",
+      "start_elevation":"-Catch_Basin_Depth+0.1",
+      "end_elevation":"-Catch_Basin_Depth-0.1",
+      "ManningCoeff": "ManningCoeff_aggregate",
+      "diameter": "diameter_aggregate",
+      "length": "length_aggregate",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "pipe_start_invert",
+      "delegate": "UnitBox",
+      "question": "Invert of the start of the underdrain pipe",
+      "unit": "m"
+    },
+    {
+      "name": "native_soil_n_y",
+      "delegate": "SpinBox",
+      "question": " Number of soil layers of the native soil",
+      "range": [
+        "1",
+        "10"
+      ],
+      "default": "3"
+    },
+    {
+      "name": "native_soil_K_s",
+      "delegate": "UnitBox",
+      "question": "Native soil hydraulic conductivity",
+      "unit": "m/day",
+      "default": "0.2"
+    },
+    {
+      "name": "native_soil_alpha",
+      "delegate": "UnitBox",
+      "question": "Native soil Van Genuchten α parameter",
+      "unit": "1/m",
+      "default": "1"
+    },
+    {
+      "name": "native_soil_n",
+      "delegate": "ValueBox",
+      "question": "Native soil Van Genuchten n parameter",
+      "default": "1.41"
+    },
+    {
+      "name": "native_soil_theta_res",
+      "delegate": "ValueBox",
+      "question": "Native soil residual moisture content",
+      "default": "0.05"
+    },
+    {
+      "name": "native_soil_theta_sat",
+      "delegate": "ValueBox",
+      "question": "Native soil saturated moisture content",
+      "default": "0.4"
+    },
+    {
+      "name": "length",
+      "delegate": "UnitBox",
+      "question": "Length",
+      "default": "100",
+      "unit": "m~^2"
+    },
+    {
+      "name": "width",
+      "delegate": "UnitBox",
+      "question": "Width",
+      "default": "20",
+      "unit": "m~^2"
+    },
+    {
+      "name": "TimeSeriesFileName",
+      "delegate": "FileBrowser",
+      "question": "Precipitation file name"
+    },
+    {
+      "name": "StartTime",
+      "delegate": "DateBox",
+      "question": "Simulation Start Date"
+    },
+    {
+      "name": "EndTime",
+      "delegate": "DateBox",
+      "question": "Simulation End Date"
+    },
+    {
+      "name": "Catchment_area",
+      "delegate": "UnitBox",
+      "question": "The area of impervious contributing area",
+      "unit": "m~^2",
+      "default": "1000"
+    },
+    {
+      "name": "Catchment_slope",
+      "delegate": "ValueBox",
+      "question": "The slope of the impervious contributing area",
+      "default": "0.01"
+    },
+    {
+      "name": "Catchment_Manning_coefficient",
+      "delegate": "ValueBox",
+      "question": "Effective Manning's roughness coefficient of the impervious contributing area",
+      "default": "0.01"
+    },
+    {
+      "name": "Catchment_mean_width",
+      "delegate": "UnitBox",
+      "question": "The average width of the impervious contributing area perpendicular to the flow direction",
+      "unit": "m",
+      "default": "30"
+    },
+    {
+      "name": "storage_layer_height",
+      "delegate": "UnitBox",
+      "question": "Depth of the Aggregate soil",
+      "unit": "m",
+      "default": "0.4"
+    },
+    {
+      "name": "aggregate_porosity",
+      "delegate": "ValueBox",
+      "question": "Porosity",
+      "default": "0.4"
+    },
+    {
+      "name": "ManningCoeff_aggregate",
+      "delegate": "ValueBox",
+      "question": "Manning's roughness coefficient of the drainage pipe ",
+      "default": "0.01"
+    },
+    {
+      "name": "diameter_aggregate",
+      "delegate": "UnitBox",
+      "question": "Underdrain pipe diameter",
+      "unit": "m",
+      "default": "0.2"
+    },
+    {
+      "name": "length_aggregate",
+      "delegate": "UnitBox",
+      "question": "The length of the underdrain pipe",
+      "unit": "m",
+      "default": "20"
+    },
+    {
+      "name": "depth_to_groundwater",
+      "delegate": "UnitBox",
+      "question": "Depth to groundwater",
+      "unit": "m",
+      "default": "3"
+    },
+    {
+      "name": "Catch_Basin_Depth",
+      "delegate": "UnitBox",
+      "question": "Catch basin invert from the surface",
+      "unit": "m"
+    },
+    {
+      "name": "Catch_Basin_Area",
+      "delegate": "UnitBox",
+      "question": "The base area of the catch basin",
+      "default": "1",
+      "unit": "m~^2"
+    }
+  ],
+  "parameter_groups": [
+    {
+      "name": "1_general",
+      "description": "General Model parameters",
+      "parameters": [
+        "StartTime",
+        "EndTime",
+        "TimeSeriesFileName"
+      ]
+    },
+    {
+      "name": "4_Sewer",
+      "description": "Underdrain pipe properties ",
+      "parameters": [
+        "ManningCoeff_aggregate",
+        "diameter_aggregate",
+        "length_aggregate",
+        "pipe_start_invert",
+        "Catch_Basin_Depth",
+        "Catch_Basin_Area"
+      ]
+    },
+    {
+      "name": "2_geometry",
+      "description": "Model geometry",
+      "parameters": [
+        "native_soil_n_y",
+        "depth_to_groundwater",
+        "width",
+        "length",
+        "Catchment_area",
+        "Catchment_slope",
+        "Catchment_Manning_coefficient",
+        "Catchment_mean_width"
+      ]
+    },
+    {
+      "name": "3_Aggregate storage",
+      "description": "Aggregate storage properties",
+      "parameters": [
+        "storage_layer_height",
+        "aggregate_porosity"
+      
+      ]
+    },
+    {
+      "name": "4_Native Soil",
+      "description": "Native soil properties",
+      "parameters": [
+        "native_soil_K_s",
+        "native_soil_alpha",
+        "native_soil_n",
+        "native_soil_theta_res",
+        "native_soil_theta_sat"
+      ]
+    }
+  ],
+  "criteria": [
+    {},
+    {}
+  ]
+}
