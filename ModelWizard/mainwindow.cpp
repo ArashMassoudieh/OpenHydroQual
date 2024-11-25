@@ -60,7 +60,7 @@ void MainWindow::itemDoubleClicked(QListWidgetItem* wizitem)
     WizardScript wiz(wizitem->data(1000).toString());
     wizDialog->setWindowTitle(wiz.Description());
     wizDialog->CreateItems(&wiz);
-    wizDialog->show();
+    wizDialog->showMaximized();
     wizDialog->resizeEvent();
 }
 

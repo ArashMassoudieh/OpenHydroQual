@@ -380,14 +380,14 @@
     {
       "name": "Catch_Basin_Area",
       "delegate": "UnitBox",
-      "question": "The Base Area of the Catch Basin",
+      "question": "The base area of the catch basin",
       "unit": "m~^2;ft~^2",
       "default": "1"
     },
     {
       "name": "Catch_Basin_Depth",
       "delegate": "UnitBox",
-      "question": "The depth of the catch Basin",
+      "question": "Catch basin invert from the surface",
       "unit": "m",
       "default": "1"
     },
@@ -406,14 +406,14 @@
     {
       "name": "diameter_aggregate",
       "delegate": "UnitBox",
-      "question": "Underdrain line diameter from aggregate soil to catch basin",
+      "question": "Underdrain pipe diameter",
       "unit": "m",
       "default": "0.2"
     },
     {
       "name": "length_aggregate",
       "delegate": "UnitBox",
-      "question": "Underdrain length from aggregate soil to catch basin",
+      "question": "The length of underdrain pipe",
       "unit": "m",
       "default": "20"
     },
@@ -442,12 +442,13 @@
       "description": "General Model parameters",
       "parameters": [
         "StartTime",
-        "EndTime"
+        "EndTime",
+        "TimeSeriesFileName"
       ]
     },
     {
       "name": "7_Sewer",
-      "description": "Sewer pipe properties ",
+      "description": "Underdrain pipe",
       "parameters": [
         "ManningCoeff_aggregate",
         "diameter_aggregate",
@@ -458,7 +459,6 @@
       "name": "3_catchment",
       "description": "Contributing area",
       "parameters": [
-        "TimeSeriesFileName",
         "Catchment_area",
         "Catchment_slope",
         "Catchment_Manning_coefficient",
@@ -467,7 +467,7 @@
     },
     {
       "name": "5_Aggregate storage",
-      "description": "Soil aggregate properties",
+      "description": "Aggregate storage",
       "parameters": [
         "storage_layer_height",
         "aggregate_porosity"
@@ -484,7 +484,7 @@
     },
     {
       "name": "6_Catch basin",
-      "description": "Catch basin Properties",
+      "description": "Catch basin",
       "parameters": [
         "Catch_Basin_Area",
         "Catch_Basin_Depth"
@@ -492,7 +492,7 @@
     },
     {
       "name": "4_Pond",
-      "description": "Pond properties",
+      "description": "Pond",
       "parameters": [
         "Area_10",
         "beta"
