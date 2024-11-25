@@ -20,7 +20,7 @@ WizardDialog::WizardDialog(QWidget *parent) :
     ui(new Ui::WizardDialog)
 {
     ui->setupUi(this);
-
+    setWindowState(Qt::WindowMaximized);
     svgviewer = new SVGViewer(this);
     svgviewer->setObjectName(QString::fromUtf8("SVGViewer"));
     svgviewer->setMinimumSize(QSize(300, 0));
