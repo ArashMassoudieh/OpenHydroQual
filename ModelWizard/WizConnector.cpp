@@ -1,5 +1,7 @@
 #include "WizConnector.h"
 #include "Wizard_Script.h"
+#include <QDebug>
+#include <QMessageBox>
 
 Connector::Connector():Wizard_Entity()
 {
@@ -70,8 +72,18 @@ Connector& Connector::operator=(const Connector& MB)
 
 QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
 {
-    QStringList output;    
-    
+    QStringList output;
+    if (!GetFromEntity())
+    {
+        QMessageBox msgBox;
+        msgBox.critical(nullptr, "Block does not exsist!", "Block '" + from + "' does not exist!");
+        return output;
+    }
+    else if (!GetToEntity()) {
+        QMessageBox msgBox;
+        msgBox.critical(nullptr, "Block does not exsist!", "Block '" + to + "' does not exist!");
+        return output;
+    }
     
     if (ConnectorType == connector_type::m2m)
     {   if (ConnectorConfig==connector_config::u2d || ConnectorConfig==connector_config::d2u)
@@ -273,7 +285,6 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
     {
         SingleBlock* fromBlock = static_cast<SingleBlock*>(GetFromEntity());
         SingleBlock* toBlock = static_cast<SingleBlock*>(GetToEntity());
-
         QString line;
         line += "create link;";
 
@@ -286,9 +297,10 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
         {
             line += "," + it.key() + "=" + QString::number(it.value().calc(params))+it.value().UnitText();
         }
-        output << line;
-        
+    output << line;
     }
+
+
     qDebug() << output; 
     return output; 
     

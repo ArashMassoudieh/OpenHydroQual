@@ -3,6 +3,7 @@
 #include "System.h"
 
 
+
 Observation::Observation(): Object::Object()
 {
     SetObjectType(object_type::observation);

@@ -1,0 +1,240 @@
+{
+  "name": "Stormwater Pond (SI)",
+  "icon": "Stormwater.png",
+  "url": "https://openhydroqual.com/wp-content/Wizards/Stormwater_Pond/Stormwater_Pond.html",
+  "description": "This wizard create a stormwater detention pond",
+  "diagram": "pond.svg",
+  "addtemplate": [
+    "main_components.json",
+    "Pond_Plugin.json"
+  ],
+  "entities": [
+    {
+      "name": "Rain",
+      "entity": "source",
+      "type": "Precipitation",
+      "timeseries": "TimeSeriesFileName@sp"
+    }
+  ],
+  "setvals": [
+    {
+      "name": "start_date",
+      "object": "system@sc",
+      "quantity": "simulation_start_time@sc",
+      "value": "StartTime@dp"
+    },
+    {
+      "name": "end_date",
+      "object": "system@sc",
+      "quantity": "simulation_end_time@sc",
+      "value": "EndTime@dp"
+    }
+  ],
+  "singleblocks": [
+    {
+      "name": "Impervious contributing catchment",
+      "area": "Catchment_area;m~^2",
+      "Precipitation": "Rain@sc",
+      "type": "Catchment",
+      "Slope": "Catchment_slope",
+      "ManningCoeff": "Catchment_Manning_coefficient",
+      "Width": "Catchment_mean_width",
+      "x": "500",
+      "y": "450",
+      "_width": "300",
+      "_height": "300"
+    },
+    {
+      "name": "Pond",
+      "Precipitation": "Rain@sc",
+      "type": "Pond",
+      "alpha": "Area_10/(beta*0.1^(beta-1))",
+      "beta": "beta",
+      "x": "950",
+      "y": "820",
+      "_width": "200",
+      "_height": "200"
+    },
+    {
+      "name": "Fixed_head",
+      "type": "fixed_head",
+      "x": "1050",
+      "y": "980",
+      "_width": "100",
+      "_height": "100"
+    }
+  ],
+  "blockarrays": [
+    {
+      "name": "Native soil",
+      "type": "Soil",
+      "grid_type": "2D-Rect",
+      "v_connector_type": "soil_to_soil_link",
+      "h_connector_type": "soil_to_soil_H_link",
+      "n_x": "1",
+      "n_y": "native_soil_n_y",
+      "K_sat_original": "native_soil_K_s;m/day",
+      "K_sat_scale_factor": "1",
+      "depth": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "alpha": "native_soil_alpha;1/m",
+      "n": "native_soil_n",
+      "area": "length*eng_soil_width;m~^2",
+      "bottom_elevation": "-eng_soil_height-surface_elevation-(j+1)*(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "_width": "200",
+      "_height": "200",
+      "specific_storage": "0.01;1/m",
+      "theta": "0.2",
+      "theta_res": "native_soil_theta_res",
+      "theta_sat": "native_soil_theta_sat",
+      "x": "1000",
+      "y": "120+j*250"
+    }
+  ],
+  "connectors": [
+    {
+      "name": "Catchment to pond",
+      "from": "Impervious contributing catchment",
+      "to": "Pond",
+      "type": "Catchment_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Overflow",
+      "from": "Pond",
+      "to": "Fixed_head",
+      "type": "wier",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d",
+      "crest_elevation": "CrestElevation",
+      "alpha": "alpha_overflow_wier",
+      "beta": "beta_overflow_wier"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "Catchment_area",
+      "delegate": "UnitBox",
+      "question": "The area of impervious contributing area",
+      "unit": "m~^2",
+      "default": "1000"
+    },
+    {
+      "name": "Catchment_slope",
+      "delegate": "ValueBox",
+      "question": "The slope of the impervious contributing area",
+      "default": "0.01"
+    },
+    {
+      "name": "Catchment_Manning_coefficient",
+      "delegate": "ValueBox",
+      "question": "Effective Manning's roughness coefficient of the impervious contributing area",
+      "default": "0.011"
+    },
+    {
+      "name": "Catchment_mean_width",
+      "delegate": "UnitBox",
+      "question": "Catchment average width",
+      "unit": "m",
+      "default": "30"
+    },
+    {
+      "name": "StartTime",
+      "delegate": "DateBox",
+      "question": "Simulation Start Date"
+    },
+    {
+      "name": "EndTime",
+      "delegate": "DateBox",
+      "question": "Simulation End Date"
+    },
+    {
+      "name": "Area_10",
+      "delegate": "UnitBox",
+      "question": "Surface area of the pond when the water depth is 0.1m",
+      "default": "100",
+      "unit": "m~^2"
+    },
+    {
+      "name": "beta",
+      "delegate": "ValueBox",
+      "question": "β: The exponent that controls how quickly storage changes as depth increases. S = α depth^β",
+      "default": "2"
+    },
+    {
+      "name": "TimeSeriesFileName",
+      "delegate": "FileBrowser",
+      "question": "Precipitation file name"
+    },
+    {
+      "name": "CrestElevation",
+      "delegate": "UnitBox",
+      "question": "Crest elevation",
+      "unit": "m"
+    },
+    {
+      "name": "alpha_overflow_wier",
+      "delegate": "ValueBox",
+      "question": "Coefficient α in Q=α*(h-z_0)^β",
+      "default": "1"
+    },
+    {
+      "name": "beta_overflow_wier",
+      "delegate": "ValueBox",
+      "question": "Exponent β in Q=α*(h-z_0)^β",
+      "default": "2.5"
+    }
+  ],
+  "parameter_groups": [
+    {
+      "name": "1_general",
+      "description": "General Model parameters",
+      "parameters": [
+        "StartTime",
+        "EndTime",
+        "TimeSeriesFileName"
+      ]
+    },
+    {
+      "name": "2_catchment",
+      "description": "Contributing area",
+      "parameters": [
+        "Catchment_area",
+        "Catchment_slope",
+        "Catchment_Manning_coefficient",
+        "Catchment_mean_width"
+      ],
+      "criteria": [
+        {
+          "name": "area_crit",
+          "less": "0",
+          "greater": "Catchment_area",
+          "errormessage": "Catchment area must be greater than zero!"
+        },
+        {
+          "name": "slope_crit",
+          "less": "0",
+          "greater": "Catchment_slope",
+          "errormessage": "Catchment slope must be greater than zero!"
+        }
+      ]
+    },
+    {
+      "name": "3_pond",
+      "description": "Pond",
+      "parameters": [
+        "Area_10",
+        "beta"
+      ]
+    },
+    {
+      "name": "4_Overflow wier",
+      "description": "Overflow wier",
+      "parameters": [
+        "CrestElevation",
+        "alpha_overflow_wier",
+        "beta_overflow_wier"
+      ]
+    }
+  ]
+}

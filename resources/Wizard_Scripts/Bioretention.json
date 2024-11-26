@@ -1,12 +1,14 @@
 {
   "name": "Bioretention (SI)",
   "icon": "Bioretention.png",
+  "url": "https://openhydroqual.com/wp-content/Wizards/Bioretention/Bioretention.html",
   "description": "This wizard create a bioretention model with underdrain",
-  "diagram" : "Bioretention.svg", 
+  "diagram": "Bioretention.svg",
   "addtemplate": [
     "main_components.json",
     "unsaturated_soil.json",
-    "Pond_Plugin.json"
+    "Pond_Plugin.json",
+    "Sewer_system.json"
   ],
   "entities": [
     {
@@ -23,7 +25,7 @@
       "quantity": "simulation_start_time@sc",
       "value": "StartTime@dp"
     },
-	{
+    {
       "name": "end_date",
       "object": "system@sc",
       "quantity": "simulation_end_time@sc",
@@ -31,69 +33,88 @@
     }
   ],
   "singleblocks": [
-  	{
-  		"name": "Impervious contributing catchment",
-  		"area": "Catchment_area;m~^2",
-  		"Precipitation": "Rain@sc",
-  		"type": "Catchment",
-  		"Slope": "Catchment_slope",
-  		"ManningCoeff": "Catchment_Manning_coefficient",
-  		"Width": "Catchment_mean_width",
-  		"x": "500",
-  		"y": "450",
-  		"_width": "500"
-  	},
-  	{
-  		"name": "Pond",
-  		"type": "Pond",
-  		"alpha": "pond_coefficient_alpha",
-  		"beta": "pond_exponent_beta",
-  		"Evapotranspiration": "Eval@sc",
-  		"Precipitation": "Rain@sc",
-  		"x": "900",
-  		"y": "650",
-  		"_width": "200"
-  	},
-  	{
-  		"name": "Engineered soil",
-  		"type": "Soil",
-      	"K_sat_original": "eng_soil_K_s;m/day",
-      	"K_sat_scale_factor": "1",
-      	"depth": "eng_soil_height;m",
-      	"alpha": "eng_soil_alpha;1/m",
-      	"n": "eng_soil_n",
-      	"area": "system_area;m~^2",
-      	"bottom_elevation": "-eng_soil_height;m",
-      	"_width": "200",
-      	"_height": "200",
-      	"specific_storage": "0.01;1/m",
-      	"theta": "0.2",
-      	"theta_res": "eng_soil_theta_res",
-      	"theta_sat": "eng_soil_theta_sat",
-      	"x": "1000",
-      	"y": "900",
-      	"_width": "200",
-		"_height": "200"
-  	},
-	{
-		"name": "Aggregate storage",
-		"x": "1000",
-		"y": "1200",
-		"bottom_elevation": "-eng_soil_height-storage_layer_height;m",
-		"porosity": "Aggregate_layer_porosity",
-		"depth": "storage_layer_height",
-		"area": "system_area;m~^2",
-		"_width": "200",
-		"_height": "200"
-	},
-  	{
-  		"name": "Groundwater",
-		"head": "-depth_to_groundwater",
-  		"type": "fixed_head",
-  		"x": "1000",
-  		"y": "1200 + (eng_soil_n_y + native_soil_n_y)*250",
-  		"_width": "800"
-  	}
+    {
+      "name": "Impervious contributing catchment",
+      "area": "Catchment_area;m~^2",
+      "Precipitation": "Rain@sc",
+      "type": "Catchment",
+      "Slope": "Catchment_slope",
+      "ManningCoeff": "Catchment_Manning_coefficient",
+      "Width": "Catchment_mean_width",
+      "x": "500",
+      "y": "-130",
+      "_width": "300",
+      "_height": "300"
+    },
+    {
+      "name": "Pond",
+      "Precipitation": "Rain@sc",
+      "type": "Pond",
+      "alpha": "Area_10/(beta*0.1^(beta-1))",
+      "beta": "beta",
+      "x": "1000",
+      "y": "250",
+      "_width": "200",
+      "_height": "200"
+    },
+    {
+      "name": "Engineered soil",
+      "type": "Soil",
+      "K_sat_original": "eng_soil_K_s;m/day",
+      "K_sat_scale_factor": "1",
+      "depth": "eng_soil_height;m",
+      "alpha": "eng_soil_alpha;1/m",
+      "n": "eng_soil_n",
+      "area": "Area_10;m~^2",
+      "bottom_elevation": "-eng_soil_height;m",
+      "_width": "200",
+      "_height": "200",
+      "specific_storage": "0.01;1/m",
+      "theta": "0.2",
+      "theta_res": "eng_soil_theta_res",
+      "theta_sat": "eng_soil_theta_sat",
+      "x": "1000",
+      "y": "500"
+    },
+    {
+      "name": "Aggregate storage",
+      "type": "Aggregate_storage_layer",
+      "x": "1000",
+      "y": "750",
+      "bottom_elevation": "-eng_soil_height-storage_layer_height;m",
+      "porosity": "aggregate_porosity",
+      "area": "Area_10",
+      "_width": "200",
+      "_height": "200"
+    },
+    {
+      "name": "Ground_Water",
+      "type": "fixed_head",
+      "x": "1050",
+      "y": "1000 + native_soil_n_y*250",
+      "_width": "100",
+      "_height": "100",
+      "head": "-depth_to_groundwater"
+    },
+    {
+      "name": "Receiving_sewer_pipe",
+      "type": "fixed_head",
+      "x": "1913",
+      "y": "336",
+      "_width": "200",
+      "_height": "200",
+      "head": "-Catch_Basin_Depth - 0.2;m"
+    },
+    {
+      "name": "Catch basin",
+      "type": "Catch basin",
+      "bottom_elevation": "-Catch_Basin_Depth;m",
+      "area": "Catch_Basin_Area",
+      "x": "1480",
+      "y": "73.37",
+      "_width": "200",
+      "_height": "200"
+    }
   ],
   "blockarrays": [
     {
@@ -106,11 +127,11 @@
       "n_y": "native_soil_n_y",
       "K_sat_original": "native_soil_K_s;m/day",
       "K_sat_scale_factor": "1",
-      "depth": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "depth": "(depth_to_groundwater-eng_soil_height-storage_layer_height)/native_soil_n_y;m",
       "alpha": "native_soil_alpha;1/m",
       "n": "native_soil_n",
-      "area": "length*eng_soil_width;m~^2",
-      "bottom_elevation": "-eng_soil_height-surface_elevation-(j+1)*(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "area": "Area_10;m~^2",
+      "bottom_elevation": "surface_elevation-eng_soil_height-storage_layer_height-(j+1)*(depth_to_groundwater-eng_soil_height-storage_layer_height)/native_soil_n_y;m",
       "_width": "200",
       "_height": "200",
       "specific_storage": "0.01;1/m",
@@ -118,56 +139,100 @@
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
       "x": "1000",
-      "y": "120+j*250"
+      "y": "1000+j*250"
     }
   ],
   "connectors": [
-  	{
-  		"name": "Bottom center to native left",
-  		"from": "Native soil underneath the engineered soil",
-  		"to": "Left low native soil",
-  		"type": "soil_to_soil_H_link",
-  		"connectiontype": "m2m",
-  		"connectionconfig": "l2r",
-  		"area": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y*length;m~^2",
-  		"length": "eng_soil_width/2+native_soil_width/native_soil_lateral_nx/2;m"
-  	},
-  	{
- 		"name": "Catchment to bioretention",
-  		"from": "Impervious contributing catchment",
-  		"to": "Pond",
-  		"type": "Catchment_link",
-  		"connectiontype": "o2o",
-  		"connectionconfig": "u2d"
-  	},
-  	{
- 		"name": "Bioswale pond to soil",
-  		"from": "Pond",
-  		"to": "Engineered Soil",
-  		"type": "surfacewater_to_soil_link",
-  		"connectiontype": "o2o",
-  		"connectionconfig": "u2d"
-  	},
-  	{
- 		"name": "Soil to Groundwater center",
-  		"from": "Native soil underneath the engineered soil",
-  		"to": "Groundwater",
-  		"type": "soil_to_fixedhead_link",
-  		"connectiontype": "m2o",
-  		"connectionconfig": "u2d"
-  	}
+    {
+      "name": "Catchment to bioretention",
+      "from": "Impervious contributing catchment",
+      "to": "Pond",
+      "type": "Catchment_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "pond to soil",
+      "from": "Pond",
+      "to": "Engineered soil",
+      "type": "surfacewater_to_soil_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Engineered soil to Aggregate storage",
+      "from": "Engineered soil",
+      "to": "Aggregate storage",
+      "type": "soil_to_aggregate_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Aggregate storage to Native soil",
+      "from": "Aggregate storage",
+      "to": "Native soil",
+      "type": "aggregate_to_soil_link",
+      "connectiontype": "o2m",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Soil to Groundwater center",
+      "from": "Native soil",
+      "to": "Ground_Water",
+      "type": "soil_to_fixedhead_link",
+      "connectiontype": "m2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Overflow",
+      "from": "Pond",
+      "to": "Catch basin",
+      "type": "wier",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d",
+      "beta": "beta_overflow_wier",
+      "alpha": "alpha_overflow_wier",
+      "crest_elevation": "CrestElevation"
+    },
+    {
+      "name": "Aggregate storage to Catch basin",
+      "from": "Aggregate storage",
+      "to": "Catch basin",
+      "type": "Sewer_pipe",
+      "diameter": "diameter_aggregate",
+      "ManningCoeff": "ManningCoeff_aggregate",
+      "length": "length_aggregate",
+      "start_elevation": "-eng_soil_height-storage_layer_height + 0.1;m",
+      "end_elevation": "-Catch_Basin_Depth + 0.1;m",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Catch basin to Receiving_sewer_pipe",
+      "from": "Catch basin",
+      "to": "Receiving_sewer_pipe",
+      "type": "Sewer_pipe",
+      "diameter": "diameter_aggregate",
+      "ManningCoeff": "ManningCoeff_aggregate",
+      "length": "20;m",
+      "start_elevation": "-Catch_Basin_Depth + 0.1;m",
+      "end_elevation": "-Catch_Basin_Depth -0.1;m",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    }
   ],
   "parameters": [
     {
-      "name": "pond_coefficient_alpha",
-      "delegate": "ValueBox",
-      "question": "Pond storage-depth coefficient 'a' in relationship S=a*h^b",
-      "default": "1000"
+      "name": "Area_10",
+      "delegate": "UnitBox",
+      "question": "Surface area of the pond when the water depth is 0.1m",
+      "default": "100",
+      "unit": "m~^2"
     },
     {
-      "name": "pond_exponent_beta",
+      "name": "beta",
       "delegate": "ValueBox",
-      "question": "Pond storage-depth exponent 'b' in relationship S=a*h^b",
+      "question": "β: The exponent that controls how quickly storage changes as depth increases. S = α depth^β",
       "default": "2"
     },
     {
@@ -175,16 +240,6 @@
       "delegate": "UnitBox",
       "question": "Bioretention area",
       "unit": "m~^2"
-    },
-    {
-      "name": "eng_soil_n_y",
-      "delegate": "SpinBox",
-      "question": "Number of cells adjacent to the engineered soil",
-      "range": [
-        "1",
-        "5"
-      ],
-      "default": "2"
     },
     {
       "name": "native_soil_n_y",
@@ -195,12 +250,6 @@
         "10"
       ],
       "default": "3"
-    },
-    {
-      "name": "length",
-      "delegate": "UnitBox",
-      "question": "The total length of the bioswale",
-      "unit": "m"
     },
     {
       "name": "depth_to_groundwater",
@@ -241,11 +290,11 @@
       "question": "Catchment average width",
       "unit": "m",
       "default": "30"
-    },      
+    },
     {
       "name": "eng_soil_alpha",
       "delegate": "UnitBox",
-      "question": "Engineered soil Van Genuchten alpha parameter",
+      "question": "Engineered soil Van Genuchten α parameter",
       "unit": "1/m",
       "default": "1"
     },
@@ -277,7 +326,7 @@
     {
       "name": "native_soil_alpha",
       "delegate": "UnitBox",
-      "question": "Native soil Van Genuchten alpha parameter",
+      "question": "Native soil Van Genuchten α parameter",
       "unit": "1/m",
       "default": "1"
     },
@@ -303,13 +352,8 @@
       "name": "eng_soil_height",
       "delegate": "UnitBox",
       "question": "Depth of the engineered soil medium",
-      "unit": "m"
-    },
-    {
-      "name": "eng_soil_width",
-      "delegate": "UnitBox",
-      "question": "The total width of the bioswale engineered soil",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.4"
     },
     {
       "name": "TimeSeriesFileName",
@@ -321,58 +365,148 @@
       "delegate": "DateBox",
       "question": "Simulation Start Date"
     },
-	{
+    {
       "name": "EndTime",
       "delegate": "DateBox",
       "question": "Simulation End Date"
+    },
+    {
+      "name": "storage_layer_height",
+      "delegate": "UnitBox",
+      "question": "Depth of the Aggregate soil",
+      "unit": "m",
+      "default": "0.4"
+    },
+    {
+      "name": "Catch_Basin_Area",
+      "delegate": "UnitBox",
+      "question": "The base area of the catch basin",
+      "unit": "m~^2;ft~^2",
+      "default": "1"
+    },
+    {
+      "name": "Catch_Basin_Depth",
+      "delegate": "UnitBox",
+      "question": "Catch basin invert from the surface",
+      "unit": "m",
+      "default": "1"
+    },
+    {
+      "name": "aggregate_porosity",
+      "delegate": "ValueBox",
+      "question": "Porosity",
+      "default": "0.4"
+    },
+    {
+      "name": "ManningCoeff_aggregate",
+      "delegate": "ValueBox",
+      "question": "Manning's roughness coefficient of the drainage pipe ",
+      "default": "0.01"
+    },
+    {
+      "name": "diameter_aggregate",
+      "delegate": "UnitBox",
+      "question": "Underdrain pipe diameter",
+      "unit": "m",
+      "default": "0.2"
+    },
+    {
+      "name": "length_aggregate",
+      "delegate": "UnitBox",
+      "question": "The length of underdrain pipe",
+      "unit": "m",
+      "default": "20"
+    },
+    {
+      "name": "CrestElevation",
+      "delegate": "UnitBox",
+      "question": "Crest Elevation",
+      "unit": "m;ft"
+    },
+    {
+      "name": "alpha_overflow_wier",
+      "delegate": "ValueBox",
+      "question": "Coefficient α in Q=α*(h-z_0)^β",
+      "default": "1000"
+    },
+    {
+      "name": "beta_overflow_wier",
+      "delegate": "ValueBox",
+      "question": "Exponent β in Q=α*(h-z_0)^β",
+      "default": "2.5"
     }
   ],
   "parameter_groups": [
     {
-      "name": "general",
+      "name": "1_general",
       "description": "General Model parameters",
       "parameters": [
-		"StartTime",
-		"EndTime"
+        "StartTime",
+        "EndTime",
+        "TimeSeriesFileName"
       ]
     },
     {
-      "name": "catchment",
+      "name": "7_Sewer",
+      "description": "Underdrain pipe",
+      "parameters": [
+        "ManningCoeff_aggregate",
+        "diameter_aggregate",
+        "length_aggregate"
+      ]
+    },
+    {
+      "name": "3_catchment",
       "description": "Contributing area",
       "parameters": [
-        "TimeSeriesFileName",
-		"Catchment_area",
-		"Catchment_slope",
-		"Catchment_Manning_coefficient",
-		"Catchment_mean_width"
+        "Catchment_area",
+        "Catchment_slope",
+        "Catchment_Manning_coefficient",
+        "Catchment_mean_width"
       ]
     },
     {
-      "name": "Pond",
-      "description": "Pond properties",
+      "name": "5_Aggregate storage",
+      "description": "Aggregate storage",
       "parameters": [
-        "pond_coefficient_alpha",
-		"pond_exponent_beta"
+        "storage_layer_height",
+        "aggregate_porosity"
       ]
     },
-	{
-      "name": "geometry",
+    {
+      "name": "8_Overflow wier",
+      "description": "Overflow Wier",
+      "parameters": [
+        "CrestElevation",
+        "alpha_overflow_wier",
+        "beta_overflow_wier"
+      ]
+    },
+    {
+      "name": "6_Catch basin",
+      "description": "Catch basin",
+      "parameters": [
+        "Catch_Basin_Area",
+        "Catch_Basin_Depth"
+      ]
+    },
+    {
+      "name": "4_Pond",
+      "description": "Pond",
+      "parameters": [
+        "Area_10",
+        "beta"
+      ]
+    },
+    {
+      "name": "2_geometry",
       "description": "Model geometry",
       "parameters": [
-        "eng_soil_n_y",
         "native_soil_n_y",
-        "length",
         "eng_soil_height",
-        "eng_soil_width",
         "depth_to_groundwater"
       ],
       "criteria": [
-        {
-          "name": "length_crit",
-          "less": "0",
-          "greater": "length",
-          "errormessage": "Bioswale length must be greater than zero!"
-        },
         {
           "name": "eng_soil_height_crit",
           "less": "0",
@@ -380,16 +514,10 @@
           "errormessage": "Engineered soil height must be greater than zero!"
         },
         {
-          "name": "depth_to_groundwater_crit",
-          "less": "eng_soil_height",
-          "greater": "depth_to_groundwater",
-          "errormessage": "Engineered soil depth must be smaller than depth to groundwater"
-        },
-        {
-          "name": "eng_soil_width_crit",
+          "name": "native_crit",
           "less": "0",
-          "greater": "eng_soil_width",
-          "errormessage": "Engineered soil width must be greater than zero!"
+          "greater": "depth_to_groundwater-eng_soil_height-storage_layer_height",
+          "errormessage": "Groundwater depth must be greater than the sum of engineered soil and aggregate layer depths."
         }
       ]
     },

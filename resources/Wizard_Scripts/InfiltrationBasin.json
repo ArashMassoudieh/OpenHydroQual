@@ -1,0 +1,363 @@
+{
+  "name": "Infiltration Basin (IB)",
+  "icon": "Infiltration_Basin.png",
+  "url": "",
+  "description": "This wizard create a Infiltration Basin ",
+  "diagram": "",
+  "addtemplate": [
+    "main_components.json",
+    "unsaturated_soil.json",
+    "Pond_Plugin.json",
+    "Sewer_system.json"
+  ],
+  "entities": [
+    {
+      "name": "Rain",
+      "entity": "source",
+      "type": "Precipitation",
+      "timeseries": "TimeSeriesFileName@sp"
+    }
+  ],
+  "setvals": [
+    {
+      "name": "start_date",
+      "object": "system@sc",
+      "quantity": "simulation_start_time@sc",
+      "value": "StartTime@dp"
+    },
+    {
+      "name": "end_date",
+      "object": "system@sc",
+      "quantity": "simulation_end_time@sc",
+      "value": "EndTime@dp"
+    }
+  ],
+  "singleblocks": [
+    {
+      "name": "Impervious contributing catchment",
+      "area": "Catchment_area;m~^2",
+      "Precipitation": "Rain@sc",
+      "type": "Catchment",
+      "Slope": "Catchment_slope",
+      "ManningCoeff": "Catchment_Manning_coefficient",
+      "Width": "Catchment_mean_width",
+      "x": "500",
+      "y": "-130",
+      "_width": "300",
+      "_height": "300"
+    },
+    {
+      "name": "Pond",
+      "Precipitation": "Rain@sc",
+      "type": "Pond",
+      "alpha": "Area_10/(beta*0.1^(beta-1))",
+      "beta": "beta",
+      "x": "1000",
+      "y": "250",
+      "_width": "500",
+      "_height": "200"
+    },
+    {
+      "name": "Ground_Water",
+      "type": "fixed_head",
+      "x": "1050",
+      "y": "500 + native_soil_n_y*250",
+      "_width": "100",
+      "_height": "100",
+      "head": "-depth_to_groundwater"
+    },
+    {
+      "name": "Receiving_sewer_pipe",
+      "type": "fixed_head",
+      "x": "1800",
+      "y": "300",
+      "_width": "200",
+      "_height": "200",
+      "head": "0.2;m"
+    }
+  ],
+  "blockarrays": [
+    {
+      "name": "Native soil",
+      "type": "Soil",
+      "grid_type": "2D-Rect",
+      "v_connector_type": "soil_to_soil_link",
+      "h_connector_type": "soil_to_soil_H_link",
+      "n_x": "1",
+      "n_y": "native_soil_n_y",
+      "K_sat_original": "native_soil_K_s;m/day",
+      "K_sat_scale_factor": "1",
+      "depth": "Native_soil_depth;m",
+      "alpha": "native_soil_alpha;1/m",
+      "n": "native_soil_n",
+      "area": "Area_10;m~^2",
+      "bottom_elevation": "-(j+1)*depth_to_groundwater/native_soil_n_y;m",
+      "_width": "500",
+      "_height": "200",
+      "specific_storage": "0.01;1/m",
+      "theta": "0.2",
+      "theta_res": "native_soil_theta_res",
+      "theta_sat": "native_soil_theta_sat",
+      "x": "1000",
+      "y": "500+j*250"
+    }
+  ],
+  "connectors": [
+    {
+      "name": "Catchment to Pond",
+      "from": "Impervious contributing catchment",
+      "to": "Pond",
+      "type": "Catchment_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+  
+    {
+    
+    "name": "Pond to Native soil",
+    "from": "Pond",
+    "to": "Native soil",
+    "type": "surfacewater_to_soil_link",
+    "connectiontype": "o2m",
+    "connectionconfig": "u2d"
+    
+    },
+    {
+      "name": "Soil to Groundwater center",
+      "from": "Native soil",
+      "to": "Ground_Water",
+      "type": "soil_to_fixedhead_link",
+      "connectiontype": "m2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Overflow",
+      "from": "Pond",
+      "to": "Receiving_sewer_pipe",
+      "type": "wier",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d",
+      "beta": "beta_overflow_wier",
+      "alpha": "alpha_overflow_wier",
+      "crest_elevation": "CrestElevation"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "Native_soil_depth",
+      "delegate": "UnitBox",
+      "question": "The depth of Native soil ",
+      "unit": "m",
+      "default": "0.2"    
+    },
+    {
+      "name": "Native_soil_Bottom_Elevation",
+      "delegate": "UnitBox",
+      "question": "The bottom elevation of Native soil ",
+      "unit": "m",
+      "default": "0.2" 
+   
+    },
+    {
+      "name": "Area_10",
+      "delegate": "UnitBox",
+      "question": "Surface area of the pond when the water depth is 0.1m",
+      "default": "100",
+      "unit": "m~^2"
+    },
+    {
+      "name": "beta",
+      "delegate": "ValueBox",
+      "question": "β: The exponent that controls how quickly storage changes as depth increases. S = α depth^β",
+      "default": "2"
+    },
+    {
+      "name": "system_area",
+      "delegate": "UnitBox",
+      "question": "Bioretention area",
+      "unit": "m~^2"
+    },
+    {
+      "name": "native_soil_n_y",
+      "delegate": "SpinBox",
+      "question": "Number of cells layers underneath the native soil",
+      "range": [
+        "1",
+        "10"
+      ],
+      "default": "3"
+    },
+    {
+      "name": "depth_to_groundwater",
+      "delegate": "UnitBox",
+      "question": "Depth to groundwater",
+      "unit": "m",
+      "default": "3"
+    },
+    {
+      "name": "Catchment_area",
+      "delegate": "UnitBox",
+      "question": "The area of impervious contributing area",
+      "unit": "m~^2",
+      "default": "1000"
+    },
+    {
+      "name": "Catchment_slope",
+      "delegate": "ValueBox",
+      "question": "The slope of the impervious contributing area",
+      "default": "0.01"
+    },
+    {
+      "name": "Catchment_Manning_coefficient",
+      "delegate": "ValueBox",
+      "question": "Effective Manning's roughness coefficient of the impervious contributing area",
+      "default": "0.011"
+    },
+    {
+      "name": "Catchment_mean_width",
+      "delegate": "UnitBox",
+      "question": "Catchment average width",
+      "unit": "m",
+      "default": "30"
+    },
+    {
+      "name": "native_soil_K_s",
+      "delegate": "UnitBox",
+      "question": "Nagtive soil hydraulic conductivity",
+      "unit": "m/day",
+      "default": "0.2"
+    },
+    {
+      "name": "native_soil_alpha",
+      "delegate": "UnitBox",
+      "question": "Native soil Van Genuchten α parameter",
+      "unit": "1/m",
+      "default": "1"
+    },
+    {
+      "name": "native_soil_n",
+      "delegate": "ValueBox",
+      "question": "Native soil Van Genuchten n parameter",
+      "default": "1.41"
+    },
+    {
+      "name": "native_soil_theta_res",
+      "delegate": "ValueBox",
+      "question": "Native soil residual moisture content",
+      "default": "0.05"
+    },
+    {
+      "name": "native_soil_theta_sat",
+      "delegate": "ValueBox",
+      "question": "Native soil saturated moisture content",
+      "default": "0.4"
+    },
+    {
+      "name": "TimeSeriesFileName",
+      "delegate": "FileBrowser",
+      "question": "Precipitation file name"
+    },
+    {
+      "name": "StartTime",
+      "delegate": "DateBox",
+      "question": "Simulation Start Date"
+    },
+    {
+      "name": "EndTime",
+      "delegate": "DateBox",
+      "question": "Simulation End Date"
+    },
+    {
+      "name": "storage_layer_height",
+      "delegate": "UnitBox",
+      "question": "Depth of the Aggregate soil",
+      "unit": "m",
+      "default": "0.4"
+    },
+    {
+      "name": "CrestElevation",
+      "delegate": "UnitBox",
+      "question": "Crest Elevation",
+      "unit": "m;ft"
+    },
+    {
+      "name": "alpha_overflow_wier",
+      "delegate": "ValueBox",
+      "question": "Coefficient α in Q=α*(h-z_0)^β",
+      "default": "1000"
+    },
+    {
+      "name": "beta_overflow_wier",
+      "delegate": "ValueBox",
+      "question": "Exponent β in Q=α*(h-z_0)^β",
+      "default": "2.5"
+    }
+  ],
+  "parameter_groups": [
+    {
+      "name": "1_general",
+      "description": "General Model parameters",
+      "parameters": [
+        "StartTime",
+        "EndTime",
+        "TimeSeriesFileName"
+      ]
+    },
+    {
+      "name": "3_catchment",
+      "description": "Contributing area",
+      "parameters": [
+        "Catchment_area",
+        "Catchment_slope",
+        "Catchment_Manning_coefficient",
+        "Catchment_mean_width"
+      ]
+    },
+    {
+      "name": "8_Overflow wier",
+      "description": "Overflow Wier",
+      "parameters": [
+        "CrestElevation",
+        "alpha_overflow_wier",
+        "beta_overflow_wier"
+      ]
+    },
+    {
+      "name": "4_Pond",
+      "description": "Pond",
+      "parameters": [
+        "Area_10",
+        "beta"
+      ]
+    },
+    {
+      "name": "2_geometry",
+      "description": "Model geometry",
+      "parameters": [
+        "native_soil_n_y",
+        "depth_to_groundwater"
+      ],
+      "criteria": [
+        {
+          "name": "native_crit",
+          "less": "0",
+          "greater": "depth_to_groundwater-eng_soil_height-storage_layer_height",
+          "errormessage": "Groundwater depth must be greater than the sum of engineered soil and aggregate layer depths."
+        }
+      ]
+    },
+    {
+      "name": "native_soil_physical_parameter",
+      "description": "Physical parameters of the native soil",
+      "parameters": [
+        "native_soil_K_s",
+        "native_soil_alpha",
+        "native_soil_n",
+        "native_soil_theta_sat",
+        "native_soil_theta_res",
+        "Native_soil_Bottom_Elevation",
+        "Native_soil_depth"
+      ]
+    }
+  ]
+}

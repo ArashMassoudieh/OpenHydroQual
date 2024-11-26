@@ -6,7 +6,7 @@
 
 #CONFIG -= app_bundle
 
-CONFIG += c++14
+CONFIG += c++17
 
 lessThan(QT_MAJOR_VERSION, 6): QT += core gui opengl printsupport svg charts
 greaterThan(QT_MAJOR_VERSION, 5): {
@@ -91,7 +91,6 @@ CONFIG(debug, debug|release) {
 SOURCES += \
     chartview.cpp \
     qplotter.cpp \
-    qplotwindow.cpp \
     ./aquifolium/src/RxnParameter.cpp \
     ./aquifolium/src/constituent.cpp \
     ./aquifolium/src/observation.cpp \
@@ -111,8 +110,8 @@ SOURCES += \
     diagramview.cpp \
     edge.cpp \
     gridgenerator.cpp \
-        main.cpp \
-        mainwindow.cpp \
+    main.cpp \
+    mainwindow.cpp \
     ./aquifolium/src/Block.cpp \
     ./aquifolium/src/Expression.cpp \
     ./aquifolium/src/Matrix.cpp \
@@ -139,6 +138,7 @@ SOURCES += \
     options.cpp \
     propmodel.cpp \
     delegate.cpp \
+    qplotwindow.cpp \
     ray.cpp \
     undodata.cpp \
     utilityfuncs.cpp \
@@ -184,6 +184,7 @@ HEADERS += \
     aquifolium/include/restorepoint.h \
     aquifolium/include/safevector.h \
     aquifolium/include/safevector.hpp \
+    chartview.h \
     diagramview.h \
     edge.h \
     gridgenerator.h \
@@ -222,6 +223,8 @@ HEADERS += \
     options.h \
     propmodel.h \
     delegate.h \
+    qplotter.h \
+    qplotwindow.h \
     ray.h \
     undodata.h \
     utilityfuncs.h \

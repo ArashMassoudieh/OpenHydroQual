@@ -1,0 +1,795 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<DOCUMENT Type="Advanced Installer" CreateVersion="14.6" version="14.6" Modules="professional" RootPath="." Language="en" Id="{D4549756-06B9-41B4-9107-91196AB5FAF3}">
+  <COMPONENT cid="caphyon.advinst.msicomp.ProjectOptionsComponent">
+    <ROW Name="HiddenItems" Value="AppXProductDetailsComponent;AppXDependenciesComponent;AppXAppDetailsComponent;AppXVisualAssetsComponent;AppXCapabilitiesComponent;AppXAppDeclarationsComponent;AppXUriRulesComponent;MsiJavaComponent;MsiDriverPackagesComponent;UserAccountsComponent;ScheduledTasksComponent;SqlConnectionComponent;AutorunComponent;FirewallExceptionComponent;GameUxComponent;MsiDirectEditorComponent;SharePointSlnComponent;SilverlightSlnComponent;MultipleInstancesComponent;SccmComponent;ActSyncAppComponent"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
+    <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
+    <ROW Property="AI_CLEAN_RESOURCES_DISABLE_UPGRADE" Value="1"/>
+    <ROW Property="AI_CLEAN_RESOURCES_UNINSTALL" Value="1"/>
+    <ROW Property="AI_CLEAN_RESOURCES_USER_PROMPT_BASIC_UI" Value="0"/>
+    <ROW Property="AI_CLEAN_RESOURCES_USER_PROMPT_FULL_UI" Value="1"/>
+    <ROW Property="AI_EXTERNALUIUNINSTALLERNAME" MultiBuildValue="DefaultBuild:aiui"/>
+    <ROW Property="AI_FINDEXE_TITLE" Value="Select the installation package for [|ProductName]" ValueLocId="AI.Property.FindExeTitle"/>
+    <ROW Property="AI_IA_APPLICATION_ID" Value="61809cc6a255ac1179c4dc15"/>
+    <ROW Property="AI_IA_ENABLE" Value="0"/>
+    <ROW Property="AI_PREDEF_LCONDS_PROPS" Value="AI_DETECTED_ALL"/>
+    <ROW Property="AI_PRODUCTNAME_ARP" Value="[|ProductName]"/>
+    <ROW Property="AI_UNINSTALLER" Value="msiexec.exe"/>
+    <ROW Property="ALLUSERS" Value="1"/>
+    <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
+    <ROW Property="ARPHELPLINK" Value="www.OpenHydroQual.com"/>
+    <ROW Property="ARPNOREPAIR" MultiBuildValue="DefaultBuild:1"/>
+    <ROW Property="ARPPRODUCTICON" Value="Aquifolium.exe" Type="8"/>
+    <ROW Property="ARPSYSTEMCOMPONENT" Value="1"/>
+    <ROW Property="ARPURLINFOABOUT" Value="www.OpenHydroQual.com"/>
+    <ROW Property="ARPURLUPDATEINFO" Value="www.OpenHydroQual.com"/>
+    <ROW Property="AppLogoIcon" Value="applogoicon" MultiBuildValue="DefaultBuild:Aquifolium.jpg" Type="1" MsiKey="AppLogoIcon"/>
+    <ROW Property="Manufacturer" Value="EnviroInformatics, LLC"/>
+    <ROW Property="ProductCode" Value="1033:{A6250418-2665-4BEA-BCA3-8A3D52A13F36} " Type="16"/>
+    <ROW Property="ProductLanguage" Value="1033"/>
+    <ROW Property="ProductName" Value="OpenHydroQual"/>
+    <ROW Property="ProductVersion" Value="1.1.23" Type="32"/>
+    <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
+    <ROW Property="UpgradeCode" Value="{22A5F0D0-785C-400D-99C4-4FBF0A322AB6}"/>
+    <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
+    <ROW Property="WindowsType9XDisplay" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT40" MultiBuildValue="DefaultBuild:Windows NT 4.0" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT40Display" MultiBuildValue="DefaultBuild:Windows NT 4.0" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT50" MultiBuildValue="DefaultBuild:Windows 2000" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT50Display" MultiBuildValue="DefaultBuild:Windows 2000" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT5X" MultiBuildValue="DefaultBuild:Windows XP/2003 RTM, Windows XP/2003 SP1, Windows XP SP2 x86" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT5XDisplay" MultiBuildValue="DefaultBuild:Windows XP/2003 RTM, Windows XP/2003 SP1, Windows XP SP2 x86" ValueLocId="-"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
+    <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
+    <ROW Directory="CommonAppDataFolder" Directory_Parent="TARGETDIR" DefaultDir="COMMON~1|CommonAppDataFolder" IsPseudoRoot="1"/>
+    <ROW Directory="DesktopFolder" Directory_Parent="TARGETDIR" DefaultDir="DESKTO~1|DesktopFolder" IsPseudoRoot="1"/>
+    <ROW Directory="Diagrams_Dir" Directory_Parent="Wizard_Scripts_Dir" DefaultDir="Diagrams"/>
+    <ROW Directory="Icons_Dir" Directory_Parent="resources_Dir" DefaultDir="Icons"/>
+    <ROW Directory="QAquifolium_1_Dir" Directory_Parent="StartMenuFolder" DefaultDir="OPENHY~1|OpenHydroQual"/>
+    <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
+    <ROW Directory="StartMenuFolder" Directory_Parent="TARGETDIR" DefaultDir="STARTM~1|StartMenuFolder" IsPseudoRoot="1"/>
+    <ROW Directory="SystemFolder" Directory_Parent="TARGETDIR" DefaultDir="SYSTEM~1|SystemFolder" IsPseudoRoot="1"/>
+    <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
+    <ROW Directory="Wizard_Icons_Dir" Directory_Parent="Wizard_Scripts_Dir" DefaultDir="WIZARD~1|Wizard_Icons"/>
+    <ROW Directory="Wizard_Scripts_Dir" Directory_Parent="resources_Dir" DefaultDir="WIZARD~1|Wizard_Scripts"/>
+    <ROW Directory="bin_1_Dir" Directory_Parent="bin_Dir" DefaultDir="bin"/>
+    <ROW Directory="bin_Dir" Directory_Parent="APPDIR" DefaultDir="bin"/>
+    <ROW Directory="platform_Dir" Directory_Parent="bin_1_Dir" DefaultDir="PLATFO~1|platforms"/>
+    <ROW Directory="regid.199509.com.example_Dir" Directory_Parent="CommonAppDataFolder" DefaultDir="REGID1~1.EXA|regid.1995-09.com.example"/>
+    <ROW Directory="resources_Dir" Directory_Parent="APPDIR" DefaultDir="RESOUR~1|resources"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
+    <ROW Component="AI_CustomARPName" ComponentId="{0F9024B0-141F-49D7-93A2-EE325E3A080A}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
+    <ROW Component="AI_ExePath" ComponentId="{E9233AF7-0339-4898-BA7A-0EA6DCB0522F}" Directory_="APPDIR" Attributes="4" KeyPath="AI_ExePath"/>
+    <ROW Component="AI_IA_ENABLE" ComponentId="{9961D3AC-A7F7-45C8-9F93-9695250B97F1}" Directory_="APPDIR" Attributes="4" KeyPath="AI_IA_ENABLE" Options="1"/>
+    <ROW Component="Bioswale.png" ComponentId="{CC505CBF-6CA5-4751-A1D1-4118B8316BCE}" Directory_="Diagrams_Dir" Attributes="0" KeyPath="Bioswale.png" Type="0"/>
+    <ROW Component="D_Soil.json" ComponentId="{D36987EC-DD05-4012-A9A8-A302B1D1B18E}" Directory_="Wizard_Scripts_Dir" Attributes="0" KeyPath="D_Soil.json" Type="0"/>
+    <ROW Component="ModelWizard.exe" ComponentId="{3756BF4A-3D7B-4179-A1A7-3CB791F8A5B9}" Directory_="bin_1_Dir" Attributes="256" KeyPath="ModelWizard.exe"/>
+    <ROW Component="OHQTerminal.exe" ComponentId="{D973E169-470B-4CEF-9609-EAEA846CAD8A}" Directory_="bin_1_Dir" Attributes="256" KeyPath="OHQTerminal.exe"/>
+    <ROW Component="ProductInformation" ComponentId="{79B16A84-C388-44BE-96BC-19E14A14AC15}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
+    <ROW Component="QAquifolium.exe" ComponentId="{08BF79BA-57E0-4D4B-9F8B-3C75471DBE99}" Directory_="bin_1_Dir" Attributes="0" KeyPath="QAquifolium.exe"/>
+    <ROW Component="QAquifolium_1" ComponentId="{6B0B8D13-AB3A-4E53-ABE7-AE5373851AC3}" Directory_="QAquifolium_1_Dir" Attributes="0"/>
+    <ROW Component="Qt5Charts.dll" ComponentId="{4930E236-B93D-40DE-AB44-EE19279A5092}" Directory_="bin_1_Dir" Attributes="256" KeyPath="Qt5Charts.dll"/>
+    <ROW Component="Qt5Core.dll" ComponentId="{1CEECA9C-92D6-4472-AFA9-97C54BF8C61B}" Directory_="bin_1_Dir" Attributes="256" KeyPath="Qt5Core.dll"/>
+    <ROW Component="Qt5Gui.dll" ComponentId="{6E0F94C1-3F18-4BAC-9E40-4F16D69EA0B4}" Directory_="bin_1_Dir" Attributes="256" KeyPath="Qt5Gui.dll"/>
+    <ROW Component="Qt5PrintSupport.dll" ComponentId="{2129339E-819C-44A5-B2A2-D20D93AE6E3E}" Directory_="bin_1_Dir" Attributes="256" KeyPath="Qt5PrintSupport.dll"/>
+    <ROW Component="Qt5Svg.dll" ComponentId="{B7F11010-C5BE-4304-BCB4-DBDDD704285C}" Directory_="bin_1_Dir" Attributes="256" KeyPath="Qt5Svg.dll"/>
+    <ROW Component="Qt5Widgets.dll" ComponentId="{F5A6977E-54A0-4F3B-BF4D-7C84D1E9BAD0}" Directory_="bin_1_Dir" Attributes="256" KeyPath="Qt5Widgets.dll"/>
+    <ROW Component="Rhistory" ComponentId="{1C03A85F-1A25-4457-96C1-494E5B1C5A34}" Directory_="resources_Dir" Attributes="0" KeyPath="settings.json" Type="0"/>
+    <ROW Component="SHORTCUTDIR" ComponentId="{B921030B-CE13-438B-91A4-FB65C498C3C3}" Directory_="SHORTCUTDIR" Attributes="0"/>
+    <ROW Component="bioswale.png" ComponentId="{9E5A1228-432E-4E17-AD8F-38AEDD04216D}" Directory_="Wizard_Icons_Dir" Attributes="0" KeyPath="bioswale.png_1" Type="0"/>
+    <ROW Component="blas_win64_MT.dll" ComponentId="{AC22A225-FA3C-492A-A5BA-C7C128C1D7CF}" Directory_="bin_1_Dir" Attributes="256" KeyPath="blas_win64_MT.dll"/>
+    <ROW Component="gsl.dll" ComponentId="{B6F1185C-08CB-4C3E-A903-F3E3DD93EC05}" Directory_="bin_1_Dir" Attributes="256" KeyPath="gsl.dll"/>
+    <ROW Component="gslcblas.dll" ComponentId="{368FCED3-0206-48D1-9DDE-C933493012C8}" Directory_="bin_1_Dir" Attributes="256" KeyPath="gslcblas.dll"/>
+    <ROW Component="lapack_win64_MT.dll" ComponentId="{F87E591E-7E83-4C46-85F8-7ADD18193F13}" Directory_="bin_1_Dir" Attributes="256" KeyPath="lapack_win64_MT.dll"/>
+    <ROW Component="pd.nfo" ComponentId="{EA2F3F75-5ABD-4957-A2AE-8475540B3E6F}" Directory_="Icons_Dir" Attributes="0" KeyPath="Darcy.png" Type="0"/>
+    <ROW Component="qwindows.dll" ComponentId="{8C436F42-BA9C-40C0-BDAB-030477991FCF}" Directory_="platform_Dir" Attributes="256" KeyPath="qwindows.dll"/>
+    <ROW Component="regid.199509.com.example" ComponentId="{4137D2EE-914D-4A57-A419-5DA792FA0CF6}" Directory_="regid.199509.com.example_Dir" Attributes="0"/>
+    <ROW Component="updater.exe" ComponentId="{15A6D915-0F43-4D3D-A3EB-8230607FF6B5}" Directory_="APPDIR" Attributes="0" KeyPath="updater.exe"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
+    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Directory_="APPDIR" Attributes="0" Components="AI_CustomARPName AI_ExePath AI_IA_ENABLE Bioswale.png D_Soil.json ModelWizard.exe OHQTerminal.exe ProductInformation QAquifolium.exe QAquifolium_1 Qt5Charts.dll Qt5Core.dll Qt5Gui.dll Qt5PrintSupport.dll Qt5Svg.dll Qt5Widgets.dll Rhistory SHORTCUTDIR bioswale.png blas_win64_MT.dll gsl.dll gslcblas.dll lapack_win64_MT.dll pd.nfo qwindows.dll regid.199509.com.example updater.exe"/>
+    <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
+    <ROW File="Age_tracer.png" Component_="pd.nfo" FileName="AGE_TR~1.PNG|Age_tracer.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Age_tracer.png" SelfReg="false" NextFile="gsl.dll"/>
+    <ROW File="Amenities.png" Component_="pd.nfo" FileName="AMENIT~1.PNG|Amenities.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Amenities.png" SelfReg="false" NextFile="Transfertogroundwater.png"/>
+    <ROW File="Aquifolium.jpg" Component_="pd.nfo" FileName="AQUIFO~1.JPG|Aquifolium.jpg" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Aquifolium.jpg" SelfReg="false" NextFile="Aquifolium_Windows_multi.ico"/>
+    <ROW File="Aquifolium.png" Component_="pd.nfo" FileName="AQUIFO~1.PNG|Aquifolium.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Aquifolium.png" SelfReg="false" NextFile="arrow.png"/>
+    <ROW File="Aquifolium_Windows_multi.ico" Component_="pd.nfo" FileName="AQUIFO~1.ICO|Aquifolium_Windows_multi.ico" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Aquifolium_Windows_multi.ico" SelfReg="false" NextFile="Control.png"/>
+    <ROW File="BioSwale.json" Component_="D_Soil.json" FileName="BIOSWA~1.JSO|BioSwale.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Wizard_Scripts\BioSwale.json" SelfReg="false" NextFile="Bioswale.png"/>
+    <ROW File="Bioswale.png" Component_="Bioswale.png" FileName="Bioswale.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Wizard_Scripts\Diagrams\Bioswale.png" SelfReg="false" NextFile="bioswale.png_1"/>
+    <ROW File="Catch_basin.png" Component_="pd.nfo" FileName="CATCH_~1.PNG|Catch_basin.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Catch_basin.png" SelfReg="false" NextFile="Sewer_pipe_link.png"/>
+    <ROW File="Catchment_outlet.png" Component_="pd.nfo" FileName="CATCHM~2.PNG|Catchment_outlet.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Catchment_outlet.png" SelfReg="false" NextFile="surface2soil.png"/>
+    <ROW File="Chemical_Source_exchange.png" Component_="pd.nfo" FileName="CHEMIC~2.PNG|Chemical_Source_exchange.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Chemical_Source_exchange.png" SelfReg="false" NextFile="fixed_flow.png"/>
+    <ROW File="Chemical_Source_timeseries.png" Component_="pd.nfo" FileName="CHEMIC~1.PNG|Chemical_Source_timeseries.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Chemical_Source_timeseries.png" SelfReg="false" NextFile="mass_transfer_template.png"/>
+    <ROW File="Chemical_source_constant.png" Component_="pd.nfo" FileName="CHEMIC~3.PNG|Chemical_source_constant.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Chemical_source_constant.png" SelfReg="false" NextFile="build_up.png"/>
+    <ROW File="Control.png" Component_="pd.nfo" FileName="Control.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Control.png" SelfReg="false" NextFile="Curve.png"/>
+    <ROW File="Curve.png" Component_="pd.nfo" FileName="Curve.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Curve.png" SelfReg="false" NextFile="flow_arrow.png"/>
+    <ROW File="D_Soil.json" Component_="D_Soil.json" FileName="2D_SOI~1.JSO|2D_Soil.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Wizard_Scripts\2D_Soil.json" SelfReg="false" NextFile="BioSwale.json"/>
+    <ROW File="Darcy.png" Component_="pd.nfo" FileName="Darcy.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Darcy.png" SelfReg="false" NextFile="deletebig.png"/>
+    <ROW File="DocumentBlankicon.png" Component_="pd.nfo" FileName="DOCUME~1.PNG|Document-Blank-icon.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Document-Blank-icon.png" SelfReg="false" NextFile="drawconnector.png"/>
+    <ROW File="Evapotranspiration_Aerodynamic.png" Component_="pd.nfo" FileName="EVAPOT~8.PNG|Evapotranspiration_Aerodynamic.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Evapotranspiration_Aerodynamic.png" SelfReg="false" NextFile="dcatchmentcatchmentlink.png"/>
+    <ROW File="Evapotranspiration_Aerodynamic_soil.png" Component_="pd.nfo" FileName="EVAPOT~7.PNG|Evapotranspiration_Aerodynamic_soil.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Evapotranspiration_Aerodynamic_soil.png" SelfReg="false" NextFile="dcatchmentfixedheadlink.png"/>
+    <ROW File="Evapotranspiration_Priestly_Taylor.png" Component_="pd.nfo" FileName="EVAPOT~6.PNG|Evapotranspiration_Priestly_Taylor.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Evapotranspiration_Priestly_Taylor.png" SelfReg="false" NextFile="Evapotranspiration_Aerodynamic_soil.png"/>
+    <ROW File="Evapotranspiration_Priestly_Taylor_soil.png" Component_="pd.nfo" FileName="EVAPOT~2.PNG|Evapotranspiration_Priestly_Taylor_soil.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Evapotranspiration_Priestly_Taylor_soil.png" SelfReg="false" NextFile="Evapotranspiration_timeseries_soil.png"/>
+    <ROW File="Evapotranspiration_energy_balance.png" Component_="pd.nfo" FileName="EVAPOT~5.PNG|Evapotranspiration_energy_balance.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Evapotranspiration_energy_balance.png" SelfReg="false" NextFile="Evapotranspiration_Priestly_Taylor.png"/>
+    <ROW File="Evapotranspiration_energy_balance_soil.png" Component_="pd.nfo" FileName="EVAPOT~4.PNG|Evapotranspiration_energy_balance_soil.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Evapotranspiration_energy_balance_soil.png" SelfReg="false" NextFile="WindowZoom.png"/>
+    <ROW File="Evapotranspiration_timeseries.png" Component_="pd.nfo" FileName="EVAPOT~1.PNG|Evapotranspiration_timeseries.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Evapotranspiration_timeseries.png" SelfReg="false" NextFile="Evapotranspiration_Priestly_Taylor_soil.png"/>
+    <ROW File="Evapotranspiration_timeseries_soil.png" Component_="pd.nfo" FileName="EVAPOT~3.PNG|Evapotranspiration_timeseries_soil.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Evapotranspiration_timeseries_soil.png" SelfReg="false" NextFile="Evapotranspiration_energy_balance_soil.png"/>
+    <ROW File="Experimentcopy.png" Component_="pd.nfo" FileName="EXPERI~1.PNG|Experiment-copy.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Experiment-copy.png" SelfReg="false" NextFile="experiment1.ico"/>
+    <ROW File="Flowofrecycledwater.png" Component_="pd.nfo" FileName="FLOWOF~1.PNG|Flow of recycled water.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Flow of recycled water.png" SelfReg="false" NextFile="Water_Transfer_to_Groundwater.png"/>
+    <ROW File="Full_screen_view.png" Component_="pd.nfo" FileName="FULL_S~1.PNG|Full_screen_view.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Full_screen_view.png" SelfReg="false" NextFile="full_screen_zoomicon.gif"/>
+    <ROW File="GIFMod.ico" Component_="pd.nfo" FileName="GIFMod.ico" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\GIFMod.ico" SelfReg="false" NextFile="GIFMod.png"/>
+    <ROW File="GIFMod.png" Component_="pd.nfo" FileName="GIFMod.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\GIFMod.png" SelfReg="false" NextFile="GIFModonBlack.pdn"/>
+    <ROW File="GIFModonBlack.pdn" Component_="pd.nfo" FileName="GIFMOD~1.PDN|GIFModonBlack.pdn" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\GIFModonBlack.pdn" SelfReg="false" NextFile="GIFModonBlack.png"/>
+    <ROW File="GIFModonBlack.png" Component_="pd.nfo" FileName="GIFMOD~1.PNG|GIFModonBlack.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\GIFModonBlack.png" SelfReg="false" NextFile="GIM.ico"/>
+    <ROW File="GIM.ico" Component_="pd.nfo" FileName="GIM.ico" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\GIM.ico" SelfReg="false" NextFile="GIM.png"/>
+    <ROW File="GIM.png" Component_="pd.nfo" FileName="GIM.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\GIM.png" SelfReg="false" NextFile="GWA.ico"/>
+    <ROW File="GWA.ico" Component_="pd.nfo" FileName="GWA.ico" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\GWA.ico" SelfReg="false" NextFile="GWA.png"/>
+    <ROW File="GWA.png" Component_="pd.nfo" FileName="GWA.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\GWA.png" SelfReg="false" NextFile="iconoutlinehandpalmcartoontoolpanfree.png"/>
+    <ROW File="Governmental_user.png" Component_="pd.nfo" FileName="GOVERN~1.PNG|Governmental_user.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Governmental_user.png" SelfReg="false" NextFile="InfiltrationandInflow.png"/>
+    <ROW File="Graph.png" Component_="pd.nfo" FileName="Graph.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Graph.png" SelfReg="false" NextFile="export.png"/>
+    <ROW File="Groundwater.png" Component_="pd.nfo" FileName="GROUND~2.PNG|Groundwater.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Groundwater.png" SelfReg="false" NextFile="Surface2GW_link.png"/>
+    <ROW File="Groundwater_Supply_Wells.png" Component_="pd.nfo" FileName="GROUND~4.PNG|Groundwater_Supply_Wells.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Groundwater_Supply_Wells.png" SelfReg="false" NextFile="Flowofrecycledwater.png"/>
+    <ROW File="Groundwater_link.png" Component_="pd.nfo" FileName="GROUND~1.PNG|Groundwater_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Groundwater_link.png" SelfReg="false" NextFile="Groundwater.png"/>
+    <ROW File="InfiltrationandInflow.png" Component_="pd.nfo" FileName="INFILT~1.PNG|Infiltration and Inflow.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Infiltration and Inflow.png" SelfReg="false" NextFile="Wastewater_Treatment_plant.png"/>
+    <ROW File="Lake2GWlink.png" Component_="pd.nfo" FileName="LAKE2G~1.PNG|Lake2GWlink.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Lake2GWlink.png" SelfReg="false" NextFile="Graph.png"/>
+    <ROW File="MCMC.png" Component_="pd.nfo" FileName="MCMC.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\MCMC.png" SelfReg="false" NextFile="Particle.png"/>
+    <ROW File="ModelWizard.exe" Component_="ModelWizard.exe" FileName="MODELW~1.EXE|ModelWizard.exe" Attributes="0" SourcePath="E:\Projects\QAquifolium\x64\Release\ModelWizard.exe" SelfReg="false" NextFile="surface2aggregate.png" DigSign="true"/>
+    <ROW File="OHQTerminal.exe" Component_="OHQTerminal.exe" FileName="OHQTER~1.EXE|OHQTerminal.exe" Attributes="0" SourcePath="E:\Projects\QAquifolium\terminal\x64\OHQTerminal.exe" SelfReg="false" NextFile="aging.png" DigSign="true"/>
+    <ROW File="Particle.png" Component_="pd.nfo" FileName="Particle.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Particle.png" SelfReg="false" NextFile="Settling_element_link.png"/>
+    <ROW File="Paste.png" Component_="pd.nfo" FileName="Paste.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Paste.png" SelfReg="false" NextFile="plant.png"/>
+    <ROW File="Pond.png" Component_="pd.nfo" FileName="Pond.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Pond.png" SelfReg="false" NextFile="reservoir.png"/>
+    <ROW File="Pond_Plugin.json" Component_="Rhistory" FileName="POND_P~1.JSO|Pond_Plugin.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Pond_Plugin.json" SelfReg="false" NextFile="pipe_1w.png"/>
+    <ROW File="Pondicon.png" Component_="pd.nfo" FileName="POND-I~1.PNG|Pond-icon.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Pond-icon.png" SelfReg="false" NextFile="pondwallmural.gif"/>
+    <ROW File="QAquifolium.exe" Component_="QAquifolium.exe" FileName="OPENHY~1.EXE|OpenHydroQual.exe" Attributes="0" SourcePath="E:\Projects\QAquifolium\x64\Release\OpenHydroQual.exe" SelfReg="false" NextFile="kivio_connector.svg.hi.png" DigSign="true"/>
+    <ROW File="Qt5Charts.dll" Component_="Qt5Charts.dll" FileName="QT5CHA~1.DLL|Qt5Charts.dll" Attributes="0" SourcePath="E:\Projects\QAquifolium\x64\Release\Qt5Charts.dll" SelfReg="false"/>
+    <ROW File="Qt5Core.dll" Component_="Qt5Core.dll" FileName="Qt5Core.dll" Attributes="0" SourcePath="E:\Projects\QAquifolium\x64\Release\Qt5Core.dll" SelfReg="false" NextFile="Qt5Gui.dll"/>
+    <ROW File="Qt5Gui.dll" Component_="Qt5Gui.dll" FileName="Qt5Gui.dll" Attributes="0" SourcePath="E:\Projects\QAquifolium\x64\Release\Qt5Gui.dll" SelfReg="false" NextFile="Qt5PrintSupport.dll"/>
+    <ROW File="Qt5PrintSupport.dll" Component_="Qt5PrintSupport.dll" FileName="QT5PRI~1.DLL|Qt5PrintSupport.dll" Attributes="0" SourcePath="E:\Projects\QAquifolium\x64\Release\Qt5PrintSupport.dll" SelfReg="false" NextFile="Qt5Widgets.dll"/>
+    <ROW File="Qt5Svg.dll" Component_="Qt5Svg.dll" FileName="Qt5Svg.dll" Attributes="0" SourcePath="E:\Projects\QAquifolium\x64\Release\Qt5Svg.dll" SelfReg="false" NextFile="well_template.png"/>
+    <ROW File="Qt5Widgets.dll" Component_="Qt5Widgets.dll" FileName="QT5WID~1.DLL|Qt5Widgets.dll" Attributes="0" SourcePath="E:\Projects\QAquifolium\x64\Release\Qt5Widgets.dll" SelfReg="false" NextFile="qwindows.dll"/>
+    <ROW File="Reservoid_Control.png" Component_="pd.nfo" FileName="RESERV~3.PNG|Reservoid_Control.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Reservoid_Control.png" SelfReg="false" NextFile="Reservoir_Control.png"/>
+    <ROW File="Reservoir_Control.png" Component_="pd.nfo" FileName="RESERV~4.PNG|Reservoir_Control.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Reservoir_Control.png" SelfReg="false" NextFile="Reservoir_Link_Arrow.png"/>
+    <ROW File="Reservoir_Link_Arrow.png" Component_="pd.nfo" FileName="RESERV~5.PNG|Reservoir_Link_Arrow.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Reservoir_Link_Arrow.png" SelfReg="false" NextFile="Reservoir_Rating_Curve.png"/>
+    <ROW File="Reservoir_Rating_Curve.png" Component_="pd.nfo" FileName="RESERV~6.PNG|Reservoir_Rating_Curve.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Reservoir_Rating_Curve.png" SelfReg="false" NextFile="Trapezoidal_Channel.png"/>
+    <ROW File="Reservoir_operation.json" Component_="Rhistory" FileName="RESERV~1.JSO|Reservoir_operation.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Reservoir_operation.json" SelfReg="false" NextFile="river_processes.json"/>
+    <ROW File="Reservoir_template.png" Component_="pd.nfo" FileName="RESERV~7.PNG|Reservoir_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Reservoir_template.png" SelfReg="false" NextFile="River.png"/>
+    <ROW File="River.png" Component_="pd.nfo" FileName="River.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\River.png" SelfReg="false" NextFile="aggregate2soil.png"/>
+    <ROW File="River2BedLink.png" Component_="pd.nfo" FileName="RIVER2~1.PNG|River2BedLink.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\River2BedLink.png" SelfReg="false" NextFile="River2River.png"/>
+    <ROW File="River2River.png" Component_="pd.nfo" FileName="RIVER2~2.PNG|River2River.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\River2River.png" SelfReg="false" NextFile="bed_sediment.png"/>
+    <ROW File="River_Template.png" Component_="pd.nfo" FileName="RIVER_~1.PNG|River_Template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\River_Template.png" SelfReg="false" NextFile="River2BedLink.png"/>
+    <ROW File="SCM_template.png" Component_="pd.nfo" FileName="SCM_TE~1.PNG|SCM_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\SCM_template.png" SelfReg="false" NextFile="soil2aggregate.png"/>
+    <ROW File="Save.png" Component_="pd.nfo" FileName="Save.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Save.png" SelfReg="false" NextFile="Storage.png"/>
+    <ROW File="Settling_element.png" Component_="pd.nfo" FileName="SETTLI~2.PNG|Settling_element.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Settling_element.png" SelfReg="false" NextFile="Splillway.png"/>
+    <ROW File="Settling_element_link.png" Component_="pd.nfo" FileName="SETTLI~1.PNG|Settling_element_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Settling_element_link.png" SelfReg="false" NextFile="Settling_element.png"/>
+    <ROW File="Settling_element_link_time_variable.png" Component_="pd.nfo" FileName="SETTLI~3.PNG|Settling_element_link_time_variable.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Settling_element_link_time_variable.png" SelfReg="false" NextFile="Soil2Plant.png"/>
+    <ROW File="Sewer_pipe.png" Component_="pd.nfo" FileName="SEWER_~4.PNG|Sewer_pipe.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Sewer_pipe.png" SelfReg="false" NextFile="Sewer_system.json"/>
+    <ROW File="Sewer_pipe_link.png" Component_="pd.nfo" FileName="SEWER_~3.PNG|Sewer_pipe_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Sewer_pipe_link.png" SelfReg="false" NextFile="Sewer_pipe.png"/>
+    <ROW File="Sewer_pipe_section.png" Component_="pd.nfo" FileName="SEWER_~2.PNG|Sewer_pipe_section.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Sewer_pipe_section.png" SelfReg="false" NextFile="Catch_basin.png"/>
+    <ROW File="Sewer_system.json" Component_="Rhistory" FileName="SEWER_~1.JSO|Sewer_system.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Sewer_system.json" SelfReg="false" NextFile="sewer2fixedhead_link.png"/>
+    <ROW File="Sewer_system_template.png" Component_="pd.nfo" FileName="SEWER_~1.PNG|Sewer_system_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Sewer_system_template.png" SelfReg="false" NextFile="Sewer_pipe_section.png"/>
+    <ROW File="Soil.png" Component_="pd.nfo" FileName="Soil.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Soil.png" SelfReg="false" NextFile="Soil2Soil.png"/>
+    <ROW File="Soil2Plant.png" Component_="pd.nfo" FileName="SOIL2P~1.PNG|Soil2Plant.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Soil2Plant.png" SelfReg="false" NextFile="Age_tracer.png"/>
+    <ROW File="Soil2Soil.png" Component_="pd.nfo" FileName="SOIL2S~1.PNG|Soil2Soil.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Soil2Soil.png" SelfReg="false" NextFile="main_components.json"/>
+    <ROW File="Soil2Soil_KS.png" Component_="pd.nfo" FileName="SOIL2S~5.PNG|Soil2Soil_KS.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Soil2Soil_KS.png" SelfReg="false" NextFile="unsaturated_soil_links_w_Ks.json"/>
+    <ROW File="Splillway.png" Component_="pd.nfo" FileName="SPLILL~1.PNG|Splillway.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Splillway.png" SelfReg="false" NextFile="suspended_sediments.png"/>
+    <ROW File="Storage.png" Component_="pd.nfo" FileName="Storage.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Storage.png" SelfReg="false" NextFile="stream.ico"/>
+    <ROW File="Stormwater_control_measures.json" Component_="Rhistory" FileName="STORMW~1.JSO|Stormwater_control_measures.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Stormwater_control_measures.json" SelfReg="false" NextFile="buildup_washoff_template.png"/>
+    <ROW File="Stream.png" Component_="pd.nfo" FileName="Stream.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Stream.png" SelfReg="false" NextFile="tracer.png"/>
+    <ROW File="Surface2GW_link.png" Component_="pd.nfo" FileName="SURFAC~2.PNG|Surface2GW_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Surface2GW_link.png" SelfReg="false" NextFile="groundwater.json"/>
+    <ROW File="Surface_Chemical_Source_exchange.png" Component_="pd.nfo" FileName="SURFAC~5.PNG|Surface_Chemical_Source_exchange.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Surface_Chemical_Source_exchange.png" SelfReg="false" NextFile="wastewater.json"/>
+    <ROW File="Transfertogroundwater.png" Component_="pd.nfo" FileName="TRANSF~1.PNG|Transfer to groundwater.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Transfer to groundwater.png" SelfReg="false" NextFile="plant_template.png"/>
+    <ROW File="Trapezoidal_Channel.png" Component_="pd.nfo" FileName="TRAPEZ~1.PNG|Trapezoidal_Channel.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Trapezoidal_Channel.png" SelfReg="false" NextFile="Trapezoidal_Channel_Link.png"/>
+    <ROW File="Trapezoidal_Channel_Link.png" Component_="pd.nfo" FileName="TRAPEZ~2.PNG|Trapezoidal_Channel_Link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Trapezoidal_Channel_Link.png" SelfReg="false" NextFile="Soil.png"/>
+    <ROW File="Twitter_Icon.png" Component_="pd.nfo" FileName="TWITTE~1.PNG|Twitter_Icon.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Twitter_Icon.png" SelfReg="false" NextFile="undo.png"/>
+    <ROW File="Wastewater_Treatment_plant.png" Component_="pd.nfo" FileName="WASTEW~3.PNG|Wastewater_Treatment_plant.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Wastewater_Treatment_plant.png" SelfReg="false" NextFile="Amenities.png"/>
+    <ROW File="Wastewater_flow.png" Component_="pd.nfo" FileName="WASTEW~2.PNG|Wastewater_flow.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Wastewater_flow.png" SelfReg="false" NextFile="Groundwater_Supply_Wells.png"/>
+    <ROW File="Water_Transfer.png" Component_="pd.nfo" FileName="WATER_~1.PNG|Water_Transfer.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Water_Transfer.png" SelfReg="false" NextFile="residential.png"/>
+    <ROW File="Water_Transfer_to_Groundwater.png" Component_="pd.nfo" FileName="WATER_~3.PNG|Water_Transfer_to_Groundwater.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Water_Transfer_to_Groundwater.png" SelfReg="false" NextFile="Governmental_user.png"/>
+    <ROW File="Well.json" Component_="Rhistory" FileName="WELL~1.JSO|Well.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Well.json" SelfReg="false" NextFile="soil2soilH.png"/>
+    <ROW File="Well_aggregate.png" Component_="pd.nfo" FileName="WELL_A~1.PNG|Well_aggregate.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\Well_aggregate.png" SelfReg="false" NextFile="darcy_connector.png"/>
+    <ROW File="WindowZoom.png" Component_="pd.nfo" FileName="WINDOW~1.PNG|WindowZoom.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\WindowZoom.png" SelfReg="false" NextFile="Evapotranspiration_energy_balance.png"/>
+    <ROW File="_Redo.png" Component_="pd.nfo" FileName="143925~2.PNG|1439255778_Redo.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\1439255778_Redo.png" SelfReg="false" NextFile="png"/>
+    <ROW File="_newfile.png" Component_="pd.nfo" FileName="143925~1.PNG|1439255260_new-file.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\1439255260_new-file.png" SelfReg="false" NextFile="_Redo.png"/>
+    <ROW File="activate_sludge_reactor.png" Component_="pd.nfo" FileName="ACTIVA~1.PNG|activate_sludge_reactor.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\activate_sludge_reactor.png" SelfReg="false" NextFile="sedimentation_tank_element.png"/>
+    <ROW File="aggregate2aggregate_H.png" Component_="pd.nfo" FileName="AGGREG~3.PNG|aggregate2aggregate_H.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\aggregate2aggregate_H.png" SelfReg="false" NextFile="timedependent_flow.png"/>
+    <ROW File="aggregate2soil.png" Component_="pd.nfo" FileName="AGGREG~2.PNG|aggregate2soil.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\aggregate2soil.png" SelfReg="false" NextFile="Reservoir_operation.json"/>
+    <ROW File="aggregates.png" Component_="pd.nfo" FileName="AGGREG~1.PNG|aggregates.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\aggregates.png" SelfReg="false" NextFile="SCM_template.png"/>
+    <ROW File="aging.png" Component_="pd.nfo" FileName="aging.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\aging.png" SelfReg="false" NextFile="aggregate2aggregate_H.png"/>
+    <ROW File="agriculture.png" Component_="pd.nfo" FileName="AGRICU~1.PNG|agriculture.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\agriculture.png" SelfReg="false" NextFile="urban_water_management.json"/>
+    <ROW File="aquifer_recharge.png" Component_="pd.nfo" FileName="AQUIFE~1.PNG|aquifer_recharge.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\aquifer_recharge.png" SelfReg="false" NextFile="public.png"/>
+    <ROW File="arrow.png" Component_="pd.nfo" FileName="arrow.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\arrow.png" SelfReg="false" NextFile="atom.png"/>
+    <ROW File="arrow_cursor.png" Component_="pd.nfo" FileName="ARROW_~2.PNG|arrow_cursor.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\arrow_cursor.png" SelfReg="false" NextFile="Chemical_Source_timeseries.png"/>
+    <ROW File="arrow_to_user.png" Component_="pd.nfo" FileName="ARROW_~1.PNG|arrow_to_user.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\arrow_to_user.png" SelfReg="false" NextFile="commertial.png"/>
+    <ROW File="atom.png" Component_="pd.nfo" FileName="atom.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\atom.png" SelfReg="false" NextFile="backwardsrunning.ico"/>
+    <ROW File="backwardsrunning.ico" Component_="pd.nfo" FileName="BACKWA~1.ICO|backwards-running.ico" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\backwards-running.ico" SelfReg="false" NextFile="backwardsrunning.png"/>
+    <ROW File="backwardsrunning.png" Component_="pd.nfo" FileName="BACKWA~1.PNG|backwards-running.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\backwards-running.png" SelfReg="false" NextFile="catchment.ico"/>
+    <ROW File="bed_sediment.png" Component_="pd.nfo" FileName="BED_SE~1.PNG|bed_sediment.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\bed_sediment.png" SelfReg="false" NextFile="Reservoir_template.png"/>
+    <ROW File="bed_sediment_2_fixed_head.png" Component_="pd.nfo" FileName="BED_SE~2.PNG|bed_sediment_2_fixed_head.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\bed_sediment_2_fixed_head.png" SelfReg="false" NextFile="sewer2pond_link.png"/>
+    <ROW File="bioswale.png_1" Component_="bioswale.png" FileName="bioswale.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Wizard_Scripts\Wizard_Icons\bioswale.png" SelfReg="false" NextFile="soil_grid.png"/>
+    <ROW File="blas_win64_MT.dll" Component_="blas_win64_MT.dll" FileName="BLAS_W~1.DLL|blas_win64_MT.dll" Attributes="0" SourcePath="E:\Projects\QAquifolium\libs\lapack-blas_lib_win64\blas_win64_MT.dll" SelfReg="false" NextFile="lapack_win64_MT.dll"/>
+    <ROW File="build_up.png" Component_="pd.nfo" FileName="build_up.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\build_up.png" SelfReg="false" NextFile="cloud_rain.png"/>
+    <ROW File="build_up_sat.png" Component_="pd.nfo" FileName="BUILD_~1.PNG|build_up_sat.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\build_up_sat.png" SelfReg="false" NextFile="Lake2GWlink.png"/>
+    <ROW File="buildup_washoff.json" Component_="Rhistory" FileName="BUILDU~1.JSO|buildup_washoff.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\buildup_washoff.json" SelfReg="false" NextFile="Chemical_source_constant.png"/>
+    <ROW File="buildup_washoff_template.png" Component_="pd.nfo" FileName="BUILDU~1.PNG|buildup_washoff_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\buildup_washoff_template.png" SelfReg="false" NextFile="immobile_constituent.png"/>
+    <ROW File="catchment.ico" Component_="pd.nfo" FileName="CATCHM~1.ICO|catchment.ico" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\catchment.ico" SelfReg="false" NextFile="catchment.png"/>
+    <ROW File="catchment.png" Component_="pd.nfo" FileName="CATCHM~1.PNG|catchment.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\catchment.png" SelfReg="false" NextFile="commad.png"/>
+    <ROW File="channel2fixed.png" Component_="pd.nfo" FileName="CHANNE~1.PNG|channel2fixed.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\channel2fixed.png" SelfReg="false" NextFile="soil2fixedhead.png"/>
+    <ROW File="city.png" Component_="pd.nfo" FileName="city.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\city.png" SelfReg="false" NextFile="Water_Transfer.png"/>
+    <ROW File="cloud.png" Component_="pd.nfo" FileName="cloud.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\cloud.png" SelfReg="false" NextFile="Aquifolium.jpg"/>
+    <ROW File="cloud_rain.png" Component_="pd.nfo" FileName="CLOUD_~1.PNG|cloud_rain.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\cloud_rain.png" SelfReg="false" NextFile="precipitation_forcast.json"/>
+    <ROW File="commad.png" Component_="pd.nfo" FileName="commad.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\commad.png" SelfReg="false" NextFile="copydisk.png"/>
+    <ROW File="commertial.png" Component_="pd.nfo" FileName="COMMER~1.PNG|commertial.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\commertial.png" SelfReg="false" NextFile="industrial.png"/>
+    <ROW File="constituent.png" Component_="pd.nfo" FileName="CONSTI~1.PNG|constituent.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\constituent.png" SelfReg="false" NextFile="vnotchweir.png"/>
+    <ROW File="control_valve.png" Component_="pd.nfo" FileName="CONTRO~1.PNG|control_valve.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\control_valve.png" SelfReg="false" NextFile="bed_sediment_2_fixed_head.png"/>
+    <ROW File="copy.png" Component_="pd.nfo" FileName="copy.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\copy.png" SelfReg="false" NextFile="cuticon.png"/>
+    <ROW File="copydisk.png" Component_="pd.nfo" FileName="COPY-D~1.PNG|copy-disk.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\copy-disk.png" SelfReg="false" NextFile="copy.png"/>
+    <ROW File="cuticon.png" Component_="pd.nfo" FileName="cut-icon.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\cut-icon.png" SelfReg="false" NextFile="Darcy.png"/>
+    <ROW File="darcy_connector.png" Component_="pd.nfo" FileName="DARCY_~1.PNG|darcy_connector.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\darcy_connector.png" SelfReg="false" NextFile="immobile_constituent_reactor.png"/>
+    <ROW File="dcatchmentcatchmentlink.png" Component_="pd.nfo" FileName="DCATCH~2.PNG|dcatchment-catchment-link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\dcatchment-catchment-link.png" SelfReg="false" NextFile="rainfall_runoff.json"/>
+    <ROW File="dcatchmentfixedheadlink.png" Component_="pd.nfo" FileName="DCATCH~1.PNG|dcatchment-fixedhead-link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\dcatchment-fixedhead-link.png" SelfReg="false" NextFile="Evapotranspiration_Aerodynamic.png"/>
+    <ROW File="dcatchmentstreamlink.png" Component_="pd.nfo" FileName="DCATCH~3.PNG|dcatchment-stream-link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\dcatchment-stream-link.png" SelfReg="false" NextFile="Qt5Svg.dll"/>
+    <ROW File="default_templates.list" Component_="Rhistory" FileName="DEFAUL~1.LIS|default_templates.list" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\default_templates.list" SelfReg="false" NextFile="rainfall_runoff_template.png"/>
+    <ROW File="deletebig.png" Component_="pd.nfo" FileName="DELETE~1.PNG|delete-big.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\delete-big.png" SelfReg="false" NextFile="DocumentBlankicon.png"/>
+    <ROW File="desalination_plant.png" Component_="pd.nfo" FileName="DESALI~1.PNG|desalination_plant.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\desalination_plant.png" SelfReg="false" NextFile="city.png"/>
+    <ROW File="desorption.png" Component_="pd.nfo" FileName="DESORP~1.PNG|desorption.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\desorption.png" SelfReg="false" NextFile="sorbed_constituent.png"/>
+    <ROW File="drain_pipe.png" Component_="pd.nfo" FileName="DRAIN_~1.PNG|drain_pipe.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\drain_pipe.png" SelfReg="false" NextFile="evapotranspiration_models.json"/>
+    <ROW File="drawconnector.png" Component_="pd.nfo" FileName="DRAW-C~1.PNG|draw-connector.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\draw-connector.png" SelfReg="false" NextFile="editpropertyxxl.png"/>
+    <ROW File="editpropertyxxl.png" Component_="pd.nfo" FileName="EDIT-P~1.PNG|edit-property-xxl.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\edit-property-xxl.png" SelfReg="false" NextFile="Experimentcopy.png"/>
+    <ROW File="evaporation_template.png" Component_="pd.nfo" FileName="EVAPOR~1.PNG|evaporation_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\evaporation_template.png" SelfReg="false" NextFile="dcatchmentstreamlink.png"/>
+    <ROW File="evapotranspiration_models.json" Component_="Rhistory" FileName="EVAPOT~1.JSO|evapotranspiration_models.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\evapotranspiration_models.json" SelfReg="false" NextFile="soil_evapotranspiration_models.json"/>
+    <ROW File="experiment1.ico" Component_="pd.nfo" FileName="EXPERI~1.ICO|experiment1.ico" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\experiment1.ico" SelfReg="false" NextFile="experiment1.png"/>
+    <ROW File="experiment1.png" Component_="pd.nfo" FileName="EXPERI~2.PNG|experiment1.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\experiment1.png" SelfReg="false" NextFile="experiment2.ico"/>
+    <ROW File="experiment2.ico" Component_="pd.nfo" FileName="EXPERI~2.ICO|experiment2.ico" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\experiment2.ico" SelfReg="false" NextFile="experiment2.png"/>
+    <ROW File="experiment2.png" Component_="pd.nfo" FileName="EXPERI~3.PNG|experiment2.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\experiment2.png" SelfReg="false" NextFile="farm.png"/>
+    <ROW File="export.png" Component_="pd.nfo" FileName="export.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\export.png" SelfReg="false" NextFile="Qt5Charts.dll"/>
+    <ROW File="farm.png" Component_="pd.nfo" FileName="farm.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\farm.png" SelfReg="false" NextFile="farm_link.png"/>
+    <ROW File="farm_link.png" Component_="pd.nfo" FileName="FARM_L~1.PNG|farm_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\farm_link.png" SelfReg="false" NextFile="Full_screen_view.png"/>
+    <ROW File="fixed2channel.png" Component_="pd.nfo" FileName="FIXED2~1.PNG|fixed2channel.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\fixed2channel.png" SelfReg="false" NextFile="channel2fixed.png"/>
+    <ROW File="fixed_flow.png" Component_="pd.nfo" FileName="FIXED_~1.PNG|fixed_flow.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\fixed_flow.png" SelfReg="false" NextFile="mass_transfer.json"/>
+    <ROW File="fixed_hydro_gradient.png" Component_="pd.nfo" FileName="FIXED_~2.PNG|fixed_hydro_gradient.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\fixed_hydro_gradient.png" SelfReg="false" NextFile="soil2sewer.png"/>
+    <ROW File="fixedhead.png" Component_="pd.nfo" FileName="FIXEDH~1.PNG|fixedhead.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\fixedhead.png" SelfReg="false" NextFile="open_channel.json"/>
+    <ROW File="fixedhead_timeseries.png" Component_="pd.nfo" FileName="FIXEDH~2.PNG|fixedhead_timeseries.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\fixedhead_timeseries.png" SelfReg="false" NextFile="junction_rigid.png"/>
+    <ROW File="flow_arrow.png" Component_="pd.nfo" FileName="FLOW_A~1.PNG|flow_arrow.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\flow_arrow.png" SelfReg="false" NextFile="rainwatercatchment.png"/>
+    <ROW File="full_screen_zoomicon.gif" Component_="pd.nfo" FileName="FULL_S~1.GIF|full_screen_zoom-icon.gif" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\full_screen_zoom-icon.gif" SelfReg="false" NextFile="gear_run.png"/>
+    <ROW File="gear_run.png" Component_="pd.nfo" FileName="gear_run.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\gear_run.png" SelfReg="false" NextFile="generatescript.png"/>
+    <ROW File="generatescript.png" Component_="pd.nfo" FileName="GENERA~1.PNG|generate script.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\generate script.png" SelfReg="false" NextFile="GIFMod.ico"/>
+    <ROW File="groundwater.json" Component_="Rhistory" FileName="GROUND~1.JSO|groundwater.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\groundwater.json" SelfReg="false" NextFile="reaction.png"/>
+    <ROW File="groundwater_template.png" Component_="pd.nfo" FileName="GROUND~3.PNG|groundwater_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\groundwater_template.png" SelfReg="false" NextFile="open_channel_template.png"/>
+    <ROW File="gsl.dll" Component_="gsl.dll" FileName="gsl.dll" Attributes="0" SourcePath="E:\Projects\QAquifolium\libs\gsl\gsl.dll" SelfReg="false" NextFile="gslcblas.dll"/>
+    <ROW File="gslcblas.dll" Component_="gslcblas.dll" FileName="gslcblas.dll" Attributes="0" SourcePath="E:\Projects\QAquifolium\libs\gsl\gslcblas.dll" SelfReg="false" NextFile="surface_release2.png"/>
+    <ROW File="gw_2_fixed_head.png" Component_="pd.nfo" FileName="GW_2_F~1.PNG|gw_2_fixed_head.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\gw_2_fixed_head.png" SelfReg="false" NextFile="inverserun.png"/>
+    <ROW File="iconoutlinehandpalmcartoontoolpanfree.png" Component_="pd.nfo" FileName="ICON-O~1.PNG|icon-outline-hand-palm-cartoon-tool-pan-free.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\icon-outline-hand-palm-cartoon-tool-pan-free.png" SelfReg="false" NextFile="isometric_sand_block_icon__hd__by_memoryleakxxxd8e3mwa.png"/>
+    <ROW File="immobile_constituent.png" Component_="pd.nfo" FileName="IMMOBI~1.PNG|immobile_constituent.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\immobile_constituent.png" SelfReg="false" NextFile="surface_release.png"/>
+    <ROW File="immobile_constituent_reactor.png" Component_="pd.nfo" FileName="IMMOBI~2.PNG|immobile_constituent_reactor.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\immobile_constituent_reactor.png" SelfReg="false" NextFile="Wastewater_flow.png"/>
+    <ROW File="industrial.png" Component_="pd.nfo" FileName="INDUST~1.PNG|industrial.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\industrial.png" SelfReg="false" NextFile="agriculture.png"/>
+    <ROW File="inverserun.png" Component_="pd.nfo" FileName="INVERS~1.PNG|inverserun.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\inverserun.png" SelfReg="false" NextFile="observation.png"/>
+    <ROW File="isometric_sand_block_icon__hd__by_memoryleakxxxd8e3mwa.png" Component_="pd.nfo" FileName="ISOMET~1.PNG|isometric_sand_block_icon__hd__by_memoryleakxxx-d8e3mwa.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\isometric_sand_block_icon__hd__by_memoryleakxxx-d8e3mwa.png" SelfReg="false" NextFile="log_icon.png"/>
+    <ROW File="junction.png" Component_="pd.nfo" FileName="junction.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\junction.png" SelfReg="false" NextFile="pipe.png"/>
+    <ROW File="junction_rigid.png" Component_="pd.nfo" FileName="JUNCTI~1.PNG|junction_rigid.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\junction_rigid.png" SelfReg="false" NextFile="desalination_plant.png"/>
+    <ROW File="kivio_connector.svg.hi.png" Component_="pd.nfo" FileName="119499~1.PNG|1194994606310980771kivio_connector.svg.hi.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\1194994606310980771kivio_connector.svg.hi.png" SelfReg="false" NextFile="_newfile.png"/>
+    <ROW File="lapack_win64_MT.dll" Component_="lapack_win64_MT.dll" FileName="LAPACK~1.DLL|lapack_win64_MT.dll" Attributes="0" SourcePath="E:\Projects\QAquifolium\libs\lapack-blas_lib_win64\lapack_win64_MT.dll" SelfReg="false" NextFile="Qt5Core.dll"/>
+    <ROW File="log_icon.png" Component_="pd.nfo" FileName="log_icon.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\log_icon.png" SelfReg="false" NextFile="objective.png"/>
+    <ROW File="main_components.json" Component_="Rhistory" FileName="MAIN_C~1.JSO|main_components.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\main_components.json" SelfReg="false" NextFile="unsaturated_soil.json"/>
+    <ROW File="mass_transfer.json" Component_="Rhistory" FileName="MASS_T~1.JSO|mass_transfer.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\mass_transfer.json" SelfReg="false" NextFile="aquifer_recharge.png"/>
+    <ROW File="mass_transfer_template.png" Component_="pd.nfo" FileName="MASS_T~1.PNG|mass_transfer_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\mass_transfer_template.png" SelfReg="false" NextFile="reactor.png"/>
+    <ROW File="objective.png" Component_="pd.nfo" FileName="OBJECT~1.PNG|objective.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\objective.png" SelfReg="false" NextFile="open.ico"/>
+    <ROW File="observation.png" Component_="pd.nfo" FileName="OBSERV~1.PNG|observation.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\observation.png" SelfReg="false" NextFile="drain_pipe.png"/>
+    <ROW File="open.ico" Component_="pd.nfo" FileName="open.ico" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\open.ico" SelfReg="false" NextFile="open.png"/>
+    <ROW File="open.png" Component_="pd.nfo" FileName="open.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\open.png" SelfReg="false" NextFile="optimize.png"/>
+    <ROW File="open_channel.json" Component_="Rhistory" FileName="OPEN_C~1.JSO|open_channel.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\open_channel.json" SelfReg="false" NextFile="pipe_pump_tank.json"/>
+    <ROW File="open_channel_template.png" Component_="pd.nfo" FileName="OPEN_C~1.PNG|open_channel_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\open_channel_template.png" SelfReg="false" NextFile="pipe_pump_template.png"/>
+    <ROW File="optimize.png" Component_="pd.nfo" FileName="optimize.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\optimize.png" SelfReg="false" NextFile="oscilloscope.png"/>
+    <ROW File="oscilloscope.png" Component_="pd.nfo" FileName="OSCILL~1.PNG|oscilloscope.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\oscilloscope.png" SelfReg="false" NextFile="panicon.gif"/>
+    <ROW File="pan2.png" Component_="pd.nfo" FileName="pan2.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\pan2.png" SelfReg="false" NextFile="parameter.png"/>
+    <ROW File="panicon.gif" Component_="pd.nfo" FileName="pan-icon.gif" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\pan-icon.gif" SelfReg="false" NextFile="pan2.png"/>
+    <ROW File="parameter.png" Component_="pd.nfo" FileName="PARAME~1.PNG|parameter.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\parameter.png" SelfReg="false" NextFile="Paste.png"/>
+    <ROW File="pipe.png" Component_="pd.nfo" FileName="pipe.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\pipe.png" SelfReg="false" NextFile="watertank.png"/>
+    <ROW File="pipe_1w.png" Component_="pd.nfo" FileName="pipe_1w.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\pipe_1w.png" SelfReg="false" NextFile="Catchment_outlet.png"/>
+    <ROW File="pipe_pump_tank.json" Component_="Rhistory" FileName="PIPE_P~1.JSO|pipe_pump_tank.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\pipe_pump_tank.json" SelfReg="false" NextFile="junction.png"/>
+    <ROW File="pipe_pump_template.png" Component_="pd.nfo" FileName="PIPE_P~1.PNG|pipe_pump_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\pipe_pump_template.png" SelfReg="false" NextFile="evaporation_template.png"/>
+    <ROW File="plant.png" Component_="pd.nfo" FileName="plant.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\plant.png" SelfReg="false" NextFile="png_pond_by_paradise234d5g6gky.png"/>
+    <ROW File="plant_template.png" Component_="pd.nfo" FileName="PLANT_~1.PNG|plant_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\plant_template.png" SelfReg="false" NextFile="OHQTerminal.exe"/>
+    <ROW File="png" Component_="pd.nfo" FileName="37.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\37.png" SelfReg="false" NextFile="Aquifolium.png"/>
+    <ROW File="png_pond_by_paradise234d5g6gky.png" Component_="pd.nfo" FileName="PNG_PO~1.PNG|png_pond_by_paradise234-d5g6gky.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\png_pond_by_paradise234-d5g6gky.png" SelfReg="false" NextFile="Pondicon.png"/>
+    <ROW File="pond_template.png" Component_="pd.nfo" FileName="POND_T~1.PNG|pond_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\pond_template.png" SelfReg="false" NextFile="groundwater_template.png"/>
+    <ROW File="pondwallmural.gif" Component_="pd.nfo" FileName="POND-W~1.GIF|pond-wall-mural.gif" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\pond-wall-mural.gif" SelfReg="false" NextFile="Pond.png"/>
+    <ROW File="precipitation_forcast.json" Component_="Rhistory" FileName="PRECIP~1.JSO|precipitation_forcast.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\precipitation_forcast.json" SelfReg="false" NextFile="control_valve.png"/>
+    <ROW File="public.png" Component_="pd.nfo" FileName="public.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\public.png" SelfReg="false" NextFile="Sewer_system_template.png"/>
+    <ROW File="pump.png" Component_="pd.nfo" FileName="pump.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\pump.png" SelfReg="false" NextFile="stormwaterpond.png"/>
+    <ROW File="pump_with_time_series_control.png" Component_="pd.nfo" FileName="PUMP_W~1.PNG|pump_with_time_series_control.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\pump_with_time_series_control.png" SelfReg="false" NextFile="fixedhead_timeseries.png"/>
+    <ROW File="qwindows.dll" Component_="qwindows.dll" FileName="qwindows.dll" Attributes="0" SourcePath="..\..\..\..\..\..\Qt\5.15.1\msvc2019_64\plugins\platforms\qwindows.dll" SelfReg="false" NextFile="cloud.png"/>
+    <ROW File="rainfall_runoff.json" Component_="Rhistory" FileName="RAINFA~1.JSO|rainfall_runoff.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\rainfall_runoff.json" SelfReg="false" NextFile="default_templates.list"/>
+    <ROW File="rainfall_runoff_template.png" Component_="pd.nfo" FileName="RAINFA~1.PNG|rainfall_runoff_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\rainfall_runoff_template.png" SelfReg="false" NextFile="soil_evaporation_template.png"/>
+    <ROW File="rainwatercatchment.png" Component_="pd.nfo" FileName="RAINWA~1.PNG|rainwater-catchment.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\rainwater-catchment.png" SelfReg="false" NextFile="Reservoid_Control.png"/>
+    <ROW File="reaction.png" Component_="pd.nfo" FileName="reaction.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\reaction.png" SelfReg="false" NextFile="reactionparameter.png"/>
+    <ROW File="reactionparameter.png" Component_="pd.nfo" FileName="REACTI~1.PNG|reactionparameter.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\reactionparameter.png" SelfReg="false" NextFile="soil2GW_link.png"/>
+    <ROW File="reactor.png" Component_="pd.nfo" FileName="reactor.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\reactor.png" SelfReg="false" NextFile="Chemical_Source_exchange.png"/>
+    <ROW File="release.png" Component_="pd.nfo" FileName="release.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\release.png" SelfReg="false" NextFile="buildup_washoff.json"/>
+    <ROW File="reservoir.png" Component_="pd.nfo" FileName="RESERV~1.PNG|reservoir.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\reservoir.png" SelfReg="false" NextFile="reservoir_link.png"/>
+    <ROW File="reservoir_link.png" Component_="pd.nfo" FileName="RESERV~2.PNG|reservoir_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\reservoir_link.png" SelfReg="false" NextFile="runmodel.png"/>
+    <ROW File="residential.png" Component_="pd.nfo" FileName="RESIDE~1.PNG|residential.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\residential.png" SelfReg="false" NextFile="arrow_to_user.png"/>
+    <ROW File="river_processes.json" Component_="Rhistory" FileName="RIVER_~1.JSO|river_processes.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\river_processes.json" SelfReg="false" NextFile="Stormwater_control_measures.json"/>
+    <ROW File="runScript.png" Component_="pd.nfo" FileName="RUNSCR~1.PNG|runScript.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\runScript.png" SelfReg="false" NextFile="runtime.pdn"/>
+    <ROW File="runmodel.png" Component_="pd.nfo" FileName="runmodel.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\runmodel.png" SelfReg="false" NextFile="runScript.png"/>
+    <ROW File="runtime.pdn" Component_="pd.nfo" FileName="runtime.pdn" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\runtime.pdn" SelfReg="false" NextFile="runtime.png"/>
+    <ROW File="runtime.png" Component_="pd.nfo" FileName="runtime.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\runtime.png" SelfReg="false" NextFile="Save.png"/>
+    <ROW File="sedimentation_tank_element.png" Component_="pd.nfo" FileName="SEDIME~1.PNG|sedimentation_tank_element.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\sedimentation_tank_element.png" SelfReg="false" NextFile="sedimentation_tank_link.png"/>
+    <ROW File="sedimentation_tank_link.png" Component_="pd.nfo" FileName="SEDIME~2.PNG|sedimentation_tank_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\sedimentation_tank_link.png" SelfReg="false" NextFile="valve.png"/>
+    <ROW File="settings.json" Component_="Rhistory" FileName="SETTIN~1.JSO|settings.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\settings.json" SelfReg="false" NextFile="blas_win64_MT.dll"/>
+    <ROW File="sewer2fixedhead_link.png" Component_="pd.nfo" FileName="SEWER2~1.PNG|sewer2fixedhead_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\sewer2fixedhead_link.png" SelfReg="false" NextFile="sewer2sewer_link.png"/>
+    <ROW File="sewer2pond_link.png" Component_="pd.nfo" FileName="SEWER2~3.PNG|sewer2pond_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\sewer2pond_link.png" SelfReg="false" NextFile="Surface_Chemical_Source_exchange.png"/>
+    <ROW File="sewer2sewer_link.png" Component_="pd.nfo" FileName="SEWER2~2.PNG|sewer2sewer_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\sewer2sewer_link.png" SelfReg="false" NextFile="MCMC.png"/>
+    <ROW File="sheet_flow.png" Component_="pd.nfo" FileName="SHEET_~1.PNG|sheet_flow.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\sheet_flow.png" SelfReg="false" NextFile="sheet_flow_link.png"/>
+    <ROW File="sheet_flow_link.png" Component_="pd.nfo" FileName="SHEET_~2.PNG|sheet_flow_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\sheet_flow_link.png" SelfReg="false" NextFile="soil2soilH_KS.png"/>
+    <ROW File="soil2GW_link.png" Component_="pd.nfo" FileName="SOIL2G~1.PNG|soil2GW_link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil2GW_link.png" SelfReg="false" NextFile="wide_channel.png"/>
+    <ROW File="soil2aggregate.png" Component_="pd.nfo" FileName="SOIL2A~1.PNG|soil2aggregate.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil2aggregate.png" SelfReg="false" NextFile="River_Template.png"/>
+    <ROW File="soil2fixedhead.png" Component_="pd.nfo" FileName="SOIL2F~1.PNG|soil2fixedhead.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil2fixedhead.png" SelfReg="false" NextFile="fixedhead.png"/>
+    <ROW File="soil2fixedhead_KS.png" Component_="pd.nfo" FileName="SOIL2F~2.PNG|soil2fixedhead_KS.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil2fixedhead_KS.png" SelfReg="false" NextFile="soilfreeflow.png"/>
+    <ROW File="soil2fixedheadh.png" Component_="pd.nfo" FileName="SOIL2F~3.PNG|soil2fixedhead-h.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil2fixedhead-h.png" SelfReg="false" NextFile="soil2fixedheadv.png"/>
+    <ROW File="soil2fixedheadv.png" Component_="pd.nfo" FileName="SOIL2F~4.PNG|soil2fixedhead-v.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil2fixedhead-v.png" SelfReg="false" NextFile="surface2soil2.png"/>
+    <ROW File="soil2sewer.png" Component_="pd.nfo" FileName="SOIL2S~3.PNG|soil2sewer.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil2sewer.png" SelfReg="false" NextFile="soil_evapotranspiration_models_v2.json"/>
+    <ROW File="soil2soilH.png" Component_="pd.nfo" FileName="SOIL2S~2.PNG|soil2soilH.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil2soilH.png" SelfReg="false" NextFile="pump_with_time_series_control.png"/>
+    <ROW File="soil2soilH_KS.png" Component_="pd.nfo" FileName="SOIL2S~4.PNG|soil2soilH_KS.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil2soilH_KS.png" SelfReg="false" NextFile="Soil2Soil_KS.png"/>
+    <ROW File="soil_evaporation_template.png" Component_="pd.nfo" FileName="SOIL_E~1.PNG|soil_evaporation_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil_evaporation_template.png" SelfReg="false" NextFile="soil_template.png"/>
+    <ROW File="soil_evapotranspiration_models.json" Component_="Rhistory" FileName="SOIL_E~1.JSO|soil_evapotranspiration_models.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\soil_evapotranspiration_models.json" SelfReg="false" NextFile="Evapotranspiration_timeseries.png"/>
+    <ROW File="soil_evapotranspiration_models_v2.json" Component_="Rhistory" FileName="SOIL_E~2.JSO|soil_evapotranspiration_models_v2.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\soil_evapotranspiration_models_v2.json" SelfReg="false" NextFile="desorption.png"/>
+    <ROW File="soil_grid.png" Component_="bioswale.png" FileName="SOIL_G~1.PNG|soil_grid.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Wizard_Scripts\Wizard_Icons\soil_grid.png" SelfReg="false" NextFile="ModelWizard.exe"/>
+    <ROW File="soil_template.png" Component_="pd.nfo" FileName="SOIL_T~1.PNG|soil_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soil_template.png" SelfReg="false" NextFile="pond_template.png"/>
+    <ROW File="soilfreeflow.png" Component_="pd.nfo" FileName="SOILFR~1.PNG|soilfreeflow.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\soilfreeflow.png" SelfReg="false" NextFile="D_Soil.json"/>
+    <ROW File="sorbed_constituent.png" Component_="pd.nfo" FileName="SORBED~1.PNG|sorbed_constituent.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\sorbed_constituent.png" SelfReg="false" NextFile="sheet_flow.png"/>
+    <ROW File="stormwaterpond.png" Component_="pd.nfo" FileName="STORMW~1.PNG|stormwaterpond.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\stormwaterpond.png" SelfReg="false" NextFile="constituent.png"/>
+    <ROW File="stream.ico" Component_="pd.nfo" FileName="stream.ico" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\stream.ico" SelfReg="false" NextFile="Stream.png"/>
+    <ROW File="surface2aggregate.png" Component_="pd.nfo" FileName="SURFAC~6.PNG|surface2aggregate.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\surface2aggregate.png" SelfReg="false" NextFile="Well_aggregate.png"/>
+    <ROW File="surface2soil.png" Component_="pd.nfo" FileName="SURFAC~1.PNG|surface2soil.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\surface2soil.png" SelfReg="false" NextFile="Groundwater_link.png"/>
+    <ROW File="surface2soil2.png" Component_="pd.nfo" FileName="SURFAC~9.PNG|surface2soil2.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\surface2soil2.png" SelfReg="false" NextFile="timedependentreactionparameter.png"/>
+    <ROW File="surface2well.png" Component_="pd.nfo" FileName="SURFAC~3.PNG|surface2well.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\surface2well.png" SelfReg="false" NextFile="Well.json"/>
+    <ROW File="surface_release.png" Component_="pd.nfo" FileName="SURFAC~4.PNG|surface_release.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\surface_release.png" SelfReg="false" NextFile="release.png"/>
+    <ROW File="surface_release2.png" Component_="pd.nfo" FileName="SURFAC~7.PNG|surface_release2.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\surface_release2.png" SelfReg="false" NextFile="surface_release3.png"/>
+    <ROW File="surface_release3.png" Component_="pd.nfo" FileName="SURFAC~8.PNG|surface_release3.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\surface_release3.png" SelfReg="false" NextFile="soil2fixedheadh.png"/>
+    <ROW File="suspended_sediments.png" Component_="pd.nfo" FileName="SUSPEN~1.PNG|suspended_sediments.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\suspended_sediments.png" SelfReg="false" NextFile="aggregates.png"/>
+    <ROW File="timedependent_flow.png" Component_="pd.nfo" FileName="TIMEDE~1.PNG|timedependent_flow.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\timedependent_flow.png" SelfReg="false" NextFile="Settling_element_link_time_variable.png"/>
+    <ROW File="timedependentreactionparameter.png" Component_="pd.nfo" FileName="TIMEDE~2.PNG|timedependentreactionparameter.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\timedependentreactionparameter.png" SelfReg="false" NextFile="timedependentreactionparameterglobal.png"/>
+    <ROW File="timedependentreactionparameterglobal.png" Component_="pd.nfo" FileName="TIMEDE~3.PNG|timedependentreactionparameterglobal.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\timedependentreactionparameterglobal.png" SelfReg="false" NextFile="build_up_sat.png"/>
+    <ROW File="tracer.png" Component_="pd.nfo" FileName="tracer.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\tracer.png" SelfReg="false" NextFile="Twitter_Icon.png"/>
+    <ROW File="unconfined_GW2fixedhead.png" Component_="pd.nfo" FileName="UNCONF~5.PNG|unconfined_GW2fixedhead.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\unconfined_GW2fixedhead.png" SelfReg="false" NextFile="water_supply_well.png"/>
+    <ROW File="unconfined_GW2unconfined_GW.png" Component_="pd.nfo" FileName="UNCONF~1.PNG|unconfined_GW2unconfined_GW.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\unconfined_GW2unconfined_GW.png" SelfReg="false" NextFile="unconfined_aquifer2well.png"/>
+    <ROW File="unconfined_aquifer.png" Component_="pd.nfo" FileName="UNCONF~6.PNG|unconfined_aquifer.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\unconfined_aquifer.png" SelfReg="false" NextFile="unconfined_groundwater.json"/>
+    <ROW File="unconfined_aquifer2well.png" Component_="pd.nfo" FileName="UNCONF~2.PNG|unconfined_aquifer2well.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\unconfined_aquifer2well.png" SelfReg="false" NextFile="unconfined_aquifer2well.png.png"/>
+    <ROW File="unconfined_aquifer2well.png.png" Component_="pd.nfo" FileName="UNCONF~3.PNG|unconfined_aquifer2well.png.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\unconfined_aquifer2well.png.png" SelfReg="false" NextFile="unconfined_groundwater_template.png"/>
+    <ROW File="unconfined_groundwater.json" Component_="Rhistory" FileName="UNCONF~1.JSO|unconfined_groundwater.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\unconfined_groundwater.json" SelfReg="false" NextFile="arrow_cursor.png"/>
+    <ROW File="unconfined_groundwater_template.png" Component_="pd.nfo" FileName="UNCONF~4.PNG|unconfined_groundwater_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\unconfined_groundwater_template.png" SelfReg="false" NextFile="unconfined_GW2fixedhead.png"/>
+    <ROW File="undo.png" Component_="pd.nfo" FileName="undo.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\undo.png" SelfReg="false" NextFile="well.png"/>
+    <ROW File="unsaturated_soil.json" Component_="Rhistory" FileName="UNSATU~1.JSO|unsaturated_soil.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\unsaturated_soil.json" SelfReg="false" NextFile="updater.exe"/>
+    <ROW File="unsaturated_soil_links_w_Ks.json" Component_="Rhistory" FileName="UNSATU~2.JSO|unsaturated_soil_links_w_Ks.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\unsaturated_soil_links_w_Ks.json" SelfReg="false" NextFile="soil2fixedhead_KS.png"/>
+    <ROW File="updater.exe" Component_="updater.exe" FileName="updater.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="&lt;AI_STUBS&gt;updater.exe" SelfReg="false" NextFile="fixed2channel.png" DigSign="true"/>
+    <ROW File="urban_water_management.json" Component_="Rhistory" FileName="URBAN_~1.JSO|urban_water_management.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\urban_water_management.json" SelfReg="false" NextFile="unconfined_GW2unconfined_GW.png"/>
+    <ROW File="valve.png" Component_="pd.nfo" FileName="valve.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\valve.png" SelfReg="false" NextFile="fixed_hydro_gradient.png"/>
+    <ROW File="vnotchweir.png" Component_="pd.nfo" FileName="VNOTCH~1.PNG|vnotchweir.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\vnotchweir.png" SelfReg="false" NextFile="Pond_Plugin.json"/>
+    <ROW File="wastewater.json" Component_="Rhistory" FileName="WASTEW~1.JSO|wastewater.json" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\wastewater.json" SelfReg="false" NextFile="wastewater_template.png"/>
+    <ROW File="wastewater_template.png" Component_="pd.nfo" FileName="WASTEW~1.PNG|wastewater_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\wastewater_template.png" SelfReg="false" NextFile="activate_sludge_reactor.png"/>
+    <ROW File="water_supply_well.png" Component_="pd.nfo" FileName="WATER_~2.PNG|water_supply_well.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\water_supply_well.png" SelfReg="false" NextFile="unconfined_aquifer.png"/>
+    <ROW File="watertank.png" Component_="pd.nfo" FileName="WATERT~1.PNG|watertank.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\watertank.png" SelfReg="false" NextFile="pump.png"/>
+    <ROW File="well.png" Component_="pd.nfo" FileName="well.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\well.png" SelfReg="false" NextFile="wizardblue.png"/>
+    <ROW File="well_template.png" Component_="pd.nfo" FileName="WELL_T~1.PNG|well_template.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\well_template.png" SelfReg="false" NextFile="welltosoilHlink.png"/>
+    <ROW File="welltosoilHlink.png" Component_="pd.nfo" FileName="WELL-T~1.PNG|well-to-soil-H-link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\well-to-soil-H-link.png" SelfReg="false" NextFile="welltosoilVlink.png"/>
+    <ROW File="welltosoilVlink.png" Component_="pd.nfo" FileName="WELL-T~2.PNG|well-to-soil-V-link.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\well-to-soil-V-link.png" SelfReg="false" NextFile="surface2well.png"/>
+    <ROW File="wide_channel.png" Component_="pd.nfo" FileName="WIDE_C~1.PNG|wide_channel.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\wide_channel.png" SelfReg="false" NextFile="gw_2_fixed_head.png"/>
+    <ROW File="wizardblue.png" Component_="pd.nfo" FileName="WIZARD~1.PNG|wizard blue.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\wizard blue.png" SelfReg="false" NextFile="wizardgreen.png"/>
+    <ROW File="wizardgreen.png" Component_="pd.nfo" FileName="WIZARD~2.PNG|wizard green.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\wizard green.png" SelfReg="false" NextFile="wizardorange.png"/>
+    <ROW File="wizardorange.png" Component_="pd.nfo" FileName="WIZARD~3.PNG|wizard orange.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\wizard orange.png" SelfReg="false" NextFile="zoom_in.png"/>
+    <ROW File="zoom_in.png" Component_="pd.nfo" FileName="zoom_in.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\zoom_in.png" SelfReg="false" NextFile="zoom_out.png"/>
+    <ROW File="zoom_out.png" Component_="pd.nfo" FileName="zoom_out.png" Attributes="0" SourcePath="E:\Projects\QAquifolium\resources\Icons\zoom_out.png" SelfReg="false" NextFile="settings.json"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.custcomp.MsiEmbeddedUIComponent">
+    <ROW MsiEmbeddedUI="embeddeduiproxy" FileName="embeddeduiproxy.dll" Attributes="3" MessageFilter="201359327" Data="&lt;AI_HOME&gt;bin\x86\embeddeduiproxy.dll"/>
+    <ROW MsiEmbeddedUI="InstallerAnalytics" FileName="InstallerAnalytics.dll" Attributes="0" Data="&lt;AI_TEMPLATES&gt;PlaceHolder.dat"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.AiPersistentPropComponent">
+    <ROW Property="AI_IA_ENABLE" Registry="AI_IA_ENABLE" HklmSearch="AI_IA_ENABLE" HkcuSearch="AI_IA_ENABLE_1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.AiRemoveFileComponent">
+    <ROW RemoveFile="_" Condition="(AI_CLEAN_RESOURCES_UNINSTALL = &quot;1&quot;) AND (NOT UPGRADINGPRODUCTCODE)" Options="3"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.BootstrOptComponent">
+    <ROW BootstrOptKey="GlobalOptions" DownloadFolder="[AppDataFolder]\[|ProductName]\prerequisites" Options="6" UpdatesUrl="http://www.example.com/download/updates.txt"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.BootstrapperUISequenceComponent">
+    <ROW Action="AI_DetectSoftware" Sequence="101"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
+    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="0" PackageFolder="..\..\..\..\Dropbox\Aquifolium" PackageFileName="OpenHydroQual" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="E:\Projects\QAquifolium\resources\Icons\Aquifolium_Windows_multi.ico" ExtUI="true" UseLargeSchema="true"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.DictionaryComponent">
+    <ROW Path="&lt;AI_DICTS&gt;ui.ail"/>
+    <ROW Path="&lt;AI_DICTS&gt;ui_en.ail"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
+    <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
+    <ROW Fragment="InstallDlg.aip" Path="&lt;AI_THEMES&gt;surface\fragments\InstallDlg.aip"/>
+    <ROW Fragment="LicenseAgreementDlg.aip" Path="&lt;AI_THEMES&gt;surface\fragments\LicenseAgreementDlg.aip"/>
+    <ROW Fragment="MaintenanceTypeDlg.aip" Path="&lt;AI_THEMES&gt;surface\fragments\MaintenanceTypeDlg.aip"/>
+    <ROW Fragment="PreparePrereqDlg.aip" Path="&lt;AI_THEMES&gt;surface\fragments\PreparePrereqDlg.aip"/>
+    <ROW Fragment="PrerequisitesDlg.aip" Path="&lt;AI_THEMES&gt;surface\fragments\PrerequisitesDlg.aip"/>
+    <ROW Fragment="ProgressPrereqDlg.aip" Path="&lt;AI_THEMES&gt;surface\fragments\ProgressPrereqDlg.aip"/>
+    <ROW Fragment="SequenceDialogs.aip" Path="&lt;AI_THEMES&gt;surface\fragments\SequenceDialogs.aip"/>
+    <ROW Fragment="Sequences.aip" Path="&lt;AI_FRAGS&gt;Sequences.aip"/>
+    <ROW Fragment="StaticUIStrings.aip" Path="&lt;AI_FRAGS&gt;StaticUIStrings.aip"/>
+    <ROW Fragment="UI.aip" Path="&lt;AI_THEMES&gt;surface\fragments\UI.aip"/>
+    <ROW Fragment="Validation.aip" Path="&lt;AI_FRAGS&gt;Validation.aip"/>
+    <ROW Fragment="VerifyRemoveDlg.aip" Path="&lt;AI_THEMES&gt;surface\fragments\VerifyRemoveDlg.aip"/>
+    <ROW Fragment="VerifyRepairDlg.aip" Path="&lt;AI_THEMES&gt;surface\fragments\VerifyRepairDlg.aip"/>
+    <ROW Fragment="WelcomePrereqDlg.aip" Path="&lt;AI_THEMES&gt;surface\fragments\WelcomePrereqDlg.aip"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiActionTextComponent">
+    <ROW Action="AI_AiRemoveFilesCommit" Description="Executing file removal operations" DescriptionLocId="ActionText.Description.AI_AiRemoveFilesCommit" Template="Executing file removal: [1]" TemplateLocId="ActionText.Template.AI_AiRemoveFilesCommit"/>
+    <ROW Action="AI_AiRemoveFilesDeferred_Permanent" Description="Preparing files for removal" DescriptionLocId="ActionText.Description.AI_AiRemoveFilesDeferred_Permanent" Template="Preparing file: [1]" TemplateLocId="ActionText.Template.AI_AiRemoveFilesDeferred_Permanent"/>
+    <ROW Action="AI_AiRemoveFilesDeferred_Undoable" Description="Preparing files for removal" DescriptionLocId="ActionText.Description.AI_AiRemoveFilesDeferred_Undoable" Template="Preparing file: [1]" TemplateLocId="ActionText.Template.AI_AiRemoveFilesDeferred_Undoable"/>
+    <ROW Action="AI_AiRemoveFilesImmediate" Description="Preparing files for removal" DescriptionLocId="ActionText.Description.AI_AiRemoveFilesImmediate" Template="Preparing file: [1]" TemplateLocId="ActionText.Template.AI_AiRemoveFilesImmediate"/>
+    <ROW Action="AI_AiRemoveFilesRollback" Description="Restoring removed files" DescriptionLocId="ActionText.Description.AI_AiRemoveFilesRollback" Template="Restoring file: [1]" TemplateLocId="ActionText.Template.AI_AiRemoveFilesRollback"/>
+    <ROW Action="AI_DeleteLzma" Description="Deleting files extracted from archive" DescriptionLocId="ActionText.Description.AI_DeleteLzma" TemplateLocId="-"/>
+    <ROW Action="AI_DeleteRLzma" Description="Deleting files extracted from archive" DescriptionLocId="ActionText.Description.AI_DeleteLzma" TemplateLocId="-"/>
+    <ROW Action="AI_ExtractFiles" Description="Extracting files from archive" DescriptionLocId="ActionText.Description.AI_ExtractLzma" TemplateLocId="-"/>
+    <ROW Action="AI_ExtractLzma" Description="Extracting files from archive" DescriptionLocId="ActionText.Description.AI_ExtractLzma" TemplateLocId="-"/>
+    <ROW Action="AI_XmlCommit" Description="Committing XML file configurations." DescriptionLocId="ActionText.Description.AI_XmlCommit" Template="Committing XML file configurations." TemplateLocId="ActionText.Template.AI_XmlCommit"/>
+    <ROW Action="AI_XmlConfig" Description="Executing XML file configurations" DescriptionLocId="ActionText.Description.AI_XmlConfig" Template="Configuring XML file: &quot;[1]&quot;" TemplateLocId="ActionText.Template.AI_XmlConfig"/>
+    <ROW Action="AI_XmlInstall" Description="Generating actions to configure XML files" DescriptionLocId="ActionText.Description.AI_XmlInstall"/>
+    <ROW Action="AI_XmlRemove" Description="Executing XML file configurations" DescriptionLocId="ActionText.Description.AI_XmlRemove" Template="Configuring XML file: &quot;[1]&quot;" TemplateLocId="ActionText.Template.AI_XmlRemove"/>
+    <ROW Action="AI_XmlRollback" Description="Rolling back XML file configurations." DescriptionLocId="ActionText.Description.AI_XmlRollback" Template="Rolling back XML file configurations." TemplateLocId="ActionText.Template.AI_XmlRollback"/>
+    <ROW Action="AI_XmlUninstall" Description="Generating actions to configure XML files" DescriptionLocId="ActionText.Description.AI_XmlUninstall"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiAppSearchComponent">
+    <ROW Property="AI_SETUPEXEPATH" Signature_="AI_EXE_PATH_CU" Builds="DefaultBuild"/>
+    <ROW Property="AI_SETUPEXEPATH" Signature_="AI_EXE_PATH_LM" Builds="DefaultBuild"/>
+    <ROW Property="AI_IA_ENABLE" Signature_="AI_IA_ENABLE"/>
+    <ROW Property="AI_IA_ENABLE" Signature_="AI_IA_ENABLE_1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
+    <ROW Name="Aquifolium.jpg" SourcePath="E:\Projects\QAquifolium\resources\Icons\Aquifolium.jpg"/>
+    <ROW Name="ExternalUICleaner.dll" SourcePath="&lt;AI_CUSTACTS&gt;ExternalUICleaner.dll"/>
+    <ROW Name="InstallerAnalytics.dll" SourcePath="&lt;AI_CUSTACTS&gt;InstallerAnalytics.dll"/>
+    <ROW Name="Prereq.dll" SourcePath="&lt;AI_CUSTACTS&gt;Prereq.dll"/>
+    <ROW Name="ResourceCleaner.dll" SourcePath="&lt;AI_CUSTACTS&gt;ResourceCleaner.dll"/>
+    <ROW Name="SoftwareDetector.dll" SourcePath="&lt;AI_CUSTACTS&gt;SoftwareDetector.dll"/>
+    <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
+    <ROW Name="lzmaextractor.dll" SourcePath="&lt;AI_CUSTACTS&gt;lzmaextractor.dll"/>
+    <ROW Name="xmlCfg.dll" SourcePath="&lt;AI_CUSTACTS&gt;xmlCfg.dll"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCheckBoxComponent">
+    <ROW Property="AI_CLEAN_RESOURCES_UNINSTALL" Value="1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiControlComponent">
+    <ROW Dialog_="CustomizeDlg" Control="CustomizeDlgDialogInitializer" Type="DialogInitializer" X="0" Y="0" Width="0" Height="0" Attributes="0" Order="-1" TextLocId="-" HelpLocId="-" ExtDataLocId="-"/>
+    <ROW Dialog_="MsiRMFilesInUse" Control="Cancel" Type="ImageButton" X="163" Y="359" Width="78" Height="28" Attributes="2" Text="[NextCancelButtons]" TextStyle="[MetroButtonText]" Order="100" MsiKey="MsiRMFilesInUse#Cancel" Options="1" ExtType="ImageButton" ExtData="[ButtonText_Cancel]" ExtDataLocId="-"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control="PatchWelcomeDlgDialogInitializer" Type="DialogInitializer" X="0" Y="0" Width="0" Height="0" Attributes="0" Order="-1" TextLocId="-" HelpLocId="-" ExtDataLocId="-"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control="ProductNameTitle" Type="Text" X="83" Y="21" Width="245" Height="50" Attributes="196611" Text="[ProductName]" TextStyle="[ProductNameForSplash]" Order="600" TextLocId="Metro.Control.Text.ProductName" MsiKey="PatchWelcomeDlg#ProductNameTitle"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control="CompanyText" Type="Text" X="83" Y="16" Width="191" Height="12" Attributes="196611" Text="[Manufacturer]" TextStyle="[ManufacturerFont]" Order="700" TextLocId="Metro.Control.Text.Manufacturer" MsiKey="PatchWelcomeDlg#CompanyText"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control="ProductLogo" Type="Bitmap" X="17" Y="5" Width="59" Height="63" Attributes="1" Text="[AppLogoIcon]" Order="800" MsiKey="PatchWelcomeDlg#ProductLogo"/>
+    <ROW Dialog_="PreparePrereqDlg" Control="ProgressAnimation" Type="Bitmap" X="123" Y="83" Width="113" Height="30" Attributes="1048577" Text="PreparePrereqDlgProgress.gif" Order="800" MsiKey="PreparePrereqDlg#ProgressAnimation"/>
+    <ROW Dialog_="PrerequisitesDlg" Control="Cancel" Type="ImageButton" X="163" Y="359" Width="78" Height="28" Attributes="2" Text="[NextCancelButtons]" TextStyle="[MetroButtonText]" Order="100" MsiKey="PrerequisitesDlg#Cancel" Options="1" ExtType="ImageButton" ExtData="[ButtonText_Cancel]" ExtDataLocId="-"/>
+    <ROW Dialog_="ProgressPrereqDlg" Control="ActionText" Type="Text" X="17" Y="191" Width="309" Height="11" Attributes="196611" TextStyle="SubnoteFont" Order="800" MsiKey="ProgressPrereqDlg#ActionText"/>
+    <ROW Dialog_="ProgressPrereqDlg" Control="ProgressBar" Type="StyledProgressBar" X="17" Y="185" Width="312" Height="5" Attributes="65537" Text="PrereqProgressImage.png" Order="900" MsiKey="ProgressPrereqDlg#ProgressBar" ExtType="StyledProgressBar"/>
+    <ROW Dialog_="ProgressPrereqDlg" Control="StatusLabel" Type="Text" X="17" Y="171" Width="45" Height="13" Attributes="196611" Text="Status:" TextStyle="SubnoteFont" Order="1000" TextLocId="Control.Text.ProgressDlg#StatusLabel" MsiKey="ProgressPrereqDlg#StatusLabel"/>
+    <ROW Dialog_="ProgressPrereqDlg" Control="Text" Type="Text" X="17" Y="105" Width="300" Height="30" Attributes="196611" Text="Please wait while the [Wizard] [Progress2] prerequisites for [ProductName].  This may take several minutes." Order="1100" TextLocId="Control.Text.ProgressPrereqDlg#Text" MsiKey="ProgressPrereqDlg#Text"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="Cancel" Type="ImageButton" X="163" Y="359" Width="78" Height="28" Attributes="2" Text="[NextCancelButtons]" TextStyle="[MetroButtonText]" Order="100" MsiKey="VerifyReadyDlg#Cancel" Options="1" ExtType="ImageButton" ExtData="[ButtonText_Cancel]" ExtDataLocId="-"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="Back" Type="PushButton" X="5" Y="381" Width="11" Height="11" Attributes="2" Text="Control.Text.VerifyReadyDlg#Back" Help="Back|" Order="200" TextLocId="Control.Text.VerifyReadyDlg#Back" HelpLocId="Air.Control.Help#Back" MsiKey="VerifyReadyDlg#Back" Options="1" ExtType="PushButton" ExtData="[ButtonText_Back]" ExtDataLocId="-"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="ReadyToInstall" Type="Text" X="17" Y="105" Width="312" Height="19" Attributes="196611" Text="Ready to Install" TextStyle="[SubTitleStyle]" Order="400" TextLocId="Control.Text.VerifyReadyDlg#Title" MsiKey="VerifyReadyDlg#ReadyToInstall"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="Text_2" Type="Text" X="17" Y="139" Width="312" Height="100" Attributes="65539" Text="The [Wizard] is ready to begin the [ProductName] installation" Order="500" TextLocId="Control.Text.VerifyReadyDlg#Description" MsiKey="VerifyReadyDlg#Text_2"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="InstallButton" Type="ImageButton" X="251" Y="359" Width="78" Height="28" Attributes="3" Text="[metrobuttonimage]" TextStyle="[MetroButtonText]" Order="600" MsiKey="VerifyReadyDlg#InstallButton" ExtType="ImageButton" ExtData="INSTALL" ExtDataLocId="Metro.Control.ExtData.VerifyReadyDlg#InstallButton"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="ProductNameTitle" Type="Text" X="83" Y="21" Width="245" Height="50" Attributes="196611" Text="[ProductName]" TextStyle="[ProductNameForSplash]" Order="700" TextLocId="Metro.Control.Text.ProductName" MsiKey="VerifyReadyDlg#ProductNameTitle"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="CompanyText" Type="Text" X="83" Y="16" Width="191" Height="12" Attributes="196611" Text="[Manufacturer]" TextStyle="[ManufacturerFont]" Order="800" TextLocId="Metro.Control.Text.Manufacturer" MsiKey="VerifyReadyDlg#CompanyText"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="ProductLogo" Type="Bitmap" X="17" Y="5" Width="59" Height="63" Attributes="1" Text="[AppLogoIcon]" Order="900" MsiKey="VerifyReadyDlg#ProductLogo"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="AdvInst" Type="Text" X="5" Y="388" Width="74" Height="11" Attributes="196611" Text="Advanced Installer" TextStyle="[BrandingStyle]" Order="1000" MsiKey="VerifyReadyDlg#AdvInst"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control="Cancel" Type="ImageButton" X="163" Y="359" Width="78" Height="28" Attributes="2" Text="[NextCancelButtons]" TextStyle="[MetroButtonText]" Order="100" MsiKey="VerifyRemoveDlg#Cancel" Options="1" ExtType="ImageButton" ExtData="[ButtonText_Cancel]" ExtDataLocId="-"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control="UnistallCleanupCheckBox" Type="CheckBox" X="17" Y="191" Width="308" Height="20" Attributes="3" Property="AI_CLEAN_RESOURCES_UNINSTALL" Text="Remove [ProductName] settings and temporary files." Order="1100"/>
+    <ROW Dialog_="VerifyRepairDlg" Control="Bitmap" Type="Bitmap" X="0" Y="0" Width="345" Height="400" Attributes="1" Text="[Background]" Order="100" MsiKey="VerifyRepairDlg#Bitmap"/>
+    <ROW Dialog_="VerifyRepairDlg" Control="Repair" Type="ImageButton" X="251" Y="359" Width="78" Height="28" Attributes="3" Text="[metrobuttonimage]" TextStyle="[MetroButtonText]" Order="200" MsiKey="VerifyRepairDlg#Repair" Options="1" ExtType="ImageButton" ExtData="&amp;Repair" ExtDataLocId="Metro.Control.ExtData.VerifyRepairDlg#Repair"/>
+    <ROW Dialog_="WelcomePrereqDlg" Control="Description" Type="Text" X="17" Y="139" Width="312" Height="211" Attributes="196611" Text="The setup has determined that some of the prerequisites needed to run [ProductName] are missing. This wizard will assist you in getting and installing those prerequisites. Click &quot;[Text_Next]&quot; to continue or &quot;[ButtonText_Cancel]&quot; to exit the [Wizard]." Order="800" TextLocId="Control.Text.WelcomePrereqDlg#Description" MsiKey="WelcomePrereqDlg#Description"/>
+    <ROW Dialog_="WelcomePrereqDlg" Control="SubTitle" Type="Text" X="17" Y="105" Width="312" Height="34" Attributes="196611" Text="Welcome to the Prerequisites [Wizard]" TextStyle="SubTitle" Order="900" TextLocId="Control.Text.WelcomePrereqDlg#SubTitle" MsiKey="WelcomePrereqDlg#SubTitle"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiControlEventComponent">
+    <ROW Dialog_="CustomizeDlg" Control_="Modify" Event="DoAction" Argument="AI_InstallModeCheck" Condition="AI_MAINT" Ordering="100" MsiKey="CustomizeDlg#Modify#DoAction#AI_InstallModeCheck#AI_MAINT"/>
+    <ROW Dialog_="ExitDialog" Control_="ViewReadmeCheckBox" Event="DoAction" Argument="AI_RunFinishActions" Condition="(AI_INSTALL OR AI_PATCH)" Ordering="200" MsiKey="ExitDialog#ViewReadmeCheckBox#DoAction#AI_RunFinishActions#(AI_INSTALL OR AI_PATCH)"/>
+    <ROW Dialog_="ExitDialog" Control_="LaunchProdCheckBox" Event="DoAction" Argument="AI_RunFinishActions" Condition="(AI_INSTALL OR AI_PATCH)" Ordering="200" MsiKey="ExitDialog#LaunchProdCheckBox#DoAction#AI_RunFinishActions#(AI_INSTALL OR AI_PATCH)"/>
+    <ROW Dialog_="FatalError" Control_="Finish" Event="DoAction" Argument="AI_SHOW_LOG" Condition="(MsiLogFileLocation AND AI_LOG_CHECKBOX)" Ordering="200" MsiKey="FatalError#Finish#DoAction#AI_SHOW_LOG#(MsiLogFileLocation AND AI_LOG_CHECKBOX)"/>
+    <ROW Dialog_="InstallDlg" Control_="Next" Event="EndDialog" Argument="Return" Condition="AI_INSTALL" Ordering="301"/>
+    <ROW Dialog_="InstallDlg" Control_="YouMustAgreeCtrl" Event="NewDialog" Argument="LicenseAgreementDlg" Condition="AI_INSTALL AND AiLicenseAgreement" Ordering="301"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="Back" Event="NewDialog" Argument="InstallDlg" Condition="AI_INSTALL AND AiLicenseAgreement" Ordering="1"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="Next" Event="EndDialog" Argument="Return" Condition="AI_INSTALL AND AiLicenseAgreement" Ordering="101"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="ChangeButton" Event="NewDialog" Argument="CustomizeDlg" Condition="AI_MAINT" Ordering="501"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="RemoveButton" Event="NewDialog" Argument="VerifyRemoveDlg" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="699"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="1"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control_="Remove" Event="EndDialog" Argument="Return" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="199" Options="1"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="RepairButton" Event="NewDialog" Argument="VerifyRepairDlg" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="699"/>
+    <ROW Dialog_="VerifyRepairDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="1"/>
+    <ROW Dialog_="VerifyRepairDlg" Control_="Repair" Event="EndDialog" Argument="Return" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="299" Options="1"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Modify" Event="EndDialog" Argument="Return" Condition="AI_MAINT" Ordering="101"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT" Ordering="1"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="Next" Event="EndDialog" Argument="Return" Condition="AI_PATCH" Ordering="201"/>
+    <ROW Dialog_="ResumeDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_RESUME" Ordering="99"/>
+    <ROW Dialog_="InstallDlg" Control_="Next" Event="SpawnDialog" Argument="OutOfRbDiskDlg" Condition="AI_INSTALL AND OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND (PROMPTROLLBACKCOST=&quot;P&quot; OR NOT PROMPTROLLBACKCOST)" Ordering="302" Options="2"/>
+    <ROW Dialog_="InstallDlg" Control_="Next" Event="EnableRollback" Argument="False" Condition="AI_INSTALL AND OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND PROMPTROLLBACKCOST=&quot;D&quot;" Ordering="303" Options="2"/>
+    <ROW Dialog_="InstallDlg" Control_="Next" Event="SpawnDialog" Argument="OutOfDiskDlg" Condition="AI_INSTALL AND ( (OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 1) OR (OutOfDiskSpace = 1 AND PROMPTROLLBACKCOST=&quot;F&quot;) )" Ordering="304" Options="2"/>
+    <ROW Dialog_="InstallDlg" Control_="InstallDlgDialogInitializer" Event="[AI_ButtonText_Next_Orig]" Argument="[ButtonText_Next]" Condition="AI_INSTALL" Ordering="101" Options="2"/>
+    <ROW Dialog_="InstallDlg" Control_="InstallDlgDialogInitializer" Event="[ButtonText_Next]" Argument="[[AI_CommitButton]]" Condition="AI_INSTALL" Ordering="102" Options="2"/>
+    <ROW Dialog_="InstallDlg" Control_="InstallDlgDialogInitializer" Event="[AI_Text_Next_Orig]" Argument="[Text_Next]" Condition="AI_INSTALL" Ordering="103" Options="2"/>
+    <ROW Dialog_="InstallDlg" Control_="InstallDlgDialogInitializer" Event="[Text_Next]" Argument="[Text_Install]" Condition="AI_INSTALL" Ordering="104" Options="2"/>
+    <ROW Dialog_="InstallDlg" Control_="YouMustAgreeCtrl" Event="[ButtonText_Next]" Argument="[AI_ButtonText_Next_Orig]" Condition="AI_INSTALL" Ordering="302" Options="2"/>
+    <ROW Dialog_="InstallDlg" Control_="YouMustAgreeCtrl" Event="[Text_Next]" Argument="[AI_Text_Next_Orig]" Condition="AI_INSTALL" Ordering="303" Options="2"/>
+    <ROW Dialog_="InstallDlg" Control_="Back" Event="[ButtonText_Next]" Argument="[AI_ButtonText_Next_Orig]" Condition="AI_INSTALL" Ordering="0" Options="2"/>
+    <ROW Dialog_="InstallDlg" Control_="Back" Event="[Text_Next]" Argument="[AI_Text_Next_Orig]" Condition="AI_INSTALL" Ordering="1" Options="2"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="Next" Event="SpawnDialog" Argument="OutOfRbDiskDlg" Condition="AI_INSTALL AND AiLicenseAgreement AND OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND (PROMPTROLLBACKCOST=&quot;P&quot; OR NOT PROMPTROLLBACKCOST)" Ordering="102" Options="2"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="Next" Event="EnableRollback" Argument="False" Condition="AI_INSTALL AND AiLicenseAgreement AND OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND PROMPTROLLBACKCOST=&quot;D&quot;" Ordering="103" Options="2"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="Next" Event="SpawnDialog" Argument="OutOfDiskDlg" Condition="AI_INSTALL AND AiLicenseAgreement AND ( (OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 1) OR (OutOfDiskSpace = 1 AND PROMPTROLLBACKCOST=&quot;F&quot;) )" Ordering="104" Options="2"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="LicenseAgreementDlgDialogInitializer" Event="[AI_ButtonText_Next_Orig]" Argument="[ButtonText_Next]" Condition="AI_INSTALL AND AiLicenseAgreement" Ordering="101" Options="2"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="LicenseAgreementDlgDialogInitializer" Event="[ButtonText_Next]" Argument="[[AI_CommitButton]]" Condition="AI_INSTALL AND AiLicenseAgreement" Ordering="102" Options="2"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="LicenseAgreementDlgDialogInitializer" Event="[AI_Text_Next_Orig]" Argument="[Text_Next]" Condition="AI_INSTALL AND AiLicenseAgreement" Ordering="103" Options="2"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="LicenseAgreementDlgDialogInitializer" Event="[Text_Next]" Argument="[Text_Install]" Condition="AI_INSTALL AND AiLicenseAgreement" Ordering="104" Options="2"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="Back" Event="[ButtonText_Next]" Argument="[AI_ButtonText_Next_Orig]" Condition="AI_INSTALL AND AiLicenseAgreement" Ordering="2" Options="2"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="Back" Event="[Text_Next]" Argument="[AI_Text_Next_Orig]" Condition="AI_INSTALL AND AiLicenseAgreement" Ordering="3" Options="2"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Modify" Event="SpawnDialog" Argument="OutOfRbDiskDlg" Condition="AI_MAINT AND OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND (PROMPTROLLBACKCOST=&quot;P&quot; OR NOT PROMPTROLLBACKCOST)" Ordering="102" Options="2"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Modify" Event="EnableRollback" Argument="False" Condition="AI_MAINT AND OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND PROMPTROLLBACKCOST=&quot;D&quot;" Ordering="103" Options="2"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Modify" Event="SpawnDialog" Argument="OutOfDiskDlg" Condition="AI_MAINT AND ( (OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 1) OR (OutOfDiskSpace = 1 AND PROMPTROLLBACKCOST=&quot;F&quot;) )" Ordering="104" Options="2"/>
+    <ROW Dialog_="CustomizeDlg" Control_="CustomizeDlgDialogInitializer" Event="[AI_ButtonText_Next_Orig]" Argument="[ButtonText_Next]" Condition="AI_MAINT" Ordering="0" Options="2"/>
+    <ROW Dialog_="CustomizeDlg" Control_="CustomizeDlgDialogInitializer" Event="[ButtonText_Next]" Argument="[[AI_CommitButton]]" Condition="AI_MAINT" Ordering="1" Options="2"/>
+    <ROW Dialog_="CustomizeDlg" Control_="CustomizeDlgDialogInitializer" Event="[AI_Text_Next_Orig]" Argument="[Text_Next]" Condition="AI_MAINT" Ordering="2" Options="2"/>
+    <ROW Dialog_="CustomizeDlg" Control_="CustomizeDlgDialogInitializer" Event="[Text_Next]" Argument="[Text_Install]" Condition="AI_MAINT" Ordering="3" Options="2"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Back" Event="[ButtonText_Next]" Argument="[AI_ButtonText_Next_Orig]" Condition="AI_MAINT" Ordering="2" Options="2"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Back" Event="[Text_Next]" Argument="[AI_Text_Next_Orig]" Condition="AI_MAINT" Ordering="3" Options="2"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="Next" Event="SpawnDialog" Argument="OutOfRbDiskDlg" Condition="AI_PATCH AND OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND (PROMPTROLLBACKCOST=&quot;P&quot; OR NOT PROMPTROLLBACKCOST)" Ordering="202" Options="2"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="Next" Event="EnableRollback" Argument="False" Condition="AI_PATCH AND OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND PROMPTROLLBACKCOST=&quot;D&quot;" Ordering="203" Options="2"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="Next" Event="SpawnDialog" Argument="OutOfDiskDlg" Condition="AI_PATCH AND ( (OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 1) OR (OutOfDiskSpace = 1 AND PROMPTROLLBACKCOST=&quot;F&quot;) )" Ordering="204" Options="2"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="PatchWelcomeDlgDialogInitializer" Event="[AI_ButtonText_Next_Orig]" Argument="[ButtonText_Next]" Condition="AI_PATCH" Ordering="0" Options="2"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="PatchWelcomeDlgDialogInitializer" Event="[ButtonText_Next]" Argument="[[AI_CommitButton]]" Condition="AI_PATCH" Ordering="1" Options="2"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="PatchWelcomeDlgDialogInitializer" Event="[AI_Text_Next_Orig]" Argument="[Text_Next]" Condition="AI_PATCH" Ordering="2" Options="2"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="PatchWelcomeDlgDialogInitializer" Event="[Text_Next]" Argument="[Text_Install]" Condition="AI_PATCH" Ordering="3" Options="2"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="Back" Event="[ButtonText_Next]" Argument="[AI_ButtonText_Next_Orig]" Condition="AI_PATCH" Ordering="0" Options="2"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="Back" Event="[Text_Next]" Argument="[AI_Text_Next_Orig]" Condition="AI_PATCH" Ordering="1" Options="2"/>
+    <ROW Dialog_="WelcomePrereqDlg" Control_="Next" Event="NewDialog" Argument="PrerequisitesDlg" Condition="AI_BOOTSTRAPPER" Ordering="1"/>
+    <ROW Dialog_="PrerequisitesDlg" Control_="Next" Event="EndDialog" Argument="Return" Condition="AI_BOOTSTRAPPER" Ordering="1"/>
+    <ROW Dialog_="PrerequisitesDlg" Control_="Back" Event="NewDialog" Argument="WelcomePrereqDlg" Condition="AI_BOOTSTRAPPER" Ordering="1"/>
+    <ROW Dialog_="CancelDlg" Control_="Yes" Event="DoAction" Argument="AI_IaLogPkgExitUserAbort" Condition="VersionMsi &lt; &quot;4.05&quot; OR UILevel = 2 OR LIMITUI = 1 OR UPGRADINGPRODUCTCODE" Ordering="101"/>
+    <ROW Dialog_="LicenseAgreementDlg" Control_="Next" Event="[AI_IA_ENABLE]" Argument="1" Condition="AI_INSTALL" Ordering="0"/>
+    <ROW Dialog_="InstallDlg" Control_="Next" Event="[AI_IA_ENABLE]" Argument="1" Condition="AI_INSTALL" Ordering="0"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCreateFolderComponent">
+    <ROW Directory_="SHORTCUTDIR" Component_="SHORTCUTDIR" ManualDelete="false"/>
+    <ROW Directory_="QAquifolium_1_Dir" Component_="QAquifolium_1" ManualDelete="false"/>
+    <ROW Directory_="regid.199509.com.example_Dir" Component_="regid.199509.com.example" ManualDelete="false"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
+    <ROW Action="AI_AiRemoveFilesCommit" Type="11777" Source="ResourceCleaner.dll" Target="OnAiRemoveFilesCommit" WithoutSeq="true"/>
+    <ROW Action="AI_AiRemoveFilesDeferred_Permanent" Type="11265" Source="ResourceCleaner.dll" Target="OnAiRemoveFilesPermanent" WithoutSeq="true"/>
+    <ROW Action="AI_AiRemoveFilesDeferred_Undoable" Type="11265" Source="ResourceCleaner.dll" Target="OnAiRemoveFilesUndoable" WithoutSeq="true"/>
+    <ROW Action="AI_AiRemoveFilesImmediate" Type="1" Source="ResourceCleaner.dll" Target="OnAiRemoveFilesImmediate"/>
+    <ROW Action="AI_AiRemoveFilesRollback" Type="11521" Source="ResourceCleaner.dll" Target="OnAiUndoRemoveFiles"/>
+    <ROW Action="AI_AppSearchEx" Type="1" Source="Prereq.dll" Target="DoAppSearchEx"/>
+    <ROW Action="AI_BACKUP_AI_SETUPEXEPATH" Type="51" Source="AI_SETUPEXEPATH_ORIGINAL" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_ChooseTextStyles" Type="1" Source="aicustact.dll" Target="ChooseTextStyles"/>
+    <ROW Action="AI_DATA_SETTER" Type="51" Source="AI_ExtractFiles" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_DATA_SETTER_1" Type="51" Source="CustomActionData" Target="[~]"/>
+    <ROW Action="AI_DATA_SETTER_2" Type="51" Source="CustomActionData" Target="[~]"/>
+    <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
+    <ROW Action="AI_DeleteCadLzma" Type="51" Source="AI_DeleteLzma" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_DeleteLzma" Type="1025" Source="lzmaextractor.dll" Target="DeleteLZMAFiles"/>
+    <ROW Action="AI_DeleteRCadLzma" Type="51" Source="AI_DeleteRLzma" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_DeleteRLzma" Type="1281" Source="lzmaextractor.dll" Target="DeleteLZMAFiles"/>
+    <ROW Action="AI_DetectSoftware" Type="257" Source="SoftwareDetector.dll" Target="OnDetectSoftware"/>
+    <ROW Action="AI_DoRemoveExternalUIStub" Type="3585" Source="ExternalUICleaner.dll" Target="DoRemoveExternalUIStub" WithoutSeq="true"/>
+    <ROW Action="AI_DpiContentScale" Type="1" Source="aicustact.dll" Target="DpiContentScale"/>
+    <ROW Action="AI_EnableDebugLog" Type="321" Source="aicustact.dll" Target="EnableDebugLog"/>
+    <ROW Action="AI_EstimateExtractFiles" Type="1" Source="Prereq.dll" Target="EstimateExtractFiles"/>
+    <ROW Action="AI_ExtractCadLzma" Type="51" Source="AI_ExtractLzma" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_ExtractFiles" Type="1025" Source="Prereq.dll" Target="ExtractSourceFiles" AdditionalSeq="AI_DATA_SETTER"/>
+    <ROW Action="AI_ExtractLzma" Type="1025" Source="lzmaextractor.dll" Target="ExtractLZMAFiles"/>
+    <ROW Action="AI_FindExeLzma" Type="1" Source="lzmaextractor.dll" Target="FindEXE"/>
+    <ROW Action="AI_GetArpIconPath" Type="1" Source="aicustact.dll" Target="GetArpIconPath"/>
+    <ROW Action="AI_IaLogInstallData" Type="65" Source="InstallerAnalytics.dll" Target="OnAnalyticsLogInstallData"/>
+    <ROW Action="AI_IaLogMachineInfo" Type="321" Source="InstallerAnalytics.dll" Target="OnAnalyticsLogMachineInfo"/>
+    <ROW Action="AI_IaLogPkgExitFatalError" Type="65" Source="InstallerAnalytics.dll" Target="OnAnalyticsLogFatalError"/>
+    <ROW Action="AI_IaLogPkgExitFinish" Type="65" Source="InstallerAnalytics.dll" Target="OnAnalyticsLogFinish"/>
+    <ROW Action="AI_IaLogPkgExitUserAbort" Type="65" Source="InstallerAnalytics.dll" Target="OnAnalyticsLogUserAbort" WithoutSeq="true"/>
+    <ROW Action="AI_IaLogPkgStarted" Type="321" Source="InstallerAnalytics.dll" Target="OnAnalyticsLogStart"/>
+    <ROW Action="AI_IaToggle" Type="65" Source="InstallerAnalytics.dll" Target="OnAnalyticsToggle"/>
+    <ROW Action="AI_InstallModeCheck" Type="1" Source="aicustact.dll" Target="UpdateInstallMode" WithoutSeq="true"/>
+    <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
+    <ROW Action="AI_RESTORE_AI_SETUPEXEPATH" Type="51" Source="AI_SETUPEXEPATH" Target="[AI_SETUPEXEPATH_ORIGINAL]"/>
+    <ROW Action="AI_RESTORE_LOCATION" Type="65" Source="aicustact.dll" Target="RestoreLocation"/>
+    <ROW Action="AI_RemoveExternalUIStub" Type="1" Source="ExternalUICleaner.dll" Target="RemoveExternalUIStub"/>
+    <ROW Action="AI_ResolveKnownFolders" Type="1" Source="aicustact.dll" Target="AI_ResolveKnownFolders"/>
+    <ROW Action="AI_RunFinishActions" Type="1" Source="aicustact.dll" Target="RunFinishActions" WithoutSeq="true"/>
+    <ROW Action="AI_SHOW_LOG" Type="65" Source="aicustact.dll" Target="LaunchLogFile" WithoutSeq="true"/>
+    <ROW Action="AI_STORE_LOCATION" Type="51" Source="ARPINSTALLLOCATION" Target="[APPDIR]"/>
+    <ROW Action="AI_UPDATER_UNINSTALL" Type="82" Source="updater.exe" Target="/clean silent"/>
+    <ROW Action="AI_XmlCommit" Type="11777" Source="xmlCfg.dll" Target="OnXmlCommit" WithoutSeq="true"/>
+    <ROW Action="AI_XmlConfig" Type="11265" Source="xmlCfg.dll" Target="OnXmlConfig" WithoutSeq="true"/>
+    <ROW Action="AI_XmlInstall" Type="1" Source="xmlCfg.dll" Target="OnXmlInstall" AdditionalSeq="AI_DATA_SETTER_1"/>
+    <ROW Action="AI_XmlRemove" Type="11265" Source="xmlCfg.dll" Target="OnXmlRemove" WithoutSeq="true"/>
+    <ROW Action="AI_XmlRollback" Type="11521" Source="xmlCfg.dll" Target="OnXmlRollback" WithoutSeq="true"/>
+    <ROW Action="AI_XmlUninstall" Type="1" Source="xmlCfg.dll" Target="OnXmlUninstall" AdditionalSeq="AI_DATA_SETTER_2"/>
+    <ROW Action="SET_APPDIR" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]" MultiBuildTarget="DefaultBuild:[ProgramFilesFolder]\[ProductName]"/>
+    <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]"/>
+    <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
+    <ROW Name="Aquifolium.exe" SourcePath="..\..\..\..\Downloads\Aquifolium.ico" Index="0"/>
+    <ROW Name="Aquifolium_Windows_multi.exe" SourcePath="E:\Projects\QAquifolium\resources\Icons\Aquifolium_Windows_multi.ico" Index="0"/>
+    <ROW Name="ModelWizard.exe" SourcePath="..\..\..\..\Dropbox\Aquifolium\Wizard.ico" Index="0"/>
+    <ROW Name="OHQTerminal.exe" SourcePath="..\..\..\..\Downloads\command_prompt.ico" Index="0"/>
+    <ROW Name="SystemFoldermsiexec.exe" SourcePath="&lt;AI_RES&gt;uninstall.ico" Index="0"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiIniFileComponent">
+    <ROW IniFile="AppDir" FileName="updater.ini" DirProperty="APPDIR" Section="General" Key="AppDir" Value="[APPDIR]" Action="0" Component_="updater.exe"/>
+    <ROW IniFile="ApplicationName" FileName="updater.ini" DirProperty="APPDIR" Section="General" Key="ApplicationName" Value="[ProductName]" Action="0" Component_="updater.exe"/>
+    <ROW IniFile="ApplicationVersion" FileName="updater.ini" DirProperty="APPDIR" Section="General" Key="ApplicationVersion" Value="[ProductVersion]" Action="0" Component_="updater.exe"/>
+    <ROW IniFile="CheckFrequency" FileName="updater.ini" DirProperty="APPDIR" Section="General" Key="CheckFrequency" Value="2" Action="0" Component_="updater.exe"/>
+    <ROW IniFile="CompanyName" FileName="updater.ini" DirProperty="APPDIR" Section="General" Key="CompanyName" Value="[Manufacturer]" Action="0" Component_="updater.exe"/>
+    <ROW IniFile="DefaultCommandLine" FileName="updater.ini" DirProperty="APPDIR" Section="General" Key="DefaultCommandLine" Value="/checknow" Action="0" Component_="updater.exe"/>
+    <ROW IniFile="DownloadsFolder" FileName="updater.ini" DirProperty="APPDIR" Section="General" Key="DownloadsFolder" Value="[CommonAppDataFolder][Manufacturer]\[ProductName]\updates\" Action="0" Component_="updater.exe"/>
+    <ROW IniFile="Flags" FileName="updater.ini" DirProperty="APPDIR" Section="General" Key="Flags" Value="PerMachine|ShowConfigOptionsButton" Action="0" Component_="updater.exe"/>
+    <ROW IniFile="ID" FileName="updater.ini" DirProperty="APPDIR" Section="General" Key="ID" Value="[UpgradeCode]" Action="0" Component_="updater.exe"/>
+    <ROW IniFile="URL" FileName="updater.ini" DirProperty="APPDIR" Section="General" Key="URL" Value="http://www.example.com/download/updates.txt" Action="0" Component_="updater.exe"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
+    <ROW Action="AI_DOWNGRADE" Condition="AI_NEWERPRODUCTFOUND AND (UILevel &lt;&gt; 5)" Sequence="210"/>
+    <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
+    <ROW Action="AI_STORE_LOCATION" Condition="(Not Installed) OR REINSTALL" Sequence="1502"/>
+    <ROW Action="AI_PREPARE_UPGRADE" Condition="AI_UPGRADE=&quot;No&quot; AND (Not Installed)" Sequence="1399"/>
+    <ROW Action="AI_ResolveKnownFolders" Sequence="57"/>
+    <ROW Action="AI_EnableDebugLog" Sequence="55"/>
+    <ROW Action="AI_GetArpIconPath" Sequence="1402"/>
+    <ROW Action="AI_RemoveExternalUIStub" Condition="(REMOVE=&quot;ALL&quot;) AND ((VersionNT &gt; 500) OR((VersionNT = 500) AND (ServicePackLevel &gt;= 4)))" Sequence="1501"/>
+    <ROW Action="AI_AiRemoveFilesRollback" Sequence="3099"/>
+    <ROW Action="AI_UPDATER_UNINSTALL" Condition="($updater.exe = 2) AND (?updater.exe = 3) AND NOT (UPGRADINGPRODUCTCODE)" Sequence="1551"/>
+    <ROW Action="AI_AppSearchEx" Sequence="104"/>
+    <ROW Action="AI_XmlInstall" Condition="(REMOVE &lt;&gt; &quot;ALL&quot;)" Sequence="5102"/>
+    <ROW Action="AI_DATA_SETTER_1" Condition="(REMOVE &lt;&gt; &quot;ALL&quot;)" Sequence="5101"/>
+    <ROW Action="AI_XmlUninstall" Condition="(REMOVE)" Sequence="3102"/>
+    <ROW Action="AI_DATA_SETTER_2" Condition="(REMOVE)" Sequence="3101"/>
+    <ROW Action="AI_IaToggle" Sequence="103"/>
+    <ROW Action="AI_IaLogPkgStarted" Condition="VersionMsi &lt; &quot;4.05&quot; OR UILevel = 2 OR LIMITUI = 1 OR UPGRADINGPRODUCTCODE" Sequence="54"/>
+    <ROW Action="AI_IaLogPkgExitFinish" Condition="VersionMsi &lt; &quot;4.05&quot; OR UILevel = 2 OR LIMITUI = 1 OR UPGRADINGPRODUCTCODE" Sequence="-1"/>
+    <ROW Action="AI_IaLogPkgExitFatalError" Condition="VersionMsi &lt; &quot;4.05&quot; OR UILevel = 2 OR LIMITUI = 1 OR UPGRADINGPRODUCTCODE" Sequence="-3"/>
+    <ROW Action="AI_IaLogPkgExitUserAbort" Condition="VersionMsi &lt; &quot;4.05&quot; OR UILevel = 2 OR LIMITUI = 1 OR UPGRADINGPRODUCTCODE" Sequence="-2"/>
+    <ROW Action="AI_IaLogInstallData" Sequence="1401"/>
+    <ROW Action="AI_IaLogMachineInfo" Sequence="399"/>
+    <ROW Action="AI_DetectSoftware" Sequence="102"/>
+    <ROW Action="AI_BACKUP_AI_SETUPEXEPATH" Sequence="99" Builds="DefaultBuild"/>
+    <ROW Action="AI_RESTORE_AI_SETUPEXEPATH" Condition="AI_SETUPEXEPATH_ORIGINAL" Sequence="101" Builds="DefaultBuild"/>
+    <ROW Action="AI_DeleteCadLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="199" Builds="DefaultBuild"/>
+    <ROW Action="AI_DeleteRCadLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="198" Builds="DefaultBuild"/>
+    <ROW Action="AI_ExtractCadLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="197" Builds="DefaultBuild"/>
+    <ROW Action="AI_FindExeLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="196" Builds="DefaultBuild"/>
+    <ROW Action="AI_ExtractLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="1549" Builds="DefaultBuild"/>
+    <ROW Action="AI_DeleteRLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="1548" Builds="DefaultBuild"/>
+    <ROW Action="AI_DeleteLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="6599" Builds="DefaultBuild"/>
+    <ROW Action="AI_ExtractFiles" Sequence="3998" Builds="DefaultBuild"/>
+    <ROW Action="AI_DATA_SETTER" Sequence="3997"/>
+    <ROW Action="AI_EstimateExtractFiles" Sequence="3999" Builds="DefaultBuild"/>
+    <ROW Action="AI_AiRemoveFilesImmediate" Sequence="3499"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
+    <ROW Action="InstallDlg" Condition="AI_INSTALL" Sequence="1230" SeqType="3" MsiKey="WelcomeDlg"/>
+    <ROW Action="MaintenanceTypeDlg" Condition="AI_MAINT" Sequence="1250" SeqType="3" MsiKey="MaintenanceTypeDlg"/>
+    <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
+    <ROW Action="AI_ResolveKnownFolders" Sequence="54"/>
+    <ROW Action="AI_DpiContentScale" Sequence="53"/>
+    <ROW Action="AI_EnableDebugLog" Sequence="52"/>
+    <ROW Action="AI_ChooseTextStyles" Sequence="74"/>
+    <ROW Action="AI_BACKUP_AI_SETUPEXEPATH" Sequence="98"/>
+    <ROW Action="AI_RESTORE_AI_SETUPEXEPATH" Condition="AI_SETUPEXEPATH_ORIGINAL" Sequence="103"/>
+    <ROW Action="AI_AppSearchEx" Sequence="102"/>
+    <ROW Action="AI_IaToggle" Sequence="99"/>
+    <ROW Action="AI_IaLogPkgStarted" Condition="VersionMsi &lt; &quot;4.05&quot; OR UILevel = 2 OR LIMITUI = 1 OR UPGRADINGPRODUCTCODE" Sequence="51"/>
+    <ROW Action="AI_IaLogMachineInfo" Sequence="399"/>
+    <ROW Action="AI_DetectSoftware" Sequence="101"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiLaunchConditionsComponent">
+    <ROW Condition="(VersionNT &lt;&gt; 400)" Description="[ProductName] cannot be installed on [WindowsTypeNT40Display]." DescriptionLocId="AI.LaunchCondition.NoNT40" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="(VersionNT &lt;&gt; 500)" Description="[ProductName] cannot be installed on [WindowsTypeNT50Display]." DescriptionLocId="AI.LaunchCondition.NoNT50" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="(VersionNT64 OR ((VersionNT &lt;&gt; 501) OR (ServicePackLevel = 3))) AND ((VersionNT &lt;&gt; 502) OR (ServicePackLevel = 2))" Description="[ProductName] cannot be installed on [WindowsTypeNT5XDisplay]." DescriptionLocId="AI.LaunchCondition.NoNT5X" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="SETUPEXEDIR OR (REMOVE=&quot;ALL&quot;)" Description="This package can only be run from a bootstrapper." DescriptionLocId="AI.LaunchCondition.RequireBootstrapper" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="VersionNT" Description="[ProductName] cannot be installed on [WindowsType9XDisplay]." DescriptionLocId="AI.LaunchCondition.No9X" IsPredefined="true" Builds="DefaultBuild"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiRegLocatorComponent">
+    <ROW Signature_="AI_EXE_PATH_CU" Root="1" Key="Software\Caphyon\Advanced Installer\LZMA\[ProductCode]\[ProductVersion]" Name="AI_ExePath" Type="2"/>
+    <ROW Signature_="AI_EXE_PATH_LM" Root="2" Key="Software\Caphyon\Advanced Installer\LZMA\[ProductCode]\[ProductVersion]" Name="AI_ExePath" Type="2"/>
+    <ROW Signature_="AI_IA_ENABLE" Root="2" Key="Software\[Manufacturer]\[ProductCode]" Name="AI_IA_ENABLE" Type="2"/>
+    <ROW Signature_="AI_IA_ENABLE_1" Root="1" Key="Software\[Manufacturer]\[ProductCode]" Name="AI_IA_ENABLE" Type="2"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiRegsComponent">
+    <ROW Registry="AI_ExePath" Root="-1" Key="Software\Caphyon\Advanced Installer\LZMA\[ProductCode]\[ProductVersion]" Name="AI_ExePath" Value="[AI_SETUPEXEPATH]" Component_="AI_ExePath"/>
+    <ROW Registry="AI_IA_ENABLE" Root="-1" Key="Software\[Manufacturer]\[ProductCode]" Name="AI_IA_ENABLE" Value="[AI_IA_ENABLE]" Component_="AI_IA_ENABLE"/>
+    <ROW Registry="Comments" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="Comments" Value="[ARPCOMMENTS]" Component_="AI_CustomARPName"/>
+    <ROW Registry="Contact" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="Contact" Value="[ARPCONTACT]" Component_="AI_CustomARPName"/>
+    <ROW Registry="DisplayIcon" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="DisplayIcon" Value="[ARP_ICON_PATH]" Component_="AI_CustomARPName"/>
+    <ROW Registry="DisplayName" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="DisplayName" Value="[AI_PRODUCTNAME_ARP]" Component_="AI_CustomARPName"/>
+    <ROW Registry="DisplayVersion" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="DisplayVersion" Value="[ProductVersion]" Component_="AI_CustomARPName"/>
+    <ROW Registry="EstimatedSize" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="EstimatedSize" Value="#[AI_ARP_SIZE]" Component_="AI_CustomARPName"/>
+    <ROW Registry="HelpLink" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="HelpLink" Value="[ARPHELPLINK]" Component_="AI_CustomARPName"/>
+    <ROW Registry="HelpTelephone" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="HelpTelephone" Value="[ARPHELPTELEPHONE]" Component_="AI_CustomARPName"/>
+    <ROW Registry="InstallLocation" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="InstallLocation" Value="[APPDIR]" Component_="AI_CustomARPName"/>
+    <ROW Registry="Path" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Path" Value="[APPDIR]" Component_="ProductInformation"/>
+    <ROW Registry="Publisher" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="Publisher" Value="[Manufacturer]" Component_="AI_CustomARPName"/>
+    <ROW Registry="URLInfoAbout" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="URLInfoAbout" Value="[ARPURLINFOABOUT]" Component_="AI_CustomARPName"/>
+    <ROW Registry="URLUpdateInfo" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="URLUpdateInfo" Value="[ARPURLUPDATEINFO]" Component_="AI_CustomARPName"/>
+    <ROW Registry="UninstallPath" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="UninstallPath" Value="[AI_UNINSTALLER] /i [ProductCode] AI_UNINSTALLER_CTP=1" Component_="AI_CustomARPName"/>
+    <ROW Registry="UninstallString" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="UninstallString" Value="[AI_UNINSTALLER] /i [ProductCode] AI_UNINSTALLER_CTP=1" Component_="AI_CustomARPName"/>
+    <ROW Registry="Version" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Version" Value="[ProductVersion]" Component_="ProductInformation"/>
+    <ROW Registry="VersionMajor" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="VersionMajor" Value="#1" Component_="AI_CustomARPName"/>
+    <ROW Registry="VersionMinor" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="VersionMinor" Value="#0" Component_="AI_CustomARPName"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiRemoveFileComponent">
+    <ROW FileKey="_" Component_="Qt5Core.dll" DirProperty="APPDIR" InstallMode="2"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
+    <ROW Shortcut="ModelWizard" Directory_="SHORTCUTDIR" Name="MODELW~1|ModelWizard" Component_="ModelWizard.exe" Target="[#ModelWizard.exe]" Hotkey="0" Icon_="ModelWizard.exe" IconIndex="0" ShowCmd="1" WkDir="bin_1_Dir"/>
+    <ROW Shortcut="ModelWizard_1" Directory_="QAquifolium_1_Dir" Name="MODELW~1|ModelWizard" Component_="ModelWizard.exe" Target="[#ModelWizard.exe]" Hotkey="0" Icon_="ModelWizard.exe" IconIndex="0" ShowCmd="1" WkDir="bin_1_Dir"/>
+    <ROW Shortcut="QAquifolium" Directory_="StartMenuFolder" Name="OPENHY~1|OpenHydroQual" Component_="QAquifolium.exe" Target="[#QAquifolium.exe]" Hotkey="0" Icon_="Aquifolium_Windows_multi.exe" IconIndex="0" ShowCmd="3" WkDir="bin_1_Dir"/>
+    <ROW Shortcut="QAquifolium.exe" Directory_="SHORTCUTDIR" Name="OPENHY~1|OpenHydroQual" Component_="QAquifolium.exe" Target="[#QAquifolium.exe]" Description="QAquifolium.exe" Hotkey="0" Icon_="Aquifolium_Windows_multi.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+    <ROW Shortcut="QAquifolium.exe_1" Directory_="DesktopFolder" Name="QAQUIF~1.EXE|QAquifolium.exe" Component_="QAquifolium.exe" Target="[#QAquifolium.exe]" Description="QAquifolium.exe" Hotkey="0" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+    <ROW Shortcut="QAquifolium_2" Directory_="QAquifolium_1_Dir" Name="OPENHY~1|OpenHydroQual" Component_="QAquifolium.exe" Target="[#QAquifolium.exe]" Description="OpenHydroQual.exe" Hotkey="0" Icon_="Aquifolium_Windows_multi.exe" IconIndex="0" ShowCmd="3" WkDir="APPDIR"/>
+    <ROW Shortcut="TerminalExecution" Directory_="QAquifolium_1_Dir" Name="TERMIN~1|Terminal Execution" Component_="OHQTerminal.exe" Target="[bin_1_Dir]" Hotkey="0" Icon_="OHQTerminal.exe" IconIndex="0" ShowCmd="1"/>
+    <ROW Shortcut="Uninstall" Directory_="SHORTCUTDIR" Name="UNINST~1|Uninstall" Component_="Rhistory" Target="[SystemFolder]msiexec.exe" Arguments="/x [ProductCode]" Hotkey="0" Icon_="SystemFoldermsiexec.exe" IconIndex="0" ShowCmd="1" WkDir="SystemFolder"/>
+    <ROW Shortcut="Uninstall_2" Directory_="QAquifolium_1_Dir" Name="UNINST~1|Uninstall" Component_="qwindows.dll" Target="[SystemFolder]msiexec.exe" Arguments="/x [ProductCode]" Hotkey="0" Icon_="SystemFoldermsiexec.exe" IconIndex="0" ShowCmd="1" WkDir="SystemFolder"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
+    <ATTRIBUTE name="UsedTheme" value="surface"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiUpgradeComponent">
+    <ROW UpgradeCode="[|UpgradeCode]" VersionMin="0.0.1" VersionMax="[|ProductVersion]" Attributes="257" ActionProperty="OLDPRODUCTS"/>
+    <ROW UpgradeCode="[|UpgradeCode]" VersionMin="[|ProductVersion]" Attributes="2" ActionProperty="AI_NEWERPRODUCTFOUND"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.PreReqComponent">
+    <ROW PrereqKey="D36C9FE0826D4D2B9C2DDCCE2C83E860" DisplayName="Visual C++ Redistributable for Visual Studio 2017 x64" VersionMin="14.10" SetupFileUrl="Prerequisites\Visual C++ Redistributable for Visual Studio 2017\vc_redist.x64.exe" Location="0" ExactSize="0" WinNTVersions="Windows 9x/ME/NT/2000/XP/Vista/Windows 7/Windows 8 x86/Windows 8.1 x86/Windows 10 x86" WinNT64Versions="Windows Vista RTM x64, Windows Vista SP1 x64, Windows Server 2008 RTM x64, Windows 7 RTM x64, Windows Server 2008 R2 RTM x64" Operator="1" NoUiComLine="/q /norestart" Options="xy" TargetName="Visual C++ Redistributable for Visual Studio 2017\vc_redist.x64.exe"/>
+    <ATTRIBUTE name="PrereqsOrder" value="D36C9FE0826D4D2B9C2DDCCE2C83E860"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.PreReqSearchComponent">
+    <ROW SearchKey="D36C9FE0826D4D2B9C2DDCCE2C83E860Ver" Prereq="D36C9FE0826D4D2B9C2DDCCE2C83E860" SearchType="2" SearchString="HKLM\SOFTWARE\Microsoft\DevDiv\VC\Servicing\14.0\RuntimeMinimum\Version" VerMin="14.10.25008" Order="1" Property="PreReqSearch_D36C9FE0826D4D2B9C2DDC"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.SoftwareIdentificationComponent">
+    <ATTRIBUTE name="LocalFile" value="regid.199509.com.example_ProductNam"/>
+    <ATTRIBUTE name="SystemFile" value="regid.199509.com.example_ProductN_1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.UpdaterComponent">
+    <ROW Updater="updater.exe" URL="URL" SearchFreq="CheckFrequency" DownloadsFolder="DownloadsFolder" ID="ID" TargetDir="AppDir" AppName="ApplicationName" AppVersion="ApplicationVersion" CompanyName="CompanyName" DefCommandLine="DefaultCommandLine" Flags="Flags" IconIndex="0" UnistallCASeq="AI_UPDATER_UNINSTALL" Description="[|UpdaterName] [|ProductVersion]"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.XmlAttributeComponent">
+    <ROW XmlAttribute="xmlnsds" XmlElement="swidsoftware_identification_tag" Name="xmlns:ds" Flags="14" Order="0" Value="http://www.w3.org/2000/09/xmldsig#"/>
+    <ROW XmlAttribute="xmlnsswid" XmlElement="swidsoftware_identification_tag" Name="xmlns:swid" Flags="14" Order="1" Value="http://standards.iso.org/iso/19770/-2/2008/schema.xsd"/>
+    <ROW XmlAttribute="xmlnsxsi" XmlElement="swidsoftware_identification_tag" Name="xmlns:xsi" Flags="14" Order="2" Value="http://www.w3.org/2001/XMLSchema-instance"/>
+    <ROW XmlAttribute="xsischemaLocation" XmlElement="swidsoftware_identification_tag" Name="xsi:schemaLocation" Flags="14" Order="3" Value="http://standards.iso.org/iso/19770/-2/2008/schema.xsd software_identification_tag.xsd"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
+    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="23"/>
+    <ROW XmlElement="swidentitlement_required_indicator" ParentElement="swidsoftware_identification_tag" Name="swid:entitlement_required_indicator" Condition="1" Order="0" Flags="14" Text="false"/>
+    <ROW XmlElement="swidmajor" ParentElement="swidnumeric" Name="swid:major" Condition="1" Order="0" Flags="14" Text="1"/>
+    <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="1"/>
+    <ROW XmlElement="swidname" ParentElement="swidproduct_version" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[ProductVersion]"/>
+    <ROW XmlElement="swidname_1" ParentElement="swidsoftware_creator" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[Manufacturer]"/>
+    <ROW XmlElement="swidname_2" ParentElement="swidsoftware_licensor" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[Manufacturer]"/>
+    <ROW XmlElement="swidname_3" ParentElement="swidtag_creator" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[Manufacturer]"/>
+    <ROW XmlElement="swidnumeric" ParentElement="swidproduct_version" Name="swid:numeric" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="swidproduct_title" ParentElement="swidsoftware_identification_tag" Name="swid:product_title" Condition="1" Order="1" Flags="14" Text="[ProductName]"/>
+    <ROW XmlElement="swidproduct_version" ParentElement="swidsoftware_identification_tag" Name="swid:product_version" Condition="1" Order="2" Flags="14"/>
+    <ROW XmlElement="swidregid" ParentElement="swidsoftware_creator" Name="swid:regid" Condition="1" Order="1" Flags="14" Text="regid.1995-09.com.example"/>
+    <ROW XmlElement="swidregid_1" ParentElement="swidsoftware_licensor" Name="swid:regid" Condition="1" Order="1" Flags="14" Text="regid.1995-09.com.example"/>
+    <ROW XmlElement="swidregid_2" ParentElement="swidtag_creator" Name="swid:regid" Condition="1" Order="1" Flags="14" Text="regid.1995-09.com.example"/>
+    <ROW XmlElement="swidreview" ParentElement="swidnumeric" Name="swid:review" Condition="1" Order="3" Flags="14" Text="0"/>
+    <ROW XmlElement="swidsoftware_creator" ParentElement="swidsoftware_identification_tag" Name="swid:software_creator" Condition="1" Order="3" Flags="14"/>
+    <ROW XmlElement="swidsoftware_id" ParentElement="swidsoftware_identification_tag" Name="swid:software_id" Condition="1" Order="5" Flags="14"/>
+    <ROW XmlElement="swidsoftware_identification_tag" Name="swid:software_identification_tag" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="swidsoftware_licensor" ParentElement="swidsoftware_identification_tag" Name="swid:software_licensor" Condition="1" Order="4" Flags="14"/>
+    <ROW XmlElement="swidtag_creator" ParentElement="swidsoftware_identification_tag" Name="swid:tag_creator" Condition="1" Order="6" Flags="14"/>
+    <ROW XmlElement="swidtag_creator_regid" ParentElement="swidsoftware_id" Name="swid:tag_creator_regid" Condition="1" Order="1" Flags="14" Text="regid.1995-09.com.example"/>
+    <ROW XmlElement="swidunique_id" ParentElement="swidsoftware_id" Name="swid:unique_id" Condition="1" Order="0" Flags="14" Text="[ProductName]"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.XmlFileComponent">
+    <ROW XmlFile="regid.199509.com.example_ProductN_1" FileName="REGID1~1.SWI|regid.1995-09.com.example_[|ProductName].swidtag" DirProperty="regid.199509.com.example_Dir" Component="ProductInformation" RootElement="swidsoftware_identification_tag" Flags="153" Version="1.0" Encoding="UTF-8" IndentUnits="2"/>
+    <ROW XmlFile="regid.199509.com.example_ProductNam" FileName="REGID1~1.SWI|regid.1995-09.com.example_[|ProductName].swidtag" DirProperty="APPDIR" Component="ProductInformation" RootElement="swidsoftware_identification_tag" Flags="153" Version="1.0" Encoding="UTF-8" IndentUnits="2"/>
+  </COMPONENT>
+</DOCUMENT>

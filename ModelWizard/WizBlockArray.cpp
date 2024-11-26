@@ -1,4 +1,5 @@
 #include "WizBlockArray.h"
+#include <QDebug>
 
 BlockArray::BlockArray():Wizard_Entity()
 {

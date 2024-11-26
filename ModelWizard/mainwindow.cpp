@@ -24,6 +24,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->listWidget->setViewMode(QListView::IconMode);
     QObject::connect(ui->listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(itemDoubleClicked(QListWidgetItem*)));
     PopulateListOfWizards();
+    QIcon mainicon(QString::fromStdString(wizardsfolder) + "/../Icons/wizard blue.png");
+    
+    setWindowIcon(mainicon);
 }
 
 MainWindow::~MainWindow()
@@ -52,12 +55,14 @@ void MainWindow::PopulateListOfWizards()
 
 void MainWindow::itemDoubleClicked(QListWidgetItem* wizitem)
 {
-    WizardDialog *wizDialog = new WizardDialog(this);
+    WizardDialog *wizDialog = new WizardDialog();
     
     WizardScript wiz(wizitem->data(1000).toString());
     wizDialog->setWindowTitle(wiz.Description());
     wizDialog->CreateItems(&wiz);
-    wizDialog->show();
+    wizDialog->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
+
+    wizDialog->showMaximized();
     wizDialog->resizeEvent();
 }
 

@@ -10,6 +10,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QMessageBox>
+#include <QDesktopServices>
 
  
 
@@ -19,11 +20,22 @@ WizardDialog::WizardDialog(QWidget *parent) :
     ui(new Ui::WizardDialog)
 {
     ui->setupUi(this);
+
+    svgviewer = new SVGViewer(this);
+    svgviewer->setObjectName(QString::fromUtf8("SVGViewer"));
+    svgviewer->setMinimumSize(QSize(300, 0));
+
+    ui->horizontalLayout_2->addWidget(svgviewer);
+
+    ui->horizontalLayout_2->setStretch(0, 3);
+    ui->horizontalLayout_2->setStretch(1, 1);
+
     ui->Previous->setEnabled(false);
     connect(ui->Next, SIGNAL(clicked()),this, SLOT(on_next_clicked()));
     connect(ui->Previous, SIGNAL(clicked()),this, SLOT(on_previous_clicked()));
     connect(ui->tabWidget,SIGNAL(currentChanged(int)), this, SLOT(on_TabChanged()));
-    connect(ui->graphicsView,SIGNAL(resizeevent()),this, SLOT(fit_diagram()));
+    connect(svgviewer,SIGNAL(resizeevent()),this, SLOT(fit_diagram()));
+    connect(ui->OpenHTML, SIGNAL(clicked()),this,SLOT(open_html()));
 
 }
 
@@ -36,6 +48,13 @@ WizardDialog::~WizardDialog()
 void WizardDialog::CreateItems(WizardScript *wizscript)
 {
     SelectedWizardScript = *wizscript;
+    if (SelectedWizardScript.Url().isEmpty())
+        ui->OpenHTML->setEnabled(false);
+    else
+    {   connect(svgviewer,&SVGViewer::doubleClicked,this, &WizardDialog::open_html);
+        svgviewer->setToolTip("Double-click to get more detailed explanations.");
+
+    }
     for (QMap<QString,WizardParameterGroup>::Iterator it=wizscript->GetWizardParameterGroups().begin(); it!=wizscript->GetWizardParameterGroups().end(); it++)
     {
         tab this_tab;
@@ -69,17 +88,20 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
     }
     on_TabChanged();
     QGraphicsScene* scene = new QGraphicsScene();
-    ui->graphicsView->setScene(scene);
-    if (wizscript->DiagramFileName().split(".")[1]=="png")
-        diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
-    else if (wizscript->DiagramFileName().split(".")[1]=="svg")
-    {   svgitem = new QGraphicsSvgItem(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
-        qDebug()<<scene->sceneRect();
-        ui->graphicsView->scene()->clear();
-        ui->graphicsView->scene()->addItem(svgitem);
+    svgviewer->setScene(scene);
+    if (wizscript->DiagramFileName().split(".").size()>1)
+    {   if (wizscript->DiagramFileName().split(".")[1]=="png")
+            diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+        else if (wizscript->DiagramFileName().split(".")[1]=="svg")
+        {   svgitem = new QGraphicsSvgItem(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
+            qDebug()<<scene->sceneRect();
+            svgviewer->scene()->clear();
+            svgviewer->scene()->addItem(svgitem);
+        }
     }
 
     resizeEvent();
+    setWindowState(Qt::WindowMaximized);
     repaint();
 
 }
@@ -238,18 +260,24 @@ void WizardDialog::GenerateModel()
 
 }
 
+void WizardDialog::open_html()
+{
+    QDesktopServices::openUrl(QUrl(SelectedWizardScript.Url()));
+}
+
+
 void WizardDialog::resizeEvent(QResizeEvent *)
 {
 
-    QSize gvs  = ui->graphicsView->size();
+    QSize gvs  = svgviewer->size();
     if (diagram_pix!=nullptr)
     {   QPixmap scaled_img = diagram_pix->scaled(gvs, Qt::IgnoreAspectRatio);
-        ui->graphicsView->scene()->clear();
-        ui->graphicsView->scene()->addPixmap(scaled_img);
+        svgviewer->scene()->clear();
+        svgviewer->scene()->addPixmap(scaled_img);
     }
     else if (svgitem!=nullptr)
     {
-        QRectF newRect = ui->graphicsView->scene()->itemsBoundingRect();
+        QRectF newRect = svgviewer->scene()->itemsBoundingRect();
         float width = float(newRect.width());
         float height = float(newRect.height());
         float scale = float(1.05);
@@ -257,9 +285,9 @@ void WizardDialog::resizeEvent(QResizeEvent *)
         newRect.setTop(newRect.top() - (scale - 1) / 2 * height);
         newRect.setWidth(qreal(width * scale));
         newRect.setHeight(qreal(height * scale));
-        if (width>ui->graphicsView->scene()->sceneRect().width() || height>ui->graphicsView->scene()->sceneRect().height())
-            ui->graphicsView->scene()->setSceneRect(newRect);
-        ui->graphicsView->fitInView(newRect,Qt::KeepAspectRatio);
-        ui->graphicsView->repaint();
+        if (width>svgviewer->scene()->sceneRect().width() || height>svgviewer->scene()->sceneRect().height())
+            svgviewer->scene()->setSceneRect(newRect);
+        svgviewer->fitInView(newRect,Qt::KeepAspectRatio);
+        svgviewer->repaint();
     }
 }

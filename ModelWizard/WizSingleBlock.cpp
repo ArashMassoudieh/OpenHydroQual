@@ -1,4 +1,5 @@
 #include "WizSingleBlock.h"
+#include <QDebug>
 
 SingleBlock::SingleBlock():Wizard_Entity()
 {

@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.1.23"
-#define last_modified "July, 19, 2024"
+#define openhydroqual_version "1.1.24"
+#define last_modified "November, 23, 2024"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     resource_directory = QString::fromStdString(RESOURCE_DIRECTORY);
+    qDebug()<<"Resource Directory: " << resource_directory;
     QIcon mainicon(QString::fromStdString(RESOURCE_DIRECTORY) + "/Icons/Aquifolium.png");
     workingfolder = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     setWindowIcon(mainicon);
