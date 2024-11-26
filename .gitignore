@@ -277,8 +277,12 @@ OpenHydroQual/x64/Release/qmake/
 
 build/Desktop_Qt_5_15_2_GCC_64bit-Debug/
 
+<<<<<<< HEAD
+build/Desktop_Qt_6_7_3-Debug/
+=======
 terminal/OHQTerminal/x64/Debug/qmake/
 
 terminal/OHQTerminal/x64/Release/
 
 Setup/QAquifolium-cache/part7/
+>>>>>>> 5f1ae12cd08fb81dfd0f4ed4d2e1196342fdbca6

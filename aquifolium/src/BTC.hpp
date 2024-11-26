@@ -849,8 +849,8 @@ CTimeSeries<T> operator*(T alpha, CTimeSeries<T> &CTimeSeries_T)
     CTimeSeries<T> S(CTimeSeries_T.n);
 	for (int i=0; i<CTimeSeries_T.n; i++)
 	{
-		S.t[i] = CTimeSeries_T.t[i];
-		S.C[i] = alpha*CTimeSeries_T.C[i];
+        S.SetT(i, CTimeSeries_T.GetT(i));
+        S.SetC(i, alpha*CTimeSeries_T.GetC(i));
 	}
 
 	return S;
