@@ -54,14 +54,14 @@
       "beta": "beta",
       "x": "1000",
       "y": "250",
-      "_width": "200",
+      "_width": "500",
       "_height": "200"
     },
     {
       "name": "Ground_Water",
       "type": "fixed_head",
       "x": "1050",
-      "y": "1000 + native_soil_n_y*250",
+      "y": "500 + native_soil_n_y*250",
       "_width": "100",
       "_height": "100",
       "head": "-depth_to_groundwater"
@@ -69,21 +69,11 @@
     {
       "name": "Receiving_sewer_pipe",
       "type": "fixed_head",
-      "x": "1913",
-      "y": "336",
+      "x": "1800",
+      "y": "300",
       "_width": "200",
       "_height": "200",
-      "head": "-Catch_Basin_Depth - 0.2;m"
-    },
-    {
-      "name": "Catch basin",
-      "type": "Catch basin",
-      "bottom_elevation": "-Catch_Basin_Depth;m",
-      "area": "Catch_Basin_Area",
-      "x": "1480",
-      "y": "73.37",
-      "_width": "200",
-      "_height": "200"
+      "head": "0.2;m"
     }
   ],
   "blockarrays": [
@@ -101,15 +91,15 @@
       "alpha": "native_soil_alpha;1/m",
       "n": "native_soil_n",
       "area": "Area_10;m~^2",
-      "bottom_elevation": "Native_soil_Bottom_Elevation;m",
-      "_width": "200",
+      "bottom_elevation": "-(j+1)*depth_to_groundwater/native_soil_n_y;m",
+      "_width": "500",
       "_height": "200",
       "specific_storage": "0.01;1/m",
       "theta": "0.2",
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
       "x": "1000",
-      "y": "1000+j*250"
+      "y": "500+j*250"
     }
   ],
   "connectors": [
@@ -143,26 +133,13 @@
     {
       "name": "Overflow",
       "from": "Pond",
-      "to": "Catch basin",
+      "to": "Receiving_sewer_pipe",
       "type": "wier",
       "connectiontype": "o2o",
       "connectionconfig": "u2d",
       "beta": "beta_overflow_wier",
       "alpha": "alpha_overflow_wier",
       "crest_elevation": "CrestElevation"
-    },
-    {
-      "name": "Catch basin to Receiving_sewer_pipe",
-      "from": "Catch basin",
-      "to": "Receiving_sewer_pipe",
-      "type": "Sewer_pipe",
-      "diameter": "diameter_catchbasin",
-      "ManningCoeff": "ManningCoeff_catchbasin",
-      "length": "20;m",
-      "start_elevation": "-Catch_Basin_Depth + 0.1;m",
-      "end_elevation": "-Catch_Basin_Depth -0.1;m",
-      "connectiontype": "o2o",
-      "connectionconfig": "u2d"
     }
   ],
   "parameters": [
@@ -173,9 +150,7 @@
       "unit": "m",
       "default": "0.2"    
     },
-    
     {
-   
       "name": "Native_soil_Bottom_Elevation",
       "delegate": "UnitBox",
       "question": "The bottom elevation of Native soil ",
@@ -183,20 +158,6 @@
       "default": "0.2" 
    
     },
-  
-   {
-      "name": "ManningCoeff_catchbasin",
-      "delegate": "ValueBox",
-      "question": "Catch basin pipe Manning's roughness coefficient to sewer",
-      "default": "0.01"
-   },
-   {
-      "name": "diameter_catchbasin",
-      "delegate": "UnitBox",
-      "question": "Catch basin pipe diameter to sewer ",
-      "unit": "m",
-      "default": "0.2"
-   },
     {
       "name": "Area_10",
       "delegate": "UnitBox",
@@ -314,20 +275,6 @@
       "default": "0.4"
     },
     {
-      "name": "Catch_Basin_Area",
-      "delegate": "UnitBox",
-      "question": "The base area of the catch basin",
-      "unit": "m~^2;ft~^2",
-      "default": "1"
-    },
-    {
-      "name": "Catch_Basin_Depth",
-      "delegate": "UnitBox",
-      "question": "Catch basin invert from the surface",
-      "unit": "m",
-      "default": "1"
-    },
-    {
       "name": "CrestElevation",
       "delegate": "UnitBox",
       "question": "Crest Elevation",
@@ -373,17 +320,6 @@
         "CrestElevation",
         "alpha_overflow_wier",
         "beta_overflow_wier"
-      ]
-    },
-    {
-      "name": "6_Catch basin",
-      "description": "Catch basin",
-      "parameters": [
-        "Catch_Basin_Area",
-        "Catch_Basin_Depth",
-        "ManningCoeff_catchbasin",
-        "diameter_catchbasin"
-        
       ]
     },
     {

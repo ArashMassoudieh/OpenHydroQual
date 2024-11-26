@@ -55,11 +55,13 @@ void MainWindow::PopulateListOfWizards()
 
 void MainWindow::itemDoubleClicked(QListWidgetItem* wizitem)
 {
-    WizardDialog *wizDialog = new WizardDialog(this);
+    WizardDialog *wizDialog = new WizardDialog();
     
     WizardScript wiz(wizitem->data(1000).toString());
     wizDialog->setWindowTitle(wiz.Description());
     wizDialog->CreateItems(&wiz);
+    wizDialog->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
+
     wizDialog->showMaximized();
     wizDialog->resizeEvent();
 }
