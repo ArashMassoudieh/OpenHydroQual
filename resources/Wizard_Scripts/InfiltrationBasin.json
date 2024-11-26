@@ -3,7 +3,7 @@
   "icon": "Infiltration_Basin.png",
   "url": "",
   "description": "This wizard create a Infiltration Basin ",
-  "diagram": "",
+  "diagram": "InfiltrationBasin.svg",
   "addtemplate": [
     "main_components.json",
     "unsaturated_soil.json",
