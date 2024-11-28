@@ -2,8 +2,8 @@
   "name": "Infiltration Trench (IT)",
   "icon": "Infiltration_trench.png",
   "description": "This wizard create a Infiltration Trench ",
-  "diagram": "",
-  "url": "",
+  "diagram": "InfiltrationTrench.svg",
+  "url": "https://openhydroqual.com/wp-content/Wizards/Infiltration_Trench/InfiltrationTrench.html",
   "addtemplate": [
     "main_components.json",
     "Pond_Plugin.json",
