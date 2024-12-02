@@ -1,7 +1,7 @@
 {
   "name": "Infiltration Basin (IB)",
   "icon": "Infiltration_Basin.png",
-  "url": "",
+  "url": "https://openhydroqual.com/wp-content/Wizards/Infiltration_Basin/Infiltration_Basin.html",
   "description": "This wizard create a Infiltration Basin ",
   "diagram": "InfiltrationBasin.svg",
   "addtemplate": [
