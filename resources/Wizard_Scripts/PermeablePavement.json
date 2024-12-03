@@ -427,8 +427,16 @@
         "Catchment_slope",
         "Catchment_Manning_coefficient",
         "Catchment_mean_width"
+      ],
+      "criteria": [
+        {
+          "name": "native_crit",
+          "less": "0",
+          "greater": "depth_to_groundwater-storage_layer_height",
+          "errormessage": "Groundwater depth must be greater than aggregate layer depths."
+        }
       ]
-    },
+     },
     {
       "name": "3_Aggregate storage",
       "description": "Aggregate storage properties",
@@ -447,11 +455,7 @@
         "native_soil_n",
         "native_soil_theta_res",
         "native_soil_theta_sat"
-      ]
+       ]
     }
-  ],
-  "criteria": [
-    {},
-    {}
   ]
 }

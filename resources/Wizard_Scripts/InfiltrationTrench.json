@@ -374,7 +374,15 @@
         "storage_layer_height",
         "aggregate_porosity"
       
-      ]
+      ],
+        "criteria": [
+     {
+     "name": "native_crit",
+          "less": "0",
+          "greater": "depth_to_groundwater-eng_soil_height-storage_layer_height",
+          "errormessage": "Groundwater depth must be greater than the sum of engineered soil and aggregate layer depths."
+      }
+     ]
     },
     {
       "name": "4_Native Soil",
@@ -387,9 +395,5 @@
         "native_soil_theta_sat"
       ]
     }
-  ],
-  "criteria": [
-    {},
-    {}
   ]
 }
