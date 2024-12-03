@@ -119,23 +119,23 @@
 		},
 		"alpha": {
 		      "type": "value",
-		      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta",
+		      "description": "Coefficient α in Q=α*(h-z_0)^β",
 		      "ask_user": "true",
 		      "delegate": "ValueBox",
 		      "estimate": "true",
 		      "default": "1",
 		      "criteria": "alpha>0",
-		      "warningmessage": "alpha must be positive"
+		      "warningmessage": "α must be positive"
     		},
     		"beta": {
 		      "type": "value",
-		      "description": "Exponent beta in Q=alpha*(h-z_0)^beta",
+		      "description": "Exponent β in Q=α*(h-z_0)^β",
 		      "ask_user": "true",
 		      "delegate": "ValueBox",
 		      "estimate": "true",
 		      "default": "2.5",
 		      "criteria": "beta>0",
-		      "warningmessage": "beta must be positive"
+		      "warningmessage": "β must be positive"
    		},	
 	        "flow" : {
 		      	"type": "expression",
@@ -386,14 +386,17 @@
 	      "delegate": "ValueBox",
 	      "estimate": "true"
 	    },
+	    "hydraulic_conductivity": {
+	      "type": "expression",
+	      "expression": "K_sat",
+	      "description": "Hydraulic conductivity",
+	      "includeinoutput": "false"
+	    },
 	    "depth": {
 	      "type": "expression",
 	      "expression": "Storage/(area*porosity)",
 	      "description": "Initial Water Depth; Water Depth",
-	      "ask_user": "true",
 	      "helptext": "This is the initial depth of water in the aggregate layer",
-	      "delegate": "UnitBox",
-	      "unit": "m;ft;cm",
 	      "includeinoutput": "true"
 	    },
 	    "head": {

@@ -28,10 +28,27 @@ WizardScript::WizardScript(const QString& filename)
         QString json_string;
         json_string = file_text.readAll();
         file_obj.close();
-        QByteArray json_bytes = json_string.toLocal8Bit();
+        
+        QJsonParseError parseError;
+        QJsonDocument json_doc = QJsonDocument::fromJson(json_string.toUtf8(), &parseError);
+        
+        if (parseError.error != QJsonParseError::NoError) {
+            qDebug() << "Error parsing JSON:";
+            qDebug() << "Error message:" << parseError.errorString();
+            qDebug() << "Error offset:" << parseError.offset;
+            int line = 1, column = 1;
+            for (int i = 0; i < parseError.offset; ++i) {
+                if (json_string[i] == '\n') {
+                    ++line;
+                    column = 1;
+                }
+                else {
+                    ++column;
+                }
+            }
+            qDebug() << "Line:" << line << ", Column:" << column;
 
-        // step 3
-        auto json_doc = QJsonDocument::fromJson(json_bytes);
+        }
 
         if (json_doc.isNull()) {
             qDebug() << "Failed to create JSON doc.";

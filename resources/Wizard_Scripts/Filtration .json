@@ -1,0 +1,441 @@
+{
+  "name": "Surface Filtration (SF)",
+  "icon": "Flitration.png",
+  "url": "",
+  "description": "This wizard create a Surface Filtration with underdrain",
+  "diagram": "",
+  "addtemplate": [
+    "main_components.json",
+    "unsaturated_soil.json",
+    "Pond_Plugin.json",
+    "Sewer_system.json"
+  ],
+  "entities": [
+    {
+      "name": "Rain",
+      "entity": "source",
+      "type": "Precipitation",
+      "timeseries": "TimeSeriesFileName@sp"
+    }
+  ],
+  "setvals": [
+    {
+      "name": "start_date",
+      "object": "system@sc",
+      "quantity": "simulation_start_time@sc",
+      "value": "StartTime@dp"
+    },
+    {
+      "name": "end_date",
+      "object": "system@sc",
+      "quantity": "simulation_end_time@sc",
+      "value": "EndTime@dp"
+    }
+  ],
+  "singleblocks": [
+    {
+      "name": "Impervious contributing catchment",
+      "area": "Catchment_area;m~^2",
+      "Precipitation": "Rain@sc",
+      "type": "Catchment",
+      "Slope": "Catchment_slope",
+      "ManningCoeff": "Catchment_Manning_coefficient",
+      "Width": "Catchment_mean_width",
+      "x": "500",
+      "y": "-130",
+      "_width": "300",
+      "_height": "300"
+    },
+    {
+      "name": "Top Soil",
+      "type": "Soil",
+      "K_sat_original": "top_soil_K_s;m/day",
+      "K_sat_scale_factor": "1",
+      "depth": "top_soil_height;m",
+      "alpha": "top_soil_alpha;1/m",
+      "n": "top_soil_n",
+      "area": "Surface_Area;m~^2",
+      "bottom_elevation": "-top_soil_height;m",
+      "_width": "200",
+      "_height": "200",
+      "specific_storage": "0.01;1/m",
+      "theta": "0.2",
+      "theta_res": "top_soil_theta_res",
+      "theta_sat": "top_soil_theta_sat",
+      "x": "1000",
+      "y": "500"
+    },
+    {
+      "name": "Sand",
+      "type": "Soil",
+      "K_sat_original": "sand_soil_K_s;m/day",
+      "K_sat_scale_factor": "1",
+      "depth": "sand_soil_height;m",
+      "alpha": "sand_soil_alpha;1/m",
+      "n": "sand_soil_n",
+      "area": "Surface_Area;m~^2",
+      "bottom_elevation": "-sand_soil_height;m",
+      "_width": "200",
+      "_height": "200",
+      "specific_storage": "0.01;1/m",
+      "theta": "0.2",
+      "theta_res": "sand_soil_theta_res",
+      "theta_sat": "sand_soil_theta_sat",
+      "x": "1008",
+      "y": "1068"
+    },
+    {
+      "name": "Aggregate storage",
+      "type": "Aggregate_storage_layer",
+      "x": "1000",
+      "y": "750",
+      "bottom_elevation": "-top_soil_height-storage_layer_height;m",
+      "porosity": "aggregate_porosity",
+      "area": "Surface_Area",
+      "_width": "200",
+      "_height": "200"
+    },
+    {
+      "name": "Receiving_sewer_pipe",
+      "type": "fixed_head",
+      "x": "1913",
+      "y": "336",
+      "_width": "200",
+      "_height": "200",
+      "head": "-Catch_Basin_Depth - 0.2;m"
+    },
+    {
+      "name": "Catch basin",
+      "type": "Catch basin",
+      "bottom_elevation": "-Catch_Basin_Depth;m",
+      "area": "Catch_Basin_Area",
+      "x": "1480",
+      "y": "73.37",
+      "_width": "200",
+      "_height": "200"
+    }
+  ],
+  "blockarrays": [
+  ],
+  "connectors": [
+    {
+      "name": "Catchment to bioretention",
+      "from": "Impervious contributing catchment",
+      "to": "Top Soil",
+      "type": "Catchment_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Top soil to Aggregate storage",
+      "from": "Top Soil",
+      "to": "Aggregate storage",
+      "type": "soil_to_aggregate_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Aggregate storage to Sand",
+      "from": "Aggregate storage",
+      "to": "Sand",
+      "type": "aggregate_to_soil_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Aggregate storage to Catch basin",
+      "from": "Aggregate storage",
+      "to": "Catch basin",
+      "type": "Sewer_pipe",
+      "diameter": "diameter_aggregate",
+      "ManningCoeff": "ManningCoeff_aggregate",
+      "length": "length_aggregate",
+      "start_elevation": "-top_soil_height-storage_layer_height + 0.1;m",
+      "end_elevation": "-Catch_Basin_Depth + 0.1;m",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    },
+    {
+      "name": "Catch basin to Receiving_sewer_pipe",
+      "from": "Catch basin",
+      "to": "Receiving_sewer_pipe",
+      "type": "Sewer_pipe",
+      "diameter": "diameter_aggregate",
+      "ManningCoeff": "ManningCoeff_aggregate",
+      "length": "20;m",
+      "start_elevation": "-Catch_Basin_Depth + 0.1;m",
+      "end_elevation": "-Catch_Basin_Depth -0.1;m",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
+    }
+  ],
+  "parameters": [
+    { 
+      "name": "Surface_Area",
+      "delegate": "UnitBox",
+      "question": "Surface area",
+      "default": "100",
+      "unit": "m~^2" 
+    },
+    {
+      "name": "top_soil_K_s",
+      "delegate": "UnitBox",
+      "question": "Top soil Saturated Hydraulic Conductivity",
+      "unit": "m/day",
+      "default": "10"
+    },
+    {
+      "name": "Catchment_area",
+      "delegate": "UnitBox",
+      "question": "The area of impervious contributing area",
+      "unit": "m~^2",
+      "default": "1000"
+    },
+    {
+      "name": "Catchment_slope",
+      "delegate": "ValueBox",
+      "question": "The slope of the impervious contributing area",
+      "default": "0.01"
+    },
+    {
+      "name": "Catchment_Manning_coefficient",
+      "delegate": "ValueBox",
+      "question": "Effective Manning's roughness coefficient of the impervious contributing area",
+      "default": "0.011"
+    },
+    {
+      "name": "Catchment_mean_width",
+      "delegate": "UnitBox",
+      "question": "Catchment average width",
+      "unit": "m",
+      "default": "30"
+    },
+    {
+      "name": "top_soil_alpha",
+      "delegate": "UnitBox",
+      "question": "Top soil Van Genuchten α parameter",
+      "unit": "1/m",
+      "default": "1"
+    },
+    {
+      "name": "top_soil_n",
+      "delegate": "ValueBox",
+      "question": "Top soil Van Genuchten n parameter",
+      "default": "1.41"
+    },
+    {
+      "name": "top_soil_theta_res",
+      "delegate": "ValueBox",
+      "question": "Top soil residual moisture content",
+      "default": "0.05"
+    },
+    {
+      "name": "top_soil_theta_sat",
+      "delegate": "ValueBox",
+      "question": "Top soil residual moisture content",
+      "default": "0.4"
+    },
+    {
+      "name": "sand_soil_K_s",
+      "delegate": "UnitBox",
+      "question": "Sand soil hydraulic conductivity",
+      "unit": "m/day",
+      "default": "0.166"
+    },
+    {
+      "name": "sand_soil_alpha",
+      "delegate": "UnitBox",
+      "question": "Sand soil Van Genuchten α parameter",
+      "unit": "1/m",
+      "default": "3.52"
+    },
+    {
+      "name": "sand_soil_n",
+      "delegate": "ValueBox",
+      "question": "Sand soil Van Genuchten n parameter",
+      "default": "3.18"
+    },
+    {
+      "name": "sand_soil_theta_res",
+      "delegate": "ValueBox",
+      "question": "Sand soil residual moisture content",
+      "default": "0.05"
+    },
+    {
+      "name": "sand_soil_theta_sat",
+      "delegate": "ValueBox",
+      "question": "Sand soil saturated moisture content",
+      "default": "0.38"
+    },
+    {
+    "name":"sand_soil_height",
+    "delegate": "UnitBox",
+    "question": "Depth of the sand",
+    "unit": "m",
+    "default": "0.3"
+    },
+    {
+      "name": "top_soil_height",
+      "delegate": "UnitBox",
+      "question": "Top soil depth ",
+      "unit": "m",
+      "default": "0.08"
+    },
+    {
+      "name": "sand_soil_height",
+      "delegate": "UnitBox",
+      "question": "Sand soil depth",
+      "unit": "m",
+      "default": "0.4"
+    },
+    {
+      "name": "TimeSeriesFileName",
+      "delegate": "FileBrowser",
+      "question": "Precipitation file name"
+    },
+    {
+      "name": "StartTime",
+      "delegate": "DateBox",
+      "question": "Simulation Start Date"
+    },
+    {
+      "name": "EndTime",
+      "delegate": "DateBox",
+      "question": "Simulation End Date"
+    },
+    {
+      "name": "storage_layer_height",
+      "delegate": "UnitBox",
+      "question": "Depth of the Aggregate soil",
+      "unit": "m",
+      "default": "0.4"
+    },
+    {
+      "name": "Catch_Basin_Area",
+      "delegate": "UnitBox",
+      "question": "The base area of the catch basin",
+      "unit": "m~^2;ft~^2",
+      "default": "1"
+    },
+    {
+      "name": "Catch_Basin_Depth",
+      "delegate": "UnitBox",
+      "question": "Catch basin invert from the surface",
+      "unit": "m",
+      "default": "1"
+    },
+    {
+      "name": "aggregate_porosity",
+      "delegate": "ValueBox",
+      "question": "Porosity",
+      "default": "0.4"
+    },
+    {
+      "name": "ManningCoeff_aggregate",
+      "delegate": "ValueBox",
+      "question": "Manning's roughness coefficient of the drainage pipe ",
+      "default": "0.01"
+    },
+    {
+      "name": "diameter_aggregate",
+      "delegate": "UnitBox",
+      "question": "Underdrain pipe diameter",
+      "unit": "m",
+      "default": "0.2"
+    },
+    {
+      "name": "length_aggregate",
+      "delegate": "UnitBox",
+      "question": "The length of underdrain pipe",
+      "unit": "m",
+      "default": "20"
+    }
+  ],
+  "parameter_groups": [
+    {
+      "name": "1_general",
+      "description": "General Model parameters",
+      "parameters": [
+        "StartTime",
+        "EndTime",
+        "TimeSeriesFileName"
+      ]
+    },
+    {
+      "name": "7_Sewer",
+      "description": "Underdrain pipe",
+      "parameters": [
+        "ManningCoeff_aggregate",
+        "diameter_aggregate",
+        "length_aggregate"
+      ]
+    },
+    {
+      "name": "3_catchment",
+      "description": "Contributing area",
+      "parameters": [
+        "Catchment_area",
+        "Catchment_slope",
+        "Catchment_Manning_coefficient",
+        "Catchment_mean_width"
+      ]
+    },
+    {
+      "name": "5_Aggregate storage",
+      "description": "Aggregate storage",
+      "parameters": [
+        "storage_layer_height",
+        "aggregate_porosity"
+      ]
+    },
+    {
+      "name": "6_Catch basin",
+      "description": "Catch basin",
+      "parameters": [
+        "Catch_Basin_Area",
+        "Catch_Basin_Depth"
+      ]
+    },
+    {
+      "name": "2_geometry",
+      "description": "Model geometry",
+      "parameters": [
+        "sand_soil_n_y",
+        "top_soil_height",
+        "Surface_Area"
+      ],
+      "criteria": [
+        {
+          "name": "top_soil_height_crit",
+          "less": "0",
+          "greater": "top_soil_height",
+          "errormessage": "Top soil height must be greater than zero!"
+        }
+      ]
+    },
+    {
+      "name": "top_soil_physical_parameter",
+      "description": "Physical parameters of the top soil medium",
+      "parameters": [
+        "top_soil_K_s",
+        "top_soil_alpha",
+        "top_soil_n",
+        "top_soil_theta_sat",
+        "top_soil_theta_res",
+        "top_soil_height"
+      ]
+    },
+    {
+      "name": "sand_soil_physical_parameter",
+      "description": "Physical parameters of the sand soil",
+      "parameters": [
+        "sand_soil_K_s",
+        "sand_soil_alpha",
+        "sand_soil_n",
+        "sand_soil_theta_sat",
+        "sand_soil_theta_res",
+        "sand_soil_height"
+      ]
+    }
+  ]
+}

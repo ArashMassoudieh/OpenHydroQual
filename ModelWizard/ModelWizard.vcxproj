@@ -31,13 +31,13 @@
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
-    <QtInstall>5.15</QtInstall>
-    <QtModules>core;gui;svg;widgets</QtModules>
+    <QtInstall>6.7</QtInstall>
+    <QtModules>core;gui;widgets;svg;svgwidgets</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
-    <QtInstall>5.15</QtInstall>
-    <QtModules>core;gui;svg;widgets</QtModules>
+    <QtInstall>6.7</QtInstall>
+    <QtModules>core;gui;widgets;svg;svgwidgets</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -101,6 +101,7 @@
     <ClCompile Include="..\UnitTextBox3.cpp" />
     <ClCompile Include="FilePushButton.cpp" />
     <ClCompile Include="SetValEntity.cpp" />
+    <ClCompile Include="svgviewer.cpp" />
     <ClCompile Include="wizardcriteria.cpp" />
     <ClCompile Include="wizarddialog.cpp" />
     <ClCompile Include="wizardparameter.cpp" />
@@ -122,6 +123,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\aquifolium\include\Expression.h" />
+    <QtMoc Include="svgviewer.h" />
     <ClInclude Include="WizBlockArray.h" />
     <ClInclude Include="WizConnector.h" />
     <ClInclude Include="WizSingleBlock.h" />

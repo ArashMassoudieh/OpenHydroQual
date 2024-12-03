@@ -258,7 +258,7 @@
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "false",
-      "default": "0",
+      "default": "0.0001",
       "unit": "m~^3;ft~^3",
       "estimate": "true"
     },

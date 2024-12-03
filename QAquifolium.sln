@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29728.190
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QAquifolium", "QAquifolium.vcxproj", "{5A90F65E-A732-3F51-9E7E-690233E2FA3A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenHydroQual", "QAquifolium.vcxproj", "{5A90F65E-A732-3F51-9E7E-690233E2FA3A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{403737A9-365F-43D0-B642-33C97A58BD6C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelWizard", "ModelWizard\ModelWizard.vcxproj", "{B8F575E1-D901-44AF-A7FE-F996C85E7950}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OHQTerminal", "terminal\OHQTerminal\OHQTerminal.vcxproj", "{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,6 +27,22 @@ Global
 		{5A90F65E-A732-3F51-9E7E-690233E2FA3A}.Release|x64.Build.0 = Release|x64
 		{5A90F65E-A732-3F51-9E7E-690233E2FA3A}.Release|x86.ActiveCfg = Release|Win32
 		{5A90F65E-A732-3F51-9E7E-690233E2FA3A}.Release|x86.Build.0 = Release|Win32
+		{B8F575E1-D901-44AF-A7FE-F996C85E7950}.Debug|x64.ActiveCfg = Debug|x64
+		{B8F575E1-D901-44AF-A7FE-F996C85E7950}.Debug|x64.Build.0 = Debug|x64
+		{B8F575E1-D901-44AF-A7FE-F996C85E7950}.Debug|x86.ActiveCfg = Debug|x64
+		{B8F575E1-D901-44AF-A7FE-F996C85E7950}.Debug|x86.Build.0 = Debug|x64
+		{B8F575E1-D901-44AF-A7FE-F996C85E7950}.Release|x64.ActiveCfg = Release|x64
+		{B8F575E1-D901-44AF-A7FE-F996C85E7950}.Release|x64.Build.0 = Release|x64
+		{B8F575E1-D901-44AF-A7FE-F996C85E7950}.Release|x86.ActiveCfg = Release|x64
+		{B8F575E1-D901-44AF-A7FE-F996C85E7950}.Release|x86.Build.0 = Release|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Debug|x64.ActiveCfg = Debug|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Debug|x64.Build.0 = Debug|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Debug|x86.ActiveCfg = Debug|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Debug|x86.Build.0 = Debug|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Release|x64.ActiveCfg = Release|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Release|x64.Build.0 = Release|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Release|x86.ActiveCfg = Release|x64
+		{EC5F815B-9265-4E61-89C4-BF11C2FBEB49}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

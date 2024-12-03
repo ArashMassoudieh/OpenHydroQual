@@ -76,6 +76,9 @@
     <ClCompile Include="WizBlockArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="svgviewer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -88,6 +91,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="FilePushButton.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="svgviewer.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

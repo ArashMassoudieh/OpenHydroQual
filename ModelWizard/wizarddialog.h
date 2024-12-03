@@ -8,6 +8,7 @@
 #include <QFormLayout>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsSvgItem>
+#include "svgviewer.h"
 
 struct tab {
     QScrollArea *scrollArea;
@@ -43,6 +44,7 @@ private:
     QPixmap* diagram_pix = nullptr;
     QGraphicsSvgItem *svgitem = nullptr;
     int currenttabindex=0;
+    SVGViewer *svgviewer = nullptr;
 
 public slots:
     void on_next_clicked();
