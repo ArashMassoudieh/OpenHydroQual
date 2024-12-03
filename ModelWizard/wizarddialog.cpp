@@ -26,6 +26,7 @@ WizardDialog::WizardDialog(QWidget *parent) :
     connect(ui->tabWidget,SIGNAL(currentChanged(int)), this, SLOT(on_TabChanged()));
     connect(ui->graphicsView,SIGNAL(resizeevent()),this, SLOT(fit_diagram()));
     connect(ui->OpenHTML, SIGNAL(clicked()),this,SLOT(open_html()));
+
 }
 
 WizardDialog::~WizardDialog()

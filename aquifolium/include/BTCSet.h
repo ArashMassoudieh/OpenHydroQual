@@ -76,6 +76,9 @@ public:
     CTimeSeries<T> operator[](string BTCName) const;
     bool Contains(string BTCName);
     bool ReadContentFromFile(string _filename, bool varytime);
+    CTimeSeriesSet<T> ConverttoNormalScore();
+    CTimeSeriesSet<T> AutoCorrelation(const double &span, const double &increment);
+    CTimeSeriesSet<T> GetCummulativeDistribution();
 #ifdef _ARMA
     arma::mat ToArmaMat(const vector<string> &columns = vector<string>());
     arma::mat ToArmaMat(const vector<int> &columns);
