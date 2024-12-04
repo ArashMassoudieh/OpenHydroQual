@@ -280,7 +280,7 @@
     {
       "name": "storage_layer_height",
       "delegate": "UnitBox",
-      "question": "Depth of the Aggregate soil",
+      "question": "Depth of the Aggregate",
       "unit": "m",
       "default": "0.4"
     },
@@ -313,14 +313,14 @@
     {
       "name": "depth_to_groundwater",
       "delegate": "UnitBox",
-      "question": "Depth to groundwater",
+      "question": "The depth to groundwater",
       "unit": "m",
       "default": "3"
     },
     {
       "name": "Catch_Basin_Depth",
       "delegate": "UnitBox",
-      "question": "Catch basin invert from the surface",
+      "question": "The catch basin invert from the surface",
       "unit": "m"
     },
     {
@@ -351,7 +351,39 @@
         "pipe_start_invert",
         "Catch_Basin_Depth",
         "Catch_Basin_Area"
-      ]
+      ],
+      "criteria": [
+     {
+          "name": "pipe_start_invert_crit",
+          "less": "pipe_start_invert",
+          "greater": "storage_layer_height",
+          "errormessage": "The invert of underdrain pipe cannot be lower than the bottom surface of the aggregate layer"
+      },
+      {
+          "name": "pipe_start_invert_neg_crit",
+          "less": "0",
+          "greater": "pipe_start_invert",
+          "errormessage": "The invert of underdrain pipe must be greater than zero"
+      },
+      {
+     	 "name": "length_aggregate_crit",
+          "less": "0",
+          "greater": "length_aggregate",
+          "errormessage": "The lenght of the underdrain pipe must be greater than zero!"
+      },
+      {
+         "name": "Catch_Basin_Depth_crit",
+          "less": "0",
+          "greater": "Catch_Basin_Depth",
+          "errormessage": "The catch basin invert from the surface must be greater than zero!"
+      },
+      {
+          "name": "Catch_Basin_Area_crit",
+          "less": "0",
+          "greater": "Catch_Basin_Area",
+          "errormessage": "The base area of the catch basin must be greater than zero!"
+      }
+     ]
     },
     {
       "name": "2_geometry",
@@ -365,6 +397,50 @@
         "Catchment_slope",
         "Catchment_Manning_coefficient",
         "Catchment_mean_width"
+      ],
+       "criteria": [
+        {
+          "name": "Catchment_area_crit",
+          "less": "0",
+          "greater": "Catchment_area",
+          "errormessage": "The area of impervious contributing area must be greater than zero!"
+        },
+        {
+         "name": "Catchment_slope_crit",
+          "less": "0",
+          "greater": "Catchment_slope",
+          "errormessage": "The slope of the impervious contributing area must be greater than zero!"        
+        },
+        {
+         "name": "Catchment_Manning_coefficient_crit",
+          "less": "0",
+          "greater": "Catchment_Manning_coefficient",
+          "errormessage": "The effective Manning's roughness coefficient of the impervious contributing area must be greater than zero!" 
+        },
+        {
+           "name": "Catchment_mean_width_crit",
+          "less": "0",
+          "greater": "Catchment_mean_width",
+          "errormessage": "The average width of the impervious contributing area perpendicular to the flow direction must be greater than zero!" 
+        },
+        {
+         "name": "width_crit",
+          "less": "0",
+          "greater": "width",
+          "errormessage": "The width must be greater than zero!"      
+        },
+        {
+          "name": "depth_to_groundwater_crit",
+          "less": "0",
+          "greater": "depth_to_groundwater",
+          "errormessage": "The groundwater depth must be greater than zero!"
+        },
+        {
+         "name": "length_crit",
+          "less": "0",
+          "greater": "length",
+          "errormessage": "The length must be greater than zero!"        
+        }
       ]
     },
     {
@@ -377,10 +453,17 @@
       ],
         "criteria": [
      {
-     "name": "native_crit",
+         "name": "native_crit",
           "less": "0",
-          "greater": "depth_to_groundwater-eng_soil_height-storage_layer_height",
-          "errormessage": "Groundwater depth must be greater than the sum of engineered soil and aggregate layer depths."
+          "greater": "depth_to_groundwater-storage_layer_height",
+          "errormessage": "The groundwater depth must be greater than aggregate layer depth."
+      },
+      {
+      
+          "name":  "aggregate_porosity_crit",
+          "less": "0",
+          "greater":  "aggregate_porosity",
+          "errormessage": "The porosity must be greater than zero!"
       }
      ]
     },
@@ -393,6 +476,26 @@
         "native_soil_n",
         "native_soil_theta_res",
         "native_soil_theta_sat"
+      ],
+       "criteria": [
+        {
+          "name": "native_soil_theta_sat_crit",
+          "less": "native_soil_theta_res",
+          "greater": "native_soil_theta_sat",
+          "errormessage": "The native soil saturated moisture content must be greater than the residual moisture content"
+        },
+        {
+          "name": "native_soil_theta_res_crit",
+          "less": "-0.00000001",
+          "greater": "native_soil_theta_res",
+          "errormessage": "The native soil resudual moisture content must be non-negative"
+        },
+        {
+        "name":  "native_soil_theta_sat_2_crit",
+          "less": "native_soil_theta_sat",
+          "greater": "1.00000001",
+          "errormessage": "The native soil saturated moisture content cannot be greater than 1.00!"
+        }
       ]
     }
   ]

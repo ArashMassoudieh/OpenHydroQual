@@ -276,8 +276,26 @@ QStringList WizardScript::Script()
 
     for (QMap<QString, Wizard_Entity>::iterator it = Entities.begin(); it != Entities.end(); it++)
     {
-        QStringList out = it.value().GenerateScript(&GetWizardParameters());
-        script.append(out);
+        if (it.value().Entity()=="constituent")
+        {   QStringList out = it.value().GenerateScript(&GetWizardParameters());
+            script.append(out);
+        }
+    }
+
+    for (QMap<QString, Wizard_Entity>::iterator it = Entities.begin(); it != Entities.end(); it++)
+    {
+        if (it.value().Entity()=="reaction_parameter")
+        {   QStringList out = it.value().GenerateScript(&GetWizardParameters());
+            script.append(out);
+        }
+    }
+
+    for (QMap<QString, Wizard_Entity>::iterator it = Entities.begin(); it != Entities.end(); it++)
+    {
+        if (it.value().Entity()!="reaction_parameter" && it.value().Entity()!="constituent")
+        {   QStringList out = it.value().GenerateScript(&GetWizardParameters());
+            script.append(out);
+        }
     }
     
 
