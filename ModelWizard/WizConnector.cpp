@@ -258,7 +258,8 @@ QStringList Connector::GenerateScript(QMap<QString, WizardParameter> *params)
         {
             SingleBlock* fromBlock = static_cast<SingleBlock*>(GetFromEntity());
             BlockArray* toBlock = static_cast<BlockArray*>(GetToEntity());
-            for (int j = 0; j < static_cast<BlockArray*>(GetFromEntity())->Ny(); j++)
+            qDebug()<< static_cast<BlockArray*>(GetToEntity())->Ny();
+            for (int j = 0; j < static_cast<BlockArray*>(GetToEntity())->Ny(); j++)
             {
                 QString line;
                 line += "create link;";

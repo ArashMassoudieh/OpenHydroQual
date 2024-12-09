@@ -42,7 +42,7 @@
     "type":"Reactor",
     "Storage":"Reactor_Volume;m~^3",
     "bottom_elevation":"0",
-    "constant_inflow":"Constant_Inflow",
+    "constant_inflow":"Reactor_Constant_Inflow",
     "x":"0",
     "y": "901",
     "_width": "200",
@@ -53,7 +53,6 @@
     "type":"Settling compartment",
     "Storage":"Settling_Tank_Area * Settling_Tank_Height / 2",
     "bottom_elevation":"0",
-    "inflow": "0",
     "x": "1463",
     "y": "903",
     "_width": "200",
@@ -64,7 +63,6 @@
      "type":"Settling compartment",
      "Storage":"Settling_Tank_Area * Settling_Tank_Height / 2",
      "bottom_elevation":"-1",
-     "inflow": "0",
      "x":"1466",
      "y": "1166",
      "_width": "200",
@@ -178,10 +176,10 @@
     
     },
     {
-    "name":"Constant_Inflow",
-    "delegate":"Value",
-    "question": "Constant inflow"
-    
+    "name":"Reactor_Constant_Inflow",
+    "delegate":"ValueBox",
+    "question": "Reactor constant inflow",
+    "default": "1"
     },
     {
      "name":"Settling_Tank_Height",
@@ -217,7 +215,9 @@
         "Reactor_Volume",
         "Settling_Tank_Height",
         "Settling_Tank_Area",
-        "number_of_reactors"
+        "number_of_reactors",
+        "Reactor_Constant_Inflow"
+        
      ]
      }
  ]
