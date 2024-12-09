@@ -687,10 +687,10 @@ template <class T>
 CTimeSeriesSet<T> CTimeSeriesSet<T>::distribution(int n_bins, int n_columns, int limit)
 {
 	//qDebug() << "Distribution bins, columns, limit" << n_bins << n_columns << limit;
-	CTimeSeriesSet A(n_columns);
+    CTimeSeriesSet A;
 	for (int i = 0; i < n_columns; i++)
 	{
-		A.BTC[i] = BTC[i].distribution(n_bins, limit);
+        A.append(BTC[i].distribution(n_bins, limit),names[i]);
 		//qDebug() << "BTC[" << i << "] done";
 	}
 
@@ -1311,6 +1311,51 @@ CTimeSeriesSet CTimeSeriesSet<T>::unCompact(QDataStream &data)
 	return c;
 }
 #endif
+
+template <class T>
+CTimeSeriesSet<T> CTimeSeriesSet<T>::ConverttoNormalScore()
+{
+    CTimeSeriesSet<T> out;
+    for (int i=0; i<nvars; i++)
+    {
+        out.append(BTC[i].ConverttoNormalScore(),names[i]);
+    }
+    return out;
+}
+
+template <class T>
+CTimeSeriesSet<T> CTimeSeriesSet<T>::AutoCorrelation(const double &span, const double &increment)
+{
+    CTimeSeriesSet<T> out;
+    for (int i=0; i<nvars; i++)
+    {
+        out.append(BTC[i].AutoCorrelation(span, increment),names[i]);
+    }
+    return out;
+}
+
+template <class T>
+CTimeSeriesSet<T> CTimeSeriesSet<T>::GetCummulativeDistribution()
+{
+    CTimeSeriesSet<T> out;
+    for (int i=0; i<nvars; i++)
+    {
+        out.append(BTC[i].GetCummulativeDistribution(),names[i]);
+    }
+    return out;
+}
+
+template <class T>
+CTimeSeriesSet<T> CTimeSeriesSet<T>::Log()
+{
+    CTimeSeriesSet<T> out;
+    for (int i=0; i<nvars; i++)
+    {
+        out.append(BTC[i].Log(),names[i]);
+    }
+    return out;
+}
+
 
 #ifdef _ARMA
 template <class T>

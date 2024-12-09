@@ -234,7 +234,7 @@
 		      "description": "Head-loss coefficient",
 		      "ask_user": "true",
 		      "delegate": "UnitBox",
-			  "unit": "m~^3/day",
+			  "unit": "m~^2/day",
 		      "estimate": "true",
 		      "default": "0.6",
 		      "criteria": "Transmissivity>0",

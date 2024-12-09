@@ -630,8 +630,8 @@ T R(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, int nlimit)
 
 	for (int i=nlimit; i<BTC_d.n; i++)
 	{
-        T x1 = BTC_d.C[i];
-        T x2 = BTC_p.C[i];
+        T x1 = BTC_d.GetC(i);
+        T x2 = BTC_p.GetC(i);
 		sumcov += x1*x2/N;
 		sumvar1 += x1*x1/N;
 		sumvar2 += x2*x2/N;
@@ -863,7 +863,7 @@ CTimeSeries<T> operator*(CTimeSeries<T> &CTimeSeries_T, T alpha)
 	for (int i=0; i<CTimeSeries_T.n; i++)
 	{
 		//S.t[i] = CTimeSeries_T.t[i];
-		S.C[i] = alpha*CTimeSeries_T.C[i];
+        S.SetC(i, alpha*CTimeSeries_T.C[i]);
 	}
 
 
@@ -877,7 +877,7 @@ CTimeSeries<T> operator/(CTimeSeries<T> &CTimeSeries_T, T alpha)
     for (int i=0; i<CTimeSeries_T.n; i++)
     {
         //S.t[i] = CTimeSeries_T.t[i];
-        S.C[i] = 1/alpha*CTimeSeries_T.C[i];
+        S.SeC(i, 1/alpha*CTimeSeries_T.C[i]);
     }
 
 
@@ -889,7 +889,7 @@ CTimeSeries<T> operator/(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 {
     CTimeSeries<T> S = BTC1;
 	for (int i=0; i<BTC1.n; i++)
-		S.C[i] = BTC1.C[i]/BTC2.interpol(BTC1.t[i]);
+        S.SetC(i, BTC1.C[i]/BTC2.interpol(BTC1.t[i]));
 
 	return S;
 
