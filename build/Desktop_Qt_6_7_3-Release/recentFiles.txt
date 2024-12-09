@@ -1,4 +1,0 @@
-/home/behzad/Projects/Van Nuys/Van Nuys BR.ohq
-/home/behzad/Documents/ASM_First_Attmpt.ohq
-/home/behzad/Projects/ASM/ASM_First_Attempt.ohq
-/home/behzad/Projects/Settling_Models/CreatedModel_obs.ohq

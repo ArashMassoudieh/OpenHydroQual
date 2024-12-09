@@ -161,8 +161,7 @@
 	"description": "Inflow",
     	"ask_user": "false"
     },
-    "bottom_elevation":
-    {
+    "bottom_elevation": {
     	"type": "value",
     	"ask_user": "true",
     	"description": "Bottom elevation",
