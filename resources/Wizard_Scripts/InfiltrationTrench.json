@@ -459,7 +459,6 @@
           "errormessage": "The groundwater depth must be greater than aggregate layer depth."
       },
       {
-      
           "name":  "aggregate_porosity_crit",
           "less": "0",
           "greater":  "aggregate_porosity",

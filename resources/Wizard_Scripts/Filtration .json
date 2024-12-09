@@ -1,9 +1,9 @@
 {
   "name": "Surface Filtration (SF)",
   "icon": "Flitration.png",
-  "url": "",
+  "url": "https://openhydroqual.com/wp-content/Wizards/Filtration/Filtration.html",
   "description": "This wizard create a Surface Filtration with underdrain",
-  "diagram": "",
+  "diagram": "Filtration.svg",
   "addtemplate": [
     "main_components.json",
     "unsaturated_soil.json",
@@ -19,51 +19,47 @@
       "timeseries": "TimeSeriesFileName@sp"
     },
     {
-     "name" : "Build up",
-     "entity": "source",
-     "type": "Build up",
-     "build_up_rate":"Buildup_rate"
+      "name": "Build up",
+      "entity": "source",
+      "type": "Build up",
+      "build_up_rate": "Buildup_rate"
     },
     {
-     "name" : "Mobile_Particles",
-     "entity": "constituent",
-     "type": "Constituent"
+      "name": "Mobile_Particles",
+      "entity": "constituent",
+      "type": "Constituent"
     },
     {
-     "name" : "Immobile_Particles",
-     "entity": "constituent",
-     "type": "Immobile_Constituent"
+      "name": "Immobile_Particles",
+      "entity": "constituent",
+      "type": "Immobile_Constituent"
     },
     {
-    
-     "name" : "Filtration_label",
-     "entity": "constituent",
-     "type": "Immobile_Constituent"
-    
+      "name": "Filtration_label",
+      "entity": "constituent",
+      "type": "Immobile_Constituent"
     },
     {
-    
-     "name" : "Filtration",
-     "entity": "reaction",
-     "type": "Reaction",
-     "rate_expression":"filtration_rate_coefficient*Filtration_label*Mobile_Particles@sc",
-     "Mobile_Particles:stoichiometric_constant":"-1"
+      "name": "Filtration",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "filtration_rate_coefficient*Filtration_label*Mobile_Particles@sc",
+      "Mobile_Particles:stoichiometric_constant": "-1"
     },
     {
-    "name":"filtration_rate_coefficient",
-    "entity":"reaction_parameter",
-    "type": "ReactionParameter",
-    "base_value":"FiltrationRateCoefficient"
+      "name": "filtration_rate_coefficient",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "FiltrationRateCoefficient"
     },
     {
-    "name":"surface_release",
-    "entity":"reaction",
-    "type": "surface_release",
-    "Immobile_Particles:stoichiometric_constant":"-1",
-    "Mobile_Particles:stoichiometric_constant":"1",
-    "concentration_dependence_rate_expression":"Immobile_Particles@sc"
+      "name": "surface_release",
+      "entity": "reaction",
+      "type": "surface_release",
+      "Immobile_Particles:stoichiometric_constant": "-1",
+      "Mobile_Particles:stoichiometric_constant": "1",
+      "concentration_dependence_rate_expression": "Immobile_Particles@sc"
     }
-    
   ],
   "setvals": [
     {
@@ -92,9 +88,9 @@
       "y": "-130",
       "_width": "300",
       "_height": "300",
-      "surface_release:exponent_of_depth":"1",
-      "surface_release:release_coefficient":"SurfaceReleaseCoefficient",
-      "Immobile_Particles:external_source":"Build up@sc"
+      "surface_release:exponent_of_depth": "1",
+      "surface_release:release_coefficient": "SurfaceReleaseCoefficient",
+      "Immobile_Particles:external_source": "Build up@sc"
     },
     {
       "name": "Surface ponding",
@@ -147,7 +143,6 @@
       "_height": "200",
       "head": "-top_soil_height-aggregate_layer_height-sand_soil_height;m"
     }
-
   ],
   "blockarrays": [
     {
@@ -173,17 +168,17 @@
       "theta_sat": "sand_soil_theta_sat",
       "x": "1000",
       "y": "1000+j*250",
-      "Filtration_label:concentration":"1;g/m~^2"
+      "Filtration_label:concentration": "1;g/m~^2"
     }
   ],
   "connectors": [
-   { 
-    "name": "Catchment to Surface ponding",
-    "from": "Impervious contributing catchment",
-    "to": "Surface ponding",
-    "type": "Catchment_link",
-    "connectiontype": "o2o",
-    "connectionconfig": "u2d"
+    {
+      "name": "Catchment to Surface ponding",
+      "from": "Impervious contributing catchment",
+      "to": "Surface ponding",
+      "type": "Catchment_link",
+      "connectiontype": "o2o",
+      "connectionconfig": "u2d"
     },
     {
       "name": "Catchment to Top Soil",
@@ -219,14 +214,14 @@
     }
   ],
   "parameters": [
-    { 
+    {
       "name": "Surface_Area",
       "delegate": "UnitBox",
       "question": "Surface area",
       "default": "100",
-      "unit": "m~^2" 
+      "unit": "m~^2"
     },
-       {
+    {
       "name": "sand_soil_n_y",
       "delegate": "SpinBox",
       "question": "Number of cells layers the Sand soil",
@@ -244,24 +239,23 @@
       "default": "10"
     },
     {
-    
-     "name": "Buildup_rate",
-     "delegate": "UnitBox",
-     "question": "Buildup rate",
-     "unit": "g/day/m~^2",
-     "default": "1"
+      "name": "Buildup_rate",
+      "delegate": "UnitBox",
+      "question": "Buildup rate",
+      "unit": "g/day/m~^2",
+      "default": "1"
     },
     {
-     "name": "FiltrationRateCoefficient",
-     "delegate": "ValueBox",
-     "question": "Filtration rate coefficient",
-     "default": "1"
+      "name": "FiltrationRateCoefficient",
+      "delegate": "ValueBox",
+      "question": "Filtration rate coefficient",
+      "default": "1"
     },
     {
-    "name": "SurfaceReleaseCoefficient",
-     "delegate": "ValueBox",
-     "question": "Surface release coefficient",
-     "default": "1"
+      "name": "SurfaceReleaseCoefficient",
+      "delegate": "ValueBox",
+      "question": "Surface release coefficient",
+      "default": "1"
     },
     {
       "name": "Catchment_area",
@@ -347,11 +341,11 @@
       "default": "0.38"
     },
     {
-    "name":"sand_soil_height",
-    "delegate": "UnitBox",
-    "question": "Depth of the sand",
-    "unit": "m",
-    "default": "0.3"
+      "name": "sand_soil_height",
+      "delegate": "UnitBox",
+      "question": "Depth of the sand",
+      "unit": "m",
+      "default": "0.3"
     },
     {
       "name": "top_soil_height",
@@ -404,7 +398,6 @@
         "StartTime",
         "EndTime",
         "TimeSeriesFileName"
-      
       ]
     },
     {
@@ -424,34 +417,33 @@
           "errormessage": "The area of impervious contributing area must be greater than zero!"
         },
         {
-         "name": "Catchment_slope_crit",
+          "name": "Catchment_slope_crit",
           "less": "0",
           "greater": "Catchment_slope",
-          "errormessage": "The slope of the impervious contributing area must be greater than zero!"        
+          "errormessage": "The slope of the impervious contributing area must be greater than zero!"
         },
         {
-         "name": "Catchment_Manning_coefficient_crit",
+          "name": "Catchment_Manning_coefficient_crit",
           "less": "0",
           "greater": "Catchment_Manning_coefficient",
-          "errormessage": "The effective Manning's roughness coefficient of the impervious contributing area must be greater than zero!" 
+          "errormessage": "The effective Manning's roughness coefficient of the impervious contributing area must be greater than zero!"
         },
         {
-         "name": "Catchment_mean_width_crit",
+          "name": "Catchment_mean_width_crit",
           "less": "0",
           "greater": "Catchment_mean_width",
-          "errormessage":  "The catchment average width must be greater than zero!"      
+          "errormessage": "The catchment average width must be greater than zero!"
         }
-       ] 
+      ]
     },
     {
-    "name": "4_Pollution",
-    "description":"Pollution",
-    "parameters":[
-     "FiltrationRateCoefficient" ,
-     "Buildup_rate",
-     "SurfaceReleaseCoefficient"
-              
-     ]
+      "name": "4_Pollution",
+      "description": "Pollution",
+      "parameters": [
+        "FiltrationRateCoefficient",
+        "Buildup_rate",
+        "SurfaceReleaseCoefficient"
+      ]
     },
     {
       "name": "5_Aggregate layer",
@@ -472,9 +464,8 @@
           "less": "0",
           "greater": "aggregate_porosity",
           "errormessage": "The porosity must be greater than zero!"
-        
         }
-       ] 
+      ]
     },
     {
       "name": "2_geometry",
@@ -482,7 +473,6 @@
       "parameters": [
         "sand_soil_n_y",
         "Surface_Area"
-     
       ],
       "criteria": [
         {
@@ -491,7 +481,7 @@
           "greater": "Surface_Area",
           "errormessage": "Surface area must be greater than zero!"
         }
-       ] 
+      ]
     },
     {
       "name": "top_soil_physical_parameter",
@@ -504,8 +494,8 @@
         "top_soil_theta_res",
         "top_soil_height"
       ],
-       "criteria": [
-            {
+      "criteria": [
+        {
           "name": "top_soil_height_crit",
           "less": "0",
           "greater": "top_soil_height",
@@ -524,12 +514,12 @@
           "errormessage": "Top soil residual moisture content must be non-negative"
         },
         {
-        "name":  "top_soil_theta_sat_2_crit",
+          "name": "top_soil_theta_sat_2_crit",
           "less": "top_soil_theta_sat",
           "greater": "1.00000001",
           "errormessage": "Top soil residual moisture content cannot be greater than 1.00!"
         }
-       ] 
+      ]
     },
     {
       "name": "sand_soil_physical_parameter",
@@ -542,7 +532,7 @@
         "sand_soil_theta_res",
         "sand_soil_height"
       ],
-       "criteria": [
+      "criteria": [
         {
           "name": "sand_soil_height_crit",
           "less": "0",
@@ -562,7 +552,7 @@
           "errormessage": "The sand soil residual moisture content must be non-negative"
         },
         {
-        "name":  "sand_soil_theta_sat_2_crit",
+          "name": "sand_soil_theta_sat_2_crit",
           "less": "sand_soil_theta_sat",
           "greater": "1.00000001",
           "errormessage": "The sand soil residual moisture content be greater than 1.00!"
