@@ -17,6 +17,21 @@
       "type": "Constituent"
     },
     {
+    
+      "name": "Growth",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "(mu_max*S_s/(S_s+K_s)*X_bh)",
+      "X_bh:stoichiometric_constant":"1"
+    },
+    {
+      "name": "Decay",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "(k_d*X_bh)" ,
+      "X_bh:stoichiometric_constant":"1"
+    },
+    {
       "name": "X_bh",
       "entity": "constituent",
       "type": "Particle"
@@ -42,7 +57,7 @@
     "type":"Reactor",
     "Storage":"Reactor_Volume;m~^3",
     "bottom_elevation":"0",
-    "constant_inflow":"Reactor_Constant_Inflow",
+    "constant_inflow":"Reactor_inflow",
     "x":"0",
     "y": "901",
     "_width": "200",
@@ -51,7 +66,7 @@
     {
     "name":"Settling_compartment_1",
     "type":"Settling compartment",
-    "Storage":"Settling_Tank_Area * Settling_Tank_Height / 2",
+    "Storage":"Settling_Tank_Area*Settling_Tank_Height/2.0",
     "bottom_elevation":"0",
     "x": "1463",
     "y": "903",
@@ -61,7 +76,7 @@
     {
      "name":"Settling_compartment_2",
      "type":"Settling compartment",
-     "Storage":"Settling_Tank_Area * Settling_Tank_Height / 2",
+     "Storage":"Settling_Tank_Area*Settling_Tank_Height/2",
      "bottom_elevation":"-1",
      "x":"1466",
      "y": "1166",
@@ -94,9 +109,10 @@
 	    "grid_type": "2D-Rect",
       	    "v_connector_type": "Fixed flow",
       	    "h_connector_type": "Fixed flow",
+      	    "flow.h": "Return_acitvated_sludge+Reactor_inflow",
             "n_x": "number_of_reactors",
             "n_y": "1",
-	    "Storage":"Reactor_Volume;m~^3",
+ 	    "Storage":"Reactor_Volume;m~^3",
 	    "bottom_elevation":"0",
 	     "x": "(i+1)*300",
 	    "y": "896",
@@ -111,23 +127,27 @@
       "to": "Reactor_2",
       "type": "Fixed flow",
       "connectiontype": "o2m",
-      "connectionconfig":"l2r"
+      "connectionconfig":"l2r",
+      "flow":"Reactor_inflow+Return_acitvated_sludge"
     },
     {
      "name": "Reactor_2 to Settling compartment (1)",
       "from": "Reactor_2",
       "to": "Settling_compartment_1",
+      "flow":"Reactor_inflow+Return_acitvated_sludge",
       "type": "Fixed flow",
       "connectiontype": "m2o",
       "connectionconfig":"l2r"
+     
     },
     {
-     "name": "Settling compartment (1) to Settling compartment (2)",
+      "name": "Settling compartment (1) to Settling compartment (2)",
       "from":"Settling_compartment_1",
       "to": "Settling_compartment_2",
       "type": "Settling element interface",
       "connectiontype": "o2o",
-      "connectionconfig":"u2d"
+      "connectionconfig":"u2d",
+      "flow":"Return_acitvated_sludge+Waste_acitvated_sludge"
     },
     {
       "name": "Settling compartment (1) to Effluent",
@@ -135,16 +155,18 @@
       "to": "Effluent",
       "type": "Fixed flow",
       "connectiontype": "o2o",
-      "connectionconfig":"u2d"
+      "connectionconfig":"u2d",
+      "flow":"Reactor_inflow-Waste_acitvated_sludge" 
     },
-     {
+    {
 
       "name": "Settling compartment (2) to Waste",
       "from": "Settling_compartment_2",
       "to": "Waste",
       "type": "Fixed flow",
       "connectiontype": "o2o",
-      "connectionconfig":"u2d"
+      "connectionconfig":"u2d",
+      "flow":"Waste_acitvated_sludge"
     },
     {
 
@@ -153,7 +175,8 @@
       "to": "Reactor_1",
       "type": "Fixed flow",
       "connectiontype": "o2o",
-      "connectionconfig":"u2d"
+      "connectionconfig":"u2d",
+      "flow":"Return_acitvated_sludge"
     }
   ],
   "parameters": [
@@ -176,12 +199,6 @@
     
     },
     {
-    "name":"Reactor_Constant_Inflow",
-    "delegate":"ValueBox",
-    "question": "Reactor constant inflow",
-    "default": "1"
-    },
-    {
      "name":"Settling_Tank_Height",
      "unit": "m",
      "delegate": "UnitBox",
@@ -193,6 +210,26 @@
      "unit":"m~^3",
      "delegate": "UnitBox",
      "question": "The volume of reactor" 
+    },
+    {
+     "name":"Reactor_inflow",
+    "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
+    "delegate": "UnitBox",
+    "question": "Reactor inflow",
+    "default":"100"
+     },
+    {
+    "name":"Return_acitvated_sludge",
+    "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
+    "delegate": "UnitBox",
+    "question": "Return acitvated sludge"
+    },
+    {
+    "name":"Waste_acitvated_sludge",
+    "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
+    "delegate": "UnitBox",
+    "question": "Waste acitvated sludge"
+    
     },
     {
       "name": "number_of_reactors",
@@ -216,8 +253,9 @@
         "Settling_Tank_Height",
         "Settling_Tank_Area",
         "number_of_reactors",
-        "Reactor_Constant_Inflow"
-        
+        "Reactor_inflow",
+        "Waste_acitvated_sludge",
+        "Return_acitvated_sludge"
      ]
      }
  ]

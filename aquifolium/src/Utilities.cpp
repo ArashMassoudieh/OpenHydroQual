@@ -637,8 +637,8 @@ namespace aquiutils
         del.push_back('\\');
         vector<string> splittedbyslash = split(fullfilename,del);
         if (fullfilename.size()>=2)
-            if (aquiutils::right(fullfilename,1)=="/" || aquiutils::right(fullfilename,2)=="\\")
-                splittedbyslash.push_back("");
+        if (aquiutils::right(fullfilename,1)=="/" || aquiutils::right(fullfilename,2)=="\\")
+            splittedbyslash.push_back("");
         return left(fullfilename,int(fullfilename.size()-splittedbyslash[splittedbyslash.size()-1].size()));
     }
 
