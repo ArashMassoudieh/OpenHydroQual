@@ -1332,9 +1332,20 @@ CTimeSeries<T>& CTimeSeries<T>::operator%=(CTimeSeries<T> &v)
 }
 
 template<class T>
-CTimeSeries<T> operator+(CTimeSeries<T> &v1, CTimeSeries<T> &v2)
+CTimeSeries<T> operator+(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 {
-	return v1 += v2;
+    //qDebug()<<"Inside Operator -";
+    CTimeSeries<T> S = BTC1;
+    for (int i=0; i<BTC1.n; i++)
+    {
+        //qDebug()<<i;
+        double interp2 = BTC2.interpol(BTC1.GetT(i));
+        //qDebug()<<interp2;
+        S.SetC(i, BTC1.GetC(i)+interp2);
+
+    }
+    //qDebug()<<"Diffentiation done!";
+    return S;
 }
 
 template<class T>

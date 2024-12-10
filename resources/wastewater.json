@@ -96,24 +96,24 @@
     "icon": {
       "filename": "sedimentation_tank_element.png"
     },
-    "time_variable_inflow":{
+    "time_variable_flow":{
     	"type": "timeseries",
 	"includeinoutput": "true",
-	"description": "Time variable inflow",
+	"description": "Time variable flow",
     	"ask_user": "true",
 	"delegate": "Browser"
     },
-    "constant_inflow":{
+    "constant_flow":{
     	"type": "value",
 	"includeinoutput": "true",
-	"description": "Constant Inflow",
+	"description": "Constant flow",
     	"ask_user": "true",
 	"delegate": "UnitBox",
 	"unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
     "flow":{
     	"type": "expression",
-	"expression": "time_variable_inflow+constant_inflow",
+	"expression": "time_variable_flow+constant_flow",
 	"includeinoutput": "true",
 	"description": "Flow rate",
     	"ask_user": "false"

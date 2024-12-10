@@ -520,13 +520,10 @@
       "ask_user": "true",
       "delegate": "Browser" 
     },
-    "bottom_elevation":
-    {
-    	"type": "value",
-    	"ask_user": "true",
-    	"description": "Bottom elevation",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft"
+    "bottom_elevation": {
+      "type": "expression",
+      "expression": "head",	
+      "ask_user": "false"
     }
     },
   "Constituent": {
