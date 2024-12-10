@@ -161,8 +161,7 @@
 	"description": "Inflow",
     	"ask_user": "false"
     },
-    "bottom_elevation":
-    {
+    "bottom_elevation": {
     	"type": "value",
     	"ask_user": "true",
     	"description": "Bottom elevation",
@@ -273,14 +272,27 @@
     "icon": {
       "filename": "Settling_element_link.png"
     },
-    "flow": {
-      "type": "value",
-      "description": "Flow rate",
-      "includeinoutput": "true",
-      "applylimit": "true",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    "time_variable_flow":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Time variable flow",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "constant_flow":{
+    	"type": "value",
+	"includeinoutput": "true",
+	"description": "Constant flow",
+    	"ask_user": "true",
+	"delegate": "UnitBox",
+	"unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    },
+    "flow":{
+    	"type": "expression",
+	"expression": "time_variable_flow+constant_flow",
+	"includeinoutput": "true",
+	"description": "Flow rate",
+    	"ask_user": "false"
     },
     "area":
     {

@@ -519,8 +519,13 @@
       "description": "Head (m)",
       "ask_user": "true",
       "delegate": "Browser" 
+    },
+    "bottom_elevation": {
+      "type": "expression",
+      "expression": "head",	
+      "ask_user": "false"
     }
-  },
+    },
   "Constituent": {
     "type": "constituent",
     "typecategory": "Constituents",
