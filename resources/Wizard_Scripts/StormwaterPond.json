@@ -205,17 +205,30 @@
         "Catchment_mean_width"
       ],
       "criteria": [
-        {
-          "name": "area_crit",
+            {
+          "name": "Catchment_area_crit",
           "less": "0",
           "greater": "Catchment_area",
-          "errormessage": "Catchment area must be greater than zero!"
+          "errormessage": "The area of impervious contributing area must be greater than zero!"
         },
         {
-          "name": "slope_crit",
+         "name": "Catchment_slope_crit",
           "less": "0",
           "greater": "Catchment_slope",
-          "errormessage": "Catchment slope must be greater than zero!"
+          "errormessage": "The slope of the impervious contributing area must be greater than zero!"        
+        },
+        {
+         "name": "Catchment_Manning_coefficient_crit",
+          "less": "0",
+          "greater": "Catchment_Manning_coefficient",
+          "errormessage": "The effective Manning's roughness coefficient of the impervious contributing area must be greater than zero!" 
+        },
+        {
+        
+         "name": "Catchment_mean_width_crit",
+          "less": "0",
+          "greater": "Catchment_mean_width",
+          "errormessage": "The catchment average width must be greater than zero!"      
         }
       ]
     },
@@ -225,6 +238,20 @@
       "parameters": [
         "Area_10",
         "beta"
+      ],
+       "criteria": [
+        {
+          "name": "Area_10_crit",
+          "less": "0",
+          "greater": "Area_10",
+          "errormessage": "The surface area of the pond when the water depth must be greater than zero!"
+        },
+        {
+          "name":  "beta_crit",
+          "less": "0",
+          "greater":  "beta",
+          "errormessage": "The β: exponent that controls how quickly storage changes as depth increases. S = α depth^β must be greater than zero!"
+        }
       ]
     },
     {
@@ -234,6 +261,27 @@
         "CrestElevation",
         "alpha_overflow_wier",
         "beta_overflow_wier"
+      ],
+      "criteria": [
+        {
+          "name": "CrestElevation_crit",
+          "less": "0",
+          "greater": "CrestElevation",
+          "errormessage": "The crest elevation must be greater than zero!"
+        },
+        {
+          "name": "alpha_overflow_wier_crit",
+          "less": "0",
+          "greater": "alpha_overflow_wier",
+          "errormessage": "The coefficient α in Q=α*(h-z_0)^β must be greater than zero!"
+        },
+        {
+        
+         "name": "beta_overflow_wier_crit",
+          "less": "0",
+          "greater": "beta_overflow_wier",
+          "errormessage": "The exponent β in Q=α*(h-z_0)^β must be greater than zero!"
+        }
       ]
     }
   ]
