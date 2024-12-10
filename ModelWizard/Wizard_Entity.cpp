@@ -63,6 +63,11 @@ QString Wizard_Entity::Type()
     return type;
 }
 
+QString Wizard_Entity::Entity()
+{
+    return entity;
+}
+
 QStringList Wizard_Entity::GenerateScript(QMap<QString, WizardParameter>* params)
 {
     QStringList out; 

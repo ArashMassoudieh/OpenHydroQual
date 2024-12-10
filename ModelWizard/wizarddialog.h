@@ -35,6 +35,7 @@ public:
     void PopulateTab(QWidget *scrollAreaWidgetContents, QFormLayout *formLayout, WizardParameterGroup *paramgroup);
     void PopulateTab(WizardParameterGroup *paramgroup);
     void GenerateModel();
+    bool Verify();
     void resizeEvent(QResizeEvent *r=nullptr);
 
 private:
