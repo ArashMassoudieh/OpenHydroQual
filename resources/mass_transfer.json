@@ -221,8 +221,8 @@
     },
     "area": {
       "type": "expression",
-      "expression": "1",
-      "includeinoutput": "false",
+      "expression": "0.000000001",
+      "includeinoutput": "true",
       "description": "1",
       "ask_user": "false"
     },
