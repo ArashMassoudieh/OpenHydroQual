@@ -1177,6 +1177,7 @@ double & System::GetSimulationTime()
 bool System::SetLoadedOutputItems()
 {
     bool res = true;
+    int varcount=0;
     for (unsigned int i=0; i<blocks.size(); i++)
     {
         for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
@@ -1185,6 +1186,7 @@ bool System::SetLoadedOutputItems()
                 if (aquiutils::lookup(GetOutputs().names,blocks[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
+                varcount++;
             }
     }
 
@@ -1196,6 +1198,7 @@ bool System::SetLoadedOutputItems()
                 if (aquiutils::lookup(GetOutputs().names,reaction_parameters[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(reaction_parameters[i].GetName() + "_" + it->first);
+                varcount++;
             }
     }
 
@@ -1207,6 +1210,7 @@ bool System::SetLoadedOutputItems()
                 if (aquiutils::lookup(GetOutputs().names,links[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(links[i].GetName() + "_" + it->first);
+                varcount++;
             }
     }
 
@@ -1218,6 +1222,7 @@ bool System::SetLoadedOutputItems()
                 if (aquiutils::lookup(GetOutputs().names,sources[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
+                varcount++;
             }
     }
 
@@ -1230,7 +1235,7 @@ bool System::SetLoadedOutputItems()
                 if (aquiutils::lookup(GetOutputs().names,objective_function_set[i]->GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
-
+                varcount++;
             }
     }
 
@@ -1243,9 +1248,10 @@ bool System::SetLoadedOutputItems()
                 if (aquiutils::lookup(GetOutputs().names,observations[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
-
+                varcount++;
             }
     }
+    if (GetOutputs().nvars!=varcount) res=false;
     return res;
 }
 
