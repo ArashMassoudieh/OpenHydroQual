@@ -51,6 +51,10 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_version Aquifolium
 
 macx: {
     QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -Iusr/local/lib/
+    LIBS += -L$$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/lib/ -lgsl
+    INCLUDEPATH += $$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/include
+    DEPENDPATH += $$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/include
+
 }
 
 macx: {

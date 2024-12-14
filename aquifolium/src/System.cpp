@@ -1174,13 +1174,16 @@ double & System::GetSimulationTime()
     return SolverTempVars.t;
 }
 
-void System::SetOutputItems()
+bool System::SetLoadedOutputItems()
 {
+    bool res = true;
     for (unsigned int i=0; i<blocks.size(); i++)
     {
         for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
+                if (aquiutils::lookup(GetOutputs().names,blocks[i].GetName() + "_" + it->first)==-1)
+                    res = false;
                 it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
             }
     }
@@ -1190,7 +1193,80 @@ void System::SetOutputItems()
         for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
+                if (aquiutils::lookup(GetOutputs().names,reaction_parameters[i].GetName() + "_" + it->first)==-1)
+                    res = false;
                 it->second.SetOutputItem(reaction_parameters[i].GetName() + "_" + it->first);
+            }
+    }
+
+    for (unsigned int i=0; i<links.size(); i++)
+    {
+        for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                if (aquiutils::lookup(GetOutputs().names,links[i].GetName() + "_" + it->first)==-1)
+                    res = false;
+                it->second.SetOutputItem(links[i].GetName() + "_" + it->first);
+            }
+    }
+
+    for (unsigned int i=0; i<sources.size(); i++)
+    {
+        for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                if (aquiutils::lookup(GetOutputs().names,sources[i].GetName() + "_" + it->first)==-1)
+                    res = false;
+                it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
+            }
+    }
+
+    for (unsigned int i=0; i<objective_function_set.size(); i++)
+    {
+        objective_function_set[i]->SetOutputItem("Obj_" + objective_function_set[i]->GetName());
+        for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                if (aquiutils::lookup(GetOutputs().names,objective_function_set[i]->GetName() + "_" + it->first)==-1)
+                    res = false;
+                it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
+
+            }
+    }
+
+    for (unsigned int i=0; i<observations.size(); i++)
+    {
+        observations[i].SetOutputItem("Obs_" + observations[i].GetName());
+        for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                if (aquiutils::lookup(GetOutputs().names,observations[i].GetName() + "_" + it->first)==-1)
+                    res = false;
+                it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
+
+            }
+    }
+    return res;
+}
+
+void System::SetOutputItems()
+{
+
+    for (unsigned int i=0; i<blocks.size(); i++)
+    {
+        for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                  it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
+            }
+    }
+
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+    {
+        for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                  it->second.SetOutputItem(reaction_parameters[i].GetName() + "_" + it->first);
             }
     }
 
@@ -1208,7 +1284,7 @@ void System::SetOutputItems()
         for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
+                  it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
             }
     }
 

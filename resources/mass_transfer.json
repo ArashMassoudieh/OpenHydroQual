@@ -311,7 +311,7 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",
-      "expression": "(Storage.s/Volume.s-1)*flow_factor",      
+      "expression": "(Storage.s/Volume.s-1)*flow_factor"    
     },
     "flow_factor": {
       "type": "value",
