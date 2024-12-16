@@ -3,7 +3,7 @@
   "icon": "ASMS.png",
   "url": "",
   "description": "This wizard create Activated Sludge Model Simple(ASMS)",
-  "diagram": "",
+  "diagram": "ASMS.svg",
   "addtemplate": [
     "main_components.json",
     "wastewater.json",
@@ -341,9 +341,57 @@
         "Waste_acitvated_sludge",
         "Return_acitvated_sludge",
         "Settling Velocity"
-        
-      ]
-     
+      ],
+      "criteria": [
+        {
+          "name": "Reactor_Volume_crit",
+          "less": "0",
+          "greater": "Reactor_Volume",
+          "errormessage": "The reactor_Volume must be greater than zero!"
+     },
+     {
+          "name": "Settling_Tank_Height_crit",
+          "less": "0",
+          "greater": "Settling_Tank_Height",
+          "errormessage": "The settling tank height must be greater than zero!"
+     },
+      {
+          "name": "Settling_Tank_Area_crit",
+          "less": "0",
+          "greater": "Settling_Tank_Area",
+          "errormessage": "The settling tank area must be greater than zero!"
+     },
+      {
+          "name": "number_of_reactors_crit",
+          "less": "0",
+          "greater": "number_of_reactors",
+          "errormessage": "The number of reactors must be greater than zero!"
+     },
+      {
+          "name": "Reactor_inflow_crit",
+          "less": "0",
+          "greater": "Reactor_inflow",
+          "errormessage": "The reactor inflow must be greater than zero!"
+     },
+      {
+          "name": "Waste_acitvated_sludge_crit",
+          "less": "0",
+          "greater": "Waste_acitvated_sludge",
+          "errormessage": "The waste acitvated sludge must be greater than zero!"
+     },
+      {
+          "name": "Return_acitvated_sludge_crit",
+          "less": "0",
+          "greater": "Return_acitvated_sludge",
+          "errormessage": "The return acitvated sludge must be greater than zero!"
+     },
+     {
+          "name": "Settling Velocity_crit",
+          "less": "0",
+          "greater": "Settling Velocity",
+          "errormessage": "The settling velocity must be greater than zero!"
+     }
+     ]
      },
      {
       "name": "3_Reaction parameters",
@@ -354,9 +402,41 @@
         "K_s_param",
         "Y_param",
         "Inflow_COD_concentration"
-     ]
-     }
- ]
-}
-  
+     ],
+      "criteria": [
+      {
+          "name": "mu_max_param_crit",
+          "less": "0",
+          "greater":  "mu_max_param",
+          "errormessage": "The maximum growthrate must be greater than zero!"
+     },
+     {
+          "name": "k_d_param_crit",
+          "less": "0",
+          "greater":  "k_d_param",
+          "errormessage": "The decay rate coefficient must be greater than zero!"
+     },
+     {
+     
+         "name": "K_s_param_crit",
+          "less": "0",
+          "greater":  "K_s_param",
+          "errormessage": "The half saturation constants must be greater than zero!"
+     },
+     {
+         "name": "Y_param_crit",
+          "less": "0",
+          "greater":  "Y_param",
+          "errormessage": "The yield coefficient must be greater than zero!"
+     },
+     {
+          "name": "Inflow_COD_concentration_crit",
+          "less": "0",
+          "greater":  "Inflow_COD_concentration",
+          "errormessage": "The inflow COD concentration must be greater than zero!"
+       }
+      ]
+    }
+  ]
+} 
     
