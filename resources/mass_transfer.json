@@ -169,6 +169,64 @@
     	"unit": "m;ft"
     }
   },
+  "Reactor_Flex": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Reactor (Flexible)",
+    "icon": {
+      "filename": "reactor.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow",
+      "includeinoutput": "true",
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true"
+    },
+    "Volume": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Volume",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true"
+    },
+    "time_variable_inflow":{
+    	"type": "timeseries",
+	"includeinoutput": "true",
+	"description": "Time variable inflow",
+    	"ask_user": "true",
+	"delegate": "Browser"
+    },
+    "constant_inflow":{
+    	"type": "value",
+	"includeinoutput": "true",
+	"description": "Constant Inflow",
+    	"ask_user": "true",
+	"delegate": "UnitBox",
+	"unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    },
+    "inflow":{
+    	"type": "expression",
+	"expression": "time_variable_inflow+constant_inflow",
+	"includeinoutput": "true",
+	"description": "Inflow",
+    	"ask_user": "false"
+    },
+    "bottom_elevation": {
+    	"type": "value",
+    	"ask_user": "true",
+    	"description": "Bottom elevation",
+    	"delegate": "UnitBox",
+    	"unit": "m;ft"
+    }
+  },
   "Settling element": {
     "type": "block",
     "typecategory": "Blocks",
@@ -194,6 +252,15 @@
     	"description": "Bottom elevation",
     	"delegate": "UnitBox",
     	"unit": "m;ft"
+    },
+    "Volume": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Volume",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true"
     }
   },
   "Fixed flow": {
@@ -223,6 +290,49 @@
       "type": "expression",
       "expression": "0.000000001",
       "includeinoutput": "true",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    }
+  },
+  "Flex_flow": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Storage-based flow",
+    "icon": {
+      "filename": "fixed_flow.png"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "expression": "(Storage.s/Volume.s-1)*flow_factor"    
+    },
+    "flow_factor": {
+      "type": "value",
+      "description": "Flow factor",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
+      "default": "1000"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
       "description": "1",
       "ask_user": "false"
     },
