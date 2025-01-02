@@ -164,6 +164,7 @@ private slots:
     void addplugin();
     void adddefaultpluging();
     void optionsdialog();
+    void loadresults();
     void showgraph();
     void onDeleteItem();
     void on_actionRecent_triggered();

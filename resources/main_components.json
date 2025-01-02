@@ -519,8 +519,13 @@
       "description": "Head (m)",
       "ask_user": "true",
       "delegate": "Browser" 
+    },
+    "bottom_elevation": {
+      "type": "expression",
+      "expression": "head",	
+      "ask_user": "false"
     }
-  },
+    },
   "Constituent": {
     "type": "constituent",
     "typecategory": "Constituents",
@@ -598,17 +603,27 @@
       "role": "copytoblocks",
       "delegate": "Browser"
     },
-    "inflow_concentration": {
+    "time_variable_inflow_concentration": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Inflow concentration",
+      "description": "Time Variable Inflow concentration",
       "ask_user": "true",
       "role": "copytoblocks",
       "delegate": "Browser"
     },
+    "constant_inflow_concentration": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Constant Inflow concentration",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "g/m~^3"
+    },
     "inflow_loading": {
       "type": "expression",
-      "expression": "inflow_concentration*inflow",
+      "expression": "(constant_inflow_concentration+time_variable_inflow_concentration)*inflow",
       "includeinoutput": "true",
       "description": "Inflow loading",
       "role": "copytoblocks"

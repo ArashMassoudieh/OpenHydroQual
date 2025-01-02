@@ -232,8 +232,27 @@ void  WizardDialog::on_TabChanged()
     currenttabindex = ui->tabWidget->currentIndex();
 }
 
+bool  WizardDialog::Verify()
+{
+    SelectedWizardScript.AssignParameterValues();
+    QStringList Errors;
+    for (QMap<QString,WizardParameterGroup>::Iterator it=SelectedWizardScript.GetWizardParameterGroups().begin(); it!=SelectedWizardScript.GetWizardParameterGroups().end(); it++)
+        Errors << SelectedWizardScript.GetWizardParameterGroups()[it.key()].CheckCriteria(&SelectedWizardScript.GetWizardParameters());
+
+
+    if (Errors.count()>0)
+    {   QMessageBox::information(this, "Invalid parameter value!", Errors[0], QMessageBox::Ok, QMessageBox::StandardButton::Ok);
+        ui->tabWidget->setCurrentIndex(currenttabindex);
+        return false;
+    }
+    return true;
+
+}
+
 void WizardDialog::GenerateModel()
 {
+    if (!Verify())
+        return;
     SelectedWizardScript.AssignParameterValues();
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
