@@ -1,9 +1,9 @@
 {
   "name": "Activated Sludge Model Simple(ASMS)",
   "icon": "ASMS.png",
-  "url": "",
-  "description": "This wizard create Activated Sludge Model Simple(ASMS)",
-  "diagram": "",
+  "url": "https://openhydroqual.com/wp-content/Wizards/ASM/ASM_Simple_Wizard.pdf",
+  "description": "This wizard create a simple Activated Sludge Model (ASM)",
+  "diagram": "ASMS.svg",
   "addtemplate": [
     "main_components.json",
     "wastewater.json",
@@ -229,41 +229,43 @@
      "name":"Settling_Tank_Area",
      "unit": "m~^2",
      "delegate": "UnitBox",
-     "question": "The area of settling compartment"
-    
+     "question": "The area of clarifier",
+     "default": "100"	    
     },
     {
      "name":"Settling_Tank_Height",
      "unit": "m",
      "delegate": "UnitBox",
-     "question": "The height of settling compartment"
-    
+     "question": "The height of the clarifier",
+     "default": "2"
     },
     {
      "name":"Reactor_Volume",
      "unit":"m~^3",
      "delegate": "UnitBox",
-     "question": "The volume of reactor" 
+     "question": "The volume of each reactor",
+     "default": "400"
     },
     {
      "name":"Reactor_inflow",
     "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
     "delegate": "UnitBox",
-    "question": "Reactor inflow",
+    "question": "Inflow flow rate",
     "default":"100"
      },
     {
     "name":"Return_acitvated_sludge",
     "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
     "delegate": "UnitBox",
-    "question": "Return acitvated sludge"
+    "question": "Return acitvated sludge flow rate",
+    "default":"80"
     },
     {
     "name":"Waste_acitvated_sludge",
     "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
     "delegate": "UnitBox",
-    "question": "Waste acitvated sludge"
-    
+    "question": "Waste acitvated sludge flow rate",
+    "default":"5"
     },
     {
     "name":"Settling Velocity",
@@ -285,13 +287,13 @@
     {
     "name":"mu_max_param",
     "delegate": "ValueBox",
-    "question": "Maximum_growthrate/day ",
+    "question": "Maximum growth rate (mu_max) [1/day]",
     "default":"2"
     },
     {
     "name":"k_d_param",
     "delegate": "ValueBox",
-    "question": "Decay_rate_coefficient/day",
+    "question": "Decay rate coefficient (kd) [1/day]",
     "default":"0.05"
     
     },
@@ -299,7 +301,7 @@
     
      "name":"K_s_param",
     "delegate": "ValueBox",
-    "question": "Half_saturation_constants/COD",
+    "question": "Half saturation constants (Ks) [mg/L COD]",
     "default":"40"
    
     },
@@ -307,14 +309,14 @@
       
      "name":"Y_param",
     "delegate": "ValueBox",
-    "question": "Yield_coefficient/COD",
+    "question": "Yield coefficient (Y)",
     "default":"0.4"
     
     },
     {
     "name":"Inflow_COD_concentration",
     "delegate": "ValueBox",
-    "question": "Inflow COD concentration ",
+    "question": "Inflow COD concentration [mg/L]",
     "default":"100"
     }
   ],
@@ -341,9 +343,57 @@
         "Waste_acitvated_sludge",
         "Return_acitvated_sludge",
         "Settling Velocity"
-        
-      ]
-     
+      ],
+      "criteria": [
+        {
+          "name": "Reactor_Volume_crit",
+          "less": "0",
+          "greater": "Reactor_Volume",
+          "errormessage": "The reactor volume must be greater than zero!"
+     },
+     {
+          "name": "Settling_Tank_Height_crit",
+          "less": "0",
+          "greater": "Settling_Tank_Height",
+          "errormessage": "The settling tank height must be greater than zero!"
+     },
+      {
+          "name": "Settling_Tank_Area_crit",
+          "less": "0",
+          "greater": "Settling_Tank_Area",
+          "errormessage": "The settling tank area must be greater than zero!"
+     },
+      {
+          "name": "number_of_reactors_crit",
+          "less": "0",
+          "greater": "number_of_reactors",
+          "errormessage": "The number of reactors must be greater than zero!"
+     },
+      {
+          "name": "Reactor_inflow_crit",
+          "less": "0",
+          "greater": "Reactor_inflow",
+          "errormessage": "The reactor inflow must be greater than zero!"
+     },
+      {
+          "name": "Waste_acitvated_sludge_crit",
+          "less": "0",
+          "greater": "Waste_acitvated_sludge",
+          "errormessage": "The waste acitvated sludge must be greater than zero!"
+     },
+      {
+          "name": "Return_acitvated_sludge_crit",
+          "less": "0",
+          "greater": "Return_acitvated_sludge",
+          "errormessage": "The return acitvated sludge must be greater than zero!"
+     },
+     {
+          "name": "Settling Velocity_crit",
+          "less": "0",
+          "greater": "Settling Velocity",
+          "errormessage": "The settling velocity must be greater than zero!"
+     }
+     ]
      },
      {
       "name": "3_Reaction parameters",
@@ -354,9 +404,41 @@
         "K_s_param",
         "Y_param",
         "Inflow_COD_concentration"
-     ]
-     }
- ]
-}
-  
+     ],
+      "criteria": [
+      {
+          "name": "mu_max_param_crit",
+          "less": "0",
+          "greater":  "mu_max_param",
+          "errormessage": "The maximum growthrate must be greater than zero!"
+     },
+     {
+          "name": "k_d_param_crit",
+          "less": "0",
+          "greater":  "k_d_param",
+          "errormessage": "The decay rate coefficient must be greater than zero!"
+     },
+     {
+     
+         "name": "K_s_param_crit",
+          "less": "0",
+          "greater":  "K_s_param",
+          "errormessage": "The half saturation constants must be greater than zero!"
+     },
+     {
+         "name": "Y_param_crit",
+          "less": "0",
+          "greater":  "Y_param",
+          "errormessage": "The yield coefficient must be greater than zero!"
+     },
+     {
+          "name": "Inflow_COD_concentration_crit",
+          "less": "0",
+          "greater":  "Inflow_COD_concentration",
+          "errormessage": "The inflow COD concentration must be greater than zero!"
+       }
+      ]
+    }
+  ]
+} 
     
