@@ -1,8 +1,8 @@
 {
   "name": "Activated Sludge Model Simple(ASMS)",
   "icon": "ASMS.png",
-  "url": "",
-  "description": "This wizard create Activated Sludge Model Simple(ASMS)",
+  "url": "https://openhydroqual.com/wp-content/Wizards/ASM/ASM_Simple_Wizard.pdf",
+  "description": "This wizard create a simple Activated Sludge Model (ASM)",
   "diagram": "ASMS.svg",
   "addtemplate": [
     "main_components.json",
