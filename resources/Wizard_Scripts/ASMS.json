@@ -36,8 +36,7 @@
       "entity": "reaction",
       "type": "Reaction",
       "rate_expression": "k_d*X_bh@sc" ,
-      "X_bh:stoichiometric_constant":"-1@sc",
-      "S_s:stoichiometric_constant":"1@sc"
+      "X_bh:stoichiometric_constant":"-1@sc"
     },
     {
       "name": "mu_max",
