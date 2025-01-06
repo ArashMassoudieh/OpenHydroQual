@@ -43,14 +43,6 @@
     },
     {
     
-     "name": "X_BM",
-      "entity": "constituent",
-      "type": "Particle",
-      "settling_velocity":"Settling Velocity"
-    
-    },
-    {
-    
      "name": "X_BA",
       "entity": "constituent",
       "type": "Particle",
@@ -94,13 +86,6 @@
       "type": "Constituent"
     },
     {
-    
-     "name": "S_M",
-      "entity": "constituent",
-      "type": "Constituent"
-   
-    },
-    {
       "name": "S_NO",
       "entity": "constituent",
       "type": "Constituent"
@@ -112,14 +97,6 @@
       "entity": "constituent",
       "type": "Constituent"
    
-    },
-    {
-      "name": "Growth",
-      "entity": "reaction",
-      "type": "Reaction",
-      "rate_expression": "mu_max*S_S/(S_S+K_s)*X_BH@sc",
-      "X_BH:stoichiometric_constant":"1@sc",
-      "S_S:stoichiometric_constant":"-1/Y@sc"
     },
      {
       "name": "Decay",
@@ -148,24 +125,6 @@
       "X_p:stoichiometric_constant":"0@sc"
      },
      {
-      "name": "AerobicGHM",
-      "entity": "reaction",
-      "type": "Reaction",
-      "rate_expression": "(mu_H*S_M/(K_MH+S_M)*S_O/(K_OH+S_O)*(S_NH/K_NH+S_NH)*X_BH)@sc",
-      "S_M:stoichiometric_constant":"(0-1/Y_HM)@sc",
-      "S_ND:stoichiometric_constant":"0@sc",
-      "S_NH:stoichiometric_constant":"(0-i_XB)@sc",
-      "S_NO:stoichiometric_constant":"0@sc",
-      "S_O:stoichiometric_constant":"(0-(1-Y_H)/Y_H)@sc",
-      "S_S:stoichiometric_constant":"0@sc",
-      "X_BA:stoichiometric_constant":"0@sc",
-      "X_BH:stoichiometric_constant":"1@sc",
-      "X_BM:stoichiometric_constant":"0@sc",
-      "X_ND:stoichiometric_constant":"0@sc",
-      "X_S:stoichiometric_constant":"0@sc",
-      "X_p:stoichiometric_constant":"0@sc"
-     },
-     {
       "name": "AnoxicGH",
       "entity": "reaction",
       "type": "Reaction",
@@ -182,25 +141,6 @@
       "X_ND:stoichiometric_constant":"0@sc",
       "X_S:stoichiometric_constant":"0@sc",
       "X_p:stoichiometric_constant":"0@sc"
-    },
-     {
-      "name": "AnoxicGM",
-      "entity": "reaction",
-      "type": "Reaction",
-      "rate_expression": "(mu_M*S_M/(K_MM+S_M)*K_OM/(K_OM+S_O)*S_NO/(K_NOM+S_NO)*S_NH/(K_NH+S_NH)*X_BM)@sc",
-      "S_M:stoichiometric_constant":"(0-1/Y_M)@sc",
-      "S_ND:stoichiometric_constant":"0@sc",
-      "S_NH:stoichiometric_constant":"(0-i_XB)@sc",
-      "S_NO:stoichiometric_constant":"(0-(1-Y_M)/(2.86*Y_M))@sc",
-      "S_O:stoichiometric_constant":"0@sc",
-      "S_S:stoichiometric_constant":"0@sc",
-      "X_BA:stoichiometric_constant":"0@sc",
-      "X_BH:stoichiometric_constant":"0@sc",
-      "X_BM:stoichiometric_constant":"1@sc",
-      "X_ND:stoichiometric_constant":"0@sc",
-      "X_S:stoichiometric_constant":"0@sc",
-      "X_p:stoichiometric_constant":"0@sc"
-       
     },
      {
       "name": "AerobicGA",
@@ -239,25 +179,7 @@
       "X_S:stoichiometric_constant":"(1-f_p)@sc",
       "X_p:stoichiometric_constant":"f_p@sc"
     },
-     {
-      "name": "DecayM",
-      "entity": "reaction",
-      "type": "Reaction",
-      "rate_expression": "(b_M*(S_O/(K_OM+S_O)+eta_h*S_NO/(K_NOM+S_NO)*K_OM/(K_OM+S_O))*X_BM)@sc",
-      "S_M:stoichiometric_constant":"0@sc",
-      "S_ND:stoichiometric_constant":"0@sc",
-      "S_NH:stoichiometric_constant":"0@sc",
-      "S_NO:stoichiometric_constant":"0@sc",
-      "S_O:stoichiometric_constant":"0@sc",
-      "S_S:stoichiometric_constant":"0@sc",
-      "X_BA:stoichiometric_constant":"0@sc",
-      "X_BH:stoichiometric_constant":"0@sc",
-      "X_BM:stoichiometric_constant":"-1@sc",
-      "X_ND:stoichiometric_constant":"((1-f_p)*i_XB)@sc",
-      "X_S:stoichiometric_constant":"(1-f_p)@sc",
-      "X_p:stoichiometric_constant":"f_p@sc"
 
-    },
      {
       "name": "DecayA",
       "entity": "reaction",
@@ -349,14 +271,6 @@
       "type": "ReactionParameter",
       "base_value": "K_s_param"
     },
-    {
-    
-      "name": "mu_H",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "mu_H_param"
-    },
-
     {
     
       "name": "K_OH",
@@ -591,7 +505,7 @@
     },
     {
       "name": "Effluent",
-      "type": "time_variable_fixed_head",
+      "type": "fixed_head",
       "head": "0",
       "x":"(number_of_reactors+1)*300" ,
       "y": "898",
@@ -600,7 +514,7 @@
     },
     {
       "name": "Waste",
-      "type": "time_variable_fixed_head",
+      "type": "fixed_head",
       "head": "-1",
       "x": "(number_of_reactors+1)*300",
       "y":"1197" ,
