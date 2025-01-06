@@ -690,6 +690,14 @@
       "ask_user": "false",
       "role": "copytolinks"
     },
+	"settling_transfer": {
+      "description": "Settling transfer rate",
+      "type": "expression",
+      "expression": "settling_velocity*area*(_hsd(bottom_elevation.s-bottom_elevation.e-0.0000001)*concentration.s-_hsd(bottom_elevation.e-bottom_elevation.s-0.000001)*concentration.e)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
     "external_mass_flow_timeseries": {
       "type": "timeseries",
       "includeinoutput": "true",

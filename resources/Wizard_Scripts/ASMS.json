@@ -93,12 +93,12 @@
     "_width": "200",
     "_height": "200"
     },
-    {
-    "name":"Settling_compartment_1",
+	{
+	"name":"Settling_compartment_1",
     "type":"Settling compartment",
     "Storage":"Settling_Tank_Area*Settling_Tank_Height/2.0",
     "bottom_elevation":"0",
-    "x": "1463",
+    "x": "number_of_reactors*300",
     "y": "903",
     "_width": "200",
     "_height": "200"
@@ -108,7 +108,7 @@
      "type":"Settling compartment",
      "Storage":"Settling_Tank_Area*Settling_Tank_Height/2",
      "bottom_elevation":"-1",
-     "x":"1466",
+     "x":"number_of_reactors*300",
      "y": "1166",
      "_width": "200",
      "_height": "200"
@@ -117,7 +117,7 @@
       "name": "Effluent",
       "type": "fixed_head",
       "head": "0",
-      "x":"1772" ,
+      "x":"(number_of_reactors+1)*300" ,
       "y": "898",
       "_width": "200",
       "_height": "200"
@@ -126,7 +126,7 @@
       "name": "Waste",
       "type": "fixed_head",
       "head": "-1",
-      "x": "1757",
+      "x": "(number_of_reactors+1)*300",
       "y":"1197" ,
       "_width": "200",
       "_height": "200"
@@ -140,7 +140,7 @@
       	    "v_connector_type": "Fixed flow",
       	    "h_connector_type": "Fixed flow",
       	    "flow.h": "Return_acitvated_sludge+Reactor_inflow",
-            "n_x": "number_of_reactors",
+            "n_x": "number_of_reactors-1",
             "n_y": "1",
             "X_bh:concentration":"1",
  	    "Storage":"Reactor_Volume;m~^3",
