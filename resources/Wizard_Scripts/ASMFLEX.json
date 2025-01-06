@@ -356,13 +356,7 @@
       "type": "ReactionParameter",
       "base_value": "mu_H_param"
     },
-    {
-    
-      "name": "K_MH",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "K_MH_param"
-    },
+
     {
     
       "name": "K_OH",
@@ -401,38 +395,10 @@
     
      {
     
-      "name": "mu_M",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "mu_M_param"
-    },
-     {
-    
-      "name": "K_MM",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "K_MM_param"
-    },
-     {
-    
-      "name": "K_OM",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "K_OM_param"
-    },
-     {
-    
       "name": "K_NOM",
       "entity": "reaction_parameter",
       "type": "ReactionParameter",
       "base_value": "K_NOM_param"
-    },
-     {
-    
-      "name": "b_M",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "b_M_param"
     },
      {
     
@@ -506,13 +472,6 @@
     },
       {
     
-      "name": "Y_HM",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "Y_HM_param"
-    },
-      {
-    
       "name": "Y_A",
       "entity": "reaction_parameter",
       "type": "ReactionParameter",
@@ -567,13 +526,7 @@
       "type": "ReactionParameter",
       "base_value": "i_VSSP_param"
     },
-     {
-    
-      "name": "i_MeOH",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "i_MeOH_param"
-    },
+
       {
     
       "name": "k_LO2",
@@ -621,7 +574,7 @@
     "type":"Settling element",
     "Storage":"Settling_Tank_Area*Settling_Tank_Height/2.0",
     "bottom_elevation":"0",
-    "x": "1463",
+    "x": "number_of_reactors*300",
     "y": "903",
     "_width": "200",
     "_height": "200"
@@ -631,7 +584,7 @@
      "type":"Settling element",
      "Storage":"Settling_Tank_Area*Settling_Tank_Height/2",
      "bottom_elevation":"-1",
-     "x":"1466",
+     "x":"number_of_reactors*300",
      "y": "1166",
      "_width": "200",
      "_height": "200"
@@ -640,7 +593,7 @@
       "name": "Effluent",
       "type": "time_variable_fixed_head",
       "head": "0",
-      "x":"1772" ,
+      "x":"(number_of_reactors+1)*300" ,
       "y": "898",
       "_width": "200",
       "_height": "200"
@@ -649,7 +602,7 @@
       "name": "Waste",
       "type": "time_variable_fixed_head",
       "head": "-1",
-      "x": "1757",
+      "x": "(number_of_reactors+1)*300",
       "y":"1197" ,
       "_width": "200",
       "_height": "200"
@@ -663,7 +616,7 @@
       	    "v_connector_type": "Flex_flow",
       	    "h_connector_type": "Flex_flow",
       	    "flow.h": "Return_acitvated_sludge+Reactor_inflow",
-            "n_x": "number_of_reactors",
+            "n_x": "number_of_reactors-1",
             "n_y": "1",
             "X_BH:concentration":"1",
  	    "Storage":"Reactor_Volume;m~^3",
@@ -827,12 +780,6 @@
     "default":"1.742"
    },
    {
-   "name":"K_MH_param",
-    "delegate":"ValueBox" ,
-    "question":"Methanol half saturation for heterotrophs/gCODm^-3",
-    "default":"0.254"
-   },
-   {
    "name":"K_OH_param",
     "delegate":"ValueBox" ,
     "question": "O2 half saturation for heterotrophs/gO2m^-3",
@@ -862,36 +809,12 @@
     "question":"NHx half saturation for heterotrophs/methylotrophs/gNm^-3",
     "default":"0.014"
     },
-    {
-   "name":"mu_M_param",
-    "delegate": "ValueBox",
-    "question": "Maximum speciﬁc growth rate of methylotrophs/day^-1",
-    "default":"0.720"
-    },
-    {
-    "name":"K_MM_param",
-    "delegate": "ValueBox",
-    "question": "Methanol half saturation coefﬁcient/gCODm^-3",
-    "default":"0.119"
-   },
-   {
-    "name":"K_OM_param",
-    "delegate": "ValueBox",
-    "question":"O2 half saturation for methylotrophs/gO2m^-3" ,
-    "default":"0.033"
-   },
    {
     "name":"K_NOM_param",
     "delegate": "ValueBox",
     "question": "NOx half saturation for methylotrophs/gNm^-3",
     "default":"0.629"
    },
-   {
-   "name":"b_M_param",
-    "delegate": "ValueBox",
-    "question": "Aerobic decay rate coefﬁcient for methylotrophs/day^-1",
-    "default":"0.098"
-    },
     {
    "name":"mu_A_param",
     "delegate":"ValueBox" ,
@@ -953,22 +876,10 @@
     "default":"0.611"
    },
    {
-   "name":"Y_HM_param",
-    "delegate": "ValueBox",
-    "question": "Aerobic yield of heterotrophs on methanol",
-    "default":"0.4"
-   },
-   {
    "name":"Y_A_param",
     "delegate": "ValueBox",
     "question": "Autotroph yield",
     "default":"0.24"
-   },
-   {
-   "name":"Y_M_param",
-    "delegate": "ValueBox",
-    "question": "Methylotroph yield",
-    "default":"0.462"
    },
    {
    "name":"f_p_param",
@@ -999,13 +910,6 @@
     "delegate":"ValueBox",
     "question": "COD/VSS ratio of XP/gCOD",
     "default":"1.42"
-   },
-   {
-   "name":"i_MeOH_param",
-    "delegate":"ValueBox",
-    "question": "COD ratio of methanol/gCOD",
-    "default":"1.5"
-   
    },
    {
     "name":"k_LO2_param",
@@ -1106,15 +1010,12 @@
         "Y_param",
         "k_LO2_param",
         "k_LO2_param",
-	"i_MeOH_param",
 	"i_VSSP_param",
 	"i_VSSi_param",
 	"i_VSSB_param",
 	"i_XB_param",
 	"f_p_param",
-	"Y_M_param",
 	"Y_A_param",
-	"Y_HM_param",
 	"Y_H_param",
 	"K_a_param",
 	"K_X_param",
@@ -1127,15 +1028,11 @@
 	"mu_A_param",
 	"b_M_param",
 	"K_NOM_param",
-	"K_OM_param",
-	"K_MM_param",
-	"mu_M_param",
 	"K_NH_param",
 	"b_H_param",
 	"eta_g_param",
 	"K_NOH_param",
 	"K_OH_param",
-	"K_MH_param",
 	"mu_H_param",
 	"Y_param",
         "Inflow_COD_concentration"

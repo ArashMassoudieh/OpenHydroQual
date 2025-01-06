@@ -208,12 +208,35 @@
       "name": "sand to Sewer",
       "from": "sand",
       "to": "Sewer",
-      "type": "soil_to_fixedhead_link",
+      "type": "Sewer_pipe",
+      "diameter": "diameter_underdrain",
+      "ManningCoeff": "ManningCoeff_underdrain",
+      "length": "20;m",
       "connectiontype": "m2o",
       "connectionconfig": "u2d"
     }
   ],
   "parameters": [
+   {
+      "name": "ManningCoeff_underdrain",
+      "delegate": "ValueBox",
+      "question": "Manning's roughness coefficient of the drainage pipe ",
+      "default": "0.01"
+    },
+    {
+      "name": "diameter_underdrain",
+      "delegate": "UnitBox",
+      "question": "Underdrain pipe diameter",
+      "unit": "m",
+      "default": "0.2"
+    },
+    {
+      "name": "length_underdrain",
+      "delegate": "UnitBox",
+      "question": "The length of underdrain pipe",
+      "unit": "m",
+      "default": "20"
+    },
     {
       "name": "Surface_Area",
       "delegate": "UnitBox",
@@ -530,7 +553,10 @@
         "sand_soil_n",
         "sand_soil_theta_sat",
         "sand_soil_theta_res",
-        "sand_soil_height"
+        "sand_soil_height",
+        "ManningCoeff_underdrain",
+        "diameter_underdrain",
+        "length_underdrain"
       ],
       "criteria": [
         {
