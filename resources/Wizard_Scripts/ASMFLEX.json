@@ -110,55 +110,32 @@
       "name": "AerobicGH",
       "entity": "reaction",
       "type": "Reaction",
-      "rate_expression": "mu_H*S_S/(K_S+S_S)*S_O/(K_OH+S_O)*S_NH/(K_NH+S_NH)*X_BH)@sc" ,
-      "S_M:stoichiometric_constant":"0@sc",
-      "S_ND:stoichiometric_constant":"0@sc",
+      "rate_expression": "(mu_H*S_S/(K_S+S_S)*S_O/(K_OH+S_O)*S_NH/(K_NH+S_NH)*X_BH)@sc",
       "S_NH:stoichiometric_constant":"(0-i_XB)@sc",
-      "S_NO:stoichiometric_constant":"0@sc",
       "S_O:stoichiometric_constant":"(0-(1-Y_H)/Y_H@sc)",
       "S_S:stoichiometric_constant":"(0-1/Y_H)@sc",
-      "X_BA:stoichiometric_constant":"0@sc",
-      "X_BH:stoichiometric_constant":"1@sc",
-      "X_BM:stoichiometric_constant":"0@sc",
-      "X_ND:stoichiometric_constant":"0@sc",
-      "X_S:stoichiometric_constant":"0@sc",
-      "X_p:stoichiometric_constant":"0@sc"
+      "X_BH:stoichiometric_constant":"1@sc"
+     
      },
      {
       "name": "AnoxicGH",
       "entity": "reaction",
       "type": "Reaction",
       "rate_expression": "(mu_H*S_S/(K_S+S_S)*K_OH/(K_OH+S_O)*S_NO/(K_NOH+S_NO)*S_NH/(K_NH+S_NH)*eta_g*X_BH)@sc",
-      "S_M:stoichiometric_constant":"0@sc",
-      "S_ND:stoichiometric_constant":"0@sc",
       "S_NH:stoichiometric_constant":"(0-i_XB)@sc",
       "S_NO:stoichiometric_constant":"(0-(1-Y_H)/(2.86*Y_H))@sc",
-      "S_O:stoichiometric_constant":"0@sc",
       "S_S:stoichiometric_constant":"(0-1/Y_H)@sc",
-      "X_BA:stoichiometric_constant":"0@sc",
-      "X_BH:stoichiometric_constant":"1@sc",
-      "X_BM:stoichiometric_constant":"0@sc",
-      "X_ND:stoichiometric_constant":"0@sc",
-      "X_S:stoichiometric_constant":"0@sc",
-      "X_p:stoichiometric_constant":"0@sc"
+      "X_BH:stoichiometric_constant":"1@sc"
     },
      {
       "name": "AerobicGA",
       "entity": "reaction",
       "type": "Reaction",
       "rate_expression": "(mu_A*S_O/(K_OA+S_O)*S_NH/(K_NHA+S_NH)*X_BA)@sc",
-     "S_M:stoichiometric_constant":"0@sc",
-     "S_ND:stoichiometric_constant":"0@sc",
      "S_NH:stoichiometric_constant":"(0-(i_XB+1/Y_A))@sc",
      "S_NO:stoichiometric_constant":"(1/Y_A)@sc",
      "S_O:stoichiometric_constant":"(0-(4.57-Y_A)/Y_A)@sc",
-     "S_S:stoichiometric_constant":"0@sc",
-     "X_BA:stoichiometric_constant":"1@sc",
-     "X_BH:stoichiometric_constant":"0@sc",
-     "X_BM:stoichiometric_constant":"0@sc",
-     "X_ND:stoichiometric_constant":"0@sc",
-     "X_S:stoichiometric_constant":"0@sc",
-     "X_p:stoichiometric_constant":"0@sc"
+     "X_BA:stoichiometric_constant":"1@sc"
 
     },
      {
@@ -166,15 +143,7 @@
       "entity": "reaction",
       "type": "Reaction",
       "rate_expression": "b_H*(S_O/(K_OH+S_O)+eta_h*S_NO/(K_NOH+S_NO)*K_OH/(K_OH+S_O))*X_BH)@sc",
-     "S_M:stoichiometric_constant":"0@sc",
-      "S_ND:stoichiometric_constant":"0@sc",
-     " S_NH:stoichiometric_constant":"0@sc",
-      "S_NO:stoichiometric_constant":"0@sc",
-      "S_O:stoichiometric_constant":"0@sc",
-      "S_S:stoichiometric_constant":"0@sc",
-      "X_BA:stoichiometric_constant":"0@sc",
       "X_BH:stoichiometric_constant":"-1@sc",
-      "X_BM:stoichiometric_constant":"0@sc",
       "X_ND:stoichiometric_constant":"((1-f_p)*i_XB)@sc",
       "X_S:stoichiometric_constant":"(1-f_p)@sc",
       "X_p:stoichiometric_constant":"f_p@sc"
@@ -185,15 +154,7 @@
       "entity": "reaction",
       "type": "Reaction",
       "rate_expression": "(b_A*(S_O/(K_OA+S_O)+eta_h*S_NO/(K_NOA+S_NO)*K_OA/(K_OA+S_O))*X_BA)@sc",
-     "S_M:stoichiometric_constant":"0@sc",
-     "S_ND:stoichiometric_constant":"0@sc",
-     "S_NH:stoichiometric_constant":"0@sc",
-     "S_NO:stoichiometric_constant":"0@sc",
-     "S_O:stoichiometric_constant":"0@sc",
-     "S_S:stoichiometric_constant":"0@sc",
      "X_BA:stoichiometric_constant":"-1@sc",
-     "X_BH:stoichiometric_constant":"0@sc",
-     "X_BM:stoichiometric_constant":"0@sc",
      "X_ND:stoichiometric_constant":"((1-f_p)*i_XB)@sc",
      "X_S:stoichiometric_constant":"(1-f_p)@sc",
      "X_p:stoichiometric_constant":"f_p@sc"
@@ -203,54 +164,24 @@
       "entity": "reaction",
       "type": "Reaction",
       "rate_expression": "(K_a*S_ND*(X_BH+X_BM+X_BA))@sc" ,
-      "S_M:stoichiometric_constant":"0@sc",
       "S_ND:stoichiometric_constant":"-1@sc",
-      "S_NH:stoichiometric_constant":"1@sc",
-      "S_NO:stoichiometric_constant":"0@sc",
-      "S_O:stoichiometric_constant":"0@sc",
-      "S_S:stoichiometric_constant":"0@sc",
-      "X_BA:stoichiometric_constant":"0@sc",
-      "X_BH:stoichiometric_constant":"0@sc",
-      "X_BM:stoichiometric_constant":"0@sc",
-      "X_ND:stoichiometric_constant":"0@sc",
-      "X_S:stoichiometric_constant":"0@sc",
-      "X_p:stoichiometric_constant":"0@sc"  
-    },
+      "S_NH:stoichiometric_constant":"1@sc"
+     },
      {
       "name": "HydrolysisEO",
       "entity": "reaction",
       "type": "Reaction",
       "rate_expression": "(K_h*(X_S/(X_BH+X_BM+X_BA))/(K_X+(X_S/(X_BH+X_BM+X_BA)))*((S_O/(K_OH+S_O))+(eta_h*(S_NO/(K_NOH+S_NO))*(K_OH/(K_OH+S_O))))*(X_BH+X_BM+X_BA))@sc" ,
-      "S_M:stoichiometric_constant":"0@sc",
-      "S_ND:stoichiometric_constant":"0@sc",
-      "S_NH:stoichiometric_constant":"0@sc",
-      "S_NO:stoichiometric_constant":"0@sc",
-      "S_O:stoichiometric_constant":"0@sc",
       "S_S:stoichiometric_constant":"1@sc",
-      "X_BA:stoichiometric_constant":"0@sc",
-      "X_BH:stoichiometric_constant":"0@sc",
-      "X_BM:stoichiometric_constant":"0@sc",
-      "X_ND:stoichiometric_constant":"0@sc",
-      "X_S:stoichiometric_constant":"-1@sc",
-      "X_p:stoichiometric_constant":"0@sc" 
+      "X_S:stoichiometric_constant":"-1@sc"
     },
      {
      "name": "HydrolysisEON",
      "entity": "reaction",
      "type": "Reaction",
      "rate_expression": "((X_ND/X_S)*K_h*(X_S/(X_BH+X_BM+X_BA))/(K_X+(X_S/(X_BH+X_BM+X_BA)))*((S_O/(K_OH+S_O))+(eta_h*(S_NO/(K_NOH+S_NO))*(K_OH/(K_OH+S_O))))*(X_BH+X_BM+X_BA))@sc" ,
-     "S_M:stoichiometric_constant":"0@sc",
      "S_ND:stoichiometric_constant":"1@sc",
-     "S_NH:stoichiometric_constant":"0@sc",
-     "S_NO:stoichiometric_constant":"0@sc",
-     "S_O:stoichiometric_constant":"0@sc",
-     "S_S:stoichiometric_constant":"0@sc",
-     "X_BA:stoichiometric_constant":"0@sc",
-     "X_BH:stoichiometric_constant":"0@sc",
-     "X_BM:stoichiometric_constant":"0@sc",
-     "X_ND:stoichiometric_constant":"-1@sc",
-     "X_S:stoichiometric_constant":"0@sc",
-     "X_p:stoichiometric_constant":"0@sc"
+     "X_ND:stoichiometric_constant":"-1@sc"
     },
     {
       "name": "mu_max",
@@ -476,8 +407,16 @@
     "Storage":"Reactor_Volume;m~^3",
     "bottom_elevation":"0",
     "constant_inflow":"Reactor_inflow",
-    "S_S:constant_inflow_concentration":"Inflow_COD_concentration",
-    "X_BH:concentration":"1",
+    "S_ND:constant_inflow_concentration":"S_ND_Inflow_concentration",
+    "S_NH:constant_inflow_concentration":"S_NH_Inflow_concentration",
+    "S_NO:constant_inflow_concentration":"S_NO_Inflow_concentration",
+    "S_O:constant_inflow_concentration":"S_O_Inflow_concentration",
+    "S_S:constant_inflow_concentration":"S_S_Inflow_concentration",
+    "X_BA:constant_inflow_concentration":"X_BA_Inflow_concentration",
+    "X_BH:constant_inflow_concentration":"X_BH_Inflow_concentration",
+    "X_ND:constant_inflow_concentration":"X_ND_Inflow_concentration",
+    "X_S:constant_inflow_concentration":"X_S_Inflow_concentration",
+    "X_p:constant_inflow_concentration":"X_p_Inflow_concentration",
     "x":"0",
     "y": "901",
     "_width": "200",
@@ -663,30 +602,6 @@
       ],
       "default": "3"
     },
-    {
-    "name":"mu_max_param",
-    "delegate": "ValueBox",
-    "question": "Maximum_growthrate/day ",
-    "default":"2"
-    },
-    {
-    "name":"k_d_param",
-    "delegate": "ValueBox",
-    "question": "Decay_rate_coefficient/day",
-    "default":"0.05"
-    },
-    {
-     "name":"K_s_param",
-    "delegate": "ValueBox",
-    "question": "Half_saturation_constants/COD",
-    "default":"40"
-    },
-    { 
-     "name":"Y_param",
-    "delegate": "ValueBox",
-    "question": "Yield_coefficient/COD",
-    "default":"0.4"
-    },
    {
     "name":"mu_H_param",
     "delegate":"ValueBox" ,
@@ -830,12 +745,65 @@
     "delegate":"ValueBox",
     "question": "Oxygen mass transfer rate/day^-1",
     "default":"190.446"
-   
    },
     {
-    "name":"Inflow_COD_concentration",
+    "name":"S_S_Inflow_concentration",
     "delegate": "ValueBox",
-    "question": "Inflow COD concentration ",
+    "question": "Inflow S_S concentration ",
+    "default":"100"
+    },
+    {
+    "name":"S_ND_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow S_ND concentration ",
+    "default":"100"
+    },
+    {
+    "name":"S_NH_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow S_NH concentration ",
+    "default":"100"
+    },
+    {
+    "name":"S_NO_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow S_NO concentration ",
+    "default":"100"
+    },
+     {
+    "name":"S_O_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow S_O concentration ",
+    "default":"100"
+    },
+     {
+    "name":"X_BA_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow X_BA concentration ",
+    "default":"100"
+    },
+   {
+    "name":"X_BH_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow X_BH concentration ",
+    "default":"1"
+    },
+    {
+    "name":"X_ND_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow X_ND concentration ",
+    "default":"100"
+    },
+    {
+    "name":"X_S_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow X_S concentration ",
+    "default":"100"
+    },
+    {
+    "name":"X_p_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow X_p concentration ",
     "default":"100"
     }
   ],
@@ -915,13 +883,27 @@
      ]
      },
      {
+     
+     "name": "4_Inflow_concentration",
+      "description": "Inflow parameters",
+      "parameters": [ 
+      "S_ND_Inflow_concentration",
+      "S_NH_Inflow_concentration",
+      "S_NO_Inflow_concentration",
+      "S_O_Inflow_concentration",
+      "S_S_Inflow_concentration",
+      "X_BA_Inflow_concentration",
+      "X_BH_Inflow_concentration",
+      "X_ND_Inflow_concentration",
+      "X_S_Inflow_concentration",
+      "X_p_Inflow_concentration"
+      ]
+     
+     },
+     {
       "name": "3_Reaction parameters",
       "description": "Reaction parameters",
       "parameters": [
-        "mu_max_param",
-        "k_d_param",
-        "K_s_param",
-        "Y_param",
         "k_LO2_param",
         "k_LO2_param",
 	"i_VSSP_param",
@@ -948,40 +930,12 @@
 	"K_NOH_param",
 	"K_OH_param",
 	"mu_H_param",
-	"Y_param",
-        "Inflow_COD_concentration"
+	"Y_param"
+        
      ],
       "criteria": [
-      {
-          "name": "mu_max_param_crit",
-          "less": "0",
-          "greater":  "mu_max_param",
-          "errormessage": "The maximum growthrate must be greater than zero!"
-     },
-     {
-          "name": "k_d_param_crit",
-          "less": "0",
-          "greater":  "k_d_param",
-          "errormessage": "The decay rate coefficient must be greater than zero!"
-     },
-     {
-         "name": "K_s_param_crit",
-          "less": "0",
-          "greater":  "K_s_param",
-          "errormessage": "The half saturation constants must be greater than zero!"
-     },
-     {
-         "name": "Y_param_crit",
-          "less": "0",
-          "greater":  "Y_param",
-          "errormessage": "The yield coefficient must be greater than zero!"
-     },
-     {
-          "name": "Inflow_COD_concentration_crit",
-          "less": "0",
-          "greater":  "Inflow_COD_concentration",
-          "errormessage": "The inflow COD concentration must be greater than zero!"
-       }
+ 
+   
       ]
     }
   ]

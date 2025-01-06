@@ -137,8 +137,8 @@
     {
       "name": "Sewer",
       "type": "fixed_head",
-      "x": "1000",
-      "y": "1000+sand_soil_n_y*250",
+      "x": "1992.16",
+      "y": "717.328",
       "_width": "200",
       "_height": "200",
       "head": "-top_soil_height-aggregate_layer_height-sand_soil_height;m"
@@ -212,6 +212,8 @@
       "diameter": "diameter_underdrain",
       "ManningCoeff": "ManningCoeff_underdrain",
       "length": "20;m",
+      "start_elevation":"-top_soil_height-aggregate_layer_height-(j+1)*sand_soil_height/sand_soil_n_y;m",
+      "end_elevation": "",
       "connectiontype": "m2o",
       "connectionconfig": "u2d"
     }
