@@ -1,7 +1,7 @@
 {
-  "name": "Surface Filtration (SF)",
+  "name": "Surface Filtration (SI)",
   "icon": "Flitration.png",
-  "url": "https://openhydroqual.com/wp-content/Wizards/Filtration/Filtration.html",
+  "url": "https://openhydroqual.com/wp-content/Wizards/Filtration/Filtration_Wizard.pdf",
   "description": "This wizard create a Surface Filtration with underdrain",
   "diagram": "Filtration.svg",
   "addtemplate": [
@@ -137,8 +137,8 @@
     {
       "name": "Sewer",
       "type": "fixed_head",
-      "x": "1000",
-      "y": "1000+sand_soil_n_y*250",
+      "x": "1992.16",
+      "y": "717.328",
       "_width": "200",
       "_height": "200",
       "head": "-top_soil_height-aggregate_layer_height-sand_soil_height;m"
@@ -208,23 +208,48 @@
       "name": "sand to Sewer",
       "from": "sand",
       "to": "Sewer",
-      "type": "soil_to_fixedhead_link",
+      "type": "Sewer_pipe",
+      "diameter": "diameter_underdrain",
+      "ManningCoeff": "ManningCoeff_underdrain",
+      "length": "20;m",
+      "start_elevation":"-top_soil_height-aggregate_layer_height-sand_soil_height+sand_soil_height/sand_soil_n_y/2;m",
+      "end_elevation": "-top_soil_height-aggregate_layer_height-sand_soil_height;m",
       "connectiontype": "m2o",
       "connectionconfig": "u2d"
     }
   ],
   "parameters": [
+   {
+      "name": "ManningCoeff_underdrain",
+      "delegate": "ValueBox",
+      "question": "Manning's roughness coefficient of the drainage pipe ",
+      "default": "0.01"
+    },
+    {
+      "name": "diameter_underdrain",
+      "delegate": "UnitBox",
+      "question": "Underdrain pipe diameter",
+      "unit": "m",
+      "default": "0.2"
+    },
+    {
+      "name": "length_underdrain",
+      "delegate": "UnitBox",
+      "question": "The length of underdrain pipe",
+      "unit": "m",
+      "default": "20"
+    },
     {
       "name": "Surface_Area",
       "delegate": "UnitBox",
-      "question": "Surface area",
+      "question": "Filter surface area",
       "default": "100",
       "unit": "m~^2"
     },
     {
       "name": "sand_soil_n_y",
       "delegate": "SpinBox",
-      "question": "Number of cells layers the Sand soil",
+      "question": "Number of layers of the sand filtration layer",
       "range": [
         "1",
         "10"
@@ -255,7 +280,7 @@
       "name": "SurfaceReleaseCoefficient",
       "delegate": "ValueBox",
       "question": "Surface release coefficient",
-      "default": "1"
+      "default": "10000"
     },
     {
       "name": "Catchment_area",
@@ -311,39 +336,39 @@
     {
       "name": "sand_soil_K_s",
       "delegate": "UnitBox",
-      "question": "Sand soil hydraulic conductivity",
+      "question": "Sand hydraulic conductivity",
       "unit": "m/day",
       "default": "0.166"
     },
     {
       "name": "sand_soil_alpha",
       "delegate": "UnitBox",
-      "question": "Sand soil Van Genuchten α parameter",
+      "question": "Sand Van Genuchten α parameter",
       "unit": "1/m",
       "default": "3.52"
     },
     {
       "name": "sand_soil_n",
       "delegate": "ValueBox",
-      "question": "Sand soil Van Genuchten n parameter",
+      "question": "Sand Van Genuchten n parameter",
       "default": "3.18"
     },
     {
       "name": "sand_soil_theta_res",
       "delegate": "ValueBox",
-      "question": "Sand soil residual moisture content",
+      "question": "Sand residual moisture content",
       "default": "0.05"
     },
     {
       "name": "sand_soil_theta_sat",
       "delegate": "ValueBox",
-      "question": "Sand soil saturated moisture content",
+      "question": "Sand saturated moisture content",
       "default": "0.38"
     },
     {
       "name": "sand_soil_height",
       "delegate": "UnitBox",
-      "question": "Depth of the sand",
+      "question": "Depth of the sand layer",
       "unit": "m",
       "default": "0.3"
     },
@@ -523,14 +548,17 @@
     },
     {
       "name": "sand_soil_physical_parameter",
-      "description": "Physical parameters of the sand soil",
+      "description": "Physical parameters of the sand layer",
       "parameters": [
         "sand_soil_K_s",
         "sand_soil_alpha",
         "sand_soil_n",
         "sand_soil_theta_sat",
         "sand_soil_theta_res",
-        "sand_soil_height"
+        "sand_soil_height",
+        "ManningCoeff_underdrain",
+        "diameter_underdrain",
+        "length_underdrain"
       ],
       "criteria": [
         {

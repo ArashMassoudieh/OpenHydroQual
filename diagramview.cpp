@@ -610,12 +610,19 @@ void DiagramView::showgraph()
 {
     QAction* act = qobject_cast<QAction*>(sender());
     QString item = act->data().toString().split(";")[1];
+    if (aquiutils::lookup(mainwindow->GetSystem()->GetOutputs().names,item.toStdString())!=-1)
+    {
 #ifndef QCharts
     Plotter *plot = mainwindow->Plot(mainwindow->GetSystem()->GetOutputs()[item.toStdString()]);
 #else
     QPlotWindow *plot = mainwindow->Plot(mainwindow->GetSystem()->GetOutputs()[item.toStdString()]);
 #endif
     plot->SetYAxisTitle(act->text());
+    }
+    else
+    {
+        QMessageBox::critical(mainwindow,"There is no results!", "There is no results!", QMessageBox::Ok);
+    }
     
 }
 void DiagramView::updateNodeCoordinates()

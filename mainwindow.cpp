@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.1.24"
-#define last_modified "November, 23, 2024"
+#define openhydroqual_version "1.1.25"
+#define last_modified "January, 4, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -113,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAddPlugin,SIGNAL(triggered()),this,SLOT(addplugin()));
     connect(ui->actionAdd_plugin,SIGNAL(triggered()),this,SLOT(adddefaultpluging()));
     connect(ui->actionOptions,SIGNAL(triggered()),this,SLOT(optionsdialog()));
-
+    connect(ui->actionOpen_Results,SIGNAL(triggered()),this,SLOT(loadresults()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
     PropertiesWidget = new ItemPropertiesWidget(ui->dockWidgetContents_3);
     PropertiesWidget->tableView()->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -2262,6 +2262,24 @@ void MainWindow::optionsdialog()
     Options_Dialog->show();
 
 }
+
+void MainWindow::loadresults()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+            tr("Open"), "",
+            tr("Output files (*.txt);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
+
+    CTimeSeriesSet<double> outputs(fileName.toStdString(),true);
+    CTimeSeriesSet<double> past_output = system.GetOutputs();
+    system.GetOutputs() = outputs;
+    if (!system.SetLoadedOutputItems())
+    {   system.GetOutputs()=past_output;
+        QMessageBox::critical(this, "Outputfile not correct!", "The file does not contains the results of the model",QMessageBox::Ok);
+    }
+
+
+}
+
 
 bool MainWindow::Log(const QString &s)
 {

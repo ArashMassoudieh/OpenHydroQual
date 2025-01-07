@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>775</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFilw">
@@ -80,6 +80,7 @@
     </property>
     <addaction name="actionValidate"/>
     <addaction name="actionRun"/>
+    <addaction name="actionOpen_Results"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -347,6 +348,11 @@
   <action name="actionCreate_2D_Array">
    <property name="text">
     <string>Create 2D Array</string>
+   </property>
+  </action>
+  <action name="actionOpen_Results">
+   <property name="text">
+    <string>Load Results</string>
    </property>
   </action>
  </widget>
