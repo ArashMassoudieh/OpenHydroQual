@@ -14,16 +14,8 @@
      "name": "Aeration",
       "entity": "source",
       "type": "atmospheric exchange",
-      "rate_coefficient":"5[1/day]",
-      "saturation":"8.55[g/m~^3]"
-   },
-   {
-   
-      "name": "Aeration_anoxic",
-      "entity": "source",
-      "type": "atmospheric exchange",
-      "rate_coefficient":"0.1[1/day]",
-      "saturation":"8.55[g/m~^3]"
+      "rate_coefficient":"k_LO2_param",
+      "saturation":"8.55"
    },
    {
       "name": "S_S",
@@ -98,14 +90,6 @@
       "type": "Constituent"
    
     },
-     {
-      "name": "Decay",
-      "entity": "reaction",
-      "type": "Reaction",
-      "rate_expression": "k_d*X_BH@sc" ,
-      "X_BH:stoichiometric_constant":"-1@sc",
-      "S_S:stoichiometric_constant":"1@sc"
-    },
     {
       "name": "AerobicGH",
       "entity": "reaction",
@@ -163,7 +147,7 @@
       "name": "AmmonificationSON",
       "entity": "reaction",
       "type": "Reaction",
-      "rate_expression": "(K_a*S_ND*(X_BH+X_BM+X_BA))@sc" ,
+      "rate_expression": "(K_a*S_ND*(X_BH+X_BA))@sc" ,
       "S_ND:stoichiometric_constant":"-1@sc",
       "S_NH:stoichiometric_constant":"1@sc"
      },
@@ -171,7 +155,7 @@
       "name": "HydrolysisEO",
       "entity": "reaction",
       "type": "Reaction",
-      "rate_expression": "(K_h*(X_S/(X_BH+X_BM+X_BA))/(K_X+(X_S/(X_BH+X_BM+X_BA)))*((S_O/(K_OH+S_O))+(eta_h*(S_NO/(K_NOH+S_NO))*(K_OH/(K_OH+S_O))))*(X_BH+X_BM+X_BA))@sc" ,
+      "rate_expression": "(K_h*(X_S/(X_BH+X_BA))/(K_X+(X_S/(X_BH+X_BA)))*((S_O/(K_OH+S_O))+(eta_h*(S_NO/(K_NOH+S_NO))*(K_OH/(K_OH+S_O))))*(X_BH+X_BA))@sc" ,
       "S_S:stoichiometric_constant":"1@sc",
       "X_S:stoichiometric_constant":"-1@sc"
     },
@@ -179,31 +163,17 @@
      "name": "HydrolysisEON",
      "entity": "reaction",
      "type": "Reaction",
-     "rate_expression": "((X_ND/X_S)*K_h*(X_S/(X_BH+X_BM+X_BA))/(K_X+(X_S/(X_BH+X_BM+X_BA)))*((S_O/(K_OH+S_O))+(eta_h*(S_NO/(K_NOH+S_NO))*(K_OH/(K_OH+S_O))))*(X_BH+X_BM+X_BA))@sc" ,
+     "rate_expression": "((X_ND/X_S)*K_h*(X_S/(X_BH+X_BA))/(K_X+(X_S/(X_BH+X_BA)))*((S_O/(K_OH+S_O))+(eta_h*(S_NO/(K_NOH+S_NO))*(K_OH/(K_OH+S_O))))*(X_BH+X_BA))@sc" ,
      "S_ND:stoichiometric_constant":"1@sc",
      "X_ND:stoichiometric_constant":"-1@sc"
     },
     {
-      "name": "mu_max",
+      "name": "K_S",
       "entity": "reaction_parameter",
       "type": "ReactionParameter",
-      "base_value": "mu_max_param"
+      "base_value": "K_S_param"
     },
-    {
-      "name": "k_d",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "k_d_param"
-    },
-    {
-    
-      "name": "K_s",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "K_s_param"
-    },
-    {
-    
+	{
       "name": "K_OH",
       "entity": "reaction_parameter",
       "type": "ReactionParameter",
@@ -246,11 +216,16 @@
       "base_value": "K_NOM_param"
     },
      {
-    
       "name": "mu_A",
       "entity": "reaction_parameter",
       "type": "ReactionParameter",
       "base_value": "mu_A_param"
+    },
+	{
+      "name": "mu_H",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "mu_H_param"
     },
      {
     
@@ -370,20 +345,6 @@
       "entity": "reaction_parameter",
       "type": "ReactionParameter",
       "base_value": "i_VSSP_param"
-    },
-
-      {
-    
-      "name": "k_LO2",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "k_LO2_param"
-    },
-    {
-      "name": "Y",
-      "entity": "reaction_parameter",
-      "type": "ReactionParameter",
-      "base_value": "Y_param"   
     }
   ],
   "setvals": [
@@ -407,6 +368,7 @@
     "Storage":"Reactor_Volume;m~^3",
     "bottom_elevation":"0",
     "constant_inflow":"Reactor_inflow",
+	"S_O:external_source":"Aeration@sc",
     "S_ND:constant_inflow_concentration":"S_ND_Inflow_concentration",
     "S_NH:constant_inflow_concentration":"S_NH_Inflow_concentration",
     "S_NO:constant_inflow_concentration":"S_NO_Inflow_concentration",
@@ -417,6 +379,11 @@
     "X_ND:constant_inflow_concentration":"X_ND_Inflow_concentration",
     "X_S:constant_inflow_concentration":"X_S_Inflow_concentration",
     "X_p:constant_inflow_concentration":"X_p_Inflow_concentration",
+	"X_BH:concentration":"1",
+	"X_BA:concentration":"1",
+    "X_ND:concentration":"1",
+	"X_S:concentration":"1",
+	"X_p:concentration":"1",
     "x":"0",
     "y": "901",
     "_width": "200",
@@ -466,12 +433,17 @@
 	    "name":"Reactor_2",
 	    "type":"Reactor_Flex",
 	    "grid_type": "2D-Rect",
-      	    "v_connector_type": "Flex_flow",
-      	    "h_connector_type": "Flex_flow",
-      	    "flow.h": "Return_acitvated_sludge+Reactor_inflow",
-            "n_x": "number_of_reactors-1",
-            "n_y": "1",
-            "X_BH:concentration":"1",
+      	"v_connector_type": "Flex_flow",
+      	"h_connector_type": "Flex_flow",
+      	"flow.h": "Return_acitvated_sludge+Reactor_inflow",
+		"S_O:external_source":"Aeration@sc",
+        "n_x": "number_of_reactors-1",
+        "n_y": "1",
+        "X_BH:concentration":"1",
+		"X_BA:concentration":"1",
+        "X_ND:concentration":"1",
+		"X_S:concentration":"1",
+		"X_p:concentration":"1",
  	    "Storage":"Reactor_Volume;m~^3",
 	    "bottom_elevation":"0",
 	     "x": "(i+1)*300",
@@ -552,38 +524,43 @@
      "name":"Settling_Tank_Area",
      "unit": "m~^2",
      "delegate": "UnitBox",
-     "question": "The area of settling compartment"
+     "question": "The area of settling compartment",
+	 "default":"1000"
     },
     {
      "name":"Settling_Tank_Height",
      "unit": "m",
      "delegate": "UnitBox",
-     "question": "The height of settling compartment"
+     "question": "The height of settling compartment",
+	 "default":"2"
     },
     {
      "name":"Reactor_Volume",
      "unit":"m~^3",
      "delegate": "UnitBox",
-     "question": "The volume of reactor" 
+     "question": "The volume of reactor", 
+	 "default": "275.5"
     },
     {
      "name":"Reactor_inflow",
     "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
     "delegate": "UnitBox",
     "question": "Reactor inflow",
-    "default":"100"
+    "default":"12950"
      },
     {
     "name":"Return_acitvated_sludge",
     "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
     "delegate": "UnitBox",
-    "question": "Return acitvated sludge"
+    "question": "Return acitvated sludge",
+	"default": "10000"
     },
     {
     "name":"Waste_acitvated_sludge",
     "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
     "delegate": "UnitBox",
-    "question": "Waste acitvated sludge"
+    "question": "Waste acitvated sludge",
+	"default": "100"
     },
     {
     "name":"Settling Velocity",
@@ -614,6 +591,12 @@
     "question": "O2 half saturation for heterotrophs/gO2m^-3",
     "default":"0.030"
     },
+	{
+		"name":"K_S_param",
+		"delegate":"ValueBox" ,
+		"question":"Substrate half saturation for heterotrophs/g COD m^-3",
+		"default":"8.065"
+    },
     {
    "name":"K_NOH_param",
     "delegate":"ValueBox" ,
@@ -638,17 +621,17 @@
     "question":"NHx half saturation for heterotrophs/methylotrophs/gNm^-3",
     "default":"0.014"
     },
-   {
-    "name":"K_NOM_param",
-    "delegate": "ValueBox",
-    "question": "NOx half saturation for methylotrophs/gNm^-3",
-    "default":"0.629"
-   },
     {
-   "name":"mu_A_param",
+    "name":"mu_H_param",
     "delegate":"ValueBox" ,
-    "question": "Maximum speciﬁc growth rate of autotrophs/day^-1",
-    "default":"1.059"
+    "question": "Maximum speciﬁc growth rate of heterotrophs/day^-1",
+    "default":"1.742"
+   },
+   {
+		"name":"mu_A_param",
+		"delegate":"ValueBox" ,
+		"question": "Maximum speciﬁc growth rate of autotrophs/day^-1",
+		"default":"1.059"
    },
    {
    "name":"K_NHA_param",
@@ -774,7 +757,7 @@
     "name":"S_O_Inflow_concentration",
     "delegate": "ValueBox",
     "question": "Inflow S_O concentration ",
-    "default":"100"
+    "default":"0"
     },
      {
     "name":"X_BA_Inflow_concentration",
@@ -905,7 +888,6 @@
       "description": "Reaction parameters",
       "parameters": [
         "k_LO2_param",
-        "k_LO2_param",
 	"i_VSSP_param",
 	"i_VSSi_param",
 	"i_VSSB_param",
@@ -921,6 +903,7 @@
 	"K_OA_param",
 	"K_NOA_param",
 	"K_NHA_param",
+	"mu_H_param",
 	"mu_A_param",
 	"b_M_param",
 	"K_NOM_param",
@@ -929,9 +912,8 @@
 	"eta_g_param",
 	"K_NOH_param",
 	"K_OH_param",
-	"mu_H_param",
-	"Y_param"
-        
+	"K_S_param",
+	"mu_H_param"
      ],
       "criteria": [
  
