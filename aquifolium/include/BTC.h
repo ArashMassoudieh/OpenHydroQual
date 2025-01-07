@@ -139,6 +139,7 @@ public:
     void CreateOUProcess(const T &t_start, const T &t_end, const T &dt, const T &theta);
     CTimeSeries<T> MapfromNormalScoreToDistribution(const string& , const vector<double>&);
     CTimeSeries<T> ConverttoNormalScore();
+    double AutoCorrelationCoeff();
 #endif
 private:
     vector<T> t;
