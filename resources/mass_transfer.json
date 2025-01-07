@@ -288,8 +288,8 @@
     },
     "area": {
       "type": "expression",
-      "expression": "1",
-      "includeinoutput": "false",
+      "expression": "0.000000001",
+      "includeinoutput": "true",
       "description": "1",
       "ask_user": "false"
     },
@@ -311,7 +311,7 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",
-      "expression": "(Storage.s/Volume.s-1)*flow_factor",      
+      "expression": "(Storage.s/Volume.s-1)*flow_factor"    
     },
     "flow_factor": {
       "type": "value",

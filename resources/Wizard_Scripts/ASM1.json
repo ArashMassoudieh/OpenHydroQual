@@ -1,0 +1,943 @@
+{
+  "name": "Activated Sludge Model 1",
+  "icon": "",
+  "url": "",
+  "description": "This wizard create Activated Sludge Model 1",
+  "diagram": "",
+  "addtemplate": [
+    "main_components.json",
+    "wastewater.json",
+    "mass_transfer.json"
+  ],
+  "entities": [
+   {
+     "name": "Aeration",
+      "entity": "source",
+      "type": "atmospheric exchange",
+      "rate_coefficient":"5[1/day]",
+      "saturation":"8.55[g/m~^3]"
+   },
+   {
+   
+      "name": "Aeration_anoxic",
+      "entity": "source",
+      "type": "atmospheric exchange",
+      "rate_coefficient":"0.1[1/day]",
+      "saturation":"8.55[g/m~^3]"
+   },
+   {
+      "name": "S_S",
+      "entity": "constituent",
+      "type": "Constituent"
+   },
+   {
+      "name": "S_O",
+      "entity": "constituent",
+      "type": "Constituent"
+    },
+    {
+      "name": "X_BH",
+      "entity": "constituent",
+      "type": "Particle",
+      "settling_velocity":"Settling Velocity"
+    },
+    {
+    
+     "name": "X_BA",
+      "entity": "constituent",
+      "type": "Particle",
+      "settling_velocity":"Settling Velocity"
+
+    },
+    {
+      "name": "X_BA",
+      "entity": "constituent",
+      "type": "Particle",
+      "settling_velocity":"Settling Velocity"
+    },
+    {
+    
+     "name": "X_S",
+      "entity": "constituent",
+      "type": "Particle",
+      "settling_velocity":"Settling Velocity"
+   
+    },
+    {
+    
+      "name": "X_p",
+      "entity": "constituent",
+      "type": "Particle",
+      "settling_velocity":"Settling Velocity"
+    
+    },
+    {
+    
+     "name": "X_ND",
+      "entity": "constituent",
+      "type": "Particle",
+      "settling_velocity":"Settling Velocity"
+    
+    
+    },
+    {
+      "name": "S_NH",
+      "entity": "constituent",
+      "type": "Constituent"
+    },
+    {
+      "name": "S_NO",
+      "entity": "constituent",
+      "type": "Constituent"
+    
+    },
+    {
+    
+      "name": "S_ND",
+      "entity": "constituent",
+      "type": "Constituent"
+   
+    },
+     {
+      "name": "Decay",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "k_d*X_BH@sc" ,
+      "X_BH:stoichiometric_constant":"-1@sc",
+      "S_S:stoichiometric_constant":"1@sc"
+    },
+    {
+      "name": "AerobicGH",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "(mu_H*S_S/(K_S+S_S)*S_O/(K_OH+S_O)*S_NH/(K_NH+S_NH)*X_BH)@sc",
+      "S_NH:stoichiometric_constant":"(0-i_XB)@sc",
+      "S_O:stoichiometric_constant":"(0-(1-Y_H)/Y_H@sc)",
+      "S_S:stoichiometric_constant":"(0-1/Y_H)@sc",
+      "X_BH:stoichiometric_constant":"1@sc"
+     
+     },
+     {
+      "name": "AnoxicGH",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "(mu_H*S_S/(K_S+S_S)*K_OH/(K_OH+S_O)*S_NO/(K_NOH+S_NO)*S_NH/(K_NH+S_NH)*eta_g*X_BH)@sc",
+      "S_NH:stoichiometric_constant":"(0-i_XB)@sc",
+      "S_NO:stoichiometric_constant":"(0-(1-Y_H)/(2.86*Y_H))@sc",
+      "S_S:stoichiometric_constant":"(0-1/Y_H)@sc",
+      "X_BH:stoichiometric_constant":"1@sc"
+    },
+     {
+      "name": "AerobicGA",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "(mu_A*S_O/(K_OA+S_O)*S_NH/(K_NHA+S_NH)*X_BA)@sc",
+     "S_NH:stoichiometric_constant":"(0-(i_XB+1/Y_A))@sc",
+     "S_NO:stoichiometric_constant":"(1/Y_A)@sc",
+     "S_O:stoichiometric_constant":"(0-(4.57-Y_A)/Y_A)@sc",
+     "X_BA:stoichiometric_constant":"1@sc"
+
+    },
+     {
+      "name": "DecayH",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "b_H*(S_O/(K_OH+S_O)+eta_h*S_NO/(K_NOH+S_NO)*K_OH/(K_OH+S_O))*X_BH)@sc",
+      "X_BH:stoichiometric_constant":"-1@sc",
+      "X_ND:stoichiometric_constant":"((1-f_p)*i_XB)@sc",
+      "X_S:stoichiometric_constant":"(1-f_p)@sc",
+      "X_p:stoichiometric_constant":"f_p@sc"
+    },
+
+     {
+      "name": "DecayA",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "(b_A*(S_O/(K_OA+S_O)+eta_h*S_NO/(K_NOA+S_NO)*K_OA/(K_OA+S_O))*X_BA)@sc",
+     "X_BA:stoichiometric_constant":"-1@sc",
+     "X_ND:stoichiometric_constant":"((1-f_p)*i_XB)@sc",
+     "X_S:stoichiometric_constant":"(1-f_p)@sc",
+     "X_p:stoichiometric_constant":"f_p@sc"
+    },
+     {
+      "name": "AmmonificationSON",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "(K_a*S_ND*(X_BH+X_BM+X_BA))@sc" ,
+      "S_ND:stoichiometric_constant":"-1@sc",
+      "S_NH:stoichiometric_constant":"1@sc"
+     },
+     {
+      "name": "HydrolysisEO",
+      "entity": "reaction",
+      "type": "Reaction",
+      "rate_expression": "(K_h*(X_S/(X_BH+X_BM+X_BA))/(K_X+(X_S/(X_BH+X_BM+X_BA)))*((S_O/(K_OH+S_O))+(eta_h*(S_NO/(K_NOH+S_NO))*(K_OH/(K_OH+S_O))))*(X_BH+X_BM+X_BA))@sc" ,
+      "S_S:stoichiometric_constant":"1@sc",
+      "X_S:stoichiometric_constant":"-1@sc"
+    },
+     {
+     "name": "HydrolysisEON",
+     "entity": "reaction",
+     "type": "Reaction",
+     "rate_expression": "((X_ND/X_S)*K_h*(X_S/(X_BH+X_BM+X_BA))/(K_X+(X_S/(X_BH+X_BM+X_BA)))*((S_O/(K_OH+S_O))+(eta_h*(S_NO/(K_NOH+S_NO))*(K_OH/(K_OH+S_O))))*(X_BH+X_BM+X_BA))@sc" ,
+     "S_ND:stoichiometric_constant":"1@sc",
+     "X_ND:stoichiometric_constant":"-1@sc"
+    },
+    {
+      "name": "mu_max",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "mu_max_param"
+    },
+    {
+      "name": "k_d",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "k_d_param"
+    },
+    {
+    
+      "name": "K_s",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_s_param"
+    },
+    {
+    
+      "name": "K_OH",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_OH_param"
+    },
+    {
+    
+      "name": "K_NOH",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_NOH_param"
+    },
+    {
+    
+      "name": "eta_g",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "eta_g_param"
+    },
+    {
+    
+      "name": "b_H",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "b_H_param"
+    },
+    {
+    
+      "name": "K_NH",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_NH_param"
+    },
+    
+     {
+    
+      "name": "K_NOM",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_NOM_param"
+    },
+     {
+    
+      "name": "mu_A",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "mu_A_param"
+    },
+     {
+    
+      "name": "K_NHA",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_NHA_param"
+    },
+     {
+    
+      "name": "K_NOA",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_NOA_param"
+    },
+     {
+    
+      "name": "K_OA",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_OA_param"
+    },
+     {
+    
+      "name": "b_A",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "b_A_param"
+    },
+     {
+    
+      "name": "eta_h",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "eta_h_param"
+    },
+     {
+    
+      "name": "K_h",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_h_param"
+    },
+    {
+    
+      "name": "K_X",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_X_param"
+    },
+      {
+    
+      "name": "K_a",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "K_a_param"
+    },
+      {
+    
+      "name": "Y_H",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "Y_H_param"
+    },
+      {
+    
+      "name": "Y_A",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "Y_A_param"
+    },
+      {
+    
+      "name": "Y_M",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "Y_M_param"
+    },
+      {
+    
+      "name": "f_p",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "f_p_param"
+    },
+       {
+    
+      "name": "i_XB",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "i_XB_param"
+    },
+      {
+    
+      "name": "i_VSSB",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "i_VSSB_param"
+    },
+     {
+    
+      "name": "i_VSSi",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "i_VSSi_param"
+    },
+      {
+    
+      "name": "i_VSSs",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "i_VSSs_param"
+    },
+      {
+    
+      "name": "i_VSSP",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "i_VSSP_param"
+    },
+
+      {
+    
+      "name": "k_LO2",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "k_LO2_param"
+    },
+    {
+      "name": "Y",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "Y_param"   
+    }
+  ],
+  "setvals": [
+    {
+      "name": "start_date",
+      "object": "system@sc",
+      "quantity": "simulation_start_time@sc",
+      "value": "StartTime@dp"
+    },
+    {
+      "name": "end_date",
+      "object": "system@sc",
+      "quantity": "simulation_end_time@sc",
+      "value": "EndTime@dp"
+    }
+  ],
+  "singleblocks": [
+    {
+    "name":"Reactor_1",
+    "type":"Reactor_Flex",
+    "Storage":"Reactor_Volume;m~^3",
+    "bottom_elevation":"0",
+    "constant_inflow":"Reactor_inflow",
+    "S_ND:constant_inflow_concentration":"S_ND_Inflow_concentration",
+    "S_NH:constant_inflow_concentration":"S_NH_Inflow_concentration",
+    "S_NO:constant_inflow_concentration":"S_NO_Inflow_concentration",
+    "S_O:constant_inflow_concentration":"S_O_Inflow_concentration",
+    "S_S:constant_inflow_concentration":"S_S_Inflow_concentration",
+    "X_BA:constant_inflow_concentration":"X_BA_Inflow_concentration",
+    "X_BH:constant_inflow_concentration":"X_BH_Inflow_concentration",
+    "X_ND:constant_inflow_concentration":"X_ND_Inflow_concentration",
+    "X_S:constant_inflow_concentration":"X_S_Inflow_concentration",
+    "X_p:constant_inflow_concentration":"X_p_Inflow_concentration",
+    "x":"0",
+    "y": "901",
+    "_width": "200",
+    "_height": "200"
+    },
+    {
+    "name":"Settling_element_1",
+    "type":"Settling element",
+    "Storage":"Settling_Tank_Area*Settling_Tank_Height/2.0",
+    "bottom_elevation":"0",
+    "x": "number_of_reactors*300",
+    "y": "903",
+    "_width": "200",
+    "_height": "200"
+    },
+    {
+     "name":"Settling_element_2",
+     "type":"Settling element",
+     "Storage":"Settling_Tank_Area*Settling_Tank_Height/2",
+     "bottom_elevation":"-1",
+     "x":"number_of_reactors*300",
+     "y": "1166",
+     "_width": "200",
+     "_height": "200"
+    },
+    {
+      "name": "Effluent",
+      "type": "fixed_head",
+      "head": "0",
+      "x":"(number_of_reactors+1)*300" ,
+      "y": "898",
+      "_width": "200",
+      "_height": "200"
+    },
+    {
+      "name": "Waste",
+      "type": "fixed_head",
+      "head": "-1",
+      "x": "(number_of_reactors+1)*300",
+      "y":"1197" ,
+      "_width": "200",
+      "_height": "200"
+    }
+  ],
+  "blockarrays": [
+ 	{
+	    "name":"Reactor_2",
+	    "type":"Reactor_Flex",
+	    "grid_type": "2D-Rect",
+      	    "v_connector_type": "Flex_flow",
+      	    "h_connector_type": "Flex_flow",
+      	    "flow.h": "Return_acitvated_sludge+Reactor_inflow",
+            "n_x": "number_of_reactors-1",
+            "n_y": "1",
+            "X_BH:concentration":"1",
+ 	    "Storage":"Reactor_Volume;m~^3",
+	    "bottom_elevation":"0",
+	     "x": "(i+1)*300",
+	    "y": "896",
+	    "_width": "200",
+	    "_height": "200"
+    }
+   ],
+  "connectors": [
+     {
+      "name": "Reactor to Reactor",
+      "from": "Reactor_1",
+      "to": "Reactor_2",
+      "type": "Flex_flow",
+      "connectiontype": "o2m",
+      "connectionconfig":"l2r",
+      "flow":"Reactor_inflow+Return_acitvated_sludge"
+    },
+    {
+     "name": "Reactor_2 to Settling_element_1",
+      "from": "Reactor_2",
+      "to": "Settling_element_1",
+      "flow":"Reactor_inflow+Return_acitvated_sludge",
+      "type": "Flex_flow",
+      "connectiontype": "m2o",
+      "connectionconfig":"l2r"
+    },
+    {
+      "name": "Settling_element_1 to Settling_element_2",
+      "from": "Settling_element_1",
+      "to":  "Settling_element_2",
+      "type": "Settling element interface",
+      "connectiontype": "o2o",
+      "connectionconfig":"u2d",
+      "constant_flow":"Return_acitvated_sludge+Waste_acitvated_sludge",
+      "area":"Settling_Tank_Area"
+    },
+    {
+      "name": "Settling_element (1) to Effluent",
+      "from": "Settling_element_1",
+      "to": "Effluent",
+      "type":"Flex_flow",
+      "connectiontype": "o2o",
+      "connectionconfig":"u2d",
+      "flow":"Reactor_inflow-Waste_acitvated_sludge" 
+    },
+    {
+      "name": "Settling element (2) to Waste",
+      "from": "Settling_element_2",
+      "to": "Waste",
+      "type":  "Flex_flow",
+      "connectiontype": "o2o",
+      "connectionconfig":"u2d",
+      "flow":"Waste_acitvated_sludge"
+    },
+    {
+      "name": "Settling element  (2) to Reactor_1",
+      "from":"Settling_element_2",
+      "to": "Reactor_1",
+      "type": "Flex_flow",
+      "connectiontype": "o2o",
+      "connectionconfig":"u2d",
+      "flow":"Return_acitvated_sludge"
+    }
+  ],
+  "parameters": [
+     {
+      "name": "StartTime",
+      "delegate": "DateBox",
+      "question": "Simulation Start Date"
+    },
+    {
+      "name": "EndTime",
+      "delegate": "DateBox",
+      "question": "Simulation End Date"
+    },
+    {
+     "name":"Settling_Tank_Area",
+     "unit": "m~^2",
+     "delegate": "UnitBox",
+     "question": "The area of settling compartment"
+    },
+    {
+     "name":"Settling_Tank_Height",
+     "unit": "m",
+     "delegate": "UnitBox",
+     "question": "The height of settling compartment"
+    },
+    {
+     "name":"Reactor_Volume",
+     "unit":"m~^3",
+     "delegate": "UnitBox",
+     "question": "The volume of reactor" 
+    },
+    {
+     "name":"Reactor_inflow",
+    "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
+    "delegate": "UnitBox",
+    "question": "Reactor inflow",
+    "default":"100"
+     },
+    {
+    "name":"Return_acitvated_sludge",
+    "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
+    "delegate": "UnitBox",
+    "question": "Return acitvated sludge"
+    },
+    {
+    "name":"Waste_acitvated_sludge",
+    "unit":"m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
+    "delegate": "UnitBox",
+    "question": "Waste acitvated sludge"
+    },
+    {
+    "name":"Settling Velocity",
+    "unit":"m/day",
+    "delegate": "UnitBox",
+    "question": "Settling Velocity",
+    "default":"864"
+    },
+    {
+      "name": "number_of_reactors",
+      "delegate": "SpinBox",
+      "question": "Number of reactors",
+      "range": [
+        "1",
+        "10"
+      ],
+      "default": "3"
+    },
+   {
+    "name":"mu_H_param",
+    "delegate":"ValueBox" ,
+    "question":"Maximum speciﬁc growth rate of heterotrophs/day^-1" ,
+    "default":"1.742"
+   },
+   {
+   "name":"K_OH_param",
+    "delegate":"ValueBox" ,
+    "question": "O2 half saturation for heterotrophs/gO2m^-3",
+    "default":"0.030"
+    },
+    {
+   "name":"K_NOH_param",
+    "delegate":"ValueBox" ,
+    "question": "NOx half saturation for heterotrophs/gNm^-3",
+    "default":"0.067"
+    },
+    {
+   "name":"eta_g_param",
+    "delegate":"ValueBox" ,
+    "question":"Anoxic growth reduction for heterotrophs/day^-1" ,
+    "default":"0.582"
+   },
+   {
+   "name":"b_H_param",
+    "delegate":"ValueBox" ,
+    "question": "Aerobic decay rate coefﬁcient for heterotrophs/day^-1",
+    "default":"0.641"
+   },
+   {
+   "name":"K_NH_param",
+    "delegate": "ValueBox",
+    "question":"NHx half saturation for heterotrophs/methylotrophs/gNm^-3",
+    "default":"0.014"
+    },
+   {
+    "name":"K_NOM_param",
+    "delegate": "ValueBox",
+    "question": "NOx half saturation for methylotrophs/gNm^-3",
+    "default":"0.629"
+   },
+    {
+   "name":"mu_A_param",
+    "delegate":"ValueBox" ,
+    "question": "Maximum speciﬁc growth rate of autotrophs/day^-1",
+    "default":"1.059"
+   },
+   {
+   "name":"K_NHA_param",
+    "delegate": "ValueBox",
+    "question": "Ammonia half saturation for autotrophs/gNm^-3",
+    "default":"0.952"
+   },
+   {
+   "name":"K_NOA_param",
+    "delegate": "ValueBox",
+    "question": "NOx half saturation for autotrophs/gNm^-3",
+    "default":"0.020"
+   },
+   {
+   "name":"K_OA_param",
+    "delegate": "ValueBox",
+    "question": "Oxygen half saturation for autotrophs/gO2m^-3",
+    "default":"0.238"
+   },
+   {
+    "name":"b_A_param",
+    "delegate": "ValueBox",
+    "question":"Aerobic decay rate coefﬁcient for autotrophs " ,
+    "default":"0.185"
+   },
+   {
+   "name":"eta_h_param",
+    "delegate": "ValueBox",
+    "question": "Anoxic growth reduction for decay",
+    "default":"0.736"
+   },
+   {
+   "name":"K_h_param",
+    "delegate": "ValueBox",
+    "question": "Hydrolysis rate coefﬁcient/day^-1",
+    "default":"1.088"
+   },
+   {
+   "name":"K_X_param",
+    "delegate": "ValueBox",
+    "question": "Hydrolysis half saturation coefﬁcient",
+    "default":"0.095"
+   },
+   {
+   "name":"K_a_param",
+    "delegate": "ValueBox",
+    "question":"Ammoniﬁcation rate coefﬁcient/day^-1" ,
+    "default":"0.057"
+   },
+   {
+   "name":"Y_H_param",
+    "delegate": "ValueBox",
+    "question": "Aerobic yield of heterotrophs on methanol",
+    "default":"0.611"
+   },
+   {
+   "name":"Y_A_param",
+    "delegate": "ValueBox",
+    "question": "Autotroph yield",
+    "default":"0.24"
+   },
+   {
+   "name":"f_p_param",
+    "delegate": "ValueBox",
+    "question": "Endogenous fraction (death-regeneration)",
+    "default":"0.08"
+   },
+   {
+   "name": "i_XB_param",
+    "delegate": "ValueBox",
+    "question": "Nitrogen fraction in biomass/gCOD^-1",
+    "default":"0.058"
+   },
+   {
+   "name":"i_VSSB_param",
+    "delegate": "ValueBox",
+    "question": "COD ratio of biomass/gCOD",
+    "default":"1.42"
+    },
+    {
+    "name":"i_VSSi_param",
+    "delegate": "ValueBox",
+    "question": "COD ratio of Xi/gCOD",
+    "default":"2"
+   },
+   {
+    "name":"i_VSSP_param",
+    "delegate":"ValueBox",
+    "question": "COD/VSS ratio of XP/gCOD",
+    "default":"1.42"
+   },
+   {
+    "name":"k_LO2_param",
+    "delegate":"ValueBox",
+    "question": "Oxygen mass transfer rate/day^-1",
+    "default":"190.446"
+   },
+    {
+    "name":"S_S_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow S_S concentration ",
+    "default":"100"
+    },
+    {
+    "name":"S_ND_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow S_ND concentration ",
+    "default":"100"
+    },
+    {
+    "name":"S_NH_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow S_NH concentration ",
+    "default":"100"
+    },
+    {
+    "name":"S_NO_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow S_NO concentration ",
+    "default":"100"
+    },
+     {
+    "name":"S_O_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow S_O concentration ",
+    "default":"100"
+    },
+     {
+    "name":"X_BA_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow X_BA concentration ",
+    "default":"100"
+    },
+   {
+    "name":"X_BH_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow X_BH concentration ",
+    "default":"1"
+    },
+    {
+    "name":"X_ND_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow X_ND concentration ",
+    "default":"100"
+    },
+    {
+    "name":"X_S_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow X_S concentration ",
+    "default":"100"
+    },
+    {
+    "name":"X_p_Inflow_concentration",
+    "delegate": "ValueBox",
+    "question": "Inflow X_p concentration ",
+    "default":"100"
+    }
+  ],
+  "parameter_groups": [
+  {
+      "name": "1_General parameters",
+      "description": "General parameters",
+      "parameters": [
+        "StartTime",
+        "EndTime"
+     ]
+     },
+     {
+     
+      "name": "2_Physical parameters",
+      "description": "Physical parameters",
+      "parameters": [
+       
+        "Reactor_Volume",
+        "Settling_Tank_Height",
+        "Settling_Tank_Area",
+        "number_of_reactors",
+        "Reactor_inflow",
+        "Waste_acitvated_sludge",
+        "Return_acitvated_sludge",
+        "Settling Velocity"
+      ],
+      "criteria": [
+        {
+          "name": "Reactor_Volume_crit",
+          "less": "0",
+          "greater": "Reactor_Volume",
+          "errormessage": "The reactor_Volume must be greater than zero!"
+     },
+     {
+          "name": "Settling_Tank_Height_crit",
+          "less": "0",
+          "greater": "Settling_Tank_Height",
+          "errormessage": "The settling tank height must be greater than zero!"
+      },
+      {
+          "name": "Settling_Tank_Area_crit",
+          "less": "0",
+          "greater": "Settling_Tank_Area",
+          "errormessage": "The settling tank area must be greater than zero!"
+      },
+      {
+          "name": "number_of_reactors_crit",
+          "less": "0",
+          "greater": "number_of_reactors",
+          "errormessage": "The number of reactors must be greater than zero!"
+      },
+      {
+          "name": "Reactor_inflow_crit",
+          "less": "0",
+          "greater": "Reactor_inflow",
+          "errormessage": "The reactor inflow must be greater than zero!"
+      },
+      {
+          "name": "Waste_acitvated_sludge_crit",
+          "less": "0",
+          "greater": "Waste_acitvated_sludge",
+          "errormessage": "The waste acitvated sludge must be greater than zero!"
+      },
+      {
+          "name": "Return_acitvated_sludge_crit",
+          "less": "0",
+          "greater": "Return_acitvated_sludge",
+          "errormessage": "The return acitvated sludge must be greater than zero!"
+     },
+     {
+          "name": "Settling Velocity_crit",
+          "less": "0",
+          "greater": "Settling Velocity",
+          "errormessage": "The settling velocity must be greater than zero!"
+     }
+     ]
+     },
+     {
+     
+     "name": "4_Inflow_concentration",
+      "description": "Inflow parameters",
+      "parameters": [ 
+      "S_ND_Inflow_concentration",
+      "S_NH_Inflow_concentration",
+      "S_NO_Inflow_concentration",
+      "S_O_Inflow_concentration",
+      "S_S_Inflow_concentration",
+      "X_BA_Inflow_concentration",
+      "X_BH_Inflow_concentration",
+      "X_ND_Inflow_concentration",
+      "X_S_Inflow_concentration",
+      "X_p_Inflow_concentration"
+      ]
+     
+     },
+     {
+      "name": "3_Reaction parameters",
+      "description": "Reaction parameters",
+      "parameters": [
+        "k_LO2_param",
+        "k_LO2_param",
+	"i_VSSP_param",
+	"i_VSSi_param",
+	"i_VSSB_param",
+	"i_XB_param",
+	"f_p_param",
+	"Y_A_param",
+	"Y_H_param",
+	"K_a_param",
+	"K_X_param",
+	"K_h_param",
+	"eta_h_param",
+	"b_A_param",
+	"K_OA_param",
+	"K_NOA_param",
+	"K_NHA_param",
+	"mu_A_param",
+	"b_M_param",
+	"K_NOM_param",
+	"K_NH_param",
+	"b_H_param",
+	"eta_g_param",
+	"K_NOH_param",
+	"K_OH_param",
+	"mu_H_param",
+	"Y_param"
+        
+     ],
+      "criteria": [
+ 
+   
+      ]
+    }
+  ]
+} 
+    

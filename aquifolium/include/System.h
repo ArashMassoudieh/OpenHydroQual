@@ -365,6 +365,7 @@ class System: public Object
         unique_ptr<vector<string>> operators;
         unique_ptr<vector<string>> functions;
         void SetOutputItems();
+        bool SetLoadedOutputItems();
         double & GetSimulationTime();
         vector<string> addedtemplates;
         //constituents
