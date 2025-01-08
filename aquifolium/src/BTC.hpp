@@ -1707,7 +1707,18 @@ CTimeSeries<T> CTimeSeries<T>::ConverttoNormalScore()
 }
 #endif
 
-
+template<class T>
+double CTimeSeries<T>::AutoCorrelationCoeff()
+{
+    double numerator=0;
+    double denuminator = 0;
+    for (int i=0; i<n; i++)
+    {
+        numerator += log(GetC(i))*GetT(i);
+        denuminator += log(pow(GetT(i),2));
+    }
+    return -numerator/denuminator;
+}
 
 template<class T>
 CTimeSeries<T> CTimeSeries<T>::getcummulative() const
