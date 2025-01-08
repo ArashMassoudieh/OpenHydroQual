@@ -1714,8 +1714,8 @@ double CTimeSeries<T>::AutoCorrelationCoeff()
     double denuminator = 0;
     for (int i=0; i<n; i++)
     {
-        numerator += log(GetC(i))*GetT(i);
-        denuminator += log(pow(GetT(i),2));
+        numerator += log(std::fabs(GetC(i)))*GetT(i); // Negative --> abs // Figure out later!
+        denuminator += pow(GetT(i),2);
     }
     return -numerator/denuminator;
 }

@@ -9,6 +9,9 @@
 #endif
 #include "Expression.h"
 #include "Object.h"
+#include "qstring.h"
+#include "QDebug"
+
 
 #ifdef Q_version
     #include "runtimewindow.h"
