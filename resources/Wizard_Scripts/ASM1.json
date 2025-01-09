@@ -1,6 +1,6 @@
 {
   "name": "Activated Sludge Model 1",
-  "icon": "",
+  "icon": "ASM1.png",
   "url": "",
   "description": "This wizard create Activated Sludge Model 1",
   "diagram": "",
@@ -371,13 +371,59 @@
       "type": "ReactionParameter",
       "base_value": "i_VSSP_param"
     },
-
       {
     
       "name": "k_LO2",
       "entity": "reaction_parameter",
       "type": "ReactionParameter",
       "base_value": "k_LO2_param"
+    },
+    {
+      "name": "k_LO2",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "k_LO2_param"
+    
+    },
+    {
+      "name": "f_SiCODs",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "f_SiCODs_param"
+
+    },
+    {
+       "name": "i_CV_Bio",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "i_CV_Bio_param"
+    },
+    {
+    
+      "name": " i_CV_i",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "i_CV_i_param"
+    },
+    {
+      "name": "i_CV_s",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "i_CV_s_param"
+    
+    },
+    {
+      "name": "i_CV_p",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "i_CV_p_param"
+    },
+    {
+      "name": "f_Ss_Snd",
+      "entity": "reaction_parameter",
+      "type": "ReactionParameter",
+      "base_value": "f_Ss_Snd_param"
+    
     },
     {
       "name": "Y",
@@ -407,16 +453,16 @@
     "Storage":"Reactor_Volume;m~^3",
     "bottom_elevation":"0",
     "constant_inflow":"Reactor_inflow",
-    "S_ND:constant_inflow_concentration":"S_ND_Inflow_concentration",
+    "S_ND:constant_inflow_concentration":"S_ND_Inflow_concentration*(f_Ss_Snd_param)*(1-f_SiCODs_param)",
     "S_NH:constant_inflow_concentration":"S_NH_Inflow_concentration",
     "S_NO:constant_inflow_concentration":"S_NO_Inflow_concentration",
     "S_O:constant_inflow_concentration":"S_O_Inflow_concentration",
-    "S_S:constant_inflow_concentration":"S_S_Inflow_concentration",
+    "S_S:constant_inflow_concentration":"S_S_Inflow_concentration*(1-(f_SiCODs_param))",
     "X_BA:constant_inflow_concentration":"X_BA_Inflow_concentration",
     "X_BH:constant_inflow_concentration":"X_BH_Inflow_concentration",
-    "X_ND:constant_inflow_concentration":"X_ND_Inflow_concentration",
-    "X_S:constant_inflow_concentration":"X_S_Inflow_concentration",
-    "X_p:constant_inflow_concentration":"X_p_Inflow_concentration",
+    "X_ND:constant_inflow_concentration":"X_ND_Inflow_concentration*0*(i_CV_Bio_param)",
+    "X_S:constant_inflow_concentration":"X_S_Inflow_concentration*0.71*(i_CV_Bio_param)*(1-0)",
+    "X_p:constant_inflow_concentration":"X_p_Inflow_concentration*0.71*(i_CV_Bio_param)*(0)",
     "x":"0",
     "y": "901",
     "_width": "200",
@@ -800,6 +846,42 @@
     "question": "Inflow X_S concentration ",
     "default":"100"
     },
+     {
+    "name":"f_SiCODs_param",
+    "delegate":"ValueBox",
+    "question": "f_SiCODs",
+    "default":"0.57"
+   },
+    {
+    "name":"i_CV_Bio_param",
+    "delegate":"ValueBox",
+    "question": "i_CV_Bio",
+    "default":"1.42"
+   },
+    {
+    "name":"i_CV_i_param",
+    "delegate":"ValueBox",
+    "question": "i_CV_i",
+    "default":"1.3"
+   },
+     {
+    "name":"i_CV_s_param",
+    "delegate":"ValueBox",
+    "question": "i_CV_s",
+    "default":"1.8"
+   },
+    {
+    "name":"i_CV_p_param",
+    "delegate":"ValueBox",
+    "question": "i_CV_p",
+    "default":"1.42"
+   },
+   {
+    "name":"f_Ss_Snd_param",
+    "delegate":"ValueBox",
+    "question": "f_Ss_Snd",
+    "default":"0.05"
+   },
     {
     "name":"X_p_Inflow_concentration",
     "delegate": "ValueBox",
@@ -930,8 +1012,13 @@
 	"K_NOH_param",
 	"K_OH_param",
 	"mu_H_param",
-	"Y_param"
-        
+	"Y_param",
+	"f_SiCODs_param",
+        "i_CV_Bio_param",
+        "i_CV_i_param",
+        "i_CV_s_param",
+        "i_CV_p_param",
+        "f_Ss_Snd_param"
      ],
       "criteria": [
  
