@@ -2095,4 +2095,21 @@ CTimeSeries<T> CTimeSeries<T>::MapfromNormalScoreToDistribution(const string &di
 
     return out;
 }
+
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::MapfromNormalScoreToDistribution(const CTimeSeries<double> &distribution)
+{
+    CTimeSeries<T> out;
+    for (int i=0; i<n; i++)
+    {
+        double u = gsl_cdf_ugaussian_P(GetC(i));
+        double value = distribution.interpol(u);
+        out.append(t[i], value);
+    }
+    return out;
+}
+
 #endif
+
+
