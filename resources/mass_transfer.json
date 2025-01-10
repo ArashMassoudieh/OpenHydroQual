@@ -365,7 +365,7 @@
     },
     "area": {
       "type": "expression",
-      "expression": "1",
+      "expression": "0.000000001",
       "includeinoutput": "false",
       "description": "1",
       "ask_user": "false"
