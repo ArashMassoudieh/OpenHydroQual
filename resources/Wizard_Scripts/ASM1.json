@@ -814,7 +814,7 @@
     {
     "name":"f_SiCODs_param",
     "delegate":"ValueBox",
-    "question": "f_SiCODs",
+    "question": "Inert disolved fraction of COD (f_SiCODs)",
     "default":"0.57"
     },
     {
