@@ -1783,9 +1783,11 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
                         GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
                     }
-                    else
-                        GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at state variable '" + aquiutils::numbertostring(F.abs_max_elems())+"', dt = "  + aquiutils::numbertostring(dt()));
-
+                else
+                {
+                    string BlockConst = GetBlockConstituent(F.abs_max_elems());
+                    GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at state variable '" + GetBlockConstituent(F.abs_max_elems()) + "', dt = " + aquiutils::numbertostring(dt()));
+                }
                     GetSolutionLogger()->WriteString("Error criteria number: " + aquiutils::numbertostring(err/(err_ini+1e-10*X_norm)));
                     GetSolutionLogger()->WriteString("X_norm: " + aquiutils::numbertostring(X_norm));
                     GetSolutionLogger()->WriteString("Block outflow factors: " + GetBlocksOutflowFactors(Expression::timing::present).toString());
@@ -1990,6 +1992,16 @@ CVector_arma System::GetStateVariables(const string &variable, const Expression:
 
         return X;
     }
+}
+
+string System::GetBlockConstituent(unsigned int i)
+{
+    int BlockNo = i / this->constituents.size();
+    int ConstituentNo = i % this->constituents.size();
+    qDebug() << BlockNo; 
+    qDebug() << ConstituentNo; 
+    string out = blocks[BlockNo].GetName() + ":" + constituents[ConstituentNo].GetName();
+    return out;
 }
 
 void System::SetStateVariables(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport)
