@@ -636,19 +636,19 @@
    {
    "name":"K_OH_param",
     "delegate":"ValueBox" ,
-    "question": "O2 half saturation for heterotrophs (K<sub>OH</sub>) [gO<sup>2</sup>/m<sup>-3</sup>]",
+    "question": "O2 half saturation for heterotrophs (K<sub>OH</sub>) [gO<sup>2</sup>m<sup>-3</sup>]",
     "default":"0.030"
     },
     {
 	"name":"K_S_param",
 	"delegate":"ValueBox" ,
-	"question": "Substrate half saturation for heterotrophs (K<sub>S</sub>) [gCOD/m<sup>-3</sup>]",
+	"question": "Substrate half saturation for heterotrophs (K<sub>S</sub>) [gCOD m<sup>-3</sup>]",
 	"default":"8.065"
     },
     {
    "name":"K_NOH_param",
     "delegate":"ValueBox" ,
-    "question": "NOx half saturation for heterotrophs (K<sub>NOH</sub>) [gN/m<sup>-3</sup>]",
+    "question": "NOx half saturation for heterotrophs (K<sub>NOH</sub>) [gN m<sup>-3</sup>]",
     "default":"0.067"
     },
     {
@@ -666,7 +666,7 @@
    {
    "name":"K_NH_param",
     "delegate": "ValueBox",
-    "question":"NHx half saturation for heterotrophs (K<sub>NH</sub>) [gN/m<sup>-3</sup>]",
+    "question":"NHx half saturation for heterotrophs (K<sub>NH</sub>) [gN m<sup>-3</sup>]",
     "default":"0.014"
     },
     {
@@ -678,19 +678,19 @@
    {
    "name":"K_NHA_param",
     "delegate": "ValueBox",
-    "question": "Ammonia half saturation for autotrophs (K<sub>NHA</sub>) [gN/m<sup>-3</sup>]",
+    "question": "Ammonia half saturation for autotrophs (K<sub>NHA</sub>) [gN m<sup>-3</sup>]",
     "default":"0.952"
    },
    {
    "name":"K_NOA_param",
     "delegate": "ValueBox",
-    "question": "NOx half saturation for autotrophs (K<sub>NOA</sub>) [gN/m<sup>-3</sup>]",
+    "question": "NOx half saturation for autotrophs (K<sub>NOA</sub>) [gN m<sup>-3</sup>]",
     "default":"0.020"
    },
    {
    "name":"K_OA_param",
     "delegate": "ValueBox",
-    "question": "Oxygen half saturation for autotrophs (K<sub>OA</sub>) [gO<sup>2</sup>/m<sup>-3</sup>]",
+    "question": "Oxygen half saturation for autotrophs (K<sub>OA</sub>) [gO<sup>2</sup>m<sup>-3</sup>]",
     "default":"0.238"
    },
    {
@@ -714,7 +714,7 @@
    {
    "name":"K_X_param",
     "delegate": "ValueBox",
-    "question": "Hydrolysis half saturation coefﬁcient (K<sub>X</sub>) [gCOD/m<sup>-3</sup>]",
+    "question": "Hydrolysis half saturation coefﬁcient (K<sub>X</sub>) [gCOD m<sup>-3</sup>]",
     "default":"0.095"
    },
    {
@@ -744,25 +744,25 @@
    {
    "name": "i_XB_param",
     "delegate": "ValueBox",
-    "question": "Nitrogen fraction in biomass (i<sub>XB</sub>) [gCOD/m<sup>-3</sup>]",
+    "question": "Nitrogen fraction in biomass (i<sub>XB</sub>) [gCOD m<sup>-3</sup>]",
     "default":"0.058"
    },
    {
    "name":"i_VSSB_param",
     "delegate": "ValueBox",
-    "question": "COD ratio of biomass (i<sub>VSS,B</sub>) [gCOD/m<sup>-3</sup>]",
+    "question": "COD ratio of biomass (i<sub>VSS,B</sub>) [gCOD m<sup>-3</sup>]",
     "default":"1.42"
     },
     {
     "name":"i_VSSi_param",
     "delegate": "ValueBox",
-    "question": "COD ratio of Xi (i<sub>VSS,i</sub>) [gCOD/m<sup>-3</sup>]",
+    "question": "COD ratio of Xi (i<sub>VSS,i</sub>) [gCOD m<sup>-3</sup>]",
     "default":"2"
    },
    {
     "name":"i_VSSP_param",
     "delegate":"ValueBox",
-    "question": "COD/VSS ratio of XP (i<sub>VSS,P</sub>) [gCOD/m<sup>-3</sup>]",
+    "question": "COD/VSS ratio of XP (i<sub>VSS,P</sub>) [gCOD m<sup>-3</sup>]",
     "default":"1.42"
    },
    {
