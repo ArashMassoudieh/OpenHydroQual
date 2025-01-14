@@ -180,7 +180,6 @@
       "base_value": "k_d_param"
     },
     {
-    
       "name": "K_S",
       "entity": "reaction_parameter",
       "type": "ReactionParameter",
@@ -637,139 +636,139 @@
    {
    "name":"K_OH_param",
     "delegate":"ValueBox" ,
-    "question": "O2 half saturation for heterotrophs (K_OH) gO2m^-3",
+    "question": "O2 half saturation for heterotrophs (K<sub>OH</sub>) [gO<sup>2</sup>/m<sup>-3</sup>]",
     "default":"0.030"
     },
     {
 	"name":"K_S_param",
 	"delegate":"ValueBox" ,
-	"question": "Substrate half saturation for heterotrophs (K_S) g COD m^-3",
+	"question": "Substrate half saturation for heterotrophs (K<sub>S</sub>) [gCOD/m<sup>-3</sup>]",
 	"default":"8.065"
     },
     {
    "name":"K_NOH_param",
     "delegate":"ValueBox" ,
-    "question": "NOx half saturation for heterotrophs (K_NOH) gNm^-3",
+    "question": "NOx half saturation for heterotrophs (K<sub>NOH</sub>) [gN/m<sup>-3</sup>]",
     "default":"0.067"
     },
     {
    "name":"eta_g_param",
     "delegate":"ValueBox" ,
-    "question":"Anoxic growth reduction for heterotrophs (eta_g) day^-1" ,
+    "question":"Anoxic growth reduction for heterotrophs (<html>&eta;</html><sub>g</sub>) [day<sup>-1</sup>]" ,
     "default":"0.582"
    },
    {
    "name":"b_H_param",
     "delegate":"ValueBox" ,
-    "question": "Aerobic decay rate coefﬁcient for heterotrophs (b_H) day^-1",
+    "question": "Aerobic decay rate coefﬁcient for heterotrophs (b<sub>H</sub>) [day<sup>-1</sup>]",
     "default":"0.641"
    },
    {
    "name":"K_NH_param",
     "delegate": "ValueBox",
-    "question":"NHx half saturation for heterotrophs (K_NH) gNm^-3",
+    "question":"NHx half saturation for heterotrophs (K<sub>NH</sub>) [gN/m<sup>-3</sup>]",
     "default":"0.014"
     },
     {
    "name":"mu_A_param",
     "delegate":"ValueBox" ,
-    "question": "Maximum speciﬁc growth rate of autotrophs (mu_A) day^-1",
+    "question": "Maximum speciﬁc growth rate of autotrophs (<html>&mu;</html><sub>A</sub>) [day<sup>-1</sup>]",
     "default":"1.059"
    },
    {
    "name":"K_NHA_param",
     "delegate": "ValueBox",
-    "question": "Ammonia half saturation for autotrophs (K_NHA) gNm^-3",
+    "question": "Ammonia half saturation for autotrophs (K<sub>NHA</sub>) [gN/m<sup>-3</sup>]",
     "default":"0.952"
    },
    {
    "name":"K_NOA_param",
     "delegate": "ValueBox",
-    "question": "NOx half saturation for autotrophs (K_NOA) gNm^-3",
+    "question": "NOx half saturation for autotrophs (K<sub>NOA</sub>) [gN/m<sup>-3</sup>]",
     "default":"0.020"
    },
    {
    "name":"K_OA_param",
     "delegate": "ValueBox",
-    "question": "Oxygen half saturation for autotrophs (K_OA) gO2m^-3",
+    "question": "Oxygen half saturation for autotrophs (K<sub>OA</sub>) [gO<sup>2</sup>/m<sup>-3</sup>]",
     "default":"0.238"
    },
    {
     "name":"b_A_param",
     "delegate": "ValueBox",
-    "question":"Aerobic decay rate coefﬁcient for autotrophs (b_A) day^-1" ,
+    "question":"Aerobic decay rate coefﬁcient for autotrophs (b<sub>A</sub>) [day<sup>-1</sup>]" ,
     "default":"0.185"
    },
    {
    "name":"eta_h_param",
     "delegate": "ValueBox",
-    "question": "Anoxic growth reduction for decay (eta_h)",
+    "question": "Anoxic growth reduction for decay (<html>&eta;</html><sub>h</sub>)",
     "default":"0.736"
    },
    {
    "name":"K_h_param",
     "delegate": "ValueBox",
-    "question": "Hydrolysis rate coefﬁcient (k_h) day^-1",
+    "question": "Hydrolysis rate coefﬁcient (k<sub>h</sub>) [day<sup>-1</sup>]",
     "default":"1.088"
    },
    {
    "name":"K_X_param",
     "delegate": "ValueBox",
-    "question": "Hydrolysis half saturation coefﬁcient (K_X) gCOD/m^-3",
+    "question": "Hydrolysis half saturation coefﬁcient (K<sub>X</sub>) [gCOD/m<sup>-3</sup>]",
     "default":"0.095"
    },
    {
    "name":"K_a_param",
     "delegate": "ValueBox",
-    "question":"Ammoniﬁcation rate coefﬁcient (k_A) day^-1" ,
+    "question":"Ammoniﬁcation rate coefﬁcient (k<sub>A</sub>)  [day<sup>-1</sup>]",
     "default":"0.057"
    },
    {
    "name":"Y_H_param",
     "delegate": "ValueBox",
-    "question": "Aerobic yield of heterotrophs on methanol (Y_H) ",
+    "question": "Aerobic yield of heterotrophs on methanol (Y<sub>H</sub>) ",
     "default":"0.611"
    },
    {
    "name":"Y_A_param",
     "delegate": "ValueBox",
-    "question": "Autotroph yield (Y_A)",
+    "question": "Autotroph yield (Y<sub>A</sub>)",
     "default":"0.24"
    },
    {
    "name":"f_p_param",
     "delegate": "ValueBox",
-    "question": "Endogenous fraction (death-regeneration) (f_p)",
+    "question": "Endogenous fraction (death-regeneration) (f<sub>P</sub>)",
     "default":"0.08"
    },
    {
    "name": "i_XB_param",
     "delegate": "ValueBox",
-    "question": "Nitrogen fraction in biomass (i_XB) gCOD/m^3",
+    "question": "Nitrogen fraction in biomass (i<sub>XB</sub>) [gCOD/m<sup>-3</sup>]",
     "default":"0.058"
    },
    {
    "name":"i_VSSB_param",
     "delegate": "ValueBox",
-    "question": "COD ratio of biomass (i_VSSB) gCOD/m^3",
+    "question": "COD ratio of biomass (i<sub>VSS,B</sub>) [gCOD/m<sup>-3</sup>]",
     "default":"1.42"
     },
     {
     "name":"i_VSSi_param",
     "delegate": "ValueBox",
-    "question": "COD ratio of Xi (i_VSSi) gCOD/m^3",
+    "question": "COD ratio of Xi (i<sub>VSS,i</sub>) [gCOD/m<sup>-3</sup>]",
     "default":"2"
    },
    {
     "name":"i_VSSP_param",
     "delegate":"ValueBox",
-    "question": "COD/VSS ratio of XP (i_VSSP) gCOD/m^3",
+    "question": "COD/VSS ratio of XP (i<sub>VSS,P</sub>) [gCOD/m<sup>-3</sup>]",
     "default":"1.42"
    },
    {
     "name":"k_LO2_param",
     "delegate":"ValueBox",
-    "question": "Oxygen mass transfer rate (K_LA) day^-1",
+    "question": "Oxygen mass transfer rate (K<sub>LA</sub>) [day<sup>-1</sup>]",
     "default":"190.446"
    },
     {
@@ -787,13 +786,13 @@
     {
     "name":"S_NH_Inflow_concentration",
     "delegate": "ValueBox",
-    "question": "Inflow S_NH concentration ",
+    "question": "Inflow  S<sub>NH</sub> concentration ",
     "default":"20"
     },
     {
     "name":"S_NO_Inflow_concentration",
     "delegate": "ValueBox",
-    "question": "Inflow S_NO concentration ",
+    "question": "Inflow S<sub>NO</sub> concentration ",
     "default":"2"
     },
     {
@@ -902,6 +901,8 @@
       "parameters": [
         "k_LO2_param",
 	"mu_A_param",
+	"eta_g_param",
+	"eta_h_param",
 	"mu_H_param"
     ],
       "criteria": [
@@ -913,6 +914,7 @@
       "name": "5_Half_Saturation",
       "description": "Half saturation constants",
       "parameters": [
+	"K_OH_param",
 	"K_S_param",
 	"K_a_param",
 	"K_X_param",
@@ -920,7 +922,8 @@
 	"K_OA_param",
 	"K_NOA_param",
 	"K_NHA_param",
-	"K_NH_param"
+	"K_NH_param",
+	"K_NOH_param"
     ],
       "criteria": [
  
@@ -960,7 +963,6 @@
 	"i_VSSB_param",
 	"i_XB_param",
 	"f_p_param",
-	"eta_h_param",
 	"f_SiCODs_param",
 	"i_CV_Bio_param",
     	"i_CV_i_param",
