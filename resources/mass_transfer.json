@@ -321,7 +321,7 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
-      "default": "1000"
+      "default": "1000000"
     },
     "length": {
       "type": "expression",
