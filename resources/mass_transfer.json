@@ -57,6 +57,7 @@
     	"ask_user": "true",
     	"description": "Rate coefficient",
     	"delegate": "UnitBox",
+    	"estimate": "true",
     	"unit": "1/day;1/s;1/hr"
     },
     "saturation":
