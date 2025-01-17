@@ -37,7 +37,7 @@
     },
     "Shift_factor": {
       "type": "value",
-      "description": "Hydraulic Conductivity",
+      "description": "Shift factor",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
