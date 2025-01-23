@@ -520,6 +520,13 @@
       "ask_user": "true",
       "delegate": "Browser" 
     },
+    "Dummy_timeseries": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Dummy timeseries",
+      "ask_user": "true",
+      "delegate": "Browser" 
+    },
     "bottom_elevation": {
       "type": "expression",
       "expression": "head",	
