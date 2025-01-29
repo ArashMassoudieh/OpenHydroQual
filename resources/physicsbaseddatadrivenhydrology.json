@@ -13,8 +13,7 @@
       "inflow":"PrecipitationAdjusted",
       "includeinoutput": "true",
       "description": "Initial Storage; Storage",
-      "ask_user": "true",
-      "estimate": "true"
+	  "initial_value_expression": "Initial_Storage_coeff*Capacity"
     },
     "Capacity": {
        "type": "value",
@@ -27,17 +26,33 @@
 	   "criteria": "Capacity>0",
        "warningmessage": "Capacity must be greater than zero"
     },
+	"Initial_Storage_coeff": {
+       "type": "value",
+       "description": "Initial storage ratio",      
+       "ask_user": "true",
+       "includeinoutput": "true",
+	   "delegate": "ValueBox",
+	   "estimate": "true",
+	   "criteria": "0<Initial_Storage_coeff<1",
+       "warningmessage": "Initial storage ratio must smaller than 1"
+    },
     "Precipitation": {
-      "type": "source",
+      "type": "timeseries",
       "includeinoutput": "true",
       "description": "Precipitation",
-      "helptext": "A precipitation source object must be selected.",  
       "ask_user": "true",
-      "delegate": "ComboBox;Sources"
+      "delegate": "Browser;time series"
     },
-    "Shift_factor": {
+	"PrecipitationAdjusted":
+	{
+		"type": "expression",
+		"description": "Rain inflow",
+		"expression": "Precipitation_coefficient*Precipitation",
+		"includeinoutput": "true"
+	},
+	"Precipitation_coefficient": {
       "type": "value",
-      "description": "Shift factor",
+      "description": "Precipitation coefficient",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
@@ -56,9 +71,49 @@
 	"Latent_variable": {
 	  "type": "expression",
       "description": "Latent variable",
-	  "expression": "Scale_factor*_log(Shift_factor*Storage/(Capacity-Storage))",
+	  "expression": "Scale_factor*Capacity_ratio/(_max(1-Capacity_ratio;0.0000001)) - 0.0001/_max(Capacity_ratio;0.00000001)",
 	  "includeinoutput": "true",
 	  "ask_user": "false"
+	},
+	"Capacity_ratio": {
+	  "type": "expression",
+      "description": "Water content",
+	  "expression": "Storage/Capacity",
+	  "includeinoutput": "true",
+	  "ask_user": "false"
+	},
+	"Void capacity_ratio": {
+	  "type": "expression",
+      "description": "Void ratio",
+	  "expression": "1-Storage/Capacity",
+	  "includeinoutput": "true",
+	  "ask_user": "false"
+	}
+  },
+  "Fixed Later Variable Unit": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Fixed Latent Variable Unit",
+    "icon": {
+      "filename": "fixedhead.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "includeinoutput": "true",
+      "description": "Initial Storage; Storage",
+      "ask_user": "true",
+      "estimate": "true",
+	  "default": "1000000"
+    },
+	"Latent_variable": {
+	  "type": "value",
+      "description": "Latent variable",
+	  "includeinoutput": "true",
+	  "ask_user": "true",
+	  "delegate": "ValueBox",
+	  "estimate": "true"
 	}
   },
   "storage_unit_link": {
@@ -104,14 +159,22 @@
 	"ExpTerm": {
       "type": "expression",
       "description": "Exponential Term",
-      "expression": "_exp(-Nonlinearity_Factor*(Latent_variable.s - Latent_variable.e))",
+      "expression": "_exp(-Nonlinearity_Factor*Latent_Variable_Difference)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
 	"flow": {
       "type": "expression",
       "description": "Flow rate",
-      "expression": "Mean_Transmissivity*(Latent_variable.s-Latent_variable.e) + Smoothness_Factor/2*(1-ExpTerm)/(1+ExpTerm)",
+      "expression": "Mean_Transmissivity*(Latent_Variable_Difference + Smoothness_Factor/2*(1-ExpTerm)/(1+ExpTerm))",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+	"Latent_Variable_Difference": {
+      "type": "expression",
+      "description": "Latent Variable Difference",
+      "expression": "Latent_variable.s-Latent_variable.e",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
