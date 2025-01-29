@@ -24,7 +24,8 @@
 	   "unit": "m~^3;ft~^3",
 	   "estimate": "true",
 	   "criteria": "Capacity>0",
-       "warningmessage": "Capacity must be greater than zero"
+       "warningmessage": "Capacity must be greater than zero",
+	   "default": "1000"
     },
 	"Initial_Storage_coeff": {
        "type": "value",
@@ -34,7 +35,8 @@
 	   "delegate": "ValueBox",
 	   "estimate": "true",
 	   "criteria": "0<Initial_Storage_coeff<1",
-       "warningmessage": "Initial storage ratio must smaller than 1"
+       "warningmessage": "Initial storage ratio must smaller than 1",
+	   "default": "0.5"
     },
     "Precipitation": {
       "type": "timeseries",
@@ -90,7 +92,7 @@
 	  "ask_user": "false"
 	}
   },
-  "Fixed Later Variable Unit": {
+  "Fixed Latent Variable Unit": {
     "type": "block",
     "typecategory": "Blocks",
     "description": "Fixed Latent Variable Unit",
@@ -113,7 +115,8 @@
 	  "includeinoutput": "true",
 	  "ask_user": "true",
 	  "delegate": "ValueBox",
-	  "estimate": "true"
+	  "estimate": "true",
+	  "default": "0"
 	}
   },
   "storage_unit_link": {
@@ -138,35 +141,10 @@
 		"unit": "m~^2/day; ft~^2/day",
 		"default": "1"
 	},
-	"Smoothness_Factor": {
-		"type": "value",
-		"description": "Smoothness Factor",
-		"ask_user": "true",
-		"delegate": "UnitBox",
-		"estimate": "true",
-		"unit": "m~^3/day; ft~^3/day",
-		"default": "1"
-	},
-	"Nonlinearity_Factor": {
-		"type": "value",
-		"description": "Nonlinearity Factor",
-		"ask_user": "true",
-		"delegate": "UnitBox",
-		"estimate": "true",
-		"unit": "m~^1; ft~^1",
-		"default": "1"
-	},
-	"ExpTerm": {
-      "type": "expression",
-      "description": "Exponential Term",
-      "expression": "_exp(-Nonlinearity_Factor*Latent_Variable_Difference)",
-      "includeinoutput": "true",
-      "ask_user": "false"
-    },
 	"flow": {
       "type": "expression",
       "description": "Flow rate",
-      "expression": "Mean_Transmissivity*(Latent_Variable_Difference + Smoothness_Factor/2*(1-ExpTerm)/(1+ExpTerm))",
+      "expression": "Mean_Transmissivity*Latent_Variable_Difference",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
