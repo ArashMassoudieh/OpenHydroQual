@@ -1967,8 +1967,8 @@ T CTimeSeries<T>::Exponential_Kernel(const T &t,const T &lambda) const
     T sum=0;
     for (unsigned int i=initial_i; i<last_i; i++)
     {
-        sum+=GetC(i)*exp(-lambda*(GetT(i)-t))*(GetT(i+1)-GetT(i));
-        sum+=GetC(i)*exp(-lambda*(GetT(i+1)-t))*(GetT(i+1)-GetT(i));
+        sum+=GetC(i)*lambda*exp(-lambda*(GetT(i)-t))*(GetT(i+1)-GetT(i));
+        sum+=GetC(i)*lambda*exp(-lambda*(GetT(i+1)-t))*(GetT(i+1)-GetT(i));
     }
     return sum;
 }
