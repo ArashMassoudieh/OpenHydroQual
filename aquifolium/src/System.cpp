@@ -2818,6 +2818,15 @@ bool System::SetAsParameter(const string &location, const string &quantity, cons
     return false;
 }
 
+bool System::SetAsParameter(const string& location, const string& quantity, const string& parametername, bool Full)
+{
+    SetAsParameter(location, quantity, parametername);
+    if (!object(location))
+        return false; 
+    object(location)->Variable(quantity)->SetParameterAssignedTo(parametername);
+    return true; 
+}
+
 bool System::AppendParameter(const string &paramname, const double &lower_limit, const double &upper_limit, const string &prior_distribution)
 {
     if (Parameters().Contains(paramname))
