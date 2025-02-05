@@ -491,6 +491,14 @@ Quan& Quan::operator=(const Quan& rhs)
     return *this;
 }
 
+bool Quan::operator==(const Quan& other)
+{
+    bool out = true;
+    out = out && (_val != other._val);
+    out = out && (_val_star != other._val_star);
+    return out; 
+}
+
 double Quan::CalcVal(Object *block, const Expression::timing &tmg)
 {
     if (type == _type::constant || type== _type::boolean)
@@ -1171,7 +1179,7 @@ void Quan::SetInitialValueExpression(const Expression &expression)
     initial_value_expression = expression;
 }
 
-vector<string> Quan::AllConstituents() const
+vector<std::string> Quan::AllConstituents() const
 {
     if (parent)
         return parent->AllConstituents();
@@ -1194,7 +1202,7 @@ bool Quan::RenameQuantity(const string &oldname, const string &newname)
     return false;
 }
 
-double Quan::InterpolateBasedonPrecalcFunction(const double &val)
+double Quan::InterpolateBasedonPrecalcFunction(const double &val) const
 {
     if (precalcfunction.Logarithmic())
     {

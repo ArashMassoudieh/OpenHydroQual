@@ -31,7 +31,7 @@
        "type": "value",
        "description": "Initial storage ratio",      
        "ask_user": "true",
-       "includeinoutput": "true",
+       "includeinoutput": "false",
 	   "delegate": "ValueBox",
 	   "estimate": "true",
 	   "criteria": "0<Initial_Storage_coeff<1",
@@ -88,6 +88,75 @@
 	  "type": "expression",
       "description": "Void ratio",
 	  "expression": "1-Storage/Capacity",
+	  "includeinoutput": "true",
+	  "ask_user": "false"
+	}
+  },
+  "Storage Unit (Power-law)": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Storage Unit",
+    "icon": {
+      "filename": "StorageUnitPowerLaw.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow":"PrecipitationAdjusted",
+      "includeinoutput": "true",
+      "description": "Initial Storage; Storage",
+	  "ask_user": "true",
+	  "delegate": "UnitBox",
+	  "unit": "m;ft"
+    },
+    "H_S_Coefficient": {
+       "type": "value",
+       "description": "Coefficient",      
+       "ask_user": "true",
+       "includeinoutput": "true",
+	   "delegate": "ValueBox",
+	   "estimate": "true",
+	   "criteria": "H_S_Coefficient>0",
+       "warningmessage": "The coefficient must be greater than zero",
+	   "default": "1000"
+    },
+    "Precipitation": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Precipitation",
+      "ask_user": "true",
+      "delegate": "Browser;time series"
+    },
+	"PrecipitationAdjusted":
+	{
+		"type": "expression",
+		"description": "Rain inflow",
+		"expression": "Precipitation_coefficient*Precipitation",
+		"includeinoutput": "true"
+	},
+	"Precipitation_coefficient": {
+      "type": "value",
+      "description": "Precipitation coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1"
+    },
+	"Exponent": {
+      "type": "value",
+      "description": "Exponent",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+	  "criteria": "Exponent>0",
+      "warningmessage": "The Exponent must be greater than zero"
+    },
+	"Latent_variable": {
+	  "type": "expression",
+      "description": "Latent variable",
+	  "expression": "H_S_Coefficient*Storage^Exponent",
 	  "includeinoutput": "true",
 	  "ask_user": "false"
 	}

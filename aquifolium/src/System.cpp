@@ -3829,6 +3829,8 @@ void System::SetSolutionLogger(SolutionLogger &slnlogger)
 
 bool System::SetSolutionLogger(const string &filename)
 {
+    if (solutionlogger != nullptr)
+        delete solutionlogger;
     solutionlogger = new SolutionLogger(filename);
     return true;
 
