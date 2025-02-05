@@ -75,7 +75,7 @@ double Block::GetInflowValue(const string &variable, const string &constituent, 
                         SetCurrentCorrespondingConstituent(constituent);
                         SetCurrentCorrespondingSource(Variable(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i])->GetSource()->GetName());
                     }
-                double inflow1 = CalcVal(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i]);
+                double inflow1 = CalcVal(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i],tmg);
                 Variable(constituent+":"+Variable(variablefullname)->GetCorrespondingInflowVar()[i])->SetVal(inflow1, tmg);
                 inflow += inflow1;
             }
