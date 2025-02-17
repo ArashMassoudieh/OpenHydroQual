@@ -578,6 +578,14 @@
       "estimate": "true",
       "unit": "m~^2/s;m~^2/day;ft~^2/s;ft~^2/day"
     },
+	"dispersivity": {
+      "description": "Dispersivity",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m;ft"
+    },
     "advective_masstransfer": {
       "description": "Advective mass transfer rate",
       "type": "expression",
@@ -587,9 +595,9 @@
       "role": "copytolinks"
     },
     "diffusive_masstransfer": {
-      "description": "Diffusive mass transfer rate",
+      "description": "Diffusive/Dispersive mass transfer rate",
       "type": "expression",
-      "expression": "diffusion_coefficient*area/length*(concentration.s-concentration.e)",
+      "expression": "(diffusion_coefficient*area+dispersivity*flow)/length*(concentration.s-concentration.e)",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"

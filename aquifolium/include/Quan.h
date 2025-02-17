@@ -7,6 +7,7 @@
 #include "precalculatedfunction.h"
 #include <json/json.h>
 #include "Condition.h"
+#include <string>
 
 #ifdef Q_version
 #include <qjsonobject.h>
@@ -35,6 +36,7 @@ class Quan
 
         string GetStringValue() {return _string_value;}
         Quan& operator=(const Quan& other);
+        bool operator==(const Quan& other);
         enum class _type {constant, value, balance, expression, timeseries, prec_timeseries, global_quan, rule, source, string, not_assigned, boolean};
         enum class _role {none, copytoblocks, copytolinks, copytosources, copytoreactions};
         double CalcVal(Object *, const Expression::timing &tmg=Expression::timing::past);
@@ -113,7 +115,7 @@ class Quan
         {
             role = r;
         }
-        _role GetRole()
+        _role GetRole() const
         {
             return role;
         }
@@ -142,13 +144,13 @@ class Quan
         void SetInitialValueExpression(const string &expression);
         void SetInitialValueExpression(const Expression &expression);
         Expression &InitialValueExpression() {return initial_value_expression;}
-        bool calcinivalue() {return calculate_initial_value_from_expression;}
-        vector<string> AllConstituents() const;
+        bool calcinivalue() const { return calculate_initial_value_from_expression; }
+        vector<std::string> AllConstituents() const;
         vector<string> AllReactionParameters() const;
         bool RenameQuantity(const string &oldname, const string &newname);
         bool SetPrecalcIndependentVariable(const string &varname) {return precalcfunction.SetIndependentVariable(varname);}
         PreCalculatedFunction* PreCalcFunction() {return &precalcfunction;}
-        double InterpolateBasedonPrecalcFunction(const double &val);
+        double InterpolateBasedonPrecalcFunction(const double &val) const;
         bool InitializePreCalcFunction(int n_inc=100);
         bool SetQuanPointers(Object *W)
         {
