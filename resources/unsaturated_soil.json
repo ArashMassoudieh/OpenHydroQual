@@ -256,7 +256,7 @@
     },
     "length": {
       "type": "expression",
-      "description": "lenght",
+      "description": "Length",
       "expression": "(depth.s+depth.e)/2",
       "includeinoutput": "false",
       "ask_user": "false"
@@ -335,7 +335,7 @@
     },
     "length": {
       "type": "value",
-      "description": "length",
+      "description": "Length",
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
@@ -401,7 +401,7 @@
     },
     "length": {
       "type": "value",
-      "description": "length",
+      "description": "Length",
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
@@ -467,7 +467,7 @@
     },
     "length": {
       "type": "expression",
-      "description": "Lenght",
+      "description": "Length",
       "expression": "depth.e/2",
       "includeinoutput": "true",
       "ask_user": "false"
@@ -508,7 +508,7 @@
     },
     "length": {
       "type": "expression",
-      "description": "Lenght",
+      "description": "Length",
       "expression": "depth.s/2",
       "includeinoutput": "true",
       "ask_user": "false"
@@ -571,7 +571,7 @@
     },
     "length": {
       "type": "value",
-      "description": "Lenght",
+      "description": "Length",
       "includeinoutput": "true",
       "ask_user": "true",
       "estimate": "true",
@@ -709,7 +709,7 @@
     },
     "length": {
       "type": "value",
-      "description": "Lenght",
+      "description": "Length",
       "includeinoutput": "true",
       "ask_user": "true",
       "estimate": "true",
@@ -796,7 +796,7 @@
     }, 
     "length": { 
       "type": "expression", 
-      "description": "Lenght", 
+      "description": "Length", 
       "expression": "depth.e/2", 
       "includeinoutput": "true", 
       "ask_user": "false" 
