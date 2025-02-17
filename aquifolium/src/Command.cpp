@@ -336,6 +336,8 @@ bool Command::Execute(System *_sys)
         if (Validate())
         {
             cout<<"Initializing optimizer...."<<std::endl;
+            if (parent->GetGA() != nullptr)
+                delete parent->GetGA(); 
             parent->SetGA(new CGA<System>(sys));
             bool success = true;
             for (map<string,string>::iterator it=assignments.begin(); it!=assignments.end(); it++)
@@ -379,6 +381,8 @@ bool Command::Execute(System *_sys)
             if (parent->GetGA()==nullptr)
             {
                 cout<<"Initializing optimizer...."<<std::endl;
+                if (parent->GetGA() != nullptr)
+                    delete parent->GetGA(); 
                 parent->SetGA(new CGA<System>(sys));
             }
             parent->GetGA()->SetProperty(assignments["quantity"],assignments["value"]);
