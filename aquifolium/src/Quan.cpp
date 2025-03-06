@@ -1043,10 +1043,14 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
             SetTimeSeries("");
             return false;
         }
-        if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
-            return SetTimeSeries(parent->Parent()->InputPath() + val,true);
-		else
-			return SetTimeSeries(val,true);
+        if (parent->Parent()!=nullptr)
+        {   if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
+                return SetTimeSeries(parent->Parent()->InputPath() + val,true);
+            else
+                return SetTimeSeries(val,true);
+        }
+        else
+            return SetTimeSeries(val,true);
 	}
     if (type == _type::source)
     {
