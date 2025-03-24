@@ -31,7 +31,7 @@ public:
     bool structured=true;
 	CTimeSeries();
 	CTimeSeries(int n);
-	virtual ~CTimeSeries();
+    virtual ~CTimeSeries();
 	int n;
     string filename;
 	string name = "";
