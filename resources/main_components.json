@@ -140,7 +140,7 @@
       "ask_user": "true",
       "delegate": "String"
     },
-    "coefficient": {
+    "pre": {
       "type": "expression",
       "expression": "area",
       "ask_user": "false",

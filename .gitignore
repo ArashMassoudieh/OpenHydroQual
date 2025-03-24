@@ -294,3 +294,9 @@ ModelWizard/x64/Release/qt/qmake/
 *.cab
 
 Setup/QAquifolium-cache/part2/
+
+Setup/QAquifolium-cache/part1/
+
+terminal/OHQTerminal/x64/Debug/
+
+build/Release/

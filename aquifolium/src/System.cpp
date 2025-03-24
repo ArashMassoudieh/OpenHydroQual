@@ -66,6 +66,8 @@ void System::PopulateOperatorsFunctions()
 
 System::~System()
 {
+    if (solutionlogger != nullptr)
+        delete solutionlogger;
     clear();
     //dtor
 }
@@ -2910,6 +2912,9 @@ void System::SetAllParents()
     for (unsigned int i = 0; i < sources.size(); i++)
         sources[i].SetParent(this);
 
+    for (unsigned int i = 0; i < constituents.size(); i++)
+        constituents[i].SetParent(this);
+    
     for (unsigned int i = 0; i < reaction_parameters.size(); i++)
         reaction_parameters[i].SetParent(this);
 
@@ -3829,6 +3834,8 @@ void System::SetSolutionLogger(SolutionLogger &slnlogger)
 
 bool System::SetSolutionLogger(const string &filename)
 {
+    if (solutionlogger != nullptr)
+        delete solutionlogger;
     solutionlogger = new SolutionLogger(filename);
     return true;
 
