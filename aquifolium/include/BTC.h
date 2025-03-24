@@ -148,7 +148,7 @@ private:
     vector<T> D;
 #ifdef GSL
     const gsl_rng_type * A;
-    gsl_rng * r;
+    gsl_rng * r = nullptr;
 #endif
 #ifdef QT_version
 	CTimeSeries(QList <QMap <QVariant, QVariant>> data);
