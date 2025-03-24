@@ -46,6 +46,20 @@ CTimeSeries<T>::CTimeSeries()
 }
 
 template<class T>
+CTimeSeries<T>::~CTimeSeries()
+{
+#ifdef GSL
+    if (r != nullptr) {
+        gsl_rng_free(r); // free exactly once
+        r = nullptr;     // avoid dangling/freeing again
+    }
+#endif
+    C.clear();
+    D.clear();
+    t.clear();
+}
+
+template<class T>
 CTimeSeries<T>::CTimeSeries(int n1)
 {
 	n=n1;
@@ -152,11 +166,6 @@ T CTimeSeries<T>::GetC(int i) const
         return 0;
 }
 
-template<class T>
-CTimeSeries<T>::~CTimeSeries()
-{
-
-}
 
 template<class T>
 CTimeSeries<T>::CTimeSeries(const CTimeSeries<T> &CC)

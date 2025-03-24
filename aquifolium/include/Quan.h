@@ -30,6 +30,7 @@ class Quan
         virtual ~Quan();
         Quan(const Quan& other);
         Quan(Json::ValueIterator &it);
+
 #ifdef Q_version
 		Quan(QJsonObject& qjobject);
 #endif // QT_version
