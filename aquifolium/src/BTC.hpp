@@ -49,7 +49,10 @@ template<class T>
 CTimeSeries<T>::~CTimeSeries()
 {
 #ifdef GSL
-    gsl_rng_free(r);
+    if (r != nullptr) {
+        gsl_rng_free(r); // free exactly once
+        r = nullptr;     // avoid dangling/freeing again
+    }
 #endif
     C.clear();
     D.clear();
