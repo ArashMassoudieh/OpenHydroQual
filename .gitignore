@@ -300,3 +300,7 @@ Setup/QAquifolium-cache/part1/
 terminal/OHQTerminal/x64/Debug/
 
 build/Release/
+
+*.db
+
+.vs/QAquifolium/CopilotIndices/17.12.53.23981/
