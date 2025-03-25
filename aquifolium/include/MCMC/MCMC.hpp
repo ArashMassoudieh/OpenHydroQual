@@ -236,8 +236,8 @@ void CMCMC<T>::initialize(bool random)
                 if (parameter(i)->GetPriorDistribution()=="log-normal")
                     pp += log(Params[j][i]);
             }
-            logp[j] = posterior(Params[j]);
-            logp1[j] = logp[j]+pp;
+            logp[j] = posterior(Params[j])+pp;
+            logp1[j] = logp[j];
         }
     }
     else
@@ -250,8 +250,8 @@ void CMCMC<T>::initialize(bool random)
                 if (parameter(i)->GetPriorDistribution()=="log-normal")
                     pp += log(Params[j][i]);
             }
-            logp[j] = posterior(Params[j]);
-            logp1[j] = logp[j]+pp;
+            logp[j] = posterior(Params[j])+pp;
+            logp1[j] = logp[j];
         }
     }
 
