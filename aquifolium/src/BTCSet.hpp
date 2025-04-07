@@ -881,7 +881,10 @@ CTimeSeriesSet<T> CTimeSeriesSet<T>::make_uniform(T increment, bool assgn_d)
 template <class T>
 CTimeSeriesSet<T> CTimeSeriesSet<T>::getpercentiles(vector<T> percents)
 {
+	
 	CTimeSeriesSet X(1+percents.size());
+	if (nvars == 0)
+		return X;
 
 	X.names.clear();
 

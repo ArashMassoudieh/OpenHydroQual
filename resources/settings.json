@@ -325,14 +325,14 @@
       "code": "continue_based_on_file_name"
     },
     "number_of_post_estimate_realizations": {
-      "default": "0",
+      "default": "10",
       "description": "Number of post-estimate realizations",
       "ask_user": "true",
       "type": "value",
       "delegate": "ValueBox",
       "code": "number_of_post_estimate_realizations",
-      "criteria": "number_of_post_estimate_realizations>-0.001",
-      "warningmessage": "Number of realizations cannot be negative"
+      "criteria": "number_of_post_estimate_realizations>0",
+      "warningmessage": "Number of realizations must be greater than zero"
     },
     "add_noise_to_realizations": {
       "type": "string",
