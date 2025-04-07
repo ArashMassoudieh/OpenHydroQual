@@ -28,7 +28,7 @@
     "Precipitation": {
       "type": "source",
       "includeinoutput": "true",
-      "description": "precipitation time series",
+      "description": "Precipitation time series",
       "helptext": "A precipitation source object must be selected.",  
       "ask_user": "true",
       "delegate": "ComboBox;Sources"
@@ -140,7 +140,7 @@
       "ask_user": "true",
       "delegate": "String"
     },
-    "pre": {
+    "coefficient": {
       "type": "expression",
       "expression": "area",
       "ask_user": "false",
