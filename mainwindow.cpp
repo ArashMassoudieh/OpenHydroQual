@@ -394,7 +394,7 @@ bool MainWindow::BuildObjectsToolBar()
     {
         string typecategory = system.QGetAllCategoryTypes()[j].toStdString();
 
-        if (typecategory!="Blocks" && typecategory !="Connectors" && typecategory!="Settings")
+        if (typecategory!="Blocks" && typecategory !="Connectors" && typecategory!="Settings" && !typecategory.empty())
             for (unsigned int i = 0; i < system.GetAllTypesOf(typecategory).size(); i++)
             {
                 string type = system.GetAllTypesOf(typecategory)[i];
