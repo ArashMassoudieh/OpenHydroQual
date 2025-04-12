@@ -4013,7 +4013,7 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
         }
     }
 #ifndef NO_OPENMP
-//#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static)
 #endif   
     for (int i=0; i<BlockCount(); i++)
     {
