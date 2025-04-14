@@ -140,8 +140,8 @@ public:
     CTimeSeries<T> MapfromNormalScoreToDistribution(const string& , const vector<double>&);
     CTimeSeries<T> MapfromNormalScoreToDistribution(const CTimeSeries<double> &distribution);
     CTimeSeries<T> ConverttoNormalScore();
-    double AutoCorrelationCoeff();
 #endif
+    double AutoCorrelationCoeff();
 private:
     vector<T> t;
     vector<T> C;

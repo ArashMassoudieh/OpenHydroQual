@@ -310,3 +310,7 @@ build/Desktop_Qt_6_8_2-Debug/
 build/Desktop_Qt_6_8_2-Release/
 
 .vs/OpenHydroQual/CopilotIndices/17.12.53.23981/
+
+terminal/TOpenHydroQual/build/Desktop_Qt_6_8_2-Debug/
+
+terminal/TOpenHydroQual/OpenHydroQual-Console
