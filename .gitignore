@@ -314,3 +314,9 @@ build/Desktop_Qt_6_8_2-Release/
 terminal/TOpenHydroQual/build/Desktop_Qt_6_8_2-Debug/
 
 terminal/TOpenHydroQual/OpenHydroQual-Console
+
+terminal/Server/build/Desktop-Debug/
+
+terminal/Server/build/Desktop_Qt_6_8_2-Debug/
+
+terminal/Server/debug/qmake/
