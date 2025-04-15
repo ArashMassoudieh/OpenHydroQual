@@ -80,6 +80,7 @@ public:
     CTimeSeriesSet<T> AutoCorrelation(const double &span, const double &increment);
     CTimeSeriesSet<T> GetCummulativeDistribution();
     CTimeSeriesSet<T> Log();
+    QJsonObject toJson() const;
 #ifdef _ARMA
     arma::mat ToArmaMat(const vector<string> &columns = vector<string>());
     arma::mat ToArmaMat(const vector<int> &columns);

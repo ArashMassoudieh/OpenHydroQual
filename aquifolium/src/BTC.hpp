@@ -23,7 +23,8 @@
 #ifdef GSL
 #include <gsl/gsl_cdf.h>
 #endif
-
+#include <QJsonArray>
+#include <QJsonObject>
 
 
 using namespace std;
@@ -2121,4 +2122,23 @@ CTimeSeries<T> CTimeSeries<T>::MapfromNormalScoreToDistribution(const CTimeSerie
 
 #endif
 
+template<class T>
+QJsonObject CTimeSeries<T>::toJson() const {
+    QJsonObject obj;
+    QJsonArray tArray;
+    QJsonArray cArray;
+
+    for (double value : t) {
+        tArray.append(value);
+    }
+
+    for (double value : C) {
+        cArray.append(value);
+    }
+
+    obj["t"] = tArray;
+    obj["value"] = cArray;
+
+    return obj;
+}
 

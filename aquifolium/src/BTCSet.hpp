@@ -1588,3 +1588,14 @@ vector<CTimeSeriesSet<T>> CTimeSeriesSet<T>::Split(const vector<int> &splitsizes
     out.push_back(segment);
     return out;
 }
+
+template <class T>
+QJsonObject CTimeSeriesSet<T>::toJson() const
+{
+    QJsonObject out;
+    for (unsigned int i=0; i<nvars; i++)
+    {
+        out[QString::fromStdString(names[i])] = BTC[i].toJson();
+    }
+    return out;
+}
