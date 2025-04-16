@@ -226,7 +226,7 @@
 			"massbalance": "true",
 			"flow": "flow",
 			"inflow": "inflow",
-			"initial_value_expression": "(diameter^2)/4*3.1415*depth",
+			"initial_value_expression": "(diameter^2)/4*3.1415*depth*porosity",
 			"ask_user": "false",
 			"delegate": "ValueBox",
 			"estimate": "false",

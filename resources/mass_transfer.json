@@ -57,6 +57,7 @@
     	"ask_user": "true",
     	"description": "Rate coefficient",
     	"delegate": "UnitBox",
+    	"estimate": "true",
     	"unit": "1/day;1/s;1/hr"
     },
     "saturation":
@@ -320,7 +321,7 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
-      "default": "1000"
+      "default": "1000000"
     },
     "length": {
       "type": "expression",
@@ -365,7 +366,7 @@
     },
     "area": {
       "type": "expression",
-      "expression": "1",
+      "expression": "0.000000001",
       "includeinoutput": "false",
       "description": "1",
       "ask_user": "false"

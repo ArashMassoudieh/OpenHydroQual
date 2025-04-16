@@ -1,0 +1,230 @@
+{
+  "Storage Unit": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Storage Unit",
+    "icon": {
+      "filename": "StorageUnit.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow":"PrecipitationAdjusted",
+      "includeinoutput": "true",
+      "description": "Initial Storage; Storage",
+	  "initial_value_expression": "Initial_Storage_coeff*Capacity"
+    },
+    "Capacity": {
+       "type": "value",
+       "description": "Capacity",      
+       "ask_user": "true",
+       "includeinoutput": "true",
+	   "delegate": "UnitBox",
+	   "unit": "m~^3;ft~^3",
+	   "estimate": "true",
+	   "criteria": "Capacity>0",
+       "warningmessage": "Capacity must be greater than zero",
+	   "default": "1000"
+    },
+	"Initial_Storage_coeff": {
+       "type": "value",
+       "description": "Initial storage ratio",      
+       "ask_user": "true",
+       "includeinoutput": "false",
+	   "delegate": "ValueBox",
+	   "estimate": "true",
+	   "criteria": "0<Initial_Storage_coeff<1",
+       "warningmessage": "Initial storage ratio must smaller than 1",
+	   "default": "0.5"
+    },
+    "Precipitation": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Precipitation",
+      "ask_user": "true",
+      "delegate": "Browser;time series"
+    },
+	"PrecipitationAdjusted":
+	{
+		"type": "expression",
+		"description": "Rain inflow",
+		"expression": "Precipitation_coefficient*Precipitation",
+		"includeinoutput": "true"
+	},
+	"Precipitation_coefficient": {
+      "type": "value",
+      "description": "Precipitation coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1"
+    },
+	"Scale_factor": {
+      "type": "value",
+      "description": "Scale factor",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+	  "criteria": "Scale_factor>0",
+      "warningmessage": "Scale factor must be greater than zero"
+    },
+	"Latent_variable": {
+	  "type": "expression",
+      "description": "Latent variable",
+	  "expression": "Scale_factor*Capacity_ratio/(_max(1-Capacity_ratio;0.0000001)) - 0.0001/_max(Capacity_ratio;0.00000001)",
+	  "includeinoutput": "true",
+	  "ask_user": "false"
+	},
+	"Capacity_ratio": {
+	  "type": "expression",
+      "description": "Water content",
+	  "expression": "Storage/Capacity",
+	  "includeinoutput": "true",
+	  "ask_user": "false"
+	},
+	"Void capacity_ratio": {
+	  "type": "expression",
+      "description": "Void ratio",
+	  "expression": "1-Storage/Capacity",
+	  "includeinoutput": "true",
+	  "ask_user": "false"
+	}
+  },
+  "Storage Unit (Power-law)": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Storage Unit",
+    "icon": {
+      "filename": "StorageUnitPowerLaw.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow":"PrecipitationAdjusted",
+      "includeinoutput": "true",
+      "description": "Initial Storage; Storage",
+	  "ask_user": "true",
+	  "delegate": "UnitBox",
+	  "unit": "m;ft"
+    },
+    "H_S_Coefficient": {
+       "type": "value",
+       "description": "Coefficient",      
+       "ask_user": "true",
+       "includeinoutput": "true",
+	   "delegate": "ValueBox",
+	   "estimate": "true",
+	   "criteria": "H_S_Coefficient>0",
+       "warningmessage": "The coefficient must be greater than zero",
+	   "default": "1000"
+    },
+    "Precipitation": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Precipitation",
+      "ask_user": "true",
+      "delegate": "Browser;time series"
+    },
+	"PrecipitationAdjusted":
+	{
+		"type": "expression",
+		"description": "Rain inflow",
+		"expression": "Precipitation_coefficient*Precipitation",
+		"includeinoutput": "true"
+	},
+	"Precipitation_coefficient": {
+      "type": "value",
+      "description": "Precipitation coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1"
+    },
+	"Exponent": {
+      "type": "value",
+      "description": "Exponent",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+	  "criteria": "Exponent>0",
+      "warningmessage": "The Exponent must be greater than zero"
+    },
+	"Latent_variable": {
+	  "type": "expression",
+      "description": "Latent variable",
+	  "expression": "H_S_Coefficient*Storage^Exponent",
+	  "includeinoutput": "true",
+	  "ask_user": "false"
+	}
+  },
+  "Fixed Latent Variable Unit": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Fixed Latent Variable Unit",
+    "icon": {
+      "filename": "fixedhead.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "includeinoutput": "true",
+      "description": "Initial Storage; Storage",
+      "ask_user": "true",
+      "estimate": "true",
+	  "default": "1000000"
+    },
+	"Latent_variable": {
+	  "type": "value",
+      "description": "Latent variable",
+	  "includeinoutput": "true",
+	  "ask_user": "true",
+	  "delegate": "ValueBox",
+	  "estimate": "true",
+	  "default": "0"
+	}
+  },
+  "storage_unit_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Storage Unit Link",
+    "icon": {
+      "filename": "StorageUnitLink.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String" 
+    },
+    "Mean_Transmissivity": {
+		"type": "value",
+		"description": "Mean Transmissivity",
+		"ask_user": "true",
+		"delegate": "UnitBox",
+		"estimate": "true",
+		"unit": "m~^2/day; ft~^2/day",
+		"default": "1"
+	},
+	"flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "expression": "Mean_Transmissivity*Latent_Variable_Difference",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+	"Latent_Variable_Difference": {
+      "type": "expression",
+      "description": "Latent Variable Difference",
+      "expression": "Latent_variable.s-Latent_variable.e",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  }
+}

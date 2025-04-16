@@ -23,7 +23,8 @@
 #ifdef GSL
 #include <gsl/gsl_cdf.h>
 #endif
-
+#include <QJsonArray>
+#include <QJsonObject>
 
 
 using namespace std;
@@ -43,6 +44,20 @@ CTimeSeries<T>::CTimeSeries()
     unsigned long seed = static_cast<unsigned long>(std::time(nullptr));
     gsl_rng_set(r, seed);
 #endif
+}
+
+template<class T>
+CTimeSeries<T>::~CTimeSeries()
+{
+#ifdef GSL
+    if (r != nullptr) {
+        gsl_rng_free(r); // free exactly once
+        r = nullptr;     // avoid dangling/freeing again
+    }
+#endif
+    C.clear();
+    D.clear();
+    t.clear();
 }
 
 template<class T>
@@ -152,11 +167,6 @@ T CTimeSeries<T>::GetC(int i) const
         return 0;
 }
 
-template<class T>
-CTimeSeries<T>::~CTimeSeries()
-{
-
-}
 
 template<class T>
 CTimeSeries<T>::CTimeSeries(const CTimeSeries<T> &CC)
@@ -1707,7 +1717,18 @@ CTimeSeries<T> CTimeSeries<T>::ConverttoNormalScore()
 }
 #endif
 
-
+template<class T>
+double CTimeSeries<T>::AutoCorrelationCoeff()
+{
+    double numerator=0;
+    double denuminator = 0;
+    for (int i=0; i<n; i++)
+    {
+        numerator += log(std::fabs(GetC(i)))*GetT(i); // Negative --> abs // Figure out later!
+        denuminator += pow(GetT(i),2);
+    }
+    return -numerator/denuminator;
+}
 
 template<class T>
 CTimeSeries<T> CTimeSeries<T>::getcummulative() const
@@ -1956,8 +1977,8 @@ T CTimeSeries<T>::Exponential_Kernel(const T &t,const T &lambda) const
     T sum=0;
     for (unsigned int i=initial_i; i<last_i; i++)
     {
-        sum+=GetC(i)*exp(-lambda*(GetT(i)-t))*(GetT(i+1)-GetT(i));
-        sum+=GetC(i)*exp(-lambda*(GetT(i+1)-t))*(GetT(i+1)-GetT(i));
+        sum+=GetC(i)*lambda*exp(-lambda*(GetT(i)-t))*(GetT(i+1)-GetT(i));
+        sum+=GetC(i)*lambda*exp(-lambda*(GetT(i+1)-t))*(GetT(i+1)-GetT(i));
     }
     return sum;
 }
@@ -2084,4 +2105,40 @@ CTimeSeries<T> CTimeSeries<T>::MapfromNormalScoreToDistribution(const string &di
 
     return out;
 }
+
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::MapfromNormalScoreToDistribution(const CTimeSeries<double> &distribution)
+{
+    CTimeSeries<T> out;
+    for (int i=0; i<n; i++)
+    {
+        double u = gsl_cdf_ugaussian_P(GetC(i));
+        double value = distribution.interpol(u);
+        out.append(t[i], value);
+    }
+    return out;
+}
+
 #endif
+
+template<class T>
+QJsonObject CTimeSeries<T>::toJson() const {
+    QJsonObject obj;
+    QJsonArray tArray;
+    QJsonArray cArray;
+
+    for (double value : t) {
+        tArray.append(value);
+    }
+
+    for (double value : C) {
+        cArray.append(value);
+    }
+
+    obj["t"] = tArray;
+    obj["value"] = cArray;
+
+    return obj;
+}
+

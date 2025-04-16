@@ -211,7 +211,7 @@ void CMCMC<T>::initialize(bool random)
     logp1.resize(MCMC_Settings.total_number_of_samples);
     for (unsigned int i=0; i<MCMC_Settings.total_number_of_samples; i++)
         Params[i].resize(MCMC_Settings.number_of_parameters);
-    double pp=0;
+    
     for (int j = 0; j<MCMC_Settings.number_of_parameters; j++)
     {
         if (parameter(j)->GetPriorDistribution()=="normal" || parameter(j)->GetPriorDistribution()=="uniform")
@@ -227,6 +227,7 @@ void CMCMC<T>::initialize(bool random)
     if (random)
     {   for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
+            double pp = 0;
             for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
             {	if (parameter(i)->GetPriorDistribution()=="log-normal")
                     Params[j][i] = exp(log(parameter(i)->GetRange().low)+(log(parameter(i)->GetRange().high)-log(parameter(i)->GetRange().low))*ND.unitrandom());
@@ -235,20 +236,22 @@ void CMCMC<T>::initialize(bool random)
                 if (parameter(i)->GetPriorDistribution()=="log-normal")
                     pp += log(Params[j][i]);
             }
-            logp[j] = posterior(Params[j]);
-            logp1[j] = logp[j]+pp;
+            logp[j] = posterior(Params[j])+pp;
+            logp1[j] = logp[j];
         }
     }
     else
     {
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
-        {   for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
+        {
+            double pp = 0;
+            for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
             {   Params[j][i] = parameter(i)->GetValue();
                 if (parameter(i)->GetPriorDistribution()=="log-normal")
                     pp += log(Params[j][i]);
             }
-            logp[j] = posterior(Params[j]);
-            logp1[j] = logp[j]+pp;
+            logp[j] = posterior(Params[j])+pp;
+            logp1[j] = logp[j];
         }
     }
 

@@ -9,6 +9,9 @@
 #endif
 #include "Expression.h"
 #include "Object.h"
+#include "qstring.h"
+#include "QDebug"
+
 
 #ifdef Q_version
     #include "runtimewindow.h"
@@ -536,12 +539,20 @@ int CGA<T>::optimize()
 	#ifdef Q_version
 	QCoreApplication::processEvents();
 	#endif // Q_version
-	string RunFileName = filenames.pathname + filenames.outputfilename;
+    string RunFileName;
+    if (aquiutils::contains(filenames.outputfilename,"/"))
+        RunFileName = filenames.outputfilename;
+    else
+        RunFileName = filenames.pathname + filenames.outputfilename;
 
 	FILE *FileOut;
 	FILE *FileOut1;
 
 	FileOut = fopen(RunFileName.c_str(),"w");
+    if (!FileOut)
+    {
+        qDebug()<< QString::fromStdString("Unable to open '" + RunFileName + "'");
+    }
 	fclose(FileOut);
     FileOut1 = fopen((filenames.pathname + "detail_GA.txt").c_str(), "w");
 	fclose(FileOut1);

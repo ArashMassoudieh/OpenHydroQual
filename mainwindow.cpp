@@ -1,5 +1,5 @@
-#define openhydroqual_version "1.1.24"
-#define last_modified "November, 23, 2024"
+#define openhydroqual_version "1.1.27"
+#define last_modified "March, 12, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -394,7 +394,7 @@ bool MainWindow::BuildObjectsToolBar()
     {
         string typecategory = system.QGetAllCategoryTypes()[j].toStdString();
 
-        if (typecategory!="Blocks" && typecategory !="Connectors" && typecategory!="Settings")
+        if (typecategory!="Blocks" && typecategory !="Connectors" && typecategory!="Settings" && !typecategory.empty())
             for (unsigned int i = 0; i < system.GetAllTypesOf(typecategory).size(); i++)
             {
                 string type = system.GetAllTypesOf(typecategory)[i];

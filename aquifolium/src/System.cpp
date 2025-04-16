@@ -66,6 +66,8 @@ void System::PopulateOperatorsFunctions()
 
 System::~System()
 {
+    if (solutionlogger != nullptr)
+        delete solutionlogger;
     clear();
     //dtor
 }
@@ -1783,9 +1785,11 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
                         GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
                     }
-                    else
-                        GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at state variable '" + aquiutils::numbertostring(F.abs_max_elems())+"', dt = "  + aquiutils::numbertostring(dt()));
-
+                else
+                {
+                    string BlockConst = GetBlockConstituent(F.abs_max_elems());
+                    GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at state variable '" + GetBlockConstituent(F.abs_max_elems()) + "', dt = " + aquiutils::numbertostring(dt()));
+                }
                     GetSolutionLogger()->WriteString("Error criteria number: " + aquiutils::numbertostring(err/(err_ini+1e-10*X_norm)));
                     GetSolutionLogger()->WriteString("X_norm: " + aquiutils::numbertostring(X_norm));
                     GetSolutionLogger()->WriteString("Block outflow factors: " + GetBlocksOutflowFactors(Expression::timing::present).toString());
@@ -1990,6 +1994,16 @@ CVector_arma System::GetStateVariables(const string &variable, const Expression:
 
         return X;
     }
+}
+
+string System::GetBlockConstituent(unsigned int i)
+{
+    int BlockNo = i / this->constituents.size();
+    int ConstituentNo = i % this->constituents.size();
+    qDebug() << BlockNo; 
+    qDebug() << ConstituentNo; 
+    string out = blocks[BlockNo].GetName() + ":" + constituents[ConstituentNo].GetName();
+    return out;
 }
 
 void System::SetStateVariables(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport)
@@ -2806,6 +2820,15 @@ bool System::SetAsParameter(const string &location, const string &quantity, cons
     return false;
 }
 
+bool System::SetAsParameter(const string& location, const string& quantity, const string& parametername, bool Full)
+{
+    SetAsParameter(location, quantity, parametername);
+    if (!object(location))
+        return false; 
+    object(location)->Variable(quantity)->SetParameterAssignedTo(parametername);
+    return true; 
+}
+
 bool System::AppendParameter(const string &paramname, const double &lower_limit, const double &upper_limit, const string &prior_distribution)
 {
     if (Parameters().Contains(paramname))
@@ -2889,6 +2912,9 @@ void System::SetAllParents()
     for (unsigned int i = 0; i < sources.size(); i++)
         sources[i].SetParent(this);
 
+    for (unsigned int i = 0; i < constituents.size(); i++)
+        constituents[i].SetParent(this);
+    
     for (unsigned int i = 0; i < reaction_parameters.size(); i++)
         reaction_parameters[i].SetParent(this);
 
@@ -3808,6 +3834,8 @@ void System::SetSolutionLogger(SolutionLogger &slnlogger)
 
 bool System::SetSolutionLogger(const string &filename)
 {
+    if (solutionlogger != nullptr)
+        delete solutionlogger;
     solutionlogger = new SolutionLogger(filename);
     return true;
 
@@ -3960,7 +3988,7 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma jacobian(BlockCount());
 #ifndef NO_OPENMP
-#pragma omp parallel for schedule(static)
+//#pragma omp parallel for schedule(static)
 #endif
     for (int i=0; i<LinksCount(); i++)
     {

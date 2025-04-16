@@ -247,17 +247,6 @@
       "ask_user": "true",
       "delegate": "Browser;time series"
    },
-   "flow_coefficient": {
-      "type": "value",
-      "default": "1",
-      "description": "Flow multiplier",
-      "delegate": "ValueBox",
-      "ask_user": "true",
-      "estimate": "true",
-      "helptext": "This coefficient is multiplied by the Qmin and Qmax for flow control, often to correct for contributing catchment area", 
-      "criteria": "flow_coefficient>0",
-      "warningmessage": "flow_coefficient must be greater than zero"
-    },
    "kernel_delay_parameter": {
       "type": "value",
       "default": "5",
@@ -304,7 +293,7 @@
       "default": "20",
       "description": "Valve Flow factor",
       "delegate": "UnitBox",
-      "unit": "m~^3/day",
+      "unit": "m/day",
       "ask_user": "true",
       "estimate": "true",
       "helptext": "The scale factor detemining the flow as a function of rain forcast", 

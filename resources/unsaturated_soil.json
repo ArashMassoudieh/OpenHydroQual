@@ -256,7 +256,7 @@
     },
     "length": {
       "type": "expression",
-      "description": "lenght",
+      "description": "Length",
       "expression": "(depth.s+depth.e)/2",
       "includeinoutput": "false",
       "ask_user": "false"
@@ -335,7 +335,7 @@
     },
     "length": {
       "type": "value",
-      "description": "length",
+      "description": "Length",
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
@@ -401,7 +401,7 @@
     },
     "length": {
       "type": "value",
-      "description": "length",
+      "description": "Length",
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
@@ -467,7 +467,7 @@
     },
     "length": {
       "type": "expression",
-      "description": "Lenght",
+      "description": "Length",
       "expression": "depth.e/2",
       "includeinoutput": "true",
       "ask_user": "false"
@@ -508,7 +508,7 @@
     },
     "length": {
       "type": "expression",
-      "description": "Lenght",
+      "description": "Length",
       "expression": "depth.s/2",
       "includeinoutput": "true",
       "ask_user": "false"
@@ -554,6 +554,54 @@
       "default": "120,120,120"
     }
   },
+  "fixedhead_to_soil_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "fixedhead2soil-v.png"
+    },
+    "description": "Fixed-head to soil connector",
+    "area": {
+      "type": "expression",
+      "description": "Interface area",
+      "expression": "area.e",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Length",
+      "expression": "depth.e/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_sat": {
+      "type": "expression",
+      "description": "Saturated Hydraulic Conductivity",
+      "expression": "K_sat.e",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "(head.s-head.e)*K_eff/length*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "120,120,120"
+    }
+  },
   "soil_to_fixedhead_link_H": {
     "type": "link",
     "typecategory": "Connectors",
@@ -571,7 +619,7 @@
     },
     "length": {
       "type": "value",
-      "description": "Lenght",
+      "description": "Length",
       "includeinoutput": "true",
       "ask_user": "true",
       "estimate": "true",
@@ -709,7 +757,7 @@
     },
     "length": {
       "type": "value",
-      "description": "Lenght",
+      "description": "Length",
       "includeinoutput": "true",
       "ask_user": "true",
       "estimate": "true",
@@ -796,7 +844,7 @@
     }, 
     "length": { 
       "type": "expression", 
-      "description": "Lenght", 
+      "description": "Length", 
       "expression": "depth.e/2", 
       "includeinoutput": "true", 
       "ask_user": "false" 

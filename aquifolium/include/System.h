@@ -300,6 +300,7 @@ class System: public Object
         bool AppendParameter(const string &paramname, const double &lower_limit, const double &upper_limit, const string &prior_distribution = "normal");
         bool AppendParameter(const string &paramname, const Parameter& param);
         bool SetAsParameter(const string &location, const string &quantity, const string &parametername);
+        bool SetAsParameter(const string& location, const string& quantity, const string& parametername, bool Full);
         bool RemoveAsParameter(const string &location, const string &quantity, const string &parametername);
         bool SetParameterValue(const string &paramname, const double &val);
         bool SetParameterValue(int i, const double &val);
@@ -459,6 +460,7 @@ class System: public Object
 
         bool CalculateFlows(const string &var, const Expression::timing &tmg = Expression::timing::present);
         void SetStateVariables(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present, bool transport=false);
+        string GetBlockConstituent(unsigned int i);
         void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport);
         void SetStateVariables_TR(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present);
         vector<bool> GetOutflowLimitedVector();
