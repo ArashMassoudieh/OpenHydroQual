@@ -7,6 +7,7 @@
 #undef signals
 #endif
 #include "crow.h"
+#include <QJsonObject>
 
 class ServerOps : public QObject
 {
@@ -15,7 +16,7 @@ public:
     explicit ServerOps(quint16 port, QObject *parent = nullptr);
     ~ServerOps();
     crow::response StatementReceived(const crow::request& req);
-    QJsonDocument Execute();
+    QJsonDocument Execute(const QJsonObject &instructions = QJsonObject());
 private slots:
 
 

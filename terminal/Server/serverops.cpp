@@ -38,7 +38,7 @@ crow::response ServerOps::StatementReceived(const crow::request& req)
         qDebug() << "Key:" << key << ", Value:" << value;
     }
 
-    QJsonDocument responseDoc = Execute();
+    QJsonDocument responseDoc = Execute(obj);
     QByteArray responseJson = responseDoc.toJson();
 
     crow::response res;
@@ -55,7 +55,7 @@ ServerOps::~ServerOps()
 }
 
 
-QJsonDocument ServerOps::Execute()
+QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
 {
     System *system=new System();
     cout<<"Reading script ..."<<endl;
@@ -68,6 +68,20 @@ QJsonDocument ServerOps::Execute()
     cout<<"Executing script ..."<<endl;
     system->CreateFromScript(scr,settingfilename);
     system->SetSilent(false);
+    for (QJsonObject::const_iterator entity = instructions.constBegin(); entity != instructions.constEnd(); ++entity)
+    {
+        if (system->object(entity.key().toStdString()))
+        {
+            QJsonObject properties = entity.value().toObject();
+            qDebug()<<entity.key()<<":"<<entity.value();
+            for (QJsonObject::const_iterator property = properties.constBegin(); property != properties.constEnd(); ++property)
+            {
+                qDebug()<<property.key()<<":"<<property.value();
+                system->object(entity.key().toStdString())->SetProperty(property.key().toStdString(), property.value().toString().toStdString());
+            }
+        }
+    }
+
     cout<<"Solving ..."<<endl;
     system->Solve();
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
