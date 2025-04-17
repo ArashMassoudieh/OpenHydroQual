@@ -158,7 +158,7 @@ void System::Clear()
 bool System::AddBlock(Block &blk, bool SetQuantities)
 {
     blocks.push_back(blk);
-    qDebug()<<QString::fromStdString(blk.GetName());
+
     block(blk.GetName())->SetParent(this);
     if (SetQuantities)
         block(blk.GetName())->SetQuantities(metamodel, blk.GetType());
@@ -194,7 +194,7 @@ bool System::AddConstituent(Constituent &cnst, bool SetQuantities)
 bool System::AddReaction(Reaction &rxn, bool SetQuantities)
 {
     reactions.push_back(rxn);
-    qDebug()<<QString::fromStdString(rxn.GetType())<<":"<<QString::fromStdString(rxn.GetName());
+
     reaction(rxn.GetName())->SetParent(this);
      if (SetQuantities)
         reaction(rxn.GetName())->SetQuantities(metamodel, rxn.GetType());
@@ -489,17 +489,13 @@ bool System::GetQuanTemplate(const string &filename)
 
 bool System::AppendQuanTemplate(const string &filename)
 {
-    qDebug()<<"To be added:"<< QString::fromStdString(filename);
-    for (int i=0; i<addedtemplates.size(); i++)
-        qDebug()<<"Already there: "<<QString::fromStdString(addedtemplates[i]);
+
     if (aquiutils::lookup(addedtemplates,filename)==-1)
     {
         if (!metamodel.AppendFromJsonFile(filename)) return false;
         addedtemplates.push_back(filename);
         TransferQuantitiesFromMetaModel();
     }
-    for (int i=0; i<addedtemplates.size(); i++)
-        qDebug()<<"After Adding: "<<QString::fromStdString(addedtemplates[i]);
 
     return true;
 }
@@ -4443,13 +4439,12 @@ bool System::LoadfromJson(const QJsonDocument &jsondoc)
     QJsonObject BlocksJson = root["Blocks"].toObject();
     for (const QString& blockname: BlocksJson.keys())
     {
-        qDebug()<<blockname;
+
         QJsonObject BlockJson = BlocksJson[blockname].toObject();
         Block current_block;
         current_block.SetName(BlockJson["name"].toString().toStdString());
         current_block.SetType(BlockJson["type"].toString().toStdString());
         AddBlock(current_block);
-        qDebug()<<QString::fromStdString(blocks[0].GetName())<<":"<<QString::fromStdString(blocks[0].GetType());
         for (const QString &property: BlockJson.keys())
         {
             if (property!="type" && property!="to" && property!="from")
