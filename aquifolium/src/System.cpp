@@ -4378,8 +4378,7 @@ bool System::LoadfromJson(const QJsonDocument &jsondoc)
             }
         }
     }
-    SavetoScriptFile("temporary.json");
-    qDebug()<<QString::fromStdString(metamodel.ToString());
+
     QJsonObject SettingsJson = root["Settings"].toObject();
     for (const QString& settingkey: SettingsJson.keys())
     {
