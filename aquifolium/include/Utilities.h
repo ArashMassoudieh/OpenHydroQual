@@ -8,6 +8,7 @@
 #include <fstream>
 #include <cmath>
 #include <sstream>
+#include <QJsonArray>
 
 #define SMALLNUMBER 1e-23
 #define PI 3.14159265359
@@ -93,5 +94,6 @@ namespace aquiutils
 
 }
 
+QJsonArray mergeArrays(const QJsonArray& a1, const QJsonArray& a2);
 
 #endif // UTILITIES_H

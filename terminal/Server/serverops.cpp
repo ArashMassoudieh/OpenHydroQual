@@ -85,6 +85,22 @@ QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
     cout<<"Solving ..."<<endl;
     system->Solve();
     system->SavetoJson("System.json",system->addedtemplates);
+    System system2;
+
+    system2.SetDefaultTemplatePath(defaulttemppath);
+    system2.SetWorkingFolder(QFileInfo(QString::fromStdString("ServerEx.ohq")).canonicalPath().toStdString() + "/");
+    system2.ReadSystemSettingsTemplate(settingfilename);
+
+    QFile file("System.json");
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    QByteArray rawData = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(rawData);
+
+
+    system2.LoadfromJson(doc);
+    system2.SavetoScriptFile("Recreated.ohq");
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
     system->GetOutputs().writetofile(system->GetWorkingFolder() + system->OutputFileName());
     return QJsonDocument(system->GetOutputs().toJson());

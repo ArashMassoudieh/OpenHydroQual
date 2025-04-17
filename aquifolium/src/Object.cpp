@@ -656,7 +656,9 @@ string Object::toCommand()
 
 QJsonObject Object::toJson()
 {
-    return var.toJson();
+    QJsonObject out = var.toJson();
+    out["type"] = QString::fromStdString(type);
+    return out;
 }
 
 string Object::toCommandSetAsParam()

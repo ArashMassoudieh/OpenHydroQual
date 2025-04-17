@@ -682,9 +682,16 @@ QJsonObject QuanSet::toJson()
     QJsonObject out;
     for (map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
+
         if (it->second.AskFromUser())
-            out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(it->second.GetType()!=Quan::_type::expression));
+        {    if (it->second.Delegate()=="UnitBox" || it->second.Delegate() == "ValueBox")
+                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(true));
+            else
+                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(false));
+        }
+
     }
+
     return out;
 }
 

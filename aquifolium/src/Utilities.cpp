@@ -1,5 +1,6 @@
 #include "Utilities.h"
 
+
 using namespace std;
 
 namespace aquiutils
@@ -655,4 +656,9 @@ namespace aquiutils
 }
 
 
-
+QJsonArray mergeArrays(const QJsonArray& a1, const QJsonArray& a2) {
+    QJsonArray result = a1;
+    for (const QJsonValue& val : a2)
+        result.append(val);
+    return result;
+}

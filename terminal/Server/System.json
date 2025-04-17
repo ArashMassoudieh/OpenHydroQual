@@ -1,7 +1,7 @@
 {
     "Blocks": {
         "Reactor (1)": {
-            "C:concentration": "(C:mass/(Storage+1e-05))",
+            "C:concentration": "0.0170396",
             "C:constant_inflow_concentration": "0",
             "C:external_mass_flow_timeseries": "",
             "C:external_source": "",
@@ -13,13 +13,14 @@
             "constant_inflow": "0",
             "name": "Reactor (1)",
             "time_variable_inflow": "",
+            "type": "Reactor",
             "x": "900",
             "y": "900"
         }
     },
     "Constituents": {
         "C": {
-            "concentration": "(mass/(Storage+1e-05))",
+            "concentration": "0",
             "constant_inflow_concentration": "0",
             "diffusion_coefficient": "0",
             "dispersivity": "0",
@@ -27,7 +28,8 @@
             "external_source": "",
             "name": "C",
             "stoichiometric_constant": "0",
-            "time_variable_inflow_concentration": ""
+            "time_variable_inflow_concentration": "",
+            "type": "Constituent"
         }
     },
     "Links": {
@@ -44,23 +46,19 @@
             "base_value": "2",
             "name": "kd",
             "reference_temperature": "0",
-            "temperature": ""
+            "temperature": "",
+            "type": "ReactionParameter"
         }
     },
     "Reactions": {
         "Decay": {
             "C:stoichiometric_constant": "-1",
             "name": "Decay",
-            "rate_expression": "(kd*C)"
+            "rate_expression": "(kd*C)",
+            "type": "Reaction"
         }
     },
     "Set As Parameters": [
-        [
-        ],
-        [
-        ],
-        [
-        ]
     ],
     "Settings": {
         "acceptance_rate": "0.15",

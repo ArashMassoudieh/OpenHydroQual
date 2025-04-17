@@ -4,6 +4,11 @@ QT += core
 CONFIG += console
 CONFIG -= app_bundle
 
+CONFIG += debug
+CONFIG -= release
+
+QMAKE_CXXFLAGS_DEBUG += -O0 -g
+
 CONFIG += c++17
 
 INCLUDEPATH += ../../aquifolium/include
