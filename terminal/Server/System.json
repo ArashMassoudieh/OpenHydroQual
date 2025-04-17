@@ -1,0 +1,112 @@
+{
+    "Blocks": {
+        "Reactor (1)": {
+            "C:concentration": "(C:mass/(Storage+1e-05))",
+            "C:constant_inflow_concentration": "0",
+            "C:external_mass_flow_timeseries": "",
+            "C:external_source": "",
+            "C:time_variable_inflow_concentration": "",
+            "Storage": "1",
+            "_height": "200",
+            "_width": "200",
+            "bottom_elevation": "0",
+            "constant_inflow": "0",
+            "name": "Reactor (1)",
+            "time_variable_inflow": "",
+            "x": "900",
+            "y": "900"
+        }
+    },
+    "Constituents": {
+        "C": {
+            "concentration": "(mass/(Storage+1e-05))",
+            "constant_inflow_concentration": "0",
+            "diffusion_coefficient": "0",
+            "dispersivity": "0",
+            "external_mass_flow_timeseries": "",
+            "external_source": "",
+            "name": "C",
+            "stoichiometric_constant": "0",
+            "time_variable_inflow_concentration": ""
+        }
+    },
+    "Links": {
+    },
+    "Objective Functions": {
+    },
+    "Observations": {
+    },
+    "Parameters": {
+    },
+    "Reaction Parameters": {
+        "kd": {
+            "Arrhenius_factor": "1",
+            "base_value": "2",
+            "name": "kd",
+            "reference_temperature": "0",
+            "temperature": ""
+        }
+    },
+    "Reactions": {
+        "Decay": {
+            "C:stoichiometric_constant": "-1",
+            "name": "Decay",
+            "rate_expression": "(kd*C)"
+        }
+    },
+    "Set As Parameters": [
+        [
+        ],
+        [
+        ],
+        [
+        ]
+    ],
+    "Settings": {
+        "acceptance_rate": "0.15",
+        "add_noise_to_realizations": "No",
+        "alloutputfile": "output.txt",
+        "c_n_weight": "1",
+        "continue_based_on_file_name": "",
+        "initial_purturbation": "No",
+        "initial_time_step": "0.01",
+        "initual_purturbation_factor": "0.05",
+        "jacobian_method": "Inverse Jacobian",
+        "maximum_number_of_matrix_inverstions": "200000",
+        "maximum_time_allowed": "86400",
+        "maxpop": "40",
+        "minimum_timestep": "1e-06",
+        "n_threads": "8",
+        "ngen": "40",
+        "nr_timestep_reduction_factor": "0.75",
+        "nr_timestep_reduction_factor_fail": "0.2",
+        "nr_tolerance": "0.001",
+        "number_of_burnout_samples": "0",
+        "number_of_chains": "8",
+        "number_of_post_estimate_realizations": "10",
+        "number_of_samples": "1000",
+        "number_of_threads": "1",
+        "numthreads": "8",
+        "observed_outputfile": "observedoutput.txt",
+        "outputfile": "GA_output.txt",
+        "pcross": "1",
+        "perform_global_sensitivity": "No",
+        "pmute": "0.02",
+        "purturbation_change_scale": "0.75",
+        "record_interval": "1",
+        "samples_filename": "mcmc.txt",
+        "shakescale": "0.05",
+        "shakescalered": "0.75",
+        "simulation_end_time": "2",
+        "simulation_start_time": "0",
+        "write_intermittently": "No",
+        "write_interval": "100",
+        "write_solution_details": "No"
+    },
+    "Sources": {
+    },
+    "Templates": [
+        "/home/arash/Projects/OpenHydroQual/terminal/Server/../../resources/main_components.json",
+        "/home/arash/Projects/OpenHydroQual/terminal/Server/../../resources/mass_transfer.json"
+    ]
+}

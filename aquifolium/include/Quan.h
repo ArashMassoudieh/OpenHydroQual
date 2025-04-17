@@ -162,6 +162,7 @@ class Quan
 
             return false;
         }
+
     protected:
 
     private:

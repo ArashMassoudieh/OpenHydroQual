@@ -1,6 +1,9 @@
 #include "System.h"
 #include <fstream>
 #include <qstring.h>
+#include <QFile>
+#include <QIODevice>
+#include <QJsonDocument>
 #pragma warning(pop)
 #pragma warning(disable : 4996)
 #include <json/json.h>
@@ -4235,4 +4238,111 @@ bool System::WriteOutPuts()
     if (SolverTempVars.first_write)
         errorhandler.Write(paths.inputpath + "/errors.txt");
     return true;
+}
+
+bool System::SavetoJson(const string &filename, const vector<string> &_addedtemplates)
+{
+    SetVariableParents();
+    if (_addedtemplates.size()!=0)
+        addedtemplates = _addedtemplates;
+
+    QJsonObject out;
+    QJsonArray templates;
+    for (unsigned int i=0; i<addedtemplates.size();i++)
+    {
+        templates.append(QString::fromStdString(addedtemplates[i]));
+    }
+    out["Templates"] = templates;
+
+    QJsonObject SettingsJsonObject;
+    for (unsigned int i=0; i<Settings.size(); i++)
+        for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
+            if (j->second.AskFromUser())
+                SettingsJsonObject[QString::fromStdString(j->first)] = QString::fromStdString(j->second.GetProperty());
+    out["Settings"] = SettingsJsonObject;
+
+    QJsonObject SourcesJsonObject;
+    for (unsigned int i=0; i<sources.size(); i++)
+        SourcesJsonObject[QString::fromStdString(sources[i].GetName())] = sources[i].toJson();
+    out["Sources"] = SourcesJsonObject;
+
+    QJsonObject ParametersJsonObject;
+    for (unsigned int i=0; i<ParametersCount(); i++)
+        ParametersJsonObject[QString::fromStdString(Parameters()[i]->GetName())] = Parameters()[i]->toJson();
+    out["Parameters"] = ParametersJsonObject;
+
+
+    QJsonObject ConstituentsJsonObject;
+    for (unsigned int i=0; i<ConstituentsCount(); i++)
+        ConstituentsJsonObject[QString::fromStdString(constituents[i].GetName())] = constituents[i].toJson();
+    out["Constituents"] = ConstituentsJsonObject;
+
+    QJsonObject ReactionParametersJsonObject;
+    for (unsigned int i = 0; i < ReactionParametersCount(); i++)
+        ReactionParametersJsonObject[QString::fromStdString(reaction_parameters[i].GetName())] = reaction_parameters[i].toJson();
+    out["Reaction Parameters"] = ReactionParametersJsonObject;
+
+    QJsonObject ReactionsJsonObject;
+    for (unsigned int i = 0; i < ReactionsCount(); i++)
+        ReactionsJsonObject[QString::fromStdString(reactions[i].GetName())] = reactions[i].toJson();
+    out["Reactions"] = ReactionsJsonObject;
+
+    QJsonObject BlocksJsonObject;
+    for (unsigned int i=0; i<blocks.size(); i++)
+        BlocksJsonObject[QString::fromStdString(blocks[i].GetName())] = blocks[i].toJson();
+    out["Blocks"] = BlocksJsonObject;
+
+    QJsonObject LinksJsonObject;
+    for (unsigned int i=0; i<links.size(); i++)
+        LinksJsonObject[QString::fromStdString(links[i].GetName())] = links[i].toJson();
+    out["Links"] = LinksJsonObject;
+
+    QJsonObject ObjectiveFunctionsJsonObject;
+    for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
+        ObjectiveFunctionsJsonObject[QString::fromStdString(ObjectiveFunctions()[i]->GetName())] = ObjectiveFunctions()[i]->toJson();
+    out["Objective Functions"] = ObjectiveFunctionsJsonObject;
+
+    QJsonObject ObservationsJsonObject;
+    for (unsigned int i = 0; i < ObservationsCount(); i++)
+        ObservationsJsonObject[QString::fromStdString(observation(i)->GetName())] = observation(i)->toJson();
+    out["Observations"] = ObservationsJsonObject;
+
+    QJsonArray SetAsParametersJsonArray;
+    for (unsigned int i=0; i<blocks.size(); i++)
+        SetAsParametersJsonArray.append(blocks[i].GetVars()->toJsonSetAsParameter());
+
+
+    for (unsigned int i=0; i<links.size(); i++)
+        SetAsParametersJsonArray.append(links[i].GetVars()->toJsonSetAsParameter());
+
+
+    for (unsigned int i = 0; i < observations.size(); i++)
+        SetAsParametersJsonArray.append(observations[i].GetVars()->toJsonSetAsParameter());
+
+
+    for (unsigned int i = 0; i < sources.size(); i++)
+        SetAsParametersJsonArray.append(sources[i].GetVars()->toJsonSetAsParameter());
+
+
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+        SetAsParametersJsonArray.append(reaction_parameters[i].GetVars()->toJsonSetAsParameter());
+
+
+    for (unsigned int i = 0; i < constituents.size(); i++)
+        SetAsParametersJsonArray.append(constituents[i].GetVars()->toJsonSetAsParameter());
+
+    out["Set As Parameters"] = SetAsParametersJsonArray;
+
+    QFile file(QString::fromStdString(filename));
+        if (!file.open(QIODevice::WriteOnly)) {
+            qWarning() << "Could not open file for writing:" << file.errorString();
+            return false;
+        }
+
+    QJsonDocument jsonDoc(out);
+    file.write(jsonDoc.toJson(QJsonDocument::Indented));  // Use Indented or Compact
+    file.close();
+
+    return true;
+
 }

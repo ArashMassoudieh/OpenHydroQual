@@ -677,3 +677,34 @@ void QuanSet::CreateCPPcode(const string &source, const string header)
     sourcefile.close();
 }
 
+QJsonObject QuanSet::toJson()
+{
+    QJsonObject out;
+    for (map<string,Quan>::iterator it=begin(); it!=end(); it++)
+    {
+        if (it->second.AskFromUser())
+            out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(it->second.GetType()!=Quan::_type::expression));
+    }
+    return out;
+}
+
+
+QJsonArray QuanSet::toJsonSetAsParameter()
+{
+    QJsonArray array;
+    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    {
+        if (it->second.AskFromUser())
+        {
+            if (it->second.GetParameterAssignedTo()!="")
+            {
+                QJsonObject item;
+                item["Object"] = QString::fromStdString(quans["name"].GetProperty());
+                item["Parameter"] = QString::fromStdString(it->second.GetParameterAssignedTo());
+                item["Quantity"] = QString::fromStdString(it->second.GetName());
+                array.append(item);
+            }
+        }
+    }
+    return array;
+}

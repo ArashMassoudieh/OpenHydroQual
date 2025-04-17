@@ -654,6 +654,11 @@ string Object::toCommand()
     return out;
 }
 
+QJsonObject Object::toJson()
+{
+    return var.toJson();
+}
+
 string Object::toCommandSetAsParam()
 {
     string out;

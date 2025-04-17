@@ -84,6 +84,7 @@ QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
 
     cout<<"Solving ..."<<endl;
     system->Solve();
+    system->SavetoJson("System.json",system->addedtemplates);
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
     system->GetOutputs().writetofile(system->GetWorkingFolder() + system->OutputFileName());
     return QJsonDocument(system->GetOutputs().toJson());
