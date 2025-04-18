@@ -12,7 +12,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // Initialize the API client with this as the parent
-    apiClient = new ApiClient(QUrl("http://localhost:8080/calculate"), this);
+    //apiClient = new ApiClient(QUrl("http://localhost:8080/calculate"), this);
+    apiClient = new ApiClient(QUrl("http://ec2-54-213-147-59.us-west-2.compute.amazonaws.com:8080/calculate"), this);
 
     // Connect button click
     connect(ui->pushButtonProcess, &QPushButton::clicked, this, &MainWindow::onProcessTriggered);
