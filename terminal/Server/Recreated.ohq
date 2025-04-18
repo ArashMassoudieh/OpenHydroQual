@@ -1,27 +1,26 @@
 addtemplate; filename = /home/arash/Projects/OpenHydroQual/bin/release/../../resources/main_components.json
-addtemplate; filename = /home/arash/Projects/OpenHydroQual/bin/release/../../resources/groundwater.json
 addtemplate; filename = /home/arash/Projects/OpenHydroQual/bin/release/../../resources/mass_transfer.json
 setvalue; object=system, quantity=acceptance_rate, value=0.15
 setvalue; object=system, quantity=add_noise_to_realizations, value=No
 setvalue; object=system, quantity=continue_based_on_file_name, value=
 setvalue; object=system, quantity=initial_purturbation, value=No
 setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
-setvalue; object=system, quantity=number_of_burnout_samples, value=10000
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
 setvalue; object=system, quantity=number_of_chains, value=8
-setvalue; object=system, quantity=number_of_post_estimate_realizations, value=100
-setvalue; object=system, quantity=number_of_samples, value=50000
-setvalue; object=system, quantity=number_of_threads, value=8
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=10
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
 setvalue; object=system, quantity=perform_global_sensitivity, value=No
 setvalue; object=system, quantity=purturbation_change_scale, value=0.75
 setvalue; object=system, quantity=record_interval, value=1
 setvalue; object=system, quantity=samples_filename, value=mcmc.txt
 setvalue; object=system, quantity=alloutputfile, value=output.txt
 setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
-setvalue; object=system, quantity=simulation_end_time, value=1.33
+setvalue; object=system, quantity=simulation_end_time, value=2
 setvalue; object=system, quantity=simulation_start_time, value=0
 setvalue; object=system, quantity=maxpop, value=40
-setvalue; object=system, quantity=ngen, value=50
-setvalue; object=system, quantity=numthreads, value=10
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=numthreads, value=8
 setvalue; object=system, quantity=outputfile, value=GA_output.txt
 setvalue; object=system, quantity=pcross, value=1
 setvalue; object=system, quantity=pmute, value=0.02
@@ -31,7 +30,7 @@ setvalue; object=system, quantity=c_n_weight, value=1
 setvalue; object=system, quantity=initial_time_step, value=0.01
 setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
 setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
-setvalue; object=system, quantity=maximum_time_allowed, value=1200
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
 setvalue; object=system, quantity=minimum_timestep, value=1e-06
 setvalue; object=system, quantity=n_threads, value=8
 setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
@@ -40,166 +39,7 @@ setvalue; object=system, quantity=nr_tolerance, value=0.001
 setvalue; object=system, quantity=write_intermittently, value=No
 setvalue; object=system, quantity=write_interval, value=100
 setvalue; object=system, quantity=write_solution_details, value=No
-create parameter;type=Parameter,high=1000,low=50,name=KD_param,prior_distribution=log-normal,value=70.6547
-create parameter;type=Parameter,high=0.0001,low=1e-10,name=disp_param,prior_distribution=log-normal,value=1e-10
-create parameter;type=Parameter,high=0.1,low=0.001,name=error_std,prior_distribution=log-normal,value=0.01
-create parameter;type=Parameter,high=10000,low=100,name=kf_param,prior_distribution=log-normal,value=657.096
-create parameter;type=Parameter,high=0.4,low=0.3,name=porosity_param,prior_distribution=log-normal,value=0.376052
-create constituent;type=Constituent,concentration=0,constant_inflow_concentration=0,diffusion_coefficient=0,dispersivity=0,external_mass_flow_timeseries=,external_source=,name=Cu_aq,stoichiometric_constant=0,time_variable_inflow_concentration=
-create constituent;type=Immobile_Constituent,concentration=0,external_mass_flow_timeseries=,external_source=,name=Cu_s,stoichiometric_constant=0
-create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=259,name=K_D,reference_temperature=0,temperature=
-create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=5000,name=k_f,reference_temperature=0,temperature=
-create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=0.325,name=porosity,reference_temperature=0,temperature=
-create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=1.65,name=rho,reference_temperature=0,temperature=
-create reaction;type=Reaction,Cu_aq:stoichiometric_constant=-1,Cu_s:stoichiometric_constant=(porosity/rho),name=Adsorption,rate_expression=(k_f*Cu_aq)
-create reaction;type=Reaction,Cu_aq:stoichiometric_constant=1,Cu_s:stoichiometric_constant=(0-porosity/rho),name=Desorption,rate_expression=(k_f/K_D*Cu_s)
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=eVCin.txt,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=0,depth=0.0254,hydraulic_conductivity=1,inflow=eVFlow1.txt,moisture_content=0.325,name=Col1-1,porosity=0.325,specific_storage=0.01,x=907.016,y=900
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.2286,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-10,porosity=0.325,specific_storage=0.01,x=900,y=3600
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.254,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-11,porosity=0.325,specific_storage=0.01,x=900,y=3900
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.2794,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-12,porosity=0.325,specific_storage=0.01,x=900,y=4200
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.3048,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-13,porosity=0.325,specific_storage=0.01,x=900,y=4500
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.3302,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-14,porosity=0.325,specific_storage=0.01,x=900,y=4800
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.3556,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-15,porosity=0.325,specific_storage=0.01,x=900,y=5100
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.381,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-16,porosity=0.325,specific_storage=0.01,x=900,y=5400
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.4318,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-18,porosity=0.325,specific_storage=0.01,x=900,y=6000
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.0254,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-2,porosity=0.325,specific_storage=0.01,x=900,y=1200
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.0508,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-3,porosity=0.325,specific_storage=0.01,x=900,y=1500
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.0762,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-4,porosity=0.325,specific_storage=0.01,x=900,y=1800
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.127,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-6,porosity=0.325,specific_storage=0.01,x=900,y=2400
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.1524,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-7,porosity=0.325,specific_storage=0.01,x=900,y=2700
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.1778,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-8,porosity=0.325,specific_storage=0.01,x=900,y=3000
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.2032,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-9,porosity=0.325,specific_storage=0.01,x=900,y=3300
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.4064,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-Bottom,porosity=0.325,specific_storage=0.01,x=1194,y=5700
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.1016,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0.325,name=Col1-Top,porosity=0.325,specific_storage=0.01,x=1200,y=2100
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.4064,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Col2-Bottom,porosity=0,specific_storage=0.01,x=2100,y=5700
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.1016,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Col2-Top,porosity=0,specific_storage=0.01,x=2100,y=2100
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=eVCin.txt,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=0,depth=0.0254,hydraulic_conductivity=1,inflow=eVFlow2.txt,moisture_content=0,name=Groundwater cell(1:1),porosity=0,specific_storage=0.01,x=1800,y=900
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.2286,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:10),porosity=0,specific_storage=0.01,x=1800,y=3600
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.254,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:11),porosity=0,specific_storage=0.01,x=1800,y=3900
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.2794,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:12),porosity=0,specific_storage=0.01,x=1800,y=4200
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.3048,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:13),porosity=0,specific_storage=0.01,x=1800,y=4500
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.3302,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:14),porosity=0,specific_storage=0.01,x=1800,y=4800
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.3556,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:15),porosity=0,specific_storage=0.01,x=1800,y=5100
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.381,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:16),porosity=0,specific_storage=0.01,x=1800,y=5400
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.4318,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:18),porosity=0,specific_storage=0.01,x=1800,y=6000
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.0254,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:2),porosity=0,specific_storage=0.01,x=1800,y=1200
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.0508,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:3),porosity=0,specific_storage=0.01,x=1800,y=1500
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.0762,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:4),porosity=0,specific_storage=0.01,x=1800,y=1800
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.127,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:6),porosity=0,specific_storage=0.01,x=1800,y=2400
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.1524,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:7),porosity=0,specific_storage=0.01,x=1800,y=2700
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.1778,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:8),porosity=0,specific_storage=0.01,x=1800,y=3000
-create block;type=Groundwater cell,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=0.00811,bottom_elevation=-0.2032,depth=0.0254,hydraulic_conductivity=1,inflow=,moisture_content=0,name=Groundwater cell(1:9),porosity=0,specific_storage=0.01,x=1800,y=3300
-create block;type=fixed_head,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,Storage=100000,_height=200,_width=200,head=0,name=fixed_head (1),x=1200,y=6300
-create block;type=fixed_head,Cu_aq:concentration=0,Cu_aq:constant_inflow_concentration=0,Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0,Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,Storage=100000,_height=200,_width=200,head=0,name=fixed_head (2),x=2100,y=6300
-create link;from=Col1-1,to=Col1-2,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow1
-create link;from=Col1-10,to=Col1-11,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow10
-create link;from=Col1-11,to=Col1-12,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow11
-create link;from=Col1-12,to=Col1-13,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow12
-create link;from=Col1-13,to=Col1-14,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow13
-create link;from=Col1-14,to=Col1-15,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow14
-create link;from=Col1-15,to=Col1-16,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow15
-create link;from=Col1-16,to=Col1-Bottom,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow16
-create link;from=Col1-Bottom,to=Col1-18,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow17
-create link;from=Col1-2,to=Col1-3,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow2
-create link;from=Col1-3,to=Col1-4,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow3
-create link;from=Col1-4,to=Col1-Top,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow4
-create link;from=Col1-Top,to=Col1-6,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow5
-create link;from=Col1-6,to=Col1-7,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow6
-create link;from=Col1-7,to=Col1-8,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow7
-create link;from=Col1-8,to=Col1-9,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow8
-create link;from=Col1-9,to=Col1-10,type=Time-Dependent flow,flow=eVFlow1.txt,name=Flow9
-create link;from=Col1-18,to=fixed_head (1),type=Time-Dependent flow,flow=eVFlow1.txt,name=Groundwater cell(1:18) - fixed_head (1)
-create link;from=Groundwater cell(1:18),to=fixed_head (2),type=Time-Dependent flow,flow=eVFlow2.txt,name=Groundwater cell(1:18) - fixed_head (2)
-create link;from=Groundwater cell(1:1),to=Groundwater cell(1:2),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:1)-(1:2)
-create link;from=Groundwater cell(1:10),to=Groundwater cell(1:11),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:10)-(1:11)
-create link;from=Groundwater cell(1:11),to=Groundwater cell(1:12),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:11)-(1:12)
-create link;from=Groundwater cell(1:12),to=Groundwater cell(1:13),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:12)-(1:13)
-create link;from=Groundwater cell(1:13),to=Groundwater cell(1:14),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:13)-(1:14)
-create link;from=Groundwater cell(1:14),to=Groundwater cell(1:15),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:14)-(1:15)
-create link;from=Groundwater cell(1:15),to=Groundwater cell(1:16),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:15)-(1:16)
-create link;from=Groundwater cell(1:16),to=Col2-Bottom,type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:16)-(1:17)
-create link;from=Col2-Bottom,to=Groundwater cell(1:18),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:17)-(1:18)
-create link;from=Groundwater cell(1:2),to=Groundwater cell(1:3),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:2)-(1:3)
-create link;from=Groundwater cell(1:3),to=Groundwater cell(1:4),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:3)-(1:4)
-create link;from=Groundwater cell(1:4),to=Col2-Top,type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:4)-(1:5)
-create link;from=Col2-Top,to=Groundwater cell(1:6),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:5)-(1:6)
-create link;from=Groundwater cell(1:6),to=Groundwater cell(1:7),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:6)-(1:7)
-create link;from=Groundwater cell(1:7),to=Groundwater cell(1:8),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:7)-(1:8)
-create link;from=Groundwater cell(1:8),to=Groundwater cell(1:9),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:8)-(1:9)
-create link;from=Groundwater cell(1:9),to=Groundwater cell(1:10),type=Time-Dependent flow,flow=eVFlow2.txt,name=Time-Dependent flow(1:9)-(1:10)
-setasparameter; object= Col1-1, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-1, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-10, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-10, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-11, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-11, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-12, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-12, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-13, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-13, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-14, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-14, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-15, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-15, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-16, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-16, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-18, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-18, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-2, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-2, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-3, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-3, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-4, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-4, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-6, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-6, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-7, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-7, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-8, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-8, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-9, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-9, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-Bottom, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-Bottom, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col1-Top, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col1-Top, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col2-Bottom, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col2-Bottom, parametername= porosity_param, quantity= porosity
-setasparameter; object= Col2-Top, parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Col2-Top, parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:1), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:1), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:10), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:10), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:11), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:11), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:12), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:12), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:13), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:13), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:14), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:14), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:15), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:15), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:16), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:16), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:18), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:18), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:2), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:2), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:3), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:3), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:4), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:4), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:6), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:6), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:7), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:7), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:8), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:8), parametername= porosity_param, quantity= porosity
-setasparameter; object= Groundwater cell(1:9), parametername= porosity_param, quantity= moisture_content
-setasparameter; object= Groundwater cell(1:9), parametername= porosity_param, quantity= porosity
-setasparameter; object= K_D, parametername= KD_param, quantity= base_value
-setasparameter; object= k_f, parametername= kf_param, quantity= base_value
-setasparameter; object= porosity, parametername= porosity_param, quantity= base_value
-setasparameter; object= Cu_aq, parametername= disp_param, quantity= dispersivity
+create constituent;type=Constituent,concentration=0,constant_inflow_concentration=0,diffusion_coefficient=0,dispersivity=0,external_mass_flow_timeseries=,external_source=,name=C,stoichiometric_constant=0,time_variable_inflow_concentration=
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=7,name=kd,reference_temperature=0,temperature=
+create reaction;type=Reaction,C:stoichiometric_constant=-1,name=Decay,rate_expression=(kd*C)
+create block;type=Reactor,C:concentration=2.25673e-06,C:constant_inflow_concentration=0,C:external_mass_flow_timeseries=,C:external_source=,C:time_variable_inflow_concentration=,Storage=1,_height=200,_width=200,bottom_elevation=0,constant_inflow=0,name=Reactor (1),time_variable_inflow=,x=900,y=900

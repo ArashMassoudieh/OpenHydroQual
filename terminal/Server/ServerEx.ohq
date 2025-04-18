@@ -1,5 +1,6 @@
-loadtemplate; filename = /home/arash/Projects/OpenHydroQual/build/Desktop_Qt_6_8_2-Debug/../../resources/main_components.json
-addtemplate; filename = /home/arash/Projects/OpenHydroQual/build/Desktop_Qt_6_8_2-Debug/../../resources/mass_transfer.json
+loadtemplate; filename = /home/arash/Projects/OpenHydroQual/bin/release/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/bin/release/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/bin/release/../../resources/mass_transfer.json
 setvalue; object=system, quantity=acceptance_rate, value=0.15
 setvalue; object=system, quantity=add_noise_to_realizations, value=No
 setvalue; object=system, quantity=continue_based_on_file_name, value=
@@ -43,3 +44,4 @@ create constituent;type=Constituent,concentration=0[g/m~^3],constant_inflow_conc
 create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=0.5,name=kd,reference_temperature=0,temperature=
 create reaction;type=Reaction,C:stoichiometric_constant=-1,name=Decay,rate_expression=(kd*C)
 create block;type=Reactor,C:concentration=1[g/m~^3],C:constant_inflow_concentration=0[g/m~^3],C:external_mass_flow_timeseries=,C:external_source=,C:time_variable_inflow_concentration=,Storage=1[m~^3],_height=200,_width=200,bottom_elevation=0[m],constant_inflow=0[m~^3/day],name=Reactor (1),time_variable_inflow=,x=900,y=900
+create observation;type=Observation,autocorrelation_time-span=1,comparison_method=Least Squared,error_standard_deviation=1,error_structure=normal,expression=C:concentration,name=Concentration,object=Reactor (1),observed_data=

@@ -8,17 +8,21 @@
 #include <QCoreApplication>
 #include <QFileInfo>
 
+
 using namespace crow;
 
-ServerOps::ServerOps(quint16 port, QObject *parent): QObject(parent)
+ServerOps::ServerOps(quint16 port, QObject *parent) : QObject(parent)
 {
+    // Handle POST /calculate (main API)
     CROW_ROUTE(app, "/calculate").methods("POST"_method)
     ([this](const crow::request& req) {
         return StatementReceived(req);
     });
 
+    // Start the server
     app.port(port).multithreaded().run();
 }
+
 
 crow::response ServerOps::StatementReceived(const crow::request& req)
 {
@@ -43,7 +47,9 @@ crow::response ServerOps::StatementReceived(const crow::request& req)
 
     crow::response res;
     res.code = 200;
-    res.set_header("Content-Type", "application/json");
+    res.set_header("Access-Control-Allow-Origin", "*");  // or "http://localhost:8000" for more security
+    res.set_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    res.set_header("Access-Control-Allow-Headers", "Content-Type");
     res.body = responseJson.toStdString();
     return res;
 }
@@ -62,9 +68,9 @@ QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
     string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
     cout << "Default Template path = " + defaulttemppath +"\n";
     system->SetDefaultTemplatePath(defaulttemppath);
-    system->SetWorkingFolder(QFileInfo(QString::fromStdString("SoilColumn.ohq")).canonicalPath().toStdString() + "/");
+    system->SetWorkingFolder(QFileInfo(QString::fromStdString("ServerEx.ohq")).canonicalPath().toStdString() + "/");
     string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
-    Script scr("SoilColumn.ohq",system);
+    Script scr("ServerEx.ohq",system);
     cout<<"Executing script ..."<<endl;
     system->CreateFromScript(scr,settingfilename);
     system->SetSilent(false);
@@ -102,8 +108,8 @@ QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
     system2.LoadfromJson(doc);
     system2.SavetoScriptFile("Recreated.ohq");
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
-    system->GetOutputs().writetofile(system->GetWorkingFolder() + system->OutputFileName());
-    return QJsonDocument(system->GetOutputs().toJson());
+    system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + system->OutputFileName());
+    return QJsonDocument(system->GetObservedOutputs().toJson());
 }
 
 

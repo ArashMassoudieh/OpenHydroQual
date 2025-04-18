@@ -326,3 +326,9 @@ terminal/build-OHQServer-Desktop_Qt_6_3_2_GCC_64bit-Debug/
 terminal/OHQServer
 
 terminal/Server/errors.txt
+
+build-Client-Desktop_Qt_6_3_2_GCC_64bit-Debug/
+
+build-Client-WebAssembly_Qt_6_3_2-Debug/
+
+build-Client-WebAssembly_Qt_6_3_2-Release/

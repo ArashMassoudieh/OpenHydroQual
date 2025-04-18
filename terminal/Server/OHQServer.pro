@@ -175,6 +175,7 @@ HEADERS += \
     ../../aquifolium/src/BTC.hpp \
     ../../aquifolium/src/BTCSet.hpp \
     ../../aquifolium/include/reaction.h \
+    cors_middleware.h \
     serverops.h
 
 

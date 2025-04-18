@@ -8,6 +8,7 @@
 #endif
 #include "crow.h"
 #include <QJsonObject>
+#include "cors_middleware.h"
 
 class ServerOps : public QObject
 {
@@ -23,7 +24,7 @@ private slots:
 
 
 private:
-    crow::SimpleApp app;
+    crow::App<CORS> app;
 
 };
 
