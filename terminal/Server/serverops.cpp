@@ -62,9 +62,9 @@ QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
     string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
     cout << "Default Template path = " + defaulttemppath +"\n";
     system->SetDefaultTemplatePath(defaulttemppath);
-    system->SetWorkingFolder(QFileInfo(QString::fromStdString("ServerEx.ohq")).canonicalPath().toStdString() + "/");
+    system->SetWorkingFolder(QFileInfo(QString::fromStdString("SoilColumn.ohq")).canonicalPath().toStdString() + "/");
     string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
-    Script scr("ServerEx.ohq",system);
+    Script scr("SoilColumn.ohq",system);
     cout<<"Executing script ..."<<endl;
     system->CreateFromScript(scr,settingfilename);
     system->SetSilent(false);

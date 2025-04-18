@@ -425,6 +425,7 @@ class System: public Object
         bool WriteOutPuts();
         bool SavetoJson(const string &filename, const vector<string> &_addedtemplates);
         bool LoadfromJson(const QJsonDocument &jsondoc);
+        bool LoadfromJson(const QJsonObject &jsondoc);
     protected:
 
     private:

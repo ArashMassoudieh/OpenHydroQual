@@ -4355,6 +4355,12 @@ bool System::SavetoJson(const string &filename, const vector<string> &_addedtemp
 bool System::LoadfromJson(const QJsonDocument &jsondoc)
 {
     QJsonObject root = jsondoc.object();
+    return LoadfromJson(root);
+
+}
+
+bool System::LoadfromJson(const QJsonObject &root)
+{
     bool outcome = true;
     QJsonArray TemplatesJson = root["Templates"].toArray();
     qDebug()<<TemplatesJson;
@@ -4467,6 +4473,7 @@ bool System::LoadfromJson(const QJsonDocument &jsondoc)
         {
             if (property!="type" && property!="to" && property!="from")
             {
+                qDebug()<<linkname;
                 if (!link(linkname.toStdString())->SetProperty(property.toStdString(),LinkJson[property].toString().toStdString(),true, false))
                     errorhandler.Append("System", "Link","ReadFromJson","Link '" + linkname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10013 );
             }
@@ -4535,26 +4542,21 @@ bool System::LoadfromJson(const QJsonDocument &jsondoc)
         }
     }
 
-
-    /*if (aquiutils::tolower(keyword) == "setasparameter")
+    QJsonArray SetAsParameterJsonArray = root["Set As Parameters"].toArray();
+    for (const QJsonValue& SetAsParam : SetAsParameterJsonArray)
     {
-        if (Validate())
+        string s_object = SetAsParam.toObject()["Object"].toString().toStdString();
+        string s_parameter = SetAsParam.toObject()["Parameter"].toString().toStdString();
+        string s_quantity = SetAsParam.toObject()["Quantity"].toString().toStdString();
+        SetAsParameter(s_object, s_quantity, s_parameter);
+        if (object(s_object))
         {
-            sys->SetAsParameter(assignments["object"],assignments["quantity"],assignments["parametername"]);
-            if (sys->object(assignments["object"]))
-            {	if (sys->object(assignments["object"])->HasQuantity(assignments["quantity"]))
-                    sys->object(assignments["object"])->Variable(assignments["quantity"])->SetParameterAssignedTo(assignments["parametername"]);
-            }
-            else
+            if (object(s_object)->HasQuantity(s_quantity))
             {
-                return false;
-                sys->GetErrorHandler()->Append("system", "command", "Execute", "object '" + assignments["object"] + "' was not found!", 11237);
+                object(s_object)->Variable(s_quantity)->SetParameterAssignedTo(s_parameter);
             }
-            return true;
         }
-        else
-            return false;
-    }*/
+    }
 
     SetAllParents();
 
