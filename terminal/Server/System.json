@@ -1,7 +1,7 @@
 {
     "Blocks": {
         "Reactor (1)": {
-            "C:concentration": "0.0170396",
+            "C:concentration": "0.00250491",
             "C:constant_inflow_concentration": "0",
             "C:external_mass_flow_timeseries": "",
             "C:external_source": "",
@@ -54,7 +54,7 @@
     "Reaction Parameters": {
         "kd": {
             "Arrhenius_factor": "1",
-            "base_value": "2",
+            "base_value": "3",
             "name": "kd",
             "reference_temperature": "0",
             "temperature": "",

@@ -1,5 +1,5 @@
 QT -= gui
-QT += core
+QT += core websockets
 
 CONFIG += console
 CONFIG -= app_bundle
@@ -114,7 +114,8 @@ SOURCES += \
         ../../../jsoncpp/src/lib_json/json_value.cpp \
         ../../../jsoncpp/src/lib_json/json_writer.cpp \
         main.cpp \
-        serverops.cpp
+        serverops.cpp \
+        wsserverop.cpp
 
 HEADERS += \
     ../../aquifolium/include/Objective_Function.h \
@@ -176,7 +177,8 @@ HEADERS += \
     ../../aquifolium/src/BTCSet.hpp \
     ../../aquifolium/include/reaction.h \
     cors_middleware.h \
-    serverops.h
+    serverops.h \
+    wsserverop.h
 
 
 # Default rules for deployment.
