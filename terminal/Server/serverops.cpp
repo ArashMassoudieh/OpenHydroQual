@@ -11,7 +11,7 @@
 
 using namespace crow;
 
-ServerOps::ServerOps(quint16 port, QObject *parent) : QObject(parent)
+ServerOps::ServerOps(QObject *parent) : QObject(parent)
 {
     // Handle POST /calculate (main API)
     CROW_ROUTE(app, "/calculate").methods("POST"_method)
@@ -19,10 +19,12 @@ ServerOps::ServerOps(quint16 port, QObject *parent) : QObject(parent)
         return StatementReceived(req);
     });
 
-    // Start the server
-    app.port(port).multithreaded().run();
 }
 
+void ServerOps::Start(quint16 port)
+{
+    app.port(port).multithreaded().run();
+}
 
 crow::response ServerOps::StatementReceived(const crow::request& req)
 {
@@ -68,9 +70,11 @@ QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
     string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
     cout << "Default Template path = " + defaulttemppath +"\n";
     system->SetDefaultTemplatePath(defaulttemppath);
-    system->SetWorkingFolder(QFileInfo(QString::fromStdString("ServerEx.ohq")).canonicalPath().toStdString() + "/");
+    system->SetWorkingFolder(QFileInfo(modelFile).canonicalPath().toStdString() + "/");
+
+    qDebug()<<"Model File: " << modelFile;
     string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
-    Script scr("ServerEx.ohq",system);
+    Script scr(modelFile.toStdString(),system);
     cout<<"Executing script ..."<<endl;
     system->CreateFromScript(scr,settingfilename);
     system->SetSilent(false);
@@ -94,7 +98,8 @@ QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
     System system2;
 
     system2.SetDefaultTemplatePath(defaulttemppath);
-    system2.SetWorkingFolder(QFileInfo(QString::fromStdString("ServerEx.ohq")).canonicalPath().toStdString() + "/");
+    system2.SetWorkingFolder(QFileInfo(workingDirectory).canonicalPath().toStdString() + "/");
+    qDebug()<<"Working Folder: "<< QString::fromStdString(system2.GetWorkingFolder());
     system2.ReadSystemSettingsTemplate(settingfilename);
 
     QFile file("System.json");
@@ -113,4 +118,25 @@ QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
 }
 
 
+QJsonObject loadJsonObjectFromFile(const QString& filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Failed to open file:" << filePath;
+        return QJsonObject();
+    }
+
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
+
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        qWarning() << "JSON parse error:" << parseError.errorString();
+        return QJsonObject();
+    }
+
+    return doc.object();
+}
 
