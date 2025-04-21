@@ -332,3 +332,5 @@ build-Client-Desktop_Qt_6_3_2_GCC_64bit-Debug/
 build-Client-WebAssembly_Qt_6_3_2-Debug/
 
 build-Client-WebAssembly_Qt_6_3_2-Release/
+
+terminal/build-OHQuery-Desktop_Qt_6_4_2_GCC_64bit-Debug/

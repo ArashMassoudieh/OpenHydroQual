@@ -18,6 +18,7 @@ public:
     CPrecipitation(string filename);
     CPrecipitation(const CPrecipitation &Precip);
     CPrecipitation operator = (const CPrecipitation &Precip);
+    void append(const double &_s, const double &_e, const double &intensity);
     int n;
     vector<double> s;
     vector<double> e;

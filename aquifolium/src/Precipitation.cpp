@@ -12,6 +12,7 @@ using namespace std;
 
 CPrecipitation::CPrecipitation(void)
 {
+    n=0;
 }
 
 CPrecipitation::CPrecipitation(int nn)
@@ -201,6 +202,17 @@ void CPrecipitation::writefile(string Filename)
         }
     }
     file.close();
+
+}
+
+void CPrecipitation::append(const double &_s, const double &_e, const double &intensity)
+{
+    if (intensity!=9999.9)
+    {   s.push_back(_s);
+        e.push_back(_e);
+        i.push_back(intensity);
+        n++;
+    }
 
 }
 

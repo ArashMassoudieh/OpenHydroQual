@@ -1,0 +1,45 @@
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/bin/release/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/bin/release/../../resources/mass_transfer.json
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=10
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=simulation_end_time, value=2
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=numthreads, value=8
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=c_n_weight, value=1
+setvalue; object=system, quantity=initial_time_step, value=0.01
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=write_intermittently, value=No
+setvalue; object=system, quantity=write_interval, value=100
+setvalue; object=system, quantity=write_solution_details, value=No
+create constituent;type=Constituent,concentration=0,constant_inflow_concentration=0,diffusion_coefficient=0,dispersivity=0,external_mass_flow_timeseries=,external_source=,name=C,stoichiometric_constant=0,time_variable_inflow_concentration=
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=3,name=kd,reference_temperature=0,temperature=
+create reaction;type=Reaction,C:stoichiometric_constant=-1,name=Decay,rate_expression=(kd*C)
+create block;type=Reactor,C:concentration=0.00250491,C:constant_inflow_concentration=0,C:external_mass_flow_timeseries=,C:external_source=,C:time_variable_inflow_concentration=,Storage=1,_height=200,_width=200,bottom_elevation=0,constant_inflow=0,name=Reactor (1),time_variable_inflow=,x=900,y=900
