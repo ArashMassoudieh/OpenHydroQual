@@ -101,7 +101,7 @@
         "wier":{
 		"type": "link",
 		"typecategory": "Connectors",
-                "description": "Weir based on a power-law rating curve",
+                "description": "V-notch weir based on a power-law rating curve",
 		"icon": {
 			"filename": "vnotchweir.png"
 		},
@@ -119,23 +119,23 @@
 		},
 		"alpha": {
 		      "type": "value",
-		      "description": "Coefficient α in Q=α*(h-z_0)^β",
+		      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta",
 		      "ask_user": "true",
 		      "delegate": "ValueBox",
 		      "estimate": "true",
 		      "default": "1",
 		      "criteria": "alpha>0",
-		      "warningmessage": "α must be positive"
+		      "warningmessage": "alpha must be positive"
     		},
     		"beta": {
 		      "type": "value",
-		      "description": "Exponent β in Q=α*(h-z_0)^β",
+		      "description": "Exponent beta in Q=alpha*(h-z_0)^beta",
 		      "ask_user": "true",
 		      "delegate": "ValueBox",
 		      "estimate": "true",
 		      "default": "2.5",
 		      "criteria": "beta>0",
-		      "warningmessage": "β must be positive"
+		      "warningmessage": "beta must be positive"
    		},	
 	        "flow" : {
 		      	"type": "expression",
@@ -212,6 +212,51 @@
 			"applylimit": "true"	
 		}  	
 	},
+	"orifice":{
+		"type": "link",
+		"typecategory": "Connectors",
+                "description": "Orifice",
+		"icon": {
+			"filename": "orifice.png"
+		},
+		"name": {
+		      "description": "Name",
+		      "type": "string",
+		      "ask_user": "true",
+		      "delegate": "String" 
+		},
+                "color": {
+      			"type": "string",
+      			"default": "0,70,200"
+    		},
+                		"head_loss_coefficient": {
+		      "type": "value",
+		      "description": "Head-loss coefficient",
+		      "ask_user": "true",
+		      "delegate": "ValueBox",
+		      "estimate": "true",
+		      "default": "0.6",
+		      "criteria": "head_loss_coefficient>0",
+		      "warningmessage": "Head-loss coefficient must be positive"
+    		},
+    		"orifice_area": {
+		      "type": "value",
+		      "description": "orifice_area",
+		      "ask_user": "true",
+		      "delegate": "UnitBox",
+                      "unit": "m2;ft2;cm2",
+		      "estimate": "true",
+		      "criteria": "orifice_area>0",
+		      "warningmessage": "orifice_area must be positive"
+   		},	
+	        "flow" : {
+		    "type": "expression",
+			"description": "Flow rate (m~^3/day)",
+            "expression" : "86400*head_loss_coefficient*orifice_area*_pos(19.6*(head.s-head.e))^0.5",
+			"includeinoutput" : "true", 
+			"applylimit": "true"	
+		}  	
+	},
 	"darcy_connector":{
 		"type": "link",
 		"typecategory": "Connectors",
@@ -234,7 +279,7 @@
 		      "description": "Head-loss coefficient",
 		      "ask_user": "true",
 		      "delegate": "UnitBox",
-			  "unit": "m~^2/day",
+			  "unit": "m~^3/day",
 		      "estimate": "true",
 		      "default": "0.6",
 		      "criteria": "Transmissivity>0",
@@ -358,17 +403,9 @@
 	      "ask_user": "true",
 	      "delegate": "UnitBox",
 	      "unit": "m~^2;ft~^2",
-	      "estimate": "false",
+	      "estimate": "true",
 	      "criteria": "area>0",
 	      "warningmessage": "Base area must be positive"
-	    },
-	    "volume": {
-	      "type": "value",
-	      "description": "Total Volume",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m~^3;ft~^3",
-	      "estimate": "false"
 	    },
 	    "bottom_elevation": {
 	      "type": "value",
@@ -386,17 +423,14 @@
 	      "delegate": "ValueBox",
 	      "estimate": "true"
 	    },
-	    "hydraulic_conductivity": {
-	      "type": "expression",
-	      "expression": "K_sat",
-	      "description": "Hydraulic conductivity",
-	      "includeinoutput": "false"
-	    },
 	    "depth": {
 	      "type": "expression",
 	      "expression": "Storage/(area*porosity)",
 	      "description": "Initial Water Depth; Water Depth",
+	      "ask_user": "true",
 	      "helptext": "This is the initial depth of water in the aggregate layer",
+	      "delegate": "UnitBox",
+	      "unit": "m;ft;cm",
 	      "includeinoutput": "true"
 	    },
 	    "head": {

@@ -27,10 +27,10 @@
     <ROW Property="ARPURLUPDATEINFO" Value="www.OpenHydroQual.com"/>
     <ROW Property="AppLogoIcon" Value="applogoicon" MultiBuildValue="DefaultBuild:Aquifolium.jpg_1" Type="1" MsiKey="AppLogoIcon"/>
     <ROW Property="Manufacturer" Value="EnviroInformatics, LLC"/>
-    <ROW Property="ProductCode" Value="1033:{A92D9A47-6967-48C9-B55E-B408DAB7D2A5} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{B3A02BEE-9DD5-44DC-92AB-4C338C833BC7} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="OpenHydroQual"/>
-    <ROW Property="ProductVersion" Value="1.1.26" Type="32"/>
+    <ROW Property="ProductVersion" Value="1.2.2" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{22A5F0D0-785C-400D-99C4-4FBF0A322AB6}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -61,7 +61,7 @@
     <ROW Directory="resources_Dir" Directory_Parent="APPDIR" DefaultDir="RESOUR~1|resources"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
-    <ROW Component="AI_CustomARPName" ComponentId="{50B5BBE4-E3AB-4C01-92A7-4B0ACBC20994}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
+    <ROW Component="AI_CustomARPName" ComponentId="{42400746-49C9-4E60-BD11-C497D1A99C26}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
     <ROW Component="AI_ExePath" ComponentId="{E9233AF7-0339-4898-BA7A-0EA6DCB0522F}" Directory_="APPDIR" Attributes="4" KeyPath="AI_ExePath"/>
     <ROW Component="AI_IA_ENABLE" ComponentId="{9961D3AC-A7F7-45C8-9F93-9695250B97F1}" Directory_="APPDIR" Attributes="4" KeyPath="AI_IA_ENABLE" Options="1"/>
     <ROW Component="Bioretention.png" ComponentId="{F01F4FC1-0721-4F89-8CAF-F9B6A4F658CD}" Directory_="Wizard_Icons_Dir" Attributes="0" KeyPath="Bioretention.png_1" Type="0"/>
@@ -156,7 +156,7 @@
     <ROW File="Groundwater_link.png" Component_="pd.nfo" FileName="GROUND~2.PNG|Groundwater_link.png" Attributes="0" SourcePath="..\resources\Icons\Groundwater_link.png" SelfReg="false" NextFile="Groundwater_Supply_Wells.png"/>
     <ROW File="InfiltrationBasin.json" Component_="D_Soil.json" FileName="INFILT~1.JSO|InfiltrationBasin.json" Attributes="0" SourcePath="..\resources\Wizard_Scripts\InfiltrationBasin.json" SelfReg="false" NextFile="InfiltrationTrench.json"/>
     <ROW File="InfiltrationBasin.svg" Component_="Bioswale.png" FileName="INFILT~1.SVG|InfiltrationBasin.svg" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Diagrams\InfiltrationBasin.svg" SelfReg="false" NextFile="InfiltrationTrench.svg"/>
-    <ROW File="InfiltrationTrench.json" Component_="D_Soil.json" FileName="INFILT~2.JSO|InfiltrationTrench.json" Attributes="0" SourcePath="..\resources\Wizard_Scripts\InfiltrationTrench.json" SelfReg="false"/>
+    <ROW File="InfiltrationTrench.json" Component_="D_Soil.json" FileName="INFILT~2.JSO|InfiltrationTrench.json" Attributes="0" SourcePath="..\resources\Wizard_Scripts\InfiltrationTrench.json" SelfReg="false" NextFile="fixedhead2soilv.png"/>
     <ROW File="InfiltrationTrench.svg" Component_="Bioswale.png" FileName="INFILT~2.SVG|InfiltrationTrench.svg" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Diagrams\InfiltrationTrench.svg" SelfReg="false" NextFile="ASMFLEX._json"/>
     <ROW File="Infiltration_Basin.png" Component_="Bioretention.png" FileName="INFILT~1.PNG|Infiltration_Basin.png" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Wizard_Icons\Infiltration_Basin.png" SelfReg="false" NextFile="Infiltration_trench.png"/>
     <ROW File="Infiltration_trench.png" Component_="Bioretention.png" FileName="INFILT~2.PNG|Infiltration_trench.png" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Wizard_Icons\Infiltration_trench.png" SelfReg="false" NextFile="ASMS.svg"/>
@@ -298,6 +298,7 @@
     <ROW File="fixed_flow.png" Component_="pd.nfo" FileName="FIXED_~1.PNG|fixed_flow.png" Attributes="0" SourcePath="..\resources\Icons\fixed_flow.png" SelfReg="false" NextFile="fixed_hydro_gradient.png"/>
     <ROW File="fixed_hydro_gradient.png" Component_="pd.nfo" FileName="FIXED_~2.PNG|fixed_hydro_gradient.png" Attributes="0" SourcePath="..\resources\Icons\fixed_hydro_gradient.png" SelfReg="false" NextFile="fixed2channel.png"/>
     <ROW File="fixedhead.png" Component_="pd.nfo" FileName="FIXEDH~1.PNG|fixedhead.png" Attributes="0" SourcePath="..\resources\Icons\fixedhead.png" SelfReg="false" NextFile="fixedhead_timeseries.png"/>
+    <ROW File="fixedhead2soilv.png" Component_="pd.nfo" FileName="FIXEDH~3.PNG|fixedhead2soil-v.png" Attributes="0" SourcePath="..\resources\Icons\fixedhead2soil-v.png" SelfReg="false"/>
     <ROW File="fixedhead_timeseries.png" Component_="pd.nfo" FileName="FIXEDH~2.PNG|fixedhead_timeseries.png" Attributes="0" SourcePath="..\resources\Icons\fixedhead_timeseries.png" SelfReg="false" NextFile="Flowofrecycledwater.png"/>
     <ROW File="flow_arrow.png" Component_="pd.nfo" FileName="FLOW_A~1.PNG|flow_arrow.png" Attributes="0" SourcePath="..\resources\Icons\flow_arrow.png" SelfReg="false" NextFile="Full_screen_view.png"/>
     <ROW File="full_screen_zoomicon.gif" Component_="pd.nfo" FileName="FULL_S~1.GIF|full_screen_zoom-icon.gif" Attributes="0" SourcePath="..\resources\Icons\full_screen_zoom-icon.gif" SelfReg="false" NextFile="gear_run.png"/>
@@ -833,10 +834,10 @@
     <ROW XmlAttribute="xsischemaLocation" XmlElement="swidsoftware_identification_tag" Name="xsi:schemaLocation" Flags="14" Order="3" Value="http://standards.iso.org/iso/19770/-2/2008/schema.xsd software_identification_tag.xsd"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
-    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="26"/>
+    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="2"/>
     <ROW XmlElement="swidentitlement_required_indicator" ParentElement="swidsoftware_identification_tag" Name="swid:entitlement_required_indicator" Condition="1" Order="0" Flags="14" Text="false"/>
     <ROW XmlElement="swidmajor" ParentElement="swidnumeric" Name="swid:major" Condition="1" Order="0" Flags="14" Text="1"/>
-    <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="1"/>
+    <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="2"/>
     <ROW XmlElement="swidname" ParentElement="swidproduct_version" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[ProductVersion]"/>
     <ROW XmlElement="swidname_1" ParentElement="swidsoftware_creator" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[Manufacturer]"/>
     <ROW XmlElement="swidname_2" ParentElement="swidsoftware_licensor" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[Manufacturer]"/>
