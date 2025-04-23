@@ -25,6 +25,7 @@ public:
         qDebug()<< "Working directory was set to '" <<workingdirectory<<"'";
         workingDirectory = workingdirectory;
     }
+    QJsonDocument SendModelTemplate(const QString &TemplateName);
 private slots:
     void onNewConnection();
     void onTextMessageReceived(QString message);

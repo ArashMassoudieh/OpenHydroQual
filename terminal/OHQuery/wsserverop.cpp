@@ -60,19 +60,50 @@ void WSServerOps::onTextMessageReceived(QString message)
             qDebug() << "Parsed JSON:" << jsonDoc;
         }
 
-        QJsonObject obj = jsonDoc.object();
-        for (auto it = obj.begin(); it != obj.end(); ++it) {
-            QString key = it.key();
-            QJsonValue value = it.value();
-            qDebug() << "Key:" << key << ", Value:" << value;
+        QJsonObject root_obj = jsonDoc.object();
+        if (root_obj.keys().contains("Model"))
+        {
+            QJsonDocument responseDoc = SendModelTemplate(root_obj["Model"].toObject()["FileName"].toString());
+            qDebug()<<responseDoc;
+            QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
+            sendMessageToClient(senderSocket, jsonString);
         }
-
-        QJsonDocument responseDoc = Execute(obj);
-
-        QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
-        sendMessageToClient(senderSocket, jsonString);
-
+        else if (root_obj.keys().contains("ParameterValues"))
+        {
+            QJsonObject obj = root_obj["ParameterValues"].toObject();
+            for (auto it = obj.begin(); it != obj.end(); ++it) {
+                QString key = it.key();
+                QJsonValue value = it.value();
+                qDebug() << "Key:" << key << ", Value:" << value;
+            }
+            QJsonDocument responseDoc = Execute(obj);
+            QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
+            sendMessageToClient(senderSocket, jsonString);
+        }
     }
+}
+
+QJsonDocument WSServerOps::SendModelTemplate(const QString &TemplateName)
+{
+    QFile file(QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName);
+    qDebug()<<QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Failed to open file:" << QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+        return QJsonDocument(); // returns a null document
+    }
+
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &parseError);
+
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parse error:" << parseError.errorString();
+        return QJsonDocument();
+    }
+
+    return jsonDoc;
 }
 
 void WSServerOps::onSocketDisconnected()
