@@ -1241,3 +1241,4 @@ bool Quan::InitializePreCalcFunction(int n_inc)
     precalcfunction.SetInitiated(true);
     return true;
 }
+

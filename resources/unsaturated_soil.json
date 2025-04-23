@@ -258,7 +258,7 @@
       "type": "expression",
       "description": "Length",
       "expression": "(depth.s+depth.e)/2",
-      "includeinoutput": "false",
+      "includeinoutput": "true",
       "ask_user": "false"
     },
     "Se": {
@@ -272,7 +272,7 @@
       "type": "expression",
       "description": "Van Genuchten m parameter",
       "expression": "0.5*(m.s+m.e)",
-      "includeinoutput": "false",
+      "includeinoutput": "true",
       "ask_user": "false"
     },
     "K_sat": {
@@ -280,6 +280,13 @@
       "description": "Saturated Hydraulic Conductivity",
       "expression": "_min(K_sat.s;K_sat.e)",
       "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "K_eff2K_sat": {
+      "type": "expression",
+      "description": "Keff to Ksat ratio",
+      "expression": "(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
       "ask_user": "false"
     },
     "K_eff": {

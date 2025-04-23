@@ -36,6 +36,8 @@ class QuanSet
         std::unordered_map<string,Quan>::iterator find(const string &name) {return quans.find(name);}
         std::unordered_map<string,Quan>::iterator end() {return quans.end();}
         std::unordered_map<string,Quan>::iterator begin() {return quans.begin();}
+        std::unordered_map<string,Quan>::const_iterator const_end() const {return quans.cend();}
+        std::unordered_map<string,Quan>::const_iterator const_begin() const {return quans.cbegin();}
         unsigned long size() {return quans.size();}
         unsigned long AskableSize();
         string &Description() 
@@ -89,6 +91,8 @@ class QuanSet
         vector<string> ReviseQuanityOrder(const vector<string> &quantity, const string &constituent);
         bool InitializePrecalcFunctions();
         void CreateCPPcode(const string &source, const string header);
+        QJsonObject toJson();
+        QJsonArray toJsonSetAsParameter();
     protected:
 
     private:

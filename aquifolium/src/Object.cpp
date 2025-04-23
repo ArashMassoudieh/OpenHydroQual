@@ -654,6 +654,18 @@ string Object::toCommand()
     return out;
 }
 
+QJsonObject Object::toJson()
+{
+    QJsonObject out = var.toJson();
+    out["type"] = QString::fromStdString(type);
+    if (ObjectType() == object_type::link)
+    {
+        out["from"] = QString::fromStdString(parent->block(s_Block_no)->GetName());
+        out["to"] = QString::fromStdString(parent->block(e_Block_no)->GetName());
+    }
+    return out;
+}
+
 string Object::toCommandSetAsParam()
 {
     string out;

@@ -310,3 +310,27 @@ build/Desktop_Qt_6_8_2-Debug/
 build/Desktop_Qt_6_8_2-Release/
 
 .vs/OpenHydroQual/CopilotIndices/17.12.53.23981/
+
+terminal/TOpenHydroQual/build/Desktop_Qt_6_8_2-Debug/
+
+terminal/TOpenHydroQual/OpenHydroQual-Console
+
+terminal/Server/build/Desktop-Debug/
+
+terminal/Server/build/Desktop_Qt_6_8_2-Debug/
+
+terminal/Server/debug/qmake/
+
+terminal/build-OHQServer-Desktop_Qt_6_3_2_GCC_64bit-Debug/
+
+terminal/OHQServer
+
+terminal/Server/errors.txt
+
+build-Client-Desktop_Qt_6_3_2_GCC_64bit-Debug/
+
+build-Client-WebAssembly_Qt_6_3_2-Debug/
+
+build-Client-WebAssembly_Qt_6_3_2-Release/
+
+terminal/build-OHQuery-Desktop_Qt_6_4_2_GCC_64bit-Debug/

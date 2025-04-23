@@ -16,6 +16,7 @@
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
+#include <QJsonObject>
 
 //#define CBTC CTimeSeries
 
@@ -140,8 +141,10 @@ public:
     CTimeSeries<T> MapfromNormalScoreToDistribution(const string& , const vector<double>&);
     CTimeSeries<T> MapfromNormalScoreToDistribution(const CTimeSeries<double> &distribution);
     CTimeSeries<T> ConverttoNormalScore();
-    double AutoCorrelationCoeff();
+    QJsonObject toJson() const;
+
 #endif
+    double AutoCorrelationCoeff();
 private:
     vector<T> t;
     vector<T> C;

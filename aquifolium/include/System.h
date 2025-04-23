@@ -423,6 +423,9 @@ class System: public Object
         double dt0() {return SimulationParameters.dt0;}
         Objective_Function_Set *ObjectiveFunctionSet() {return &objective_function_set;}
         bool WriteOutPuts();
+        bool SavetoJson(const string &filename, const vector<string> &_addedtemplates);
+        bool LoadfromJson(const QJsonDocument &jsondoc);
+        bool LoadfromJson(const QJsonObject &jsondoc);
     protected:
 
     private:

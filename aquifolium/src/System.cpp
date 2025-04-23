@@ -1,6 +1,9 @@
 #include "System.h"
 #include <fstream>
 #include <qstring.h>
+#include <QFile>
+#include <QIODevice>
+#include <QJsonDocument>
 #pragma warning(pop)
 #pragma warning(disable : 4996)
 #include <json/json.h>
@@ -155,10 +158,12 @@ void System::Clear()
 bool System::AddBlock(Block &blk, bool SetQuantities)
 {
     blocks.push_back(blk);
+
     block(blk.GetName())->SetParent(this);
     if (SetQuantities)
         block(blk.GetName())->SetQuantities(metamodel, blk.GetType());
     block(blk.GetName())->SetParent(this);
+
     AddAllConstituentRelateProperties(block(blk.GetName()));
 	return true;
 }
@@ -189,6 +194,7 @@ bool System::AddConstituent(Constituent &cnst, bool SetQuantities)
 bool System::AddReaction(Reaction &rxn, bool SetQuantities)
 {
     reactions.push_back(rxn);
+
     reaction(rxn.GetName())->SetParent(this);
      if (SetQuantities)
         reaction(rxn.GetName())->SetQuantities(metamodel, rxn.GetType());
@@ -483,12 +489,14 @@ bool System::GetQuanTemplate(const string &filename)
 
 bool System::AppendQuanTemplate(const string &filename)
 {
+
     if (aquiutils::lookup(addedtemplates,filename)==-1)
     {
         if (!metamodel.AppendFromJsonFile(filename)) return false;
         addedtemplates.push_back(filename);
         TransferQuantitiesFromMetaModel();
     }
+
     return true;
 }
 
@@ -4013,7 +4021,7 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
         }
     }
 #ifndef NO_OPENMP
-//#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static)
 #endif   
     for (int i=0; i<BlockCount(); i++)
     {
@@ -4236,3 +4244,322 @@ bool System::WriteOutPuts()
         errorhandler.Write(paths.inputpath + "/errors.txt");
     return true;
 }
+
+bool System::SavetoJson(const string &filename, const vector<string> &_addedtemplates)
+{
+    SetVariableParents();
+    if (_addedtemplates.size()!=0)
+        addedtemplates = _addedtemplates;
+
+    QJsonObject out;
+    QJsonArray templates;
+    for (unsigned int i=0; i<addedtemplates.size();i++)
+    {
+        templates.append(QString::fromStdString(addedtemplates[i]));
+    }
+    out["Templates"] = templates;
+
+    QJsonObject SettingsJsonObject;
+    for (unsigned int i=0; i<Settings.size(); i++)
+        for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
+            if (j->second.AskFromUser())
+                SettingsJsonObject[QString::fromStdString(j->first)] = QString::fromStdString(j->second.GetProperty());
+    out["Settings"] = SettingsJsonObject;
+
+    QJsonObject SourcesJsonObject;
+    for (unsigned int i=0; i<sources.size(); i++)
+        SourcesJsonObject[QString::fromStdString(sources[i].GetName())] = sources[i].toJson();
+    out["Sources"] = SourcesJsonObject;
+
+    QJsonObject ParametersJsonObject;
+    for (unsigned int i=0; i<ParametersCount(); i++)
+        ParametersJsonObject[QString::fromStdString(Parameters()[i]->GetName())] = Parameters()[i]->toJson();
+    out["Parameters"] = ParametersJsonObject;
+
+
+    QJsonObject ConstituentsJsonObject;
+    for (unsigned int i=0; i<ConstituentsCount(); i++)
+        ConstituentsJsonObject[QString::fromStdString(constituents[i].GetName())] = constituents[i].toJson();
+    out["Constituents"] = ConstituentsJsonObject;
+
+    QJsonObject ReactionParametersJsonObject;
+    for (unsigned int i = 0; i < ReactionParametersCount(); i++)
+        ReactionParametersJsonObject[QString::fromStdString(reaction_parameters[i].GetName())] = reaction_parameters[i].toJson();
+    out["Reaction Parameters"] = ReactionParametersJsonObject;
+
+    QJsonObject ReactionsJsonObject;
+    for (unsigned int i = 0; i < ReactionsCount(); i++)
+        ReactionsJsonObject[QString::fromStdString(reactions[i].GetName())] = reactions[i].toJson();
+    out["Reactions"] = ReactionsJsonObject;
+
+    QJsonObject BlocksJsonObject;
+    for (unsigned int i=0; i<blocks.size(); i++)
+        BlocksJsonObject[QString::fromStdString(blocks[i].GetName())] = blocks[i].toJson();
+    out["Blocks"] = BlocksJsonObject;
+
+    QJsonObject LinksJsonObject;
+    for (unsigned int i=0; i<links.size(); i++)
+        LinksJsonObject[QString::fromStdString(links[i].GetName())] = links[i].toJson();
+    out["Links"] = LinksJsonObject;
+
+    QJsonObject ObjectiveFunctionsJsonObject;
+    for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
+        ObjectiveFunctionsJsonObject[QString::fromStdString(ObjectiveFunctions()[i]->GetName())] = ObjectiveFunctions()[i]->toJson();
+    out["Objective Functions"] = ObjectiveFunctionsJsonObject;
+
+    QJsonObject ObservationsJsonObject;
+    for (unsigned int i = 0; i < ObservationsCount(); i++)
+        ObservationsJsonObject[QString::fromStdString(observation(i)->GetName())] = observation(i)->toJson();
+    out["Observations"] = ObservationsJsonObject;
+
+    QJsonArray SetAsParametersJsonArray;
+    for (unsigned int i=0; i<blocks.size(); i++)
+        SetAsParametersJsonArray = mergeArrays(SetAsParametersJsonArray, blocks[i].GetVars()->toJsonSetAsParameter());
+
+
+    for (unsigned int i=0; i<links.size(); i++)
+        SetAsParametersJsonArray = mergeArrays(SetAsParametersJsonArray, links[i].GetVars()->toJsonSetAsParameter());
+
+
+    for (unsigned int i = 0; i < observations.size(); i++)
+        SetAsParametersJsonArray = mergeArrays(SetAsParametersJsonArray, observations[i].GetVars()->toJsonSetAsParameter());
+
+
+    for (unsigned int i = 0; i < sources.size(); i++)
+        SetAsParametersJsonArray = mergeArrays(SetAsParametersJsonArray, sources[i].GetVars()->toJsonSetAsParameter());
+
+
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+        SetAsParametersJsonArray = mergeArrays(SetAsParametersJsonArray, reaction_parameters[i].GetVars()->toJsonSetAsParameter());
+
+
+    for (unsigned int i = 0; i < constituents.size(); i++)
+        SetAsParametersJsonArray = mergeArrays(SetAsParametersJsonArray, constituents[i].GetVars()->toJsonSetAsParameter());
+
+    out["Set As Parameters"] = SetAsParametersJsonArray;
+
+    QFile file(QString::fromStdString(filename));
+        if (!file.open(QIODevice::WriteOnly)) {
+            qWarning() << "Could not open file for writing:" << file.errorString();
+            return false;
+        }
+
+    QJsonDocument jsonDoc(out);
+    file.write(jsonDoc.toJson(QJsonDocument::Indented));  // Use Indented or Compact
+    file.close();
+
+    return true;
+
+}
+
+bool System::LoadfromJson(const QJsonDocument &jsondoc)
+{
+    QJsonObject root = jsondoc.object();
+    return LoadfromJson(root);
+
+}
+
+bool System::LoadfromJson(const QJsonObject &root)
+{
+    bool outcome = true;
+    QJsonArray TemplatesJson = root["Templates"].toArray();
+    qDebug()<<TemplatesJson;
+
+    for (const QJsonValue& temp : TemplatesJson)
+    {   if (AppendQuanTemplate(temp.toString().toStdString()))
+        {
+            outcome &= true;
+        }
+        else
+        {
+            if (!AppendQuanTemplate(DefaultTemplatePath() + aquiutils::GetOnlyFileName(temp.toString().toStdString())))
+            {
+                lasterror() = "File '" + temp.toString().toStdString() + "' was not found!";
+                outcome &= false;
+            }
+            else
+            {
+                outcome &= true;
+
+            }
+        }
+    }
+
+    QJsonObject SettingsJson = root["Settings"].toObject();
+    for (const QString& settingkey: SettingsJson.keys())
+    {
+        outcome &= SetSystemSettingsObjectProperties(settingkey.toStdString(), SettingsJson[settingkey].toString().toStdString(),false);
+    }
+
+
+    QJsonObject ConstituentsJson = root["Constituents"].toObject();
+    for (const QString& constituentname: ConstituentsJson.keys())
+    {
+        QJsonObject ConstituentJson = ConstituentsJson[constituentname].toObject();
+        Constituent current_constituent;
+        current_constituent.SetName(ConstituentJson["name"].toString().toStdString());
+        current_constituent.SetType(ConstituentJson["type"].toString().toStdString());
+        AddConstituent(current_constituent);
+        for (const QString &property: ConstituentJson.keys())
+        {
+            if (!constituent(constituentname.toStdString())->SetProperty(property.toStdString(),ConstituentJson[property].toString().toStdString()))
+                errorhandler.Append("System", "Constituent","ReadFromJson","Constituent '" + constituentname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+
+        }
+    }
+
+    QJsonObject ParametersJson = root["Parameters"].toObject();
+    for (const QString& parametername: ParametersJson.keys())
+    {
+        QJsonObject ParameterJson = ParametersJson[parametername].toObject();
+        Parameter current_parameter;
+        AppendParameter(parametername.toStdString(),ParameterJson["low"].toString().toDouble(),ParameterJson["high"].toString().toDouble());
+
+        for (const QString &property: ParameterJson.keys())
+        {
+            if (!parameter(parametername.toStdString())->SetProperty(property.toStdString(),ParameterJson[property].toString().toStdString(),false))
+                errorhandler.Append("System", "Parameter","ReadFromJson","Parameter '" + parametername.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10011 );
+        }
+    }
+
+    QJsonObject SourcesJson = root["Sources"].toObject();
+    for (const QString& sourcename: SourcesJson.keys())
+    {
+        QJsonObject SourceJson = SourcesJson[sourcename].toObject();
+        Source current_source;
+        current_source.SetName(SourceJson["name"].toString().toStdString());
+        current_source.SetType(SourceJson["type"].toString().toStdString());
+        AddSource(current_source);
+
+        for (const QString &property: SourcesJson.keys())
+        {
+            if (!source(sourcename.toStdString())->SetProperty(property.toStdString(),SourceJson[property].toString().toStdString(),true, false))
+                    errorhandler.Append("System", "Source","ReadFromJson","Source '" + sourcename.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10012 );
+
+        }
+    }
+
+
+
+    QJsonObject BlocksJson = root["Blocks"].toObject();
+    for (const QString& blockname: BlocksJson.keys())
+    {
+
+        QJsonObject BlockJson = BlocksJson[blockname].toObject();
+        Block current_block;
+        current_block.SetName(BlockJson["name"].toString().toStdString());
+        current_block.SetType(BlockJson["type"].toString().toStdString());
+        AddBlock(current_block);
+        for (const QString &property: BlockJson.keys())
+        {
+            if (property!="type" && property!="to" && property!="from")
+            {
+                if (!block(blockname.toStdString())->SetProperty(property.toStdString(),BlockJson[property].toString().toStdString(),true, false))
+                    errorhandler.Append("System", "Block","ReadFromJson","Block '" + blockname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10012 );
+            }
+        }
+    }
+
+    QJsonObject LinksJson = root["Links"].toObject();
+    for (const QString& linkname: LinksJson.keys())
+    {
+        QJsonObject LinkJson = LinksJson[linkname].toObject();
+        Link current_link;
+        current_link.SetName(LinkJson["name"].toString().toStdString());
+        current_link.SetType(LinkJson["type"].toString().toStdString());
+        AddLink(current_link, LinkJson["from"].toString().toStdString(),LinkJson["to"].toString().toStdString());
+
+        for (const QString &property: LinkJson.keys())
+        {
+            if (property!="type" && property!="to" && property!="from")
+            {
+                qDebug()<<linkname;
+                if (!link(linkname.toStdString())->SetProperty(property.toStdString(),LinkJson[property].toString().toStdString(),true, false))
+                    errorhandler.Append("System", "Link","ReadFromJson","Link '" + linkname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10013 );
+            }
+        }
+    }
+
+    QJsonObject ObjectiveFunctionsJson = root["Objective Functions"].toObject();
+    for (const QString& objectivefunctionname: ObjectiveFunctionsJson.keys())
+    {
+        QJsonObject ObjectiveJson = ObjectiveFunctionsJson[objectivefunctionname].toObject();
+        AppendObjectiveFunction( objectivefunctionname.toStdString(),ObjectiveJson["object"].toString().toStdString(),Expression(ObjectiveJson["expression"].toString().toStdString()), ObjectiveJson["weight"].toString().toDouble());
+        for (const QString &property: ObjectiveJson.keys())
+        {
+            if (!objectivefunction(objectivefunctionname.toStdString())->SetProperty(property.toStdString(),ObjectiveJson[property].toString().toStdString()))
+                errorhandler.Append("System", "Objective function","ReadFromJson","Objective Function '" + objectivefunctionname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10014 );
+
+        }
+    }
+
+    QJsonObject ObservationsJson = root["Observation"].toObject();
+    for (const QString& observationname: ObservationsJson.keys())
+    {
+        QJsonObject ObservationJson = ObservationsJson[observationname].toObject();
+        Observation current_observation;
+        current_observation.SetName(ObservationJson["name"].toString().toStdString());
+        current_observation.SetType(ObservationJson["type"].toString().toStdString());
+        AddObservation(current_observation);
+        for (const QString &property: ObservationJson.keys())
+        {
+            if (!observation(observationname.toStdString())->SetProperty(property.toStdString(),ObservationJson[property].toString().toStdString()))
+                errorhandler.Append("System", "Observation","ReadFromJson","Observation '" + observationname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+
+        }
+    }
+
+    QJsonObject RxnParametersJson = root["Reaction Parameters"].toObject();
+    for (const QString& rxnparametername: RxnParametersJson.keys())
+    {
+        QJsonObject RxnParameterJson = RxnParametersJson[rxnparametername].toObject();
+        RxnParameter current_rxnparameter;
+        current_rxnparameter.SetName(RxnParameterJson["name"].toString().toStdString());
+        current_rxnparameter.SetType(RxnParameterJson["type"].toString().toStdString());
+        AddReactionParameter(current_rxnparameter);
+        for (const QString &property: RxnParameterJson.keys())
+        {
+            if (!reactionparameter(rxnparametername.toStdString())->SetProperty(property.toStdString(),RxnParameterJson[property].toString().toStdString()))
+                errorhandler.Append("System", "Reaction Parameter","ReadFromJson","Reaction parameter '" + rxnparametername.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+
+        }
+    }
+
+    QJsonObject RxnsJson = root["Reactions"].toObject();
+    for (const QString& rxnname: RxnsJson.keys())
+    {
+        QJsonObject RxnJson = RxnsJson[rxnname].toObject();
+        Reaction current_rxn;
+
+        current_rxn.SetName(RxnJson["name"].toString().toStdString());
+        current_rxn.SetType(RxnJson["type"].toString().toStdString());
+        AddReaction(current_rxn);
+                for (const QString &property: RxnJson.keys())
+        {
+            if (!reaction(rxnname.toStdString())->SetProperty(property.toStdString(),RxnJson[property].toString().toStdString()))
+                errorhandler.Append("System", "Reaction ","ReadFromJson","Reaction  '" + rxnname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+
+        }
+    }
+
+    QJsonArray SetAsParameterJsonArray = root["Set As Parameters"].toArray();
+    for (const QJsonValue& SetAsParam : SetAsParameterJsonArray)
+    {
+        string s_object = SetAsParam.toObject()["Object"].toString().toStdString();
+        string s_parameter = SetAsParam.toObject()["Parameter"].toString().toStdString();
+        string s_quantity = SetAsParam.toObject()["Quantity"].toString().toStdString();
+        SetAsParameter(s_object, s_quantity, s_parameter);
+        if (object(s_object))
+        {
+            if (object(s_object)->HasQuantity(s_quantity))
+            {
+                object(s_object)->Variable(s_quantity)->SetParameterAssignedTo(s_parameter);
+            }
+        }
+    }
+
+    SetAllParents();
+
+    return outcome;
+}
+
