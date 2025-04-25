@@ -33,7 +33,6 @@ private slots:
     void sendMessageToClient(QWebSocket *client, const QString &message);
 
 
-
 private:
     QWebSocketServer *m_server;
     QList<QWebSocket *> m_clients;

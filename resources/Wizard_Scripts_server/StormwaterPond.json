@@ -163,7 +163,7 @@
     },
     {
       "name": "TimeSeriesFileName",
-      "delegate": "Retrieve_from_API",
+      "delegate": "FileBrowser",
       "question": "Precipitation file name"
     },
     {
