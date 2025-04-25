@@ -1,5 +1,5 @@
-QT -= gui
-QT += core websockets
+#QT -= gui
+QT += core websockets gui
 
 CONFIG += console
 CONFIG -= app_bundle
@@ -16,6 +16,7 @@ INCLUDEPATH += ../../aquifolium/src
 INCLUDEPATH += ../../aquifolium/include/GA
 INCLUDEPATH += ../../aquifolium/include/MCMC
 INCLUDEPATH += ../../../jsoncpp/include/
+INCLUDEPATH += ../../
 
 if==macx:CONFIG += staticlib
 macx: DEFINES +=mac_version
@@ -73,6 +74,7 @@ CONFIG(debug, debug|release) {
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        ../../XString.cpp \
         ../../aquifolium/src/Block.cpp \
         ../../aquifolium/src/Command.cpp \
         ../../aquifolium/src/Condition.cpp \
@@ -113,12 +115,28 @@ SOURCES += \
         ../../../jsoncpp/src/lib_json/json_reader.cpp \
         ../../../jsoncpp/src/lib_json/json_value.cpp \
         ../../../jsoncpp/src/lib_json/json_writer.cpp \
+        SetValEntity.cpp \
+        WizBlockArray.cpp \
+        WizConnector.cpp \
+        WizSingleBlock.cpp \
+        Wizard_Argument.cpp \
+        Wizard_Entity.cpp \
+        Wizard_Script.cpp \
         main.cpp \
         serverops.cpp \
         weatherretriever.cpp \
+        wiz_assigned_value.cpp \
+        wiz_parameter.cpp \
+        wiz_parameter_group.cpp \
+        wizard_assigned_value.cpp \
+        wizardcriteria.cpp \
+        wizardparameter.cpp \
+        wizardparametergroup.cpp \
         wsserverop.cpp
 
 HEADERS += \
+    ../../XString.h \
+    ../../aquifolium/include/Expression.h \
     ../../aquifolium/include/Objective_Function.h \
     ../../aquifolium/include/Objective_Function_Set.h \
     ../../aquifolium/include/Precipitation.h \
@@ -137,7 +155,6 @@ HEADERS += \
     ../../aquifolium/include/Block.h \
     ../../aquifolium/include/BTC.h \
     ../../aquifolium/include/BTCSet.h \
-    ../../aquifolium/include/Expression.h \
     ../../aquifolium/include/Link.h \
     ../../aquifolium/include/Matrix.h \
     ../../aquifolium/include/Matrix_arma.h \
@@ -177,9 +194,23 @@ HEADERS += \
     ../../aquifolium/src/BTC.hpp \
     ../../aquifolium/src/BTCSet.hpp \
     ../../aquifolium/include/reaction.h \
+    SetValEntity.h \
+    WizBlockArray.h \
+    WizConnector.h \
+    WizSingleBlock.h \
+    Wizard_Argument.h \
+    Wizard_Entity.h \
+    Wizard_Script.h \
     cors_middleware.h \
     serverops.h \
     weatherretriever.h \
+    wiz_assigned_value.h \
+    wiz_parameter.h \
+    wiz_parameter_group.h \
+    wizard_assigned_value.h \
+    wizardcriteria.h \
+    wizardparameter.h \
+    wizardparametergroup.h \
     wsserverop.h
 
 

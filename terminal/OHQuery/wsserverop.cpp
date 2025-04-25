@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include "Script.h"
 #include <QFile>
+#include "Wizard_Script.h"
 
 WSServerOps::WSServerOps(QObject *parent)
     : QObject(parent),
@@ -80,6 +81,19 @@ void WSServerOps::onTextMessageReceived(QString message)
             QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
             sendMessageToClient(senderSocket, jsonString);
         }
+        else if (root_obj.keys().contains("Parameters"))
+        {
+            QJsonObject obj = root_obj["Parameters"].toObject();
+            for (auto it = obj.begin(); it != obj.end(); ++it) {
+                QString key = it.key();
+                QJsonValue value = it.value();
+                qDebug() << "Key:" << key << ", Value:" << value;
+            }
+            WizardScript SelectedWizardScript(TemplateFile_Fullpath);
+            SelectedWizardScript.AssignParameterValues(obj);
+            QStringList script = SelectedWizardScript.Script();
+
+        }
     }
 }
 
@@ -91,7 +105,10 @@ QJsonDocument WSServerOps::SendModelTemplate(const QString &TemplateName)
         qWarning() << "Failed to open file:" << QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
         return QJsonDocument(); // returns a null document
     }
-
+    else
+    {
+        TemplateFile_Fullpath = QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+    }
     QByteArray jsonData = file.readAll();
     file.close();
 

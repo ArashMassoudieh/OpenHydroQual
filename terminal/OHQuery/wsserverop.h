@@ -38,6 +38,7 @@ private:
     QList<QWebSocket *> m_clients;
     QString modelFile;
     QString workingDirectory;
+    QString TemplateFile_Fullpath;
 
 };
 

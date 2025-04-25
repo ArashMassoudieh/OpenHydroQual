@@ -43,6 +43,7 @@ public:
     Wizard_Entity* FindEntity(QString name);
     QStringList CheckParameters();
     bool AssignParameterValues();
+    bool AssignParameterValues(const QJsonObject &jsonObject);
     QString Url();
 private:
     QMap<QString, BlockArray> BlockArrays;
