@@ -125,9 +125,6 @@ SOURCES += \
         main.cpp \
         serverops.cpp \
         weatherretriever.cpp \
-        wiz_assigned_value.cpp \
-        wiz_parameter.cpp \
-        wiz_parameter_group.cpp \
         wizard_assigned_value.cpp \
         wizardcriteria.cpp \
         wizardparameter.cpp \
@@ -204,9 +201,6 @@ HEADERS += \
     cors_middleware.h \
     serverops.h \
     weatherretriever.h \
-    wiz_assigned_value.h \
-    wiz_parameter.h \
-    wiz_parameter_group.h \
     wizard_assigned_value.h \
     wizardcriteria.h \
     wizardparameter.h \

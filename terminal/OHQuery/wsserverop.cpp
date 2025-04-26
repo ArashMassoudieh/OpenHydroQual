@@ -6,6 +6,7 @@
 #include "Script.h"
 #include <QFile>
 #include "Wizard_Script.h"
+#include <QDir>
 
 WSServerOps::WSServerOps(QObject *parent)
     : QObject(parent),
@@ -91,8 +92,15 @@ void WSServerOps::onTextMessageReceived(QString message)
             }
             WizardScript SelectedWizardScript(TemplateFile_Fullpath);
             SelectedWizardScript.AssignParameterValues(obj);
-            QStringList script = SelectedWizardScript.Script();
-
+            Script script;
+            System system;
+            string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
+            cout << "Default Template path = " + defaulttemppath +"\n";
+            system.SetDefaultTemplatePath(defaulttemppath);
+            script.CreateSystemFromQStringList(SelectedWizardScript.Script(),&system);
+            QJsonDocument responseDoc = Execute(&system);
+            QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
+            sendMessageToClient(senderSocket, jsonString);
         }
     }
 }
@@ -193,6 +201,42 @@ QJsonDocument WSServerOps::Execute(const QJsonObject &instructions)
     system2.SavetoScriptFile("Recreated.ohq");
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
     system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + system->OutputFileName());
+    return QJsonDocument(system->GetObservedOutputs().toJson());
+}
+
+
+QJsonDocument WSServerOps::Execute(System *system)
+{
+    QString randomFolderName = QUuid::createUuid().toString(QUuid::WithoutBraces);
+
+    // Set the path where you want to create the folder
+    QString basePath = QDir::homePath();
+    QString newFolderPath = basePath + "/" + randomFolderName;
+
+    // Create the directory
+    QDir dir;
+    if (dir.mkpath(newFolderPath)) {
+        qDebug() << "Folder created successfully:" << newFolderPath;
+    } else {
+        qDebug() << "Failed to create folder.";
+    }
+
+
+    system->SetWorkingFolder(newFolderPath.toStdString() + "/");
+
+    string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
+
+    cout<<"Executing script ..."<<endl;
+
+    system->SetSilent(false);
+
+    cout<<"Solving ..."<<endl;
+    system->Solve();
+    system->SavetoJson("System.json",system->addedtemplates);
+
+    cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
+    system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + system->ObservedOutputFileName());
+    system->GetOutputs().writetofile(system->GetWorkingFolder() + system->OutputFileName());
     return QJsonDocument(system->GetObservedOutputs().toJson());
 }
 

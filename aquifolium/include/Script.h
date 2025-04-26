@@ -16,7 +16,9 @@ class Script
     public:
         Script();
         Script(const string &filename, System *sys = nullptr);
+        bool CreateSystemFromQStringList(const QStringList &Script, System *sys);
         System* CreateSystem();
+        bool CreateSystem(System *system);
         virtual ~Script();
         Command* operator[](int i) {return &commands[i];}
         System *GetSystem() {return system;}
@@ -36,7 +38,7 @@ class Script
     private:
         vector<Command> commands;
         vector<string> errors;
-        System *system;
+        System *system = nullptr;
         map<string, map<string, vector<string>>> mustbespecifiedatcreation;
         ErrorHandler errorhandler;
         CGA<System> *GA = nullptr;

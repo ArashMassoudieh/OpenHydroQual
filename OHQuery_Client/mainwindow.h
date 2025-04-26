@@ -21,9 +21,10 @@ private:
     Ui::MainWindow *ui;
     void PopulateListOfWizards();
     WSClient * wsClient = nullptr;
-
+    void sendParameters(const QJsonDocument& jsonDoc); //Send Parameters
 public slots:
-    void handleData(const QJsonDocument &JsonDoc);
-    void sendParameters(const QJsonDocument& jsonDoc);
+    void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
+    void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved
+
 };
 #endif // MAINWINDOW_H

@@ -15,7 +15,6 @@ MainWindow::MainWindow(QWidget *parent)
     wsClient = new WSClient(url);
 
     // Connect async response
-    connect(wsClient, &WSClient::dataReady, this, &MainWindow::handleData);
     connect(wsClient, &WSClient::connected, this, &MainWindow::RecieveTemplate);
 
 
@@ -28,11 +27,14 @@ void MainWindow::RecieveTemplate()
     QJsonObject response;
     response["Model"] = ModelFile;
     wsClient->sendJson(response);  // now async
+    connect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
 }
 
 void MainWindow::sendParameters(const QJsonDocument& jsonDoc)
 {
+    disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
     wsClient->sendJson(jsonDoc.object());  // now async
+    connect(wsClient, &WSClient::dataReady, this, &MainWindow::handleData);
 }
 
 
@@ -41,16 +43,22 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::handleData(const QJsonDocument &JsonDoc)
+void MainWindow::TemplateRecieved(const QJsonDocument &JsonDoc)
 {
     WizardScript wiz;
+    qDebug()<<JsonDoc;
     wiz.GetFromJsonDoc(JsonDoc);
     WizardDialog *wizDialog = new WizardDialog(this);
     wizDialog->setWindowTitle(wiz.Description());
     wizDialog->CreateItems(&wiz);
     ui->horizontalLayout->addWidget(wizDialog);
-    connect(wsClient, &WSClient::dataReady, this, &MainWindow::handleData);
+    disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::handleData);
     connect(wizDialog, &WizardDialog::model_generate_requested, this, &MainWindow::sendParameters);
+}
+
+void MainWindow::handleData(const QJsonDocument &JsonDoc)
+{
+    qDebug()<<JsonDoc;
 }
 
 

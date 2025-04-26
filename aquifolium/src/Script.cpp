@@ -43,6 +43,47 @@ Script::Script(const string &filename, System *sys)
     }
 }
 
+bool Script::CreateSystemFromQStringList(const QStringList &Script, System *sys)
+{
+
+    FillMustBeSpecified();
+    if (system!=nullptr)
+    {   system = sys;
+        systemwascreated=false;
+    }
+    else
+    {   system = new System();
+        systemwascreated = true;
+    }
+
+    for (int i=0; i<Script.count(); i++)
+    {
+        Command command(Script[i].toStdString());
+        if (command.Syntax())
+            Append(command);
+        else
+            errors.push_back(command.LastError());
+    }
+    CreateSystem(sys);
+    return systemwascreated;
+}
+
+bool Script::CreateSystem(System *system)
+{
+
+    for (unsigned int i=0; i<commands.size(); i++)
+    {
+        if (!commands[i].Execute(system))
+        {
+            system->errorhandler.Append("","Script","CreateSystem",commands[i].LastError(),6001);
+            errors.push_back(commands[i].LastError());
+        }
+    }
+    system->SetVariableParents();
+    return true;
+}
+
+
 System* Script::CreateSystem()
 {
     system = new System();

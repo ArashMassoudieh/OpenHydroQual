@@ -5,6 +5,7 @@
 #include <QWebSocketServer>
 #include <QWebSocket>
 
+class System;
 
 class WSServerOps : public QObject
 {
@@ -14,6 +15,7 @@ public:
     void Start(quint16 port);
     ~WSServerOps();
     QJsonDocument Execute(const QJsonObject &instructions);
+    QJsonDocument Execute(System *sys);
     void SetModelFile(const QString &modelfile)
     {
         qDebug()<< "Model file was set to '" <<modelfile<<"'";
