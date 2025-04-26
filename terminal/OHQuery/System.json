@@ -57,7 +57,7 @@
         "Overflow": {
             "alpha": "1",
             "beta": "2.5",
-            "crest_elevation": "2",
+            "crest_elevation": "1",
             "from": "Pond",
             "name": "Overflow",
             "to": "Fixed_head",
@@ -67,6 +67,17 @@
     "Objective Functions": {
     },
     "Observations": {
+        "Outflow": {
+            "autocorrelation_time-span": "1",
+            "comparison_method": "Least Squared",
+            "error_standard_deviation": "1",
+            "error_structure": "normal",
+            "expression": "0",
+            "name": "Outflow",
+            "object": "0",
+            "observed_data": "",
+            "type": "Observation"
+        }
     },
     "Parameters": {
     },

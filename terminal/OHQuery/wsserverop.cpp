@@ -95,6 +95,7 @@ void WSServerOps::onTextMessageReceived(QString message)
             Script script;
             System system;
             string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
+            system.ReadSystemSettingsTemplate(qApp->applicationDirPath().toStdString() + "/../../resources/settings.json");
             cout << "Default Template path = " + defaulttemppath +"\n";
             system.SetDefaultTemplatePath(defaulttemppath);
             script.CreateSystemFromQStringList(SelectedWizardScript.Script(),&system);
@@ -229,10 +230,10 @@ QJsonDocument WSServerOps::Execute(System *system)
     cout<<"Executing script ..."<<endl;
 
     system->SetSilent(false);
-
     cout<<"Solving ..."<<endl;
     system->Solve();
-    system->SavetoJson("System.json",system->addedtemplates);
+    system->SavetoJson(system->GetWorkingFolder() + "System.json",system->addedtemplates);
+    system->SavetoScriptFile(system->GetWorkingFolder() + "System.ohq");
 
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
     system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + system->ObservedOutputFileName());
