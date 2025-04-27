@@ -27,14 +27,17 @@ class WeatherRetriever
 public:
     WeatherRetriever();
     CPrecipitation RetrivePrecip(const QPointF location, const QString &FIPS);
+    CPrecipitation RetrivePrecip(const double &startdate, const double &enddate, const QPointF location, const QString &FIPS);
     QMap<QString, WeatherStationData> fetchPrecipitationStations(const QString& FIPS);
     void SetAPIToken(const QString &token) {apiToken = token; }
     QMap<QString, WeatherStationData> findClosestStations(const QMap<QString, WeatherStationData>& stations, double latitude, double longitude, int n);
     WeatherStationData findLongestRecordStation(const QMap<QString, WeatherStationData>& stations);
     WeatherStationData findStation( const double &latitude, const double &longitude, const QString &FIPS);
     QVector<PrecipitationData> fetchPrecipitationData(const QString& stationId, const QString& startDate, const QString& endDate);
+    QString SelectedStation() {return StationName;}
 private:
     QString apiToken = "";
+    QString StationName = "";
 };
 
 double haversine(double lat1, double lon1, double lat2, double lon2);

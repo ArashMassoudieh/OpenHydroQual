@@ -1,12 +1,12 @@
 #pragma once
 #include <qstring.h>
 #include <qjsonobject.h>
-#include "Wizard_Argument.h"
 #include "wizardparameter.h"
 #include "Expression.h" // for struct_calculation_pattern and struct_calculation_struct
 
 using namespace std;
 
+class Wizard_Entity;
 
 class Wizard_Argument
 {
@@ -20,6 +20,8 @@ public:
     QString Unit() { return QString::fromStdString(unit); }
     QString UnitText();
     parameter_type ArgumentType() { return argument_type; }
+    QString WorkingDirectory();
+    void SetWizardEntity(Wizard_Entity *wiz_entity) {wizard_entity = wiz_entity;}
 private:
     vector<string> operators;
     vector<Wizard_Argument> terms;
@@ -46,7 +48,8 @@ private:
     double oprt(const string& f, const double& val1, const double& val2) const;
     vector<double> argument_values(unsigned int calculation_sequence, QMap<QString, WizardParameter>* params);
     string unit; 
-    parameter_type argument_type = parameter_type::numeric; 
+    parameter_type argument_type = parameter_type::numeric;
+    Wizard_Entity *wizard_entity;
 };
 
 double QDate2Xldate(const QDateTime& x);

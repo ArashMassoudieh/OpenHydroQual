@@ -6,7 +6,7 @@
 #include <QVector2D>
 #include <QStringList>
 
-enum class parameter_type {numeric, string, date};
+enum class parameter_type {numeric, string, date, api};
 
 class WizardParameter
 {

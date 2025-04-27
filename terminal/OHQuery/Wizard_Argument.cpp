@@ -3,7 +3,9 @@
 #include <QDateTime>
 #include <QVector>
 #include <QString>
-
+#include "weatherretriever.h"
+#include "Wizard_Entity.h"
+#include "Wizard_Script.h"
 
 bool Wizard_Argument::func_operators_initialized =false;
 vector<string> Wizard_Argument::funcs = vector<string>();
@@ -99,6 +101,13 @@ Wizard_Argument::Wizard_Argument(const string& _S, const string& _unit)
         argument_type = parameter_type::date;
         constant = QDate2Xldate(QDateTime::fromString(QString::fromStdString(S).split("@")[0], "MM.dd.yyyy"));
         param_constant_expression = "constant";
+        return;
+    }
+    else if (QString::fromStdString(S).contains("@api"))
+    {
+        argument_type = parameter_type::api;
+        parameter = QString::fromStdString(S).split("@")[0].toStdString();
+        param_constant_expression = "api";
         return;
     }
 
@@ -220,6 +229,7 @@ Wizard_Argument::Wizard_Argument(const Wizard_Argument& WA)
     unit = WA.unit;
     argument_type = WA.argument_type;
     constant_string = WA.constant_string;
+    wizard_entity = WA.wizard_entity;
 }
 Wizard_Argument& Wizard_Argument::operator=(const Wizard_Argument& WA)
 {
@@ -239,6 +249,7 @@ Wizard_Argument& Wizard_Argument::operator=(const Wizard_Argument& WA)
     unit = WA.unit;
     argument_type = WA.argument_type;
     constant_string = WA.constant_string;
+    wizard_entity = WA.wizard_entity;
     return *this;
 }
 
@@ -416,7 +427,22 @@ int  Wizard_Argument::count_operators(const string& s) const
 
 QString Wizard_Argument::Calc(QMap<QString, WizardParameter>* params)
 {
-
+    if (param_constant_expression == "api")
+    {
+        WeatherRetriever weatherretriever;
+        weatherretriever.SetAPIToken("AuOQEjHeTwRMJeUjLpoXmneFKxUDdred");
+        QStringList delegate = params->value(QString::fromStdString(parameter)).Delegate().split("|");
+        qDebug()<<delegate[1]<<":"<<params->value(delegate[1]).Value();
+        double x_location = params->value(delegate[1]).Value().toDouble();
+        double y_location = params->value(delegate[2]).Value().toDouble();
+        double start_date = params->value(delegate[3]).Value().toDouble();
+        double end_date = params->value(delegate[4]).Value().toDouble();
+        QPointF location(y_location, x_location);
+        CPrecipitation precipitationdata = weatherretriever.RetrivePrecip(start_date, end_date, location,"24");
+        QString FileName = WorkingDirectory() + "/Precipitation_" + weatherretriever.SelectedStation() + ".csv";
+        precipitationdata.writefile(FileName.toStdString());
+        return FileName;
+    }
     if (param_constant_expression == "constant")
     {
         if (argument_type == parameter_type::string)
@@ -426,9 +452,9 @@ QString Wizard_Argument::Calc(QMap<QString, WizardParameter>* params)
     }
     if (param_constant_expression == "parameter")
     {
-        if (params->operator[](QString::fromStdString(parameter)).ParameterType() == parameter_type::string)
+        if (params->value(QString::fromStdString(parameter)).ParameterType() == parameter_type::string)
         {
-            return params->operator[](QString::fromStdString(parameter)).Value();
+            return params->value(QString::fromStdString(parameter)).Value();
         }
     }
     return QString::number(calc(params));
@@ -618,4 +644,9 @@ QString Wizard_Argument::UnitText()
         return "";
     else
         return QString::fromStdString("[" + unit + "]");
+}
+
+QString Wizard_Argument::WorkingDirectory()
+{
+    return wizard_entity->GetWizardScript()->WorkingFolder();
 }

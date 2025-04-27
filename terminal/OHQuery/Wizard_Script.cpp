@@ -167,6 +167,7 @@ WizardScript::WizardScript(const QString& filename)
                 }
             }
         }
+        SetAllParents();
 
 }
 WizardScript::WizardScript(const WizardScript &WS)
@@ -184,6 +185,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     Connectors = WS.Connectors; 
     diagramfilename = WS.diagramfilename; 
     url = WS.url;
+    workingfolder = WS.workingfolder;
     SetAllParents(); 
 
 
@@ -194,26 +196,32 @@ void WizardScript::SetAllParents()
     for (QMap<QString, BlockArray>::iterator it = BlockArrays.begin(); it != BlockArrays.end(); it++)
     {
         it.value().SetWizardScript(this);
+        it.value().SetAllParents();
     }
     for (QMap<QString, SingleBlock>::iterator it = SingleBlocks.begin(); it != SingleBlocks.end(); it++)
     {
         it.value().SetWizardScript(this);
+        it.value().SetAllParents();
     }
     for (QMap<QString, SetVal_Entity>::iterator it = SetValEntities.begin(); it != SetValEntities.end(); it++)
     {
         it.value().SetWizardScript(this);
+        it.value().SetAllParents();
     }
     for (QMap<QString, Wizard_Entity>::iterator it = Entities.begin(); it != Entities.end(); it++)
     {
         it.value().SetWizardScript(this);
+        it.value().SetAllParents();
     }
     for (QMap<QString, Wizard_Entity>::iterator it = Entities.begin(); it != Entities.end(); it++)
     {
         it.value().SetWizardScript(this);
+        it.value().SetAllParents();
     }
     for (QMap<QString, Connector>::iterator it = Connectors.begin(); it != Connectors.end(); it++)
     {
         it.value().SetWizardScript(this);
+        it.value().SetAllParents();
     }
 }
 
@@ -232,6 +240,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     diagramfilename = WS.diagramfilename;
     WizardParameterGroups = WS.WizardParameterGroups;
     url = WS.url;
+    workingfolder = WS.workingfolder;
     SetAllParents();
     return *this;
 }
@@ -332,7 +341,7 @@ bool WizardScript::AssignParameterValues(const QJsonObject &jsonObject)
             it.value().SetValue(jsonObject[it.key()].toString());
         else if (it.value().Delegate() == "DateBox")
             it.value().SetValue(jsonObject[it.key()].toString());
-        else if (it.value().Delegate() == "PrecipitationData")
+        else if (it.value().Delegate().contains("PrecipitationDataFromAPI"))
             it.value().SetValue(jsonObject[it.key()].toString());
     }
 

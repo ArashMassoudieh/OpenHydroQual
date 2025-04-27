@@ -26,6 +26,10 @@ WizardParameter::WizardParameter(const QJsonObject& json_obj)
             {
                 Parameter_Type = parameter_type::date;
             }
+            else if (delegate.contains("PrecipitationDataFromAPI"))
+            {
+                Parameter_Type = parameter_type::api;
+            }
         }
         if (it.key() == "question")
         {
@@ -68,6 +72,7 @@ WizardParameter::WizardParameter(const WizardParameter& WS)
     Parameter_Type = WS.Parameter_Type;
     default_value = WS.default_value;
     units = WS.units;
+    value = WS.value;
 }
 WizardParameter& WizardParameter::operator=(const WizardParameter& WS)
 {
@@ -79,6 +84,7 @@ WizardParameter& WizardParameter::operator=(const WizardParameter& WS)
     units = WS.units;
     Parameter_Type = WS.Parameter_Type;
     default_value = WS.default_value;
+    value = WS.value;
     return *this;
 }
 QString WizardParameter::Name()

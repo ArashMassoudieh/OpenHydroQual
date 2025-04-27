@@ -32,6 +32,8 @@ public:
     bool AssignParameterValues();
     bool AssignParameterValues(const QJsonObject &jsonObject);
     QString Url();
+    void SetWorkingFolder(const QString wrkingfolder) {workingfolder = wrkingfolder;}
+    QString WorkingFolder() {return workingfolder;}
 private:
     QMap<QString, BlockArray> BlockArrays;
     QMap<QString, SingleBlock> SingleBlocks;
@@ -46,6 +48,7 @@ private:
     QString description;
     QStringList addedtemplates;
     QString url;
+    QString workingfolder;
 
 };
 

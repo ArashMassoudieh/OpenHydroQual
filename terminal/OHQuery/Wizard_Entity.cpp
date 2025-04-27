@@ -82,3 +82,9 @@ QStringList Wizard_Entity::GenerateScript(QMap<QString, WizardParameter>* params
     return out; 
 }
 
+void Wizard_Entity::SetAllParents()
+{
+    for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
+        it->SetWizardEntity(this);
+}
+

@@ -92,12 +92,43 @@ void WSServerOps::onTextMessageReceived(QString message)
             }
             WizardScript SelectedWizardScript(TemplateFile_Fullpath);
             SelectedWizardScript.AssignParameterValues(obj);
+
+            QString randomFolderName = QUuid::createUuid().toString(QUuid::WithoutBraces);
+
+            // Set the path where you want to create the folder
+            QString basePath = QDir::homePath();
+            QString newFolderPath = basePath + "/OHQueryTemporaryFolder/" + randomFolderName;
+
+            // Create the directory
+            QDir dir;
+
+            QString MainFolderPath = basePath + "/OHQueryTemporaryFolder/";
+
+            if (!dir.exists(MainFolderPath)) {
+                if (dir.mkpath(MainFolderPath)) {
+                    qDebug() << "Folder created successfully:" << MainFolderPath;
+                } else {
+                    qDebug() << "Failed to create folder:" << MainFolderPath;
+                }
+            } else {
+                qDebug() << "Folder already exists:" << MainFolderPath;
+            }
+
+            if (dir.mkpath(newFolderPath)) {
+                qDebug() << "Folder created successfully:" << newFolderPath;
+            } else {
+                qDebug() << "Failed to create folder.";
+            }
+
+            SelectedWizardScript.SetWorkingFolder(newFolderPath);
+
             Script script;
             System system;
             string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
             system.ReadSystemSettingsTemplate(qApp->applicationDirPath().toStdString() + "/../../resources/settings.json");
             cout << "Default Template path = " + defaulttemppath +"\n";
             system.SetDefaultTemplatePath(defaulttemppath);
+            system.SetWorkingFolder(newFolderPath.toStdString());
             script.CreateSystemFromQStringList(SelectedWizardScript.Script(),&system);
             QJsonDocument responseDoc = Execute(&system);
             QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
@@ -208,36 +239,21 @@ QJsonDocument WSServerOps::Execute(const QJsonObject &instructions)
 
 QJsonDocument WSServerOps::Execute(System *system)
 {
-    QString randomFolderName = QUuid::createUuid().toString(QUuid::WithoutBraces);
-
-    // Set the path where you want to create the folder
-    QString basePath = QDir::homePath();
-    QString newFolderPath = basePath + "/" + randomFolderName;
-
-    // Create the directory
-    QDir dir;
-    if (dir.mkpath(newFolderPath)) {
-        qDebug() << "Folder created successfully:" << newFolderPath;
-    } else {
-        qDebug() << "Failed to create folder.";
-    }
-
-
-    system->SetWorkingFolder(newFolderPath.toStdString() + "/");
 
     string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
 
     cout<<"Executing script ..."<<endl;
 
     system->SetSilent(false);
+    system->SavetoScriptFile(system->GetWorkingFolder() + "/" + "System.ohq");
     cout<<"Solving ..."<<endl;
     system->Solve();
-    system->SavetoJson(system->GetWorkingFolder() + "System.json",system->addedtemplates);
-    system->SavetoScriptFile(system->GetWorkingFolder() + "System.ohq");
+    system->SavetoJson(system->GetWorkingFolder() + "/" + "System.json",system->addedtemplates);
 
-    cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
-    system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + system->ObservedOutputFileName());
-    system->GetOutputs().writetofile(system->GetWorkingFolder() + system->OutputFileName());
+
+    cout<<"Writing outputs in '"<< system->GetWorkingFolder() + "/" + system->OutputFileName() +"'";
+    system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + "/" + system->ObservedOutputFileName());
+    system->GetOutputs().writetofile(system->GetWorkingFolder() + "/" + system->OutputFileName());
     return QJsonDocument(system->GetObservedOutputs().toJson());
 }
 

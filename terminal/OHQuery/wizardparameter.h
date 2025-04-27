@@ -6,7 +6,7 @@
 #include <QVector2D>
 #include <QStringList>
 
-enum class parameter_type {numeric, string, date};
+enum class parameter_type {numeric, string, date, api};
 
 class WizardParameter
 {
@@ -26,7 +26,9 @@ public:
     void SetEntryItem(QWidget *item) {entryitem = item;}
     QWidget *EntryItem() {return entryitem;}
     void SetValue(const QString &val) {value = val;}
-    QString Value() {return value; }
+    QString Value() {
+        return value;
+    }
     parameter_type ParameterType() { return Parameter_Type; }
 private:
     QString name;

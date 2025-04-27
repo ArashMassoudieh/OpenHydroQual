@@ -19,11 +19,7 @@ ServerOps::ServerOps(QObject *parent) : QObject(parent)
     ([this](const crow::request& req) {
         return StatementReceived(req);
     });
-    WeatherRetriever weatherretriever;
-    weatherretriever.SetAPIToken("AuOQEjHeTwRMJeUjLpoXmneFKxUDdred");
-    QPointF location(39.1733,-76.6841);
-    CPrecipitation precipitationdata = weatherretriever.RetrivePrecip(location,"24");
-    precipitationdata.writefile("precipitation.csv");
+
 }
 
 void ServerOps::Start(quint16 port)

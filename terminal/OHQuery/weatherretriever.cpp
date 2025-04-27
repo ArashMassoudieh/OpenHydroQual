@@ -25,6 +25,23 @@ CPrecipitation WeatherRetriever::RetrivePrecip(const QPointF location, const QSt
     return out;
 }
 
+CPrecipitation WeatherRetriever::RetrivePrecip(const double &startdate, const double &enddate, const QPointF location, const QString &FIPS)
+{
+    CPrecipitation out;
+    WeatherStationData stationwithlongestdata = findStation(location.x(),location.y(),"24");
+    qDebug()<<"Station with longest record:";
+    qDebug()<<stationwithlongestdata.name << ": Longitude: " <<stationwithlongestdata.longitude << ": Latitude: " << stationwithlongestdata.latitude << ": Time span [" <<stationwithlongestdata.mindate << "," << stationwithlongestdata.maxdate << "]";
+    QString StartDate = excelToQDateTime(startdate).toString(Qt::ISODate);
+    QString EndDate = excelToQDateTime(enddate).toString(Qt::ISODate);
+    QVector<PrecipitationData> data = fetchPrecipitationData(stationwithlongestdata.id,StartDate,EndDate);
+    for (int i=0; i<data.count(); i++)
+    {
+        qDebug()<<data[i].dateTime<<","<<data[i].precipitation;
+        out.append(qDateTimeToExcel(data[i].dateTime)-1.0/24.0,qDateTimeToExcel(data[i].dateTime),data[i].precipitation*0.254/100);
+    }
+    return out;
+}
+
 
 QVector<PrecipitationData> WeatherRetriever::fetchPrecipitationData(const QString& stationId, const QString& startDate, const QString& endDate) {
     QVector<PrecipitationData> dataList;
@@ -231,6 +248,7 @@ WeatherStationData WeatherRetriever::findStation( const double &latitude, const 
     WeatherStationData stationwithlongestdata = findLongestRecordStation(closeststations);
     qDebug()<<"Station with longest record:";
     qDebug()<<stationwithlongestdata.name << ": Longitude: " <<stationwithlongestdata.longitude << ": Latitude: " << stationwithlongestdata.latitude << ": Time span [" <<stationwithlongestdata.mindate << "," << stationwithlongestdata.maxdate << "]";
+    StationName = stationwithlongestdata.id;
     return stationwithlongestdata;
 }
 

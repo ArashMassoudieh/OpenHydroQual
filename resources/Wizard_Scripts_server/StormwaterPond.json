@@ -13,7 +13,7 @@
       "name": "Rain",
       "entity": "source",
       "type": "Precipitation",
-      "timeseries": "TimeSeriesFileName@sp"
+      "timeseries": "PrecipitationData@api"
     },
     {
       "name": "Outflow",
@@ -169,9 +169,21 @@
       "default": "2"
     },
     {
-      "name": "TimeSeriesFileName",
-      "delegate": "FileBrowser",
-      "question": "Precipitation file name"
+      "name": "PrecipitationData",
+      "delegate": "PrecipitationDataFromAPI|Longitude|Latitude|StartTime|EndTime",
+      "question": "Precipitation data"
+    },
+    {
+      "name": "Longitude",
+      "delegate": "ValueBox",
+      "question": "Longitude",
+      "default" : "-76.6684"
+    },
+    {
+      "name": "Latitude",
+      "delegate": "ValueBox",
+      "question": "Latitude",
+      "default": "39.1754"
     },
     {
       "name": "CrestElevation",
@@ -199,7 +211,8 @@
       "parameters": [
         "StartTime",
         "EndTime",
-        "TimeSeriesFileName"
+        "Longitude",
+        "Latitude"
       ]
     },
     {

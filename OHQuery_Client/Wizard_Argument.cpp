@@ -101,7 +101,13 @@ Wizard_Argument::Wizard_Argument(const string& _S, const string& _unit)
         param_constant_expression = "constant";
         return;
     }
-
+    else if (QString::fromStdString(S).contains("@api"))
+    {
+        argument_type = parameter_type::api;
+        param_constant_expression = "api";
+        parameter = QString::fromStdString(S).split("@api")[0].toStdString();
+        return;
+    }
     
     unit = _unit; 
     
