@@ -1398,7 +1398,7 @@ CTimeSeries<T> CTimeSeries<T>::make_uniform(T increment, bool assignD)
     }
 
 	out.structured = true;
-
+    out.filename = filename;
 	return out;
 }
 
