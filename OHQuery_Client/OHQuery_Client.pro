@@ -1,5 +1,5 @@
-greaterThan(QT_MAJOR_VERSION, 5): QT += core gui svgwidgets network websockets
-lessThan(QT_MAJOR_VERSION, 6): QT += core gui svg network websockets
+greaterThan(QT_MAJOR_VERSION, 5): QT += core gui svgwidgets network websockets charts
+lessThan(QT_MAJOR_VERSION, 6): QT += core gui svg network websockets charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

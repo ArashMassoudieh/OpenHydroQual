@@ -27,7 +27,7 @@ DEFINES += Terminal_version
 
 INCLUDEPATH += include
 
-TARGET = OHQServer
+TARGET = OHQuery
 TEMPLATE = app
 win32:QMAKE_CXXFLAGS += /MP
 

@@ -216,7 +216,12 @@ void  WizardDialog::on_TabChanged()
     SelectedWizardScript.AssignParameterValues();
     QStringList Errors = SelectedWizardScript.GetWizardParameterGroups()[ui->tabWidget->widget(currenttabindex)->objectName()].CheckCriteria(&SelectedWizardScript.GetWizardParameters());
     if (Errors.count()>0)
-    {   QMessageBox::information(this, "Invalid parameter value!", Errors[0], QMessageBox::Ok, QMessageBox::StandardButton::Ok);
+    {   QMessageBox *msgBox = new QMessageBox(this);
+        msgBox->setIcon(QMessageBox::Information);
+        msgBox->setWindowTitle("Invalid parameter value!");
+        msgBox->setText(Errors[0]);
+        msgBox->setStandardButtons(QMessageBox::Ok);
+        msgBox->open();
         ui->tabWidget->setCurrentIndex(currenttabindex);
         return;
     }

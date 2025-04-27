@@ -22,7 +22,8 @@ void WSClient::onConnected()
 
 void WSClient::onTextMessageReceived(const QString &message)
 {
-    qDebug() << "Received response:" << message;QJsonParseError parseError;
+    //qDebug() << "Received response:" << message;
+    QJsonParseError parseError;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8(), &parseError);
     if (parseError.error != QJsonParseError::NoError) {
         qDebug()<<"JSON parse error: " + parseError.errorString();

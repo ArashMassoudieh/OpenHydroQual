@@ -4,6 +4,10 @@
 #include "QDir"
 #include "wizarddialog.h"
 #include <QJsonDocument>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QChart>
+#include <QDateTimeAxis>
+#include <QValueAxis>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -58,8 +62,86 @@ void MainWindow::TemplateRecieved(const QJsonDocument &JsonDoc)
 
 void MainWindow::handleData(const QJsonDocument &JsonDoc)
 {
-    qDebug()<<JsonDoc;
+    for (const QChartView* item : chartviews)
+        delete item;
+
+    TimeSeriesMap allSeries;
+
+    QJsonObject rootObj = JsonDoc.object();
+    for (const QString& key : rootObj.keys()) {
+        QJsonObject variable = rootObj[key].toObject();
+        QJsonArray tArr = variable["t"].toArray();
+        QJsonArray valArr = variable["value"].toArray();
+
+        TimeSeries ts;
+        for (int i = 0; i < tArr.size(); ++i) {
+            ts.t.append(tArr[i].toDouble());
+            ts.value.append(valArr[i].toDouble());
+        }
+
+        allSeries[key] = ts;
+    }
+
+    chartviews.clear();
+
+    for (const QString& key : allSeries.keys()) {
+        const TimeSeries& ts = allSeries[key];
+        QLineSeries* series = new QLineSeries();
+
+        for (int i = 0; i < ts.t.size(); ++i)
+        {
+            QDateTime dt = excelToQDateTime(ts.t[i]);
+            series->append(dt.toMSecsSinceEpoch(), ts.value[i]);
+        }
+
+        QChart* chart = new QChart();
+        chart->addSeries(series);
+        chart->setTitle(key);
+
+        // X-axis as DateTimeAxis
+        QDateTimeAxis* axisX = new QDateTimeAxis;
+        axisX->setFormat("yyyy-MM-dd");
+        axisX->setTitleText("Time");
+        chart->addAxis(axisX, Qt::AlignBottom);
+        series->attachAxis(axisX);
+
+        // Y-axis
+        QValueAxis* axisY = new QValueAxis;
+        axisY->setTitleText(key);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisY);
+
+        QChartView* chartView = new QChartView(chart);
+        chartView->setRenderHint(QPainter::Antialiasing);
+        chartviews[key] = chartView;
+
+        ui->ChartsLayout->addWidget(chartView);    }
 }
 
+QDateTime excelToQDateTime(double excelDate) {
+    if (excelDate < 1.0) {
+        qDebug() << "Invalid Excel date. Must be >= 1.0.";
+        return QDateTime();
+    }
 
+    // Excel base date: January 1, 1900
+    QDate excelBaseDate(1900, 1, 1);
+
+    // Excel leap year bug: Skip February 29, 1900 (nonexistent day)
+    int days = static_cast<int>(excelDate); // Integer part represents days
+    if (days >= 60) {
+        days -= 1; // Correct for Excel's leap year bug
+    }
+
+    // Add the integer days to the base date
+    QDate convertedDate = excelBaseDate.addDays(days - 1);
+
+    // Extract the fractional part for time
+    double fractionalDay = excelDate - static_cast<int>(excelDate);
+    int totalSeconds = static_cast<int>(fractionalDay * 86400); // Convert fraction to seconds
+    QTime convertedTime = QTime(0, 0, 0).addSecs(totalSeconds);
+
+    // Combine the date and time
+    return QDateTime(convertedDate, convertedTime);
+}
 

@@ -14,7 +14,6 @@ public:
     explicit WSServerOps(QObject *parent = nullptr);
     void Start(quint16 port);
     ~WSServerOps();
-    QJsonDocument Execute(const QJsonObject &instructions);
     QJsonDocument Execute(System *sys);
     void SetModelFile(const QString &modelfile)
     {

@@ -56,6 +56,11 @@ bool Script::CreateSystemFromQStringList(const QStringList &Script, System *sys)
         systemwascreated = true;
     }
 
+    Command command("loadtemplate; filename = main_components.json");
+    if (command.Syntax())
+        Append(command);
+    else
+        errors.push_back(command.LastError());
     for (int i=0; i<Script.count(); i++)
     {
         Command command(Script[i].toStdString());
