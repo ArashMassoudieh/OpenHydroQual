@@ -10,13 +10,14 @@ int main(int argc, char *argv[])
     ServerOps *server = nullptr;
 
 #ifndef LOCAL_HOST
-    QString certPath = QStringLiteral("/etc/letsencrypt/live/yourdomain.com/fullchain.pem");
-    QString keyPath = QStringLiteral("/etc/letsencrypt/live/yourdomain.com/privkey.pem");
+    QString certPath = QStringLiteral("/etc/letsencrypt/live/greeninfraiq.com/fullchain.pem");
+    QString keyPath = QStringLiteral("/etc/letsencrypt/live/greeninfraiq.com/privkey.pem");
 #else
     QString certPath = QStringLiteral("/home/arash/localhost-ssl/fullchain.pem");
     QString keyPath = QStringLiteral("/home/arash/localhost-ssl/privkey.pem");
 #endif
-
+    qDebug()<<"Certificate Path: "<<certPath;
+    qDebug()<<"Key Path: "<<keyPath;
     WSServerOps *wsserver = nullptr;
     if (configuration["Config"].toString() == "FlaskType")
     {   server = new ServerOps();
