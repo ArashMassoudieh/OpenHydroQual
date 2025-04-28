@@ -37,7 +37,8 @@ WSServerOps::WSServerOps(const QString &certPath, const QString &keyPath, QObjec
                                   QWebSocketServer::SecureMode, this))
     ,m_certPath(certPath), m_keyPath(keyPath)
 {
-
+    qDebug()<<"Certificate path: " <<m_certPath;
+    qDebug()<<"Key path: " <<m_keyPath;
 }
 
 void WSServerOps::Start(quint16 port)

@@ -10,8 +10,8 @@ int main(int argc, char *argv[])
     ServerOps *server = nullptr;
 
 #ifndef LOCAL_HOST
-    QString certPath = QStringLiteral("/etc/letsencrypt/live/greeninfraiq.com/fullchain.pem");
-    QString keyPath = QStringLiteral("/etc/letsencrypt/live/greeninfraiq.com/privkey.pem");
+    QString certPath = "/etc/letsencrypt/live/greeninfraiq.com/fullchain.pem";
+    QString keyPath = "/etc/letsencrypt/live/greeninfraiq.com/privkey.pem";
 #else
     QString certPath = QStringLiteral("/home/arash/localhost-ssl/fullchain.pem");
     QString keyPath = QStringLiteral("/home/arash/localhost-ssl/privkey.pem");
