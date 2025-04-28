@@ -11,7 +11,11 @@ class WSServerOps : public QObject
 {
     Q_OBJECT
 public:
+#ifdef HTTPS
+    explicit WSServerOps(const QString &certPath, const QString &keyPath, QObject *parent = nullptr);
+#else
     explicit WSServerOps(QObject *parent = nullptr);
+#endif
     void Start(quint16 port);
     ~WSServerOps();
     QJsonDocument Execute(System *sys);
@@ -37,6 +41,8 @@ private slots:
 private:
     QWebSocketServer *m_server;
     QList<QWebSocket *> m_clients;
+    QString m_certPath;
+    QString m_keyPath;
     QString modelFile;
     QString workingDirectory;
     QString TemplateFile_Fullpath;

@@ -7,7 +7,11 @@
 #include <QFile>
 #include "Wizard_Script.h"
 #include <QDir>
+#ifdef HTTPS
+#include <QSslKey>
+#endif
 
+#ifndef HTTPS
 WSServerOps::WSServerOps(QObject *parent)
     : QObject(parent),
     m_server(new QWebSocketServer(QStringLiteral("Echo Server"),
@@ -25,6 +29,48 @@ void WSServerOps::Start(quint16 port)
                 this, &WSServerOps::onNewConnection);
     }
 }
+#else
+
+WSServerOps::WSServerOps(const QString &certPath, const QString &keyPath, QObject *parent)
+    : QObject(parent),
+    m_server(new QWebSocketServer(QStringLiteral("Echo Server"),
+                                  QWebSocketServer::SecureMode, this))
+    ,m_certPath(certPath), m_keyPath(keyPath)
+{
+
+}
+
+void WSServerOps::Start(quint16 port)
+{
+    // Load SSL configuration
+    QSslConfiguration sslConfiguration;
+    QFile certFile(m_certPath);
+    QFile keyFile(m_keyPath);
+    if (!certFile.open(QIODevice::ReadOnly) || !keyFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "Cannot open SSL certificate or key file!";
+        return;
+    }
+
+    QSslCertificate certificate(&certFile, QSsl::Pem);
+    QSslKey sslKey(&keyFile, QSsl::Rsa, QSsl::Pem);
+
+    sslConfiguration.setPeerVerifyMode(QSslSocket::VerifyNone);  // Don't verify clients
+    sslConfiguration.setLocalCertificate(certificate);
+    sslConfiguration.setPrivateKey(sslKey);
+    sslConfiguration.setProtocol(QSsl::TlsV1_2);
+
+    m_server->setSslConfiguration(sslConfiguration);
+
+    // Start listening
+    if (m_server->listen(QHostAddress::Any, port)) {
+        qDebug() << "Secure WebSocket server listening on port" << port;
+        connect(m_server, &QWebSocketServer::newConnection,
+                this, &WSServerOps::onNewConnection);
+    } else {
+        qDebug() << "Failed to start WebSocket server on port" << port;
+    }
+}
+#endif
 
 WSServerOps::~WSServerOps()
 {
