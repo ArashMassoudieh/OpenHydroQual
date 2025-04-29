@@ -8,6 +8,7 @@
 #include <QtCharts/QChart>
 #include <QDateTimeAxis>
 #include <QValueAxis>
+#include <QLabel>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -16,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     //QUrl url("ws://localhost:12345");  // Change the port to match your server
-    QUrl url("wss://www.greeninfraiq.com:12345");  // Change the port to match your server
+    QUrl url("ws://greeninfraiq.com:12345");  // Change the port to match your server
 
     wsClient = new WSClient(url);
 
@@ -29,6 +30,64 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::onError(QAbstractSocket::SocketError error)
 {
     qDebug() << "WebSocket error occurred:" << error;
+    ui->label->setText("WebSocket error occurred:" + socketErrorToString(error));
+
+}
+
+QString socketErrorToString(QAbstractSocket::SocketError error)
+{
+    switch (error)
+    {
+    case QAbstractSocket::ConnectionRefusedError:
+        return "Connection refused by the server";
+    case QAbstractSocket::RemoteHostClosedError:
+        return "Remote host closed the connection";
+    case QAbstractSocket::HostNotFoundError:
+        return "Host not found";
+    case QAbstractSocket::SocketAccessError:
+        return "Socket access error";
+    case QAbstractSocket::SocketResourceError:
+        return "Socket resource error (too many open sockets?)";
+    case QAbstractSocket::SocketTimeoutError:
+        return "Socket operation timed out";
+    case QAbstractSocket::DatagramTooLargeError:
+        return "Datagram too large to send";
+    case QAbstractSocket::NetworkError:
+        return "Network error occurred";
+    case QAbstractSocket::AddressInUseError:
+        return "Address already in use";
+    case QAbstractSocket::SocketAddressNotAvailableError:
+        return "Socket address not available";
+    case QAbstractSocket::UnsupportedSocketOperationError:
+        return "Unsupported socket operation";
+    case QAbstractSocket::UnfinishedSocketOperationError:
+        return "Unfinished socket operation";
+    case QAbstractSocket::ProxyAuthenticationRequiredError:
+        return "Proxy authentication required";
+    case QAbstractSocket::SslHandshakeFailedError:
+        return "SSL/TLS handshake failed";
+    case QAbstractSocket::ProxyConnectionRefusedError:
+        return "Proxy connection was refused";
+    case QAbstractSocket::ProxyConnectionClosedError:
+        return "Proxy connection closed unexpectedly";
+    case QAbstractSocket::ProxyConnectionTimeoutError:
+        return "Proxy connection timed out";
+    case QAbstractSocket::ProxyNotFoundError:
+        return "Proxy server not found";
+    case QAbstractSocket::ProxyProtocolError:
+        return "Proxy protocol error";
+    case QAbstractSocket::OperationError:
+        return "Operation error (an operation is in progress)";
+    case QAbstractSocket::SslInternalError:
+        return "Internal SSL error occurred";
+    case QAbstractSocket::SslInvalidUserDataError:
+        return "Invalid SSL user data";
+    case QAbstractSocket::TemporaryError:
+        return "Temporary error (try again)";
+    case QAbstractSocket::UnknownSocketError:
+    default:
+        return "Unknown socket error";
+    }
 }
 
 void MainWindow::RecieveTemplate()

@@ -38,6 +38,8 @@ public:
     void ParametersToJson();
     bool Verify();
     void resizeEvent(QResizeEvent *r=nullptr);
+    QGraphicsSvgItem* fetchSvgAsGraphicsItem(const QUrl& svgUrl);
+    void fetchSvgAsync(const QUrl& svgUrl);
 
 private:
     Ui::WizardDialog *ui;

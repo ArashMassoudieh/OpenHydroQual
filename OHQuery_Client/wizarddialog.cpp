@@ -12,8 +12,9 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QJsonDocument>
-
- 
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QSvgRenderer>
 
 
 WizardDialog::WizardDialog(QWidget *parent) :
@@ -90,14 +91,8 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
     QGraphicsScene* scene = new QGraphicsScene();
     svgviewer->setScene(scene);
     if (wizscript->DiagramFileName().split(".").size()>1)
-    {   if (wizscript->DiagramFileName().split(".")[1]=="png")
-            diagram_pix = new QPixmap(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
-        else if (wizscript->DiagramFileName().split(".")[1]=="svg")
-        {   svgitem = new QGraphicsSvgItem(QString::fromStdString(wizardsfolder)+"Diagrams/"+wizscript->DiagramFileName());
-            qDebug()<<scene->sceneRect();
-            svgviewer->scene()->clear();
-            svgviewer->scene()->addItem(svgitem);
-        }
+    {
+       fetchSvgAsync(QUrl("http://www.greeninfraiq.com/svgs/" + wizscript->DiagramFileName()));
     }
 
     resizeEvent();
@@ -105,6 +100,8 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
     repaint();
 
 }
+
+
 
 void WizardDialog::PopulateTab(QWidget *scrollAreaWidgetContents, QFormLayout *formLayout, WizardParameterGroup *paramgroup)
 {
@@ -278,28 +275,93 @@ void WizardDialog::open_html()
 }
 
 
-void WizardDialog::resizeEvent(QResizeEvent *)
+void WizardDialog::resizeEvent(QResizeEvent *event)
 {
+    QWidget::resizeEvent(event);
 
-    QSize gvs  = svgviewer->size();
-    if (diagram_pix!=nullptr)
-    {   QPixmap scaled_img = diagram_pix->scaled(gvs, Qt::IgnoreAspectRatio);
+    if (svgitem)
+    {   qDebug() << "SVG boundingRect:" << svgitem->boundingRect();
+        qDebug() << "Scene rect:" << svgviewer->scene()->sceneRect();
+        qDebug() << "Viewer size:" << svgviewer->size();
+    }
+
+    if (!svgviewer || !svgviewer->scene())
+        return;
+
+    if (diagram_pix)
+    {
+        QPixmap scaled_img = diagram_pix->scaled(svgviewer->size(), Qt::KeepAspectRatio);
         svgviewer->scene()->clear();
         svgviewer->scene()->addPixmap(scaled_img);
+        svgviewer->fitInView(svgviewer->scene()->itemsBoundingRect(), Qt::KeepAspectRatio);
     }
-    else if (svgitem!=nullptr)
+    else if (svgitem)
     {
-        QRectF newRect = svgviewer->scene()->itemsBoundingRect();
-        float width = float(newRect.width());
-        float height = float(newRect.height());
-        float scale = float(1.05);
-        newRect.setLeft(newRect.left() - float(scale - 1) / 2 * float(width));
-        newRect.setTop(newRect.top() - (scale - 1) / 2 * height);
-        newRect.setWidth(qreal(width * scale));
-        newRect.setHeight(qreal(height * scale));
-        if (width>svgviewer->scene()->sceneRect().width() || height>svgviewer->scene()->sceneRect().height())
-            svgviewer->scene()->setSceneRect(newRect);
-        svgviewer->fitInView(newRect,Qt::KeepAspectRatio);
-        svgviewer->repaint();
+        svgviewer->scene()->setSceneRect(svgitem->boundingRect());
+        svgviewer->fitInView(svgitem->boundingRect(), Qt::KeepAspectRatio);
     }
+}
+
+QGraphicsSvgItem* WizardDialog::fetchSvgAsGraphicsItem(const QUrl& svgUrl)
+{
+    QNetworkAccessManager manager;
+    QEventLoop loop;
+    QNetworkReply* reply = manager.get(QNetworkRequest(svgUrl));
+
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "Network error:" << reply->errorString();
+        reply->deleteLater();
+        return nullptr;
+    }
+
+    QByteArray svgData = reply->readAll();
+    reply->deleteLater();
+
+    // Load into QSvgRenderer
+    QSvgRenderer* renderer = new QSvgRenderer(svgData);
+    if (!renderer->isValid()) {
+        qWarning() << "Failed to load SVG";
+        delete renderer;
+        return nullptr;
+    }
+
+    // Create QGraphicsSvgItem
+    QGraphicsSvgItem* svgItem = new QGraphicsSvgItem();
+    svgItem->setSharedRenderer(renderer);
+    return svgItem;
+}
+
+void WizardDialog::fetchSvgAsync(const QUrl& svgUrl)
+{
+    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+    QNetworkRequest request(svgUrl);
+    QNetworkReply* reply = manager->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            qWarning() << "Network error:" << reply->errorString();
+            reply->deleteLater();
+            return;
+        }
+
+        QByteArray svgData = reply->readAll();
+        reply->deleteLater();
+
+        QSvgRenderer* renderer = new QSvgRenderer(svgData, this);
+        if (!renderer->isValid()) {
+            qWarning() << "Invalid SVG data";
+            delete renderer;
+            return;
+        }
+
+        svgitem = new QGraphicsSvgItem();
+        svgitem->setSharedRenderer(renderer);
+        svgviewer->scene()->clear();
+        svgviewer->scene()->addItem(svgitem);
+        svgviewer->scene()->setSceneRect(svgitem->boundingRect());
+        svgviewer->fitInView(svgitem->boundingRect(), Qt::KeepAspectRatio);
+    });
 }

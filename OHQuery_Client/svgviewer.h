@@ -11,7 +11,7 @@ class SVGViewer : public QGraphicsView
 
 public:
     explicit SVGViewer(QWidget *parent = nullptr);
-
+    void resizeEvent(QResizeEvent* event) override;
 signals:
     // Custom signal emitted on double-click
     void doubleClicked(const QPointF &scenePos);

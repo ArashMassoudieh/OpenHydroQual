@@ -35,5 +35,6 @@ public slots:
 };
 
 QDateTime excelToQDateTime(double excelDate);
+QString socketErrorToString(QAbstractSocket::SocketError error);
 
 #endif // MAINWINDOW_H
