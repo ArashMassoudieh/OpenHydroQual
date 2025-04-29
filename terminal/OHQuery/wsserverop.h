@@ -47,6 +47,7 @@ private:
     QString workingDirectory;
     QString TemplateFile_Fullpath;
 
+
 };
 
 #endif // WEBSOCKETSERVER_H

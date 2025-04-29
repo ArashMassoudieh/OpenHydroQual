@@ -9,6 +9,13 @@ int main(int argc, char *argv[])
     QJsonObject configuration = loadJsonObjectFromFile("config.json");
     ServerOps *server = nullptr;
 
+
+#ifdef HTTPS
+    int port_number = 12345;
+#else
+    int port_number = 12345;
+#endif
+
 #ifndef LOCAL_HOST
     QString certPath = "/etc/letsencrypt/live/greeninfraiq.com/fullchain.pem";
     QString keyPath = "/etc/letsencrypt/live/greeninfraiq.com/privkey.pem";
@@ -27,10 +34,14 @@ int main(int argc, char *argv[])
     }
     else if (configuration["Config"].toString() == "WebSockets")
     {
+#ifdef HTTPS
         wsserver = new WSServerOps(certPath, keyPath);
+#else
+        wsserver = new WSServerOps();
+#endif
         wsserver->SetModelFile(configuration["ModelFile"].toString());
         wsserver->SetWorkingDirectory(configuration["WorkingDirectory"].toString());
-        wsserver->Start(12345);
+        wsserver->Start(port_number);
     }
     a.exec();
 }

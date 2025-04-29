@@ -11,6 +11,7 @@ WSClient::WSClient(const QUrl &url, QObject *parent)
 {
     connect(&m_webSocket, &QWebSocket::connected, this, &WSClient::onConnected);
     connect(&m_webSocket, &QWebSocket::textMessageReceived, this, &WSClient::onTextMessageReceived);
+    connect(&m_webSocket, &QWebSocket::errorOccurred, this, &WSClient::socketError);
     m_webSocket.open(m_url);
 }
 

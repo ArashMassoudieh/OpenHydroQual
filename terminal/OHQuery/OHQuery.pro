@@ -4,7 +4,7 @@ QT += core websockets gui
 CONFIG += console
 CONFIG -= app_bundle
 
-DEFINES += HTTPS
+#DEFINES += HTTPS
 #DEFINES += LOCAL_HOST  #for local host testing
 
 CONFIG += debug

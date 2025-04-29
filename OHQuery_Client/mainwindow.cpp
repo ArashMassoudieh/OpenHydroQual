@@ -16,14 +16,19 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     //QUrl url("ws://localhost:12345");  // Change the port to match your server
-    QUrl url("ws://ec2-34-221-236-134.us-west-2.compute.amazonaws.com:12345");  // Change the port to match your server
+    QUrl url("wss://www.greeninfraiq.com:12345");  // Change the port to match your server
 
     wsClient = new WSClient(url);
 
     // Connect async response
     connect(wsClient, &WSClient::connected, this, &MainWindow::RecieveTemplate);
+    connect(wsClient, &WSClient::socketError, this, &MainWindow::onError);
 
+}
 
+void MainWindow::onError(QAbstractSocket::SocketError error)
+{
+    qDebug() << "WebSocket error occurred:" << error;
 }
 
 void MainWindow::RecieveTemplate()

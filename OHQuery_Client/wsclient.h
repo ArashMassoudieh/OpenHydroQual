@@ -29,6 +29,8 @@ private slots:
 signals:
     void dataReady(const QJsonDocument& data);
     void connected();
+    void socketError(QAbstractSocket::SocketError error);
+
 private:
     QWebSocket m_webSocket;
     QUrl m_url;
