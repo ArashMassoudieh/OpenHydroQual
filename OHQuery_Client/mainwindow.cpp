@@ -16,11 +16,14 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //QUrl url("ws://localhost:12345");  // Change the port to match your server
-#ifdef HTTPs
-    QUrl url("wss://greeninfraiq.com/ws/");  // Change the port to match your server
+#ifdef LOCALHOST
+    QUrl url("ws://localhost:12345");  // Change the port to match your server
 #else
-    QUrl url("ws://greeninfraiq.com:12345");  // Change the port to match your server
+    #ifdef HTTPs
+        QUrl url("wss://greeninfraiq.com/ws/");  // Change the port to match your server
+    #else
+        QUrl url("ws://greeninfraiq.com:12345");  // Change the port to match your server
+    #endif
 #endif
 
     wsClient = new WSClient(url);

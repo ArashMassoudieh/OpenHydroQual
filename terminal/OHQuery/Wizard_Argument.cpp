@@ -430,7 +430,7 @@ QString Wizard_Argument::Calc(QMap<QString, WizardParameter>* params)
     if (param_constant_expression == "api")
     {
         WeatherRetriever weatherretriever;
-        weatherretriever.SetAPIToken("AuOQEjHeTwRMJeUjLpoXmneFKxUDdred");
+        //weatherretriever.SetAPIToken("AuOQEjHeTwRMJeUjLpoXmneFKxUDdred");
         QStringList delegate = params->value(QString::fromStdString(parameter)).Delegate().split("|");
         qDebug()<<delegate[1]<<":"<<params->value(delegate[1]).Value();
         double x_location = params->value(delegate[1]).Value().toDouble();
@@ -438,8 +438,8 @@ QString Wizard_Argument::Calc(QMap<QString, WizardParameter>* params)
         double start_date = params->value(delegate[3]).Value().toDouble();
         double end_date = params->value(delegate[4]).Value().toDouble();
         QPointF location(y_location, x_location);
-        CPrecipitation precipitationdata = weatherretriever.RetrivePrecip(start_date, end_date, location,"24");
-        QString FileName = WorkingDirectory() + "/Precipitation_" + weatherretriever.SelectedStation() + ".csv";
+        CPrecipitation precipitationdata = weatherretriever.RetrivePrecipOpenMeteo(start_date, end_date, location);
+        QString FileName = WorkingDirectory() + "/Precipitation_" + QString::number(x_location) + "_" + QString::number(y_location) + ".csv";
         precipitationdata.writefile(FileName.toStdString());
         return FileName;
     }
