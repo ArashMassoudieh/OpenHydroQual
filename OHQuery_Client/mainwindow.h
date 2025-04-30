@@ -10,6 +10,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+class QPushButton;
+
 using TimeSeriesMap = QMap<QString, TimeSeries>;
 
 class MainWindow : public QMainWindow
@@ -27,10 +29,16 @@ private:
     WSClient * wsClient = nullptr;
     void sendParameters(const QJsonDocument& jsonDoc); //Send Parameters
     QMap<QString, QChartView*> chartviews;
+    void downloadFileAndTriggerBrowserSave(const QUrl& fileUrl, const QString& downloadName, QObject* parent = nullptr);
+    void saveLocalFileToBrowser(const QString& sourceFilePath, const QString& downloadName);
+    QString TemporaryFolderName;
+    QPushButton* DownloadModelButton = nullptr;
+    QPushButton* DownloadPrecipButton = nullptr;
 public slots:
     void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
     void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved
     void onError(QAbstractSocket::SocketError error);
+    void onDownloadModel();
 
 };
 

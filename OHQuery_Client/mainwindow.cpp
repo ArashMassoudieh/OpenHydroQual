@@ -9,7 +9,15 @@
 #include <QDateTimeAxis>
 #include <QValueAxis>
 #include <QLabel>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QPushButton>
 
+#ifdef Q_OS_WASM
+#include <emscripten.h>
+#else
+#include <QFileDialog>
+#endif
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -143,17 +151,24 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
 
     QJsonObject rootObj = JsonDoc.object();
     for (const QString& key : rootObj.keys()) {
-        QJsonObject variable = rootObj[key].toObject();
-        QJsonArray tArr = variable["t"].toArray();
-        QJsonArray valArr = variable["value"].toArray();
-
-        TimeSeries ts;
-        for (int i = 0; i < tArr.size(); ++i) {
-            ts.t.append(tArr[i].toDouble());
-            ts.value.append(valArr[i].toDouble());
+        if (key == "TemporaryFolderName")
+        {
+            TemporaryFolderName = rootObj[key].toString();
         }
+        else
+        {
+            QJsonObject variable = rootObj[key].toObject();
+            QJsonArray tArr = variable["t"].toArray();
+            QJsonArray valArr = variable["value"].toArray();
 
-        allSeries[key] = ts;
+            TimeSeries ts;
+            for (int i = 0; i < tArr.size(); ++i) {
+                ts.t.append(tArr[i].toDouble());
+                ts.value.append(valArr[i].toDouble());
+            }
+
+            allSeries[key] = ts;
+        }
     }
 
     chartviews.clear();
@@ -189,7 +204,19 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
         chartView->setRenderHint(QPainter::Antialiasing);
         chartviews[key] = chartView;
 
-        ui->ChartsLayout->addWidget(chartView);    }
+        ui->ChartsLayout->addWidget(chartView);
+    }
+
+    if (!DownloadModelButton)
+    {   DownloadModelButton = new QPushButton(this);
+        DownloadPrecipButton = new QPushButton(this);
+        DownloadModelButton->setText("Download the OpenHydroQual Model");
+        DownloadPrecipButton->setText("Download precipitation data");
+        ui->horizontalLayout_buttons->addWidget(DownloadModelButton);
+        ui->horizontalLayout_buttons->addWidget(DownloadPrecipButton);
+        connect(DownloadModelButton, &QPushButton::clicked, this, &MainWindow::onDownloadModel);
+    }
+
 }
 
 QDateTime excelToQDateTime(double excelDate) {
@@ -219,3 +246,94 @@ QDateTime excelToQDateTime(double excelDate) {
     return QDateTime(convertedDate, convertedTime);
 }
 
+void MainWindow::downloadFileAndTriggerBrowserSave(const QUrl& fileUrl, const QString& downloadName, QObject* parent)
+{
+    auto* manager = new QNetworkAccessManager(parent);
+    QNetworkRequest request(fileUrl);
+    QNetworkReply* reply = manager->get(request);
+
+    QObject::connect(reply, &QNetworkReply::finished, [reply, downloadName]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            qWarning() << "Download failed:" << reply->errorString();
+            reply->deleteLater();
+            return;
+        }
+
+        QByteArray data = reply->readAll();
+        reply->deleteLater();
+
+#ifdef Q_OS_WASM
+        // Use Emscripten to trigger browser download
+        QString base64 = QString::fromLatin1(data.toBase64());
+        QString js = QString(R"(
+            const a = document.createElement('a');
+            a.href = 'data:application/octet-stream;base64,%1';
+            a.download = '%2';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        )").arg(base64, downloadName);
+
+        emscripten_run_script(js.toUtf8().constData());
+#else \
+    // Native fallback: prompt with QFileDialog (won’t work in WASM)
+        QString filename = QFileDialog::getSaveFileName(nullptr, "Save File", downloadName);
+        if (!filename.isEmpty()) {
+            QFile file(filename);
+            if (file.open(QIODevice::WriteOnly)) {
+                file.write(data);
+                file.close();
+            }
+        }
+#endif
+    });
+}
+
+void MainWindow::saveLocalFileToBrowser(const QString& sourceFilePath, const QString& downloadName)
+{
+    QFile file(sourceFilePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open file:" << sourceFilePath;
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+#ifdef Q_OS_WASM
+    // Use Emscripten to trigger download via browser
+    QString base64 = QString::fromLatin1(data.toBase64());
+    QString js = QString(R"(
+        const a = document.createElement('a');
+        a.href = 'data:application/octet-stream;base64,%1';
+        a.download = '%2';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    )").arg(base64, downloadName);
+
+    emscripten_run_script(js.toUtf8().constData());
+
+#else
+    // Native fallback using QFileDialog
+    QString filename = QFileDialog::getSaveFileName(nullptr, "Save File As", downloadName);
+    if (!filename.isEmpty()) {
+        QFile outFile(filename);
+        if (outFile.open(QIODevice::WriteOnly)) {
+            outFile.write(data);
+            outFile.close();
+        } else {
+            qWarning() << "Could not save file to" << filename;
+        }
+    }
+#endif
+}
+
+void MainWindow::onDownloadModel()
+{
+#ifdef LOCALHOST
+    saveLocalFileToBrowser(TemporaryFolderName + "/System.ohq","model.ohq");
+#else
+    downloadFileAndTriggerBrowserSave(QUrl("https://www.greeninfraiq.com/modeldata/" + TemporaryFolderName + "/System.ohq"),"model.ohq");
+#endif
+}

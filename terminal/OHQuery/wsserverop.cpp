@@ -234,7 +234,9 @@ QJsonDocument WSServerOps::Execute(System *system)
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + "/" + system->OutputFileName() +"'";
     system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + "/" + system->ObservedOutputFileName());
     system->GetOutputs().writetofile(system->GetWorkingFolder() + "/" + system->OutputFileName());
-    return QJsonDocument(system->GetObservedOutputs().toJson());
+    QJsonObject output = system->GetObservedOutputs().toJson();
+    output["TemporaryFolderName"] = QString::fromStdString(system->GetWorkingFolder());
+    return QJsonDocument(output);
 }
 
 
