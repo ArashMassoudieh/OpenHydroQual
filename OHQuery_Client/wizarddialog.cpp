@@ -92,7 +92,7 @@ void WizardDialog::CreateItems(WizardScript *wizscript)
     svgviewer->setScene(scene);
     if (wizscript->DiagramFileName().split(".").size()>1)
     {
-       fetchSvgAsync(QUrl("http://www.greeninfraiq.com/svgs/" + wizscript->DiagramFileName()));
+       fetchSvgAsync(QUrl("https://www.greeninfraiq.com/svgs/" + wizscript->DiagramFileName()));
     }
 
     resizeEvent();

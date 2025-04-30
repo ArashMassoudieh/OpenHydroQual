@@ -125,6 +125,7 @@ void MainWindow::TemplateRecieved(const QJsonDocument &JsonDoc)
     WizardDialog *wizDialog = new WizardDialog(this);
     wizDialog->setWindowTitle(wiz.Description());
     wizDialog->CreateItems(&wiz);
+    ui->label->hide();
     ui->horizontalLayout->addWidget(wizDialog);
     disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::handleData);
     connect(wizDialog, &WizardDialog::model_generate_requested, this, &MainWindow::sendParameters);
