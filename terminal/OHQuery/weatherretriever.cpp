@@ -51,7 +51,7 @@ CPrecipitation WeatherRetriever::RetrivePrecipOpenMeteo(const double &startdate,
     QVector<WeatherDataPoint> data = fetchWeatherDataOpenMeteo(location.x(), location.y(), StartDate,EndDate, "precipitation");
     for (int i=0; i<data.count(); i++)
     {
-        qDebug()<<data[i].dateTime<<","<<data[i].value;
+        //qDebug()<<data[i].dateTime<<","<<data[i].value;
         out.append(qDateTimeToExcel(data[i].dateTime)-1.0/24.0,qDateTimeToExcel(data[i].dateTime),data[i].value/1000.0);
     }
     return out;
