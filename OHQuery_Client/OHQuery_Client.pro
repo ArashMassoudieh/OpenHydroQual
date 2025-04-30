@@ -3,6 +3,8 @@ lessThan(QT_MAJOR_VERSION, 6): QT += core gui svg network websockets charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+
+DEFINES += HTTPs
 CONFIG += c++17
 
 # You can make your code fail to compile if it uses deprecated APIs.
