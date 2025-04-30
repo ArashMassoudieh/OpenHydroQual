@@ -36,7 +36,6 @@ CPrecipitation WeatherRetriever::RetrivePrecipNOAA(const double &startdate, cons
     QVector<WeatherDataPoint> data = fetchPrecipitationDataNOAA(stationwithlongestdata.id,StartDate,EndDate);
     for (int i=0; i<data.count(); i++)
     {
-        qDebug()<<data[i].dateTime<<","<<data[i].value;
         out.append(qDateTimeToExcel(data[i].dateTime)-1.0/24.0,qDateTimeToExcel(data[i].dateTime),data[i].value*0.254/100);
     }
     return out;

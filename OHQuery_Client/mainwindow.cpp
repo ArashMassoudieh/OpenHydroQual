@@ -334,6 +334,7 @@ void MainWindow::onDownloadModel()
 #ifdef LOCALHOST
     saveLocalFileToBrowser(TemporaryFolderName + "/System.ohq","model.ohq");
 #else
-    downloadFileAndTriggerBrowserSave(QUrl("https://www.greeninfraiq.com/modeldata/" + TemporaryFolderName + "/System.ohq"),"model.ohq");
+    QString cleanedFilePath = TemporaryFolderName.remove("/root/OHQueryTemporaryFolder/");
+    downloadFileAndTriggerBrowserSave(QUrl("https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/System.ohq"),"model.ohq");
 #endif
 }
