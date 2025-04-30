@@ -117,6 +117,7 @@ void MainWindow::RecieveTemplate()
 
 void MainWindow::sendParameters(const QJsonDocument& jsonDoc)
 {
+    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
     disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
     wsClient->sendJson(jsonDoc.object());  // now async
     connect(wsClient, &WSClient::dataReady, this, &MainWindow::handleData);
@@ -216,6 +217,7 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
         ui->horizontalLayout_buttons->addWidget(DownloadPrecipButton);
         connect(DownloadModelButton, &QPushButton::clicked, this, &MainWindow::onDownloadModel);
     }
+    QGuiApplication::restoreOverrideCursor();
 
 }
 
@@ -244,6 +246,7 @@ QDateTime excelToQDateTime(double excelDate) {
 
     // Combine the date and time
     return QDateTime(convertedDate, convertedTime);
+
 }
 
 void MainWindow::downloadFileAndTriggerBrowserSave(const QUrl& fileUrl, const QString& downloadName, QObject* parent)
@@ -334,7 +337,8 @@ void MainWindow::onDownloadModel()
 #ifdef LOCALHOST
     saveLocalFileToBrowser(TemporaryFolderName + "/System.ohq","model.ohq");
 #else
-    QString cleanedFilePath = TemporaryFolderName.remove("/root/OHQueryTemporaryFolder/");
+
+    QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
     downloadFileAndTriggerBrowserSave(QUrl("https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/System.ohq"),"model.ohq");
 #endif
 }
