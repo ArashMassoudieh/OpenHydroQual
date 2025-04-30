@@ -131,7 +131,7 @@ void WSServerOps::onTextMessageReceived(QString message)
             QString randomFolderName = QUuid::createUuid().toString(QUuid::WithoutBraces);
 
             // Set the path where you want to create the folder
-            QString basePath = QDir::homePath();
+            QString basePath = "/home/ubuntu";
             QString newFolderPath = basePath + "/OHQueryTemporaryFolder/" + randomFolderName;
 
             // Create the directory
