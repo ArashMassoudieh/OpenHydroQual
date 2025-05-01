@@ -22,7 +22,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void RecieveTemplate();
-
+    void SetModelTemplate(const QString &jsonfile) {modeltemplate = jsonfile;}
 private:
     Ui::MainWindow *ui;
     void PopulateListOfWizards();
@@ -34,6 +34,7 @@ private:
     QString TemporaryFolderName;
     QPushButton* DownloadModelButton = nullptr;
     QPushButton* DownloadPrecipButton = nullptr;
+    QString modeltemplate;
 public slots:
     void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
     void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved

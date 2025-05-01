@@ -108,7 +108,7 @@ QString socketErrorToString(QAbstractSocket::SocketError error)
 void MainWindow::RecieveTemplate()
 {
     QJsonObject ModelFile;
-    ModelFile["FileName"] = "StormwaterPond.json";
+    ModelFile["FileName"] = modeltemplate;
     QJsonObject response;
     response["Model"] = ModelFile;
     wsClient->sendJson(response);  // now async
