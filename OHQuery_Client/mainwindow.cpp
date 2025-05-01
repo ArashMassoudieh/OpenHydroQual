@@ -24,6 +24,19 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->chartTabs->hide();
+    this->setStyleSheet("background-color: white;");
+
+    qApp->setStyleSheet(R"(
+    * {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 14px;
+    }
+
+    QLineEdit, QTextEdit, QComboBox, QPushButton {
+        padding: 6px;
+    }
+    )");
 #ifdef LOCALHOST
     QUrl url("ws://localhost:12345");  // Change the port to match your server
 #else
@@ -156,6 +169,13 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
         {
             TemporaryFolderName = rootObj[key].toString();
         }
+        else if (key == "DownloadedTimeSeriesData")
+        {
+            QJsonObject TimeSeriesInfo = rootObj[key].toObject();
+            for (const QString& key_TS : TimeSeriesInfo.keys()) {
+                 DownloadedTimeSeriesData[key_TS] = TimeSeriesInfo[key_TS].toString();
+            }
+        }
         else
         {
             QJsonObject variable = rootObj[key].toObject();
@@ -205,20 +225,42 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
         chartView->setRenderHint(QPainter::Antialiasing);
         chartviews[key] = chartView;
 
-        ui->ChartsLayout->addWidget(chartView);
+        ui->chartTabs->addTab(chartView, key);
     }
 
     if (!DownloadModelButton)
     {   DownloadModelButton = new QPushButton(this);
-        DownloadPrecipButton = new QPushButton(this);
+        DownloadPrecipTextBrowser = new QTextBrowser(this);
         DownloadModelButton->setText("Download the OpenHydroQual Model");
-        DownloadPrecipButton->setText("Download precipitation data");
+        DownloadPrecipTextBrowser->setText("Download precipitation data");
         ui->horizontalLayout_buttons->addWidget(DownloadModelButton);
-        ui->horizontalLayout_buttons->addWidget(DownloadPrecipButton);
+        ui->horizontalLayout_buttons->addWidget(DownloadPrecipTextBrowser);
         connect(DownloadModelButton, &QPushButton::clicked, this, &MainWindow::onDownloadModel);
     }
+    PopulatePrecipTextBrowser();
+    ui->chartTabs->show();
     QGuiApplication::restoreOverrideCursor();
 
+}
+
+void MainWindow::PopulatePrecipTextBrowser()
+{
+
+    DownloadPrecipTextBrowser->clear();
+    DownloadPrecipTextBrowser->setOpenExternalLinks(true);
+    QString html = "<h3>Download Time Series Data</h3><ul>";
+
+    for (const QString& key : DownloadedTimeSeriesData.keys())
+    {
+        QString title = key;
+        QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
+
+        QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/" + DownloadedTimeSeriesData[key];
+        html += QString("<li><a href='%1'>%2</a></li>").arg(url, title);
+    }
+
+
+    DownloadPrecipTextBrowser->setHtml(html);
 }
 
 QDateTime excelToQDateTime(double excelDate) {

@@ -18,7 +18,7 @@ public:
 #endif
     void Start(quint16 port);
     ~WSServerOps();
-    QJsonDocument Execute(System *sys);
+    QJsonObject Execute(System *sys);
     void SetModelFile(const QString &modelfile)
     {
         qDebug()<< "Model file was set to '" <<modelfile<<"'";

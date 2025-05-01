@@ -34,6 +34,11 @@ public:
     QString Url();
     void SetWorkingFolder(const QString wrkingfolder) {workingfolder = wrkingfolder;}
     QString WorkingFolder() {return workingfolder;}
+    void AppendTimeSeries(const QString& key, const QString &url)
+    {
+        TimeSeriesData[key] = url;
+    };
+    QMap<QString, QString> GetTimeSeriesData() {return TimeSeriesData;}
 private:
     QMap<QString, BlockArray> BlockArrays;
     QMap<QString, SingleBlock> SingleBlocks;
@@ -49,6 +54,7 @@ private:
     QStringList addedtemplates;
     QString url;
     QString workingfolder;
+    QMap<QString, QString> TimeSeriesData;
 
 };
 

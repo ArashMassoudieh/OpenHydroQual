@@ -5,6 +5,7 @@
 #include <QListWidgetItem>
 #include "wsclient.h"
 #include <QtCharts/QChartView>
+#include <QTextBrowser>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -23,6 +24,7 @@ public:
     ~MainWindow();
     void RecieveTemplate();
     void SetModelTemplate(const QString &jsonfile) {modeltemplate = jsonfile;}
+    void PopulatePrecipTextBrowser();
 private:
     Ui::MainWindow *ui;
     void PopulateListOfWizards();
@@ -32,8 +34,9 @@ private:
     void downloadFileAndTriggerBrowserSave(const QUrl& fileUrl, const QString& downloadName, QObject* parent = nullptr);
     void saveLocalFileToBrowser(const QString& sourceFilePath, const QString& downloadName);
     QString TemporaryFolderName;
+    QMap<QString,QString> DownloadedTimeSeriesData;
     QPushButton* DownloadModelButton = nullptr;
-    QPushButton* DownloadPrecipButton = nullptr;
+    QTextBrowser* DownloadPrecipTextBrowser = nullptr;
     QString modeltemplate;
 public slots:
     void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved

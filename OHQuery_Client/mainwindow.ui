@@ -26,7 +26,7 @@
      <layout class="QHBoxLayout" name="horizontalLayout"/>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="ChartsLayout"/>
+     <widget class="QTabWidget" name="chartTabs"/>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_buttons"/>

@@ -48,9 +48,9 @@ int main(int argc, char *argv[])
         w->SetModelTemplate("StormwaterPond.json");
 #else
     if (argc > 1)
-        w.SetModelTemplate(argv[1]);
+        w->SetModelTemplate(argv[1]);
     else
-        w.SetModelTemplate("StormwaterPond.json");
+        w->SetModelTemplate("StormwaterPond.json");
 #endif
 
     w->show();

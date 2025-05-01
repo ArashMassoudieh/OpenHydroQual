@@ -131,7 +131,11 @@ void WSServerOps::onTextMessageReceived(QString message)
             QString randomFolderName = QUuid::createUuid().toString(QUuid::WithoutBraces);
 
             // Set the path where you want to create the folder
+#ifndef LOCAL_HOST
             QString basePath = "/home/ubuntu";
+#else
+            QString basePath = QDir::homePath();
+#endif
             QString newFolderPath = basePath + "/OHQueryTemporaryFolder/" + randomFolderName;
 
             // Create the directory
@@ -165,7 +169,15 @@ void WSServerOps::onTextMessageReceived(QString message)
             system.SetDefaultTemplatePath(defaulttemppath);
             system.SetWorkingFolder(newFolderPath.toStdString());
             script.CreateSystemFromQStringList(SelectedWizardScript.Script(),&system);
-            QJsonDocument responseDoc = Execute(&system);
+            QJsonObject responseObj = Execute(&system);
+            QJsonObject TimeSeriesData;
+            QMap<QString, QString> TimeSeriesDataMap = SelectedWizardScript.GetTimeSeriesData();
+            for (QString tskey: TimeSeriesDataMap.keys())
+            {
+                TimeSeriesData[tskey] = TimeSeriesDataMap[tskey];
+            }
+            responseObj["DownloadedTimeSeriesData"] = TimeSeriesData;
+            QJsonDocument responseDoc = QJsonDocument(responseObj);
             QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
             sendMessageToClient(senderSocket, jsonString);
         }
@@ -217,7 +229,7 @@ void WSServerOps::sendMessageToClient(QWebSocket *client, const QString &message
     }
 }
 
-QJsonDocument WSServerOps::Execute(System *system)
+QJsonObject WSServerOps::Execute(System *system)
 {
 
     string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
@@ -236,7 +248,8 @@ QJsonDocument WSServerOps::Execute(System *system)
     system->GetOutputs().writetofile(system->GetWorkingFolder() + "/" + system->OutputFileName());
     QJsonObject output = system->GetObservedOutputs().toJson();
     output["TemporaryFolderName"] = QString::fromStdString(system->GetWorkingFolder());
-    return QJsonDocument(output);
+
+    return output;
 }
 
 
