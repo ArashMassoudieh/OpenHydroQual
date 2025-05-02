@@ -17,6 +17,34 @@
       "type": "Precipitation",
       "timeseries": "PrecipitationData@api"
     },
+    {
+      "name": "Outflow",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Overflow@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Underdrain flow",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Aggregate storage to Catch basin@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Total Outflow",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Catch basin to Receiving_sewer_pipe@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Inflow to the bioretention",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Catchment to bioretention@sc",
+      "expression" : "flow@sc"
+    }
   ],
   "setvals": [
     {
