@@ -1,50 +1,80 @@
 {
     "Blocks": {
-        "Reactor (1)": {
-            "C:concentration": "0.00250491",
-            "C:constant_inflow_concentration": "0",
-            "C:external_mass_flow_timeseries": "",
-            "C:external_source": "",
-            "C:time_variable_inflow_concentration": "",
-            "Storage": "1",
+        "Fixed_head": {
+            "Storage": "100000",
+            "_height": "100",
+            "_width": "100",
+            "head": "0",
+            "name": "Fixed_head",
+            "type": "fixed_head",
+            "x": "1050",
+            "y": "980"
+        },
+        "Impervious contributing catchment": {
+            "Evapotranspiration": "",
+            "ManningCoeff": "0.011",
+            "Precipitation": "Rain",
+            "Slope": "0.01",
+            "Width": "30",
+            "_height": "300",
+            "_width": "300",
+            "area": "1000",
+            "depression_storage": "0",
+            "depth": "0",
+            "elevation": "0",
+            "inflow": "",
+            "loss_coefficient": "0",
+            "name": "Impervious contributing catchment",
+            "type": "Catchment",
+            "x": "500",
+            "y": "450"
+        },
+        "Pond": {
+            "Evapotranspiration": "",
+            "Precipitation": "Rain",
+            "Storage": "0",
             "_height": "200",
             "_width": "200",
+            "alpha": "500",
+            "beta": "2",
             "bottom_elevation": "0",
-            "constant_inflow": "0",
-            "name": "Reactor (1)",
-            "time_variable_inflow": "",
-            "type": "Reactor",
-            "x": "900",
-            "y": "900"
+            "inflow": "",
+            "name": "Pond",
+            "type": "Pond",
+            "x": "950",
+            "y": "820"
         }
     },
     "Constituents": {
-        "C": {
-            "concentration": "0",
-            "constant_inflow_concentration": "0",
-            "diffusion_coefficient": "0",
-            "dispersivity": "0",
-            "external_mass_flow_timeseries": "",
-            "external_source": "",
-            "name": "C",
-            "stoichiometric_constant": "0",
-            "time_variable_inflow_concentration": "",
-            "type": "Constituent"
-        }
     },
     "Links": {
+        "Catchment to pond": {
+            "from": "Impervious contributing catchment",
+            "name": "Catchment to pond",
+            "to": "Pond",
+            "type": "Catchment_link"
+        },
+        "Overflow": {
+            "alpha": "1",
+            "beta": "2.5",
+            "crest_elevation": "1",
+            "from": "Pond",
+            "name": "Overflow",
+            "to": "Fixed_head",
+            "type": "wier"
+        }
     },
     "Objective Functions": {
     },
     "Observations": {
-        "Concentration": {
+        "Outflow": {
             "autocorrelation_time-span": "1",
             "comparison_method": "Least Squared",
             "error_standard_deviation": "1",
             "error_structure": "normal",
-            "expression": "C:concentration",
-            "name": "Concentration",
-            "object": "Reactor (1)",
+            "expression": "0",
+            "name": "Outflow",
+            "object": "0",
             "observed_data": "",
             "type": "Observation"
         }
@@ -52,70 +82,22 @@
     "Parameters": {
     },
     "Reaction Parameters": {
-        "kd": {
-            "Arrhenius_factor": "1",
-            "base_value": "3",
-            "name": "kd",
-            "reference_temperature": "0",
-            "temperature": "",
-            "type": "ReactionParameter"
-        }
     },
     "Reactions": {
-        "Decay": {
-            "C:stoichiometric_constant": "-1",
-            "name": "Decay",
-            "rate_expression": "(kd*C)",
-            "type": "Reaction"
-        }
     },
     "Set As Parameters": [
     ],
     "Settings": {
-        "acceptance_rate": "0.15",
-        "add_noise_to_realizations": "No",
-        "alloutputfile": "output.txt",
-        "c_n_weight": "1",
-        "continue_based_on_file_name": "",
-        "initial_purturbation": "No",
-        "initial_time_step": "0.01",
-        "initual_purturbation_factor": "0.05",
-        "jacobian_method": "Inverse Jacobian",
-        "maximum_number_of_matrix_inverstions": "200000",
-        "maximum_time_allowed": "86400",
-        "maxpop": "40",
-        "minimum_timestep": "1e-06",
-        "n_threads": "8",
-        "ngen": "40",
-        "nr_timestep_reduction_factor": "0.75",
-        "nr_timestep_reduction_factor_fail": "0.2",
-        "nr_tolerance": "0.001",
-        "number_of_burnout_samples": "0",
-        "number_of_chains": "8",
-        "number_of_post_estimate_realizations": "10",
-        "number_of_samples": "1000",
-        "number_of_threads": "1",
-        "numthreads": "8",
-        "observed_outputfile": "observedoutput.txt",
-        "outputfile": "GA_output.txt",
-        "pcross": "1",
-        "perform_global_sensitivity": "No",
-        "pmute": "0.02",
-        "purturbation_change_scale": "0.75",
-        "record_interval": "1",
-        "samples_filename": "mcmc.txt",
-        "shakescale": "0.05",
-        "shakescalered": "0.75",
-        "simulation_end_time": "2",
-        "simulation_start_time": "0",
-        "write_intermittently": "No",
-        "write_interval": "100",
-        "write_solution_details": "No"
     },
     "Sources": {
+        "Rain": {
+            "name": "Rain",
+            "timeseries": "",
+            "type": "Precipitation"
+        }
     },
     "Templates": [
-        "/home/arash/Projects/OpenHydroQual/bin/release/../../resources/main_components.json",
-        "/home/arash/Projects/OpenHydroQual/bin/release/../../resources/mass_transfer.json"
+        "/home/arash/Projects/OpenHydroQual/terminal/OHQuery/../../resources/main_components.json",
+        "/home/arash/Projects/OpenHydroQual/terminal/OHQuery/../../resources/Pond_Plugin.json"
     ]
 }

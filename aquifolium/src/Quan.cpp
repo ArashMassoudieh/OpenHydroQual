@@ -922,7 +922,7 @@ bool Quan::SetTimeSeries(const string &filename, bool prec)
 		CPrecipitation Prec;
 		if (!CPrecipitation::isFileValid(filename))
 		{
-			AppendError(GetName(), "Quan", "SetTimeSeries", filename + " was not is not a valid precipitation file", 3023);
+            AppendError(GetName(), "Quan", "SetTimeSeries", filename + " is not a valid precipitation file", 3023);
 			return false;
 		}
 		else

@@ -353,6 +353,28 @@ bool WizardScript::AssignParameterValues()
     return true;
 }
 
+bool WizardScript::AssignParameterValues(const QJsonObject &jsonObject)
+{
+    for (QMap<QString,WizardParameter>::iterator it=GetWizardParameters().begin(); it!=GetWizardParameters().end(); it++)
+    {
+        if (it.value().EntryItem()!=nullptr)
+        {   if (it.value().Delegate()=="ValueBox")
+                it.value().SetValue(jsonObject[it.key()].toString());
+            else if (it.value().Delegate()=="UnitBox")
+                it.value().SetValue(jsonObject[it.key()].toString());
+            else if (it.value().Delegate()=="SpinBox")
+                it.value().SetValue(jsonObject[it.key()].toString());
+            else if (it.value().Delegate()=="ComboBox")
+                it.value().SetValue(jsonObject[it.key()].toString());
+            else if (it.value().Delegate() == "DateBox")
+                it.value().SetValue(QString::number(QString2Xldate(jsonObject[it.key()].toString())));
+            else if (it.value().Delegate() == "FileBrowser")
+                it.value().SetValue(QString::number(QString2Xldate(jsonObject[it.key()].toString())));
+        }
+    }
+    return true;
+}
+
 QStringList WizardScript::CheckParameters()
 {
     QStringList Errors;

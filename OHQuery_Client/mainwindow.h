@@ -1,0 +1,52 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <QListWidgetItem>
+#include "wsclient.h"
+#include <QtCharts/QChartView>
+#include <QTextBrowser>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
+
+class QPushButton;
+
+using TimeSeriesMap = QMap<QString, TimeSeries>;
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+    void RecieveTemplate();
+    void SetModelTemplate(const QString &jsonfile) {modeltemplate = jsonfile;}
+    void PopulatePrecipTextBrowser();
+private:
+    Ui::MainWindow *ui;
+    void PopulateListOfWizards();
+    WSClient * wsClient = nullptr;
+    void sendParameters(const QJsonDocument& jsonDoc); //Send Parameters
+    QMap<QString, QChartView*> chartviews;
+    void downloadFileAndTriggerBrowserSave(const QUrl& fileUrl, const QString& downloadName, QObject* parent = nullptr);
+    void saveLocalFileToBrowser(const QString& sourceFilePath, const QString& downloadName);
+    QString TemporaryFolderName;
+    QMap<QString,QString> DownloadedTimeSeriesData;
+    QPushButton* DownloadModelButton = nullptr;
+    QTextBrowser* DownloadPrecipTextBrowser = nullptr;
+    QString modeltemplate;
+public slots:
+    void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
+    void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved
+    void onError(QAbstractSocket::SocketError error);
+    void onDownloadModel();
+
+};
+
+QDateTime excelToQDateTime(double excelDate);
+QString socketErrorToString(QAbstractSocket::SocketError error);
+
+#endif // MAINWINDOW_H

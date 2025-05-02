@@ -10,24 +10,56 @@ WeatherRetriever::WeatherRetriever()
 
 }
 
-CPrecipitation WeatherRetriever::RetrivePrecip(const QPointF location, const QString &FIPS)
+CPrecipitation WeatherRetriever::RetrivePrecipNOAA(const QPointF location, const QString &FIPS)
 {
     CPrecipitation out;
-    WeatherStationData stationwithlongestdata = findStation(location.x(),location.y(),"24");
+    WeatherStationData stationwithlongestdata = findStationNOAA(location.x(),location.y(),"24");
     qDebug()<<"Station with longest record:";
     qDebug()<<stationwithlongestdata.name << ": Longitude: " <<stationwithlongestdata.longitude << ": Latitude: " << stationwithlongestdata.latitude << ": Time span [" <<stationwithlongestdata.mindate << "," << stationwithlongestdata.maxdate << "]";
-    QVector<PrecipitationData> data = fetchPrecipitationData(stationwithlongestdata.id,"2012-01-01","2013-01-01");
+    QVector<WeatherDataPoint> data = fetchPrecipitationDataNOAA(stationwithlongestdata.id,"2012-01-01","2013-01-01");
     for (int i=0; i<data.count(); i++)
     {
-        qDebug()<<data[i].dateTime<<","<<data[i].precipitation;
-        out.append(qDateTimeToExcel(data[i].dateTime)-1.0/24.0,qDateTimeToExcel(data[i].dateTime),data[i].precipitation*0.254/100);
+        qDebug()<<data[i].dateTime<<","<<data[i].value;
+        out.append(qDateTimeToExcel(data[i].dateTime)-1.0/24.0,qDateTimeToExcel(data[i].dateTime),data[i].value*0.254/100);
+    }
+    return out;
+}
+
+CPrecipitation WeatherRetriever::RetrivePrecipNOAA(const double &startdate, const double &enddate, const QPointF location, const QString &FIPS)
+{
+    CPrecipitation out;
+    WeatherStationData stationwithlongestdata = findStationNOAA(location.x(),location.y(),"24");
+    qDebug()<<"Station with longest record:";
+    qDebug()<<stationwithlongestdata.name << ": Longitude: " <<stationwithlongestdata.longitude << ": Latitude: " << stationwithlongestdata.latitude << ": Time span [" <<stationwithlongestdata.mindate << "," << stationwithlongestdata.maxdate << "]";
+    QString StartDate = excelToQDateTime(startdate).toString(Qt::ISODate);
+    QString EndDate = excelToQDateTime(enddate).toString(Qt::ISODate);
+    QVector<WeatherDataPoint> data = fetchPrecipitationDataNOAA(stationwithlongestdata.id,StartDate,EndDate);
+    for (int i=0; i<data.count(); i++)
+    {
+        out.append(qDateTimeToExcel(data[i].dateTime)-1.0/24.0,qDateTimeToExcel(data[i].dateTime),data[i].value*0.254/100);
+    }
+    return out;
+}
+
+CPrecipitation WeatherRetriever::RetrivePrecipOpenMeteo(const double &startdate, const double &enddate, const QPointF location)
+{
+    CPrecipitation out;
+
+    qDebug() << ": Longitude: " <<location.y() << ": Latitude: " << location.x() << ": Time span [" <<startdate << "," << enddate << "]";
+    QDate StartDate = excelToQDateTime(startdate).date();
+    QDate EndDate = excelToQDateTime(enddate).date();
+    QVector<WeatherDataPoint> data = fetchWeatherDataOpenMeteo(location.x(), location.y(), StartDate,EndDate, "precipitation");
+    for (int i=0; i<data.count(); i++)
+    {
+        //qDebug()<<data[i].dateTime<<","<<data[i].value;
+        out.append(qDateTimeToExcel(data[i].dateTime)-1.0/24.0,qDateTimeToExcel(data[i].dateTime),data[i].value/1000.0);
     }
     return out;
 }
 
 
-QVector<PrecipitationData> WeatherRetriever::fetchPrecipitationData(const QString& stationId, const QString& startDate, const QString& endDate) {
-    QVector<PrecipitationData> dataList;
+QVector<WeatherDataPoint> WeatherRetriever::fetchPrecipitationDataNOAA(const QString& stationId, const QString& startDate, const QString& endDate) {
+    QVector<WeatherDataPoint> dataList;
 
     // NOAA API endpoint
     QString url;
@@ -67,9 +99,9 @@ QVector<PrecipitationData> WeatherRetriever::fetchPrecipitationData(const QStrin
                 QString dateTimeStr = resultObj["date"].toString();
                 double precipitation = resultObj["value"].toDouble() / 10.0; // NOAA stores precipitation in tenths of mm
 
-                PrecipitationData data;
+                WeatherDataPoint data;
                 data.dateTime = QDateTime::fromString(dateTimeStr, Qt::ISODate);
-                data.precipitation = precipitation;
+                data.value = precipitation;
 
                 dataList.append(data);
             }
@@ -87,7 +119,7 @@ QVector<PrecipitationData> WeatherRetriever::fetchPrecipitationData(const QStrin
 
 
 
-QMap<QString, WeatherStationData> WeatherRetriever::fetchPrecipitationStations(const QString& FIPS) {
+QMap<QString, WeatherStationData> WeatherRetriever::fetchPrecipitationStationsNOAA(const QString& FIPS) {
     QMap<QString, WeatherStationData> stationList;
 
     // NOAA API endpoint
@@ -148,7 +180,7 @@ QMap<QString, WeatherStationData> WeatherRetriever::fetchPrecipitationStations(c
     return stationList;
 }
 
-QMap<QString, WeatherStationData> WeatherRetriever::findClosestStations(
+QMap<QString, WeatherStationData> WeatherRetriever::findClosestStationsNOAA(
     const QMap<QString, WeatherStationData>& stations,
     double latitude,
     double longitude,
@@ -177,7 +209,7 @@ QMap<QString, WeatherStationData> WeatherRetriever::findClosestStations(
     return result;
 }
 
-WeatherStationData WeatherRetriever::findLongestRecordStation(const QMap<QString, WeatherStationData>& stations) {
+WeatherStationData WeatherRetriever::findLongestRecordStationNOAA(const QMap<QString, WeatherStationData>& stations) {
     int maxDays = -1;
     WeatherStationData longest;
 
@@ -213,24 +245,25 @@ double haversine(double lat1, double lon1, double lat2, double lon2) {
     return R * c;
 }
 
-WeatherStationData WeatherRetriever::findStation( const double &latitude, const double &longitude, const QString &FIPS)
+WeatherStationData WeatherRetriever::findStationNOAA( const double &latitude, const double &longitude, const QString &FIPS)
 {
-    QMap<QString, WeatherStationData> stations =  fetchPrecipitationStations(FIPS);
+    QMap<QString, WeatherStationData> stations =  fetchPrecipitationStationsNOAA(FIPS);
     qDebug()<<"All Stations:";
     for (QString stationkey: stations.keys())
     {
         qDebug()<<stationkey << ": Longitude: " <<stations[stationkey].longitude << ": Latitude: " << stations[stationkey].latitude << ": Time span [" <<stations[stationkey].mindate << "," << stations[stationkey].maxdate << "]";
     }
 
-    QMap<QString, WeatherStationData> closeststations = findClosestStations(stations,latitude,longitude,3);
+    QMap<QString, WeatherStationData> closeststations = findClosestStationsNOAA(stations,latitude,longitude,3);
     qDebug()<<"Closest 3 stations:";
     for (QString stationkey: closeststations.keys())
     {
         qDebug()<<stationkey << ": Longitude: " <<closeststations[stationkey].longitude << ": Latitude: " << closeststations[stationkey].latitude << ": Time span [" <<closeststations[stationkey].mindate << "," << closeststations[stationkey].maxdate << "]";
     }
-    WeatherStationData stationwithlongestdata = findLongestRecordStation(closeststations);
+    WeatherStationData stationwithlongestdata = findLongestRecordStationNOAA(closeststations);
     qDebug()<<"Station with longest record:";
     qDebug()<<stationwithlongestdata.name << ": Longitude: " <<stationwithlongestdata.longitude << ": Latitude: " << stationwithlongestdata.latitude << ": Time span [" <<stationwithlongestdata.mindate << "," << stationwithlongestdata.maxdate << "]";
+    StationName = stationwithlongestdata.id;
     return stationwithlongestdata;
 }
 
@@ -287,4 +320,62 @@ QDateTime excelToQDateTime(double excelDate) {
 
     // Combine the date and time
     return QDateTime(convertedDate, convertedTime);
+}
+
+QVector<WeatherDataPoint> WeatherRetriever::fetchWeatherDataOpenMeteo(double latitude, double longitude, const QDate &startDate, const QDate &endDate, const QString &dataType, QObject* parent)
+{
+    QVector<WeatherDataPoint> results;
+
+    QString urlString = QString("https://archive-api.open-meteo.com/v1/era5?"
+                                "latitude=%1&longitude=%2&start_date=%3&end_date=%4"
+                                "&hourly=%5")
+                            .arg(latitude)
+                            .arg(longitude)
+                            .arg(startDate.toString(Qt::ISODate))
+                            .arg(endDate.toString(Qt::ISODate))
+                            .arg(QUrl::toPercentEncoding(dataType));
+
+    QUrl url(urlString);
+    QNetworkAccessManager manager(parent);
+    QNetworkRequest request(url);
+
+    QEventLoop loop;
+    QNetworkReply* reply = manager.get(request);
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "Network error:" << reply->errorString();
+        reply->deleteLater();
+        return results;
+    }
+
+    QByteArray response = reply->readAll();
+    reply->deleteLater();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(response, &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parse error:" << parseError.errorString();
+        return results;
+    }
+
+    QJsonObject root = doc.object();
+    QJsonObject hourly = root.value("hourly").toObject();
+    QJsonArray timeArray = hourly.value("time").toArray();
+    QJsonArray valueArray = hourly.value(dataType).toArray();
+
+    if (timeArray.size() != valueArray.size()) {
+        qWarning() << "Mismatched time and data array sizes.";
+        return results;
+    }
+
+    for (int i = 0; i < timeArray.size(); ++i) {
+        QDateTime dt = QDateTime::fromString(timeArray.at(i).toString(), Qt::ISODate);
+        dt.setTimeSpec(Qt::UTC);
+        double val = valueArray.at(i).toDouble();
+        results.append({dt, val});
+    }
+
+    return results;
 }

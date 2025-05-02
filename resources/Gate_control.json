@@ -1,0 +1,82 @@
+{
+  "Gate_Opening": {
+    "type": "constituent",
+    "typecategory": "Constituents",
+    "description": "Gate Opening",
+    "icon": {
+      "filename": "Gate_Opening.png"
+    },
+    "concentration": {
+      "description": "Concentration",
+      "type": "expression",
+      "expression": "mass",
+      "ask_user": "false",
+      "role": "copytoblocks",
+      "includeinoutput": "false",
+      "delegate": "ValueBox",
+      "estimate": "false"
+    },
+    "mass": {
+      "description": "Gate Opening",
+      "type": "balance",
+      "massbalance": "true",
+      "inflow": "external_source",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "role": "copytoblocks"
+    },
+    "masstransfer": {
+      "description": "Mass transfer rate",
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "external_source": {
+      "type": "expression",
+      "expression": "_hsd(depth-max_depth)*increase_rate-_hsd(min_depth-depth)*decrease_rate",
+      "includeinoutput": "true",
+      "description": "Rate of Change",
+      "ask_user": "false",
+      "role": "copytoblocks"
+    },
+    "decrease_rate": {
+      "type": "value",
+      "default": "10",
+      "description": "Decrease Rate",
+      "delegate": "UnitBox",
+      "unit": "1/day",
+      "ask_user": "true",
+      "estimate": "true"
+    },
+    "increase_rate": {
+      "type": "value",
+      "default": "10",
+      "description": "Increase Rate",
+      "delegate": "UnitBox",
+      "unit": "1/day",
+      "ask_user": "true",
+      "estimate": "true"
+    },
+    "min_depth": {
+      "type": "value",
+      "default": "10",
+      "description": "Minimum depth",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "ask_user": "true",
+      "estimate": "true"
+    },
+    "max_depth": {
+      "type": "value",
+      "default": "10",
+      "description": "Maximum depth",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "ask_user": "true",
+      "estimate": "true"
+    }
+  }
+}
+

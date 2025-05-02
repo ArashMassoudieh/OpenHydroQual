@@ -5,7 +5,13 @@
 #include <QFileInfo>
 #include "Script.h"
 #include <QFile>
+#include "Wizard_Script.h"
+#include <QDir>
+#ifdef HTTPS
+#include <QSslKey>
+#endif
 
+#ifndef HTTPS
 WSServerOps::WSServerOps(QObject *parent)
     : QObject(parent),
     m_server(new QWebSocketServer(QStringLiteral("Echo Server"),
@@ -23,6 +29,49 @@ void WSServerOps::Start(quint16 port)
                 this, &WSServerOps::onNewConnection);
     }
 }
+#else
+
+WSServerOps::WSServerOps(const QString &certPath, const QString &keyPath, QObject *parent)
+    : QObject(parent),
+    m_server(new QWebSocketServer(QStringLiteral("Echo Server"),
+                                  QWebSocketServer::SecureMode, this))
+    ,m_certPath(certPath), m_keyPath(keyPath)
+{
+    qDebug()<<"Certificate path: " <<m_certPath;
+    qDebug()<<"Key path: " <<m_keyPath;
+}
+
+void WSServerOps::Start(quint16 port)
+{
+    // Load SSL configuration
+    QSslConfiguration sslConfiguration;
+    QFile certFile(m_certPath);
+    QFile keyFile(m_keyPath);
+    if (!certFile.open(QIODevice::ReadOnly) || !keyFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "Cannot open SSL certificate or key file!";
+        return;
+    }
+
+    QSslCertificate certificate(&certFile, QSsl::Pem);
+    QSslKey sslKey(&keyFile, QSsl::Rsa, QSsl::Pem);
+
+    sslConfiguration.setPeerVerifyMode(QSslSocket::VerifyNone);  // Don't verify clients
+    sslConfiguration.setLocalCertificate(certificate);
+    sslConfiguration.setPrivateKey(sslKey);
+    sslConfiguration.setProtocol(QSsl::TlsV1_2);
+
+    m_server->setSslConfiguration(sslConfiguration);
+
+    // Start listening
+    if (m_server->listen(QHostAddress::Any, port)) {
+        qDebug() << "Secure WebSocket server listening on port" << port;
+        connect(m_server, &QWebSocketServer::newConnection,
+                this, &WSServerOps::onNewConnection);
+    } else {
+        qDebug() << "Failed to start WebSocket server on port" << port;
+    }
+}
+#endif
 
 WSServerOps::~WSServerOps()
 {
@@ -60,19 +109,105 @@ void WSServerOps::onTextMessageReceived(QString message)
             qDebug() << "Parsed JSON:" << jsonDoc;
         }
 
-        QJsonObject obj = jsonDoc.object();
-        for (auto it = obj.begin(); it != obj.end(); ++it) {
-            QString key = it.key();
-            QJsonValue value = it.value();
-            qDebug() << "Key:" << key << ", Value:" << value;
+        QJsonObject root_obj = jsonDoc.object();
+        if (root_obj.keys().contains("Model"))
+        {
+            QJsonDocument responseDoc = SendModelTemplate(root_obj["Model"].toObject()["FileName"].toString());
+            qDebug()<<responseDoc;
+            QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
+            sendMessageToClient(senderSocket, jsonString);
         }
+        else if (root_obj.keys().contains("Parameters"))
+        {
+            QJsonObject obj = root_obj["Parameters"].toObject();
+            for (auto it = obj.begin(); it != obj.end(); ++it) {
+                QString key = it.key();
+                QJsonValue value = it.value();
+                qDebug() << "Key:" << key << ", Value:" << value;
+            }
+            WizardScript SelectedWizardScript(TemplateFile_Fullpath);
+            SelectedWizardScript.AssignParameterValues(obj);
 
-        QJsonDocument responseDoc = Execute(obj);
+            QString randomFolderName = QUuid::createUuid().toString(QUuid::WithoutBraces);
 
-        QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
-        sendMessageToClient(senderSocket, jsonString);
+            // Set the path where you want to create the folder
+#ifndef LOCAL_HOST
+            QString basePath = "/home/ubuntu";
+#else
+            QString basePath = QDir::homePath();
+#endif
+            QString newFolderPath = basePath + "/OHQueryTemporaryFolder/" + randomFolderName;
 
+            // Create the directory
+            QDir dir;
+
+            QString MainFolderPath = basePath + "/OHQueryTemporaryFolder/";
+
+            if (!dir.exists(MainFolderPath)) {
+                if (dir.mkpath(MainFolderPath)) {
+                    qDebug() << "Folder created successfully:" << MainFolderPath;
+                } else {
+                    qDebug() << "Failed to create folder:" << MainFolderPath;
+                }
+            } else {
+                qDebug() << "Folder already exists:" << MainFolderPath;
+            }
+
+            if (dir.mkpath(newFolderPath)) {
+                qDebug() << "Folder created successfully:" << newFolderPath;
+            } else {
+                qDebug() << "Failed to create folder.";
+            }
+
+            SelectedWizardScript.SetWorkingFolder(newFolderPath);
+
+            Script script;
+            System system;
+            string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
+            system.ReadSystemSettingsTemplate(qApp->applicationDirPath().toStdString() + "/../../resources/settings.json");
+            cout << "Default Template path = " + defaulttemppath +"\n";
+            system.SetDefaultTemplatePath(defaulttemppath);
+            system.SetWorkingFolder(newFolderPath.toStdString());
+            script.CreateSystemFromQStringList(SelectedWizardScript.Script(),&system);
+            QJsonObject responseObj = Execute(&system);
+            QJsonObject TimeSeriesData;
+            QMap<QString, QString> TimeSeriesDataMap = SelectedWizardScript.GetTimeSeriesData();
+            for (QString tskey: TimeSeriesDataMap.keys())
+            {
+                TimeSeriesData[tskey] = TimeSeriesDataMap[tskey];
+            }
+            responseObj["DownloadedTimeSeriesData"] = TimeSeriesData;
+            QJsonDocument responseDoc = QJsonDocument(responseObj);
+            QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
+            sendMessageToClient(senderSocket, jsonString);
+        }
     }
+}
+
+QJsonDocument WSServerOps::SendModelTemplate(const QString &TemplateName)
+{
+    QFile file(QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName);
+    qDebug()<<QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Failed to open file:" << QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+        return QJsonDocument(); // returns a null document
+    }
+    else
+    {
+        TemplateFile_Fullpath = QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+    }
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &parseError);
+
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parse error:" << parseError.errorString();
+        return QJsonDocument();
+    }
+
+    return jsonDoc;
 }
 
 void WSServerOps::onSocketDisconnected()
@@ -90,62 +225,31 @@ void WSServerOps::sendMessageToClient(QWebSocket *client, const QString &message
 {
     if (client) {
         client->sendTextMessage(message);
-        qDebug() << "Sent message to client:" << message;
+        //qDebug() << "Sent message to client:" << message;
     }
 }
 
-QJsonDocument WSServerOps::Execute(const QJsonObject &instructions)
+QJsonObject WSServerOps::Execute(System *system)
 {
-    System *system=new System();
-    cout<<"Reading script ..."<<endl;
-    string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
-    cout << "Default Template path = " + defaulttemppath +"\n";
-    system->SetDefaultTemplatePath(defaulttemppath);
-    system->SetWorkingFolder(QFileInfo(modelFile).canonicalPath().toStdString() + "/");
 
-    qDebug()<<"Model File: " << modelFile;
     string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
-    Script scr(modelFile.toStdString(),system);
-    cout<<"Executing script ..."<<endl;
-    system->CreateFromScript(scr,settingfilename);
-    system->SetSilent(false);
-    for (QJsonObject::const_iterator entity = instructions.constBegin(); entity != instructions.constEnd(); ++entity)
-    {
-        if (system->object(entity.key().toStdString()))
-        {
-            QJsonObject properties = entity.value().toObject();
-            qDebug()<<entity.key()<<":"<<entity.value();
-            for (QJsonObject::const_iterator property = properties.constBegin(); property != properties.constEnd(); ++property)
-            {
-                qDebug()<<property.key()<<":"<<property.value();
-                system->object(entity.key().toStdString())->SetProperty(property.key().toStdString(), property.value().toString().toStdString());
-            }
-        }
-    }
 
+    cout<<"Executing script ..."<<endl;
+
+    system->SetSilent(false);
+    system->SavetoScriptFile(system->GetWorkingFolder() + "/" + "System.ohq");
     cout<<"Solving ..."<<endl;
     system->Solve();
-    system->SavetoJson("System.json",system->addedtemplates);
-    System system2;
-
-    system2.SetDefaultTemplatePath(defaulttemppath);
-    system2.SetWorkingFolder(QFileInfo(workingDirectory).canonicalPath().toStdString() + "/");
-    qDebug()<<"Working Folder: "<< QString::fromStdString(system2.GetWorkingFolder());
-    system2.ReadSystemSettingsTemplate(settingfilename);
-
-    QFile file("System.json");
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
-    QByteArray rawData = file.readAll();
-    file.close();
-
-    QJsonDocument doc = QJsonDocument::fromJson(rawData);
+    system->SavetoJson(system->GetWorkingFolder() + "/" + "System.json",system->addedtemplates);
 
 
-    system2.LoadfromJson(doc);
-    system2.SavetoScriptFile("Recreated.ohq");
-    cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
-    system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + system->OutputFileName());
-    return QJsonDocument(system->GetObservedOutputs().toJson());
+    cout<<"Writing outputs in '"<< system->GetWorkingFolder() + "/" + system->OutputFileName() +"'";
+    system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + "/" + system->ObservedOutputFileName());
+    system->GetOutputs().writetofile(system->GetWorkingFolder() + "/" + system->OutputFileName());
+    QJsonObject output = system->GetObservedOutputs().toJson();
+    output["TemporaryFolderName"] = QString::fromStdString(system->GetWorkingFolder());
+
+    return output;
 }
 
 

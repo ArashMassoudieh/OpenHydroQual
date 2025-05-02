@@ -334,3 +334,23 @@ build-Client-WebAssembly_Qt_6_3_2-Debug/
 build-Client-WebAssembly_Qt_6_3_2-Release/
 
 terminal/build-OHQuery-Desktop_Qt_6_4_2_GCC_64bit-Debug/
+
+OHQ_Server_WSClient/build/Desktop_Qt_6_8_2-Debug/
+
+OHQuery_Client/build/Desktop-Debug/
+
+OHQuery_Client/build/Desktop_Qt_5_15_2_GCC_64bit-Debug/
+
+OHQuery_Client/build/Desktop_Qt_6_8_2-Debug/
+
+OHQuery_Client/build/WebAssembly_Qt_6_8_2_multi_threaded-Debug/
+
+build-OHQuery_Client-Desktop_Qt_6_4_2_GCC_64bit-Debug/
+
+terminal/OHQuery/OHQServer
+
+WSClient/build/Desktop_Qt_6_8_2-Debug/
+
+OHQuery_Client/build/WebAssembly_Qt_6_8_2_multi_threaded-Release/
+
+OHQuery_Client/build/WebAssembly_Qt_6_8_2_single_threaded-Release/

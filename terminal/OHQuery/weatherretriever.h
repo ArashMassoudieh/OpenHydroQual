@@ -17,24 +17,29 @@ struct WeatherStationData {
     double datacoverage; // Data coverage percentage};
 };
 
-struct PrecipitationData {
+struct WeatherDataPoint {
     QDateTime dateTime;  // Timestamp of the measurement
-    double precipitation; // Precipitation value in mm
+    double value; // values
 };
 
 class WeatherRetriever
 {
 public:
     WeatherRetriever();
-    CPrecipitation RetrivePrecip(const QPointF location, const QString &FIPS);
-    QMap<QString, WeatherStationData> fetchPrecipitationStations(const QString& FIPS);
+    CPrecipitation RetrivePrecipNOAA(const QPointF location, const QString &FIPS);
+    CPrecipitation RetrivePrecipNOAA(const double &startdate, const double &enddate, const QPointF location, const QString &FIPS);
+    QMap<QString, WeatherStationData> fetchPrecipitationStationsNOAA(const QString& FIPS);
     void SetAPIToken(const QString &token) {apiToken = token; }
-    QMap<QString, WeatherStationData> findClosestStations(const QMap<QString, WeatherStationData>& stations, double latitude, double longitude, int n);
-    WeatherStationData findLongestRecordStation(const QMap<QString, WeatherStationData>& stations);
-    WeatherStationData findStation( const double &latitude, const double &longitude, const QString &FIPS);
-    QVector<PrecipitationData> fetchPrecipitationData(const QString& stationId, const QString& startDate, const QString& endDate);
+    QMap<QString, WeatherStationData> findClosestStationsNOAA(const QMap<QString, WeatherStationData>& stations, double latitude, double longitude, int n);
+    WeatherStationData findLongestRecordStationNOAA(const QMap<QString, WeatherStationData>& stations);
+    WeatherStationData findStationNOAA( const double &latitude, const double &longitude, const QString &FIPS);
+    QVector<WeatherDataPoint> fetchPrecipitationDataNOAA(const QString& stationId, const QString& startDate, const QString& endDate);
+    QString SelectedStation() {return StationName;}
+    QVector<WeatherDataPoint> fetchWeatherDataOpenMeteo(double latitude, double longitude, const QDate &startDate, const QDate &endDate, const QString &dataType, QObject* parent = nullptr);
+    CPrecipitation RetrivePrecipOpenMeteo(const double &startdate, const double &enddate, const QPointF location);
 private:
     QString apiToken = "";
+    QString StationName = "";
 };
 
 double haversine(double lat1, double lon1, double lat2, double lon2);

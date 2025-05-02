@@ -1,0 +1,165 @@
+{
+  "name": "2DSoilGrid",
+  "icon": "soil_grid.png",
+  "description": "This wizard creates a two-dimentional vertical (2DV) soil grid",
+  "addtemplate": [
+    "main_components.json",
+    "unsaturated_soil.json"
+  ],
+  "entities": [
+    {
+      "name": "Rain",
+      "entity": "source",
+      "type": "Precipitation",
+      "timeseries": "TimeSeriesFileName@sp"
+    }
+  ],
+  "setvals": [
+    {
+      "name": "start_date",
+      "object": "system@sc",
+      "quantity": "simulation_start_time@sc",
+      "value": "StartTime@dp"
+    },
+	{
+      "name": "end_date",
+      "object": "system@sc",
+      "quantity": "simulation_end_time@sc",
+      "value": "EndTime@dp"
+    }
+  ],
+  "blockarrays": [
+    {
+      "name": "Soil",
+      "type": "Soil",
+      "grid_type": "2D-Rect",
+      "v_connector_type": "soil_to_soil_link",
+      "h_connector_type": "soil_to_soil_H_link",
+      "n_x": "n_x",
+      "n_y": "n_y",
+      "K_sat_original": "K_s;m/day",
+      "K_sat_scale_factor": "1",
+      "depth": "height/n_y;m",
+      "alpha": "1;1/m",
+      "area": "length*width/n_x",
+      "bottom_elevation": "surface_elevation-j*height/n_y;m",
+      "_width": "200",
+      "_height": "200",
+      "n": "1.41",
+      "specific_storage": "0.01;1/m",
+      "theta": "0.2",
+      "theta_res": "0.05",
+      "theta_sat": "0.4",
+      "x": "900+i*250",
+      "y": "900+j*250"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "n_x",
+      "delegate": "ValueBox",
+      "question": "Number of cells in horizontal direction"
+    },
+    {
+      "name": "n_y",
+      "delegate": "SpinBox",
+      "question": "Number of cells in vertical direction",
+      "range": [
+        "1",
+        "30"
+      ]
+    },
+    {
+      "name": "length",
+      "delegate": "UnitBox",
+      "question": "The total length of the medium",
+      "unit": "m;ft"
+    },
+    {
+      "name": "K_s",
+      "delegate": "UnitBox",
+      "question": "Saturated Hydraulic Conductivity",
+      "unit": "m/day;ft/day"
+    },
+    {
+      "name": "height",
+      "delegate": "UnitBox",
+      "question": "The total height of the medium",
+      "unit": "m;ft"
+    },
+    {
+      "name": "width",
+      "delegate": "UnitBox",
+      "question": "The total width of the medium",
+      "unit": "m;ft"
+    },
+    {
+      "name": "TimeSeriesFileName",
+      "delegate": "FileBrowser",
+      "question": "Precipitation file name"
+    },
+	{
+      "name": "StartTime",
+      "delegate": "DateBox",
+      "question": "Simulation Start Date"
+    },
+	{
+      "name": "EndTime",
+      "delegate": "DateBox",
+      "question": "Simulation End Date"
+    }
+  ],
+  "parameter_groups": [
+    {
+      "name": "general",
+      "description": "General Model parameters",
+      "parameters": [
+        "TimeSeriesFileName",
+		"StartTime",
+		"EndTime"
+      ],
+      "criteria": [
+        {
+          "name": "cr1",
+          "less": "0",
+          "greater": "Wind_ceoff",
+          "ErrorMessage": "Wind coefficient must be positive"
+        }
+      ]
+    },
+	{
+      "name": "geometry",
+      "description": "Geometrical parameters",
+      "parameters": [
+        "n_x",
+        "n_y",
+        "length",
+        "height",
+        "width"
+      ],
+      "criteria": [
+        {
+          "name": "cr1",
+          "less": "0",
+          "greater": "Wind_ceoff",
+          "ErrorMessage": "Wind coefficient must be positive"
+        }
+      ]
+    },
+    {
+      "name": "physical_charachteristics",
+      "description": "Physical parameters",
+      "parameters": [
+        "K_s"
+      ],
+      "criteria": [
+        {
+          "name": "cr1",
+          "less": "0",
+          "greater": "Wind_ceoff",
+          "ErrorMessage": "Wind coefficient must be positive"
+        }
+      ]
+    }
+  ]
+}
