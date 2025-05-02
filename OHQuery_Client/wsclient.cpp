@@ -11,7 +11,14 @@ WSClient::WSClient(const QUrl &url, QObject *parent)
 {
     connect(&m_webSocket, &QWebSocket::connected, this, &WSClient::onConnected);
     connect(&m_webSocket, &QWebSocket::textMessageReceived, this, &WSClient::onTextMessageReceived);
+
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
     connect(&m_webSocket, &QWebSocket::errorOccurred, this, &WSClient::socketError);
+    #else
+    //connect(&m_webSocket.socket(), &QAbstractSocket::errorOccurred, this, &WSClient::socketError);
+    #endif
+
+
     m_webSocket.open(m_url);
 }
 
