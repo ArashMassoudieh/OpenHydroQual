@@ -18,7 +18,7 @@
       "timeseries": "PrecipitationData@api"
     },
     {
-      "name": "Outflow",
+      "name": "Overflow",
       "entity": "observation",
       "type": "Observation",
       "object": "Overflow@sc",
