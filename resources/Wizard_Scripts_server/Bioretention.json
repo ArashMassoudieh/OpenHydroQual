@@ -483,7 +483,8 @@
       "parameters": [
         "StartTime",
         "EndTime",
-        "TimeSeriesFileName"
+        "Longitude",
+        "Latitude"
       ]
     },
     {
