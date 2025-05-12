@@ -29,33 +29,8 @@ vector<double> bubbleSort(const vector<double> &V);
 vector<int> bubbleSort(const vector<int> &V);
 
 template <class T>
-vector<T> QSort(const vector<T> &V1)
-{
-
-    if (CVector(V1).max()==CVector(V1).min())
-        return V1;
-    if (V1.size() <= 1) return V1;
-    vector<T> V = V1;
-    int end = V.size();
-    if (V[end - 1]<V[0]) V = reverse_order(V);
-    vector<T> less, greater;
-    greater.push_back(V[end - 1]);
-    for (int i = 0; i<end - 1; i++)
-        if (V[i]<=V[end - 1])
-            less.push_back(V[i]);
-        else 
-            greater.push_back(V[i]);
-
-
-        if ((V.size() == greater.size()) && (less.size() == 0))
-            return greater;
-        vector<T> res = QSort(less);
-        vector<T> x2 = QSort(greater);
-
-        res.insert(res.end(), x2.begin(), x2.end());
-        less.clear();
-        greater.clear();
-        x2.clear();
-        return res;
-
+std::vector<T> QSort(const std::vector<T>& V) {
+    std::vector<T> sorted = V;
+    std::sort(sorted.begin(), sorted.end());
+    return sorted;
 }
