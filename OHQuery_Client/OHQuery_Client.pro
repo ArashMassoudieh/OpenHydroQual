@@ -5,7 +5,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 
 DEFINES += HTTPs
-DEFINES += LOCALHOST
+#DEFINES += LOCALHOST
 CONFIG += c++17
 
 # You can make your code fail to compile if it uses deprecated APIs.
