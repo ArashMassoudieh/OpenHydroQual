@@ -11,11 +11,11 @@ SolutionLogger::SolutionLogger(const string &filename)
 }
 bool SolutionLogger::AssignFile(const string &filename)
 {
-    file = ofstream(filename,std::ofstream::out);
-    if (file.good())
-        return true;
-    else
-        return false;
+    if (file.is_open())
+        file.close(); // Clean up old state
+    file.open(filename, std::ofstream::out);
+    return file.good();
+
 }
 
 bool SolutionLogger::WriteString(const string &s)
@@ -26,7 +26,8 @@ bool SolutionLogger::WriteString(const string &s)
 
 bool SolutionLogger::Close()
 {
-    file.close();
+    if (file.is_open())
+        file.close();
     return true;
 }
 
@@ -56,7 +57,8 @@ bool SolutionLogger::WriteMatrix(const CMatrix_arma &m)
 }
 void SolutionLogger::Flush()
 {
-    for (unsigned int i=0; i<contents.size(); i++)
-        file<<contents[i]<<endl;
+    if (!file.is_open()) return; // Prevent write to invalid stream
+    for (const auto& line : contents)
+        file << line << std::endl;
     contents.clear();
 }
