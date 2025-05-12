@@ -95,7 +95,6 @@ System::System(const System& other):Object::Object(other)
 	SolverTempVars = other.SolverTempVars;
     paths = other.paths;
     Settings = other.Settings;
-    solutionlogger = other.solutionlogger;
     SolverTempVars.SolutionFailed = false;
     ParameterEstimationMode = other.ParameterEstimationMode;
     metamodel = other.metamodel;
@@ -127,7 +126,6 @@ System& System::operator=(const System& rhs)
     paths = rhs.paths;
     Settings = rhs.Settings;
     observations = rhs.observations;
-    solutionlogger = rhs.solutionlogger;
     SolverTempVars.SolutionFailed = false;
     ParameterEstimationMode = rhs.ParameterEstimationMode;
     metamodel = rhs.metamodel;
@@ -1634,6 +1632,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                         if (GetSolutionLogger())
                         {
                             GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
+                            //if (transport) GetSolutionLogger()->WriteString("In transport!");
                             GetSolutionLogger()->WriteString("Diagonal vector!");
                             GetSolutionLogger()->WriteVector(J.diagvector());
                             if (J.diagvector().lookup(0).size()>0)
@@ -2410,8 +2409,8 @@ CVector_arma System::Jacobian(const string &variable, CVector_arma &V, CVector_a
 {
       double epsilon;
       double u = 1;
-      if (unitrandom()>0.5) u=1; else u=-1;
-
+      //if (unitrandom()>0.5) u=1; else u=-1;
+      
       epsilon = -1e-6*u*(fabs(V[i])+1);
       CVector_arma V1(V);
       V1[i] += epsilon;

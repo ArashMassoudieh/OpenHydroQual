@@ -35,7 +35,7 @@
     },
     "external_source": {
       "type": "expression",
-      "expression": "_hsd(depth-max_depth)*increase_rate-_hsd(min_depth-depth)*decrease_rate",
+      "expression": "_pos(mass)/_pos(mass+0.01)*(_hsd(depth-max_depth)*increase_rate-_hsd(min_depth-depth)*decrease_rate)",
       "includeinoutput": "true",
       "description": "Rate of Change",
       "ask_user": "false",
@@ -77,6 +77,82 @@
       "ask_user": "true",
       "estimate": "true"
     }
-  }
+  },
+  "controlable_wier":{
+		"type": "link",
+		"typecategory": "Connectors",
+                "description": "Automatically Controlled Weir",
+		"icon": {
+			"filename": "controlable_weir.png"
+		},
+                "color": {
+      			"type": "string",
+      			"default": "0,200,200"
+    		},
+                "crest_elevation" : {
+			"type": "value",
+			"description": "Crest Elevation",
+			"ask_user" : "true",
+			"delegate": "UnitBox",
+		        "unit": "m;ft",
+			"estimate" : "true"
+		},
+		"alpha": {
+		      "type": "expression",
+		      "description": "Coefficient α in Q=α*(h-z_0)^β",
+		      "expression" : "gate_coeff*_pos(Gate_Opening_1:mass.s)^gate_exp",
+		      "includeinoutput" : "true"
+    		},
+    		"beta": {
+		      "type": "value",
+		      "description": "Exponent β in Q=α*(h-z_0)^β",
+		      "ask_user": "true",
+		      "delegate": "ValueBox",
+		      "estimate": "true",
+		      "default": "2.5",
+		      "criteria": "beta>0",
+		      "warningmessage": "β must be positive"
+   		},
+   		"gate_coeff": {
+		      "type": "value",
+		      "description": "Gate-flow relationship coefficient",
+		      "ask_user": "true",
+		      "delegate": "ValueBox",
+		      "estimate": "true",
+		      "default": "1000",
+		      "criteria": "gate_coeff>0",
+		      "warningmessage": "Gate coefficient must be positive"
+   		},
+   		"gate_exp": {
+		      "type": "value",
+		      "description": "Gate-flow relationship exponent",
+		      "ask_user": "true",
+		      "delegate": "ValueBox",
+		      "estimate": "true",
+		      "default": "1",
+		      "criteria": "gate_exp>0",
+		      "warningmessage": "Gate exponent must be positive"
+   		},
+	        "flow" : {
+		      	"type": "expression",
+			"description": "Flow rate (m~^3/day)",
+                        "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
+			"includeinoutput" : "true",
+			"applylimit": "true"	
+		},
+	        "area" : {
+		      	"type": "value",
+			"description": "Area",
+			"default": "0",
+                       "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
+			"includeinoutput" : "false",
+			"applylimit": "false"	
+		},
+		"length" : {
+		      	"type": "value",
+			"description": "length",
+			"default": "1",
+			"includeinoutput" : "false"
+		}  	
+	}
 }
-

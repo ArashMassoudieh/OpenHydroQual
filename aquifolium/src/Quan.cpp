@@ -739,7 +739,7 @@ string tostring(const Quan::_type &typ)
 bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_criteria)
 {
     const double past_val = _val;
-    const double past_val_star = _val;
+
     if (tmg == Expression::timing::past || tmg == Expression::timing::both)
         _val = v;
     if (tmg == Expression::timing::present || tmg == Expression::timing::both)
@@ -774,7 +774,7 @@ bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_cri
                 //qDebug()<<"Appending error...";
                 AppendError(parent->GetName(), "Quan", "SetVal", warning_message, 8012);
                 _val = past_val;
-                _val_star = past_val_star;
+                _val_star = past_val;
                 return false; 
             }
 
