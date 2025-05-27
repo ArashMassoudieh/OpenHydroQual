@@ -354,3 +354,15 @@ WSClient/build/Desktop_Qt_6_8_2-Debug/
 OHQuery_Client/build/WebAssembly_Qt_6_8_2_multi_threaded-Release/
 
 OHQuery_Client/build/WebAssembly_Qt_6_8_2_single_threaded-Release/
+
+build-OHQuery_Client-Desktop_Qt_6_9_0-Debug/
+
+build-OHQuery_Client-WebAssembly_Qt_6_9_0_single_threaded-Debug/
+
+terminal/build-OHQuery-Desktop_Qt_6_9_0-Debug/
+
+terminal/OHQuery/build/Debug/
+
+terminal/OHQuery/build/Release/OHQuery
+
+terminal/OHQuery/build/Release/
