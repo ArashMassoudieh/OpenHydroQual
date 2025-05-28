@@ -677,17 +677,17 @@ void QuanSet::CreateCPPcode(const string &source, const string header)
     sourcefile.close();
 }
 
-QJsonObject QuanSet::toJson()
+QJsonObject QuanSet::toJson(bool allvariables, bool calculatevalue)
 {
     QJsonObject out;
     for (map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
 
-        if (it->second.AskFromUser())
-        {    if (it->second.Delegate()=="UnitBox" || it->second.Delegate() == "ValueBox")
-                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(true));
+        if (it->second.AskFromUser() || allvariables)
+        {    if (it->second.Delegate()=="UnitBox" || it->second.Delegate() == "ValueBox" )
+                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(true || calculatevalue));
             else
-                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(false));
+                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(false || calculatevalue));
         }
 
     }

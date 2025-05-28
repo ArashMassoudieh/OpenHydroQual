@@ -9,7 +9,7 @@
 	    "concentration": {
 	      "description": "Concentration per unit surface area",
 	      "type": "expression",
-	      "expression": "mass/area",
+	      "expression": "mass/(area+0.001)",
 	      "ask_user": "true",
 	      "role": "copytoblocks",
 	      "includeinoutput": "true",
@@ -54,7 +54,6 @@
 	    },
 	    "external_source": {
 	      "type": "source",
-	      "includeinoutput": "true",
 	      "description": "External source",
 	      "ask_user": "true",
 	      "role": "copytoblocks",

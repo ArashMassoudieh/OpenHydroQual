@@ -91,7 +91,7 @@ class QuanSet
         vector<string> ReviseQuanityOrder(const vector<string> &quantity, const string &constituent);
         bool InitializePrecalcFunctions();
         void CreateCPPcode(const string &source, const string header);
-        QJsonObject toJson();
+        QJsonObject toJson(bool allvariables = false, bool calculatevalue = false);
         QJsonArray toJsonSetAsParameter();
     protected:
 

@@ -4244,7 +4244,7 @@ bool System::WriteOutPuts()
     return true;
 }
 
-bool System::SavetoJson(const string &filename, const vector<string> &_addedtemplates)
+bool System::SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariables, bool calculatevalue)
 {
     SetVariableParents();
     if (_addedtemplates.size()!=0)
@@ -4267,48 +4267,48 @@ bool System::SavetoJson(const string &filename, const vector<string> &_addedtemp
 
     QJsonObject SourcesJsonObject;
     for (unsigned int i=0; i<sources.size(); i++)
-        SourcesJsonObject[QString::fromStdString(sources[i].GetName())] = sources[i].toJson();
+        SourcesJsonObject[QString::fromStdString(sources[i].GetName())] = sources[i].toJson(allvariables, calculatevalue);
     out["Sources"] = SourcesJsonObject;
 
     QJsonObject ParametersJsonObject;
     for (unsigned int i=0; i<ParametersCount(); i++)
-        ParametersJsonObject[QString::fromStdString(Parameters()[i]->GetName())] = Parameters()[i]->toJson();
+        ParametersJsonObject[QString::fromStdString(Parameters()[i]->GetName())] = Parameters()[i]->toJson(allvariables);
     out["Parameters"] = ParametersJsonObject;
 
 
     QJsonObject ConstituentsJsonObject;
     for (unsigned int i=0; i<ConstituentsCount(); i++)
-        ConstituentsJsonObject[QString::fromStdString(constituents[i].GetName())] = constituents[i].toJson();
+        ConstituentsJsonObject[QString::fromStdString(constituents[i].GetName())] = constituents[i].toJson(allvariables);
     out["Constituents"] = ConstituentsJsonObject;
 
     QJsonObject ReactionParametersJsonObject;
     for (unsigned int i = 0; i < ReactionParametersCount(); i++)
-        ReactionParametersJsonObject[QString::fromStdString(reaction_parameters[i].GetName())] = reaction_parameters[i].toJson();
+        ReactionParametersJsonObject[QString::fromStdString(reaction_parameters[i].GetName())] = reaction_parameters[i].toJson(allvariables);
     out["Reaction Parameters"] = ReactionParametersJsonObject;
 
     QJsonObject ReactionsJsonObject;
     for (unsigned int i = 0; i < ReactionsCount(); i++)
-        ReactionsJsonObject[QString::fromStdString(reactions[i].GetName())] = reactions[i].toJson();
+        ReactionsJsonObject[QString::fromStdString(reactions[i].GetName())] = reactions[i].toJson(allvariables);
     out["Reactions"] = ReactionsJsonObject;
 
     QJsonObject BlocksJsonObject;
     for (unsigned int i=0; i<blocks.size(); i++)
-        BlocksJsonObject[QString::fromStdString(blocks[i].GetName())] = blocks[i].toJson();
+        BlocksJsonObject[QString::fromStdString(blocks[i].GetName())] = blocks[i].toJson(allvariables, calculatevalue);
     out["Blocks"] = BlocksJsonObject;
 
     QJsonObject LinksJsonObject;
     for (unsigned int i=0; i<links.size(); i++)
-        LinksJsonObject[QString::fromStdString(links[i].GetName())] = links[i].toJson();
+        LinksJsonObject[QString::fromStdString(links[i].GetName())] = links[i].toJson(allvariables, calculatevalue);
     out["Links"] = LinksJsonObject;
 
     QJsonObject ObjectiveFunctionsJsonObject;
     for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
-        ObjectiveFunctionsJsonObject[QString::fromStdString(ObjectiveFunctions()[i]->GetName())] = ObjectiveFunctions()[i]->toJson();
+        ObjectiveFunctionsJsonObject[QString::fromStdString(ObjectiveFunctions()[i]->GetName())] = ObjectiveFunctions()[i]->toJson(allvariables, calculatevalue);
     out["Objective Functions"] = ObjectiveFunctionsJsonObject;
 
     QJsonObject ObservationsJsonObject;
     for (unsigned int i = 0; i < ObservationsCount(); i++)
-        ObservationsJsonObject[QString::fromStdString(observation(i)->GetName())] = observation(i)->toJson();
+        ObservationsJsonObject[QString::fromStdString(observation(i)->GetName())] = observation(i)->toJson(allvariables, calculatevalue);
     out["Observations"] = ObservationsJsonObject;
 
     QJsonArray SetAsParametersJsonArray;

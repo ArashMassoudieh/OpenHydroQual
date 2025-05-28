@@ -654,9 +654,9 @@ string Object::toCommand()
     return out;
 }
 
-QJsonObject Object::toJson()
+QJsonObject Object::toJson(bool allvariables, bool calculatevalue)
 {
-    QJsonObject out = var.toJson();
+    QJsonObject out = var.toJson(allvariables, calculatevalue);
     out["type"] = QString::fromStdString(type);
     if (ObjectType() == object_type::link)
     {

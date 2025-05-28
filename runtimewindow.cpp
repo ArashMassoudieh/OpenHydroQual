@@ -45,7 +45,7 @@ void RunTimeWindow::AppendtoDetails(const QString &s)
 void RunTimeWindow::AppendErrorMessage(const QString &s)
 {
 #pragma omp critical(_error_message)
-    {   qDebug()<<"in RTW";
+    {   //qDebug()<<"in RTW";
         ui->textBrowser->setTextColor(Qt::red);
         ui->textBrowser->append(s);
         ui->textBrowser->setTextColor(Qt::black);

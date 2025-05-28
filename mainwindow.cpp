@@ -1949,6 +1949,7 @@ void MainWindow::onrunmodel()
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();
+    copiedsystem.SavetoJson(workingfolder.toStdString() + "/model.json", addedtemplatefilenames,true, true);
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
     CVector FitMeasures(3*copiedsystem.ObservationsCount());
