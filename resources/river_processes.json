@@ -19,7 +19,7 @@
     "hydraulic_conductivity": {
       "type": "value",
       "description": "Hydraulic Conductivity",
-      "helptext" : "Hydraulic conductivity of the sediments. \n This value will be used to calculate the water flux into the sediment layer as a result of changes in hydraulic head with the \n overlying water or deeper sediment layers",
+      "helptext": "Hydraulic conductivity of the sediments. \n This value will be used to calculate the water flux into the sediment layer as a result of changes in hydraulic head with the \n overlying water or deeper sediment layers",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m/day;ft/day;cm/s;in/s;m/s",
@@ -30,7 +30,7 @@
     },
     "K_eff": {
       "type": "expression",
-      "expression": "hydraulic_conductivity",      
+      "expression": "hydraulic_conductivity",
       "description": "Hydraulic conductivity",
       "ask_user": "false",
       "includeinoutput": "false"
@@ -38,7 +38,7 @@
     "porosity": {
       "type": "value",
       "description": "Porosity",
-      "helptext": "Porosity of the sediments", 
+      "helptext": "Porosity of the sediments",
       "ask_user": "true",
       "default": "0.4",
       "delegate": "ValueBox",
@@ -47,7 +47,7 @@
     "specific_storage": {
       "type": "value",
       "description": "Specific Storage",
-      "helptext" : "Specific storage of the sediment layer. \n This value will be used to calculate the hydraulic head in the sediment layer in case the water content is different than the porosity.\n The pressure head is calculated as p=(water_content-porosity)/specific_storage",
+      "helptext": "Specific storage of the sediment layer. \n This value will be used to calculate the hydraulic head in the sediment layer in case the water content is different than the porosity.\n The pressure head is calculated as p=(water_content-porosity)/specific_storage",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "1/m;1/ft;1/cm;1/in",
@@ -68,7 +68,7 @@
     "depth": {
       "type": "value",
       "description": "Cell Depth",
-      "helptext": "Depth of the sediment layer", 
+      "helptext": "Depth of the sediment layer",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
@@ -78,9 +78,9 @@
     },
     "water_content": {
       "type": "expression",
-      "expression": "Storage/(depth*area)",      
+      "expression": "Storage/(depth*area)",
       "description": "Initial Water content; Water content",
-      "helptext": "Initial water content. In most cases the water content should be equal to the porosity of the sediment layer", 
+      "helptext": "Initial water content. In most cases the water content should be equal to the porosity of the sediment layer",
       "ask_user": "true",
       "default": "0.4",
       "delegate": "ValueBox",
@@ -88,8 +88,8 @@
     },
     "head": {
       "type": "expression",
-      "expression": "depth+bottom_elevation+(water_content-porosity)/specific_storage",      
-      "description": "Hydraulc Head",
+      "expression": "depth+bottom_elevation+(water_content-porosity)/specific_storage",
+      "description": "Hydraulic Head",
       "ask_user": "false",
       "includeinoutput": "true"
     },
@@ -125,7 +125,7 @@
   "River Segment": {
     "type": "block",
     "typecategory": "Blocks",
-    "description": "River Segment", 
+    "description": "River Segment",
     "icon": {
       "filename": "River.png"
     },
@@ -146,7 +146,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Bottom width of the trapezoidal river cross-section. This defines the flat portion of the riverbed."
     },
     "side_slope": {
       "type": "value",
@@ -155,14 +156,16 @@
       "delegate": "ValueBox",
       "estimate": "true",
       "criteria": "side_slope>0",
-      "warningmessage": "Side slope must be greater than zero"
+      "warningmessage": "Side slope must be greater than zero",
+      "helptext": "Horizontal to vertical ratio of the sloped sides of the river channel (e.g., 2 means 2:1 slope)."
     },
     "ManningCoeff": {
       "type": "value",
       "description": "Manning's Roughness Coefficient",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Manning\u2019s roughness coefficient that defines flow resistance based on channel surface properties."
     },
     "bottom_elevation": {
       "type": "value",
@@ -170,7 +173,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Elevation of the riverbed relative to the model's vertical datum."
     },
     "depth": {
       "type": "expression",
@@ -182,17 +186,17 @@
       "unit": "m;ft;cm",
       "includeinoutput": "true",
       "criteria": "depth>-0.0000001",
-      "warningmessage": "Depth must be non-negative"
+      "warningmessage": "Depth must be non-negative",
+      "helptext": "Initial depth of water in the river segment. Used to estimate flow area and storage."
     },
     "head": {
       "type": "expression",
-      "expression": "depth+bottom_elevation",      
-      "description": "Hydraulc Head",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic Head",
       "ask_user": "false",
       "includeinoutput": "true"
     },
-    "velocity":
-    {
+    "velocity": {
       "type": "expression",
       "expression": "velocity.v*1",
       "description": "Velocity",
@@ -233,7 +237,7 @@
     },
     "ag_area": {
       "type": "value",
-      "description": "Area of agriculural land",
+      "description": "Area of agricultural land",
       "ask_user": "true",
       "helptext": "The area of agricultural land served",
       "delegate": "UnitBox",
@@ -242,7 +246,7 @@
     },
     "non_ag_area": {
       "type": "value",
-      "description": "Area of non-agriculural activity",
+      "description": "Area of non-agricultural activity",
       "ask_user": "true",
       "delegate": "UnitBox",
       "helptext": "The area of non-agricultural land served",
@@ -352,7 +356,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "area": {
       "type": "expression",
@@ -417,7 +421,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "area": {
       "type": "expression",
@@ -512,7 +516,7 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit":"m/s;m/day;ft/s;ft/day"
+      "unit": "m/s;m/day;ft/s;ft/day"
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -533,7 +537,7 @@
       "role": "copytoblocks",
       "initial_value_expression": "concentration*Storage"
     },
-    "slope":{
+    "slope": {
       "type": "expression",
       "expression": "(bottom_elevation.s-bottom_elevation.e)/length",
       "includeinoutput": "false",
@@ -643,7 +647,7 @@
     "hydraulic_conductivity": {
       "type": "value",
       "description": "Hydraulic Conductivity",
-      "helptext" : "Hydraulic conductivity of the sediments. \n This value will be used to calculate the water flux into the sediment layer as a result of changes in hydraulic head with the \n overlying water or deeper sediment layers",
+      "helptext": "Hydraulic conductivity of the sediments. \n This value will be used to calculate the water flux into the sediment layer as a result of changes in hydraulic head with the \n overlying water or deeper sediment layers",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m/day;ft/day;cm/s;in/s;m/s",

@@ -22,11 +22,12 @@
       "includeinoutput": "true",
       "description": "precipitation time series",
       "ask_user": "true",
-      "delegate": "ComboBox;Sources"
+      "delegate": "ComboBox;Sources",
+      "helptext": "precipitation time series"
     },
     "recharge": {
       "type": "expression",
-      "expression": "recharge_per_area*area",      
+      "expression": "recharge_per_area*area",
       "description": "Total recharge",
       "ask_user": "false",
       "includeinoutput": "true"
@@ -36,7 +37,8 @@
       "includeinoutput": "true",
       "description": "Recharge per unit area [m/day]",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "helptext": "Recharge per unit area [m/day]"
     },
     "hydraulic_conductivity": {
       "type": "value",
@@ -47,11 +49,12 @@
       "estimate": "true",
       "default": "1",
       "criteria": "hydraulic_conductivity>0",
-      "warningmessage": "Hydraulic conductivity must be greater than zero"
+      "warningmessage": "Hydraulic conductivity must be greater than zero",
+      "helptext": "Hydraulic Conductivity"
     },
     "K_eff": {
       "type": "expression",
-      "expression": "hydraulic_conductivity",      
+      "expression": "hydraulic_conductivity",
       "description": "Hydraulic conductivity",
       "ask_user": "false",
       "includeinoutput": "false"
@@ -62,7 +65,8 @@
       "ask_user": "true",
       "default": "0.4",
       "delegate": "ValueBox",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Porosity"
     },
     "specific_yield": {
       "type": "value",
@@ -72,7 +76,8 @@
       "estimate": "true",
       "default": "0.3",
       "criteria": "specific_yield>0",
-      "warningmessage": "Specific Yield must be greater than zero"
+      "warningmessage": "Specific Yield must be greater than zero",
+      "helptext": "Specific Yield"
     },
     "base_elevation": {
       "type": "value",
@@ -80,20 +85,22 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Base Elevation"
     },
     "piezometric_head": {
       "type": "expression",
-      "expression": "Storage/(specific_yield*area)+base_elevation",      
+      "expression": "Storage/(specific_yield*area)+base_elevation",
       "description": "Initial Piezometric head; Piezometric head",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "helptext": "Initial Piezometric head; Piezometric head"
     },
     "depth": {
       "type": "expression",
-      "expression": "piezometric_head-base_elevation",      
+      "expression": "piezometric_head-base_elevation",
       "description": "Water depth",
       "ask_user": "false",
       "includeinoutput": "true"
@@ -106,8 +113,10 @@
       "unit": "m~^2;ft~^2;cm~^2;in~^2",
       "includeinoutput": "false",
       "criteria": "area>0",
-      "warningmessage": "Cell area must be greater than zero"
-    }
+      "warningmessage": "Cell area must be greater than zero",
+      "helptext": "Cell area"
+    },
+    "helptext": "Unconfined Aquifer Cell"
   },
   "UC_groundwater_link": {
     "type": "link",
@@ -124,7 +133,8 @@
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
       "criteria": "length>0",
-      "warningmessage": "Length must be greater than zero"
+      "warningmessage": "Length must be greater than zero",
+      "helptext": "Centroid to centroid length"
     },
     "width": {
       "type": "value",
@@ -134,7 +144,8 @@
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
       "criteria": "width>0",
-      "warningmessage": "Width must be greater than zero"
+      "warningmessage": "Width must be greater than zero",
+      "helptext": "Width of the connector"
     },
     "hydraulic_gradient": {
       "type": "expression",
@@ -158,7 +169,8 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
-    }
+    },
+    "helptext": "Unconfined Aquifer link"
   },
   "unconfined_groundwater_to_fixedhead": {
     "type": "link",
@@ -175,7 +187,8 @@
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
       "criteria": "length>0",
-      "warningmessage": "Length must be greater than zero"
+      "warningmessage": "Length must be greater than zero",
+      "helptext": "Length"
     },
     "width": {
       "type": "value",
@@ -185,7 +198,8 @@
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
       "criteria": "width>0",
-      "warningmessage": "Width must be greater than zero"
+      "warningmessage": "Width must be greater than zero",
+      "helptext": "Interface Width"
     },
     "hydraulic_gradient": {
       "type": "expression",
@@ -209,7 +223,8 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
-    }
+    },
+    "helptext": "Unconfined Groundwater to fixed head"
   },
   "surface2UCgroundwater_link": {
     "type": "link",
@@ -222,7 +237,8 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String",
+      "helptext": "Name"
     },
     "length": {
       "type": "value",
@@ -232,7 +248,8 @@
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
       "criteria": "length>0",
-      "warningmessage": "Length must be greater than zero"
+      "warningmessage": "Length must be greater than zero",
+      "helptext": "Length"
     },
     "area": {
       "type": "value",
@@ -242,7 +259,8 @@
       "delegate": "UnitBox",
       "unit": "m~^2;ft~^2;cm~^2;in~^2",
       "criteria": "area>0",
-      "warningmessage": "Interface area must be greater than zero"
+      "warningmessage": "Interface area must be greater than zero",
+      "helptext": "Interface Area"
     },
     "hydraulic_conductivity": {
       "type": "value",
@@ -250,9 +268,10 @@
       "includeinoutput": "false",
       "ask_user": "true",
       "delegate": "UnitBox",
-    	"unit": "m/day;ft/day;cm/s;in/s;m/s",
+      "unit": "m/day;ft/day;cm/s;in/s;m/s",
       "criteria": "hydraulic_conductivity>0",
-      "warningmessage": "Hydraulic conductivity must be greater than zero"
+      "warningmessage": "Hydraulic conductivity must be greater than zero",
+      "helptext": "Hydraulic conductivity"
     },
     "flow": {
       "type": "expression",
@@ -261,7 +280,8 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
-    }
+    },
+    "helptext": "Surface water to unconfined groundwater link"
   },
   "water_supply_well": {
     "type": "block",
@@ -285,22 +305,24 @@
       "includeinoutput": "true",
       "description": "Pumping rate time series [m~^3/d]",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "helptext": "Pumping rate time series [m~^3/d]"
     },
     "head": {
-    	"type":"expression",
-    	"includeinoutput": "true",
-        "description": "Hydraulic head in the well",
-        "expression": "bottom_elevation+depth"
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Hydraulic head in the well",
+      "expression": "bottom_elevation+depth"
     },
     "depth": {
-    	"type":"expression",
-    	"includeinoutput": "true",
-        "description": "Initial water depth;Water depth",
-        "expression": "4*Storage/(3.141521*diameter*diameter)",
-        "ask_user": "true",
-        "delegate": "UnitBox",
-        "unit": "m;ft"         
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Initial water depth;Water depth",
+      "expression": "4*Storage/(3.141521*diameter*diameter)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "helptext": "Initial water depth;Water depth"
     },
     "bottom_elevation": {
       "type": "value",
@@ -308,7 +330,8 @@
       "includeinoutput": "false",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft"
+      "unit": "m;ft",
+      "helptext": "The bottom elevation of the well"
     },
     "diameter": {
       "type": "value",
@@ -317,8 +340,10 @@
       "includeinoutput": "false",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft"
-    }
+      "unit": "m;ft",
+      "helptext": "well diameter"
+    },
+    "helptext": "Water Supply Well"
   },
   "aquifer2well_link": {
     "type": "link",
@@ -334,7 +359,8 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
-    }
+    },
+    "helptext": "Unconfined Aquifer to Well connector for (fixed withdrawal)"
   },
   "aquifer2well_link_pump": {
     "type": "link",
@@ -350,6 +376,7 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
-    }
+    },
+    "helptext": "Unconfined Aquifer to Well connector (pumped withdrawal)"
   }
 }

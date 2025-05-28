@@ -1,549 +1,554 @@
 {
-	"Pond": {
-		"type": "block",
-		"typecategory": "Blocks",
-		"description": "Stormwater pond",
-		"icon": {
-			"filename": "stormwaterpond.png"		
-		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String"
-		},
-		"Storage": {
-			"description": "Initial Storage;Storage",
-		        "type": "balance",
-		        "massbalance": "true",
-		        "flow": "flow",
-		        "inflow": "Precipitation,Evapotranspiration,inflow",
-		        "ask_user": "true",
-		        "unit": "m~^3;ft~^3",
-		        "delegate": "UnitBox",
-		        "estimate": "true",
-		        "includeinoutput" : "true",
-		        "criteria": "Storage>-0.0000001",
-			 "warningmessage": "Storage can not be a negaive number!" 
-		},
-		"inflow": {
-		      "type": "timeseries",
-		      "includeinoutput": "true",
-		      "applylimit": "true",
-		      "helptext": "The time series containing the inflow rate into the pond", 
-		      "description": "Inflow rate time series",
-		      "ask_user": "true",
-		      "delegate": "Browser"
-		},
-		"alpha": {
-			 "type": "value",
-			 "description": "The coefficient (~alpha) in the rating curve S = ~alpha d^~beta",
-			 "ask_user": "true",
-			 "delegate": "ValueBox",
-			 "estimate": "true",
-			 "criteria": "alpha>0",
-			 "warningmessage": "alpha coefficient must be positive!"
-		},
-	       "beta": {
-			 "type": "value",
-			 "description": "The exponent (~beta) in the rating curve S = ~alpha d^~beta",
-			 "ask_user": "true",
-			 "delegate": "ValueBox",
-			 "estimate": "true",
-		         "default": "2", 
-			 "criteria": "beta>0",
-			 "warningmessage": "beta exponent must be positive!"
-		},
-		"depth": {
-			 "type": "expression",
-			 "expression" : "_pos(Storage^2/(alpha*(Storage+0.1)))^(1/beta)",
-			 "description": "Water depth",
-			 "ask_user": "false",
-			 "includeinoutput": "true"  
-		},
-		"Precipitation": {
-			"type": "source",
-			"includeinoutput": "true",
-			"description": "precipitation time series",
-			"ask_user": "true",
-			"delegate": "ComboBox;Sources"
-	    	},
-	    	"Evapotranspiration": {
-		      "type": "source",
-		      "includeinoutput": "true",
-		      "description": "Evapotranspiration",
-		      "ask_user": "true",
-		      "delegate": "ComboBox;Sources"
-		},
-		"bottom_elevation": {
-		     "type": "value",
-		      "description": "Bottom elevation of pond",
-		      "ask_user": "true",
-		      "delegate": "UnitBox",
-      		      "unit": "m;ft",
-		      "estimate": "true"
-		},
-		"head": {
-		 	"type": "expression",
-		        "expression": "depth+bottom_elevation",
-		        "description" : "Hydraulic head",
-		        "ask_user": "false",
-		        "includeinoutput" : "true"
-		},
-		"area": {
-		 	"type": "expression",
-		        "expression": "alpha*beta*(depth^(beta-1))",
-		        "description" : "Surface area",
-		        "ask_user": "false",
-		        "includeinoutput" : "true"
-		}
-	},
-        "wier":{
-		"type": "link",
-		"typecategory": "Connectors",
-                "description": "V-notch weir based on a power-law rating curve",
-		"icon": {
-			"filename": "vnotchweir.png"
-		},
-                "color": {
-      			"type": "string",
-      			"default": "0,200,200"
-    		},
-                "crest_elevation" : {
-			"type": "value",
-			"description": "Crest Elevation",
-			"ask_user" : "true",
-			"delegate": "UnitBox",
-		        "unit": "m;ft",
-			"estimate" : "true"
-		},
-		"alpha": {
-		      "type": "value",
-		      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta",
-		      "ask_user": "true",
-		      "delegate": "ValueBox",
-		      "estimate": "true",
-		      "default": "1",
-		      "criteria": "alpha>0",
-		      "warningmessage": "alpha must be positive"
-    		},
-    		"beta": {
-		      "type": "value",
-		      "description": "Exponent beta in Q=alpha*(h-z_0)^beta",
-		      "ask_user": "true",
-		      "delegate": "ValueBox",
-		      "estimate": "true",
-		      "default": "2.5",
-		      "criteria": "beta>0",
-		      "warningmessage": "beta must be positive"
-   		},	
-	        "flow" : {
-		      	"type": "expression",
-			"description": "Flow rate (m~^3/day)",
-                        "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
-			"includeinoutput" : "true",
-			"applylimit": "true"	
-		},
-	        "area" : {
-		      	"type": "value",
-			"description": "Area",
-			"default": "0",
-                       "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
-			"includeinoutput" : "false",
-			"applylimit": "false"	
-		},
-		"length" : {
-		      	"type": "value",
-			"description": "length",
-			"default": "1",
-			"includeinoutput" : "false"
-		}  	
-	},
-	"drain_pipe":{
-		"type": "link",
-		"typecategory": "Connectors",
-                "description": "Drain pipe",
-		"icon": {
-			"filename": "drain_pipe.png"
-		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String" 
-		},
-                "color": {
-      			"type": "string",
-      			"default": "0,70,200"
-    		},
-                "crest_elevation" : {
-			"type": "value",
-			"description": "Crest Elevation",
-			"ask_user" : "true",
-			"delegate": "UnitBox",
-                       "unit": "m;ft",
-			"estimate" : "true"
-		},
-		"head_loss_coefficient": {
-		      "type": "value",
-		      "description": "Head-loss coefficient",
-		      "ask_user": "true",
-		      "delegate": "ValueBox",
-		      "estimate": "true",
-		      "default": "0.6",
-		      "criteria": "head_loss_coefficient>0",
-		      "warningmessage": "Head-loss coefficient must be positive"
-    		},
-    		"pipe_diameter": {
-		      "type": "value",
-		      "description": "Pipe Diameter",
-		      "ask_user": "true",
-		      "delegate": "UnitBox",
-                      "unit": "m;ft;cm",
-		      "estimate": "true",
-		      "criteria": "pipe_diameter>0",
-		      "warningmessage": "pipe diameter must be positive"
-   		},	
-	        "flow" : {
-		      	"type": "expression",
-			"description": "Flow rate (m~^3/day)",
-                        "expression" : "86400*3.47*_pos(head.s-crest_elevation)^(0.5)/((head_loss_coefficient+1)^0.5)*(pipe_diameter^2)",
-			"includeinoutput" : "true",
-			"applylimit": "true"	
-		}  	
-	},
-	"orifice":{
-		"type": "link",
-		"typecategory": "Connectors",
-                "description": "Orifice",
-		"icon": {
-			"filename": "orifice.png"
-		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String" 
-		},
-                "color": {
-      			"type": "string",
-      			"default": "0,70,200"
-    		},
-                		"head_loss_coefficient": {
-		      "type": "value",
-		      "description": "Head-loss coefficient",
-		      "ask_user": "true",
-		      "delegate": "ValueBox",
-		      "estimate": "true",
-		      "default": "0.6",
-		      "criteria": "head_loss_coefficient>0",
-		      "warningmessage": "Head-loss coefficient must be positive"
-    		},
-    		"orifice_area": {
-		      "type": "value",
-		      "description": "orifice_area",
-		      "ask_user": "true",
-		      "delegate": "UnitBox",
-                      "unit": "m2;ft2;cm2",
-		      "estimate": "true",
-		      "criteria": "orifice_area>0",
-		      "warningmessage": "orifice_area must be positive"
-   		},	
-	        "flow" : {
-		    "type": "expression",
-			"description": "Flow rate (m~^3/day)",
-            "expression" : "86400*head_loss_coefficient*orifice_area*_pos(19.6*(head.s-head.e))^0.5",
-			"includeinoutput" : "true", 
-			"applylimit": "true"	
-		}  	
-	},
-	"darcy_connector":{
-		"type": "link",
-		"typecategory": "Connectors",
-                "description": "Darcy connector",
-		"icon": {
-			"filename": "darcy_connector.png"
-		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String" 
-		},
-                "color": {
-      			"type": "string",
-      			"default": "0,70,200"
-  		},
-		"Transmissivity": {
-		      "type": "value",
-		      "description": "Head-loss coefficient",
-		      "ask_user": "true",
-		      "delegate": "UnitBox",
-			  "unit": "m~^3/day",
-		      "estimate": "true",
-		      "default": "0.6",
-		      "criteria": "Transmissivity>0",
-		      "warningmessage": "Transmissivity must be positive"
-    		},
-	        "flow" : {
-				"type": "expression",
-				"description": "Flow rate (m~^3/day)",
-				"expression" : "Transmissivity*(head.s-_max(bottom_elevation.s;head.e))",
-				"includeinoutput" : "true",
-				"applylimit": "true"	
-		}  	
-	},
-	"wide_channel":{
-		"type": "link",
-		"typecategory": "Connectors",
-                "description": "Wide Channel",
-		"icon": {
-			"filename": "wide_channel.png"
-		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String" 
-		},
-                "color": {
-      			"type": "string",
-      			"default": "0,100,200"
-    		},
-                "width" : {
-			"type": "value",
-			"description": "Width",
-			"ask_user" : "true",
-			"delegate": "UnitBox",
-                       "unit": "m;ft;cm",
-			"estimate" : "true"
-		},
-		"depth": {
-			"type": "expression",
-			"description": "Water depth",
-			"expression": "_max((depth.s+depth.e)/2;0)",
-			"includeinoutput": "true",
-			"ask_user": "false"
-		},
-		"area": {
-			"type": "expression",
-			"description": "Cross-sectional area",
-			"expression": "_max(depth*width;0)",
-			"includeinoutput": "true",
-			"ask_user": "false"
-		},
-		"ManningCoeff": {
-			"type": "value",
-			"description": "Manning's roughness coefficient",
-			"ask_user" : "true",
-			"delegate" : "ValueBox",
-			"includeinoutput": "false",
-			"estimate": "true"
-		},
-		"length": {
-			"type": "value",
-			"description": "Channel length",
-			"delegate": "UnitBox",
-                       "unit": "m;ft;cm",
-			"includeinoutput": "false",
-			"ask_user": "true"
-		},
-		"flow": {
-			"type": "expression",
-   	                "description": "Flow rate (m~^3/day)",
-			"expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*width*depth^1.6667",
-			"includeinoutput": "true",
-			"applylimit": "true",
-			"ask_user": "false"
-		}  	
-	},
-	"Aggregate_storage_layer": {
-	    "type": "block",
-	    "typecategory": "Blocks",
-	    "description": "Aggregate zone", 
-	    "icon": {
-	      "filename": "aggregates.png"
-	    },
-	    "Storage": {
-	      "type": "balance",
-	      "massbalance": "true",
-	      "flow": "flow",
-	      "inflow": "inflow",
-	      "includeinoutput": "true",
-	      "description": "Initial Storage;Storage",
-	      "initial_value_expression": "area*depth*porosity",
-	      "ask_user": "false",
-	      "default": "0",
-	      "unit": "m~^3;ft~^3",
-	      "estimate": "true"
-	    },
-	    "inflow": {
-	      "type": "timeseries",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "description": "Inflow time series",
-	      "ask_user": "true",
-	      "delegate": "Browser"
-	    },
-	      "K_sat": {
-	      "type": "value",
-	      "description": "Saturated Hydraulc Conductivity",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m/day;ft/day;m/s;ft/s",
-	      "includeinoutput": "true",
-	      "estimate": "true",
-	      "default": "1",
-	      "criteria": "K_sat>0",
-	      "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero"
-    	    },
-	    "area": {
-	      "type": "value",
-	      "description": "Base Area",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m~^2;ft~^2",
-	      "estimate": "true",
-	      "criteria": "area>0",
-	      "warningmessage": "Base area must be positive"
-	    },
-	    "bottom_elevation": {
-	      "type": "value",
-	      "description": "Bottom Elevation",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m;ft",
-	      "estimate": "true"
-	    },
-	    "porosity": {
-	      "type": "value",
-	      "description": "Porosity",
-	      "ask_user": "true",
-	      "default": "0.4",
-	      "delegate": "ValueBox",
-	      "estimate": "true"
-	    },
-	    "depth": {
-	      "type": "expression",
-	      "expression": "Storage/(area*porosity)",
-	      "description": "Initial Water Depth; Water Depth",
-	      "ask_user": "true",
-	      "helptext": "This is the initial depth of water in the aggregate layer",
-	      "delegate": "UnitBox",
-	      "unit": "m;ft;cm",
-	      "includeinoutput": "true"
-	    },
-	    "head": {
-	      "type": "expression",
-	      "expression": "depth+bottom_elevation",      
-	      "description": "Hydraulc Head",
-	      "ask_user": "false",
-	      "includeinoutput": "true"
-	    }
-	  },	  
-	"soil_to_aggregate_link": {
-	    "type": "link",
-	    "typecategory": "Connectors",
-	    "icon": {
-	      "filename": "soil2aggregate.png"
-	    },
-	    "description": "Soil to aggregate layer link",
-	    "area": {
-	      "type": "expression",
-	      "description": "Interface area",
-	      "expression": "area.s",
-	      "includeinoutput": "false",
-	      "ask_user": "false"
-	    },
-	    "length": {
-	      "type": "expression",
-	      "description": "Lenght",
-	      "expression": "depth.s/2",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "Se": {
-	      "type": "expression",
-	      "description": "Effective Saturation",
-	      "expression": "Se.s",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "m": {
-	      "type": "expression",
-	      "description": "m parameter",
-	      "expression": "m.s",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "K_sat": {
-	      "type": "expression",
-	      "description": "Saturated Hydraulic Conductivity",
-	      "expression": "K_sat.s",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "K_eff": {
-	      "type": "expression",
-	      "description": "Effective Hydraulic Conductivity",
-	      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "flow": {
-	      "type": "expression",
-	      "description": "Flow",
-	      "expression": "(head.s-head.e)*K_eff/length*area",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "ask_user": "false"
-	    },
-	    "color": {
-	      "type": "string",
-	      "default": "30,120,220"
-	    }
-	  },
-	  "aggregate_to_soil_link": {
-	    "type": "link",
-	    "typecategory": "Connectors",
-	    "icon": {
-	      "filename": "aggregate2soil.png"
-	    },
-	    "description": "Aggregate layer to soil link",
-	    "area": {
-	      "type": "expression",
-	      "description": "Interface area",
-	      "expression": "area.s",
-	      "includeinoutput": "false",
-	      "ask_user": "false"
-	    },
-	    "length": {
-	      "type": "expression",
-	      "description": "Lenght",
-	      "expression": "depth.e/2",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "K_sat": {
-	      "type": "expression",
-	      "description": "Saturated Hydraulic Conductivity",
-	      "expression": "K_sat.e",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    },
-	    "flow": {
-	      "type": "expression",
-	      "description": "Flow",
-	      "expression": "(head.s-head.e)*K_sat/length*area*depth.s/(depth.s+0.01)",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "ask_user": "false"
-	    },
-	    "color": {
-	      "type": "string",
-	      "default": "30,120,220"
-	    }
-	  },
+  "Pond": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Stormwater pond",
+    "icon": {
+      "filename": "stormwaterpond.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "The name of the pond object. Used for identifying it in the model interface and results."
+    },
+    "Storage": {
+      "description": "Initial Storage;Storage",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation,Evapotranspiration,inflow",
+      "ask_user": "true",
+      "unit": "m~^3;ft~^3",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "includeinoutput": "true",
+      "criteria": "Storage>-0.0000001",
+      "warningmessage": "Storage can not be a negaive number!",
+      "helptext": "Initial volume of water stored in the pond at the beginning of the simulation."
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "helptext": "The time series containing the inflow rate into the pond",
+      "description": "Inflow rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "alpha": {
+      "type": "value",
+      "description": "The coefficient (~alpha) in the rating curve S = ~alpha d^~beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "criteria": "alpha>0",
+      "warningmessage": "alpha coefficient must be positive!",
+      "helptext": "The coefficient (~alpha) in the pond volume-depth relationship: Storage = alpha * depth^beta."
+    },
+    "beta": {
+      "type": "value",
+      "description": "The exponent (~beta) in the rating curve S = ~alpha d^~beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "2",
+      "criteria": "beta>0",
+      "warningmessage": "beta exponent must be positive!",
+      "helptext": "The exponent (~beta) in the pond volume-depth relationship: Storage = alpha * depth^beta."
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "_pos(Storage^2/(alpha*(Storage+0.1)))^(1/beta)",
+      "description": "Water depth",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "Precipitation": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "precipitation time series",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Select a precipitation source object that provides rainfall input to the pond."
+    },
+    "Evapotranspiration": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom elevation of pond",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "alpha*beta*(depth^(beta-1))",
+      "description": "Surface area",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    }
+  },
+  "wier": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "V-notch weir based on a power-law rating curve",
+    "icon": {
+      "filename": "vnotchweir.png"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,200,200"
+    },
+    "crest_elevation": {
+      "type": "value",
+      "description": "Crest Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "alpha": {
+      "type": "value",
+      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "alpha>0",
+      "warningmessage": "alpha must be positive"
+    },
+    "beta": {
+      "type": "value",
+      "description": "Exponent beta in Q=alpha*(h-z_0)^beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "2.5",
+      "criteria": "beta>0",
+      "warningmessage": "beta must be positive"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "alpha*_pos(head.s-crest_elevation)^beta",
+      "includeinoutput": "true",
+      "applylimit": "true"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "expression": "alpha*_pos(head.s-crest_elevation)^beta",
+      "includeinoutput": "false",
+      "applylimit": "false"
+    },
+    "length": {
+      "type": "value",
+      "description": "length",
+      "default": "1",
+      "includeinoutput": "false"
+    }
+  },
+  "drain_pipe": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Drain pipe",
+    "icon": {
+      "filename": "drain_pipe.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,70,200"
+    },
+    "crest_elevation": {
+      "type": "value",
+      "description": "Crest Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "head_loss_coefficient": {
+      "type": "value",
+      "description": "Head-loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.6",
+      "criteria": "head_loss_coefficient>0",
+      "warningmessage": "Head-loss coefficient must be positive"
+    },
+    "pipe_diameter": {
+      "type": "value",
+      "description": "Pipe Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "criteria": "pipe_diameter>0",
+      "warningmessage": "pipe diameter must be positive"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "86400*3.47*_pos(head.s-crest_elevation)^(0.5)/((head_loss_coefficient+1)^0.5)*(pipe_diameter^2)",
+      "includeinoutput": "true",
+      "applylimit": "true"
+    }
+  },
+  "orifice": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Orifice",
+    "icon": {
+      "filename": "orifice.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,70,200"
+    },
+    "head_loss_coefficient": {
+      "type": "value",
+      "description": "Head-loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.6",
+      "criteria": "head_loss_coefficient>0",
+      "warningmessage": "Head-loss coefficient must be positive"
+    },
+    "orifice_area": {
+      "type": "value",
+      "description": "orifice_area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m2;ft2;cm2",
+      "estimate": "true",
+      "criteria": "orifice_area>0",
+      "warningmessage": "orifice_area must be positive"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "86400*head_loss_coefficient*orifice_area*_pos(19.6*(head.s-head.e))^0.5",
+      "includeinoutput": "true",
+      "applylimit": "true"
+    }
+  },
+  "darcy_connector": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Darcy connector",
+    "icon": {
+      "filename": "darcy_connector.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,70,200"
+    },
+    "Transmissivity": {
+      "type": "value",
+      "description": "Head-loss coefficient",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3/day",
+      "estimate": "true",
+      "default": "0.6",
+      "criteria": "Transmissivity>0",
+      "warningmessage": "Transmissivity must be positive"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "Transmissivity*(head.s-_max(bottom_elevation.s;head.e))",
+      "includeinoutput": "true",
+      "applylimit": "true"
+    }
+  },
+  "wide_channel": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Wide Channel",
+    "icon": {
+      "filename": "wide_channel.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,100,200"
+    },
+    "width": {
+      "type": "value",
+      "description": "Width",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "description": "Water depth",
+      "expression": "_max((depth.s+depth.e)/2;0)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(depth*width;0)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's roughness coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "includeinoutput": "false",
+      "estimate": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Channel length",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "includeinoutput": "false",
+      "ask_user": "true"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*width*depth^1.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  },
+  "Aggregate_storage_layer": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Aggregate zone",
+    "icon": {
+      "filename": "aggregates.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow",
+      "includeinoutput": "true",
+      "description": "Initial Storage;Storage",
+      "initial_value_expression": "area*depth*porosity",
+      "ask_user": "false",
+      "default": "0",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "K_sat": {
+      "type": "value",
+      "description": "Saturated Hydraulc Conductivity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;m/s;ft/s",
+      "includeinoutput": "true",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "K_sat>0",
+      "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero"
+    },
+    "area": {
+      "type": "value",
+      "description": "Base Area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "Base area must be positive"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "porosity": {
+      "type": "value",
+      "description": "Porosity",
+      "ask_user": "true",
+      "default": "0.4",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "Storage/(area*porosity)",
+      "description": "Initial Water Depth; Water Depth",
+      "ask_user": "true",
+      "helptext": "This is the initial depth of water in the aggregate layer",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "includeinoutput": "true"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic Head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    }
+  },
+  "soil_to_aggregate_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "soil2aggregate.png"
+    },
+    "description": "Soil to aggregate layer link",
+    "area": {
+      "type": "expression",
+      "description": "Interface area",
+      "expression": "area.s",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Length",
+      "expression": "depth.s/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "Se": {
+      "type": "expression",
+      "description": "Effective Saturation",
+      "expression": "Se.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "m": {
+      "type": "expression",
+      "description": "m parameter",
+      "expression": "m.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_sat": {
+      "type": "expression",
+      "description": "Saturated Hydraulic Conductivity",
+      "expression": "K_sat.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "(head.s-head.e)*K_eff/length*area",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "30,120,220"
+    }
+  },
+  "aggregate_to_soil_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "aggregate2soil.png"
+    },
+    "description": "Aggregate layer to soil link",
+    "area": {
+      "type": "expression",
+      "description": "Interface area",
+      "expression": "area.s",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Length",
+      "expression": "depth.e/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_sat": {
+      "type": "expression",
+      "description": "Saturated Hydraulic Conductivity",
+      "expression": "K_sat.e",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "(head.s-head.e)*K_sat/length*area*depth.s/(depth.s+0.01)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "30,120,220"
+    }
+  },
   "surfacewater_to_aggregate_link": {
     "type": "link",
     "typecategory": "Connectors",
@@ -560,7 +565,7 @@
     },
     "length": {
       "type": "value",
-      "description": "Lenght",
+      "description": "Length",
       "ask_user": "true",
       "unit": "m;ft",
       "delegate": "UnitBox",
@@ -589,39 +594,39 @@
     }
   },
   "aggregate2aggregate_H_Link": {
-	    "type": "link",
-	    "typecategory": "Connectors",
-	    "icon": {
-	      "filename": "aggregate2aggregate_H.png"
-	    },
-	    "description": "Aggregate to aggregate horizontal link",
-	    "width": {
-	      "type": "value",
-	      "description": "Interface Width",
-	      "delegate": "UnitBox",
-	      "unit": "m;ft",
-	      "includeinoutput": "false",
-	      "ask_user": "true"
-	    },
-	    "length": {
-	      "type": "value",
-	      "description": "Lenght",
-	      "delegate": "UnitBox",
-	      "unit": "m;ft",
-	      "includeinoutput": "false",
-	      "ask_user": "true"
-	    },
-	    "flow": {
-	      "type": "expression",
-	      "description": "Flow",
-	      "expression": "(head.s-head.e)*(K_sat.s+K_sat.e)/(4*length)*(depth.s+depth.e)*width",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "ask_user": "false"
-	    },
-	    "color": {
-	      "type": "string",
-	      "default": "130,20,220"
-	    }
-	  }
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "aggregate2aggregate_H.png"
+    },
+    "description": "Aggregate to aggregate horizontal link",
+    "width": {
+      "type": "value",
+      "description": "Interface Width",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "includeinoutput": "false",
+      "ask_user": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "includeinoutput": "false",
+      "ask_user": "true"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "(head.s-head.e)*(K_sat.s+K_sat.e)/(4*length)*(depth.s+depth.e)*width",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "130,20,220"
+    }
+  }
 }
