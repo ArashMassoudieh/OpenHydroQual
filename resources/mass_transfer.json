@@ -11,7 +11,8 @@
       "includeinoutput": "true",
       "description": "Loading rate (mass/time)",
       "ask_user": "true",
-      "delegate": "Browser;time series"
+      "delegate": "Browser;time series",
+      "helptext": "Time series representing the chemical mass loading rate into the system (e.g., from external sources or emissions)."
     }
   },
   "constant_source": {
@@ -27,7 +28,8 @@
       "description": "Loading rate (mass/time/volume of water)",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "g/day/m~^3"
+      "unit": "g/day/m~^3",
+      "helptext": "Constant chemical loading rate per unit volume of water. Used for modeling uniformly distributed internal sources."
     },
     "coefficient": {
       "type": "expression",
@@ -51,22 +53,22 @@
     "icon": {
       "filename": "Chemical_Source_exchange.png"
     },
-    "rate_coefficient":
-    {
-    	"type": "value",
-    	"ask_user": "true",
-    	"description": "Rate coefficient",
-    	"delegate": "UnitBox",
-    	"estimate": "true",
-    	"unit": "1/day;1/s;1/hr"
+    "rate_coefficient": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Rate coefficient",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "1/day;1/s;1/hr",
+      "helptext": "Rate coefficient representing the speed of mass exchange between water and atmosphere (e.g., volatilization or gas transfer)."
     },
-    "saturation":
-    {
-    	"type": "value",
-    	"ask_user": "true",
-    	"description": "Saturation Concentration Level",
-    	"delegate": "UnitBox",
-    	"unit": "g/m~^3"
+    "saturation": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Saturation Concentration Level",
+      "delegate": "UnitBox",
+      "unit": "g/m~^3",
+      "helptext": "Saturation concentration in water under equilibrium with the atmosphere. Determines direction and magnitude of flux."
     },
     "coefficient": {
       "type": "expression",
@@ -90,21 +92,20 @@
     "icon": {
       "filename": "Surface_Chemical_Source_exchange.png"
     },
-    "rate_coefficient":
-    {
-    	"type": "value",
-    	"ask_user": "true",
-    	"description": "Rate coefficient",
-    	"delegate": "UnitBox",
-    	"unit": "m/day;m/s;m/hr"
+    "rate_coefficient": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Rate coefficient",
+      "delegate": "UnitBox",
+      "unit": "m/day;m/s;m/hr",
+      "helptext": "Surface-based mass transfer coefficient, representing rate of chemical exchange per unit surface area."
     },
-    "saturation":
-    {
-    	"type": "value",
-    	"ask_user": "true",
-    	"description": "Saturation Concentration Level",
-    	"delegate": "UnitBox",
-    	"unit": "g/m~^3"
+    "saturation": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Saturation Concentration Level",
+      "delegate": "UnitBox",
+      "unit": "g/m~^3"
     },
     "coefficient": {
       "type": "expression",
@@ -140,34 +141,34 @@
       "unit": "m~^3;ft~^3",
       "estimate": "true"
     },
-    "time_variable_inflow":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Time variable inflow",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "time_variable_inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time variable inflow",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "constant_inflow":{
-    	"type": "value",
-	"includeinoutput": "true",
-	"description": "Constant Inflow",
-    	"ask_user": "true",
-	"delegate": "UnitBox",
-	"unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    "constant_inflow": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant Inflow",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
-    "inflow":{
-    	"type": "expression",
-	"expression": "time_variable_inflow+constant_inflow",
-	"includeinoutput": "true",
-	"description": "Inflow",
-    	"ask_user": "false"
+    "inflow": {
+      "type": "expression",
+      "expression": "time_variable_inflow+constant_inflow",
+      "includeinoutput": "true",
+      "description": "Inflow",
+      "ask_user": "false"
     },
     "bottom_elevation": {
-    	"type": "value",
-    	"ask_user": "true",
-    	"description": "Bottom elevation",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft"
+      "type": "value",
+      "ask_user": "true",
+      "description": "Bottom elevation",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
     }
   },
   "Reactor_Flex": {
@@ -198,34 +199,34 @@
       "unit": "m~^3;ft~^3",
       "estimate": "true"
     },
-    "time_variable_inflow":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Time variable inflow",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "time_variable_inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time variable inflow",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "constant_inflow":{
-    	"type": "value",
-	"includeinoutput": "true",
-	"description": "Constant Inflow",
-    	"ask_user": "true",
-	"delegate": "UnitBox",
-	"unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    "constant_inflow": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant Inflow",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
-    "inflow":{
-    	"type": "expression",
-	"expression": "time_variable_inflow+constant_inflow",
-	"includeinoutput": "true",
-	"description": "Inflow",
-    	"ask_user": "false"
+    "inflow": {
+      "type": "expression",
+      "expression": "time_variable_inflow+constant_inflow",
+      "includeinoutput": "true",
+      "description": "Inflow",
+      "ask_user": "false"
     },
     "bottom_elevation": {
-    	"type": "value",
-    	"ask_user": "true",
-    	"description": "Bottom elevation",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft"
+      "type": "value",
+      "ask_user": "true",
+      "description": "Bottom elevation",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
     }
   },
   "Settling element": {
@@ -246,13 +247,12 @@
       "unit": "m~^3;ft~^3",
       "estimate": "true"
     },
-    "bottom_elevation":
-    {
-    	"type": "value",
-    	"ask_user": "true",
-    	"description": "Bottom elevation",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft"
+    "bottom_elevation": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Bottom elevation",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
     },
     "Volume": {
       "type": "value",
@@ -312,7 +312,7 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",
-      "expression": "(Storage.s/Volume.s-1)*flow_factor"    
+      "expression": "(Storage.s/Volume.s-1)*flow_factor"
     },
     "flow_factor": {
       "type": "value",
@@ -355,7 +355,7 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "true",
-	   "delegate": "Browser"
+      "delegate": "Browser"
     },
     "length": {
       "type": "expression",
@@ -383,42 +383,41 @@
     "icon": {
       "filename": "Settling_element_link.png"
     },
-    "time_variable_flow":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Time variable flow",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "time_variable_flow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time variable flow",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "constant_flow":{
-    	"type": "value",
-	"includeinoutput": "true",
-	"description": "Constant flow",
-    	"ask_user": "true",
-	"delegate": "UnitBox",
-	"unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+    "constant_flow": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant flow",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
-    "flow":{
-    	"type": "expression",
-	"expression": "time_variable_flow+constant_flow",
-	"includeinoutput": "true",
-	"description": "Flow rate",
-    	"ask_user": "false"
+    "flow": {
+      "type": "expression",
+      "expression": "time_variable_flow+constant_flow",
+      "includeinoutput": "true",
+      "description": "Flow rate",
+      "ask_user": "false"
     },
-    "area":
-    {
-    	"type": "value",
-    	"ask_user": "true",
-    	"description": "Interface area",
-    	"delegate": "UnitBox",
-    	"unit": "m~^2;ft~^2"
+    "area": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Interface area",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2"
     },
     "color": {
       "type": "string",
       "default": "0,0,200"
     }
- },
- "Settling element interface (time variable)": {
+  },
+  "Settling element interface (time variable)": {
     "type": "link",
     "typecategory": "Connectors",
     "description": "Settling element interface (Time variable)",
@@ -431,146 +430,145 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "true",
-	   "delegate": "Browser"
+      "delegate": "Browser"
     },
-    "area":
-    {
-    	"type": "value",
-    	"ask_user": "true",
-    	"description": "Interface area",
-    	"delegate": "UnitBox",
-    	"unit": "m~^2;ft~^2"
+    "area": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Interface area",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2"
     },
     "color": {
       "type": "string",
       "default": "0,0,200"
     }
- },
- "Sorbed_Constituent": {
-	"type": "constituent",
-	"typecategory": "Constituents",
-	"description": "sorbed chemical constituent",
-	"icon": {
-	  "filename": "sorbed_constituent.png"
-	},
-	"concentration": {
-	  "description": "Concentration per total volume",
-	  "type": "expression",
-	  "expression": "mass/volume",
-	  "ask_user": "true",
-	  "role": "copytoblocks",
-	  "includeinoutput": "true",
-	  "delegate": "UnitBox",
-	  "estimate": "true",
-	  "unit": "g/m~^3"
-	},
-	"stoichiometric_constant": {
-	  "description": "Stoichiometric Constant",
-	  "type": "expression",
-	  "ask_user": "true",
-	  "role": "copytoreactions",
-	  "includeinoutput": "false",
-	  "delegate": "expressionEditor"
-	},
-	"mass": {
-	  "description": "Mass",
-	  "type": "balance",
-	  "massbalance": "true",
-	  "flow": "masstransfer",
-	  "inflow": "external_mass_flow_timeseries,external_source",
-	  "includeinoutput": "true",
-	  "ask_user": "false",
-	  "role": "copytoblocks",
-	  "initial_value_expression": "concentration*depth*area"
-	},
-	"masstransfer": {
-	  "description": "Mass transfer rate",
-	  "type": "expression",
-	  "expression": "0",
-	  "includeinoutput": "false",
-	  "ask_user": "false",
-	  "role": "copytolinks"
-	},
-	"external_mass_flow_timeseries": {
-	  "type": "timeseries",
-	  "includeinoutput": "true",
-	  "description": "External mass flow time-series",
-	  "ask_user": "true",
-	  "role": "copytoblocks",
-	  "delegate": "Browser"
-	},
-	"external_source": {
-	  "type": "source",
-	  "includeinoutput": "true",
-	  "description": "External source",
-	  "ask_user": "true",
-	  "role": "copytoblocks",
-	  "delegate": "ComboBox;Sources"
-	}
+  },
+  "Sorbed_Constituent": {
+    "type": "constituent",
+    "typecategory": "Constituents",
+    "description": "sorbed chemical constituent",
+    "icon": {
+      "filename": "sorbed_constituent.png"
+    },
+    "concentration": {
+      "description": "Concentration per total volume",
+      "type": "expression",
+      "expression": "mass/volume",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "includeinoutput": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "g/m~^3"
+    },
+    "stoichiometric_constant": {
+      "description": "Stoichiometric Constant",
+      "type": "expression",
+      "ask_user": "true",
+      "role": "copytoreactions",
+      "includeinoutput": "false",
+      "delegate": "expressionEditor"
+    },
+    "mass": {
+      "description": "Mass",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "masstransfer",
+      "inflow": "external_mass_flow_timeseries,external_source",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytoblocks",
+      "initial_value_expression": "concentration*depth*area"
+    },
+    "masstransfer": {
+      "description": "Mass transfer rate",
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "external_mass_flow_timeseries": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "External mass flow time-series",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "Browser"
+    },
+    "external_source": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "External source",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "ComboBox;Sources"
+    }
   },
   "Immobile_Constituent": {
-	"type": "constituent",
-	"typecategory": "Constituents",
-	"description": "Immobile constituent",
-	"icon": {
-	  "filename": "immobile_constituent_reactor.png"
-	},
-	"concentration": {
-	  "description": "Concentration per total volume",
-	  "type": "expression",
-	  "expression": "mass/Storage",
-	  "ask_user": "true",
-	  "role": "copytoblocks",
-	  "includeinoutput": "true",
-	  "delegate": "UnitBox",
-	  "estimate": "true",
-	  "unit": "g/m~^3"
-	},
-	"stoichiometric_constant": {
-	  "description": "Stoichiometric Constant",
-	  "type": "expression",
-	  "ask_user": "true",
-	  "role": "copytoreactions",
-	  "includeinoutput": "false",
-	  "delegate": "expressionEditor"
-	},
-	"mass": {
-	  "description": "Mass",
-	  "type": "balance",
-	  "massbalance": "true",
-	  "flow": "masstransfer",
-	  "inflow": "external_mass_flow_timeseries,external_source",
-	  "includeinoutput": "true",
-	  "ask_user": "false",
-	  "role": "copytoblocks",
-	  "initial_value_expression": "concentration*Storage"
-	},
-	"masstransfer": {
-	  "description": "Mass transfer rate",
-	  "type": "expression",
-	  "expression": "0",
-	  "includeinoutput": "false",
-	  "ask_user": "false",
-	  "role": "copytolinks"
-	},
-	"external_mass_flow_timeseries": {
-	  "type": "timeseries",
-	  "includeinoutput": "true",
-	  "description": "External mass flow time-series",
-	  "ask_user": "true",
-	  "role": "copytoblocks",
-	  "delegate": "Browser"
-	},
-	"external_source": {
-	  "type": "source",
-	  "includeinoutput": "true",
-	  "description": "External source",
-	  "ask_user": "true",
-	  "role": "copytoblocks",
-	  "delegate": "ComboBox;Sources"
-	}
+    "type": "constituent",
+    "typecategory": "Constituents",
+    "description": "Immobile constituent",
+    "icon": {
+      "filename": "immobile_constituent_reactor.png"
+    },
+    "concentration": {
+      "description": "Concentration per total volume",
+      "type": "expression",
+      "expression": "mass/Storage",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "includeinoutput": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "g/m~^3"
+    },
+    "stoichiometric_constant": {
+      "description": "Stoichiometric Constant",
+      "type": "expression",
+      "ask_user": "true",
+      "role": "copytoreactions",
+      "includeinoutput": "false",
+      "delegate": "expressionEditor"
+    },
+    "mass": {
+      "description": "Mass",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "masstransfer",
+      "inflow": "external_mass_flow_timeseries,external_source",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytoblocks",
+      "initial_value_expression": "concentration*Storage"
+    },
+    "masstransfer": {
+      "description": "Mass transfer rate",
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "external_mass_flow_timeseries": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "External mass flow time-series",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "Browser"
+    },
+    "external_source": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "External source",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "ComboBox;Sources"
+    }
   },
-   "Desorption": {
+  "Desorption": {
     "type": "Reaction",
     "description": "Desorption",
     "typecategory": "Reactions",

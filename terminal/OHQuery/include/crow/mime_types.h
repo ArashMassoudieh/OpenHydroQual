@@ -1,3 +1,19 @@
+/*
+ * OpenHydroQual - Environmental Modeling Platform
+ * Copyright (C) 2025 Arash Massoudieh
+ * 
+ * This file is part of OpenHydroQual.
+ * 
+ * OpenHydroQual is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ * 
+ * If you use this file in a commercial product, you must purchase a
+ * commercial license. Contact arash.massoudieh@cua.edu for details.
+ */
+
+
 // This file is generated from nginx/conf/mime.types using nginx_mime2cpp.py on 2021-12-03.
 #include <unordered_map>
 #include <string>

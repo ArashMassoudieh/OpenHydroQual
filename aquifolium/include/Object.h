@@ -1,3 +1,19 @@
+/*
+ * OpenHydroQual - Environmental Modeling Platform
+ * Copyright (C) 2025 Arash Massoudieh
+ * 
+ * This file is part of OpenHydroQual.
+ * 
+ * OpenHydroQual is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ * 
+ * If you use this file in a commercial product, you must purchase a
+ * commercial license. Contact arash.massoudieh@enviroinformatics.co for details.
+ */
+
+
 #ifndef OBJECT_H
 #define OBJECT_H
 
@@ -112,7 +128,7 @@ class Object
         string GetPrimaryKey() {return primary_key;}
         void AssignRandomPrimaryKey();
         string toCommand();
-        QJsonObject toJson();
+        QJsonObject toJson(bool allvariables = false, bool calculatevalue = false);
         string toCommandSetAsParam();
         vector<string> ItemswithOutput();
         vector<string> quantitative_variable_list() {return var.quantitative_variable_list();}

@@ -1,112 +1,117 @@
 {
-	"Reservoir": {
-	    "type": "block",
-	    "typecategory": "Blocks",
-	    "description": "Reservoir",
-	    "icon": {
-	      "filename": "Reservoir_Rating_Curve.png"
-	    },
-	    "Storage": {
-	      "type": "balance",
-	      "massbalance": "true",
-	      "flow": "flow",
-	      "inflow": "inflow",
-	      "includeinoutput": "true",
-	      "description": "Initial Storage",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m~^3;ft~^3",
-	      "estimate": "true"
-	    },
-	    "inflow": {
-	      "type": "timeseries",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "description": "Flow rate time series",
-	      "ask_user": "true",
-	      "delegate": "Browser"
-	    }
-	  },
-	  "Controlled_Reservoir": {
-	    "type": "block",
-	    "typecategory": "Blocks",
-	    "description": "Reservoir with controlled outflow",
-	    "icon": {
-	      "filename": "Reservoid_Control.png"
-	    },
-	    "name": {
-	      "description": "Name",
-	      "type": "string",
-	      "ask_user": "true",
-	      "delegate": "String"
-	    },
-	    "Storage": {
-	      "type": "balance",
-	      "massbalance": "true",
-	      "flow": "flow",
-	      "inflow": "inflow",
-	      "includeinoutput": "true",
-	      "description": "Initial Storage;Storage",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m~^3;ft~^3",
-	      "estimate": "true"
-	    },
-	    "reservoir_power": {
-	      "type": "value",
-	      "default": "2",
-	      "description": "Reservoir rating curve power",
-	      "ask_user": "true",
-	      "delegate": "ValueBox",
-	      "estimate": "true"
-	    },
-	    "reservoir_coeff": {
-	      "type": "value",
-	      "default": "10",
-	      "description": "Reservoir rating curve coefficient",
-	      "ask_user": "true",
-	      "delegate": "ValueBox",
-	      "estimate": "true"
-	    },
-	    "inflow": {
-	      "type": "timeseries",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "description": "Flow rate time series",
-	      "ask_user": "true",
-	      "delegate": "Browser"
-	    }
-	  },
-	  "Spillway": {
-	    "type": "link",
-	    "typecategory": "Connectors",
-	    "description": "Reservoir spillway",
-	    "icon": {
-	      "filename": "Splillway.png"
-	    },
-	    "reservoir_power": {
-	      "type": "value",
-	      "default": "2",
-	      "description": "Reservoir rating curve power",
-	      "ask_user": "true",
-	      "delegate": "ValueBox",
-	      "estimate": "true"
-	    },
-	    "reservoir_coeff": {
-	      "type": "value",
-	      "default": "10",
-	      "description": "Reservoir rating curve coefficient",
-	      "ask_user": "true",
-	      "delegate": "ValueBox",
-	      "estimate": "true"
-	    },
-	    "flow": {
-	      "type": "expression",
-	      "description" : "Flow",
-	      "expression": "reservoir_coeff*Storage.s^reservoir_power",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "ask_user": "false"
-	    }
-	  }
+  "Reservoir": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Reservoir",
+    "icon": {
+      "filename": "Reservoir_Rating_Curve.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow",
+      "includeinoutput": "true",
+      "description": "Initial Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true",
+      "helptext": "Initial volume of water stored in the reservoir at the beginning of the simulation."
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Flow rate time series",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "helptext": "Time series representing the flow rate entering the reservoir."
+    }
+  },
+  "Controlled_Reservoir": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Reservoir with controlled outflow",
+    "icon": {
+      "filename": "Reservoid_Control.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name of the controlled reservoir block, used for identification within the model."
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow",
+      "includeinoutput": "true",
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "estimate": "true",
+      "helptext": "Initial volume of water stored in the reservoir at the beginning of the simulation."
+    },
+    "reservoir_power": {
+      "type": "value",
+      "default": "2",
+      "description": "Reservoir rating curve power",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "helptext": "Exponent used in the rating curve relating storage to outflow (e.g., Q = coeff * S^power)."
+    },
+    "reservoir_coeff": {
+      "type": "value",
+      "default": "10",
+      "description": "Reservoir rating curve coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Flow rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    }
+  },
+  "Spillway": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Reservoir spillway",
+    "icon": {
+      "filename": "Splillway.png"
+    },
+    "reservoir_power": {
+      "type": "value",
+      "default": "2",
+      "description": "Reservoir rating curve power",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "reservoir_coeff": {
+      "type": "value",
+      "default": "10",
+      "description": "Reservoir rating curve coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "reservoir_coeff*Storage.s^reservoir_power",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    }
+  }
 }

@@ -1,3 +1,19 @@
+/*
+ * OpenHydroQual - Environmental Modeling Platform
+ * Copyright (C) 2025 Arash Massoudieh
+ * 
+ * This file is part of OpenHydroQual.
+ * 
+ * OpenHydroQual is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ * 
+ * If you use this file in a commercial product, you must purchase a
+ * commercial license. Contact arash.massoudieh@enviroinformatics.co for details.
+ */
+
+
 #include "QuanSet.h"
 #include "Object.h"
 #include "System.h"
@@ -677,17 +693,17 @@ void QuanSet::CreateCPPcode(const string &source, const string header)
     sourcefile.close();
 }
 
-QJsonObject QuanSet::toJson()
+QJsonObject QuanSet::toJson(bool allvariables, bool calculatevalue)
 {
     QJsonObject out;
     for (map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
 
-        if (it->second.AskFromUser())
-        {    if (it->second.Delegate()=="UnitBox" || it->second.Delegate() == "ValueBox")
-                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(true));
+        if (it->second.AskFromUser() || allvariables)
+        {    if (it->second.Delegate()=="UnitBox" || it->second.Delegate() == "ValueBox" )
+                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(true || calculatevalue));
             else
-                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(false));
+                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(false || calculatevalue));
         }
 
     }

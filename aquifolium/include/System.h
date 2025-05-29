@@ -1,3 +1,19 @@
+/*
+ * OpenHydroQual - Environmental Modeling Platform
+ * Copyright (C) 2025 Arash Massoudieh
+ * 
+ * This file is part of OpenHydroQual.
+ * 
+ * OpenHydroQual is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ * 
+ * If you use this file in a commercial product, you must purchase a
+ * commercial license. Contact arash.massoudieh@enviroinformatics.co for details.
+ */
+
+
 #pragma once
 
 #include "Block.h"
@@ -423,7 +439,7 @@ class System: public Object
         double dt0() {return SimulationParameters.dt0;}
         Objective_Function_Set *ObjectiveFunctionSet() {return &objective_function_set;}
         bool WriteOutPuts();
-        bool SavetoJson(const string &filename, const vector<string> &_addedtemplates);
+        bool SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariable = false, bool calculatevalue = false);
         bool LoadfromJson(const QJsonDocument &jsondoc);
         bool LoadfromJson(const QJsonObject &jsondoc);
     protected:

@@ -9,7 +9,8 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String"
+      "delegate": "String",
+      "helptext": "Name of the tank block. Used to identify the tank in the model layout and output."
     },
     "Storage": {
       "type": "balance",
@@ -20,7 +21,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^3;ft~^3",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Initial volume of water stored in the tank at the beginning of the simulation."
     },
     "area": {
       "type": "value",
@@ -30,7 +32,8 @@
       "unit": "m~^2;ft~^2",
       "estimate": "true",
       "criteria": "area>0",
-      "warningmessage": "Base area must be positive"
+      "warningmessage": "Base area must be positive",
+      "helptext": "Horizontal cross-sectional area at the base of the tank, used to compute water depth."
     },
     "bottom_elevation": {
       "type": "value",
@@ -38,7 +41,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Elevation of the bottom of the tank relative to the model's vertical datum."
     },
     "depth": {
       "type": "expression",
@@ -51,8 +55,8 @@
     },
     "head": {
       "type": "expression",
-      "expression": "depth+bottom_elevation",      
-      "description": "Hydraulc Head",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic Head",
       "ask_user": "false",
       "includeinoutput": "true"
     }
@@ -64,7 +68,7 @@
     "icon": {
       "filename": "pipe.png"
     },
-     "diameter": {
+    "diameter": {
       "type": "value",
       "description": "Diameter",
       "ask_user": "true",
@@ -72,7 +76,8 @@
       "unit": "m;ft;cm",
       "estimate": "true",
       "criteria": "diameter>0",
-      "warningmessage": "diameter must be positive"
+      "warningmessage": "diameter must be positive",
+      "helptext": "Internal diameter of the pipe, used to calculate flow based on the Hazen-Williams equation."
     },
     "hz_coeff": {
       "type": "value",
@@ -186,7 +191,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "diameter": {
       "type": "value",
@@ -268,7 +273,7 @@
       "unit": "m;ft",
       "estimate": "true"
     },
-	"bottom_elevation": {
+    "bottom_elevation": {
       "type": "expression",
       "description": "Elevation",
       "expression": "elevation"
@@ -284,7 +289,7 @@
     "head": {
       "type": "expression",
       "expression": "elevation+elasticity*Storage-0.01",
-      "description": "Hydraulc Head",
+      "description": "Hydraulic Head",
       "ask_user": "false",
       "includeinoutput": "true"
     }
@@ -292,7 +297,7 @@
   "junction": {
     "type": "block",
     "typecategory": "Blocks",
-	"description": "Rigid Junction",
+    "description": "Rigid Junction",
     "icon": {
       "filename": "junction_rigid.png"
     },
@@ -323,9 +328,8 @@
     "head": {
       "type": "expression",
       "expression": "elevation+1*(Storage-1000)",
-      "description": "Hydraulc Head",
+      "description": "Hydraulic Head",
       "ask_user": "false",
-      "includeinoutput": "true",
       "includeinoutput": "true"
     }
   },
@@ -340,7 +344,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "head_0": {
       "type": "value",
@@ -399,7 +403,7 @@
     "typecategory": "Connectors",
     "description": "Pump with time series control",
     "icon": {
-    "filename": "pump_with_time_series_control.png"
+      "filename": "pump_with_time_series_control.png"
     },
     "head_0": {
       "type": "value",
@@ -437,7 +441,7 @@
       "includeinoutput": "true",
       "description": "Coefficient time-series",
       "ask_user": "true",
-      "delegate": "Browser" 
+      "delegate": "Browser"
     },
     "flow": {
       "type": "expression",
@@ -463,7 +467,7 @@
   "residential_user": {
     "type": "block",
     "typecategory": "Blocks",
-    "description" : "User",    
+    "description": "User",
     "icon": {
       "filename": "residential.png"
     },
@@ -474,7 +478,7 @@
       "inflow": "net_use_rate",
       "includeinoutput": "false",
       "description": "Initial Storage;Storage",
-      "default":"1000"
+      "default": "1000"
     },
     "use_rate": {
       "type": "timeseries",
@@ -488,7 +492,7 @@
       "includeinoutput": "true",
       "description": "Constant use rate",
       "ask_user": "true",
-	  "unit": "m~^3/day;ft~^3/day",
+      "unit": "m~^3/day;ft~^3/day",
       "delegate": "UnitBox"
     },
     "net_use_rate": {
@@ -502,7 +506,7 @@
   "Flow_to_user": {
     "type": "link",
     "typecategory": "Connectors",
-    "description" : "Flow link to user",    
+    "description": "Flow link to user",
     "icon": {
       "filename": "arrow_to_user.png"
     },
@@ -510,15 +514,14 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "flow": {
       "type": "expression",
       "expression": "use_rate.e+constant_use_rate.e",
       "includeinoutput": "true",
-      "description": "Flow",
-      "applylimit": "true",
-      "description": "Flow rate"
+      "description": "Flow rate",
+      "applylimit": "true"
     }
   }
 }

@@ -1,424 +1,425 @@
 {
-	"catchment-distributed": {
-	    "type": "block",
-	    "typecategory": "Blocks",
-	    "icon": {
-	      "filename": "catchment.png"
-	    },
-	    "name": {
-	      "description": "Name",
-	      "type": "string",
-	      "ask_user": "true",
-	      "delegate": "String"
-	    },
-	    "Storage": {
-	      "type": "balance",
-	      "massbalance": "true",
-	      "flow": "flow",
-	      "inflow": "Precipitation,Evapotranspiration,loss",
-	      "includeinoutput": "true",
-	      "description": "Storage",
-	      "ask_user": "false",
-	      "initial_value_expression": "area*depth",
-	      "estimate": "true"
-	    },
-	    "Precipitation": {
-	      "type": "source",
-	      "includeinoutput": "true",
-	      "description": "precipitation time series",
-	      "ask_user": "true",
-	      "delegate": "ComboBox;Sources"
-	    },
-		"Evapotranspiration": {
-		  "type": "source",
-		  "includeinoutput": "true",
-		  "description": "Evapotranspiration",
-		  "ask_user": "true",
-		  "delegate": "ComboBox;Sources"
-		},
-		"loss": {
-		  "type": "expression",
-		  "expression": "-loss_coefficient*Storage",
-		  "includeinoutput": "true",
-		  "description": "Loss rate",
-		  "ask_user": "false",
-		  "delegate": "ComboBox;Sources"
-		},
-	    "area": {
-	      "type": "value",
-	      "description": "Catchment area",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m~^2;ft~^2",
-	      "estimate": "true",
-	      "criteria": "area>0",
-	      "warningmessage": "Area must be greater than zero"
-	    },
-	    "ManningCoeff": {
-	      "type": "value",
-	      "description": "Manning's Roughness Coefficient",
-	      "ask_user": "true",
-	      "delegate": "ValueBox",
-	      "estimate": "true",
-	      "criteria": "ManningCoeff>0",
-	      "warningmessage": "Manning's roughness coefficient must be greater than zero"
-	    },
-	    "depth": {
-	      "type": "expression",
-	      "description": "Water depth",	
-	      "expression": "Storage/area",
-	      "description": "Average water depth",
-	      "delegate": "ValueBox",
-	      "ask_user": "true",
-	      "includeinoutput": "true"
-	    },
-	    "elevation": {
-	      "type": "value",
-	      "description": "Mean elevation of the catchment",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-              "unit": "m;ft"
-	    },
-	    "head": {
-	      "type": "expression",
-	      "expression": "elevation+depth",
-	      "description": "Average water head",
-	      "ask_user": "false",
-	      "includeinoutput": "true"
-	    },
-		"depression_storage": {
-		  "type": "value",
-		  "description": "Depression storage",
-		  "ask_user": "true",
-		  "delegate": "UnitBox",
-		  "unit": "m;ft;cm;in"
-		},
-		"loss_coefficient": {
-		  "type": "value",
-		  "default": "0", 
-		  "description": "Loss coefficient",
-		  "ask_user": "true",
-		  "delegate": "UnitBox",
-		  "unit": "1/day;1/hr"
-		}
-	  },
-	  "distributed_catchment_link": {
-	    "type": "link",
-	    "typecategory": "Connectors",
-	    "icon": {
-	      "filename": "dcatchment-catchment-link.png"
-	    },
-	    "name": {
-	      "description": "Name",
-	      "type": "string",
-	      "ask_user": "true",
-	      "delegate": "String" 
-	    },
-	    "Width": {
-	      "type": "value",
-	      "description": "The width of flow",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-              "unit": "m;ft",
-	      "estimate": "true"
-	     },
-	     "Length": {
-	      "type": "value",
-	      "description": "Centroid to centroid distance of the catchments",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-              "unit": "m;ft",
-	      "estimate": "true"
-	     },
-	     "depth": {
-	      "type": "expression",
-	      "expression": "_hsd(head.s-head.e)*_pos(depth.s-depression_storage.s)+_hsd(head.e-head.s)*_pos(depth.e-depression_storage.e)",
-	      "description": "Flow depth",
-	      "includeinoutput": "true"
-	     },
-	     "ManningCoeff": {
-	      "type": "expression",
-	      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
-	      "description": "Manning's coefficient",
-	      "includeinoutput": "true"
-	     },
-	    "hydraulic_gradient": {
-	      "type": "expression",
-              "description": "Hydraulic gradient",
-	      "expression": "(head.s-head.e)/Length",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    }, 
-	    "flow": {
-	      "type": "expression",
-          "description": "Flow",
-	      "expression": "86400*(Width/ManningCoeff)*_sqt(hydraulic_gradient)*(_pos(depth)^1.666667)",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "ask_user": "false"
-	    },
-	    "color": {
-	      "type": "string",
-	      "description": "color",
-	      "default": "200,0,100",
-	      "ask_user": "false"
-	    }
-	  },
-	  "distributed_catchment_to_fixed_head_link": {
-	    "type": "link",
-	    "typecategory": "Connectors",
-	    "icon": {
-	      "filename": "dcatchment-fixedhead-link.png"
-	    },
-	    "name": {
-	      "description": "Name",
-	      "type": "string",
-	      "ask_user": "true",
-	      "delegate": "String" 
-	    },
-	    "Width": {
-	      "type": "value",
-	      "description": "The width of flow",
-	      "ask_user": "true",
-          "delegate": "UnitBox",
-          "unit": "m;ft",
-	      "estimate": "true"
-	     },
-	     "Length": {
-	      "type": "value",
-	      "description": "Centroid to centroid distance of the catchments",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-      	      "unit": "m;ft",
-	      "estimate": "true"
-	     },
-	     "hydraulic_gradient": {
-	      "type": "expression",
-      	  "description": "Hydraulic gradient",
-	      "expression": "(head.s-head.e)/Length",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    }, 
-	    "flow": {
-	      "type": "expression",
-	      "description": "Flow",
-	      "expression": "86400*(Width/ManningCoeff.s)*_sqr(hydraulic_gradient)*(_pos(depth.s-depression_storage.s)^1.666667)",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "ask_user": "false"
-	    },
-	    "color": {
-	      "type": "string",
-	      "description": "color",
-	      "default": "200,0,100",
-	      "ask_user": "false"
-	    }
-	  },
-	  "distributed_catchment_to_stream_link": {
-	    "type": "link",
-	    "typecategory": "Connectors",
-	    "icon": {
-	      "filename": "dcatchment-stream-link.png"
-	    },
-	    "name": {
-	      "description": "Name",
-	      "type": "string",
-	      "ask_user": "true",
-	      "delegate": "String" 
-	    },
-	    "Width": {
-	      "type": "value",
-	      "description": "The width of flow",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-              "unit": "m;ft",
-	      "estimate": "true"
-	     },
-	     "Length": {
-	      "type": "value",
-	      "description": "Centroid to centroid distance of the catchments",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-          "unit": "m;ft",
-	      "estimate": "true"
-	     },
-	     "hydraulic_gradient": {
-	      "type": "expression",
-      	      "description": "Hydraulic gradient",
-	      "expression": "(head.s-head.e)/Length",
-	      "includeinoutput": "true",
-	      "ask_user": "false"
-	    }, 
-	    "flow": {
-	      "type": "expression",
-	      "description": "Flow",
-	      "expression": "86400*(Width/ManningCoeff.s)*_sqt(hydraulic_gradient)*(_pos(depth.s-depression_storage.s)^1.666667)",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "ask_user": "false"
-	    },
-	    "color": {
-	      "type": "string",
-	      "description": "color",
-	      "default": "200,0,100",
-	      "ask_user": "false"
-	    }
-	  },
-	  "Sheet_flow": {
-	    "type": "block",
-	    "typecategory": "Blocks",
-	    "description": "Sheet flow",
-	    "icon": {
-	      "filename": "sheet_flow.png"
-	    },
-	    "Storage": {
-	      "type": "balance",
-	      "massbalance": "true",
-	      "flow": "flow",
-	      "inflow": "Precipitation,Evapotranspiration,loss",
-	      "includeinoutput": "true",
-	      "description": "Initial Storage;Storage",
-	      "ask_user": "false",
-	      "initial_value_expression": "area*depth",
-	      "estimate": "true"
-	    },
-	    "Precipitation": {
-	      "type": "source",
-	      "includeinoutput": "true",
-	      "description": "precipitation time series",
-	      "helptext": "A precipitation source object must be selected.",  
-	      "ask_user": "true",
-	      "delegate": "ComboBox;Sources"
-	    },
-	    "Evapotranspiration": {
-	      "type": "source",
-	      "includeinoutput": "true",
-	      "description": "Evapotranspiration",
-	      "helptext": "A evapotranspiration 'source' object must be selected. In order to add an evapotransporation model a plug-in containing evapotranspiration models first needed to be added to the model",
-	      "ask_user": "true",
-	      "delegate": "ComboBox;Sources"
-	    },
-	    "loss": {
-	      "type": "expression",
-	      "expression": "-loss_coefficient*Storage",
-	      "includeinoutput": "true",
-	      "description": "Loss rate",
-	      "ask_user": "false",
-	      "delegate": "ComboBox;Sources"
-	    },
-	    "area": {
-	      "type": "value",
-	      "description": "Catchment area",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m~^2;ft~^2",
-	      "estimate": "true",
-	      "criteria": "area>0",
-	      "warningmessage": "Area must be greater than zero"
-	    },
-	    "Slope": {
-	      "type": "value",
-	      "description": "Catchment slope in the direction of flow",
-	      "helptext": "The average slope of the catchment along the dominant flow direction",
-	      "ask_user": "true",
-	      "delegate": "ValueBox",
-	      "estimate": "true"
-	    },
-	    "RoughnessCoeff": {
-	      "type": "value",
-	      "description": "Roughness Coefficient",
-	      "ask_user": "true",
-	      "delegate": "ValueBox",
-	      "estimate": "true",
-	      "criteria": "RoughnessCoeff>0",
-	      "warningmessage": "Roughness coefficient must be greater than zero"
-	    },
-	    "Width": {
-	      "type": "value",
-	      "description": "The width of the catchment",
-	      "helptext": "The average width of the catchment perpendicular to the dominant flow direction",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m;ft;cm;in",
-	      "estimate": "true"
-	    },
-	    "depth": {
-	      "type": "expression",
-	      "description": "Initial water depth; Water depth",	
-	      "expression": "Storage/area",
-	      "description": "Average water depth",
-	      "helptext": "The initial depth of the standing water before the simulation start time. Most of the times, this value is zero",
-	      "delegate": "UnitBox",
-	      "unit": "m;ft;cm;in",
-	      "ask_user": "true",
-	      "includeinoutput": "true"
-	    },
-	    "elevation": {
-	      "type": "value",
-	      "description": "Mean elevation of the catchment",
-	      "helptext": "The elevation of the centroid of the catchment based on the model datum.",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m;ft"
-	    },
-	    "head": {
-	      "type": "expression",
-	      "expression": "elevation+depth",
-	      "description": "Average water head",
-	      "ask_user": "false",
-	      "includeinoutput": "true"
-	    },
-	    "depression_storage": {
-	      "type": "value",
-	      "description": "Depression storage",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "m;ft;cm;in"
-	    },
-	    "loss_coefficient": {
-	      "type": "value",
-	      "default": "0", 
-	      "description": "Loss coefficient",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-	      "unit": "1/day;1/hr"
-	    },
-  	    "flow_exponent": {
-	      "type": "value",
-	      "default": "0.5", 
-	      "description": "Flow exponent",
-	      "ask_user": "true",
-	      "delegate": "ValueBox"
-	    }
-	  },
-	  "Sheetflow_link": {
-	    "type": "link",
-	    "typecategory": "Connectors",
-	    "description": "Link from sheet flow surface",
-	    "icon": {
-	      "filename": "sheet_flow_link.png"
-	    },
-	    "name": {
-	      "description": "Name",
-	      "type": "string",
-	      "ask_user": "true",
-	      "delegate": "String" 
-	    },
-	    "flow": {
-	      "type": "expression",
-	      "description" : "Flow",
-	      "expression": "86400*(Width.s/RoughnessCoeff.s)*(Slope.s^0.5)*(_pos(depth.s-depression_storage.s)^(1+flow_exponent.s))",
-	      "includeinoutput": "true",
-	      "applylimit": "true",
-	      "ask_user": "false"
-	    },
-	    "color": {
-	      "type": "string",
-	      "description": "color",
-	      "default": "150,200,200",
-	      "ask_user": "false"
-	    }
-	  }
+  "catchment-distributed": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "icon": {
+      "filename": "catchment.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "The name of the catchment block. Used to label and reference the catchment in the model."
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation,Evapotranspiration,loss",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "ask_user": "false",
+      "initial_value_expression": "area*depth",
+      "estimate": "true"
+    },
+    "Precipitation": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "precipitation time series",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Select a precipitation source object to provide rainfall input to this catchment."
+    },
+    "Evapotranspiration": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Select an evapotranspiration source object to represent water loss due to ET."
+    },
+    "loss": {
+      "type": "expression",
+      "expression": "-loss_coefficient*Storage",
+      "includeinoutput": "true",
+      "description": "Loss rate",
+      "ask_user": "false",
+      "delegate": "ComboBox;Sources"
+    },
+    "area": {
+      "type": "value",
+      "description": "Catchment area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "Area must be greater than zero",
+      "helptext": "Total surface area of the catchment used to calculate water storage and runoff volume."
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's Roughness Coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness coefficient must be greater than zero",
+      "helptext": "Manning\u2019s roughness coefficient for overland flow. Depends on land cover and surface roughness."
+    },
+    "depth": {
+      "type": "expression",
+      "description": "Average water depth",
+      "expression": "Storage/area",
+      "delegate": "ValueBox",
+      "ask_user": "true",
+      "includeinoutput": "true"
+    },
+    "elevation": {
+      "type": "value",
+      "description": "Mean elevation of the catchment",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "elevation+depth",
+      "description": "Average water head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "depression_storage": {
+      "type": "value",
+      "description": "Depression storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in"
+    },
+    "loss_coefficient": {
+      "type": "value",
+      "default": "0",
+      "description": "Loss coefficient",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day;1/hr"
+    }
+  },
+  "distributed_catchment_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "dcatchment-catchment-link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Width": {
+      "type": "value",
+      "description": "The width of flow",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "Length": {
+      "type": "value",
+      "description": "Centroid to centroid distance of the catchments",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "_hsd(head.s-head.e)*_pos(depth.s-depression_storage.s)+_hsd(head.e-head.s)*_pos(depth.e-depression_storage.e)",
+      "description": "Flow depth",
+      "includeinoutput": "true"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+      "description": "Manning's coefficient",
+      "includeinoutput": "true"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic gradient",
+      "expression": "(head.s-head.e)/Length",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(Width/ManningCoeff)*_sqt(hydraulic_gradient)*(_pos(depth)^1.666667)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "200,0,100",
+      "ask_user": "false"
+    }
+  },
+  "distributed_catchment_to_fixed_head_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "dcatchment-fixedhead-link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Width": {
+      "type": "value",
+      "description": "The width of flow",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "Length": {
+      "type": "value",
+      "description": "Centroid to centroid distance of the catchments",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic gradient",
+      "expression": "(head.s-head.e)/Length",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(Width/ManningCoeff.s)*_sqr(hydraulic_gradient)*(_pos(depth.s-depression_storage.s)^1.666667)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "200,0,100",
+      "ask_user": "false"
+    }
+  },
+  "distributed_catchment_to_stream_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "dcatchment-stream-link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Width": {
+      "type": "value",
+      "description": "The width of flow",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "Length": {
+      "type": "value",
+      "description": "Centroid to centroid distance of the catchments",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic gradient",
+      "expression": "(head.s-head.e)/Length",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(Width/ManningCoeff.s)*_sqt(hydraulic_gradient)*(_pos(depth.s-depression_storage.s)^1.666667)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "200,0,100",
+      "ask_user": "false"
+    }
+  },
+  "Sheet_flow": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Sheet flow",
+    "icon": {
+      "filename": "sheet_flow.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation,Evapotranspiration,loss",
+      "includeinoutput": "true",
+      "description": "Initial Storage;Storage",
+      "ask_user": "false",
+      "initial_value_expression": "area*depth",
+      "estimate": "true"
+    },
+    "Precipitation": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "precipitation time series",
+      "helptext": "A precipitation source object must be selected.",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources"
+    },
+    "Evapotranspiration": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration",
+      "helptext": "A evapotranspiration 'source' object must be selected. In order to add an evapotransporation model a plug-in containing evapotranspiration models first needed to be added to the model",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources"
+    },
+    "loss": {
+      "type": "expression",
+      "expression": "-loss_coefficient*Storage",
+      "includeinoutput": "true",
+      "description": "Loss rate",
+      "ask_user": "false",
+      "delegate": "ComboBox;Sources"
+    },
+    "area": {
+      "type": "value",
+      "description": "Catchment area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "Area must be greater than zero"
+    },
+    "Slope": {
+      "type": "value",
+      "description": "Catchment slope in the direction of flow",
+      "helptext": "The average slope of the catchment along the dominant flow direction",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "RoughnessCoeff": {
+      "type": "value",
+      "description": "Roughness Coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "criteria": "RoughnessCoeff>0",
+      "warningmessage": "Roughness coefficient must be greater than zero"
+    },
+    "Width": {
+      "type": "value",
+      "description": "The width of the catchment",
+      "helptext": "The average width of the catchment perpendicular to the dominant flow direction",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "description": "Average water depth",
+      "expression": "Storage/area",
+      "helptext": "The initial depth of the standing water before the simulation start time. Most of the times, this value is zero",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "ask_user": "true",
+      "includeinoutput": "true"
+    },
+    "elevation": {
+      "type": "value",
+      "description": "Mean elevation of the catchment",
+      "helptext": "The elevation of the centroid of the catchment based on the model datum.",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "elevation+depth",
+      "description": "Average water head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "depression_storage": {
+      "type": "value",
+      "description": "Depression storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in"
+    },
+    "loss_coefficient": {
+      "type": "value",
+      "default": "0",
+      "description": "Loss coefficient",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day;1/hr"
+    },
+    "flow_exponent": {
+      "type": "value",
+      "default": "0.5",
+      "description": "Flow exponent",
+      "ask_user": "true",
+      "delegate": "ValueBox"
+    }
+  },
+  "Sheetflow_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Link from sheet flow surface",
+    "icon": {
+      "filename": "sheet_flow_link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(Width.s/RoughnessCoeff.s)*(Slope.s^0.5)*(_pos(depth.s-depression_storage.s)^(1+flow_exponent.s))",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "150,200,200",
+      "ask_user": "false"
+    }
+  }
 }
-	  
-

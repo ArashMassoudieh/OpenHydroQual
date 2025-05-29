@@ -1,295 +1,295 @@
 {
-	"Immobile_Constituent": {
-	    "type": "constituent",
-	    "typecategory": "Constituents",
-	    "description": "Immobile chemical constituent",
-	    "icon": {
-	      "filename": "immobile_constituent.png"
-	    },
-	    "concentration": {
-	      "description": "Concentration per unit surface area",
-	      "type": "expression",
-	      "expression": "mass/area",
-	      "ask_user": "true",
-	      "role": "copytoblocks",
-	      "includeinoutput": "true",
-	      "delegate": "UnitBox",
-	      "estimate": "true",
-	      "unit": "g/m~^2"
-	    },
-	    "stoichiometric_constant": {
-	      "description": "Stoichiometric Constant",
-	      "type": "expression",
-	      "ask_user": "true",
-	      "role": "copytoreactions",
-	      "includeinoutput": "false",
-	      "delegate": "expressionEditor"
-	    },
-	    "mass": {
-	      "description": "Mass",
-	      "type": "balance",
-	      "massbalance": "true",
-	      "flow": "masstransfer",
-	      "inflow": "external_mass_flow_timeseries,external_source",
-	      "includeinoutput": "true",
-	      "ask_user": "false",
-	      "role": "copytoblocks",
-	      "initial_value_expression": "concentration*area"
-	    },
-	    "masstransfer": {
-	      "description": "Mass transfer rate",
-	      "type": "expression",
-	      "expression": "0",
-	      "includeinoutput": "false",
-	      "ask_user": "false",
-	      "role": "copytolinks"
-	    },
-	    "external_mass_flow_timeseries": {
-	      "type": "timeseries",
-	      "includeinoutput": "true",
-	      "description": "External mass flow time-series",
-	      "ask_user": "true",
-	      "role": "copytoblocks",
-	      "delegate": "Browser"
-	    },
-	    "external_source": {
-	      "type": "source",
-	      "includeinoutput": "true",
-	      "description": "External source",
-	      "ask_user": "true",
-	      "role": "copytoblocks",
-	      "delegate": "ComboBox;Sources"
-	    }
-	  },
-	  "surface_release": {
-	    "type": "Reaction",
-	    "description": "Release from surface",
-	    "normalizing_quantity": "area",
-	    "typecategory": "Reactions",
-	    "icon": {
-	      "filename": "surface_release.png"
-	    },
-	    "concentration_dependence_rate_expression": {
-	      "description": "Concentration dependence function",
-	      "type": "expression",
-	      "helptext": "This expression indicates the dependence of the release rate to the concentration of attached constituent per surface area",
-	      "ask_user": "true",
-	      "delegate": "expressionEditor"
-	    },
-	    "release_coefficient": {
-	      "description": "Release coefficient",
-	      "type": "value",
-	      "ask_user": "true",
-	      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
-	      "role": "copytoblocks",
-	      "estimate": "true",
-	      "default": "1"
-	    },
-	    "exponent_of_depth":
-	    {
-	      "description": "Depth exponent",
-	      "type": "value",
-	      "ask_user": "true",
-	      "estimate": "true",
-	      "role": "copytoblocks",
-	      "helptext": "Indicates the exponent in the power function relating the release rate and water depth (alpha*d^beta)",
-	      "default": "0"
-	    },
-	    "rate_expression": {
-	      "description": "Release rate",
-	      "type": "expression",
-	      "ask_user": "false",
-	      "expression": "concentration_dependence_rate_expression*release_coefficient*depth^exponent_of_depth"
-    	    }
-    	},
-	  "surface_release_threshold_precip_based": {
-	    "type": "Reaction",
-	    "description": "Release from surface (Threshold based on precipitation)",
-	    "normalizing_quantity": "area",
-	    "typecategory": "Reactions",
-	    "icon": {
-	      "filename": "surface_release2.png"
-	    },
-	    "concentration_dependence_rate_expression": {
-	      "description": "Concentration dependence function",
-	      "type": "expression",
-	      "helptext": "This expression indicates the dependence of the release rate to the concentration of attached constituent per surface area",
-	      "ask_user": "true",
-	      "delegate": "expressionEditor"
-	    },
-	    "release_coefficient": {
-	      "description": "Release coefficient",
-	      "type": "value",
-	      "ask_user": "true",
-	      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
-	      "role": "copytoblocks",
-	      "estimate": "true",
-	      "default": "1"
-	    },
-		"i_min": {
-	      "description": "Threshold Precipitation",
-	      "type": "value",
-	      "ask_user": "true",
-	      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
-	      "role": "copytoblocks",
-	      "delegate": "UnitBox",
-		  "unit": "m/day",
-		  "estimate": "true",
-	      "default": "0"
-	    },
-	    "exponent_of_depth":
-	    {
-	      "description": "Depth exponent",
-	      "type": "value",
-	      "ask_user": "true",
-	      "estimate": "true",
-	      "role": "copytoblocks",
-	      "helptext": "Indicates the exponent in the power function relating the release rate and water depth (alpha*d^beta)",
-	      "default": "0"
-	    },
-	    "rate_expression": {
-	      "description": "Release rate",
-	      "type": "expression",
-	      "ask_user": "false",
-	      "expression": "concentration_dependence_rate_expression*release_coefficient*(Precipitation/area)^exponent_of_depth*_hsd(Precipitation/area-i_min)"
-    	    }
-    	},
-	"surface_release_threshold": {
-	    "type": "Reaction",
-	    "description": "Release from surface (Threshold)",
-	    "normalizing_quantity": "area",
-	    "typecategory": "Reactions",
-	    "icon": {
-	      "filename": "surface_release3.png"
-	    },
-	    "concentration_dependence_rate_expression": {
-	      "description": "Concentration dependence function",
-	      "type": "expression",
-	      "helptext": "This expression indicates the dependence of the release rate to the concentration of attached constituent per surface area",
-	      "ask_user": "true",
-	      "delegate": "expressionEditor"
-	    },
-	    "release_coefficient": {
-	      "description": "Release coefficient",
-	      "type": "value",
-	      "ask_user": "true",
-	      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
-	      "role": "copytoblocks",
-	      "estimate": "true",
-	      "default": "1"
-	    },
-		"i_min": {
-	      "description": "Threshold Precipitation",
-	      "type": "value",
-	      "ask_user": "true",
-	      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
-	      "role": "copytoblocks",
-	      "delegate": "UnitBox",
-		  "unit": "m/day",
-		  "estimate": "true",
-	      "default": "0"
-	    },
-	    "exponent_of_depth":
-	    {
-	      "description": "Depth exponent",
-	      "type": "value",
-	      "ask_user": "true",
-	      "estimate": "true",
-	      "role": "copytoblocks",
-	      "helptext": "Indicates the exponent in the power function relating the release rate and water depth (alpha*d^beta)",
-	      "default": "0"
-	    },
-	    "rate_expression": {
-	      "description": "Release rate",
-	      "type": "expression",
-	      "ask_user": "false",
-	      "expression": "concentration_dependence_rate_expression*release_coefficient*depth^exponent_of_depth*_hsd(Precipitation/area-i_min)"
-    	    }
-    	},
-    	"aging": {
-	    "type": "Reaction",
-	    "description": "Aging",
-	    "typecategory": "Reactions",
-	    "normalizing_quantity": "area",
-	    "icon": {
-	      "filename": "aging.png"
-	    },
-	    "rate_expression": {
-	      "description": "Rate Expression",
-	      "type": "expression",
-	      "ask_user": "true",
-	      "delegate": "expressionEditor"
-	    }
-	  },
-    "Build up": {
-	    "type": "source",
-	    "typecategory": "Sources",
-	    "description": "Buildup constant-rate",
-	    "icon": {
-	      "filename": "build_up.png"
-	    },
-	    "build_up_rate": {
-	      "type": "value",
-	      "includeinoutput": "false",
-	      "description": "Build up rate (mass/time/area)",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-		"estimate": "true",
-	      "unit": "g/day/m~^2"
-	    },
-	    "coefficient": {
-	      "type": "expression",
-	      "expression": "area*build_up_rate",
-	      "includeinoutput": "false",
-	      "description": "Build-up rate",
-	      "ask_user": "false"
-	    },
-	    "timeseries": {
-	      "type": "expression",
-	      "expression": "1",
-	      "includeinoutput": "false",
-	      "description": "1",
-	      "ask_user": "false"
-	    }
-	},
-	"Build up (Saturation)": {
-	    "type": "source",
-	    "typecategory": "Sources",
-	    "description": "Buildup exponential model",
-	    "icon": {
-	      "filename": "build_up_sat.png"
-	    },
-	    "build_up_rate": {
-	      "type": "value",
-	      "includeinoutput": "false",
-	      "description": "Build up rate (mass/time/area)",
-	      "ask_user": "true",
-	      "delegate": "UnitBox",
-		"estimate": "true",
-	      "unit": "g/day/m~^2"
-	    },
-	    "saturation":
-	    {
-	    	"type": "value",
-	    	"ask_user": "true",
-	    	"description": "Saturation Concentration Level",
-	    	"delegate": "UnitBox",
-	    	"unit": "g/m~^2",
-	    	"estimate": "true"
-	    },
-	    "coefficient": {
-	      "type": "expression",
-	      "expression": "area*build_up_rate*(saturation-concentration)",
-	      "includeinoutput": "false",
-	      "description": "Build-up rate",
-	      "ask_user": "false"
-	    },
-	    "timeseries": {
-	      "type": "expression",
-	      "expression": "1",
-	      "includeinoutput": "false",
-	      "description": "1",
-	      "ask_user": "false"
-	    }
-	}
+  "Immobile_Constituent": {
+    "type": "constituent",
+    "typecategory": "Constituents",
+    "description": "Immobile chemical constituent",
+    "icon": {
+      "filename": "immobile_constituent.png"
+    },
+    "concentration": {
+      "description": "Concentration per unit surface area",
+      "type": "expression",
+      "expression": "mass/(area+0.001)",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "includeinoutput": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "g/m~^2",
+      "helptext": "Initial surface concentration of the immobile constituent per unit area. Used to compute initial mass on surfaces."
+    },
+    "stoichiometric_constant": {
+      "description": "Stoichiometric Constant",
+      "type": "expression",
+      "ask_user": "true",
+      "role": "copytoreactions",
+      "includeinoutput": "false",
+      "delegate": "expressionEditor",
+      "helptext": "Factor used to convert between constituent forms in reactions (e.g., from nitrogen to nitrate)."
+    },
+    "mass": {
+      "description": "Mass",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "masstransfer",
+      "inflow": "external_mass_flow_timeseries,external_source",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytoblocks",
+      "initial_value_expression": "concentration*area"
+    },
+    "masstransfer": {
+      "description": "Mass transfer rate",
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "external_mass_flow_timeseries": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "External mass flow time-series",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "Browser",
+      "helptext": "Optional time series specifying the external addition of mass to the system from sources such as atmospheric deposition."
+    },
+    "external_source": {
+      "type": "source",
+      "description": "External source",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Optional reference to another source object providing external loading of the constituent."
+    }
+  },
+  "surface_release": {
+    "type": "Reaction",
+    "description": "Release from surface",
+    "normalizing_quantity": "area",
+    "typecategory": "Reactions",
+    "icon": {
+      "filename": "surface_release.png"
+    },
+    "concentration_dependence_rate_expression": {
+      "description": "Concentration dependence function",
+      "type": "expression",
+      "helptext": "This expression indicates the dependence of the release rate to the concentration of attached constituent per surface area",
+      "ask_user": "true",
+      "delegate": "expressionEditor"
+    },
+    "release_coefficient": {
+      "description": "Release coefficient",
+      "type": "value",
+      "ask_user": "true",
+      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
+      "role": "copytoblocks",
+      "estimate": "true",
+      "default": "1"
+    },
+    "exponent_of_depth": {
+      "description": "Depth exponent",
+      "type": "value",
+      "ask_user": "true",
+      "estimate": "true",
+      "role": "copytoblocks",
+      "helptext": "Indicates the exponent in the power function relating the release rate and water depth (alpha*d^beta)",
+      "default": "0"
+    },
+    "rate_expression": {
+      "description": "Release rate",
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "concentration_dependence_rate_expression*release_coefficient*depth^exponent_of_depth"
+    }
+  },
+  "surface_release_threshold_precip_based": {
+    "type": "Reaction",
+    "description": "Release from surface (Threshold based on precipitation)",
+    "normalizing_quantity": "area",
+    "typecategory": "Reactions",
+    "icon": {
+      "filename": "surface_release2.png"
+    },
+    "concentration_dependence_rate_expression": {
+      "description": "Concentration dependence function",
+      "type": "expression",
+      "helptext": "This expression indicates the dependence of the release rate to the concentration of attached constituent per surface area",
+      "ask_user": "true",
+      "delegate": "expressionEditor"
+    },
+    "release_coefficient": {
+      "description": "Release coefficient",
+      "type": "value",
+      "ask_user": "true",
+      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
+      "role": "copytoblocks",
+      "estimate": "true",
+      "default": "1"
+    },
+    "i_min": {
+      "description": "Threshold Precipitation",
+      "type": "value",
+      "ask_user": "true",
+      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
+      "role": "copytoblocks",
+      "delegate": "UnitBox",
+      "unit": "m/day",
+      "estimate": "true",
+      "default": "0"
+    },
+    "exponent_of_depth": {
+      "description": "Depth exponent",
+      "type": "value",
+      "ask_user": "true",
+      "estimate": "true",
+      "role": "copytoblocks",
+      "helptext": "Indicates the exponent in the power function relating the release rate and water depth (alpha*d^beta)",
+      "default": "0"
+    },
+    "rate_expression": {
+      "description": "Release rate",
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "concentration_dependence_rate_expression*release_coefficient*(Precipitation/area)^exponent_of_depth*_hsd(Precipitation/area-i_min)"
+    }
+  },
+  "surface_release_threshold": {
+    "type": "Reaction",
+    "description": "Release from surface (Threshold)",
+    "normalizing_quantity": "area",
+    "typecategory": "Reactions",
+    "icon": {
+      "filename": "surface_release3.png"
+    },
+    "concentration_dependence_rate_expression": {
+      "description": "Concentration dependence function",
+      "type": "expression",
+      "helptext": "This expression indicates the dependence of the release rate to the concentration of attached constituent per surface area",
+      "ask_user": "true",
+      "delegate": "expressionEditor"
+    },
+    "release_coefficient": {
+      "description": "Release coefficient",
+      "type": "value",
+      "ask_user": "true",
+      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
+      "role": "copytoblocks",
+      "estimate": "true",
+      "default": "1"
+    },
+    "i_min": {
+      "description": "Threshold Precipitation",
+      "type": "value",
+      "ask_user": "true",
+      "helptext": "Indicates the coefficient in the power function relating the release rate and water depth (alpha*d^beta)",
+      "role": "copytoblocks",
+      "delegate": "UnitBox",
+      "unit": "m/day",
+      "estimate": "true",
+      "default": "0"
+    },
+    "exponent_of_depth": {
+      "description": "Depth exponent",
+      "type": "value",
+      "ask_user": "true",
+      "estimate": "true",
+      "role": "copytoblocks",
+      "helptext": "Indicates the exponent in the power function relating the release rate and water depth (alpha*d^beta)",
+      "default": "0"
+    },
+    "rate_expression": {
+      "description": "Release rate",
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "concentration_dependence_rate_expression*release_coefficient*depth^exponent_of_depth*_hsd(Precipitation/area-i_min)"
+    }
+  },
+  "aging": {
+    "type": "Reaction",
+    "description": "Aging",
+    "typecategory": "Reactions",
+    "normalizing_quantity": "area",
+    "icon": {
+      "filename": "aging.png"
+    },
+    "rate_expression": {
+      "description": "Rate Expression",
+      "type": "expression",
+      "ask_user": "true",
+      "delegate": "expressionEditor",
+      "helptext": "Custom expression defining the transformation or degradation rate of the constituent over time, normalized by surface area."
+    }
+  },
+  "Build up": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Buildup constant-rate",
+    "icon": {
+      "filename": "build_up.png"
+    },
+    "build_up_rate": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Build up rate (mass/time/area)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "g/day/m~^2"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*build_up_rate",
+      "includeinoutput": "false",
+      "description": "Build-up rate",
+      "ask_user": "false"
+    },
+    "timeseries": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    }
+  },
+  "Build up (Saturation)": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Buildup exponential model",
+    "icon": {
+      "filename": "build_up_sat.png"
+    },
+    "build_up_rate": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Build up rate (mass/time/area)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "g/day/m~^2"
+    },
+    "saturation": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Saturation Concentration Level",
+      "delegate": "UnitBox",
+      "unit": "g/m~^2",
+      "estimate": "true"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*build_up_rate*(saturation-concentration)",
+      "includeinoutput": "false",
+      "description": "Build-up rate",
+      "ask_user": "false"
+    },
+    "timeseries": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    }
+  }
 }

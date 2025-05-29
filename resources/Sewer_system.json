@@ -2,7 +2,7 @@
   "Sewerchannelsegment": {
     "type": "block",
     "typecategory": "Blocks",
-    "description": "Sewer Channel Segment", 
+    "description": "Sewer Channel Segment",
     "icon": {
       "filename": "Sewer_pipe_section.png"
     },
@@ -24,7 +24,8 @@
       "delegate": "ValueBox",
       "criteria": "ManningCoeff>0",
       "warningmessage": "Manning's roughness coefficient must be greater than zero",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Roughness coefficient representing flow resistance inside the sewer channel. Higher values indicate more resistance."
     },
     "bottom_elevation": {
       "type": "value",
@@ -32,7 +33,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Elevation of the sewer pipe bottom relative to the system datum. Influences flow direction and energy gradient."
     },
     "diameter": {
       "type": "value",
@@ -42,7 +44,8 @@
       "unit": "m;ft;cm;in",
       "estimate": "true",
       "criteria": "diameter>0",
-      "warningmessage": "Diameter cannot be zero"
+      "warningmessage": "Diameter cannot be zero",
+      "helptext": "Internal diameter of the sewer channel. Affects storage volume and flow capacity."
     },
     "depth": {
       "type": "expression",
@@ -54,7 +57,8 @@
       "unit": "m;ft;cm",
       "includeinoutput": "true",
       "criteria": "depth>-0.0000001",
-      "warningmessage": "Depth must be non-negative"
+      "warningmessage": "Depth must be non-negative",
+      "helptext": "Initial water depth in the sewer segment at the start of simulation."
     },
     "normalized_area": {
       "type": "expression",
@@ -72,8 +76,8 @@
     },
     "head": {
       "type": "expression",
-      "expression": "depth+bottom_elevation+_pos(Storage-0.785398163*length*diameter^2)*10000",      
-      "description": "Hydraulc Head",
+      "expression": "depth+bottom_elevation+_pos(Storage-0.785398163*length*diameter^2)*10000",
+      "description": "Hydraulic Head",
       "ask_user": "false",
       "includeinoutput": "true"
     },
@@ -85,7 +89,8 @@
       "unit": "m;ft;cm",
       "estimate": "true",
       "criteria": "length>0",
-      "warningmessage": "Length must be greater than zero"
+      "warningmessage": "Length must be greater than zero",
+      "helptext": "Length of the sewer channel segment. Affects storage and travel time of flow."
     },
     "xsectionarea": {
       "type": "expression",
@@ -226,7 +231,7 @@
     },
     "hydraulic_radius": {
       "type": "expression",
-      "description": "Effective hydraulic radious",
+      "description": "Effective hydraulic radius",
       "expression": "_hsd(_max(head.s;start_elevation)-_max(head.e;end_elevation))*area_1/perimeter_1 + _hsd(_max(head.e;end_elevation)-_max(head.s;start_elevation))*area_2/perimeter_2",
       "includeinoutput": "true",
       "ask_user": "false"
@@ -299,8 +304,8 @@
     },
     "head": {
       "type": "expression",
-      "expression": "depth+bottom_elevation",      
-      "description": "Hydraulc Head",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic Head",
       "ask_user": "false",
       "includeinoutput": "true"
     }
@@ -425,11 +430,10 @@
     "end_elevation": {
       "type": "value",
       "description": "Pipe bottom elevation at the pond",
-      "ask_user": "false",
+      "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
-      "includeinoutput": "false",
-      "ask_user": "true"
+      "includeinoutput": "false"
     },
     "depth_2": {
       "type": "expression",
@@ -501,7 +505,7 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
-    "hydraulic_gradient" : {
+    "hydraulic_gradient": {
       "type": "expression",
       "description": "Hydraulic Gradient",
       "expression": "(head.s-head.e)/length",

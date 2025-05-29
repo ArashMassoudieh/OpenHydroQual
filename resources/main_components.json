@@ -1,5 +1,7 @@
 {
-  "solutionorder": [ "Storage" ],
+  "solutionorder": [
+    "Storage"
+  ],
   "Catchment": {
     "type": "block",
     "typecategory": "Blocks",
@@ -18,18 +20,19 @@
       "initial_value_expression": "area*depth",
       "estimate": "true"
     },
-    "inflow":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Inflow",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Inflow",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "helptext": "User-supplied inflow time series to the catchment. This could represent runoff, pipe inflow, or any other external water source."
     },
     "Precipitation": {
       "type": "source",
       "includeinoutput": "true",
       "description": "Precipitation time series",
-      "helptext": "A precipitation source object must be selected.",  
+      "helptext": "A precipitation source object must be selected.",
       "ask_user": "true",
       "delegate": "ComboBox;Sources"
     },
@@ -57,7 +60,8 @@
       "unit": "m~^2;ft~^2",
       "estimate": "true",
       "criteria": "area>0",
-      "warningmessage": "Area must be greater than zero"
+      "warningmessage": "Area must be greater than zero",
+      "helptext": "Total horizontal surface area of the catchment. Used to compute initial storage and flow-related parameters."
     },
     "Slope": {
       "type": "value",
@@ -74,7 +78,8 @@
       "delegate": "ValueBox",
       "estimate": "true",
       "criteria": "ManningCoeff>0",
-      "warningmessage": "Manning's roughness coefficient must be greater than zero"
+      "warningmessage": "Manning's roughness coefficient must be greater than zero",
+      "helptext": "The Manning's roughness coefficient representing surface resistance to flow. Typical values vary by land cover type."
     },
     "Width": {
       "type": "value",
@@ -87,9 +92,8 @@
     },
     "depth": {
       "type": "expression",
-      "description": "Initial water depth; Water depth",	
-      "expression": "Storage/area",
       "description": "Average water depth",
+      "expression": "Storage/area",
       "helptext": "The initial depth of the standing water before the simulation start time. Most of the times, this value is zero",
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
@@ -116,15 +120,17 @@
       "description": "Depression storage",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft;cm;in"
+      "unit": "m;ft;cm;in",
+      "helptext": "The depth of water that is retained in surface depressions and does not contribute to surface runoff."
     },
     "loss_coefficient": {
       "type": "value",
-      "default": "0", 
+      "default": "0",
       "description": "Loss coefficient",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "1/day;1/hr"
+      "unit": "1/day;1/hr",
+      "helptext": "A coefficient representing losses (e.g., infiltration or leakage) as a first-order rate constant. Used in loss expression."
     }
   },
   "Precipitation": {
@@ -135,7 +141,7 @@
       "filename": "cloud.png"
     },
     "name": {
-      "description": "Name",      
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String"
@@ -165,11 +171,11 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "flow": {
       "type": "expression",
-      "description" : "Flow",
+      "description": "Flow",
       "expression": "86400*(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(_pos(depth.s-depression_storage.s)^1.666667)",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -193,11 +199,11 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "flow": {
       "type": "rule",
-      "description" : "Flow",
+      "description": "Flow",
       "rule": {
         "Storage.s<S_min": "Q_min",
         "S_min<Storage.s<S_max": "Q_min+((Storage.s-S_min)/(S_max-S_min))*(Q_max-Q_min)",
@@ -205,8 +211,7 @@
       },
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false",
-      "description": "Flow"
+      "ask_user": "false"
     },
     "Q_min": {
       "type": "value",
@@ -281,16 +286,15 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "flow": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Flow",
-      "applylimit": "true",
       "description": "Flow rate time series",
+      "applylimit": "true",
       "ask_user": "true",
-      "delegate": "Browser" 
+      "delegate": "Browser"
     }
   },
   "Parameter": {
@@ -304,7 +308,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "low": {
       "type": "value",
@@ -312,21 +316,21 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "criteria": "low<high",
-      "warningmessage": "Upper Limit must be greater than lower limit" 
+      "warningmessage": "Upper Limit must be greater than lower limit"
     },
     "high": {
       "type": "value",
-       "description": "Upper Limit",
+      "description": "Upper Limit",
       "ask_user": "true",
       "delegate": "ValueBox",
       "criteria": "high>low",
-      "warningmessage": "Upper Limit must be greater than lower limit" 
+      "warningmessage": "Upper Limit must be greater than lower limit"
     },
     "value": {
       "type": "value",
       "description": "Value",
       "ask_user": "true",
-      "delegate": "ValueBox" 
+      "delegate": "ValueBox"
     },
     "prior_distribution": {
       "type": "string",
@@ -348,7 +352,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "object": {
       "delegate": "ComboBox;BlockLinks",
@@ -376,7 +380,7 @@
       "includeinoutput": "false",
       "description": "Weight",
       "ask_user": "true",
-      "delegate": "ValueBox" 
+      "delegate": "ValueBox"
     },
     "exceedance_probability": {
       "type": "value",
@@ -384,7 +388,7 @@
       "description": "Exceedance probability",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "default": 0.05 
+      "default": 0.05
     }
   },
   "Observation": {
@@ -398,7 +402,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "object": {
       "delegate": "ComboBox;BlockLinks",
@@ -456,9 +460,8 @@
   },
   "fixed_head": {
     "type": "block",
-    "description": "Fixed-Head",
-    "typecategory": "Blocks",
     "description": "Fixed-head boundary",
+    "typecategory": "Blocks",
     "icon": {
       "filename": "fixedhead.png"
     },
@@ -485,28 +488,27 @@
     },
     "bottom_elevation": {
       "type": "expression",
-      "expression": "head",	
+      "expression": "head",
       "ask_user": "false"
     },
     "area": {
       "type": "value",
-	  "description": "area",
+      "description": "area",
       "default": "1"
     },
-	"volume": {
+    "volume": {
       "type": "expression",
       "description": "Volume",
       "ask_user": "false",
-	  "expression": "Storage"
+      "expression": "Storage"
     }
   },
   "time_variable_fixed_head": {
     "type": "block",
-    "description": "Time-variable Fixed-Head",
-    "typecategory": "Blocks",
     "description": "Time-variable fixed-head boundary",
+    "typecategory": "Blocks",
     "icon": {
-    	"filename": "fixedhead_timeseries.png"
+      "filename": "fixedhead_timeseries.png"
     },
     "Storage": {
       "type": "balance",
@@ -524,21 +526,21 @@
       "includeinoutput": "true",
       "description": "Head (m)",
       "ask_user": "true",
-      "delegate": "Browser" 
+      "delegate": "Browser"
     },
     "Dummy_timeseries": {
       "type": "timeseries",
       "includeinoutput": "true",
       "description": "Dummy timeseries",
       "ask_user": "true",
-      "delegate": "Browser" 
+      "delegate": "Browser"
     },
     "bottom_elevation": {
       "type": "expression",
-      "expression": "head",	
+      "expression": "head",
       "ask_user": "false"
     }
-    },
+  },
   "Constituent": {
     "type": "constituent",
     "typecategory": "Constituents",
@@ -584,7 +586,7 @@
       "estimate": "true",
       "unit": "m~^2/s;m~^2/day;ft~^2/s;ft~^2/day"
     },
-	"dispersivity": {
+    "dispersivity": {
       "description": "Dispersivity",
       "type": "value",
       "ask_user": "true",
@@ -711,7 +713,7 @@
       "ask_user": "false",
       "role": "copytolinks"
     },
-	"settling_transfer": {
+    "settling_transfer": {
       "description": "Settling transfer rate",
       "type": "expression",
       "expression": "settling_velocity*area*(_hsd(bottom_elevation.s-bottom_elevation.e-0.0000001)*concentration.s-_hsd(bottom_elevation.e-bottom_elevation.s-0.000001)*concentration.e)",
@@ -755,13 +757,6 @@
     },
     "inflow_loading": {
       "type": "expression",
-      "expression": "(constant_inflow_concentration+time_variable_inflow_concentration)*inflow",
-      "includeinoutput": "true",
-      "description": "Inflow loading",
-      "role": "copytoblocks"
-    },
-    "inflow_loading": {
-      "type": "expression",
       "expression": "inflow_concentration*inflow",
       "includeinoutput": "true",
       "description": "Inflow loading",
@@ -797,33 +792,33 @@
       "delegate": "ValueBox",
       "estimate": "true"
     },
-	"value": {
+    "value": {
       "description": "Value",
       "type": "expression",
-	  "expression": "base_value*Arrhenius_factor^(temperature-reference_temperature)",
+      "expression": "base_value*Arrhenius_factor^(temperature-reference_temperature)",
       "ask_user": "false",
-	  "includeinoutput": "true"
+      "includeinoutput": "true"
     },
-      "reference_temperature": {
+    "reference_temperature": {
       "description": "Reference Temperature",
       "type": "value",
-	  "default": "0",
+      "default": "0",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
     },
-	"temperature": {
+    "temperature": {
       "type": "timeseries",
       "includeinoutput": "true",
       "description": "Temperature time-series (degrees Celsius)",
       "ask_user": "true",
-      "delegate": "Browser" 
+      "delegate": "Browser"
     },
-	"Arrhenius_factor": {
+    "Arrhenius_factor": {
       "description": "Arrhenius temperature correction factor",
       "type": "value",
       "default": "1",
-	  "ask_user": "true",
+      "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true"
     }
@@ -840,7 +835,7 @@
       "includeinoutput": "true",
       "description": "Time-dependent value",
       "ask_user": "true",
-      "delegate": "Browser" 
+      "delegate": "Browser"
     }
   },
   "TimeDependent_ReactionParameter": {
@@ -856,7 +851,7 @@
       "description": "Time-dependent value",
       "ask_user": "true",
       "role": "copytoblocks",
-      "delegate": "Browser" 
+      "delegate": "Browser"
     }
   }
 }

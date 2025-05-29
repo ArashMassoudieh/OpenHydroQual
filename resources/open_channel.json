@@ -2,7 +2,7 @@
   "Trapezoidal Channel Segment": {
     "type": "block",
     "typecategory": "Blocks",
-    "description": "Trapezoidal Channel Segment", 
+    "description": "Trapezoidal Channel Segment",
     "icon": {
       "filename": "Trapezoidal_Channel.png"
     },
@@ -23,7 +23,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "The width of the bottom (flat) portion of the trapezoidal channel cross-section."
     },
     "side_slope": {
       "type": "value",
@@ -32,7 +33,8 @@
       "delegate": "ValueBox",
       "estimate": "true",
       "criteria": "side_slope>0",
-      "warningmessage": "Side slope must be greater than zero"
+      "warningmessage": "Side slope must be greater than zero",
+      "helptext": "The horizontal to vertical ratio of the sloped sides (e.g., 2 means 2 horizontal to 1 vertical)."
     },
     "ManningCoeff": {
       "type": "value",
@@ -41,7 +43,8 @@
       "delegate": "ValueBox",
       "criteria": "ManningCoeff>0",
       "warningmessage": "Manning's roughness must be greater than zero",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Roughness coefficient used in Manning's equation to estimate flow resistance."
     },
     "bottom_elevation": {
       "type": "value",
@@ -49,7 +52,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Elevation of the channel bottom relative to the model\u2019s vertical datum."
     },
     "depth": {
       "type": "expression",
@@ -60,12 +64,13 @@
       "unit": "m;ft;cm",
       "includeinoutput": "true",
       "criteria": "depth>-0.0000001",
-      "warningmessage": "Depth must be non-negative"
+      "warningmessage": "Depth must be non-negative",
+      "helptext": "Depth of water in the channel segment. If depth is initially unknown, it is estimated based on storage."
     },
     "head": {
       "type": "expression",
-      "expression": "depth+bottom_elevation",      
-      "description": "Hydraulc Head",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic Head",
       "ask_user": "false",
       "includeinoutput": "true"
     },
@@ -138,7 +143,7 @@
       "ask_user": "false",
       "includeinoutput": "true"
     },
-	"ag_withdrawal_per_unit_area": {
+    "ag_withdrawal_per_unit_area": {
       "type": "timeseries",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -154,8 +159,7 @@
       "ask_user": "true",
       "delegate": "Browser"
     },
-    "dam_height":
-    {
+    "dam_height": {
       "type": "value",
       "description": "Obstacle height",
       "ask_user": "true",
@@ -163,7 +167,7 @@
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
       "estimate": "true",
-      "default": "0"	
+      "default": "0"
     }
   },
   "Trapezoidal_Channel_link": {
@@ -236,7 +240,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "area": {
       "type": "expression",
@@ -293,7 +297,7 @@
       "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "area": {
       "type": "expression",
@@ -339,10 +343,10 @@
       "ask_user": "false"
     }
   },
-   "Sewer_channel_segment": {
+  "Sewer_channel_segment": {
     "type": "block",
     "typecategory": "Blocks",
-    "description": "Sewer Channel Segment", 
+    "description": "Sewer Channel Segment",
     "icon": {
       "filename": "Sewer_pipe.png"
     },
@@ -408,8 +412,8 @@
     },
     "head": {
       "type": "expression",
-      "expression": "depth+bottom_elevation+_pos(depth-diameter)*10000",      
-      "description": "Hydraulc Head",
+      "expression": "depth+bottom_elevation+_pos(depth-diameter)*10000",
+      "description": "Hydraulic Head",
       "ask_user": "false",
       "includeinoutput": "true"
     },

@@ -3,20 +3,21 @@
     "description": "Solver Settings",
     "type": "setting",
     "typecategory": "Settings",
-      "c_n_weight": {
+    "c_n_weight": {
       "type": "value",
       "default": "1",
       "description": "Crank-Nicholson Time Weight",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "code": "cn_weight"
+      "code": "cn_weight",
+      "helptext": "Time-weighting factor for the Crank-Nicholson scheme (0.5 for implicit midpoint rule, 1 for fully implicit)."
     },
     "name": {
       "description": "Name",
       "setvalue": "Solver Settings",
       "type": "string",
       "ask_user": "false",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "n_threads": {
       "type": "value",
@@ -24,7 +25,8 @@
       "description": "Number of threads to be used",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "code": "n_threads"
+      "code": "n_threads",
+      "helptext": "Number of processor threads to use for parallel computation during simulation."
     },
     "nr_tolerance": {
       "type": "value",
@@ -32,7 +34,8 @@
       "description": "Newton-Raphson Tolerance",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "code": "nr_tolerance"
+      "code": "nr_tolerance",
+      "helptext": "Tolerance for Newton-Raphson convergence. A smaller value results in more precise but potentially slower convergence."
     },
     "nr_timestep_reduction_factor": {
       "type": "value",
@@ -40,7 +43,8 @@
       "description": "Newton-Raphson Time-step reduction factor",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "code": "nr_timestep_reduction_factor"
+      "code": "nr_timestep_reduction_factor",
+      "helptext": "Factor to reduce the time-step when convergence slows down. Typical values range between 0.5 and 0.9."
     },
     "nr_timestep_reduction_factor_fail": {
       "type": "value",
@@ -48,7 +52,8 @@
       "description": "Newton-Raphson Time-step reduction factor when fail",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "code": "nr_timestep_reduction_factor_fail"
+      "code": "nr_timestep_reduction_factor_fail",
+      "helptext": "Time-step reduction factor applied when Newton-Raphson iteration fails to converge."
     },
     "minimum_timestep": {
       "type": "value",
@@ -112,7 +117,7 @@
       "description": "Output write interval",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit" : "day",
+      "unit": "day",
       "code": "write_interval"
     }
   },
@@ -121,10 +126,10 @@
     "typecategory": "Settings",
     "name": {
       "description": "Name",
-      "setvalue": "General Settings",      
+      "setvalue": "General Settings",
       "type": "string",
       "ask_user": "false",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "description": "General Parameters",
     "simulation_start_time": {
@@ -167,10 +172,10 @@
     "typecategory": "Settings",
     "name": {
       "description": "Name",
-      "setvalue": "Optimizer",      
+      "setvalue": "Optimizer",
       "type": "string",
       "ask_user": "false",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "description": "Optimizer Parameters",
     "maxpop": {
@@ -243,10 +248,10 @@
     "typecategory": "Settings",
     "name": {
       "description": "Name",
-      "setvalue": "MCMC",      
+      "setvalue": "MCMC",
       "type": "string",
       "ask_user": "false",
-      "delegate": "String" 
+      "delegate": "String"
     },
     "description": "Markov chain Monte Carlo settings",
     "number_of_samples": {
@@ -277,19 +282,11 @@
     },
     "initual_purturbation_factor": {
       "default": "0.05",
-      "description": "Initial purturbation factor",
+      "description": "Initial perturbation factor",
       "ask_user": "true",
       "type": "value",
       "delegate": "ValueBox",
       "code": "initual_purturbation_factor"
-    },
-    "record_interval": {
-      "default": "1",
-      "description": "The interval at which the samples are saved",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "record_interval"
     },
     "record_interval": {
       "default": "1",

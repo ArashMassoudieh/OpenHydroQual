@@ -23,7 +23,8 @@
       "includeinoutput": "true",
       "description": "Evapotranspiration",
       "ask_user": "true",
-      "delegate": "ComboBox;Sources"
+      "delegate": "ComboBox;Sources",
+      "helptext": "Evapotranspiration"
     },
     "depth": {
       "type": "value",
@@ -33,7 +34,8 @@
       "unit": "m;ft",
       "estimate": "true",
       "criteria": "depth>0",
-      "warningmessage": "The depth of the soil block must be greater than zero"
+      "warningmessage": "The depth of the soil block must be greater than zero",
+      "helptext": "Depth of the soil block"
     },
     "theta_sat": {
       "type": "value",
@@ -43,7 +45,8 @@
       "estimate": "true",
       "criteria": "theta_res<theta_sat<1",
       "default": "0.4",
-      "warningmessage": "Saturated Moisture Content must be between 0 and 1 and larger than the residual moisture content"
+      "warningmessage": "Saturated Moisture Content must be between 0 and 1 and larger than the residual moisture content",
+      "helptext": "Saturated Moisture Content"
     },
     "theta_res": {
       "type": "value",
@@ -53,7 +56,8 @@
       "estimate": "true",
       "default": "0.05",
       "criteria": "0<theta_res<theta_sat",
-      "warningmessage": "Residual Moisture Content must be between 0 and saturated  moisture content"
+      "warningmessage": "Residual Moisture Content must be between 0 and saturated  moisture content",
+      "helptext": "Residual Moisture Content"
     },
     "K_sat_scale_factor": {
       "type": "value",
@@ -63,7 +67,8 @@
       "estimate": "true",
       "default": "1",
       "criteria": "K_sat_scale_factor>0",
-      "warningmessage": "Hydraulic conductivity scale factor must be greater than zero"
+      "warningmessage": "Hydraulic conductivity scale factor must be greater than zero",
+      "helptext": "Hydraulic conductivity scale factor"
     },
     "MC_to_EC_exponent": {
       "type": "value",
@@ -71,7 +76,8 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
-      "default": "0"
+      "default": "0",
+      "helptext": "beta in EC = alpha*(theta-theta_t)^beta"
     },
     "MC_to_EC_coefficient": {
       "type": "value",
@@ -79,7 +85,8 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
-      "default": "0"
+      "default": "0",
+      "helptext": "alpha in EC = alpha*(theta-theta_t)^beta"
     },
     "MC_to_EC_Threshold_Moisture": {
       "type": "value",
@@ -87,7 +94,8 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
-      "default": "0"
+      "default": "0",
+      "helptext": "theta_t in EC = alpha*(theta-theta_t)^beta"
     },
     "Electrical_Conductivity": {
       "type": "expression",
@@ -98,7 +106,7 @@
     },
     "K_sat_original": {
       "type": "value",
-      "description": "Saturated Hydraulc Conductivity",
+      "description": "Saturated Hydraulic Conductivity",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m/day;ft/day;m/s;ft/s",
@@ -106,7 +114,8 @@
       "estimate": "true",
       "default": "1",
       "criteria": "K_sat_original>0",
-      "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero"
+      "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero",
+      "helptext": "Saturated Hydraulc Conductivity"
     },
     "K_sat": {
       "type": "expression",
@@ -121,7 +130,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Bottom Elevation of the soil block"
     },
     "area": {
       "type": "value",
@@ -132,7 +142,8 @@
       "estimate": "true",
       "default": "1",
       "criteria": "area>0",
-      "warningmessage": "Area must be greater than zero"
+      "warningmessage": "Area must be greater than zero",
+      "helptext": "Bottom Area of the soil block"
     },
     "volume": {
       "type": "expression",
@@ -150,7 +161,8 @@
       "estimate": "true",
       "default": "1",
       "criteria": "alpha>0",
-      "warningmessage": "Van Genuchten's alpha must be greater than zero"
+      "warningmessage": "Van Genuchten's alpha must be greater than zero",
+      "helptext": "Van Genuchten's alpha parameter"
     },
     "n": {
       "type": "value",
@@ -161,17 +173,20 @@
       "estimate": "true",
       "default": "1.41",
       "criteria": "n>0",
-      "warningmessage": "Van Genuchten's n must be greater than zero"
+      "warningmessage": "Van Genuchten's n must be greater than zero",
+      "helptext": "Van Genuchten's n parameter"
     },
     "act_X": {
       "type": "value",
       "description": "Actual x",
-      "ask_user": "true"
+      "ask_user": "true",
+      "helptext": "Actual x"
     },
     "act_Y": {
       "type": "value",
       "description": "Actual y",
-      "ask_user": "true"
+      "ask_user": "true",
+      "helptext": "Actual y"
     },
     "m": {
       "type": "expression",
@@ -189,7 +204,8 @@
       "delegate": "ValueBox",
       "default": "0.2",
       "criteria": "theta_res<theta<theta_sat",
-      "warningmessage": "Initial Moisture Content must be between residual and saturated moisture contents"
+      "warningmessage": "Initial Moisture Content must be between residual and saturated moisture contents",
+      "helptext": "Initial Moisture Content; Moisture Content"
     },
     "Se": {
       "type": "expression",
@@ -210,7 +226,8 @@
       "estimate": "true",
       "default": "0.01",
       "criteria": "specific_storage>0",
-      "warningmessage": "Specific storage must be non-zero and positive"
+      "warningmessage": "Specific storage must be non-zero and positive",
+      "helptext": "Specific storage"
     },
     "pressure_head": {
       "type": "expression",
@@ -228,7 +245,7 @@
       "ask_user": "false",
       "includeinoutput": "true"
     },
-    "aniso_ratio":{
+    "aniso_ratio": {
       "type": "value",
       "description": "Anisotropy ratio Kx/Ky",
       "ask_user": "true",
@@ -237,8 +254,10 @@
       "estimate": "true",
       "default": "1",
       "criteria": "aniso_ratio>-0.000001",
-      "warningmessage": "Anisotropy ratio cannot be negative"
-    }
+      "warningmessage": "Anisotropy ratio cannot be negative",
+      "helptext": "Anisotropy ratio Kx/Ky"
+    },
+    "helptext": "Variably Saturated Soil Block"
   },
   "soil_to_soil_link": {
     "type": "link",
@@ -323,7 +342,8 @@
     "color": {
       "type": "string",
       "default": "120,120,0"
-    }
+    },
+    "helptext": "Vertical soil to soil connector"
   },
   "soil_to_soil_H_link": {
     "type": "link",
@@ -338,7 +358,8 @@
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2"
+      "unit": "m~^2;ft~^2",
+      "helptext": "Interface area"
     },
     "length": {
       "type": "value",
@@ -348,7 +369,8 @@
       "delegate": "UnitBox",
       "unit": "m;ft",
       "criteria": "length>0",
-      "warningmessage": "Length has to be greater than zero"
+      "warningmessage": "Length has to be greater than zero",
+      "helptext": "Length"
     },
     "Se": {
       "type": "expression",
@@ -389,7 +411,8 @@
     "color": {
       "type": "string",
       "default": "120,120,0"
-    }
+    },
+    "helptext": "Horizontal soil to soil connector"
   },
   "soil_to_soil_H_link_w_K": {
     "type": "link",
@@ -404,7 +427,8 @@
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2"
+      "unit": "m~^2;ft~^2",
+      "helptext": "Interface area"
     },
     "length": {
       "type": "value",
@@ -412,7 +436,8 @@
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft"
+      "unit": "m;ft",
+      "helptext": "Length"
     },
     "Se": {
       "type": "expression",
@@ -435,8 +460,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m/day;ft/day",
-      "default":"1",
-      "estimate": "true"
+      "default": "1",
+      "estimate": "true",
+      "helptext": "Saturated Hydraulic Conductivity"
     },
     "K_eff": {
       "type": "expression",
@@ -456,7 +482,8 @@
     "color": {
       "type": "string",
       "default": "120,120,0"
-    }
+    },
+    "helptext": "Horizontal soil to soil connector (with Ksat)"
   },
   "surfacewater_to_soil_link": {
     "type": "link",
@@ -497,7 +524,8 @@
     "color": {
       "type": "string",
       "default": "0,0,180"
-    }
+    },
+    "helptext": "Surfacewater to soil connector"
   },
   "soil_to_fixedhead_link": {
     "type": "link",
@@ -559,7 +587,8 @@
     "color": {
       "type": "string",
       "default": "120,120,120"
-    }
+    },
+    "helptext": "Soil to fixed head connector"
   },
   "fixedhead_to_soil_link": {
     "type": "link",
@@ -607,7 +636,8 @@
     "color": {
       "type": "string",
       "default": "120,120,120"
-    }
+    },
+    "helptext": "Fixed-head to soil connector"
   },
   "soil_to_fixedhead_link_H": {
     "type": "link",
@@ -622,7 +652,8 @@
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2"
+      "unit": "m~^2;ft~^2",
+      "helptext": "Interface area"
     },
     "length": {
       "type": "value",
@@ -633,7 +664,8 @@
       "delegate": "UnitBox",
       "unit": "m;ft",
       "criteria": "length>0",
-      "warningmessage": "Length has to be greater than zero"
+      "warningmessage": "Length has to be greater than zero",
+      "helptext": "Length"
     },
     "Se": {
       "type": "expression",
@@ -677,12 +709,14 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Outlet head"
     },
     "color": {
       "type": "string",
       "default": "120,120,120"
-    }
+    },
+    "helptext": "Horizontal Soil to fixed head connector"
   },
   "fixed_hydraulic_gradient_link": {
     "type": "link",
@@ -697,7 +731,8 @@
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2"
+      "unit": "m~^2;ft~^2",
+      "helptext": "Interface area"
     },
     "Se": {
       "type": "expression",
@@ -732,7 +767,8 @@
       "description": "Hydraulic Gradient",
       "includeinoutput": "true",
       "ask_user": "true",
-      "delegate": "ValueBox"
+      "delegate": "ValueBox",
+      "helptext": "Hydraulic Gradient"
     },
     "flow": {
       "type": "expression",
@@ -745,7 +781,8 @@
     "color": {
       "type": "string",
       "default": "20,220,120"
-    }
+    },
+    "helptext": "Fixed Hydraulic Gradient link"
   },
   "soil_free_outflow": {
     "type": "link",
@@ -760,7 +797,8 @@
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2"
+      "unit": "m~^2;ft~^2",
+      "helptext": "Interface area"
     },
     "length": {
       "type": "value",
@@ -771,7 +809,8 @@
       "delegate": "UnitBox",
       "unit": "m;ft",
       "criteria": "length>0",
-      "warningmessage": "Length has to be greater than zero"
+      "warningmessage": "Length has to be greater than zero",
+      "helptext": "Length"
     },
     "Se": {
       "type": "expression",
@@ -795,11 +834,12 @@
       "estimate": "true",
       "default": "1",
       "criteria": "K_sat_scale_factor>0",
-      "warningmessage": "Hydraulic conductivity scale factor must be greater than zero"
+      "warningmessage": "Hydraulic conductivity scale factor must be greater than zero",
+      "helptext": "Hydraulic conductivity scale factor"
     },
     "K_sat_original": {
       "type": "value",
-      "description": "Saturated Hydraulc Conductivity",
+      "description": "Saturated Hydraulic Conductivity",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m/day;ft/day;m/s;ft/s",
@@ -807,7 +847,8 @@
       "estimate": "true",
       "default": "1",
       "criteria": "K_sat_original>0",
-      "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero"
+      "warningmessage": "Saturated Hydraulic Conductivity must be greater than zero",
+      "helptext": "Saturated Hydraulc Conductivity"
     },
     "K_sat": {
       "type": "expression",
@@ -833,47 +874,49 @@
     "color": {
       "type": "string",
       "default": "20,180,50"
-    }
+    },
+    "helptext": "Horizontal Soil to fixed head connector - Free flow"
   },
-  "surfacewater_to_soil_link_2": { 
-    "type": "link", 
-    "typecategory": "Connectors", 
-    "icon": { 
-      "filename": "surface2soil2.png" 
-    }, 
-    "description": "Surfacewater to soil connector (surface storage limit)", 
-    "area": { 
-      "type": "expression", 
-      "description": "Interface area", 
-      "expression": "_min(area.s;area.e)", 
-      "includeinoutput": "true", 
-      "ask_user": "false" 
-    }, 
-    "length": { 
-      "type": "expression", 
-      "description": "Length", 
-      "expression": "depth.e/2", 
-      "includeinoutput": "true", 
-      "ask_user": "false" 
-    }, 
-    "K_eff": { 
-      "type": "expression", 
-      "description": "Effective Hydraulic Conductivity", 
-      "expression": "K_sat.e", 
-      "includeinoutput": "true", 
-      "ask_user": "false" 
-    }, 
-    "flow": { 
-      "type": "expression", 
-      "description": "Flow", 
-      "expression": "(head.s-head.e)*K_eff/length*area*_pos(depth.s-depression_storage.s)/_pos(depth.s-depression_storage.s+0.000001)", 
-      "includeinoutput": "true", 
-      "applylimit": "true", 
-      "ask_user": "false" 
-    }, 
-    "color": { 
-      "type": "string", 
-      "default": "0,0,180" 
-    } 
+  "surfacewater_to_soil_link_2": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "surface2soil2.png"
+    },
+    "description": "Surfacewater to soil connector (surface storage limit)",
+    "area": {
+      "type": "expression",
+      "description": "Interface area",
+      "expression": "_min(area.s;area.e)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Length",
+      "expression": "depth.e/2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective Hydraulic Conductivity",
+      "expression": "K_sat.e",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "(head.s-head.e)*K_eff/length*area*_pos(depth.s-depression_storage.s)/_pos(depth.s-depression_storage.s+0.000001)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,180"
+    },
+    "helptext": "Surfacewater to soil connector (surface storage limit)"
   }
 }

@@ -1,3 +1,19 @@
+/*
+ * OpenHydroQual - Environmental Modeling Platform
+ * Copyright (C) 2025 Arash Massoudieh
+ * 
+ * This file is part of OpenHydroQual.
+ * 
+ * OpenHydroQual is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ * 
+ * If you use this file in a commercial product, you must purchase a
+ * commercial license. Contact arash.massoudieh@enviroinformatics.co for details.
+ */
+
+
 #define openhydroqual_version "1.2.3"
 #define last_modified "May, 12, 2025"
 
@@ -1949,6 +1965,7 @@ void MainWindow::onrunmodel()
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();
+    copiedsystem.SavetoJson(workingfolder.toStdString() + "/model.json", addedtemplatefilenames,true, true);
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
     CVector FitMeasures(3*copiedsystem.ObservationsCount());

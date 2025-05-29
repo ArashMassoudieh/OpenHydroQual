@@ -1,289 +1,304 @@
 {
-	"Well": {
-		"type": "block",
-		"typecategory": "Blocks",
-                "description": "Well",
-		"icon": {
-			"filename": "Well.png"		
-		},
-		"Storage": {
-			"description": "Storage",
-			"type": "balance",
-			"massbalance": "true",
-			"flow": "flow",
-			"inflow": "inflow",
-			"initial_value_expression": "(diameter^2)/4*3.1415*depth",
-			"ask_user": "false",
-			"delegate": "ValueBox",
-			"estimate": "false",
-			"includeinoutput" : "true"
-		},
-		"inflow": {
-		      "type": "timeseries",
-		      "includeinoutput": "true",
-		      "applylimit": "true",
-		      "helptext": "The time series containing the inflow rate into the well", 
-		      "description": "Inflow rate time series",
-		      "ask_user": "true",
-		      "delegate": "Browser"
-		},
-		"diameter": {
-			"type": "value",
-			"description": "Well Diameter",
-			"ask_user": "true",
-			"delegate": "UnitBox",
-			"default": "1",
-			"unit": "m;ft"
-		},
-		"area": {
-			"type": "expression",
-			"description": "Well cross-sectional area",
-			"expression": "(diameter^2)/4*3.1415",
-			"description": "Cross-sectional area",
-			"includeinoutput": "true"
-		},
-		"depth": {
-			"type": "expression",
-			"expression" : "Storage/area",
-			"description": "Water depth",
-			"ask_user": "true",
-			"includeinoutput": "true",
-			"delegate": "ValueBox",
-			"unit": "m;ft"  
-		},
-		"bottom_elevation": {
-		     "type": "value",
-		      "description": "Bottom elevation of the well",
-		      "ask_user": "true",
-		      "delegate": "UnitBox",
-			  "unit": "m;ft"
-		},
-		"head": {
-		 	"type": "expression",
-		        "expression": "depth+bottom_elevation",
-		        "description" : "Hydraulic head",
-		        "ask_user": "false",
-		        "includeinoutput" : "true"
-		}
-	},
-        "Well2soil horizontal link":{
-		"type": "link",
-		"typecategory": "Connectors",
-                "description": "Horizontal link from well to soil",
-		"icon": {
-			"filename": "well-to-soil-H-link.png"
-		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String" 
-		},
-                "color": {
-      			"type": "string",
-      			"default": "60,120,60"
-    		},
-                "length" : {
-			"type": "value",
-			"description": "Connector length",
-			"ask_user" : "true",
-			"delegate" : "ValueBox",
-			"estimate" : "true",
-			"length": ">0",
-		        "warningmessage": "length must be positive"
-		},
-		"interface_area":{
-			"type": "expression",
-			"description":"Interface area between well and soil/gw",
-			"expression":"_min(_max(0;head.s-bottom_elevation.e);depth.e)*3.14*diameter.s",
-			"includeinoutput" : "true"
-		},
-		"area":{
-			"type": "expression",
-			"description":"Interface area between well and soil/gw",
-			"expression":"_hsd(hydraulic_gradient)*interface_area + (1-_hsd(hydraulic_gradient))*interface_area_reverse",
-			"includeinoutput" : "true"
-		},
-        	"interface_area_reverse":{
-			"type": "expression",
-			"description":"Interface area between well and soil/gw",
-			"expression":"depth.e*3.14*diameter.s",
-			"includeinoutput" : "false"
-		},
-		"hydraulic_gradient":{
-			"type": "expression",
-			"description":"Hydraulic Gradient",
-			"expression":"(head.s-head.e)/length",
-			"includeinoutput" : "true"
-		},	
-	        "flow" : {
-		      	"type": "expression",
-			"description": "Flow rate",
-                        "expression" : "K_sat.e*(_pos(hydraulic_gradient)*interface_area - _pos(pressure_head.e)/length*interface_area_reverse)*depth.s/(depth.s+0.01)",
-			"includeinoutput" : "true",
-			"applylimit": "true"	
-		}  	
-	},
-        "Well2soil vertical link":{
-		"type": "link",
-		"typecategory": "Connectors",
-                "description": "Vertical link from well to soil",
-		"icon": {
-			"filename": "well-to-soil-V-link.png"
-		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String" 
-		},
-                "color": {
-      			"type": "string",
-      			"default": "60,220,60"
-    		},
-                "length" : {
-			"type": "expression",
-			"description": "Connector length",
-			"expression": "depth.e/2",
-			"ask_user" : "false"
-		},
-		"hydraulic_gradient":{
-			"type": "expression",
-			"description":"Hydraulic Gradient",
-			"expression":"(head.s-head.e)/length",
-			"includeinoutput" : "true"
-		},	
-		"area":{
-			"type": "expression",
-			"description":"Interface area between well and soil/gw",
-			"expression":"area.s",
-			"includeinoutput" : "true"
-		},
-	        "flow" : {
-		      	"type": "expression",
-			"description": "Flow rate",
-                        "expression" : "K_sat.e*hydraulic_gradient*area.s*depth.s/(depth.s+0.01)",
-                        "description": "Flow (m~^3/day)",
-			"includeinoutput" : "true",
-			"applylimit": "true"	
-		}  	
-	},
-	"Surface water to well":{
-		"type": "link",
-		"typecategory": "Connectors",
-                "description": "Surface water to well link",
-		"icon": {
-			"filename": "surface2well.png"
-		},
-		"name": {
-		      "description": "Name",
-		      "type": "string",
-		      "ask_user": "true",
-		      "delegate": "String" 
-		},
-                "color": {
-      			"type": "string",
-      			"default": "180,120,40"
-    		},
-                "length" : {
-			"type": "value",
-			"description": "Connector length",
-			"ask_user" : "true",
-			"delegate" : "ValueBox",
-			"estimate" : "true",
-			"length": ">0",
-		        "warningmessage": "length must be positive"
-		},
-		"ManningCoeff": {
-			"type": "value",
-			"description": "Manning's roughness coefficient",
-			"ask_user" : "true",
-			"delegate" : "ValueBox",
-			"includeinoutput": "false",
-			"default": "0.1",
-			"ManningCoeff": ">0",
-		        "warningmessage": "ManningCoeff must be positive"
-		},
-		"flow": {
-			"type": "expression",
-			"expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*3.14*diameter.e*depth.s^1.6667",
-			"description": "Flow (m~^3/day)",
-			"includeinoutput": "true",
-			"applylimit": "true",
-			"ask_user": "false"
-		}  	
-	},
-	"Well_aggregate": {
-		"type": "block",
-		"typecategory": "Blocks",
-        	"description": "Well-filled with aggregates",
-		"icon": {
-			"filename": "Well_aggregate.png"		
-		},
-		"Storage": {
-			"description": "Storage",
-			"type": "balance",
-			"massbalance": "true",
-			"flow": "flow",
-			"inflow": "inflow",
-			"initial_value_expression": "(diameter^2)/4*3.1415*depth*porosity",
-			"ask_user": "false",
-			"delegate": "ValueBox",
-			"estimate": "false",
-			"includeinoutput" : "true"
-		},
-		"inflow": {
-		      "type": "timeseries",
-		      "includeinoutput": "true",
-		      "applylimit": "true",
-		      "helptext": "The time series containing the inflow rate into the well", 
-		      "description": "Inflow rate time series",
-		      "ask_user": "true",
-		      "delegate": "Browser"
-		},
-		"diameter": {
-			"type": "value",
-	      		"description": "Well Diameter",
-	      		"ask_user": "true",
-	      		"delegate": "UnitBox",
-	      		"default": "1",
-				"unit": "m;ft"
-		},
-		"area": {
-			"type": "expression",
-			"description": "Well cross-sectional area",
-			"expression": "(diameter^2)/4*3.1415",
-			"description": "Cross-sectional area",
-			"includeinoutput": "true"
-		},
-		"depth": {
-			 "type": "expression",
-			 "expression" : "Storage/(area*porosity)",
-			 "description": "Water depth",
-			 "ask_user": "true",
-			 "includeinoutput": "true",
-  		         "delegate": "ValueBox",
-			 "unit": "m;ft"    
-		},
-		"bottom_elevation": {
-		     "type": "value",
-		      "description": "Bottom elevation of the well",
-		      "ask_user": "true",
-		      "delegate": "UnitBox",
-			  "unit": "m;ft"
-		},
-		"porosity": {
-		     "type": "value",
-		      "description": "Porosity",
-		      "ask_user": "true",
-		      "delegate": "ValueBox"
-		},
-		"head": {
-		 	"type": "expression",
-			"expression": "depth+bottom_elevation",
-			"description" : "Hydraulic head",
-			"ask_user": "false",
-			"includeinoutput" : "true"
-		}
-	}
+  "Well": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Well",
+    "icon": {
+      "filename": "Well.png"
+    },
+    "Storage": {
+      "description": "Storage",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow",
+      "initial_value_expression": "(diameter^2)/4*3.1415*depth",
+      "ask_user": "false",
+      "delegate": "ValueBox",
+      "estimate": "false",
+      "includeinoutput": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "helptext": "The time series containing the inflow rate into the well",
+      "description": "Inflow rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Well Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "default": "1",
+      "unit": "m;ft",
+      "helptext": "Well Diameter"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "(diameter^2)/4*3.1415",
+      "includeinoutput": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "Storage/area",
+      "description": "Water depth",
+      "ask_user": "true",
+      "includeinoutput": "true",
+      "delegate": "ValueBox",
+      "unit": "m;ft",
+      "helptext": "Water depth"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom elevation of the well",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "helptext": "Bottom elevation of the well"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "helptext": "Well"
+  },
+  "Well2soil horizontal link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Horizontal link from well to soil",
+    "icon": {
+      "filename": "well-to-soil-H-link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name"
+    },
+    "color": {
+      "type": "string",
+      "default": "60,120,60"
+    },
+    "length": {
+      "type": "value",
+      "description": "Connector length",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "length": ">0",
+      "warningmessage": "length must be positive",
+      "helptext": "Connector length"
+    },
+    "interface_area": {
+      "type": "expression",
+      "description": "Interface area between well and soil/gw",
+      "expression": "_min(_max(0;head.s-bottom_elevation.e);depth.e)*3.14*diameter.s",
+      "includeinoutput": "true"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Interface area between well and soil/gw",
+      "expression": "_hsd(hydraulic_gradient)*interface_area + (1-_hsd(hydraulic_gradient))*interface_area_reverse",
+      "includeinoutput": "true"
+    },
+    "interface_area_reverse": {
+      "type": "expression",
+      "description": "Interface area between well and soil/gw",
+      "expression": "depth.e*3.14*diameter.s",
+      "includeinoutput": "false"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic Gradient",
+      "expression": "(head.s-head.e)/length",
+      "includeinoutput": "true"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "expression": "K_sat.e*(_pos(hydraulic_gradient)*interface_area - _pos(pressure_head.e)/length*interface_area_reverse)*depth.s/(depth.s+0.01)",
+      "includeinoutput": "true",
+      "applylimit": "true"
+    },
+    "helptext": "Horizontal link from well to soil"
+  },
+  "Well2soil vertical link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Vertical link from well to soil",
+    "icon": {
+      "filename": "well-to-soil-V-link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name"
+    },
+    "color": {
+      "type": "string",
+      "default": "60,220,60"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "depth.e/2",
+      "ask_user": "false"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic Gradient",
+      "expression": "(head.s-head.e)/length",
+      "includeinoutput": "true"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Interface area between well and soil/gw",
+      "expression": "area.s",
+      "includeinoutput": "true"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow (m~^3/day)",
+      "expression": "K_sat.e*hydraulic_gradient*area.s*depth.s/(depth.s+0.01)",
+      "includeinoutput": "true",
+      "applylimit": "true"
+    },
+    "helptext": "Vertical link from well to soil"
+  },
+  "Surface water to well": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Surface water to well link",
+    "icon": {
+      "filename": "surface2well.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name"
+    },
+    "color": {
+      "type": "string",
+      "default": "180,120,40"
+    },
+    "length": {
+      "type": "value",
+      "description": "Connector length",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "length": ">0",
+      "warningmessage": "length must be positive",
+      "helptext": "Connector length"
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's roughness coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "includeinoutput": "false",
+      "default": "0.1",
+      "ManningCoeff": ">0",
+      "warningmessage": "ManningCoeff must be positive",
+      "helptext": "Manning's roughness coefficient"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*3.14*diameter.e*depth.s^1.6667",
+      "description": "Flow (m~^3/day)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "helptext": "Surface water to well link"
+  },
+  "Well_aggregate": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Well-filled with aggregates",
+    "icon": {
+      "filename": "Well_aggregate.png"
+    },
+    "Storage": {
+      "description": "Storage",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow",
+      "initial_value_expression": "(diameter^2)/4*3.1415*depth*porosity",
+      "ask_user": "false",
+      "delegate": "ValueBox",
+      "estimate": "false",
+      "includeinoutput": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "helptext": "The time series containing the inflow rate into the well",
+      "description": "Inflow rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Well Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "default": "1",
+      "unit": "m;ft",
+      "helptext": "Well Diameter"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "(diameter^2)/4*3.1415",
+      "includeinoutput": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "Storage/(area*porosity)",
+      "description": "Water depth",
+      "ask_user": "true",
+      "includeinoutput": "true",
+      "delegate": "ValueBox",
+      "unit": "m;ft",
+      "helptext": "Water depth"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom elevation of the well",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "helptext": "Bottom elevation of the well"
+    },
+    "porosity": {
+      "type": "value",
+      "description": "Porosity",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "helptext": "Porosity"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "helptext": "Well-filled with aggregates"
+  }
 }

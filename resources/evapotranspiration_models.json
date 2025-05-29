@@ -6,80 +6,85 @@
       "filename": "Evapotranspiration_Aerodynamic.png"
     },
     "name": {
-      "description": "Name",      
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
-      "delegate": "String"
+      "delegate": "String",
+      "helptext": "Name of the evapotranspiration source object. Used for identifying the component in the model."
     },
     "coefficient": {
       "type": "expression",
       "expression": "area*(depth/(depth+0.001))",
       "ask_user": "false"
     },
-    "wind_speed":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "wind time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "wind_speed": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "wind time series",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "helptext": "Time series of wind speed values measured at height z2, used to compute aerodynamic evapotranspiration."
     },
-    "Temperature":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Temperature time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "Temperature": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Temperature time series",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "helptext": "Time series of ambient air temperature (\u00b0C) used to estimate saturation vapor pressure."
     },
-    "corr_fact" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Scale factor",
-    	"default": "1",
-    	"delegate": "ValueBox",
-		"estimate": "true"
+    "corr_fact": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Scale factor",
+      "default": "1",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "helptext": "Correction or scaling factor applied to the calculated evapotranspiration rate."
     },
-    "z2" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Wind measurement elevation",
-    	"default": "2",
-    	"criteria": "z2>0",
-        "warningmessage": "Wind reference height must be greater than zero",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft;cm;in"
+    "z2": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Wind measurement elevation",
+      "default": "2",
+      "criteria": "z2>0",
+      "warningmessage": "Wind reference height must be greater than zero",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "helptext": "Elevation (height) at which wind speed measurements are taken, typically 2 meters above ground surface."
     },
-    "z0" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Roughness height",
-    	"default": "0.0003",
-    	"criteria": "z0>0",
-        "warningmessage": "Roughness height must be greater than zero",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft;cm;in"
+    "z0": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Roughness height",
+      "default": "0.0003",
+      "criteria": "z0>0",
+      "warningmessage": "Roughness height must be greater than zero",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in"
     },
     "B": {
-    	"type": "expression",
-	"includeinoutput": "true",
-	"description": "B coefficient",
-	"ask_user": "false",
-	"expression": "0.000102*wind_speed/(_log(z2/z0))^2"
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "B coefficient",
+      "ask_user": "false",
+      "expression": "0.000102*wind_speed/(_log(z2/z0))^2"
     },
     "e_as": {
-    	"type": "expression",
-    	"expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
-	"includeinoutput": "true",
-	"description": "Saturated humidity"
+      "type": "expression",
+      "expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
+      "includeinoutput": "true",
+      "description": "Saturated humidity"
     },
-    "R_h" : {
-    	"type": "timeseries",
-    	"includeinoutput": "true",
-	"description": "Relative humidity time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "R_h": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Relative humidity time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
     "rate": {
       "type": "expression",
@@ -96,7 +101,7 @@
       "filename": "Evapotranspiration_timeseries.png"
     },
     "name": {
-      "description": "Name",      
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String"
@@ -106,21 +111,21 @@
       "expression": "area*(depth/(depth+0.001))",
       "ask_user": "false"
     },
-    "corr_fact" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Scale factor",
-    	"default": "1",
-    	"delegate": "ValueBox",
-		"estimate": "true"
+    "corr_fact": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Scale factor",
+      "default": "1",
+      "delegate": "ValueBox",
+      "estimate": "true"
     },
-    "timeseries":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Evaporation time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "timeseries": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Evaporation time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
     "rate": {
       "type": "expression",
@@ -137,7 +142,7 @@
       "filename": "Evapotranspiration_energy_balance.png"
     },
     "name": {
-      "description": "Name",      
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String"
@@ -147,35 +152,34 @@
       "expression": "area*(depth/(depth+0.001))",
       "ask_user": "false"
     },
-    "solar_radiation":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Solar Radiation (W/m^2)",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "solar_radiation": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Solar Radiation (W/m^2)",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "corr_fact" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Scale factor",
-    	"default": "1",
-    	"delegate": "ValueBox",
-		"estimate": "true"
+    "corr_fact": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Scale factor",
+      "default": "1",
+      "delegate": "ValueBox",
+      "estimate": "true"
     },
-    "Temperature":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Temperature time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "Temperature": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Temperature time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "l_v" :
-    {
-	"type": "expression",
-	"description": "Latent Heat of Evaporation (J/kg)",
-      	"expression": "2501000-2370*Temperature",
-	"ask_user": "false"
+    "l_v": {
+      "type": "expression",
+      "description": "Latent Heat of Evaporation (J/kg)",
+      "expression": "2501000-2370*Temperature",
+      "ask_user": "false"
     },
     "rate": {
       "type": "expression",
@@ -192,7 +196,7 @@
       "filename": "Evapotranspiration_Priestly_Taylor.png"
     },
     "name": {
-      "description": "Name",      
+      "description": "Name",
       "type": "string",
       "ask_user": "true",
       "delegate": "String"
@@ -202,96 +206,96 @@
       "expression": "area*(depth/(depth+0.001))",
       "ask_user": "false"
     },
-    "solar_radiation":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Solar Radiation (W/m^2)",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "solar_radiation": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Solar Radiation (W/m^2)",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "Temperature":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Temperature time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "Temperature": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Temperature time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "wind_speed":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "wind time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "wind_speed": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "wind time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "wind_scale_fact" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Wind scale factor",
-    	"default": "1",
-    	"delegate": "ValueBox",
-		"estimate": "true"
+    "wind_scale_fact": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Wind scale factor",
+      "default": "1",
+      "delegate": "ValueBox",
+      "estimate": "true"
     },
-    "solar_scale_fact" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Solar radiation scale factor",
-    	"default": "1",
-    	"delegate": "ValueBox",
-		"estimate": "true"
+    "solar_scale_fact": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Solar radiation scale factor",
+      "default": "1",
+      "delegate": "ValueBox",
+      "estimate": "true"
     },
-    "R_h" : {
-    	"type": "timeseries",
-    	"includeinoutput": "true",
-	"description": "Relative humidity time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "R_h": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Relative humidity time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "z2" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Wind measurement elevation",
-    	"default": "2",
-    	"criteria": "z2>0",
-        "warningmessage": "Wind reference height must be greater than zero",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft;cm;in"
+    "z2": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Wind measurement elevation",
+      "default": "2",
+      "criteria": "z2>0",
+      "warningmessage": "Wind reference height must be greater than zero",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in"
     },
-    "z0" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Roughness height",
-    	"default": "0.0003",
-    	"criteria": "z0>0",
-       "warningmessage": "Roughness height must be greater than zero",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft;cm;in"
+    "z0": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Roughness height",
+      "default": "0.0003",
+      "criteria": "z0>0",
+      "warningmessage": "Roughness height must be greater than zero",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in"
     },
-    "gamma" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "psychrometric constant (Pa/C)",
-    	"default": "66.8",
-    	"criteria": "gamma>0",
-       "warningmessage": "psychrometric constant must be greater than zero",
-    	"delegate": "ValueBox"
+    "gamma": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "psychrometric constant (Pa/C)",
+      "default": "66.8",
+      "criteria": "gamma>0",
+      "warningmessage": "psychrometric constant must be greater than zero",
+      "delegate": "ValueBox"
     },
     "B": {
-    	"type": "expression",
-	"includeinoutput": "true",
-	"description": "B coefficient",
-	"ask_user": "false",
-	"expression": "0.000102*wind_speed*wind_scale_fact/(_log(z2/z0))^2"
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "B coefficient",
+      "ask_user": "false",
+      "expression": "0.000102*wind_speed*wind_scale_fact/(_log(z2/z0))^2"
     },
     "e_as": {
-    	"type": "expression",
-    	"expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
-	"includeinoutput": "true",
-	"description": "Saturated humidity"
+      "type": "expression",
+      "expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
+      "includeinoutput": "true",
+      "description": "Saturated humidity"
     },
     "Ea": {
       "type": "expression",
@@ -300,12 +304,11 @@
       "ask_user": "false",
       "expression": "B*e_as*(R_h-1)"
     },
-    "l_v" :
-    {
-	"type": "expression",
-	"description": "Latent Heat of Evaporation (J/kg)",
-      	"expression": "2501000-2370*Temperature",
-	"ask_user": "false"
+    "l_v": {
+      "type": "expression",
+      "description": "Latent Heat of Evaporation (J/kg)",
+      "expression": "2501000-2370*Temperature",
+      "ask_user": "false"
     },
     "Er": {
       "type": "expression",
