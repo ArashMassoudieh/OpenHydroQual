@@ -438,10 +438,20 @@ QString Wizard_Argument::Calc(QMap<QString, WizardParameter>* params)
         double start_date = params->value(delegate[3]).Value().toDouble();
         double end_date = params->value(delegate[4]).Value().toDouble();
         QPointF location(y_location, x_location);
-        CPrecipitation precipitationdata = weatherretriever.RetrivePrecipOpenMeteo(start_date, end_date, location);
-        wizard_entity->GetWizardScript()->AppendTimeSeries(this->wizard_entity->Name(),this->wizard_entity->Name() + QString::number(x_location) + "_" + QString::number(y_location) + ".csv");
-        QString FileName = WorkingDirectory() + "/" + this->wizard_entity->Name() + QString::number(x_location) + "_" + QString::number(y_location) + ".csv";
-        precipitationdata.writefile(FileName.toStdString());
+        QString FileName;
+        if (parameter == "PrecipitationData")
+        {   CPrecipitation precipitationdata = weatherretriever.RetrivePrecipOpenMeteo(start_date, end_date, location);
+            wizard_entity->GetWizardScript()->AppendTimeSeries(this->wizard_entity->Name(),this->wizard_entity->Name() + QString::number(x_location) + "_" + QString::number(y_location) + ".csv");
+            FileName = WorkingDirectory() + "/" + this->wizard_entity->Name() + QString::number(x_location) + "_" + QString::number(y_location) + ".csv";
+            precipitationdata.writefile(FileName.toStdString());
+        }
+        else if (parameter == "TemperatureData")
+        {
+            CTimeSeries<double> temperaturedata = weatherretriever.RetriveTimeSeriesOpenMeteo(start_date, end_date, location, "temperature_2m");
+            wizard_entity->GetWizardScript()->AppendTimeSeries(this->wizard_entity->Name(),this->wizard_entity->Name() + QString::number(x_location) + "_" + QString::number(y_location) + ".csv");
+            FileName = WorkingDirectory() + "/" + this->wizard_entity->Name() + QString::number(x_location) + "_" + QString::number(y_location) + ".csv";
+            temperaturedata.writefile(FileName.toStdString());
+        }
 
         return FileName;
     }

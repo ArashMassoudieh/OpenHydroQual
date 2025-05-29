@@ -5,7 +5,7 @@ CONFIG += console
 CONFIG -= app_bundle
 
 #DEFINES += HTTPS
-#DEFINES += LOCAL_HOST  #for local host testing
+DEFINES += LOCAL_HOST  #for local host testing
 
 CONFIG += debug
 CONFIG -= release
@@ -141,6 +141,7 @@ HEADERS += \
     ../../aquifolium/include/Objective_Function_Set.h \
     ../../aquifolium/include/Precipitation.h \
     ../../aquifolium/include/RxnParameter.h \
+    ../../aquifolium/include/Temperature.h \
     ../../aquifolium/include/constituent.h \
     ../../aquifolium/include/observation.h \
     ../../aquifolium/include/precalculatedfunction.h \

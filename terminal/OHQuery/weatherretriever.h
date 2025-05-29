@@ -4,6 +4,7 @@
 #include "BTC.h"
 #include <QPointF>
 #include "Precipitation.h"
+#include "Temperature.h"
 
 
 struct WeatherStationData {
@@ -36,7 +37,8 @@ public:
     QVector<WeatherDataPoint> fetchPrecipitationDataNOAA(const QString& stationId, const QString& startDate, const QString& endDate);
     QString SelectedStation() {return StationName;}
     QVector<WeatherDataPoint> fetchWeatherDataOpenMeteo(double latitude, double longitude, const QDate &startDate, const QDate &endDate, const QString &dataType, QObject* parent = nullptr);
-    CPrecipitation RetrivePrecipOpenMeteo(const double &startdate, const double &enddate, const QPointF location);
+    CPrecipitation RetrivePrecipOpenMeteo(const double &startdate, const double &enddate, const QPointF &location);
+    CTimeSeries<double> RetriveTimeSeriesOpenMeteo(const double &startdate, const double &enddate, const QPointF &location, const QString &quantity);
 private:
     QString apiToken = "";
     QString StationName = "";

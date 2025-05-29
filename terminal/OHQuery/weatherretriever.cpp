@@ -1,4 +1,6 @@
 #include "weatherretriever.h"
+#include "Temperature.h"
+#include "Precipitation.h"
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QEventLoop>
@@ -41,7 +43,7 @@ CPrecipitation WeatherRetriever::RetrivePrecipNOAA(const double &startdate, cons
     return out;
 }
 
-CPrecipitation WeatherRetriever::RetrivePrecipOpenMeteo(const double &startdate, const double &enddate, const QPointF location)
+CPrecipitation WeatherRetriever::RetrivePrecipOpenMeteo(const double &startdate, const double &enddate, const QPointF &location)
 {
     CPrecipitation out;
 
@@ -53,6 +55,22 @@ CPrecipitation WeatherRetriever::RetrivePrecipOpenMeteo(const double &startdate,
     {
         //qDebug()<<data[i].dateTime<<","<<data[i].value;
         out.append(qDateTimeToExcel(data[i].dateTime)-1.0/24.0,qDateTimeToExcel(data[i].dateTime),data[i].value/1000.0);
+    }
+    return out;
+}
+
+CTimeSeries<double> WeatherRetriever::RetriveTimeSeriesOpenMeteo(const double &startdate, const double &enddate, const QPointF &location, const QString &quantity)
+{
+    CTimeSeries<double> out;
+
+    qDebug() << ": Longitude: " <<location.y() << ": Latitude: " << location.x() << ": Time span [" <<startdate << "," << enddate << "]";
+    QDate StartDate = excelToQDateTime(startdate).date();
+    QDate EndDate = excelToQDateTime(enddate).date();
+    QVector<WeatherDataPoint> data = fetchWeatherDataOpenMeteo(location.x(), location.y(), StartDate,EndDate, quantity);
+    for (int i=0; i<data.count(); i++)
+    {
+        //qDebug()<<data[i].dateTime<<","<<data[i].value;
+        out.append(qDateTimeToExcel(data[i].dateTime),data[i].value);
     }
     return out;
 }
