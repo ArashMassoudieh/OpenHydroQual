@@ -15,7 +15,6 @@
 
 
 #include "weatherretriever.h"
-#include "Temperature.h"
 #include "Precipitation.h"
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>

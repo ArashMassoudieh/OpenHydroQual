@@ -141,7 +141,6 @@ HEADERS += \
     ../../aquifolium/include/Objective_Function_Set.h \
     ../../aquifolium/include/Precipitation.h \
     ../../aquifolium/include/RxnParameter.h \
-    ../../aquifolium/include/Temperature.h \
     ../../aquifolium/include/constituent.h \
     ../../aquifolium/include/observation.h \
     ../../aquifolium/include/precalculatedfunction.h \

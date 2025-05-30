@@ -13,8 +13,7 @@
  * commercial license. Contact arash.massoudieh@cua.edu for details.
  */
 
-
-﻿#pragma once
+#pragma once
 
 #include <cstdint>
 #include <utility>

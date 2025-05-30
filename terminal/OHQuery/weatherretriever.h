@@ -20,7 +20,6 @@
 #include "BTC.h"
 #include <QPointF>
 #include "Precipitation.h"
-#include "Temperature.h"
 
 
 struct WeatherStationData {

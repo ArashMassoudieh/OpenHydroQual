@@ -42,10 +42,11 @@ WizardParameter::WizardParameter(const QJsonObject& json_obj)
             {
                 Parameter_Type = parameter_type::date;
             }
-            else if (delegate.contains("PrecipitationDataFromAPI"))
+            else if (delegate.contains("FromAPI"))
             {
                 Parameter_Type = parameter_type::api;
             }
+
         }
         if (it.key() == "question")
         {
