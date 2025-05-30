@@ -8,7 +8,8 @@
     "main_components.json",
     "unsaturated_soil.json",
     "Pond_Plugin.json",
-    "Sewer_system.json"
+    "Sewer_system.json",
+    "soil_evapotranspiration_models.json"
   ],
   "entities": [
     {
@@ -16,6 +17,18 @@
       "entity": "source",
       "type": "Precipitation",
       "timeseries": "PrecipitationData@api"
+    },
+    {
+      "name": "Temperature",
+      "entity": "source",
+      "type": "Evapotranspiration_Penman (Soil)",
+      "Temperature": "TemperatureData@api"
+    },
+        {
+      "name": "Solar_radiation",
+      "entity": "source",
+      "type": "Evapotranspiration_Penman (Soil)",
+      "Temperature": "SolarRadiationData@api"
     },
     {
       "name": "Overflow [m^3/day]",
@@ -387,6 +400,16 @@
       "name": "PrecipitationData",
       "delegate": "PrecipitationDataFromAPI|Longitude|Latitude|StartTime|EndTime",
       "question": "Precipitation data"
+    },
+        {
+      "name": "SolarRadiationData",
+      "delegate": "SolarRadiationDataFromAPI|Longitude|Latitude|StartTime|EndTime",
+      "question": "Precipitation data"
+    },
+    {
+      "name": "TemperatureData",
+      "delegate": "TemperatureDataFromAPI|Longitude|Latitude|StartTime|EndTime",
+      "question": "Temperature data"
     },
     {
       "name": "Longitude",

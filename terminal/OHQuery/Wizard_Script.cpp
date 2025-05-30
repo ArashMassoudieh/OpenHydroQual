@@ -359,6 +359,8 @@ bool WizardScript::AssignParameterValues(const QJsonObject &jsonObject)
             it.value().SetValue(jsonObject[it.key()].toString());
         else if (it.value().Delegate().contains("PrecipitationDataFromAPI"))
             it.value().SetValue(jsonObject[it.key()].toString());
+        else if (it.value().Delegate().contains("TimeSeriesDataFromAPI"))
+            it.value().SetValue(jsonObject[it.key()].toString());
     }
 
     return true;
