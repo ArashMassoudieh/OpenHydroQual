@@ -19,16 +19,11 @@
       "timeseries": "PrecipitationData@api"
     },
     {
-      "name": "Temperature",
+      "name": "Evapotranspiration",
       "entity": "source",
       "type": "Evapotranspiration_Penman (Soil)",
-      "Temperature": "TemperatureData@api"
-    },
-        {
-      "name": "Solar_radiation",
-      "entity": "source",
-      "type": "Evapotranspiration_Penman (Soil)",
-      "Temperature": "SolarRadiationData@api"
+      "Temperature": "TemperatureData@api",
+      "solar_radiation": "SolarRadiationData@api"
     },
     {
       "name": "Overflow [m^3/day]",
@@ -101,6 +96,7 @@
     {
       "name": "Engineered soil",
       "type": "Soil",
+      "Evapotranspiration": "Evapotranspiration@sc",
       "K_sat_original": "eng_soil_K_s;m/day",
       "K_sat_scale_factor": "1",
       "depth": "eng_soil_height;m",
@@ -275,12 +271,6 @@
       "delegate": "ValueBox",
       "question": "β: The exponent that controls how quickly storage changes as depth increases. S = α depth^β",
       "default": "2"
-    },
-    {
-      "name": "system_area",
-      "delegate": "UnitBox",
-      "question": "Bioretention area",
-      "unit": "m~^2"
     },
     {
       "name": "native_soil_n_y",
