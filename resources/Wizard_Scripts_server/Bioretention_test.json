@@ -23,7 +23,9 @@
       "entity": "source",
       "type": "Evapotranspiration_Penman (Soil)",
       "Temperature": "TemperatureData@api",
-      "solar_radiation": "SolarRadiationData@api"
+      "solar_radiation": "SolarRadiationData@api",
+      "wind_speed": "WindSpeedData@api",
+      "R_h": "RelativeHumidityData@api"
     },
     {
       "name": "Overflow [m^3/day]",
@@ -400,6 +402,16 @@
       "name": "TemperatureData",
       "delegate": "TemperatureDataFromAPI|Longitude|Latitude|StartTime|EndTime",
       "question": "Temperature data"
+    },
+    {
+      "name": "WindSpeedData",
+      "delegate": "WindSpeedDataFromAPI|Longitude|Latitude|StartTime|EndTime",
+      "question": "WindSpeed data"
+    },
+    {
+      "name": "RelativeHumidityData",
+      "delegate": "RelativeHumidityDataFromAPI|Longitude|Latitude|StartTime|EndTime",
+      "question": "RelativeHumidity data"
     },
     {
       "name": "Longitude",

@@ -482,6 +482,13 @@ QString Wizard_Argument::Calc(QMap<QString, WizardParameter>* params)
             FileName = WorkingDirectory() + "/" + this->wizard_entity->Name() + "_" + QString::fromStdString(parameter) +"_" + QString::number(x_location) + "_" + QString::number(y_location) + ".csv";
             windspeeddata.writefile(FileName.toStdString());
         }
+        else if (delegate.contains("RelativeHumidityDataFromAPI"))
+        {
+            CTimeSeries<double> relativehumiditydata = weatherretriever.RetriveTimeSeriesOpenMeteo(start_date, end_date, location, "relative_humidity_2m:p");
+            wizard_entity->GetWizardScript()->AppendTimeSeries(this->wizard_entity->Name(),this->wizard_entity->Name() + QString::number(x_location) + "_" + QString::number(y_location) + ".csv");
+            FileName = WorkingDirectory() + "/" + this->wizard_entity->Name() + "_" + QString::fromStdString(parameter) +"_" + QString::number(x_location) + "_" + QString::number(y_location) + ".csv";
+            relativehumiditydata.writefile(FileName.toStdString());
+        }
 
         return FileName;
     }
