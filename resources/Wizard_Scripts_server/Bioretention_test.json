@@ -24,6 +24,8 @@
       "type": "Evapotranspiration_Penman (Soil)",
       "Temperature": "TemperatureData@api",
       "solar_radiation": "SolarRadiationData@api",
+      "wind_scale_fact" : "Evap_scale_factor",
+      "solar_scale_fact" : "Evap_scale_factor",
       "wind_speed": "WindSpeedData@api",
       "R_h": "RelativeHumidityData@api"
     },
@@ -54,6 +56,13 @@
       "type": "Observation",
       "object": "Catchment to bioretention@sc",
       "expression" : "flow@sc"
+    },
+    {
+      "name": "Evapotranspiration from soil [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Engineered soil@sc",
+      "expression" : "(0-Evapotranspiration)@sc"
     }
   ],
   "setvals": [
@@ -318,6 +327,12 @@
       "default": "0.011"
     },
     {
+    	"name": "Evap_scale_factor",
+	"delegate": "ValueBox",
+        "question": "Evaporation correction factor",
+        "default": "0.5"
+    },
+    {
       "name": "Catchment_mean_width",
       "delegate": "UnitBox",
       "question": "Catchment average width",
@@ -509,7 +524,22 @@
         "StartTime",
         "EndTime",
         "Longitude",
-        "Latitude"
+        "Latitude",
+        "Evap_scale_factor"
+      ],
+      "criteria": [
+        {
+          "name": "evap_scale_crit",
+          "less": "-0.00000001",
+          "greater": "Evap_scale_factor",
+          "errormessage": "Evaporation scale factor cannot be negative!"
+        },
+        {
+          "name": "time_crit",
+          "less": "StartTime",
+          "greater": "EndTime",
+          "errormessage": "End time must be after start time"
+        }
       ]
     },
     {

@@ -368,3 +368,7 @@ terminal/OHQuery/build/Debug/
 terminal/OHQuery/build/Release/OHQuery
 
 terminal/OHQuery/build/Release/
+
+terminal/OHQuery/OHQuery
+
+build-OHQuery_Client-WebAssembly_Qt_6_9_0_multi_threaded-Debug/
