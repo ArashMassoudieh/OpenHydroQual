@@ -369,6 +369,7 @@ QVector<WeatherDataPoint> WeatherRetriever::fetchWeatherDataOpenMeteo(double lat
                             .arg(QUrl::toPercentEncoding(dataType));
 
     QUrl url(urlString);
+    qDebug()<<urlString;
     QNetworkAccessManager manager(parent);
     QNetworkRequest request(url);
 
