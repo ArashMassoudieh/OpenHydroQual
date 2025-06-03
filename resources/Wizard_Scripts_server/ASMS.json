@@ -58,12 +58,26 @@
       "base_value": "K_s_param"
     },
     {
-    
       "name": "Y",
       "entity": "reaction_parameter",
       "type": "ReactionParameter",
       "base_value": "Y_param"   
-    }
+    },
+    {
+      "name": "Substrate Concentration in the Effluent COD mg-O2/L",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Settling_compartment_1@sc",
+      "expression" : "S_s:concentration@sc"
+    },
+    {
+      "name": "Biomass concentration in WAS COD mg-O2/L",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Settling_compartment_2@sc",
+      "expression" : "X_bh:concentration@sc"
+    },
+
   ],
   "setvals": [
     {

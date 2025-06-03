@@ -1,8 +1,8 @@
 {
-  "name": "Bioretention (SI)",
-  "icon": "Bioretention.png",
+  "name": "Bioretention with Evaporation(SI)",
+  "icon": "Bioretention_w_Evaporation.png",
   "url": "https://openhydroqual.com/wp-content/Wizards/Bioretention/Bioretention.html",
-  "description": "This wizard create a bioretention model with underdrain",
+  "description": "This wizard create a bioretention model with underdrain. It calculates the evaporation from the soil using Penman Equation",
   "diagram": "Bioretention.svg",
   "addtemplate": [
     "main_components.json",
