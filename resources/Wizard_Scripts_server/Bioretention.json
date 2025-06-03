@@ -215,11 +215,11 @@
       "name": "Overflow",
       "from": "Pond",
       "to": "Catch basin",
-      "type": "wier",
+      "type": "Weir",
       "connectiontype": "o2o",
       "connectionconfig": "u2d",
-      "beta": "beta_overflow_wier",
-      "alpha": "alpha_overflow_wier",
+      "beta": "beta_overflow_Weir",
+      "alpha": "alpha_overflow_Weir",
       "crest_elevation": "CrestElevation"
     },
     {
@@ -464,13 +464,13 @@
       "unit": "m;ft"
     },
     {
-      "name": "alpha_overflow_wier",
+      "name": "alpha_overflow_Weir",
       "delegate": "ValueBox",
       "question": "Coefficient α in Q=α*(h-z_0)^β",
       "default": "1000"
     },
     {
-      "name": "beta_overflow_wier",
+      "name": "beta_overflow_Weir",
       "delegate": "ValueBox",
       "question": "Exponent β in Q=α*(h-z_0)^β",
       "default": "2.5"
@@ -515,12 +515,12 @@
       ]
     },
     {
-      "name": "8_Overflow wier",
-      "description": "Overflow Wier",
+      "name": "8_Overflow Weir",
+      "description": "Overflow Weir",
       "parameters": [
         "CrestElevation",
-        "alpha_overflow_wier",
-        "beta_overflow_wier"
+        "alpha_overflow_Weir",
+        "beta_overflow_Weir"
       ]
     },
     {

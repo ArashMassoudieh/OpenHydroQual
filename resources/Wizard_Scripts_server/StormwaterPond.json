@@ -110,12 +110,12 @@
       "name": "Overflow",
       "from": "Pond",
       "to": "Fixed_head",
-      "type": "wier",
+      "type": "Weir",
       "connectiontype": "o2o",
       "connectionconfig": "u2d",
       "crest_elevation": "CrestElevation",
-      "alpha": "alpha_overflow_wier",
-      "beta": "beta_overflow_wier"
+      "alpha": "alpha_overflow_Weir",
+      "beta": "beta_overflow_Weir"
     }
   ],
   "parameters": [
@@ -192,13 +192,13 @@
       "unit": "m"
     },
     {
-      "name": "alpha_overflow_wier",
+      "name": "alpha_overflow_Weir",
       "delegate": "ValueBox",
       "question": "Coefficient α in Q=α*(h-z_0)^β",
       "default": "1"
     },
     {
-      "name": "beta_overflow_wier",
+      "name": "beta_overflow_Weir",
       "delegate": "ValueBox",
       "question": "Exponent β in Q=α*(h-z_0)^β",
       "default": "2.5"
@@ -275,12 +275,12 @@
       ]
     },
     {
-      "name": "4_Overflow wier",
-      "description": "Overflow wier",
+      "name": "4_Overflow Weir",
+      "description": "Overflow Weir",
       "parameters": [
         "CrestElevation",
-        "alpha_overflow_wier",
-        "beta_overflow_wier"
+        "alpha_overflow_Weir",
+        "beta_overflow_Weir"
       ],
       "criteria": [
         {
@@ -290,16 +290,16 @@
           "errormessage": "The crest elevation must be greater than zero!"
         },
         {
-          "name": "alpha_overflow_wier_crit",
+          "name": "alpha_overflow_Weir_crit",
           "less": "0",
-          "greater": "alpha_overflow_wier",
+          "greater": "alpha_overflow_Weir",
           "errormessage": "The coefficient α in Q=α*(h-z_0)^β must be greater than zero!"
         },
         {
         
-         "name": "beta_overflow_wier_crit",
+         "name": "beta_overflow_Weir_crit",
           "less": "0",
-          "greater": "beta_overflow_wier",
+          "greater": "beta_overflow_Weir",
           "errormessage": "The exponent β in Q=α*(h-z_0)^β must be greater than zero!"
         }
       ]
