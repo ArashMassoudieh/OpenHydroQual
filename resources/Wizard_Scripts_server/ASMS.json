@@ -76,8 +76,7 @@
       "type": "Observation",
       "object": "Settling_compartment_2@sc",
       "expression" : "X_bh:concentration@sc"
-    },
-
+    }
   ],
   "setvals": [
     {
