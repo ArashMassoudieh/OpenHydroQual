@@ -35,7 +35,8 @@ struct tab {
     QFormLayout *formLayout;
     WizardParameterGroup *parametergroup;
 };
-
+class RosettaFetcher;
+class QComboBox;
 namespace Ui {
 class WizardDialog;
 }
@@ -65,12 +66,13 @@ private:
     QGraphicsSvgItem *svgitem = nullptr;
     int currenttabindex=0;
     SVGViewer *svgviewer = nullptr;
-
+    RosettaFetcher *rosettaFetcher;
 public slots:
     void on_next_clicked();
     void on_previous_clicked();
     void on_TabChanged();
     void open_html();
+    void onDataReceived(QComboBox* editor);
 
 signals:
     void model_generate_requested(const QJsonDocument &jsondoc);

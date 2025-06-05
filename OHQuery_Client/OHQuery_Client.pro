@@ -34,6 +34,7 @@ SOURCES += \
     Wizard_Script.cpp \
     main.cpp \
     mainwindow.cpp \
+    rosettafetcher.cpp \
     svgviewer.cpp \
     wizard_assigned_value.cpp \
     wizardcriteria.cpp \
@@ -55,6 +56,7 @@ HEADERS += \
     Wizard_Entity.h \
     Wizard_Script.h \
     mainwindow.h \
+    rosettafetcher.h \
     svgviewer.h \
     wizard_assigned_value.h \
     wizardcriteria.h \

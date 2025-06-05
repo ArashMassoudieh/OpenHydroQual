@@ -46,6 +46,10 @@ WizardParameter::WizardParameter(const QJsonObject& json_obj)
             {
                 Parameter_Type = parameter_type::api;
             }
+            else if (delegate.contains("CombofromAPI"))
+            {
+                Parameter_Type = parameter_type::combofromapi;
+            }
 
         }
         if (it.key() == "question")
@@ -134,4 +138,8 @@ QStringList WizardParameter::Units()
 QStringList WizardParameter::ComboItems()
 {
     return comboitems;
+}
+QStringList WizardParameter::GetKeys() const
+{
+
 }

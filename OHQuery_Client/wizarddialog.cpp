@@ -31,6 +31,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSvgRenderer>
+#include "rosettafetcher.h"
 
 
 WizardDialog::WizardDialog(QWidget *parent) :
@@ -201,8 +202,24 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
+            else if (parameter->Delegate() == "CombofromAPI")
+            {
+                QComboBox* Editor = new QComboBox(this_tab.scrollAreaWidgetContents);
+                Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
+                rosettaFetcher = new RosettaFetcher();
+                connect(rosettaFetcher, &RosettaFetcher::dataReady, this, [this, Editor]() {
+                    onDataReceived(Editor);
+                });
+                this_tab.formLayout->addRow(label, Editor);
+                parameter->SetEntryItem(Editor);
+            }
         }
     }
+}
+
+void WizardDialog::onDataReceived(QComboBox* editor) {
+    editor->clear();
+    editor->addItems(rosettaFetcher->getTextureClasses());
 }
 
 void WizardDialog::on_next_clicked()

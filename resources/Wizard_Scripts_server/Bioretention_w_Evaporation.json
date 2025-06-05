@@ -514,8 +514,20 @@
       "delegate": "ValueBox",
       "question": "Exponent β in Q=α*(h-z_0)^β",
       "default": "2.5"
+    },
+    {
+    	"name": "Soil_Type",
+    	"delegate": "CombofromAPI|https://github.com/behzadshakouri/Rosetta-Soil/blob/main/rosetta_hydraulic_parameters.json|SoilParameterMap",
+    	"question": "Soil Texture Classification",
+    	"default": "Silty Loam"
     }
   ],
+  "ParameterPopulateMaps": 
+  {
+  	"SoilParameterMap": {
+  		"Ks": "native_soil_K_s"
+  	}
+  },
   "parameter_groups": [
     {
       "name": "1_general",

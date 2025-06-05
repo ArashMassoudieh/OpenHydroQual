@@ -22,7 +22,7 @@
 #include <QVector2D>
 #include <QStringList>
 
-enum class parameter_type {numeric, string, date, api};
+enum class parameter_type {numeric, string, date, api, combofromapi};
 
 class WizardParameter
 {
@@ -44,6 +44,7 @@ public:
     void SetValue(const QString &val) {value = val;}
     QString Value() {return value; }
     parameter_type ParameterType() { return Parameter_Type; }
+    QStringList GetKeys() const;
 private:
     QString name;
     QString delegate;
