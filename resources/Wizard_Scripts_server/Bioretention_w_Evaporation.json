@@ -648,7 +648,8 @@
         "native_soil_alpha",
         "native_soil_n",
         "native_soil_theta_sat",
-        "native_soil_theta_res"
+        "native_soil_theta_res",
+        "Soil_Type"
       ]
     }
   ]

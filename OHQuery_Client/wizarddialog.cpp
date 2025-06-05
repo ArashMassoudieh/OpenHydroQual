@@ -202,11 +202,12 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
-            else if (parameter->Delegate() == "CombofromAPI")
+            else if (parameter->Delegate().contains("CombofromAPI"))
             {
                 QComboBox* Editor = new QComboBox(this_tab.scrollAreaWidgetContents);
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
                 rosettaFetcher = new RosettaFetcher();
+                rosettaFetcher->fetchJson(QUrl("https://raw.githubusercontent.com/behzadshakouri/Rosetta-Soil/main/converted_rosetta_hydraulic_parameters.json"));
                 connect(rosettaFetcher, &RosettaFetcher::dataReady, this, [this, Editor]() {
                     onDataReceived(Editor);
                 });
