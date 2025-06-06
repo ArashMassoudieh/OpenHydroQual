@@ -196,6 +196,23 @@ bool WizardScript::GetFromJsonDoc(const QJsonDocument& json_doc)
                 WizardParameterGroups[paramgroupname] = paramgroup;
             }
         }
+        if (it.key() == "parameter_populate_maps")
+        {
+            QJsonObject jsonobject = it->toObject();
+            qDebug()<<jsonobject;
+            for (QJsonObject::iterator parametermap = jsonobject.begin(); parametermap!=jsonobject.end(); parametermap++)
+            {
+                QMap<QString, QString> parameter_map_set;
+                QJsonObject parametermapjsonobject = parametermap->toObject();
+                for (QJsonObject::iterator parameteritem = parametermapjsonobject.begin(); parameteritem!=parametermapjsonobject.end(); parameteritem++)
+                {
+                    qDebug()<<parameteritem.key()<<":"<<parameteritem.value();
+                    parameter_map_set[parameteritem.key()] = parameteritem.value().toString();
+                }
+                ParameterPopulateMaps[parametermap.key()] = parameter_map_set;
+            }
+
+        }
     }
     return true;
 }
@@ -215,7 +232,8 @@ WizardScript::WizardScript(const WizardScript &WS)
     addedtemplates = WS.addedtemplates;
     Entities = WS.Entities;
     Connectors = WS.Connectors; 
-    diagramfilename = WS.diagramfilename; 
+    diagramfilename = WS.diagramfilename;
+    ParameterPopulateMaps = WS.ParameterPopulateMaps;
     url = WS.url;
     SetAllParents(); 
 
@@ -264,6 +282,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     Connectors = WS.Connectors;
     diagramfilename = WS.diagramfilename;
     WizardParameterGroups = WS.WizardParameterGroups;
+    ParameterPopulateMaps = WS.ParameterPopulateMaps;
     url = WS.url;
     SetAllParents();
     return *this;

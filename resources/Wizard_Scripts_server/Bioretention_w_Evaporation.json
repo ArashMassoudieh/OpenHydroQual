@@ -517,15 +517,32 @@
     },
     {
     	"name": "Soil_Type",
-    	"delegate": "CombofromAPI|https://github.com/behzadshakouri/Rosetta-Soil/blob/main/rosetta_hydraulic_parameters.json|SoilParameterMap",
+    	"delegate": "CombofromAPI|https://raw.githubusercontent.com/behzadshakouri/Rosetta-Soil/main/converted_rosetta_hydraulic_parameters.json|SoilParameterMap",
     	"question": "Soil Texture Classification",
     	"default": "Silty Loam"
+    },
+    {
+    	"name": "Engineered Soil Type",
+    	"delegate": "CombofromAPI|https://raw.githubusercontent.com/behzadshakouri/Rosetta-Soil/main/converted_rosetta_hydraulic_parameters.json|EngineeredSoilParameterMap",
+    	"question": "Soil Texture Classification",
+    	"default": "Sand"
     }
   ],
-  "ParameterPopulateMaps": 
+  "parameter_populate_maps": 
   {
   	"SoilParameterMap": {
-  		"Ks": "native_soil_K_s"
+  		"Ks": "native_soil_K_s",
+  		"alpha": "native_soil_alpha",
+  		"n": "native_soil_n",
+  		"Theta_s": "native_soil_theta_sat",
+        	"Theta_r": "native_soil_theta_res"
+  	},
+  	"EngineeredSoilParameterMap": {
+  		"Ks": "eng_soil_K_s",
+  		"alpha": "eng_soil_alpha",
+  		"n": "eng_soil_n",
+  		"Theta_s": "eng_soil_theta_sat",
+        	"Theta_r": "eng_soil_theta_res"
   	}
   },
   "parameter_groups": [
@@ -633,6 +650,7 @@
       "name": "eng_soil_physical_parameter",
       "description": "Physical parameters of the engineered soil medium",
       "parameters": [
+        "Engineered Soil Type",
         "eng_soil_K_s",
         "eng_soil_alpha",
         "eng_soil_n",
@@ -644,12 +662,12 @@
       "name": "native_soil_physical_parameter",
       "description": "Physical parameters of the native soil",
       "parameters": [
+        "Soil_Type",
         "native_soil_K_s",
         "native_soil_alpha",
         "native_soil_n",
         "native_soil_theta_sat",
-        "native_soil_theta_res",
-        "Soil_Type"
+        "native_soil_theta_res"
       ]
     }
   ]

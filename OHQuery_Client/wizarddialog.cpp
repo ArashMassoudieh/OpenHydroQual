@@ -207,7 +207,9 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 QComboBox* Editor = new QComboBox(this_tab.scrollAreaWidgetContents);
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
                 rosettaFetcher = new RosettaFetcher();
-                rosettaFetcher->fetchJson(QUrl("https://raw.githubusercontent.com/behzadshakouri/Rosetta-Soil/main/converted_rosetta_hydraulic_parameters.json"));
+                Editor->setProperty("SoilMap",parameter->Delegate().split("|").last());
+                rosettaFetcher->fetchJson(QUrl(parameter->Delegate().split("|")[1]));
+                Editor->setProperty("Parameter",parameter->Name());
                 connect(rosettaFetcher, &RosettaFetcher::dataReady, this, [this, Editor]() {
                     onDataReceived(Editor);
                 });
@@ -221,6 +223,38 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
 void WizardDialog::onDataReceived(QComboBox* editor) {
     editor->clear();
     editor->addItems(rosettaFetcher->getTextureClasses());
+    editor->setCurrentText(SelectedWizardScript.GetWizardParameters()[editor->property("Parameter").toString()].Default());
+    connect(editor, &QComboBox::currentTextChanged, this,
+            [this, editor](const QString &text) {
+                onComboChanged(editor, text);
+            });
+    onComboChanged(editor,editor->currentText());
+}
+
+void WizardDialog::onComboChanged(QComboBox* editor, const QString& text)
+{
+    QMap<QString, double> parametervalues = rosettaFetcher->getData()[text];
+    QMap<QString, QString> parameter_map = SelectedWizardScript.GetParameterPopulateMaps(editor->property("SoilMap").toString()) ;
+    for (QMap<QString,double>::Iterator it = parametervalues.begin(); it != parametervalues.end(); ++it) {
+        qDebug() << "Key:" << it.key() << "Value:" << it.value();
+
+        if (parameter_map.contains(it.key()))
+        {
+            WizardParameter *entry_param = &SelectedWizardScript.GetWizardParameters()[parameter_map[it.key()]];
+            if (entry_param->Delegate() == "ValueBox")
+            {
+                static_cast<QLineEdit*>(entry_param->EntryItem())->setText(QString::number(it.value()));
+            }
+            else if (entry_param->Delegate() == "UnitBox")
+            {
+                static_cast<UnitTextBox3*>(entry_param->EntryItem())->setText(QString::number(it.value()));
+            }
+
+        }
+
+    }
+
+
 }
 
 void WizardDialog::on_next_clicked()

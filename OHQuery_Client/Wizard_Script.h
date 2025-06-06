@@ -54,6 +54,8 @@ public:
     QMap<QString, SingleBlock> &GetSingleBlocks() {return SingleBlocks;}
     QMap<QString, WizardParameter> &GetWizardParameters() {return WizardParameters;}
     QMap<QString, WizardParameterGroup> &GetWizardParameterGroups() {return WizardParameterGroups;}
+    QMap<QString, QMap<QString, QString>> &GetParameterPopulateMaps() {return ParameterPopulateMaps;}
+    QMap<QString, QString> &GetParameterPopulateMaps(const QString &parametermap) {return ParameterPopulateMaps[parametermap];}
     QMap<QString, Connector>& GetConnectors() { return Connectors; }
     QStringList Script();
     Wizard_Entity* FindEntity(QString name);
@@ -71,6 +73,7 @@ private:
     QMap<QString, Wizard_Entity> Entities;
     QMap<QString, SetVal_Entity> SetValEntities;
     QMap<QString, Connector> Connectors;
+    QMap<QString, QMap<QString, QString>> ParameterPopulateMaps;
     QString iconfilename;
     QString diagramfilename; 
     QString wizardname;

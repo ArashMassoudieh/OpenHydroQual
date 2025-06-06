@@ -73,6 +73,8 @@ public slots:
     void on_TabChanged();
     void open_html();
     void onDataReceived(QComboBox* editor);
+    void onComboChanged(QComboBox* editor, const QString& text);
+
 
 signals:
     void model_generate_requested(const QJsonDocument &jsondoc);
