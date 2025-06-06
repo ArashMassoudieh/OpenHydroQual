@@ -66,7 +66,7 @@ private:
     QGraphicsSvgItem *svgitem = nullptr;
     int currenttabindex=0;
     SVGViewer *svgviewer = nullptr;
-    RosettaFetcher *rosettaFetcher;
+    QMap<QString, RosettaFetcher*> rosettaFetchers;
 public slots:
     void on_next_clicked();
     void on_previous_clicked();

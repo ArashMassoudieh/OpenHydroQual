@@ -206,7 +206,8 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
             {
                 QComboBox* Editor = new QComboBox(this_tab.scrollAreaWidgetContents);
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
-                rosettaFetcher = new RosettaFetcher();
+                RosettaFetcher *rosettaFetcher = new RosettaFetcher();
+                rosettaFetchers[parameter->Name()] = rosettaFetcher;
                 Editor->setProperty("SoilMap",parameter->Delegate().split("|").last());
                 rosettaFetcher->fetchJson(QUrl(parameter->Delegate().split("|")[1]));
                 Editor->setProperty("Parameter",parameter->Name());
@@ -221,8 +222,9 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
 }
 
 void WizardDialog::onDataReceived(QComboBox* editor) {
+    QString parameter = SelectedWizardScript.GetWizardParameters()[editor->property("Parameter").toString()].Name();
     editor->clear();
-    editor->addItems(rosettaFetcher->getTextureClasses());
+    editor->addItems(rosettaFetchers[parameter]->getTextureClasses());
     editor->setCurrentText(SelectedWizardScript.GetWizardParameters()[editor->property("Parameter").toString()].Default());
     connect(editor, &QComboBox::currentTextChanged, this,
             [this, editor](const QString &text) {
@@ -233,7 +235,8 @@ void WizardDialog::onDataReceived(QComboBox* editor) {
 
 void WizardDialog::onComboChanged(QComboBox* editor, const QString& text)
 {
-    QMap<QString, double> parametervalues = rosettaFetcher->getData()[text];
+    QString parameter = SelectedWizardScript.GetWizardParameters()[editor->property("Parameter").toString()].Name();
+    QMap<QString, double> parametervalues = rosettaFetchers[parameter]->getData()[text];
     QMap<QString, QString> parameter_map = SelectedWizardScript.GetParameterPopulateMaps(editor->property("SoilMap").toString()) ;
     for (QMap<QString,double>::Iterator it = parametervalues.begin(); it != parametervalues.end(); ++it) {
         qDebug() << "Key:" << it.key() << "Value:" << it.value();
