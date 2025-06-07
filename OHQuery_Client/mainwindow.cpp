@@ -247,10 +247,14 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
     if (!DownloadModelButton)
     {   DownloadModelButton = new QPushButton(this);
         DownloadPrecipTextBrowser = new QTextBrowser(this);
+        DownloadOutputTextBrowser = new QTextBrowser(this);
         DownloadModelButton->setText("Download the OpenHydroQual Model");
-        DownloadPrecipTextBrowser->setText("Download precipitation data");
+
+        DownloadPrecipTextBrowser->setText("Download timeseries data");
+        DownloadOutputTextBrowser->setText("Download timeseries data");
         ui->horizontalLayout_buttons->addWidget(DownloadModelButton);
         ui->horizontalLayout_buttons->addWidget(DownloadPrecipTextBrowser);
+        ui->horizontalLayout_buttons->addWidget(DownloadOutputTextBrowser);
         connect(DownloadModelButton, &QPushButton::clicked, this, &MainWindow::onDownloadModel);
     }
     PopulatePrecipTextBrowser();
@@ -263,20 +267,25 @@ void MainWindow::PopulatePrecipTextBrowser()
 {
 
     DownloadPrecipTextBrowser->clear();
+    DownloadOutputTextBrowser->clear();
     DownloadPrecipTextBrowser->setOpenExternalLinks(true);
+    DownloadOutputTextBrowser->setOpenExternalLinks(true);
     QString html = "<h3>Download Time Series Data</h3><ul>";
-
+    QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
     for (const QString& key : DownloadedTimeSeriesData.keys())
     {
         QString title = key;
-        QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
-
         QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/" + DownloadedTimeSeriesData[key];
         html += QString("<li><a href='%1'>%2</a></li>").arg(url, title);
     }
-
-
     DownloadPrecipTextBrowser->setHtml(html);
+
+    html = "<h3>Download Model Outputs</h3><ul>";
+    QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/+ observedoutput.txt";
+    QString title = "Observed Output";
+    html += QString("<li><a href='%1'>%2</a></li>").arg(url, title);
+    DownloadOutputTextBrowser->setHtml(html);
+
 }
 
 QDateTime excelToQDateTime(double excelDate) {

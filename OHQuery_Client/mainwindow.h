@@ -53,6 +53,7 @@ private:
     QMap<QString,QString> DownloadedTimeSeriesData;
     QPushButton* DownloadModelButton = nullptr;
     QTextBrowser* DownloadPrecipTextBrowser = nullptr;
+    QTextBrowser* DownloadOutputTextBrowser = nullptr;
     QString modeltemplate;
 public slots:
     void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
