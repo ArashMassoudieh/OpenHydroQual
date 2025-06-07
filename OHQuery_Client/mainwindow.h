@@ -19,6 +19,7 @@
 
 #include <QMainWindow>
 #include <QListWidgetItem>
+#include "qlabel.h"
 #include "wsclient.h"
 #include <QtCharts/QChartView>
 #include <QTextBrowser>
@@ -41,6 +42,7 @@ public:
     void RecieveTemplate();
     void SetModelTemplate(const QString &jsonfile) {modeltemplate = jsonfile;}
     void PopulatePrecipTextBrowser();
+    void showErrorWindow(const QString& message);
 private:
     Ui::MainWindow *ui;
     void PopulateListOfWizards();
@@ -55,6 +57,7 @@ private:
     QTextBrowser* DownloadPrecipTextBrowser = nullptr;
     QTextBrowser* DownloadOutputTextBrowser = nullptr;
     QString modeltemplate;
+    QLabel *errorBanner = new QLabel();
 public slots:
     void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
     void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved

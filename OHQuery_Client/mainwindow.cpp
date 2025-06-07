@@ -15,6 +15,7 @@
 
 
 #include "mainwindow.h"
+#include "qmessagebox.h"
 #include "ui_mainwindow.h"
 #include "Wizard_Script.h"
 #include "QDir"
@@ -42,6 +43,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->chartTabs->hide();
     this->setStyleSheet("background-color: white;");
+
+    errorBanner = new QLabel(this);
+    errorBanner->setStyleSheet("background-color:#fee; color:red; font-weight:bold; border: 1px solid red; padding: 5px;");
+    errorBanner->setAlignment(Qt::AlignCenter);
+    errorBanner->hide(); // initially hidden
+    ui->verticalLayout_2->insertWidget(0, errorBanner); // insert at top of main layout
 
     qApp->setStyleSheet(R"(
     * {
@@ -75,7 +82,16 @@ void MainWindow::onError(QAbstractSocket::SocketError error)
 {
     qDebug() << "WebSocket error occurred:" << error;
     ui->label->setText("WebSocket error occurred:" + socketErrorToString(error));
+    showErrorWindow("The output data was failed to be retrieved from the server");
 
+    return;
+
+}
+
+void MainWindow::showErrorWindow(const QString& message)
+{
+    errorBanner->setText(message);
+    errorBanner->show();
 }
 
 QString socketErrorToString(QAbstractSocket::SocketError error)
@@ -174,6 +190,16 @@ void MainWindow::TemplateRecieved(const QJsonDocument &JsonDoc)
 
 void MainWindow::handleData(const QJsonDocument &JsonDoc)
 {
+    if (!JsonDoc.isObject()) {
+        QMessageBox* msgBox = new QMessageBox(this);
+        msgBox->setIcon(QMessageBox::Critical);
+        msgBox->setWindowTitle("Error");
+        msgBox->setText("The output data was failed to be retrieved from the server");
+        msgBox->setStandardButtons(QMessageBox::Ok);
+        msgBox->open();
+        return;
+    }
+
     for (const QChartView* item : chartviews)
         delete item;
 
@@ -282,7 +308,7 @@ void MainWindow::PopulatePrecipTextBrowser()
 
     html = "<h3>Download Model Outputs</h3><ul>";
     QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/observedoutput.txt";
-    QString title = "Observed Output";
+    QString title = "Model Output";
     html += QString("<li><a href='%1'>%2</a></li>").arg(url, title);
     DownloadOutputTextBrowser->setHtml(html);
 

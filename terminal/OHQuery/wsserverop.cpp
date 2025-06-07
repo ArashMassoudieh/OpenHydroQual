@@ -187,6 +187,7 @@ void WSServerOps::onTextMessageReceived(QString message)
             script.CreateSystemFromQStringList(SelectedWizardScript.Script(),&system);
             QJsonObject responseObj = Execute(&system);
             QJsonObject TimeSeriesData;
+#ifdef LOCAL_HOST
             QMap<QString, QString> TimeSeriesDataMap = SelectedWizardScript.GetTimeSeriesData();
             for (QString tskey: TimeSeriesDataMap.keys())
             {
@@ -196,6 +197,16 @@ void WSServerOps::onTextMessageReceived(QString message)
             QJsonDocument responseDoc = QJsonDocument(responseObj);
             QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
             sendMessageToClient(senderSocket, jsonString);
+#else
+            QJsonObject responseObj;
+            responseObj["status"] = "success";
+            responseObj["message"] = "Model execution completed successfully";
+            responseObj["folder"] = QString::fromStdString(system->GetWorkingFolder());  // optional
+
+            QJsonDocument responseDoc = QJsonDocument(responseObj);
+            QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
+            sendMessageToClient(senderSocket, jsonString);
+#endif
         }
     }
 }
@@ -259,8 +270,17 @@ QJsonObject WSServerOps::Execute(System *system)
     system->SavetoJson(system->GetWorkingFolder() + "/" + "System.json",system->addedtemplates);
 
 
+    qDebug()<<QString::fromStdString(system->GetWorkingFolder()) + "/output.json";
+    QFile file(QString::fromStdString(system->GetWorkingFolder()) + "/output.json");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        qDebug() << "Failed to open file for writing:" << file.errorString();
+    }
+
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + "/" + system->OutputFileName() +"'";
     system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + "/" + system->ObservedOutputFileName());
+    QJsonDocument doc(system->GetObservedOutputs().toJson());
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
     system->GetOutputs().writetofile(system->GetWorkingFolder() + "/" + system->OutputFileName());
     QJsonObject output = system->GetObservedOutputs().toJson();
     output["TemporaryFolderName"] = QString::fromStdString(system->GetWorkingFolder());
