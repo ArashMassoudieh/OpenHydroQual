@@ -278,33 +278,26 @@ void WizardDialog::on_previous_clicked()
     on_TabChanged();
 }
 
-void  WizardDialog::on_TabChanged()
+void WizardDialog::on_TabChanged()
 {
-    if (currenttabindex==ui->tabWidget->currentIndex())
+    if (currenttabindex == ui->tabWidget->currentIndex())
         return;
+
     SelectedWizardScript.AssignParameterValues();
     QStringList Errors = SelectedWizardScript.GetWizardParameterGroups()[ui->tabWidget->widget(currenttabindex)->objectName()].CheckCriteria(&SelectedWizardScript.GetWizardParameters());
-    if (Errors.count()>0)
-    {   QMessageBox *msgBox = new QMessageBox(this);
-        msgBox->setIcon(QMessageBox::Information);
-        msgBox->setWindowTitle("Invalid parameter value!");
-        msgBox->setText(Errors[0]);
-        msgBox->setStandardButtons(QMessageBox::Ok);
-        msgBox->open();
+
+    if (!Errors.isEmpty())
+    {
+        QMessageBox::information(this, "Invalid parameter value!", Errors[0]);  // safer for WASM
         ui->tabWidget->setCurrentIndex(currenttabindex);
         return;
     }
 
-    if (ui->tabWidget->currentIndex()==0)
-        ui->Previous->setEnabled(false);
-    else
-        ui->Previous->setEnabled(true);
-    if (ui->tabWidget->currentIndex()==ui->tabWidget->count()-1)
-        ui->Next->setText("Create Model");
-    else
-        ui->Next->setText("Next");
+    ui->Previous->setEnabled(ui->tabWidget->currentIndex() != 0);
+    ui->Next->setText(ui->tabWidget->currentIndex() == ui->tabWidget->count() - 1 ? "Create Model" : "Next");
     currenttabindex = ui->tabWidget->currentIndex();
 }
+
 
 bool  WizardDialog::Verify()
 {

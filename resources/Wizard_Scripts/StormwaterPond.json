@@ -2,7 +2,7 @@
   "name": "Stormwater Pond (SI)",
   "icon": "Stormwater.png",
   "url": "https://openhydroqual.com/wp-content/Wizards/Stormwater_Pond/Stormwater_Pond.html",
-  "description": "This wizard create a stormwater detention pond",
+  "description": "This wizard creates a stormwater detention pond",
   "diagram": "pond.svg",
   "addtemplate": [
     "main_components.json",
@@ -256,7 +256,7 @@
     },
     {
       "name": "4_Overflow wier",
-      "description": "Overflow wier",
+      "description": "Overflow weir",
       "parameters": [
         "CrestElevation",
         "alpha_overflow_wier",
