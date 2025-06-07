@@ -59,7 +59,7 @@ public:
         //delete unitBox;
         //delete validator;
     }
-
+    QString formatSuperscript(const QString& unit) const;
     void updateContextMenu(bool openFileMenu)
     {
         if (openFileMenu)
@@ -94,7 +94,14 @@ public:
 
 
     void setUnit(const QString &U){ unitBox->setCurrentText(U); }
-    void setUnitsList(const QStringList &L){ for (int i = 0; unitBox->count(); i++) unitBox->clear(); unitBox->addItems(L); }
+    void setUnitsList(const QStringList &L)
+    {
+        unitBox->clear();
+        for (const QString& unit : L) {
+            unitBox->addItem(formatSuperscript(unit));
+            unitBox->setItemData(unitBox->count() - 1, unit, Qt::UserRole);  // store raw
+        }
+    }
     QString text() const { return textBox->text(); }
     QString unit() const { return unitBox->currentText(); }
     QStringList units() const { QStringList R; for (int i = 0; i < unitBox->count(); i++) R.append(unitBox->itemText(i)); return R; }

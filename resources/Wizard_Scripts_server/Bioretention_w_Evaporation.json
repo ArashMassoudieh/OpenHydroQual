@@ -461,7 +461,7 @@
       "name": "Catch_Basin_Area",
       "delegate": "UnitBox",
       "question": "The base area of the catch basin",
-      "unit": "m~^2;ft~^2",
+      "unit": "m~^2",
       "default": "1"
     },
     {
@@ -501,7 +501,7 @@
       "name": "CrestElevation",
       "delegate": "UnitBox",
       "question": "Crest Elevation",
-      "unit": "m;ft"
+      "unit": "m"
     },
     {
       "name": "alpha_overflow_Weir",

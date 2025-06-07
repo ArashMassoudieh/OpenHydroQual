@@ -42,3 +42,36 @@ void UnitTextBox3::on_text_edited(const QString& text)
 {
     emit textEdited(text);
 }
+
+QString UnitTextBox3::formatSuperscript(const QString& unit) const
+{
+    static QMap<QChar, QChar> superscripts;
+    if (superscripts.isEmpty()) {
+        superscripts.insert('0', QChar(0x2070));
+        superscripts.insert('1', QChar(0x00B9));
+        superscripts.insert('2', QChar(0x00B2));
+        superscripts.insert('3', QChar(0x00B3));
+        superscripts.insert('4', QChar(0x2074));
+        superscripts.insert('5', QChar(0x2075));
+        superscripts.insert('6', QChar(0x2076));
+        superscripts.insert('7', QChar(0x2077));
+        superscripts.insert('8', QChar(0x2078));
+        superscripts.insert('9', QChar(0x2079));
+        superscripts.insert('-', QChar(0x207B));
+    }
+
+    QString result;
+    for (int i = 0; i < unit.length(); ++i)
+    {
+        if (unit.mid(i, 2) == "~^" && i + 2 < unit.length()) {
+            QChar c = unit[i + 2];
+            if (superscripts.contains(c)) {
+                result.append(superscripts[c]);
+                i += 2;
+                continue;
+            }
+        }
+        result.append(unit[i]);
+    }
+    return result;
+}
