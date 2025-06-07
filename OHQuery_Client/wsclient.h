@@ -22,13 +22,7 @@
 #include <QJsonObject>
 #include <QMap>
 #include <QString>
-
-struct TimeSeries {
-    QList<double> t;
-    QList<double> value;
-};
-
-using TimeSeriesMap = QMap<QString, TimeSeries>;
+#include "timeseriesloader.h"
 
 class WSClient : public QObject
 {

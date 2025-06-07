@@ -5,10 +5,10 @@ CONFIG += console
 CONFIG -= app_bundle
 
 #DEFINES += HTTPS
-DEFINES += LOCAL_HOST  #for local host testing
+#DEFINES += LOCAL_HOST  #for local host testing
 
 CONFIG += debug
-CONFIG -= release
+#CONFIG -= release
 
 QMAKE_CXXFLAGS_DEBUG += -O0 -g
 

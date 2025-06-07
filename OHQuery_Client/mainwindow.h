@@ -23,14 +23,13 @@
 #include "wsclient.h"
 #include <QtCharts/QChartView>
 #include <QTextBrowser>
+#include "timeseriesloader.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class QPushButton;
-
-using TimeSeriesMap = QMap<QString, TimeSeries>;
 
 class MainWindow : public QMainWindow
 {
@@ -63,6 +62,8 @@ public slots:
     void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved
     void onError(QAbstractSocket::SocketError error);
     void onDownloadModel();
+    void handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap);
+
 
 };
 

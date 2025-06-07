@@ -187,7 +187,7 @@ void WSServerOps::onTextMessageReceived(QString message)
             script.CreateSystemFromQStringList(SelectedWizardScript.Script(),&system);
             QJsonObject responseObj = Execute(&system);
             QJsonObject TimeSeriesData;
-#ifdef LOCAL_HOST
+
             QMap<QString, QString> TimeSeriesDataMap = SelectedWizardScript.GetTimeSeriesData();
             for (QString tskey: TimeSeriesDataMap.keys())
             {
@@ -197,16 +197,6 @@ void WSServerOps::onTextMessageReceived(QString message)
             QJsonDocument responseDoc = QJsonDocument(responseObj);
             QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
             sendMessageToClient(senderSocket, jsonString);
-#else
-            QJsonObject responseObj;
-            responseObj["status"] = "success";
-            responseObj["message"] = "Model execution completed successfully";
-            responseObj["folder"] = QString::fromStdString(system->GetWorkingFolder());  // optional
-
-            QJsonDocument responseDoc = QJsonDocument(responseObj);
-            QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
-            sendMessageToClient(senderSocket, jsonString);
-#endif
         }
     }
 }
@@ -282,7 +272,10 @@ QJsonObject WSServerOps::Execute(System *system)
     file.write(doc.toJson(QJsonDocument::Indented));
     file.close();
     system->GetOutputs().writetofile(system->GetWorkingFolder() + "/" + system->OutputFileName());
-    QJsonObject output = system->GetObservedOutputs().toJson();
+    QJsonObject output;
+#ifdef LOCAL_HOST
+    output = system->GetObservedOutputs().toJson();
+#endif
     output["TemporaryFolderName"] = QString::fromStdString(system->GetWorkingFolder());
 
     return output;

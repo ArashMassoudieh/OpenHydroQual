@@ -38,6 +38,7 @@ SOURCES += \
     mainwindow.cpp \
     rosettafetcher.cpp \
     svgviewer.cpp \
+    timeseriesloader.cpp \
     wizard_assigned_value.cpp \
     wizardcriteria.cpp \
     wizarddialog.cpp \
@@ -60,6 +61,7 @@ HEADERS += \
     mainwindow.h \
     rosettafetcher.h \
     svgviewer.h \
+    timeseriesloader.h \
     wizard_assigned_value.h \
     wizardcriteria.h \
     wizarddialog.h \

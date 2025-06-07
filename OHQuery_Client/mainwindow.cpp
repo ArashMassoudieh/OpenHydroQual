@@ -29,6 +29,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QPushButton>
+#include "timeseriesloader.h"
 
 #ifdef Q_OS_WASM
 #include <emscripten.h>
@@ -218,6 +219,7 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
                  DownloadedTimeSeriesData[key_TS] = TimeSeriesInfo[key_TS].toString();
             }
         }
+#ifdef LOCALHOST
         else
         {
             QJsonObject variable = rootObj[key].toObject();
@@ -232,12 +234,30 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
 
             allSeries[key] = ts;
         }
+#else
+        TimeSeriesLoader* loader = new TimeSeriesLoader(this);
+        connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
+        connect(loader, &TimeSeriesLoader::loadFailed, this, &MainWindow::showErrorWindow);
+
+        QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
+        QString title = key;
+        QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/output.json";
+
+        loader->load(QUrl(url));
+        connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
+#endif
     }
 
+
+
+}
+
+void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
+{
     chartviews.clear();
 
-    for (const QString& key : allSeries.keys()) {
-        const TimeSeries& ts = allSeries[key];
+    for (const QString& key : tsMap.keys()) {
+        const TimeSeries& ts = tsMap[key];
         QLineSeries* series = new QLineSeries();
 
         for (int i = 0; i < ts.t.size(); ++i)
@@ -286,7 +306,6 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
     PopulatePrecipTextBrowser();
     ui->chartTabs->show();
     QGuiApplication::restoreOverrideCursor();
-
 }
 
 void MainWindow::PopulatePrecipTextBrowser()
