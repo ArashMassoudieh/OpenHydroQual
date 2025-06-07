@@ -281,7 +281,7 @@ void MainWindow::PopulatePrecipTextBrowser()
     DownloadPrecipTextBrowser->setHtml(html);
 
     html = "<h3>Download Model Outputs</h3><ul>";
-    QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/+ observedoutput.txt";
+    QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/observedoutput.txt";
     QString title = "Observed Output";
     html += QString("<li><a href='%1'>%2</a></li>").arg(url, title);
     DownloadOutputTextBrowser->setHtml(html);
