@@ -5,7 +5,8 @@
   "diagram" : "Bioswale.svg", 
   "addtemplate": [
     "main_components.json",
-    "unsaturated_soil.json"
+    "unsaturated_soil.json",
+    "Pond_Plugin.json"
   ],
   "entities": [
     {
@@ -13,6 +14,41 @@
       "entity": "source",
       "type": "Precipitation",
       "timeseries": "PrecipitationData@api"
+    },
+    {
+      "name": "Ponding depth [m]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Bioswale ponding zone@sc",
+      "expression" : "depth@sc"
+    },
+    {
+      "name": "Cumulative groundwater recharge [m^3]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Groundwater@sc",
+      "expression" : "Storage-100000@sc"
+    },
+    {
+      "name": "Inflow into bioswale [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Catchment to bioswale@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Overflow [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Overflow@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Cumulative Overflow [m^3]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Receiving_sewer_pipe@sc",
+      "expression" : "Storage-100000@sc"
     }
   ],
   "setvals": [
@@ -61,7 +97,16 @@
   		"x": "600",
   		"y": "900 + (eng_soil_n_y + native_soil_n_y)*250",
   		"_width": "800"
-  	}
+  	},
+  	{
+	      "name": "Receiving_sewer_pipe",
+	      "type": "fixed_head",
+	      "x": "1000+(native_soil_lateral_nx+1)*250",
+	      "y": "336",
+	      "_width": "200",
+	      "_height": "200",
+	      "head": "-1;m"
+    	}
   ],
   "blockarrays": [
     {
@@ -102,6 +147,8 @@
       "alpha": "native_soil_alpha;1/m",
       "n": "native_soil_n",
       "area": "length*native_soil_width/native_soil_lateral_nx;m~^2",
+      "area.h": "eng_soil_height/eng_soil_n_y*length;m",
+      "length.h": "native_soil_width/native_soil_lateral_nx;m",
       "bottom_elevation": "surface_elevation-(j+1)*eng_soil_height/eng_soil_n_y;m",
       "_width": "200",
       "_height": "200",
@@ -126,6 +173,8 @@
       "alpha": "native_soil_alpha;1/m",
       "n": "native_soil_n",
       "area": "length*native_soil_width/native_soil_lateral_nx;m~^2",
+      "area.h": "eng_soil_height/eng_soil_n_y*length;m",
+      "length.h": "native_soil_width/native_soil_lateral_nx;m",
       "bottom_elevation": "surface_elevation-(j+1)*eng_soil_height/eng_soil_n_y;m",
       "_width": "200",
       "_height": "200",
@@ -171,6 +220,8 @@
       "K_sat_original": "native_soil_K_s;m/day",
       "K_sat_scale_factor": "1",
       "depth": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
+      "area.h": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y*length;m",
+      "length.h": "native_soil_width/native_soil_lateral_nx;m",
       "alpha": "native_soil_alpha;1/m",
       "n": "native_soil_n",
       "area": "length*native_soil_width/native_soil_lateral_nx;m~^2",
@@ -198,6 +249,8 @@
       "alpha": "native_soil_alpha;1/m",
       "n": "native_soil_n",
       "area": "length*native_soil_width/native_soil_lateral_nx;m~^2",
+      "area.h": "(depth_to_groundwater-eng_soil_height)/native_soil_n_y*length;m",
+      "length.h": "native_soil_width/native_soil_lateral_nx;m",
       "bottom_elevation": "-eng_soil_height-surface_elevation-(j+1)*(depth_to_groundwater-eng_soil_height)/native_soil_n_y;m",
       "_width": "200",
       "_height": "200",
@@ -297,7 +350,18 @@
   		"type": "soil_to_fixedhead_link",
   		"connectiontype": "m2o",
   		"connectionconfig": "u2d"
-  	}
+  	},
+  	{
+	      "name": "Overflow",
+	      "from": "Bioswale ponding zone",
+	      "to": "Receiving_sewer_pipe",
+	      "type": "wier",
+	      "connectiontype": "o2o",
+	      "connectionconfig": "u2d",
+	      "beta": "beta_overflow_Weir",
+	      "alpha": "alpha_overflow_Weir",
+	      "crest_elevation": "CrestElevation"
+	 }
   ],
   "parameters": [
     {
@@ -490,6 +554,25 @@
     	"delegate": "CombofromAPI|https://raw.githubusercontent.com/behzadshakouri/Rosetta-Soil/main/converted_rosetta_hydraulic_parameters.json|EngineeredSoilParameterMap",
     	"question": "Soil Texture Classification",
     	"default": "Sand"
+    },
+    {
+      "name": "CrestElevation",
+      "delegate": "UnitBox",
+      "question": "Overflow Depth",
+      "default": "0.25",
+      "unit": "m"
+    },
+    {
+      "name": "alpha_overflow_Weir",
+      "delegate": "ValueBox",
+      "question": "Coefficient α in Q=α*(h-z_0)^β",
+      "default": "10000"
+    },
+    {
+      "name": "beta_overflow_Weir",
+      "delegate": "ValueBox",
+      "question": "Exponent β in Q=α*(h-z_0)^β",
+      "default": "2.5"
     }
   ],
   "parameter_populate_maps": 
@@ -524,7 +607,6 @@
       "name": "2_catchment",
       "description": "Contributing area",
       "parameters": [
-                "TimeSeriesFileName",
 		"Catchment_area",
 		"Catchment_slope",
 		"Catchment_Manning_coefficient",
@@ -584,7 +666,7 @@
       ]
     },
     {
-      "name": "native_soil_physical_parameter",
+      "name": "5_native_soil_physical_parameter",
       "description": "Physical parameters of the native soil",
       "parameters": [
         "Soil_Type",
@@ -593,6 +675,15 @@
         "native_soil_n",
         "native_soil_theta_sat",
         "native_soil_theta_res"
+      ]
+    },
+     {
+      "name": "6_Overflow Weir",
+      "description": "Overflow Weir",
+      "parameters": [
+        "CrestElevation",
+        "alpha_overflow_Weir",
+        "beta_overflow_Weir"
       ]
     }
   ]

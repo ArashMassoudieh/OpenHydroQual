@@ -215,7 +215,7 @@
       "name": "Overflow",
       "from": "Pond",
       "to": "Catch basin",
-      "type": "Weir",
+      "type": "wier",
       "connectiontype": "o2o",
       "connectionconfig": "u2d",
       "beta": "beta_overflow_Weir",
