@@ -288,8 +288,18 @@ void WizardDialog::on_TabChanged()
 
     if (!Errors.isEmpty())
     {
-        QMessageBox::information(this, "Invalid parameter value!", Errors[0]);  // safer for WASM
-        ui->tabWidget->setCurrentIndex(currenttabindex);
+        auto *msgBox = new QMessageBox(QMessageBox::Information,
+                                       "Invalid parameter value!",
+                                       Errors[0],
+                                       QMessageBox::Ok,
+                                       this);
+
+        connect(msgBox, &QMessageBox::finished, this, [=](int){
+            ui->tabWidget->setCurrentIndex(currenttabindex);  // reset only after user acknowledges
+            msgBox->deleteLater();
+        });
+
+        msgBox->open();  // asynchronous and safe in WebAssembly
         return;
     }
 
