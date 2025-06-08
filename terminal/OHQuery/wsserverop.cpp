@@ -44,6 +44,7 @@ void WSServerOps::Start(quint16 port)
         connect(m_server, &QWebSocketServer::newConnection,
                 this, &WSServerOps::onNewConnection);
     }
+
 }
 #else
 
@@ -104,33 +105,60 @@ void WSServerOps::onNewConnection()
     connect(socket, &QWebSocket::disconnected,
             this, &WSServerOps::onSocketDisconnected);
 
-    m_clients.append(socket);
-    qDebug() << "New client connected!";
+    m_server->setMaxPendingConnections(100);
 
+    qDebug() << "New client socket connected, waiting for client_id...";
 
 }
 
 void WSServerOps::onTextMessageReceived(QString message)
 {
     QWebSocket *senderSocket = qobject_cast<QWebSocket *>(sender());
+    if (!senderSocket)
+        return;
+
+    qDebug() << "Received message from client:" << message;
+
+    QJsonParseError parseError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8(), &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parse error:" << parseError.errorString();
+        return;
+    }
+
+    QJsonObject root_obj = jsonDoc.object();
+
+    QString client_id = root_obj.value("client_id").toString();
+    if (client_id.isEmpty()) {
+        qWarning() << "Missing client_id in message!";
+        return;
+    }
+
+    // --- NEW: Register or update client ---
+    if (!m_clients.contains(client_id)) {
+        qDebug() << "New client registered: " << client_id;
+        m_clients[client_id] = senderSocket;
+    } else if (m_clients[client_id] != senderSocket) {
+        qDebug() << "Client reconnected: " << client_id;
+        m_clients[client_id] = senderSocket;
+    }
+
     if (senderSocket) {
         qDebug() << "Received message from client:" << message;
 
-        QJsonParseError parseError;
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8(), &parseError);
-
-        if (parseError.error != QJsonParseError::NoError) {
-            qWarning() << "JSON parse error:" << parseError.errorString();
-        } else {
-            qDebug() << "Parsed JSON:" << jsonDoc;
-        }
-
         QJsonObject root_obj = jsonDoc.object();
-        if (root_obj.keys().contains("Model"))
+        if (root_obj.keys().contains("Reconnected") && root_obj["Reconnected"].toBool() == true)
+        {
+            qDebug()<<"Seding message to the client: "<<message_to_be_sent[client_id];
+            sendMessageToClient(senderSocket, message_to_be_sent[client_id]);
+        }
+        else if (root_obj.keys().contains("Model"))
         {
             QJsonDocument responseDoc = SendModelTemplate(root_obj["Model"].toObject()["FileName"].toString());
             qDebug()<<responseDoc;
             QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
+            client_state[client_id] = "Model Sent";
+            message_to_be_sent[client_id] = jsonString;
             sendMessageToClient(senderSocket, jsonString);
         }
         else if (root_obj.keys().contains("Parameters"))
@@ -198,6 +226,8 @@ void WSServerOps::onTextMessageReceived(QString message)
             QJsonDocument responseDoc = QJsonDocument(responseObj);
             QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
             qDebug()<<"Sending message of size " << jsonString.size() << " to the client";
+            client_state[client_id] = "Model Simulation Ended";
+            message_to_be_sent[client_id] = jsonString;
             sendMessageToClient(senderSocket, jsonString);
         }
     }
@@ -232,11 +262,24 @@ QJsonDocument WSServerOps::SendModelTemplate(const QString &TemplateName)
 void WSServerOps::onSocketDisconnected()
 {
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
-    if (socket) {
-        m_clients.removeAll(socket);
-        socket->deleteLater();
-        qDebug() << "Client disconnected!";
+    if (!socket)
+        return;
+
+    QString toRemoveKey;
+    for (auto it = m_clients.begin(); it != m_clients.end(); ++it) {
+        if (it.value() == socket) {
+            toRemoveKey = it.key();
+            break;
+        }
     }
+
+    if (!toRemoveKey.isEmpty()) {
+        m_clients.remove(toRemoveKey);
+        client_state.remove(toRemoveKey);
+        qDebug() << "Client disconnected and removed: " << toRemoveKey;
+    }
+
+    socket->deleteLater();
 }
 
 

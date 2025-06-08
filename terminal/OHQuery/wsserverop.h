@@ -56,7 +56,9 @@ private slots:
 
 private:
     QWebSocketServer *m_server;
-    QList<QWebSocket *> m_clients;
+    QMap<QString, QWebSocket*> m_clients;
+    QMap<QString, QString> client_state;
+    QMap<QString, QString> message_to_be_sent;
     QString m_certPath;
     QString m_keyPath;
     QString modelFile;

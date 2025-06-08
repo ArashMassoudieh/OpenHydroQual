@@ -152,17 +152,21 @@ QString socketErrorToString(QAbstractSocket::SocketError error)
 
 void MainWindow::RecieveTemplate()
 {
-    QJsonObject ModelFile;
-    ModelFile["FileName"] = modeltemplate;
-    QJsonObject response;
-    response["Model"] = ModelFile;
-    wsClient->sendJson(response);  // now async
-    disconnect(wsClient, &WSClient::socketError, this, &MainWindow::onError);
-    connect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
+    if (!wsClient->HasConnectedOnce())
+    {   QJsonObject ModelFile;
+        ModelFile["FileName"] = modeltemplate;
+        QJsonObject response;
+        response["Model"] = ModelFile;
+        wsClient->sendJson(response);  // now async
+        disconnect(wsClient, &WSClient::socketError, this, &MainWindow::onError);
+        connect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
+    }
 }
 
 void MainWindow::sendParameters(const QJsonDocument& jsonDoc)
 {
+    if (jsonDoc.isNull())
+        return;
     QGuiApplication::setOverrideCursor(Qt::WaitCursor);
     disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
     wsClient->sendJson(jsonDoc.object());  // now async
@@ -178,7 +182,7 @@ MainWindow::~MainWindow()
 void MainWindow::TemplateRecieved(const QJsonDocument &JsonDoc)
 {
     WizardScript wiz;
-    qDebug()<<JsonDoc;
+    qDebug()<<"Template Recieved: "<<JsonDoc;
     wiz.GetFromJsonDoc(JsonDoc);
     WizardDialog *wizDialog = new WizardDialog(this);
     wizDialog->setWindowTitle(wiz.Description());
@@ -191,6 +195,7 @@ void MainWindow::TemplateRecieved(const QJsonDocument &JsonDoc)
 
 void MainWindow::handleData(const QJsonDocument &JsonDoc)
 {
+    qDebug()<<"Handling data ...";
     if (!JsonDoc.isObject()) {
         QMessageBox* msgBox = new QMessageBox(this);
         msgBox->setIcon(QMessageBox::Critical);
@@ -201,11 +206,11 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
         return;
     }
 
-
-
     TimeSeriesMap allSeries;
 
     QJsonObject rootObj = JsonDoc.object();
+
+    qDebug()<<"Message Recieved: "<<rootObj;
     for (const QString& key : rootObj.keys()) {
         if (key == "TemporaryFolderName")
         {
@@ -237,17 +242,14 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
 
 #endif
     }
+    qDebug()<<"Attempting to download the results ...";
     loader = new TimeSeriesLoader(this);
-    connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
-    connect(loader, &TimeSeriesLoader::loadFailed, this, &MainWindow::showErrorWindow);
-
     QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
-
     QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/output.json";
     qDebug()<<"Loading data from " + url;
     loader->load(QUrl(url));
     connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
-
+    connect(loader, &TimeSeriesLoader::loadFailed, this, &MainWindow::showErrorWindow);
 
 }
 
@@ -257,9 +259,12 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
     for (const QChartView* item : chartviews)
         delete item;
 
+    qDebug()<<"Previous charts deleted";
     chartviews.clear();
+    qDebug()<<"Clear!";
 
     for (const QString& key : tsMap.keys()) {
+        qDebug()<<"Chart: " << key;
         const TimeSeries& ts = tsMap[key];
         QLineSeries* series = new QLineSeries();
 
@@ -310,6 +315,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
     ui->chartTabs->show();
     QGuiApplication::restoreOverrideCursor();
     disconnect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
+    qDebug()<<"Charts created!";
 }
 
 void MainWindow::PopulatePrecipTextBrowser()

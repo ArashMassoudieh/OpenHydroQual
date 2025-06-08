@@ -22,7 +22,7 @@
 #include <QJsonObject>
 #include <QMap>
 #include <QString>
-#include "timeseriesloader.h"
+#include <QTimer>
 
 class WSClient : public QObject
 {
@@ -31,19 +31,24 @@ class WSClient : public QObject
 public:
     explicit WSClient(const QUrl &url, QObject *parent = nullptr);
     void sendJson(const QJsonObject &json);
-
+    bool HasConnectedOnce() {return m_hasConnectedOnce;}
 private slots:
     void onConnected();
+    void onDisconnected();
     void onTextMessageReceived(const QString &message);
-
+    void reconnect();
 signals:
     void dataReady(const QJsonDocument& data);
     void connected();
+    void disconnected();
     void socketError(QAbstractSocket::SocketError error);
 
 private:
     QWebSocket m_webSocket;
     QUrl m_url;
+    QTimer m_reconnectTimer;
+    QTimer m_pingTimer;
+    bool m_hasConnectedOnce = false;
 };
 
 #endif // WSCLIENT_H

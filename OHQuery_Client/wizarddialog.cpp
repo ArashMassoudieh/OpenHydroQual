@@ -332,7 +332,9 @@ bool  WizardDialog::Verify()
 void WizardDialog::GenerateModel()
 {
     if (!Verify())
-        emit QJsonDocument();
+    {   emit model_generate_requested(QJsonDocument());
+        return;
+    }
 
     QJsonObject all_parameters;
     SelectedWizardScript.AssignParameterValues();

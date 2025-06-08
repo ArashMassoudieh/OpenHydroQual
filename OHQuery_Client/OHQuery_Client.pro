@@ -34,6 +34,7 @@ SOURCES += \
     Wizard_Argument.cpp \
     Wizard_Entity.cpp \
     Wizard_Script.cpp \
+    filechecker.cpp \
     main.cpp \
     mainwindow.cpp \
     rosettafetcher.cpp \
@@ -58,6 +59,7 @@ HEADERS += \
     Wizard_Argument.h \
     Wizard_Entity.h \
     Wizard_Script.h \
+    filechecker.h \
     mainwindow.h \
     rosettafetcher.h \
     svgviewer.h \
