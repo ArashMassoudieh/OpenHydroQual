@@ -194,8 +194,10 @@ void WSServerOps::onTextMessageReceived(QString message)
                 TimeSeriesData[tskey] = TimeSeriesDataMap[tskey];
             }
             responseObj["DownloadedTimeSeriesData"] = TimeSeriesData;
+
             QJsonDocument responseDoc = QJsonDocument(responseObj);
             QString jsonString = QString::fromUtf8(responseDoc.toJson(QJsonDocument::Compact));
+            qDebug()<<"Sending message of size " << jsonString.size() << " to the client";
             sendMessageToClient(senderSocket, jsonString);
         }
     }
