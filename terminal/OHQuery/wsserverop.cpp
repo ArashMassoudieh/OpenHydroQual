@@ -242,9 +242,10 @@ void WSServerOps::onSocketDisconnected()
 
 void WSServerOps::sendMessageToClient(QWebSocket *client, const QString &message)
 {
+    qDebug() << "Message to be sent to the client:" << message;
     if (client) {
         client->sendTextMessage(message);
-        //qDebug() << "Sent message to client:" << message;
+        qDebug() << "Sent message to client:" << message;
     }
 }
 
