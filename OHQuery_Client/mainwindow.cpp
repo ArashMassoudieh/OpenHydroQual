@@ -82,8 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::onError(QAbstractSocket::SocketError error)
 {
     qDebug() << "WebSocket error occurred:" << error;
-    ui->label->setText("WebSocket error occurred:" + socketErrorToString(error));
-    showErrorWindow("The output data was failed to be retrieved from the server");
+    showErrorWindow("The output data was failed to be retrieved from the server: WebSocket error occurred:" + socketErrorToString(error));
 
     return;
 
@@ -158,6 +157,7 @@ void MainWindow::RecieveTemplate()
     QJsonObject response;
     response["Model"] = ModelFile;
     wsClient->sendJson(response);  // now async
+    disconnect(wsClient, &WSClient::socketError, this, &MainWindow::onError);
     connect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
 }
 
@@ -201,8 +201,7 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
         return;
     }
 
-    for (const QChartView* item : chartviews)
-        delete item;
+
 
     TimeSeriesMap allSeries;
 
@@ -235,25 +234,29 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
             allSeries[key] = ts;
         }
 #else
-        TimeSeriesLoader* loader = new TimeSeriesLoader(this);
-        connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
-        connect(loader, &TimeSeriesLoader::loadFailed, this, &MainWindow::showErrorWindow);
 
-        QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
-        QString title = key;
-        QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/output.json";
-
-        loader->load(QUrl(url));
-        connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
 #endif
     }
+    loader = new TimeSeriesLoader(this);
+    connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
+    connect(loader, &TimeSeriesLoader::loadFailed, this, &MainWindow::showErrorWindow);
 
+    QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
+
+    QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/output.json";
+    qDebug()<<"Loading data from " + url;
+    loader->load(QUrl(url));
+    connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
 
 
 }
 
 void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
 {
+    qDebug()<<"Processing loaded time series data ... ";
+    for (const QChartView* item : chartviews)
+        delete item;
+
     chartviews.clear();
 
     for (const QString& key : tsMap.keys()) {
@@ -306,6 +309,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
     PopulatePrecipTextBrowser();
     ui->chartTabs->show();
     QGuiApplication::restoreOverrideCursor();
+    disconnect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
 }
 
 void MainWindow::PopulatePrecipTextBrowser()

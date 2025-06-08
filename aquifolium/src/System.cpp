@@ -2274,7 +2274,7 @@ bool System::OutFlowCanOccur(int blockno, const string &variable)
         {
             if (blocks[blockno].Variable(blocks[blockno].Variable(variable)->GetCorrespondingInflowVar()[i]))
             {
-                outflow = CalcVal(blocks[blockno].Variable(variable)->GetCorrespondingInflowVar()[i]);
+                outflow = blocks[blockno].CalcVal(blocks[blockno].Variable(variable)->GetCorrespondingInflowVar()[i]);
                 alloutflowszero &= !aquiutils::isnegative(outflow);
             }
         }

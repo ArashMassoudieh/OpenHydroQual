@@ -49,8 +49,7 @@
       "expression": "-loss_coefficient*Storage",
       "includeinoutput": "true",
       "description": "Loss rate",
-      "ask_user": "false",
-      "delegate": "ComboBox;Sources"
+      "ask_user": "false"
     },
     "area": {
       "type": "value",

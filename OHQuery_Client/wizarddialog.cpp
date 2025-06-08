@@ -40,7 +40,10 @@ WizardDialog::WizardDialog(QWidget *parent) :
 {
 
     ui->setupUi(this);
+    ui->label_version->setText("Version: " +  version);
     this->setStyleSheet("background-color: white;");
+
+    QString version = "1.0.1";
     svgviewer = new SVGViewer(this);
     svgviewer->setObjectName(QString::fromUtf8("SVGViewer"));
     svgviewer->setMinimumSize(QSize(300, 0));

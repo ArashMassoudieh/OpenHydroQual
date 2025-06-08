@@ -29,6 +29,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+
+
 class QPushButton;
 
 class MainWindow : public QMainWindow
@@ -57,6 +59,7 @@ private:
     QTextBrowser* DownloadOutputTextBrowser = nullptr;
     QString modeltemplate;
     QLabel *errorBanner = new QLabel();
+    TimeSeriesLoader* loader = nullptr;
 public slots:
     void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
     void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved
