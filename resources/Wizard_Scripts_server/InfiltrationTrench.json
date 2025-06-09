@@ -17,7 +17,21 @@
       "entity": "source",
       "type": "Precipitation",
       "timeseries": "PrecipitationData@api"
-    }
+    },
+    {
+      "name": "Inflow rate to the infiltration trench [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Contributing impervious catchment to Catch basin@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Infiltration rate [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Soil to Groundwater@sc",
+      "expression" : "flow@sc"
+    },
   ],
   "setvals": [
     {
