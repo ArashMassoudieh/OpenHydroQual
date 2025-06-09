@@ -17,6 +17,20 @@
       "entity": "source",
       "type": "Precipitation",
       "timeseries": "PrecipitationData@api"
+    },
+        {
+      "name": "Inflow rate to the catch basin [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Ponded water to Catch basin@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Infiltration rate [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Soil to Groundwater(0)@sc",
+      "expression" : "flow@sc"
     }
   ],
   "setvals": [
@@ -164,7 +178,7 @@
       "connectionconfig": "u2d"
     },
     {
-      "name": "Ponded water to Catch basin ",
+      "name": "Ponded water to Catch basin",
       "from": "Ponded water",
       "to": "Catch basin",
       "type": "Catchment_link",
