@@ -19,7 +19,7 @@
       "timeseries": "PrecipitationData@api"
     },
         {
-      "name": "Inflow rate to the catch basin [m^3/day]",
+      "name": "Inflow rate to the permeable pavement [m^3/day]",
       "entity": "observation",
       "type": "Observation",
       "object": "Ponded water to Permeable pavement@sc",
