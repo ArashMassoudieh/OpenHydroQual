@@ -15,7 +15,7 @@
       "name": "Rain",
       "entity": "source",
       "type": "Precipitation",
-      "timeseries": "TimeSeriesFileName@sp"
+      "timeseries": "PrecipitationData@api"
     }
   ],
   "setvals": [
@@ -237,9 +237,21 @@
       "default": "0.4"
     },
     {
-      "name": "TimeSeriesFileName",
-      "delegate": "FileBrowser",
-      "question": "Precipitation file name"
+      "name": "PrecipitationData",
+      "delegate": "PrecipitationDataFromAPI|Longitude|Latitude|StartTime|EndTime",
+      "question": "Precipitation data"
+    },
+    {
+      "name": "Longitude",
+      "delegate": "ValueBox",
+      "question": "Longitude",
+      "default" : "-76.6684"
+    },
+    {
+      "name": "Latitude",
+      "delegate": "ValueBox",
+      "question": "Latitude",
+      "default": "39.1754"
     },
     {
       "name": "StartTime",
@@ -275,8 +287,24 @@
       "delegate": "ValueBox",
       "question": "Exponent β in Q=α*(h-z_0)^β",
       "default": "2.5"
+    },
+    {
+    	"name": "Soil_Type",
+    	"delegate": "CombofromAPI|https://raw.githubusercontent.com/behzadshakouri/Rosetta-Soil/main/converted_rosetta_hydraulic_parameters.json|SoilParameterMap",
+    	"question": "Soil Texture Classification",
+    	"default": "Silty Loam"
     }
   ],
+  "parameter_populate_maps": 
+  {
+  	"SoilParameterMap": {
+		"Ks": "native_soil_K_s",
+		"alpha": "native_soil_alpha",
+		"n": "native_soil_n",
+		"Theta_s": "native_soil_theta_sat",
+		"Theta_r": "native_soil_theta_res"
+  	}
+  },
   "parameter_groups": [
     {
       "name": "1_general",
@@ -284,7 +312,8 @@
       "parameters": [
         "StartTime",
         "EndTime",
-        "TimeSeriesFileName"
+        "Longitude",
+        "Latitude"
       ]
     },
     {
@@ -396,6 +425,7 @@
       "name": "native_soil_physical_parameter",
       "description": "Physical parameters of the native soil",
       "parameters": [
+        "Soil_Type",
         "native_soil_K_s",
         "native_soil_alpha",
         "native_soil_n",
