@@ -16,6 +16,34 @@
       "entity": "source",
       "type": "Precipitation",
       "timeseries": "PrecipitationData@api"
+    },
+    {
+      "name": "Overflow [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Overflow@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Infiltration rate [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Pond to Native soil@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Inflow rate to the infiltration basin [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Catchment to Pond@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Cumulative groundwater recharge [m^3]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Ground_Water@sc",
+      "expression" : "Storage-100000@sc"
     }
   ],
   "setvals": [
@@ -112,17 +140,15 @@
       "connectionconfig": "u2d"
     },
     {
-    
     "name": "Pond to Native soil",
     "from": "Pond",
     "to": "Native soil",
     "type": "surfacewater_to_soil_link",
     "connectiontype": "o2m",
     "connectionconfig": "u2d"
-    
     },
     {
-      "name": "Soil to Groundwater center",
+      "name": "Soil to Groundwater",
       "from": "Native soil",
       "to": "Ground_Water",
       "type": "soil_to_fixedhead_link",
