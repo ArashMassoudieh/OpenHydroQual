@@ -29,7 +29,7 @@
       "name": "Infiltration rate [m^3/day]",
       "entity": "observation",
       "type": "Observation",
-      "object": "Soil to Groundwater@sc",
+      "object": "Soil to Groundwater(0)@sc",
       "expression" : "flow@sc"
     }
   ],
