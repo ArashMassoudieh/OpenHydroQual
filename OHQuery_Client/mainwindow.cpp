@@ -152,8 +152,13 @@ QString socketErrorToString(QAbstractSocket::SocketError error)
 
 void MainWindow::RecieveTemplate()
 {
+    if (templateAlreadyRequested)
+        return;
+
     if (!wsClient->HasConnectedOnce())
-    {   QJsonObject ModelFile;
+    {
+        templateAlreadyRequested = true;
+        QJsonObject ModelFile;
         ModelFile["FileName"] = modeltemplate;
         QJsonObject response;
         response["Model"] = ModelFile;
@@ -161,6 +166,8 @@ void MainWindow::RecieveTemplate()
         disconnect(wsClient, &WSClient::socketError, this, &MainWindow::onError);
         connect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
     }
+    else
+        disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::RecieveTemplate);
 }
 
 void MainWindow::sendParameters(const QJsonDocument& jsonDoc)
@@ -189,7 +196,7 @@ void MainWindow::TemplateRecieved(const QJsonDocument &JsonDoc)
     wizDialog->CreateItems(&wiz);
     ui->label->hide();
     ui->horizontalLayout->addWidget(wizDialog);
-    disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::handleData);
+    disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
     connect(wizDialog, &WizardDialog::model_generate_requested, this, &MainWindow::sendParameters);
 }
 
@@ -255,6 +262,8 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
 
 void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
 {
+    if (resultsRead) return;
+    resultsRead = true;
     qDebug()<<"Processing loaded time series data ... ";
     for (const QChartView* item : chartviews)
         delete item;

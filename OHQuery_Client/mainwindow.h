@@ -60,7 +60,8 @@ private:
     QString modeltemplate;
     QLabel *errorBanner = new QLabel();
     TimeSeriesLoader* loader = nullptr;
-
+    bool templateAlreadyRequested = false;
+    bool resultsRead = false;
 public slots:
     void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
     void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved
