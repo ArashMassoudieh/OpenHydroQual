@@ -28,7 +28,7 @@
       "name": "Infiltration rate [m^3/day]",
       "entity": "observation",
       "type": "Observation",
-      "object": "Pond to Native soil@sc",
+      "object": "Pond to Native soil(0)@sc",
       "expression" : "flow@sc"
     },
     {
