@@ -22,7 +22,7 @@
       "name": "Inflow rate to the catch basin [m^3/day]",
       "entity": "observation",
       "type": "Observation",
-      "object": "Ponded water to Catch basin@sc",
+      "object": "Ponded water to Permeable pavement@sc",
       "expression" : "flow@sc"
     },
     {
