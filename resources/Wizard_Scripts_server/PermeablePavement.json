@@ -260,7 +260,8 @@
       "name": "pipe_start_invert",
       "delegate": "UnitBox",
       "question": "Invert of the start of the underdrain pipe",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.10"
     },
     {
       "name": "native_soil_n_y",
@@ -429,7 +430,8 @@
       "name": "Catch_Basin_Depth",
       "delegate": "UnitBox",
       "question": "Catch basin invert from the surface",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.10"
     },
     {
       "name": "Catch_Basin_Area",
