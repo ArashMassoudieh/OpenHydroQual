@@ -189,7 +189,8 @@
       "name": "CrestElevation",
       "delegate": "UnitBox",
       "question": "Crest elevation",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.30"
     },
     {
       "name": "alpha_overflow_Weir",

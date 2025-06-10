@@ -300,7 +300,8 @@
       "name": "CrestElevation",
       "delegate": "UnitBox",
       "question": "Crest Elevation",
-      "unit": "m;ft"
+      "unit": "m;ft",
+      "default": "0.30"
     },
     {
       "name": "alpha_overflow_wier",
