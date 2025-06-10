@@ -191,7 +191,8 @@
       "name": "pipe_start_invert",
       "delegate": "UnitBox",
       "question": "Invert of the start of the underdrain pipe",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.10"
     },
     {
       "name": "native_soil_n_y",
