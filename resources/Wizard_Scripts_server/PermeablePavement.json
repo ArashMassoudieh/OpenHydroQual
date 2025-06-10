@@ -19,10 +19,10 @@
       "timeseries": "PrecipitationData@api"
     },
         {
-      "name": "Inflow rate to the permeable pavement [m^3/day]",
+      "name": "Runoff flow [m^3/day]",
       "entity": "observation",
       "type": "Observation",
-      "object": "Ponded water to Permeable pavement@sc",
+      "object": "Catchment to Ponded water@sc",
       "expression" : "flow@sc"
     },
     {
@@ -30,6 +30,27 @@
       "entity": "observation",
       "type": "Observation",
       "object": "Soil to Groundwater(0)@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Underdrain flow rate [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Aggregate storage to Catch basin@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Overflow rate [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Ponded water to Catch basin@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Total flow rate to sewer [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Catch basin to Receiving_sewer_pipe@sc",
       "expression" : "flow@sc"
     }
   ],

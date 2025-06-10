@@ -22,7 +22,7 @@
       "name": "Inflow rate to the infiltration trench [m^3/day]",
       "entity": "observation",
       "type": "Observation",
-      "object": "Contributing impervious catchment to Catch basin@sc",
+      "object": "Contributing impervious catchment to Aggregate storage@sc",
       "expression" : "flow@sc"
     },
     {
@@ -30,6 +30,13 @@
       "entity": "observation",
       "type": "Observation",
       "object": "Soil to Groundwater(0)@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Underdrain flow [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Aggregate storage to Catch basin@sc",
       "expression" : "flow@sc"
     }
   ],
@@ -142,14 +149,6 @@
       "to": "Ground_Water",
       "type": "soil_to_fixedhead_link",
       "connectiontype": "m2o",
-      "connectionconfig": "u2d"
-    },
-    {
-      "name": "Contributing impervious catchment to Catch basin ",
-      "from": "Contributing impervious catchment",
-      "to": "Catch basin",
-      "type": "Catchment_link",
-      "connectiontype": "o2o",
       "connectionconfig": "u2d"
     },
     {
