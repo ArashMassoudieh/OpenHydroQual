@@ -346,14 +346,16 @@
       "name": "Catch_Basin_Depth",
       "delegate": "UnitBox",
       "question": "The catch basin invert from the surface",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.10"
     },
     {
       "name": "Catch_Basin_Area",
       "delegate": "UnitBox",
       "question": "The base area of the catch basin",
       "default": "1",
-      "unit": "m~^2"
+      "unit": "m~^2",
+      "default": "1"
     },
         {
     	"name": "Soil_Type",
