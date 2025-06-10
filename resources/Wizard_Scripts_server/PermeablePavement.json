@@ -18,7 +18,7 @@
       "type": "Precipitation",
       "timeseries": "PrecipitationData@api"
     },
-        {
+    {
       "name": "Runoff flow [m^3/day]",
       "entity": "observation",
       "type": "Observation",
