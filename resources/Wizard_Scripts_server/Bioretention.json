@@ -491,13 +491,13 @@
       "name": "eng_soil_L",
       "delegate": "ValueBox",
       "question": "Engineered soil Van Genuchten L parameter",
-      "default": "-0.93"
+      "default": "0.50"
     },
     {
       "name": "native_soil_L",
       "delegate": "ValueBox",
       "question": "Native soil Van Genuchten L parameter",
-      "default": "-0.93"
+      "default": "0.50"
     }
   ],
   "parameter_populate_maps": 
