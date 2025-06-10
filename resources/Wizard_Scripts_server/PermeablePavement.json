@@ -8,7 +8,7 @@
     "main_components.json",
     "Pond_Plugin.json",
     "groundwater.json",
-    "unsaturated_soil.json",
+    "unsaturated_soil_revised_model.json",
     "Sewer_system.json"
   ],
   "entities": [
@@ -443,6 +443,12 @@
     	"delegate": "CombofromAPI|https://raw.githubusercontent.com/behzadshakouri/Rosetta-Soil/main/converted_rosetta_hydraulic_parameters.json|SoilParameterMap",
     	"question": "Soil Texture Classification",
     	"default": "Silty Loam"
+    },
+    {
+      "name": "native_soil_L",
+      "delegate": "ValueBox",
+      "question": "Native soil Van Genuchten L parameter",
+      "default": "0.50"
     }
   ],
       "parameter_populate_maps": 
@@ -452,7 +458,8 @@
 		"alpha": "native_soil_alpha",
 		"n": "native_soil_n",
 		"Theta_s": "native_soil_theta_sat",
-		"Theta_r": "native_soil_theta_res"
+		"Theta_r": "native_soil_theta_res",
+		"L": "native_soil_L"
   	}
   },
   "parameter_groups": [
@@ -619,7 +626,8 @@
         "native_soil_alpha",
         "native_soil_n",
         "native_soil_theta_res",
-        "native_soil_theta_sat"
+        "native_soil_theta_sat",
+        "native_soil_L"
        ],
         "criteria": [
         {
