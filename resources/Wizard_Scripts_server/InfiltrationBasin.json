@@ -126,6 +126,7 @@
       "theta": "0.2",
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
+      "L": "native_soil_L",
       "x": "1000",
       "y": "500+j*250"
     }
