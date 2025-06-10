@@ -130,6 +130,7 @@
       "theta": "0.2",
       "theta_res": "eng_soil_theta_res",
       "theta_sat": "eng_soil_theta_sat",
+      "L": "eng_soil_L",
       "x": "1000",
       "y": "900+j*250"
     },
@@ -156,6 +157,7 @@
       "theta": "0.2",
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
+      "L": "native_soil_L",
       "x": "1000-(i+1)*250",
       "y": "900+j*250"
     },
@@ -182,6 +184,7 @@
       "theta": "0.2",
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
+      "L": "native_soil_L",
       "x": "1000+(i+1)*250",
       "y": "900+j*250"
     },
@@ -206,6 +209,7 @@
       "theta": "0.2",
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
+      "L": "native_soil_L",
       "x": "1000",
       "y": "900+(eng_soil_n_y+j)*250"
     },
@@ -232,6 +236,7 @@
       "theta": "0.2",
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
+      "L": "native_soil_L",
       "x": "1000-(i+1)*250",
       "y": "900+(eng_soil_n_y+j)*250"
     },
@@ -258,6 +263,7 @@
       "theta": "0.2",
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
+      "L": "native_soil_L",
       "x": "1000+(i+1)*250",
       "y": "900+(eng_soil_n_y+j)*250"
     }

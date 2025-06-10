@@ -300,7 +300,7 @@
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
-      "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
+      "expression": "K_sat*_max(Se,0.00001)^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
       "ask_user": "false"
     },
