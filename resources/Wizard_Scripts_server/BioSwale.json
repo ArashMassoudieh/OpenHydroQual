@@ -405,7 +405,8 @@
       "name": "length",
       "delegate": "UnitBox",
       "question": "The total length of the bioswale",
-      "unit": "m"
+      "unit": "m",
+      "default": "1"
     },
     {
       "name": "depth_to_groundwater",
@@ -508,13 +509,15 @@
       "name": "eng_soil_height",
       "delegate": "UnitBox",
       "question": "Depth of the engineered soil medium",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.20"
     },
     {
       "name": "eng_soil_width",
       "delegate": "UnitBox",
       "question": "The total width of the bioswale engineered soil",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.30"
     },
     {
       "name": "PrecipitationData",
