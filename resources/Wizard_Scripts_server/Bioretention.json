@@ -6,7 +6,7 @@
   "diagram": "Bioretention.svg",
   "addtemplate": [
     "main_components.json",
-    "unsaturated_soil.json",
+    "unsaturated_soil_revised_model.json",
     "Pond_Plugin.json",
     "Sewer_system.json"
   ],
@@ -486,6 +486,18 @@
     	"delegate": "CombofromAPI|https://raw.githubusercontent.com/behzadshakouri/Rosetta-Soil/main/converted_rosetta_hydraulic_parameters.json|EngineeredSoilParameterMap",
     	"question": "Soil Texture Classification",
     	"default": "Sand"
+    },
+    {
+      "name": "eng_soil_L",
+      "delegate": "ValueBox",
+      "question": "Engineered soil Van Genuchten L parameter",
+      "default": "-0.93"
+    },
+    {
+      "name": "native_soil_L",
+      "delegate": "ValueBox",
+      "question": "Native soil Van Genuchten L parameter",
+      "default": "-0.93"
     }
   ],
   "parameter_populate_maps": 
@@ -495,14 +507,16 @@
   		"alpha": "native_soil_alpha",
   		"n": "native_soil_n",
   		"Theta_s": "native_soil_theta_sat",
-        	"Theta_r": "native_soil_theta_res"
+        	"Theta_r": "native_soil_theta_res",
+        	"L": "native_soil_L"
   	},
   	"EngineeredSoilParameterMap": {
   		"Ks": "eng_soil_K_s",
   		"alpha": "eng_soil_alpha",
   		"n": "eng_soil_n",
   		"Theta_s": "eng_soil_theta_sat",
-        	"Theta_r": "eng_soil_theta_res"
+        	"Theta_r": "eng_soil_theta_res",
+        	"L": "eng_soil_L"
   	}
   },
   "parameter_groups": [
@@ -600,7 +614,8 @@
         "eng_soil_alpha",
         "eng_soil_n",
         "eng_soil_theta_sat",
-        "eng_soil_theta_res"
+        "eng_soil_theta_res",
+        "eng_soil_L"
       ]
     },
     {
@@ -612,7 +627,8 @@
         "native_soil_alpha",
         "native_soil_n",
         "native_soil_theta_sat",
-        "native_soil_theta_res"
+        "native_soil_theta_res",
+        "native_soil_L"
       ]
     }
   ]
