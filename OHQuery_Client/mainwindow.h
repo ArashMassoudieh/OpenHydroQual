@@ -76,5 +76,6 @@ public slots:
 
 QDateTime excelToQDateTime(double excelDate);
 QString socketErrorToString(QAbstractSocket::SocketError error);
+QString convertToSuperscript(const QString& input);
 
 #endif // MAINWINDOW_H

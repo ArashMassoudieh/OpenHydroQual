@@ -285,7 +285,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
 
         QChart* chart = new QChart();
         chart->addSeries(series);
-        chart->setTitle(key);
+        chart->setTitle(convertToSuperscript(key));
 
         // X-axis as DateTimeAxis
         QDateTimeAxis* axisX = new QDateTimeAxis;
@@ -296,7 +296,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
 
         // Y-axis
         QValueAxis* axisY = new QValueAxis;
-        axisY->setTitleText(key);
+        axisY->setTitleText(convertToSuperscript(key));
         chart->addAxis(axisY, Qt::AlignLeft);
         series->attachAxis(axisY);
 
@@ -304,7 +304,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
         chartView->setRenderHint(QPainter::Antialiasing);
         chartviews[key] = chartView;
 
-        ui->chartTabs->addTab(chartView, key);
+        ui->chartTabs->addTab(chartView, convertToSuperscript(key));
     }
 
     if (!DownloadModelButton)
@@ -472,4 +472,53 @@ void MainWindow::onDownloadModel()
     QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
     downloadFileAndTriggerBrowserSave(QUrl("https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/System.ohq"),"model.ohq");
 #endif
+}
+
+QString convertToSuperscript(const QString& input) {
+    // Superscript character map
+    static const QMap<QChar, QChar> superscriptMap = {
+        {'0', QChar(0x2070)},
+        {'1', QChar(0x00B9)},
+        {'2', QChar(0x00B2)},
+        {'3', QChar(0x00B3)},
+        {'4', QChar(0x2074)},
+        {'5', QChar(0x2075)},
+        {'6', QChar(0x2076)},
+        {'7', QChar(0x2077)},
+        {'8', QChar(0x2078)},
+        {'9', QChar(0x2079)},
+        {'+', QChar(0x207A)},
+        {'-', QChar(0x207B)},
+        {'=', QChar(0x207C)},
+        {'(', QChar(0x207D)},
+        {')', QChar(0x207E)},
+        {'n', QChar(0x207F)}
+        // Add more as needed
+    };
+
+    QString result;
+    bool inSuperscript = false;
+
+    for (int i = 0; i < input.length(); ++i) {
+        QChar current = input[i];
+
+        if (current == '^') {
+            inSuperscript = true;
+            continue;
+        }
+
+        if (inSuperscript) {
+            if (superscriptMap.contains(current)) {
+                result.append(superscriptMap[current]);
+            } else {
+                // If no superscript equivalent, append as-is or skip
+                result.append(current);
+            }
+            inSuperscript = false;
+        } else {
+            result.append(current);
+        }
+    }
+
+    return result;
 }
