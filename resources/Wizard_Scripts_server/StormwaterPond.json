@@ -110,7 +110,7 @@
       "name": "Overflow",
       "from": "Pond",
       "to": "Fixed_head",
-      "type": "Weir",
+      "type": "wier",
       "connectiontype": "o2o",
       "connectionconfig": "u2d",
       "crest_elevation": "CrestElevation",
@@ -189,13 +189,14 @@
       "name": "CrestElevation",
       "delegate": "UnitBox",
       "question": "Crest elevation",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.30"
     },
     {
       "name": "alpha_overflow_Weir",
       "delegate": "ValueBox",
       "question": "Coefficient α in Q=α*(h-z_0)^β",
-      "default": "1"
+      "default": "1000"
     },
     {
       "name": "beta_overflow_Weir",

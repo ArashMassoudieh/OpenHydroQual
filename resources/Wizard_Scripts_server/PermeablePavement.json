@@ -8,7 +8,7 @@
     "main_components.json",
     "Pond_Plugin.json",
     "groundwater.json",
-    "unsaturated_soil.json",
+    "unsaturated_soil_revised_model.json",
     "Sewer_system.json"
   ],
   "entities": [
@@ -16,7 +16,42 @@
       "name": "Rain",
       "entity": "source",
       "type": "Precipitation",
-      "timeseries": "TimeSeriesFileName@sp"
+      "timeseries": "PrecipitationData@api"
+    },
+    {
+      "name": "Runoff flow [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Catchment to Ponded water@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Infiltration rate [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Soil to Groundwater(0)@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Underdrain flow rate [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Aggregate storage to Catch basin@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Overflow rate [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Ponded water to Catch basin@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Total flow rate to sewer [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Catch basin to Receiving_sewer_pipe@sc",
+      "expression" : "flow@sc"
     }
   ],
   "setvals": [
@@ -134,6 +169,7 @@
       "theta": "0.2",
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
+      "L": "native_soil_L",
       "x": "1000",
       "y": "300+j*250"
     }
@@ -164,7 +200,7 @@
       "connectionconfig": "u2d"
     },
     {
-      "name": "Ponded water to Catch basin ",
+      "name": "Ponded water to Catch basin",
       "from": "Ponded water",
       "to": "Catch basin",
       "type": "Catchment_link",
@@ -225,7 +261,8 @@
       "name": "pipe_start_invert",
       "delegate": "UnitBox",
       "question": "Invert of the start of the underdrain pipe",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.10"
     },
     {
       "name": "native_soil_n_y",
@@ -284,9 +321,21 @@
       "unit": "m~^2"
     },
     {
-      "name": "TimeSeriesFileName",
-      "delegate": "FileBrowser",
-      "question": "Precipitation file name"
+      "name": "PrecipitationData",
+      "delegate": "PrecipitationDataFromAPI|Longitude|Latitude|StartTime|EndTime",
+      "question": "Precipitation data"
+    },
+    {
+      "name": "Longitude",
+      "delegate": "ValueBox",
+      "question": "Longitude",
+      "default" : "-76.6684"
+    },
+    {
+      "name": "Latitude",
+      "delegate": "ValueBox",
+      "question": "Latitude",
+      "default": "39.1754"
     },
     {
       "name": "StartTime",
@@ -382,7 +431,8 @@
       "name": "Catch_Basin_Depth",
       "delegate": "UnitBox",
       "question": "Catch basin invert from the surface",
-      "unit": "m"
+      "unit": "m",
+      "default": "0.10"
     },
     {
       "name": "Catch_Basin_Area",
@@ -390,8 +440,31 @@
       "question": "The base area of the catch basin",
       "default": "1",
       "unit": "m~^2"
+    },
+    {
+    	"name": "Soil_Type",
+    	"delegate": "CombofromAPI|https://raw.githubusercontent.com/behzadshakouri/Rosetta-Soil/main/converted_rosetta_hydraulic_parameters.json|SoilParameterMap",
+    	"question": "Soil Texture Classification",
+    	"default": "Silty Loam"
+    },
+    {
+      "name": "native_soil_L",
+      "delegate": "ValueBox",
+      "question": "Native soil Van Genuchten L parameter",
+      "default": "0.50"
     }
   ],
+      "parameter_populate_maps": 
+  {
+  	"SoilParameterMap": {
+		"Ks": "native_soil_K_s",
+		"alpha": "native_soil_alpha",
+		"n": "native_soil_n",
+		"Theta_s": "native_soil_theta_sat",
+		"Theta_r": "native_soil_theta_res",
+		"L": "native_soil_L"
+  	}
+  },
   "parameter_groups": [
     {
       "name": "1_general",
@@ -399,7 +472,8 @@
       "parameters": [
         "StartTime",
         "EndTime",
-        "TimeSeriesFileName"
+        "Longitude",
+        "Latitude"
       ]
     },
     {
@@ -550,11 +624,13 @@
       "name": "4_Native Soil",
       "description": "Native soil properties",
       "parameters": [
+        "Soil_Type",
         "native_soil_K_s",
         "native_soil_alpha",
         "native_soil_n",
         "native_soil_theta_res",
-        "native_soil_theta_sat"
+        "native_soil_theta_sat",
+        "native_soil_L"
        ],
         "criteria": [
         {

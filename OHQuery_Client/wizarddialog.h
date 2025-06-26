@@ -66,13 +66,16 @@ private:
     QGraphicsSvgItem *svgitem = nullptr;
     int currenttabindex=0;
     SVGViewer *svgviewer = nullptr;
-    RosettaFetcher *rosettaFetcher;
+    QMap<QString, RosettaFetcher*> rosettaFetchers;
+    QString version = "1.0.6";
 public slots:
     void on_next_clicked();
     void on_previous_clicked();
     void on_TabChanged();
     void open_html();
     void onDataReceived(QComboBox* editor);
+    void onComboChanged(QComboBox* editor, const QString& text);
+
 
 signals:
     void model_generate_requested(const QJsonDocument &jsondoc);

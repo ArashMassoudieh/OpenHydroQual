@@ -19,17 +19,19 @@
 
 #include <QMainWindow>
 #include <QListWidgetItem>
+#include "qlabel.h"
 #include "wsclient.h"
 #include <QtCharts/QChartView>
 #include <QTextBrowser>
+#include "timeseriesloader.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class QPushButton;
 
-using TimeSeriesMap = QMap<QString, TimeSeries>;
+
+class QPushButton;
 
 class MainWindow : public QMainWindow
 {
@@ -41,6 +43,7 @@ public:
     void RecieveTemplate();
     void SetModelTemplate(const QString &jsonfile) {modeltemplate = jsonfile;}
     void PopulatePrecipTextBrowser();
+    void showErrorWindow(const QString& message);
 private:
     Ui::MainWindow *ui;
     void PopulateListOfWizards();
@@ -53,16 +56,26 @@ private:
     QMap<QString,QString> DownloadedTimeSeriesData;
     QPushButton* DownloadModelButton = nullptr;
     QTextBrowser* DownloadPrecipTextBrowser = nullptr;
+    QTextBrowser* DownloadOutputTextBrowser = nullptr;
     QString modeltemplate;
+    QLabel *errorBanner = new QLabel();
+    TimeSeriesLoader* loader = nullptr;
+    bool templateAlreadyRequested = false;
+    bool resultsRead = false;
 public slots:
     void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
     void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved
     void onError(QAbstractSocket::SocketError error);
     void onDownloadModel();
+    void handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap);
+
+
+
 
 };
 
 QDateTime excelToQDateTime(double excelDate);
 QString socketErrorToString(QAbstractSocket::SocketError error);
+QString convertToSuperscript(const QString& input);
 
 #endif // MAINWINDOW_H

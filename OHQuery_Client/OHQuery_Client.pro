@@ -5,8 +5,10 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 
 DEFINES += HTTPs
-DEFINES += LOCALHOST
+#DEFINES += LOCALHOST
 CONFIG += c++17
+
+QMAKE_CXXFLAGS += -Wno-deprecated-declarations -Wno-unused-parameter
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -32,10 +34,12 @@ SOURCES += \
     Wizard_Argument.cpp \
     Wizard_Entity.cpp \
     Wizard_Script.cpp \
+    filechecker.cpp \
     main.cpp \
     mainwindow.cpp \
     rosettafetcher.cpp \
     svgviewer.cpp \
+    timeseriesloader.cpp \
     wizard_assigned_value.cpp \
     wizardcriteria.cpp \
     wizarddialog.cpp \
@@ -55,9 +59,11 @@ HEADERS += \
     Wizard_Argument.h \
     Wizard_Entity.h \
     Wizard_Script.h \
+    filechecker.h \
     mainwindow.h \
     rosettafetcher.h \
     svgviewer.h \
+    timeseriesloader.h \
     wizard_assigned_value.h \
     wizardcriteria.h \
     wizarddialog.h \

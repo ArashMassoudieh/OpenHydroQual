@@ -32,6 +32,18 @@ void RosettaFetcher::onReplyFinished(QNetworkReply* reply)
     QJsonDocument doc = QJsonDocument::fromJson(readdata, &parseError);
 
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        int errPos = parseError.offset;
+
+        // Display context around error
+        int contextSize = 40;
+        int start = std::max(0, errPos - contextSize);
+        int end = std::min(int(readdata.size()), errPos + contextSize);
+        QByteArray context = readdata.mid(start, end - start);
+
+        qWarning() << "Failed to parse JSON at offset:" << errPos;
+        qWarning() << "Error message:" << parseError.errorString();
+        qWarning() << "Context:" << context;
+
         emit errorOccurred("Failed to parse JSON: " + parseError.errorString());
         return;
     }
@@ -44,6 +56,7 @@ void RosettaFetcher::onReplyFinished(QNetworkReply* reply)
 
 QMap<QString, QMap<QString, double>> RosettaFetcher::parseJsonToMap(const QJsonObject& rootObj)
 {
+    QMap<QString, QMap<QString, double>> result;
     for (auto it = rootObj.begin(); it != rootObj.end(); ++it)
     {
         QString textureClass = it.key();

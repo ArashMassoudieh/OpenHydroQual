@@ -40,7 +40,9 @@ WizardDialog::WizardDialog(QWidget *parent) :
 {
 
     ui->setupUi(this);
+    ui->label_version->setText("Version: " +  version);
     this->setStyleSheet("background-color: white;");
+
     svgviewer = new SVGViewer(this);
     svgviewer->setObjectName(QString::fromUtf8("SVGViewer"));
     svgviewer->setMinimumSize(QSize(300, 0));
@@ -202,11 +204,15 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
                 this_tab.formLayout->addRow(label, Editor);
                 parameter->SetEntryItem(Editor);
             }
-            else if (parameter->Delegate() == "CombofromAPI")
+            else if (parameter->Delegate().contains("CombofromAPI"))
             {
                 QComboBox* Editor = new QComboBox(this_tab.scrollAreaWidgetContents);
                 Editor->setObjectName(paramgroup->Parameter(i) + "_edit");
-                rosettaFetcher = new RosettaFetcher();
+                RosettaFetcher *rosettaFetcher = new RosettaFetcher();
+                rosettaFetchers[parameter->Name()] = rosettaFetcher;
+                Editor->setProperty("SoilMap",parameter->Delegate().split("|").last());
+                rosettaFetcher->fetchJson(QUrl(parameter->Delegate().split("|")[1]));
+                Editor->setProperty("Parameter",parameter->Name());
                 connect(rosettaFetcher, &RosettaFetcher::dataReady, this, [this, Editor]() {
                     onDataReceived(Editor);
                 });
@@ -218,8 +224,42 @@ void WizardDialog::PopulateTab(WizardParameterGroup *paramgroup)
 }
 
 void WizardDialog::onDataReceived(QComboBox* editor) {
+    QString parameter = SelectedWizardScript.GetWizardParameters()[editor->property("Parameter").toString()].Name();
     editor->clear();
-    editor->addItems(rosettaFetcher->getTextureClasses());
+    editor->addItems(rosettaFetchers[parameter]->getTextureClasses());
+    editor->setCurrentText(SelectedWizardScript.GetWizardParameters()[editor->property("Parameter").toString()].Default());
+    connect(editor, &QComboBox::currentTextChanged, this,
+            [this, editor](const QString &text) {
+                onComboChanged(editor, text);
+            });
+    onComboChanged(editor,editor->currentText());
+}
+
+void WizardDialog::onComboChanged(QComboBox* editor, const QString& text)
+{
+    QString parameter = SelectedWizardScript.GetWizardParameters()[editor->property("Parameter").toString()].Name();
+    QMap<QString, double> parametervalues = rosettaFetchers[parameter]->getData()[text];
+    QMap<QString, QString> parameter_map = SelectedWizardScript.GetParameterPopulateMaps(editor->property("SoilMap").toString()) ;
+    for (QMap<QString,double>::Iterator it = parametervalues.begin(); it != parametervalues.end(); ++it) {
+        qDebug() << "Key:" << it.key() << "Value:" << it.value();
+
+        if (parameter_map.contains(it.key()))
+        {
+            WizardParameter *entry_param = &SelectedWizardScript.GetWizardParameters()[parameter_map[it.key()]];
+            if (entry_param->Delegate() == "ValueBox")
+            {
+                static_cast<QLineEdit*>(entry_param->EntryItem())->setText(QString::number(it.value()));
+            }
+            else if (entry_param->Delegate() == "UnitBox")
+            {
+                static_cast<UnitTextBox3*>(entry_param->EntryItem())->setText(QString::number(it.value()));
+            }
+
+        }
+
+    }
+
+
 }
 
 void WizardDialog::on_next_clicked()
@@ -240,33 +280,36 @@ void WizardDialog::on_previous_clicked()
     on_TabChanged();
 }
 
-void  WizardDialog::on_TabChanged()
+void WizardDialog::on_TabChanged()
 {
-    if (currenttabindex==ui->tabWidget->currentIndex())
+    if (currenttabindex == ui->tabWidget->currentIndex())
         return;
+
     SelectedWizardScript.AssignParameterValues();
     QStringList Errors = SelectedWizardScript.GetWizardParameterGroups()[ui->tabWidget->widget(currenttabindex)->objectName()].CheckCriteria(&SelectedWizardScript.GetWizardParameters());
-    if (Errors.count()>0)
-    {   QMessageBox *msgBox = new QMessageBox(this);
-        msgBox->setIcon(QMessageBox::Information);
-        msgBox->setWindowTitle("Invalid parameter value!");
-        msgBox->setText(Errors[0]);
-        msgBox->setStandardButtons(QMessageBox::Ok);
-        msgBox->open();
-        ui->tabWidget->setCurrentIndex(currenttabindex);
+
+    if (!Errors.isEmpty())
+    {
+        auto *msgBox = new QMessageBox(QMessageBox::Information,
+                                       "Invalid parameter value!",
+                                       Errors[0],
+                                       QMessageBox::Ok,
+                                       this);
+
+        connect(msgBox, &QMessageBox::finished, this, [=](int){
+            ui->tabWidget->setCurrentIndex(currenttabindex);  // reset only after user acknowledges
+            msgBox->deleteLater();
+        });
+
+        msgBox->open();  // asynchronous and safe in WebAssembly
         return;
     }
 
-    if (ui->tabWidget->currentIndex()==0)
-        ui->Previous->setEnabled(false);
-    else
-        ui->Previous->setEnabled(true);
-    if (ui->tabWidget->currentIndex()==ui->tabWidget->count()-1)
-        ui->Next->setText("Create Model");
-    else
-        ui->Next->setText("Next");
+    ui->Previous->setEnabled(ui->tabWidget->currentIndex() != 0);
+    ui->Next->setText(ui->tabWidget->currentIndex() == ui->tabWidget->count() - 1 ? "Create Model" : "Next");
     currenttabindex = ui->tabWidget->currentIndex();
 }
+
 
 bool  WizardDialog::Verify()
 {
@@ -288,7 +331,9 @@ bool  WizardDialog::Verify()
 void WizardDialog::GenerateModel()
 {
     if (!Verify())
-        emit QJsonDocument();
+    {   emit model_generate_requested(QJsonDocument());
+        return;
+    }
 
     QJsonObject all_parameters;
     SelectedWizardScript.AssignParameterValues();

@@ -458,7 +458,7 @@ QString Wizard_Argument::Calc(QMap<QString, WizardParameter>* params)
         if (delegate.contains("PrecipitationDataFromAPI"))
         {   CPrecipitation precipitationdata = weatherretriever.RetrivePrecipOpenMeteo(start_date, end_date, location);
             wizard_entity->GetWizardScript()->AppendTimeSeries(this->wizard_entity->Name()+"-"+QString::fromStdString(parameter),this->wizard_entity->Name() + "_" + QString::fromStdString(parameter) +"_" + QString::number(x_location) + "_" + QString::number(y_location) + ".csv");
-            FileName = WorkingDirectory() + "/" + this->wizard_entity->Name() + QString::number(x_location) + "_" + QString::number(y_location) + ".csv";
+            FileName = WorkingDirectory() + "/" + this->wizard_entity->Name() + "_" + QString::fromStdString(parameter) +"_" + QString::number(x_location) + "_" + QString::number(y_location) + ".csv";
             precipitationdata.writefile(FileName.toStdString());
         }
         else if (delegate.contains("TemperatureDataFromAPI"))

@@ -16,6 +16,7 @@ public:
     void fetchJson(const QUrl& url);
     QMap<QString, QMap<QString, double>> parseJsonToMap(const QJsonObject& data);
     QMap<QString, QMap<QString, double>> getData() {return data;}
+    QStringList getTextureClasses() const {return data.keys();}
 signals:
     void dataReady(const QStringList& keys);
     void errorOccurred(const QString& message);

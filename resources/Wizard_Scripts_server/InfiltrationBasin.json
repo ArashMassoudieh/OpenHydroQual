@@ -6,7 +6,7 @@
   "diagram": "InfiltrationBasin.svg",
   "addtemplate": [
     "main_components.json",
-    "unsaturated_soil.json",
+    "unsaturated_soil_revised_model.json",
     "Pond_Plugin.json",
     "Sewer_system.json"
   ],
@@ -15,7 +15,35 @@
       "name": "Rain",
       "entity": "source",
       "type": "Precipitation",
-      "timeseries": "TimeSeriesFileName@sp"
+      "timeseries": "PrecipitationData@api"
+    },
+    {
+      "name": "Overflow [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Overflow@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Infiltration rate [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Pond to Native soil(0)@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Inflow rate to the infiltration basin [m^3/day]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Catchment to Pond@sc",
+      "expression" : "flow@sc"
+    },
+    {
+      "name": "Cumulative groundwater recharge [m^3]",
+      "entity": "observation",
+      "type": "Observation",
+      "object": "Ground_Water@sc",
+      "expression" : "Storage-100000@sc"
     }
   ],
   "setvals": [
@@ -98,6 +126,7 @@
       "theta": "0.2",
       "theta_res": "native_soil_theta_res",
       "theta_sat": "native_soil_theta_sat",
+      "L": "native_soil_L",
       "x": "1000",
       "y": "500+j*250"
     }
@@ -112,17 +141,15 @@
       "connectionconfig": "u2d"
     },
     {
-    
     "name": "Pond to Native soil",
     "from": "Pond",
     "to": "Native soil",
     "type": "surfacewater_to_soil_link",
     "connectiontype": "o2m",
     "connectionconfig": "u2d"
-    
     },
     {
-      "name": "Soil to Groundwater center",
+      "name": "Soil to Groundwater",
       "from": "Native soil",
       "to": "Ground_Water",
       "type": "soil_to_fixedhead_link",
@@ -237,9 +264,21 @@
       "default": "0.4"
     },
     {
-      "name": "TimeSeriesFileName",
-      "delegate": "FileBrowser",
-      "question": "Precipitation file name"
+      "name": "PrecipitationData",
+      "delegate": "PrecipitationDataFromAPI|Longitude|Latitude|StartTime|EndTime",
+      "question": "Precipitation data"
+    },
+    {
+      "name": "Longitude",
+      "delegate": "ValueBox",
+      "question": "Longitude",
+      "default" : "-76.6684"
+    },
+    {
+      "name": "Latitude",
+      "delegate": "ValueBox",
+      "question": "Latitude",
+      "default": "39.1754"
     },
     {
       "name": "StartTime",
@@ -262,7 +301,8 @@
       "name": "CrestElevation",
       "delegate": "UnitBox",
       "question": "Crest Elevation",
-      "unit": "m;ft"
+      "unit": "m;ft",
+      "default": "0.30"
     },
     {
       "name": "alpha_overflow_wier",
@@ -275,8 +315,31 @@
       "delegate": "ValueBox",
       "question": "Exponent β in Q=α*(h-z_0)^β",
       "default": "2.5"
+    },
+    {
+    	"name": "Soil_Type",
+    	"delegate": "CombofromAPI|https://raw.githubusercontent.com/behzadshakouri/Rosetta-Soil/main/converted_rosetta_hydraulic_parameters.json|SoilParameterMap",
+    	"question": "Soil Texture Classification",
+    	"default": "Silty Loam"
+    },
+    {
+      "name": "native_soil_L",
+      "delegate": "ValueBox",
+      "question": "Native soil Van Genuchten L parameter",
+      "default": "0.50"
     }
   ],
+  "parameter_populate_maps": 
+  {
+  	"SoilParameterMap": {
+		"Ks": "native_soil_K_s",
+		"alpha": "native_soil_alpha",
+		"n": "native_soil_n",
+		"Theta_s": "native_soil_theta_sat",
+		"Theta_r": "native_soil_theta_res",
+		"L": "native_soil_L"
+  	}
+  },
   "parameter_groups": [
     {
       "name": "1_general",
@@ -284,7 +347,8 @@
       "parameters": [
         "StartTime",
         "EndTime",
-        "TimeSeriesFileName"
+        "Longitude",
+        "Latitude"
       ]
     },
     {
@@ -396,11 +460,13 @@
       "name": "native_soil_physical_parameter",
       "description": "Physical parameters of the native soil",
       "parameters": [
+        "Soil_Type",
         "native_soil_K_s",
         "native_soil_alpha",
         "native_soil_n",
         "native_soil_theta_sat",
-        "native_soil_theta_res"
+        "native_soil_theta_res",
+        "native_soil_L"
       ],
         "criteria": [
         {
