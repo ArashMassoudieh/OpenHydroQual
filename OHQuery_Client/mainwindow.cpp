@@ -57,10 +57,47 @@ MainWindow::MainWindow(QWidget *parent)
         font-size: 14px;
     }
 
-    QLineEdit, QTextEdit, QComboBox, QPushButton {
-        padding: 6px;
+    QWidget {
+        background-color: white;
     }
-    )");
+
+    QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QPushButton, QDateEdit {
+        padding: 6px;
+        color: black;
+        background-color: white;
+        border: 1px solid #ccc;
+    }
+
+    QLabel {
+        color: black;
+    }
+
+    QTabWidget::pane {
+        border: 1px solid #ccc;
+        background-color: white;
+    }
+
+    QTabBar::tab {
+        background: #e0e0e0;
+        color: black;
+        padding: 6px 12px;
+        border: 1px solid #bbb;
+        border-bottom: none;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    QTabBar::tab:selected {
+        background: white;
+        border-color: #aaa;
+        font-weight: bold;
+    }
+
+    QTabBar::tab:hover {
+        background: #f0f0f0;
+    }
+)");
+
 #ifdef LOCALHOST
     QUrl url("ws://localhost:12345");  // Change the port to match your server
 #else

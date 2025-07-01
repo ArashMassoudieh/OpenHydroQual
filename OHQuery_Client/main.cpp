@@ -53,6 +53,28 @@ int main(int argc, char *argv[])
         }
     }
 
+    qApp->setStyleSheet(R"(
+    QWidget {
+        color: black;
+        background-color: white;
+    }
+
+    QLineEdit, QTextEdit, QPlainTextEdit {
+        color: black;
+        background-color: white;
+        border: 1px solid #ccc;
+    }
+
+    QPushButton {
+        background-color: #f0f0f0;
+        color: black;
+    }
+
+    QLabel {
+        color: black;
+    }
+    )");
+
     MainWindow *w = new MainWindow();
 
 #ifdef Q_OS_WASM
