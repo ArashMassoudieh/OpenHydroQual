@@ -63,7 +63,9 @@ class Objective_Function: public Object
         void SetOutputItem(const string& s) { outputitem = s; }
         string GetOutputItem() { return outputitem; }
         vector<string> ItemswithOutput();
-        double GetObjectiveValue() {return objective_value;}
+        double GetObjectiveValue() {
+            return objective_value;
+        }
     protected:
 
     private:

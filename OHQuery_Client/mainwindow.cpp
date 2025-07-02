@@ -61,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
         background-color: white;
     }
 
-    QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QPushButton, QDateEdit {
+    QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QPushButton, QDateEdit, QSpinBox {
         padding: 6px;
         color: black;
         background-color: white;
@@ -288,13 +288,37 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
     }
     qDebug()<<"Attempting to download the results ...";
     loader = new TimeSeriesLoader(this);
+    scalarloader = new ScalarLoader(this);
     QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
     QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/output.json";
+    QString url_aggregate = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/scalar_values.json";
     qDebug()<<"Loading data from " + url;
     loader->load(QUrl(url));
+    scalarloader->load(QUrl(url_aggregate));
     connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
+    connect(scalarloader, &ScalarLoader::scalarsLoaded, this, &MainWindow::handleLoadedScalar);
     connect(loader, &TimeSeriesLoader::loadFailed, this, &MainWindow::showErrorWindow);
 
+}
+
+void MainWindow::handleLoadedScalar(const QMap<QString, double> data)
+{
+    if (!CalculatedValuesTextBroser)
+    {
+        CalculatedValuesTextBroser = new QTextBrowser(this);
+        CalculatedValuesTextBroser->setText("Aggregate results");
+        ui->horizontalLayout_buttons->addWidget(CalculatedValuesTextBroser);
+    }
+    QString content = "<b>Aggregate Results</b><br><br>";
+
+    for (auto it = data.constBegin(); it != data.constEnd(); ++it)
+    {
+        content += QString("<div style='margin-bottom:4px;'>%1: <b>%2</b></div>")
+        .arg(it.key())
+            .arg(it.value(), 0, 'f', 3); // 3 decimal places
+    }
+
+    CalculatedValuesTextBroser->setHtml(content);
 }
 
 void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
@@ -351,7 +375,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
         DownloadModelButton->setText("Download the OpenHydroQual Model");
 
         DownloadPrecipTextBrowser->setText("Download timeseries data");
-        DownloadOutputTextBrowser->setText("Download timeseries data");
+        DownloadOutputTextBrowser->setText("Download model results");
         ui->horizontalLayout_buttons->addWidget(DownloadModelButton);
         ui->horizontalLayout_buttons->addWidget(DownloadPrecipTextBrowser);
         ui->horizontalLayout_buttons->addWidget(DownloadOutputTextBrowser);

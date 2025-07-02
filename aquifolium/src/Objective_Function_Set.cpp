@@ -153,7 +153,7 @@ double Objective_Function_Set::EvaluateExpression(const std::string& expression)
         if (!func)
             throw std::runtime_error("Objective function \"" + varname + "\" not found.");
 
-        double value = func->GetObjectiveValue();
+        double value = func->GetObjective();
         result += match.prefix().str(); // Text before the match
         result += std::to_string(value); // Replace with numeric value
         searchStart = match.suffix().first; // Continue after the match

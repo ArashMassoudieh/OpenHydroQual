@@ -184,10 +184,11 @@ WizardScript::WizardScript(const QString& filename)
             }
             if (it.key() == "scalar_values")
             {
-                QJsonArray items = it.value().toArray();
-                for (int i=0; i<items.count(); i++)
+                QJsonObject items = it.value().toObject();
+                qDebug()<<items;
+                for (auto item = items.begin(); item != items.end(); ++item)
                 {
-                    CalculatedScalarValues[items[i].toObject()["name"].toString()] = items[i].toObject()["expression"].toString();
+                    CalculatedScalarValues[item.key()] = item.value().toString();
                 }
             }
         }

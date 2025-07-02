@@ -24,6 +24,7 @@
 #include <QtCharts/QChartView>
 #include <QTextBrowser>
 #include "timeseriesloader.h"
+#include "scalarloader.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -57,9 +58,11 @@ private:
     QPushButton* DownloadModelButton = nullptr;
     QTextBrowser* DownloadPrecipTextBrowser = nullptr;
     QTextBrowser* DownloadOutputTextBrowser = nullptr;
+    QTextBrowser* CalculatedValuesTextBroser = nullptr;
     QString modeltemplate;
     QLabel *errorBanner = new QLabel();
     TimeSeriesLoader* loader = nullptr;
+    ScalarLoader* scalarloader = nullptr;
     bool templateAlreadyRequested = false;
     bool resultsRead = false;
 public slots:
@@ -68,6 +71,7 @@ public slots:
     void onError(QAbstractSocket::SocketError error);
     void onDownloadModel();
     void handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap);
+    void handleLoadedScalar(const QMap<QString, double> data);
 
 
 
