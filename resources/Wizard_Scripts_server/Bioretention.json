@@ -53,6 +53,15 @@
       "expression" : "flow@sc",
       "method": "integrate@sc",
       "weight": "1"
+    },
+    {
+      "name": "total_inflow_objective",
+      "entity": "objectivefunction",
+      "type": "Objective_Function",
+      "object": "Catchment to bioretention@sc",
+      "expression" : "flow@sc",
+      "method": "integrate@sc",
+      "weight": "1"
     }
 
   ],
@@ -646,6 +655,8 @@
     }
   ],
   "scalar_values": {
- 	"Total outflow volume [m^3]": "total_outflow_objective"
+ 	"Total outflow volume [m^3]": "total_outflow_objective",
+ 	"Total outflow volume [m^3]": "total_inflow_objective",
+ 	"Volume reduction (%)": "(1-total_outflow_objective/total_inflow_objective)*100"
   }
 }
