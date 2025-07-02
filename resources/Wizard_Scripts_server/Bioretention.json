@@ -44,7 +44,17 @@
       "type": "Observation",
       "object": "Catchment to bioretention@sc",
       "expression" : "flow@sc"
+    },
+    {
+      "name": "total_outflow_objective",
+      "entity": "objectivefunction",
+      "type": "Objective_Function",
+      "object": "Catch basin to Receiving_sewer_pipe@sc",
+      "expression" : "flow@sc",
+      "method": "integrate@sc",
+      "weight": "1"
     }
+
   ],
   "setvals": [
     {
@@ -634,5 +644,8 @@
         "native_soil_L"
       ]
     }
-  ]
+  ],
+  "scalar_values": {
+ 	"Total outflow volume [m^3]": "total_outflow_objective"
+  }
 }

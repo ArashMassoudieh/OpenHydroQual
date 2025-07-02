@@ -68,6 +68,9 @@ private:
 
 };
 
+QJsonObject MapToJsonObject(const std::map<std::string, double>& inputMap);
+bool WriteJsonObjectToFile(const QJsonObject& jsonObject, const QString& filePath);
+
 #endif // WEBSOCKETSERVER_H
 
 

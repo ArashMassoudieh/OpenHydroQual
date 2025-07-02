@@ -2651,7 +2651,7 @@ bool System::AppendObjectiveFunction(const string &name, const string &location,
 {
     Objective_Function obj(this,expr,location);
     obj.SetSystem(this);
-    if (object(location)!=nullptr)
+    if (object(location)!=nullptr || true)
     {
         obj.SetQuantities(metamodel, "Objective_Function");
         objective_function_set.Append(name,obj, weight);

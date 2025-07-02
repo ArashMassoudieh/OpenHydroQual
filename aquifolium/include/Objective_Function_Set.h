@@ -61,13 +61,31 @@ class Objective_Function_Set
                     j++;
             return  j;
         }
+        double EvaluateExpression(const std::string& expression);
+        void AppendExpression(const std::string& name, const std::string& expression);
+        std::map<std::string, double> EvaluateAllExpressions();
     protected:
 
     private:
         vector<Objective_Function> objectivefunctions;
         string lasterror;
+        std::map<std::string, std::string> expression_map;
 
 
 };
+
+double EvaluateMathExpression(const std::string& expr);
+int precedence(char op);
+bool isRightAssociative(char op);
+double applyOp(double a, double b, char op);
+bool isFunctionChar(char c);
+double EvaluateFunction(const std::string& name, const std::vector<double>& args);
+double parseNumber(std::istringstream& input);
+std::string parseIdentifier(std::istringstream& input);
+std::vector<double> parseFunctionArgs(std::istringstream& input);
+double EvaluateMathExpression(const std::string& expr);
+
+
+
 
 #endif // OBJECTIVE_FUNCTION_SET_H
