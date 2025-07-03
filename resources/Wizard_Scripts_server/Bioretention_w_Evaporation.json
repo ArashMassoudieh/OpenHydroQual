@@ -727,7 +727,7 @@
     }
   ],
   "scalar_values": {
-   	"Total evapotranspiration [mm]": "total_evapotranspiration_objective",
+   	"Total evapotranspiration volume [m^3]": "total_evapotranspiration_objective",
  	"Total outflow volume [m^3]": "total_outflow_objective",
  	"Total inflow volume [m^3]": "total_inflow_objective",
  	"Total infiltration volume [m^3]": "total_infiltration_objective",
