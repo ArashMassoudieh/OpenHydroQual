@@ -254,7 +254,7 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
 
     QJsonObject rootObj = JsonDoc.object();
 
-    qDebug()<<"Message Recieved: "<<rootObj;
+    //qDebug()<<"Message Recieved: "<<rootObj;
     for (const QString& key : rootObj.keys()) {
         if (key == "TemporaryFolderName")
         {
