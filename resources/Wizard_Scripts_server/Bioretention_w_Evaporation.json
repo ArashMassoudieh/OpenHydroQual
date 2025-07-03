@@ -63,6 +63,42 @@
       "type": "Observation",
       "object": "Engineered soil@sc",
       "expression" : "(0-Evapotranspiration)@sc"
+    },
+    {
+      "name": "total_evapotranspiration_objective",
+      "entity": "objectivefunction",
+      "type": "Objective_Function",
+      "object": "Engineered soil@sc",
+      "expression" : "(0-Evapotranspiration)@sc",
+      "method": "integrate@sc",
+      "weight": "1"
+    },
+    {
+      "name": "total_outflow_objective",
+      "entity": "objectivefunction",
+      "type": "Objective_Function",
+      "object": "Catch basin to Receiving_sewer_pipe@sc",
+      "expression" : "flow@sc",
+      "method": "integrate@sc",
+      "weight": "1"
+    },
+    {
+      "name": "total_inflow_objective",
+      "entity": "objectivefunction",
+      "type": "Objective_Function",
+      "object": "Catchment to bioretention@sc",
+      "expression" : "flow@sc",
+      "method": "integrate@sc",
+      "weight": "1"
+    },
+    {
+      "name": "total_infiltration_objective",
+      "entity": "objectivefunction",
+      "type": "Objective_Function",
+      "object": "Aggregate storage to Native soil(0)@sc",
+      "expression" : "flow@sc",
+      "method": "integrate@sc",
+      "weight": "1"
     }
   ],
   "setvals": [
@@ -689,5 +725,12 @@
         "native_soil_L"
       ]
     }
-  ]
+  ],
+  "scalar_values": {
+   	"Total evapotranspiration [mm]": "total_evapotranspiration_objective",
+ 	"Total outflow volume [m^3]": "total_outflow_objective",
+ 	"Total inflow volume [m^3]": "total_inflow_objective",
+ 	"Total infiltration volume [m^3]": "total_infiltration_objective",
+ 	"Overall volume reduction (%)": "(1-total_outflow_objective/total_inflow_objective)*100"
+  }
 }
