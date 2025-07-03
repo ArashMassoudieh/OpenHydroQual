@@ -5,7 +5,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 
 DEFINES += HTTPs
-DEFINES += LOCALHOST
+#DEFINES += LOCALHOST
 CONFIG += c++17
 
 QMAKE_CXXFLAGS += -Wno-deprecated-declarations -Wno-unused-parameter

@@ -62,6 +62,15 @@
       "expression" : "flow@sc",
       "method": "integrate@sc",
       "weight": "1"
+    },
+    {
+      "name": "total_infiltration_objective",
+      "entity": "objectivefunction",
+      "type": "Objective_Function",
+      "object": "Aggregate storage to Native soil@sc",
+      "expression" : "flow@sc",
+      "method": "integrate@sc",
+      "weight": "1"
     }
 
   ],
@@ -657,6 +666,7 @@
   "scalar_values": {
  	"Total outflow volume [m^3]": "total_outflow_objective",
  	"Total inflow volume [m^3]": "total_inflow_objective",
- 	"Volume reduction (%)": "(1-total_outflow_objective/total_inflow_objective)*100"
+ 	"Total infiltration volume [m^3]": "total_infiltration_objective",
+ 	"Overall volume reduction (%)": "(1-total_outflow_objective/total_inflow_objective)*100"
   }
 }
