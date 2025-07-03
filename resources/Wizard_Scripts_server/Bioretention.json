@@ -67,7 +67,7 @@
       "name": "total_infiltration_objective",
       "entity": "objectivefunction",
       "type": "Objective_Function",
-      "object": "Aggregate storage to Native soil@sc",
+      "object": "Aggregate storage to Native soil(0)@sc",
       "expression" : "flow@sc",
       "method": "integrate@sc",
       "weight": "1"

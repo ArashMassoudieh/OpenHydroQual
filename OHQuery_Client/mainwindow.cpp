@@ -318,6 +318,18 @@ void MainWindow::handleLoadedScalar(const QMap<QString, double> data)
             .arg(it.value(), 0, 'f', 3); // 3 decimal places
     }
 
+    for (auto it = data.constBegin(); it != data.constEnd(); ++it)
+    {
+        QString keyFormatted = it.key();
+        // Replace all instances of ^X with <sup>X</sup>
+        QRegularExpression regex("\\^(\\w)");
+        keyFormatted.replace(regex, "<sup>\\1</sup>");
+
+        content += QString("<div style='margin-bottom:4px;'>%1: <b>%2</b></div>")
+                       .arg(keyFormatted)
+                       .arg(it.value(), 0, 'f', 3);
+    }
+
     CalculatedValuesTextBroser->setHtml(content);
 }
 
