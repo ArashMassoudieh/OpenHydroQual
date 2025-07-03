@@ -49,6 +49,33 @@
       "type": "Observation",
       "object": "Receiving_sewer_pipe@sc",
       "expression" : "Storage-100000@sc"
+    },
+    {
+      "name": "total_outflow_objective",
+      "entity": "objectivefunction",
+      "type": "Objective_Function",
+      "object": "Overflow@sc",
+      "expression" : "flow@sc",
+      "method": "integrate@sc",
+      "weight": "1"
+    },
+    {
+      "name": "total_inflow_objective",
+      "entity": "objectivefunction",
+      "type": "Objective_Function",
+      "object": "Catchment to bioswale@sc",
+      "expression" : "flow@sc",
+      "method": "integrate@sc",
+      "weight": "1"
+    },
+    {
+      "name": "total_infiltration_objective",
+      "entity": "objectivefunction",
+      "type": "Objective_Function",
+      "object": "Bioswale pond to soil(0)@sc",
+      "expression" : "flow@sc",
+      "method": "integrate@sc",
+      "weight": "1"
     }
   ],
   "setvals": [
@@ -711,5 +738,11 @@
         "beta_overflow_Weir"
       ]
     }
-  ]
+  ],
+  "scalar_values": {
+ 	"Total outflow volume [m^3]": "total_outflow_objective",
+ 	"Total inflow volume [m^3]": "total_inflow_objective",
+ 	"Total infiltration volume [m^3]": "total_infiltration_objective",
+ 	"Overall volume reduction (%)": "(1-total_outflow_objective/total_inflow_objective)*100"
+  }
 }
