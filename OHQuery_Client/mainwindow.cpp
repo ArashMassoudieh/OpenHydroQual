@@ -19,7 +19,6 @@
 #include "ui_mainwindow.h"
 #include "Wizard_Script.h"
 #include "QDir"
-#include "wizarddialog.h"
 #include <QJsonDocument>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QChart>
@@ -212,9 +211,11 @@ void MainWindow::sendParameters(const QJsonDocument& jsonDoc)
     if (jsonDoc.isNull())
         return;
     QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+    wizDialog->SetDisabled(true);
     disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
     wsClient->sendJson(jsonDoc.object());  // now async
     connect(wsClient, &WSClient::dataReady, this, &MainWindow::handleData);
+    resultsRead = false;
 }
 
 
@@ -228,7 +229,7 @@ void MainWindow::TemplateRecieved(const QJsonDocument &JsonDoc)
     WizardScript wiz;
     qDebug()<<"Template Recieved: "<<JsonDoc;
     wiz.GetFromJsonDoc(JsonDoc);
-    WizardDialog *wizDialog = new WizardDialog(this);
+    wizDialog = new WizardDialog(this);
     wizDialog->setWindowTitle(wiz.Description());
     wizDialog->CreateItems(&wiz);
     ui->label->hide();
@@ -298,6 +299,7 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
     connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
     connect(scalarloader, &ScalarLoader::scalarsLoaded, this, &MainWindow::handleLoadedScalar);
     connect(loader, &TimeSeriesLoader::loadFailed, this, &MainWindow::showErrorWindow);
+    connect(scalarloader, &ScalarLoader::loadFailed, this, &MainWindow::showErrorWindow);
 
 }
 
@@ -309,14 +311,8 @@ void MainWindow::handleLoadedScalar(const QMap<QString, double> data)
         CalculatedValuesTextBroser->setText("Aggregate results");
         ui->horizontalLayout_buttons->addWidget(CalculatedValuesTextBroser);
     }
-    QString content = "<b>Aggregate Results</b><br><br>";
 
-    for (auto it = data.constBegin(); it != data.constEnd(); ++it)
-    {
-        content += QString("<div style='margin-bottom:4px;'>%1: <b>%2</b></div>")
-        .arg(it.key())
-            .arg(it.value(), 0, 'f', 3); // 3 decimal places
-    }
+    QString content = "<b>Aggregate Results</b><br><br>";
 
     for (auto it = data.constBegin(); it != data.constEnd(); ++it)
     {
@@ -396,6 +392,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
     PopulatePrecipTextBrowser();
     ui->chartTabs->show();
     QGuiApplication::restoreOverrideCursor();
+    wizDialog->SetDisabled(false);
     disconnect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
     qDebug()<<"Charts created!";
 }

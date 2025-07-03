@@ -57,7 +57,7 @@ public:
     void resizeEvent(QResizeEvent *r=nullptr);
     QGraphicsSvgItem* fetchSvgAsGraphicsItem(const QUrl& svgUrl);
     void fetchSvgAsync(const QUrl& svgUrl);
-
+    void SetDisabled(bool state);
 private:
     Ui::WizardDialog *ui;
     QMap<QString,tab> tabs;

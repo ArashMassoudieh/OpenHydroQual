@@ -25,6 +25,7 @@
 #include <QTextBrowser>
 #include "timeseriesloader.h"
 #include "scalarloader.h"
+#include "wizarddialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -65,6 +66,7 @@ private:
     ScalarLoader* scalarloader = nullptr;
     bool templateAlreadyRequested = false;
     bool resultsRead = false;
+    WizardDialog *wizDialog = nullptr;
 public slots:
     void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
     void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved
