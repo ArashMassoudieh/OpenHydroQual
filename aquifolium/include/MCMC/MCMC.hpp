@@ -338,6 +338,7 @@ template<class T>
 bool CMCMC<T>::step(int k)
 {
 
+    qDebug()<<"MCMC step " << k;
     vector<double> X = purturb(k-MCMC_Settings.number_of_chains);
     double pp =0;
     for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
@@ -435,7 +436,8 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 #pragma omp parallel for
         for (int jj = kk; jj < min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples); jj++)
 		{
-            //qDebug() << "Starting step: " + QString::number(jj);
+
+            qDebug() << "Starting step: " + QString::number(jj);
             bool stepstuck = !step(jj);
             //qDebug() << "Step: " + QString::number(jj) + "Done!";
             if (stepstuck)
