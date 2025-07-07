@@ -1471,7 +1471,7 @@ CTimeSeries<T> CTimeSeries<T>::distribution(int n_bins, int limit)
     CTimeSeries<T> out(n_bins+2);
 
 	CVector C1(C.size()-limit);
-	for (int i=0; i<C1.num; i++)
+    for (int i=0; i<C1.size(); i++)
 		C1[i] = C[i+limit];
 
     T p_start = C1.min();
@@ -1486,8 +1486,8 @@ CTimeSeries<T> CTimeSeries<T>::distribution(int n_bins, int limit)
 		out.C[i+1] = out.C[i];
 	}
 
-	for (int i=0; i<C1.num; i++)
-		out.C[int((C1[i]-p_start)/dp)+1] += 1.0/C1.num/dp;
+    for (int i=0; i<C1.size(); i++)
+        out.C[int((C1[i]-p_start)/dp)+1] += 1.0/C1.size()/dp;
 
 	return out;
 }

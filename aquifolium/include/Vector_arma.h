@@ -47,6 +47,7 @@ public:
     CVector_arma(const double x_min, const double x_max, int n);  //CVector_arma:: is redundant. However, works fine here.
 	CVector_arma(const CVector_arma&);
 	double& operator[](int);
+    const double& operator[](int) const;
 	virtual ~CVector_arma();
 	int num;
     int range(int);

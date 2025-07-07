@@ -82,7 +82,7 @@ CVector_arma::CVector_arma(const vec & v)
 
 CVector_arma::CVector_arma(CVector & v)
 {
-	num = v.num;
+    num = v.size();
 	vect.set_size(num);
 	for (int i = 0; i<num; i++)
 		vect(i) = v[i];
@@ -110,6 +110,14 @@ double& CVector_arma::operator[](int i)
 		return *p;
 }
 
+const double& CVector_arma::operator[](int i) const
+{
+    if (i >= 0 && i < num)
+        return vect(i);
+    else
+        throw std::out_of_range("CVector_arma::operator[] - index out of bounds");
+}
+
 int CVector_arma::range(int i)
 {
 	return i;
@@ -124,8 +132,7 @@ CVector_arma& CVector_arma::operator=(const CVector_arma &v)
 
 CVector_arma & CVector_arma::operator=(const CVector &v)
 {
-	num = v.num;
-	vect = v.vec;
+    vect = v;
 	return *this;
 }
 

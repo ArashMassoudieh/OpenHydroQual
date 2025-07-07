@@ -22,124 +22,150 @@
 
 #include <vector>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #define ARMA_DONT_PRINT_ERRORS
 #include "armadillo"
+
 class QVariant;
-//class QString;
-//class QList;
 #ifdef QT_version
 #include <QMap>
-#endif // QT_version
+#endif
 
-
+#include "Vector.h"
 #include "Matrix_arma.h"
 #include "Vector_arma.h"
 
 using namespace arma;
 class CVector;
+
+/**
+ * @brief A matrix class wrapping a 2D structure of CVectors.
+ */
 class CMatrix
 {
-friend class D5Matrix;
+    friend class D5Matrix;
 private:
-	int numrows;
-	int numcols;
-	int range(int);
+    int range(int);  ///< Range-check helper
+
 public:
-	vector<CVector> matr;
-	CMatrix(int, int);
-	CMatrix(int);
-	CMatrix();
-	CMatrix(string filename);
-	CMatrix(const CMatrix&);
-	CMatrix(CMatrix_arma&);
-	CMatrix(const CVector&);
-	CVector& operator[](int);
+    int numrows() const { return static_cast<int>(matr.size()); }
+    int numcols() const { return matr.empty() ? 0 : matr[0].size(); }
+    std::vector<CVector> matr; ///< Matrix data stored row-wise
+
+    /// Constructors
+    CMatrix(int rows, int cols);
+    CMatrix(int size);
+    CMatrix();
+    CMatrix(std::string filename);
+    CMatrix(const CMatrix&);
+    CMatrix(CMatrix_arma&);
+    CMatrix(const CVector&);
+
+    /// Accessors
+    CVector& operator[](int row);
+    const CVector& operator[](int row) const;
+    double& operator()(int i, int j);
     int getnumrows() const;
     int getnumcols() const;
-	virtual ~CMatrix();
+
+    /// Assignment and operators
+    virtual ~CMatrix();
     CMatrix& operator=(const CMatrix&);
     CMatrix& operator+=(const CMatrix&);
-    CMatrix& operator-=(const CMatrix &);
+    CMatrix& operator-=(const CMatrix&);
     CMatrix& operator=(mat&);
-	friend CMatrix mult(CMatrix&, CMatrix&);
-	friend CVector mult(CMatrix&, CVector&);
-	friend CVector mult(CVector&, CMatrix&);
-	friend void triangulate(CMatrix&, CVector&);
-	friend void backsubst(CMatrix&, CVector&, CVector&);
-	friend CVector gauss0(CMatrix, CVector);
+
+    /// Matrix multiplication (friend)
+    friend CMatrix mult(const CMatrix&, const CMatrix&);
+    friend CVector mult(const CMatrix&, const CVector&);
+    friend CVector mult(const CVector&, const CMatrix&);
+
+    /// Gaussian elimination routines
+    friend void triangulate(CMatrix&, CVector&);
+    friend void backsubst(CMatrix&, CVector&, CVector&);
+    friend CVector gauss0(CMatrix, CVector);
+
+    /// Utility functions
     friend CVector diag(const CMatrix&);
     CVector maxelements() const;
-	friend CMatrix Cholesky_factor(CMatrix &M);
-	friend CMatrix LU_decomposition(CMatrix &M);
+    friend CMatrix Cholesky_factor(const CMatrix&);
+    friend CMatrix LU_decomposition(const CMatrix&);
     CMatrix LU_decomposition();
-    CMatrix Cholesky_factor();
+    CMatrix Cholesky_factor() const;
     double det();
-    void Print(FILE *FIL);
-    void print(string s);
+
+    /// File and console output
+    void Print(FILE* f) const;
+    void print(const std::string &s) const;
+    void writetofile(FILE* f) const;
+    void writetofile(const std::string &filename) const;
+    void writetofile_app(const std::string &filename) const;
+
+    /// Matrix modification
     void setval(double a);
     void setvaldiag(double a);
-    void writetofile(FILE *f);
-    void writetofile(string filename);
-    void writetofile_app(string filename);
-	friend void write_to_file(vector<CMatrix> M, string filename);
-	friend CMatrix Average(vector<CMatrix> M);
-    CVector diag_ratio();
-    CVector diagvector();
-    vector<vector<bool> > non_posdef_elems(double tol = 1);
-    CMatrix non_posdef_elems_m(double tol = 1);
-    CMatrix Preconditioner(double tol = 1);
-    vector<string> toString(string format = "", vector<string> columnHeaders = vector<string>(), vector<string> rowHeaders = vector<string>()) const;
-	vector<string> toHtml(string format = "", vector<string> columnHeaders = vector<string>(), vector<string> rowHeaders = vector<string>());
-    void setnumcolrows();
-	double& operator()(int i, int j);
-	void ScaleDiagonal(double x);
+    void ScaleDiagonal(double x);
+
+    /// Diagnostic and formatting
+    CVector diag_ratio() const;
+    CVector diagvector() const;
+    std::vector<std::vector<bool>> non_posdef_elems(double tol = 1) const;
+    CMatrix non_posdef_elems_m(double tol = 1) const;
+    CMatrix Preconditioner(double tol = 1) const;
+
+    /// Export as string or HTML
+    std::vector<std::string> toString(std::string format = "", std::vector<std::string> columnHeaders = {}, std::vector<std::string> rowHeaders = {}) const;
+    std::vector<std::string> toHtml(std::string format = "", std::vector<std::string> columnHeaders = {}, std::vector<std::string> rowHeaders = {});
+
+
+
+
 #ifdef QT_version
     QMap<QString, QVariant> compact() const;
     static CMatrix unCompact(QMap<QString, QVariant>);
-#endif // QT_version
-
+#endif
 };
 
-double det(CMatrix &);
-double rcond(CMatrix &M);
-CMatrix Log(CMatrix &M1);
-CMatrix Exp(CMatrix &M1);
-CMatrix Sqrt(CMatrix &M1);
+/// Utility matrix functions
+double det(const CMatrix&);
+double rcond(const CMatrix&);
+CMatrix Log(const CMatrix&);
+CMatrix Exp(const CMatrix&);
+CMatrix Sqrt(const CMatrix&);
+CMatrix Transpose(const CMatrix&);
+CMatrix Invert(const CMatrix&);
+CMatrix Invert(const CMatrix*);
+bool Invert(const CMatrix&, CMatrix&);
+bool Invert(const CMatrix*, CMatrix*);
+
 CMatrix operator+(const CMatrix&, const CMatrix&);
-CMatrix operator+(double, CMatrix);
-CMatrix operator+(CMatrix, double);
-CMatrix operator-(double d, CMatrix m1);
-CMatrix operator+(CMatrix m1, double d);
-CMatrix operator-(CMatrix m1,double d);
-CMatrix operator/(CMatrix m1,double d);
-CMatrix operator/(double d, CMatrix m1);
+CMatrix operator+(double, const CMatrix&);
+CMatrix operator+(const CMatrix&, double);
+CMatrix operator-(double, const CMatrix&);
+CMatrix operator+(const CMatrix&, double);
+CMatrix operator-(const CMatrix&, double);
+CMatrix operator/(const CMatrix&, double);
+CMatrix operator/(double, const CMatrix&);
 CMatrix operator-(const CMatrix&, const CMatrix&);
-CMatrix operator*(CMatrix, CMatrix);
-CVector operator*(CMatrix, CVector);
-CMatrix operator*(CVector, CMatrix);
-CMatrix operator*(double, CMatrix);
-CVector operator/(CVector&, CMatrix&);
-CVector operator/(const CVector &V, const CMatrix &M);
-CMatrix Transpose(CMatrix &M1);
-CMatrix Invert(CMatrix &M1);
-CMatrix Invert(CMatrix *M1);
-bool Invert(CMatrix &M1,CMatrix &out);
-bool Invert(CMatrix *M1,CMatrix *out);
-CVector SpareSolve(CMatrix, CVector);
-CMatrix oneoneprod(CMatrix &m1, CMatrix &m2);
-CVector solve_ar(CMatrix&, CVector&);
-CVector solve_ar(const CMatrix &M, const CVector &V);
-CMatrix inv(CMatrix);
-CVector maxelements(const CMatrix &m);
-CMatrix normalize_diag(CMatrix&, CMatrix&);
-CVector normalize_diag(CVector&, CMatrix&);
-CVector normalize_diag(const CVector &V, const CVector &D);
-CVector normalize_diag(const CVector &V, const CMatrix &M2);
-CMatrix normalize_max( const CMatrix &M1, const CMatrix &M2);
-CVector normalize_max( const CVector &V, const CMatrix &M2);
-CVector normalize_max( const CVector &V, const CVector &D);
+CMatrix operator*(const CMatrix&, const CMatrix&);
+CVector operator*(const CMatrix&, const CVector&);
+CMatrix operator*(const CVector&, const CMatrix&);
+CMatrix operator*(double, const CMatrix&);
+CVector operator/(CVector&, const CMatrix&);
+CVector operator/(const CVector&, const CMatrix&);
 
 CMatrix Identity(int rows);
-
+CMatrix oneoneprod(const CMatrix&, const CMatrix&);
+CVector solve_ar(const CMatrix&, const CVector&);
+CMatrix inv(const CMatrix&);
+CVector maxelements(const CMatrix&);
+CMatrix normalize_diag(const CMatrix&, const CMatrix&);
+CVector normalize_diag(const CVector&, const CMatrix&);
+CVector normalize_diag(const CVector&, const CVector&);
+CMatrix normalize_max(const CMatrix&, const CMatrix&);
+CVector normalize_max(const CVector&, const CMatrix&);
+CVector normalize_max(const CVector&, const CVector&);
+CMatrix Average(const std::vector<CMatrix>&);
+void write_to_file(const std::vector<CMatrix>&, const std::string&);
+CMatrix Cholesky_factor(const CMatrix &M);
 

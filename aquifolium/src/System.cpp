@@ -769,12 +769,12 @@ bool System::Solve(bool applyparameters)
             {
                 SolverTempVars.dt_base = max(SolverTempVars.dt*SolverSettings.NR_timestep_reduction_factor,SolverSettings.minimum_timestep);
                 SolverTempVars.SetUpdateJacobian(true);
-                SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1).vec;
+                SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1);
             }
             if (SolverTempVars.MaxNumberOfIterations() < SolverSettings.NR_niteration_lower)
             {
                 SolverTempVars.dt_base = min(SolverTempVars.dt_base / SolverSettings.NR_timestep_reduction_factor, SimulationParameters.dt0 * timestepmaxfactor);
-                SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1).vec;
+                SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1);
             }
 
 
@@ -1686,7 +1686,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 else
                 {
                     dx = F / SolverTempVars.Inverse_Jacobian[statevarno];
-                    if (dx.num!=X.num)
+                    if (dx.size()!=X.size())
                     {
                         if (GetSolutionLogger())
                         {   GetSolutionLogger()->WriteString("Jacobian matrix is singular");
@@ -2380,16 +2380,16 @@ bool System::CalculateFlows(const string &var, const Expression::timing &tmg)
 
 CMatrix_arma System::Jacobian(const string &variable, CVector_arma &X, bool transport)
 {
-    CMatrix_arma M(X.num);
+    CMatrix_arma M(X.size());
     CVector_arma F0;
 
     F0 = GetResiduals(variable, X, transport);
 
 
-    for (int i=0; i < X.num; i++)
+    for (int i=0; i < X.size(); i++)
     {
         CVector_arma V = Jacobian(variable, X, F0, i,transport);
-        for (int j=0; j<X.num; j++)
+        for (int j=0; j<X.size(); j++)
             M(i,j) = V[j];
 
 

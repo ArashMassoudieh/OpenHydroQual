@@ -510,7 +510,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
             }
         }
         accepted_count += accepted.sum();
-        total_count += accepted.num;
+        total_count += accepted.size();
         QCoreApplication::processEvents(QEventLoop::AllEvents,100*1000);
 
         if ((kk-k_0) % (50 * MCMC_Settings.number_of_chains) == 0 || kk == k + nsamps + MCMC_Settings.number_of_chains - 1)

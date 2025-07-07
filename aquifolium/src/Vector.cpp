@@ -18,749 +18,493 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+// Refactored Vector.cpp with const& optimization
+
 #include "Vector.h"
 #include "math.h"
 #include "Matrix.h"
-#include <cfloat>
 #include "Vector_arma.h"
-#include "Expression.h"
 #include "QuickSort.h"
+#include "Expression.h"
+#include <cfloat>
+#include <cmath>
+#include <iostream>
+#include <sstream>
+#include <numeric>
+#include <algorithm>
 
+CVector::CVector() = default;
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
+CVector::CVector(int n) : vector<double>(n) {}
 
-CVector::CVector()
-{
-	num=0;
+CVector::CVector(const vector<double>& v, int n) : vector<double>(v.begin(), v.begin() + n) {}
+
+CVector::CVector(const vector<double>& v) : vector<double>(v) {}
+
+CVector::CVector(const vector<bool>& v) {
+    reserve(v.size());
+    for (bool b : v) push_back(static_cast<double>(b));
 }
 
-CVector::CVector(int n)
-{
-	num = n;
-	vec.resize(num);
+CVector::CVector(const vector<int>& v) {
+    reserve(v.size());
+    for (int i : v) push_back(static_cast<double>(i));
 }
 
-CVector::CVector(const vector<double> a, int n)
-{
-	num = n;
-	vec = a;
+CVector::CVector(const CVector_arma& v) {
+    reserve(v.getsize());
+    for (size_t i = 0; i < v.getsize(); ++i) push_back(v[i]);
 }
 
-CVector::CVector(const double x, int n)
-{
-	num = n;
-	vec.resize(num);
-	for (int i=0; i<num; i++) vec[i] = x;
+CVector::CVector(double x, int n) : vector<double>(n, x) {}
+
+CVector::CVector(double x_min, double x_max, int n) {
+    resize(n + 1);
+    for (int i = 0; i <= n; ++i)
+        (*this)[i] = x_min + (x_max - x_min) * i / static_cast<double>(n);
 }
 
-CVector::CVector(const double x_min, const double x_max, int n)
-{
-	num = n+1;
-	vec.resize(num);
-	for (int i=0; i<num; i++) vec[i] = x_min+(x_max-x_min)/double(n)*i;
+CVector::CVector(const CVector& v) : vector<double>(v) {}
+
+// Accessors
+
+double& CVector::operator[](int i) {
+    return at(i); // Will throw std::out_of_range if invalid
 }
 
-CVector::CVector(const CVector &v)
-
-{
-	num = v.num;
-	vec = v.vec;
+const double& CVector::operator[](int i) const {
+    return at(i); // Will throw std::out_of_range if invalid
 }
 
-CVector::CVector(const vector<double> &v)
-{
-	num = v.size();
-	vec = v;
+double& CVector::at(int i) {
+    if (i >= 0 && i < static_cast<int>(size()))
+        return vector<double>::at(i);
+    throw std::out_of_range("CVector::at (const): index out of range");
 }
 
-CVector::CVector(const vector<bool> &v)
-{
-    num = v.size();
-    vec.resize(num);
-    for (unsigned int i=0; i<v.size(); i++)
-        vec[i] = double(v[i]);
+const double& CVector::at(int i) const {
+    if (i >= 0 && i < static_cast<int>(size()))
+        return vector<double>::at(i);
+    throw std::out_of_range("CVector::at: index out of range");
 }
 
 
-CVector::CVector(CVector_arma &v)
-{
-	num = v.num;
-	vec.resize(num);
-	for (int i = 0; i<num; i++)
-		vec[i] = v[i];
+// Assignment
+
+CVector& CVector::operator=(const CVector& v) {
+    vector<double>::operator=(v);
+    return *this;
 }
 
-CVector::CVector(const vector<int> &v)
-{
-	num = v.size();
-	vec.resize(num);
-	for (int i=0; i<num; i++)
-		vec[i] = v[i];
+CVector& CVector::operator=(const vector<double>& v) {
+    vector<double>::operator=(v);
+    return *this;
 }
 
-CVector::~CVector()
-{
-	vec.clear();
+CVector& CVector::operator=(const CVector_arma& v) {
+    resize(v.getsize());
+    for (size_t i = 0; i < v.getsize(); ++i) (*this)[i] = v[i];
+    return *this;
 }
 
-double& CVector::operator[](int i)
-{
-	double *p = 0;
-	if ((i<num) & (i>-1))
-		return vec[i];
-	else
-		return *p;
+CVector& CVector::operator=(const double& v) {
+    for (auto& x : *this) x = v;
+    return *this;
 }
 
-double CVector::at(int i) const
-{
-    if ((i<num) & (i>-1))
-        return vec[i];
-    else
-        return -9999;
+CVector CVector::operator=(const mat& A) {
+    resize(A.n_rows);
+    for (size_t i = 0; i < A.n_rows; ++i) (*this)[i] = A(i, 0);
+    return *this;
 }
 
-int CVector::range(int i)
-{
-	return i;
+// Operators
+
+CVector& CVector::operator+() { return *this; }
+
+void CVector::swap(int i, int j) {
+    std::swap((*this)[i], (*this)[j]);
 }
 
-CVector& CVector::operator=(const CVector &v)
-{
-	num = v.num;
-	vec = v.vec;
-	return *this;
+int CVector::getsize() const { return static_cast<int>(size()); }
+
+bool CVector::haszeros() const {
+    for (const auto& x : *this) if (x == 0.0) return true;
+    return false;
 }
 
-CVector& CVector::operator=(const vector<double> &v)
-{
-	num = v.size();
-	vec = v;
-	return *this;
+CVector& CVector::operator*=(double x) {
+    for (auto& v : *this) v *= x;
+    return *this;
 }
 
-CVector &CVector::operator=(CVector_arma &v)
-{
-	vec.reserve(v.num);
-	num = v.num;
-	for (int i = 0; i<num; ++i)
-		vec[i] = v[i];
-	return *this;
+CVector& CVector::operator/=(double x) {
+    for (auto& v : *this) v /= x;
+    return *this;
 }
 
-CVector& CVector::operator=(const double &v)
-{
-	for (int i=0; i<num; ++i)
-		vec[i] = v;
-	return *this;
+CVector& CVector::operator+=(const CVector& v) {
+    for (size_t i = 0; i < size(); ++i) (*this)[i] += v[i];
+    return *this;
 }
 
-CVector& CVector::operator+()
-{return *this;}
-
-void CVector::swap(int i, int j)
-{	double tmp = vec[range(i)];
-	vec[i] = vec[range(j)];
-	vec[j] = tmp;
-
+CVector& CVector::operator-=(const CVector& v) {
+    for (size_t i = 0; i < size(); ++i) (*this)[i] -= v[i];
+    return *this;
 }
 
-int CVector::getsize() const {return num;}
-
-CVector& CVector::operator*=(double x)
-{
-	for (int i=0; i<num; ++i)
-		vec[i] *= x;
-	return *this;
-
+CVector& CVector::operator*=(const CVector& v) {
+    for (size_t i = 0; i < size(); ++i) (*this)[i] *= v[i];
+    return *this;
 }
 
-CVector& CVector::operator/=(double x)
+CVector operator*(double a, const CVector &v)
 {
-	for (int i=0; i<num; ++i)
-		vec[i] /= x;
-	return *this;
-
-}
-
-bool CVector::haszeros() const
-{
-    bool out = false;
-    for (int i=0; i<num; ++i)
-        if (vec[i] == 0) out = true;
-
+    CVector out = v;
+    out*=a;
     return out;
-
 }
 
-CVector& CVector::operator+=(const CVector &v)
+CVector operator-(double a, const CVector& v)
 {
-	for (int i=0; i<num; ++i)
-		vec[i] += v.vec[i];
-	return *this;
+    CVector out = v;
+    for (int i=0; i<out.size(); i++)
+        out[i] = a - v[i];
+    return out;
 }
 
-CVector& CVector::operator-=(const CVector &v)
+CVector operator+(const CVector &v, double a)
 {
-	for (int i=0; i<num; ++i)
-		vec[i] -= v.vec[i];
-	return *this;
+    CVector v1(v.size());
+    for (int i=0; i<v.size(); i++)
+        v1[i] = a + v[i];
+    return v1;
 }
 
-CVector operator+(CVector v1, CVector v2)
+CVector operator+(double a, const CVector &v)
 {
-	CVector v=v1;
-	for (int i=0; i<v1.num; i++) v[i]=v1.vec[i]+v2.vec[i];
-	return v;
+    CVector v1(v.size());
+    for (int i=0; i<v.size(); i++)
+        v1[i] = a + v[i];
+    return v1;
 }
 
-CVector operator-(CVector v1, CVector v2)
+CVector operator/(const CVector &v, double a)
 {
-	CVector v=v1;
-	for (int i=0; i<v1.num; i++) v[i]=v1.vec[i]-v2.vec[i];
-	return v;
-
+    CVector out = v;
+    for (int i=0; i<out.size(); i++)
+        out[i] = v[i]/a;
+    return out;
 }
 
-double dotproduct(CVector v1, CVector v2)
+/**
+ * @brief Element-wise division of two CVectors.
+ * @throws std::invalid_argument if sizes do not match or division by zero occurs.
+ */
+CVector operator/(const CVector& v1, const CVector& v2)
 {
-	double d;
-	if (v1.num == v2.num)
-	{
-        d = 0;
-        for (int i=0; i<v1.num; ++i)
-            d += v1.vec[i]*v2.vec[i];
-        return d;
-	}
-	return 0;
+    if (v1.size() != v2.size())
+        throw std::invalid_argument("CVector operator/: vectors must be the same size.");
+
+    CVector result(v1.size());
+    for (size_t i = 0; i < v1.size(); ++i)
+    {
+        if (v2[i] == 0.0)
+            throw std::domain_error("CVector operator/: division by zero at index " + std::to_string(i));
+        result[i] = v1[i] / v2[i];
+    }
+
+    return result;
 }
 
-CVector& CVector::operator*=(const CVector& v)
+/**
+ * @brief Element-wise multiplication of two CVectors.
+ * @throws std::invalid_argument if sizes do not match or division by zero occurs.
+ */
+CVector operator*(const CVector& v1, const CVector& v2)
 {
-	for (int i=0; i<num; ++i)
-		vec[i] *= v.vec[i];
-	return *this;
+    if (v1.size() != v2.size())
+        throw std::invalid_argument("CVector operator/: vectors must be the same size.");
+
+    CVector result(v1.size());
+    for (size_t i = 0; i < v1.size(); ++i)
+    {
+        result[i] = v1[i] * v2[i];
+    }
+
+    return result;
 }
 
-
-CVector operator*(CVector v1, CVector v2)
+/**
+ * @brief Element-wise summation of two CVectors.
+ * @throws std::invalid_argument if sizes do not match or division by zero occurs.
+ */
+CVector operator+(const CVector& v1, const CVector& v2)
 {
-	return v1 *= v2;
+    if (v1.size() != v2.size())
+        throw std::invalid_argument("CVector operator/: vectors must be the same size.");
+
+    CVector result(v1.size());
+    for (size_t i = 0; i < v1.size(); ++i)
+    {
+        result[i] = v1[i] + v2[i];
+    }
+
+    return result;
 }
 
-double norm(CVector v)
+/**
+ * @brief Element-wise subtraction of two CVectors.
+ * @throws std::invalid_argument if sizes do not match or division by zero occurs.
+ */
+CVector operator-(const CVector& v1, const CVector& v2)
 {
-	double sum = 0;
-	for (int i=0; i<v.num; i++)
-		sum += pow(v.vec[i],2);
-	return sqrt(sum);
-}
+    if (v1.size() != v2.size())
+        throw std::invalid_argument("CVector operator/: vectors must be the same size.");
 
-CVector operator*(double a, CVector v)
-{
-	return v*=a;
+    CVector result(v1.size());
+    for (size_t i = 0; i < v1.size(); ++i)
+    {
+        result[i] = v1[i] - v2[i];
+    }
 
-}
-
-CVector operator/(CVector v, double a)
-{
-	return v*=(1/a);
-}
-
-CVector operator+(CVector v, double a)
-{
-	CVector v1(v.num);
-	for (int i=0; i<v.num; i++)
-		v1[i] = a + v[i];
-	return v1;
-}
-
-CVector operator+(double a, CVector v)
-{
-	CVector v1(v.num);
-	for (int i=0; i<v.num; i++)
-		v1[i] = a + v[i];
-	return v1;
-}
-
-CVector operator-(double a, CVector v)
-{
-	CVector v1(v.num);
-	for (int i=0; i<v.num; i++)
-		v1[i] = a - v[i];
-	return v1;
-
-}
-
-
-CVector operator/(CVector v1, CVector v2)
-{
-	CVector x(v1.getsize());
-	for (int i = 0; i<v1.getsize(); ++i)
-		x[i] = v1[i]/v2[i];
-	return x;
-}
-
-CVector operator/(double a, CVector v2)
-{
-	CVector x(v2.getsize());
-	for (int i = 0; i<v2.getsize(); ++i)
-		x[i] = a/v2[i];
-	return x;
-
-}
-
-bool CVector::operator==(double v)
-{
-	bool r=true;
-	for (int i=0; i<num; ++i)
-		if (vec[i] != v)
-			r=false;
-	return r;
-
-}
-
-bool CVector::operator==(CVector &v)
-{
-	bool r=true;
-	if (num!=v.num) return false;
-	for (int i=0; i<num; ++i)
-		if ((vec[i]== v[i])!=true)
-			r=false;
-	return r;
-
-}
-
-bool CVector::is_finite()
-{
-	bool r=true;
-	for (int i=0; i<num; ++i)
-        if (isfinite(vec[i])!=true)
-			r=false;
-	return r;
-}
-
-string CVector::toString() const
-{
-	string s;
-	s += aquiutils::numbertostring(vec);
-	return s; 
-}
-
-double CVector::max()
-{
-	double a = -1E14;
-	for (int i=0;i<num; i++)
-	{
-		if (vec[i]>a)
-			a = vec[i];
-	}
-	return a;
-
-}
-
-double max(CVector &V)
-{
-	return V.max();
-}
-
-double CVector::min()
-{
-	double a = 1E14;
-	for (int i=0;i<num; i++)
-	{
-		if (vec[i]<a)
-			a = vec[i];
-	}
-	return a;
-
-}
-
-double min(CVector &V)
-{
-	return V.min();
-}
-double CVector::abs_max()
-{
-	double a = -1E14;
-	for (int i=0;i<num; i++)
-	{
-		if (fabs(vec[i])>a)
-			a = fabs(vec[i]);
-	}
-	return a;
-}
-
-int CVector::abs_max_elems()
-{
-	double a = -1E14;
-	int ii;
-	for (int i = 0; i<num; i++)
-	{
-		if (fabs(vec[i]) > a)
-		{
-			a = fabs(vec[i]);
-			ii = i;
-		}
-	}
-	return ii;
-}
-
-double abs_max(CVector &V)
-{
-	return V.abs_max();
-}
-
-double CVector::norm2()
-{
-	double a = 0;
-	for (int i=0;i<num; i++)
-	{
-		a+=vec[i]*vec[i];
-	}
-	return pow(a,0.5);
-
-}
-
-double CVector::sum() const
-{
-		double a = 0;
-	for (int i=0;i<num; i++)
-	{
-		a+=vec[i];
-	}
-	return a;
-}
-
-CMatrix CVector::T()
-{
-	CMatrix K(1,num);
-	for (int i=0; i<num; i++)
-		K[0][i] = vec[i];
-	return K;
-}
-
-CVector CVector::Log()
-{
-	CVector x(getsize());
-	for (int i = 0; i<getsize(); i++)
-		x[i] = log(vec[i]);
-	return x;
-}
-
-CVector Log(CVector V)
-{
-	return V.Log();
-
-}
-
-double avg(CVector V)
-{
-	return V.sum()/V.num;
-}
-
-CVector CVector::Exp()
-{
-	CVector x(getsize());
-	for (int i = 0; i<getsize(); i++)
-		x[i] = exp(vec[i]);
-	return x;
-}
-
-vector<int> CVector::Int()
-{
-	vector<int> x(getsize());
-	for (int i = 0; i<getsize(); i++)
-		x[i] = int(vec[i]);
-	return x;
-}
-
-CVector CVector::abs()
-{
-	CVector x(getsize());
-	for (int i = 0; i<getsize(); i++)
-		x[i] = fabs(vec[i]);
-	return x;
+    return result;
 }
 
 
-CVector Exp(CVector V)
+bool CVector::operator==(double v) const {
+    for (const auto& x : *this) if (x != v) return false;
+    return true;
+}
+
+bool CVector::operator==(const CVector& v) const {
+    if (size() != v.size()) return false;
+    for (size_t i = 0; i < size(); ++i) if ((*this)[i] != v[i]) return false;
+    return true;
+}
+
+bool CVector::is_finite() const {
+    for (const auto& x : *this) if (!std::isfinite(x)) return false;
+    return true;
+}
+
+string CVector::toString() const {
+    stringstream ss;
+    for (const auto& x : *this) ss << x << ", ";
+    return ss.str();
+}
+
+void CVector::print(const string& s) const {
+    ofstream fout(s);
+    for (const auto& x : *this) fout << x << endl;
+}
+
+// Math ops
+
+double CVector::max() const {
+    return *std::max_element(begin(), end());
+}
+
+double CVector::min() const {
+    return *std::min_element(begin(), end());
+}
+
+double CVector::abs_max() const {
+    double a = 0.0;
+    for (const auto& x : *this) a = std::max(a, std::abs(x));
+    return a;
+}
+
+int CVector::abs_max_elems() const {
+    int idx = 0;
+    double maxval = 0;
+    for (size_t i = 0; i < size(); ++i)
+        if (std::abs((*this)[i]) > maxval) maxval = std::abs((*this)[i]), idx = i;
+    return idx;
+}
+
+double CVector::norm2() const {
+    double s = 0;
+    for (const auto& x : *this) s += x * x;
+    return std::sqrt(s);
+}
+
+double CVector::sum() const {
+    return std::accumulate(begin(), end(), 0.0);
+}
+
+double CVector::mean() const {
+    return sum() / size();
+}
+
+double CVector::stdev() const {
+    double m = mean(), ss = 0.0;
+    for (const auto& x : *this) ss += (x - m) * (x - m);
+    return sqrt(ss / size());
+}
+
+// Transformations
+
+CVector CVector::Log() const {
+    CVector out(size());
+    for (size_t i = 0; i < size(); ++i) out[i] = log((*this)[i]);
+    return out;
+}
+
+CVector CVector::Exp() const {
+    CVector out(size());
+    for (size_t i = 0; i < size(); ++i) out[i] = exp((*this)[i]);
+    return out;
+}
+
+CVector Exp(const CVector &V)
 {
-	return V.Exp();
+    return V.Exp();
+}
+
+CVector Log(const CVector &V)
+{
+    return V.Log();
 
 }
 
-CVector abs(CVector &V)
-{
-	return V.abs();
+CVector CVector::abs() const {
+    CVector out(size());
+    for (size_t i = 0; i < size(); ++i) out[i] = fabs((*this)[i]);
+    return out;
 }
 
-void CVector::writetofile(FILE *f)
-{
-	for (int i=0; i<num; i++)
-		fprintf(f, "%le, ", vec[i]);
-	fprintf(f, "\n");
+CVector CVector::H() const {
+    CVector out(size());
+    for (size_t i = 0; i < size(); ++i) out[i] = (*this)[i] > 0 ? (*this)[i] : 1e-25;
+    return out;
 }
 
-void CVector::writetofile(ofstream &f)
-{
-	for (int i=0; i<num-1; i++)
-		f<<vec[i]<<",";
-	f<<vec[num-1]<<endl;
-
+CVector CVector::append(const CVector& V1) {
+    insert(end(), V1.begin(), V1.end());
+    return *this;
 }
 
-void CVector::writetofile(string filename)
-{
-	FILE *f = fopen(filename.c_str(),"w");
-	writetofile(f);
-	fclose(f);
+CVector CVector::append(double d) {
+    push_back(d);
+    return *this;
 }
 
-void CVector::writetofile_app(string filename)
-{
-	FILE *f = fopen(filename.c_str(),"a");
-	writetofile(f);
-	fclose(f);
+CVector CVector::sort() {
+    std::sort(begin(), end());
+    return *this;
 }
 
-CMatrix CVector::diagmat()
-{
-	CMatrix A(num,num);
-	for (int i=0; i<num; i++)
-		A[i][i] = vec[i];
-
-	return A;
-
+vector<int> CVector::Int() const {
+    vector<int> out(size());
+    for (size_t i = 0; i < size(); ++i) out[i] = static_cast<int>((*this)[i]);
+    return out;
 }
 
-CVector zeros(int i)
-{
-	CVector V(i);
-	return V;
-}
-
-CVector CVector::append(const CVector& V1)
-{
-	for (int i=0; i<V1.num; i++)
-		vec.push_back(V1.vec[i]);
-	num += V1.num;
-	return *this;
-}
-
-CVector CVector::append(double d)
-{
-	vec.push_back(d);
-	num += 1;
-	return *this;
-}
-
-CVector CVector::sort()
-{
-	vec = QSort(vec);
-	return *this;
-}
-
-CVector combinesort(const CVector V1, const CVector V2)
-{
-	CVector V3 = V1;
-	CVector V = V3.append(V2);
-	return V.sort();
-
-}
-
-CVector combinesort_s(const CVector V1, const CVector V2)
-{
-	int n1=0;
-	int n2=0;
-	CVector V3;
-	for (int i=0; i<V1.num+V2.num; i++)
-	{
-		if (n2==V2.num)
-		{	V3.append(V1.vec[n1]);
-			n1++;
-		}
-		else if (n1==V1.num)
-		{	V3.append(V2.vec[n2]);
-			n2++;
-		}
-		else
-		{
-			if (V1.vec[n1]>V2.vec[n2])
-			{	V3.append(V2.vec[n2]);
-				n2++;
-			}
-			else
-			{	V3.append(V1.vec[n1]);
-				n1++;
-			}
-		}
-	}
-
-	return V3;
-
-}
-
-int lookup(vector<int> v, int val)
-{
-	int res = -1;
-	for (unsigned int i=0; i<v.size(); i++)
-		if (v[i] == val)
-			res = i;
-
-	return res;
-
-}
-
-int lookup(vector<string> v, string val)
-{
-	int res = -1;
-	for (unsigned int i=0; i<v.size(); i++)
-		if (v[i] == val)
-			res = i;
-
-	return res;
-
-}
-
-int lookup(vector<double> v, double val)
-{
-	int res = -1;
-	for (unsigned int i=0; i<v.size(); i++)
-		if (v[i] == val)
-			res = i;
-	return res;
-}
-
-vector<int> CVector::lookup(double val)
-{
-	vector<int> res;
-	for (int i=0; i<num; i++)
-		if (vec[i] == val)
-			res.push_back(i);
-	return res;
-}
-
-CVector H(CVector &V)
-{
-	CVector x(V.num);
-	for (int i = 0; i<V.num; i++)
-		x[i] = H(V[i]);
-	return x;
-
-}
-
-double H(double x)
-{
-	if (x>0) return x; else return 1e-25;
-
-}
-
-vector<double> H(vector<double> x)
-{
-	vector<double> X(x.size());
-	for (unsigned int i=0; i<x.size(); i++)
-		X[i] = H(x[i]);
-
-	return X;
-}
-
-void CVector::print(string s)
-{
-	ofstream Afile;
-	Afile.open(s);
-
-	for (int i=0; i<num; ++i)
-		Afile << vec[i] << endl;
-
-	Afile.close();
-
-}
-
-CVector CVector::operator=(mat A)
-{
-	num = A.n_rows;
-	vec.resize(num);
-
-	for (int i = 0; i<num; ++i)
-			vec[i]=A(i,0);
-
-	return *this;
-}
-
-CVector CVector::sub(int i, int j)
-{
-	CVector C(j-i);
-	for (int ii=i; ii<j; ii++)
-		C[ii-i] = vec[ii];
-
-	return C;
-
-}
-//mat CVector::operator=(const CVector&V)
-//{
-//	mat A(num,1);
-
-//	for (int i = 0; i<num; ++i)
-//			A(i,0) = vec[i];
-
-//	return A;
-//}
-
-vector<double> create_vector(int i)
-{
-	vector<double> X(i);
-	return X;
-
-}
-
-vector<vector<double>> create_vector(int i, int j)
-{
-	vector<vector<double>> X(i);
-	for (int ii=0; ii<i; i++)
-		X[i].resize(j);
-
-	return X;
-
-}
-
-vector<int> CVector::negative_elements()
-{
+vector<int> CVector::negative_elements() const {
     vector<int> out;
-    for (int i=0; i<num; i++)
-        if (vec[i]<0)
-            out.push_back(i);
+    for (size_t i = 0; i < size(); ++i)
+        if ((*this)[i] < 0) out.push_back(i);
     return out;
-
 }
 
-double CVector::mean() const
-{
-    return sum()/double(num);
+vector<int> CVector::lookup(double val) const {
+    vector<int> idx;
+    for (size_t i = 0; i < size(); ++i)
+        if ((*this)[i] == val) idx.push_back(i);
+    return idx;
 }
 
-double CVector::stdev() const
-{
-    double average = mean();
-    double sumsquared = 0;
-    for (int i=0; i<num; i++)
-    {
-        sumsquared += pow(vec[i]-average,2);
+CVector CVector::sub(int i, int j) const {
+    return CVector(vector<double>(begin() + i, begin() + j));
+}
+
+void CVector::writetofile(FILE* f) const {
+    for (const auto& x : *this) fprintf(f, "%le, ", x);
+    fprintf(f, "\n");
+}
+
+void CVector::writetofile(const string& filename) const {
+    FILE* f = fopen(filename.c_str(), "w");
+    writetofile(f);
+    fclose(f);
+}
+
+void CVector::writetofile_app(const string& filename) const {
+    FILE* f = fopen(filename.c_str(), "a");
+    writetofile(f);
+    fclose(f);
+}
+
+void CVector::writetofile(ofstream& f) const {
+    for (size_t i = 0; i < size(); ++i) {
+        f << (*this)[i];
+        if (i != size() - 1) f << ",";
     }
-    return sqrt(sumsquared/num);
+    f << endl;
 }
 
+CMatrix CVector::T() const {
+    CMatrix K(1, size());
+    for (size_t i = 0; i < size(); i++)
+        K[0][i] = (*this)[i];
+    return K;
+}
 
-double stdev(CVector &V)
+CMatrix CVector::diagmat() const {
+    CMatrix A(size(), size());
+    for (size_t i = 0; i < size(); i++)
+        A[i][i] = (*this)[i];
+    return A;
+}
+
+double dotproduct(const CVector& v1, const CVector& v2)
 {
-    double average = V.mean();
-    double sumsquared = 0;
-    for (int i=0; i<V.num; i++)
-    {
-        sumsquared += pow(V[i]-average,2);
-    }
-    return sqrt(sumsquared/V.num);
+    if (v1.size() != v2.size())
+        throw std::invalid_argument("dotproduct: vector sizes do not match.");
+
+    double result = 0.0;
+    for (size_t i = 0; i < v1.size(); ++i)
+        result += v1[i] * v2[i];
+
+    return result;
 }
 
+CVector combinesort(const CVector &V1, const CVector &V2)
+{
+    CVector V3 = V1;
+    CVector V = V3.append(V2);
+    return V.sort();
+}
+
+CVector combinesort_s(const CVector &V1, const CVector &V2)
+{
+    int n1=0;
+    int n2=0;
+    CVector V3;
+    for (int i=0; i<V1.size()+V2.size(); i++)
+    {
+        if (n2==V2.size())
+        {	V3.append(V1[n1]);
+            n1++;
+        }
+        else if (n1==V1.size())
+        {	V3.append(V2[n2]);
+            n2++;
+        }
+        else
+        {
+            if (V1[n1]>V2[n2])
+            {	V3.append(V2[n2]);
+                n2++;
+            }
+            else
+            {	V3.append(V1[n1]);
+                n1++;
+            }
+        }
+    }
+
+    return V3;
+
+}
