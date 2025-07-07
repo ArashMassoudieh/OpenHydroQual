@@ -1357,7 +1357,7 @@ void System::PopulateOutputs(bool dolinks)
     {
         Outputs.AllOutputs.ResizeIfNeeded(1000);
 #ifndef NO_OPENMP
-     #pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
         for (int i = 0; i < blocks.size(); i++)
             blocks[i].CalcExpressions(Expression::timing::present);
@@ -1365,7 +1365,7 @@ void System::PopulateOutputs(bool dolinks)
         if (dolinks)
         {
 #ifndef NO_OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
             for (int i = 0; i < links.size(); i++)
                 links[i].CalcExpressions(Expression::timing::present);
@@ -2172,7 +2172,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
     CVector LinkFlow(links.size());
 #ifndef NO_OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
     for (int i=0; i<blocks.size(); i++)
     {
@@ -2208,7 +2208,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 {
 
 #ifndef NO_OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
     for (int i=0; i<links.size(); i++)
        LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
@@ -4036,7 +4036,7 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
         }
     }
 #ifndef NO_OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif   
     for (int i=0; i<BlockCount(); i++)
     {
@@ -4106,7 +4106,7 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
     SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma_sp jacobian_sp(BlockCount());
 #ifndef NO_OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
     for (int i=0; i<LinksCount(); i++)
     {
@@ -4131,7 +4131,7 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
         }
     }
 #ifndef NO_OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
     for (int i=0; i<BlockCount(); i++)
     {

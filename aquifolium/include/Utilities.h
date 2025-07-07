@@ -105,6 +105,7 @@ namespace aquiutils
     };
     template<typename T> bool isfinite(T arg);
     bool FileExists(const std::string& name);
+    std::string extract_path(const std::string& filepath);
     double mod(double x, double y);
 
 

@@ -5,7 +5,7 @@ Open Channel, open_channel.json, open_channel_template.png
 Soil Evapotranspiration models, soil_evapotranspiration_models.json, soil_evaporation_template.png
 Pipe/Pump systems, pipe_pump_tank.json, pipe_pump_template.png
 Rainfall/runoff modeling, rainfall_runoff.json, rainfall_runoff_template.png
-Unsaturated Soil, unsaturated_soil.json, soil_template.png
+Unsaturated Soil, unsaturated_soil_revised_model.json, soil_template.png
 Well, Well.json, well_template.png
 Urban Water Management, urban_water_management.json, city.png
 Unconfined Aquifer, unconfined_groundwater.json, unconfined_groundwater_template.png

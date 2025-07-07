@@ -131,8 +131,7 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
             else
                 FileInformation.outputfilename = FileInformation.outputpath + value;
         }
-
-
+        FileInformation.detailfilename = aquiutils::extract_path(FileInformation.outputfilename) + "/" + "MCMC_details.txt";
         return true;
     }
     if (aquiutils::tolower(varname) == "number_of_post_estimate_realizations")
@@ -176,26 +175,39 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
 
 
 template<class T>
-double CMCMC<T>::posterior(vector<double> par, bool out)
+double CMCMC<T>::posterior(vector<double> par, int sample_number, bool out)
 {
 
     T Model1 = *Model;
-
+    Model1.SetSilent(true);
+    Model1.SetRecordResults(false);
+    Model1.SetNumThreads(1);
 	double sum = 0;
     for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
     {
-        Model1.SetSilent(true);
-        Model1.SetRecordResults(false);
-        Model1.SetNumThreads(1);
-        for (int i = 0; i < MCMC_Settings.number_of_parameters; i++)
-            Model1.SetParameterValue(i, par[i]);
-        Model1.ApplyParameters();
 
+        Model1.SetParameterValue(i, par[i]);
         sum+=parameter(i)->CalcLogPriorProbability(par[i]);
 	}
 
+    Model1.ApplyParameters();
+
+#pragma omp critical
+    {
+        std::ofstream file_details(FileInformation.detailfilename, std::ios::app);
+        file_details<<"Sample #" << sample_number << " started.\n";
+        file_details.close();
+    }
     Model1.Solve();
-    sum+= -Model1.GetObjectiveFunctionValue();
+    double ObjectiveFunctionVal = Model1.GetObjectiveFunctionValue();
+
+#pragma omp critical
+    {
+        std::ofstream file_details(FileInformation.detailfilename, std::ios::app);
+        file_details<<"Sample #" << sample_number << " simulation_duration: " << double(Model1.GetSimulationDuration()) << ", simulation status: " << Model1.GetSolutionFailed() << ", objective function value: " << ObjectiveFunctionVal << "\n";
+        file_details.close();
+    }
+    sum+= -ObjectiveFunctionVal;
 
     if (out) Model_out = Model1;
 	return sum;
@@ -222,6 +234,11 @@ void CMCMC<T>::model(T *Model1, vector<double> par)
 template<class T>
 void CMCMC<T>::initialize(bool random)
 {
+    std::ofstream file(FileInformation.detailfilename); // Default mode truncates
+    if (!file) {
+        std::cerr << "Could not open file for clearing: " << FileInformation.detailfilename << std::endl;
+    }
+    file.close();
     Params.resize(MCMC_Settings.total_number_of_samples);
     logp.resize(MCMC_Settings.total_number_of_samples);
     logp1.resize(MCMC_Settings.total_number_of_samples);
@@ -241,7 +258,9 @@ void CMCMC<T>::initialize(bool random)
     }
 
     if (random)
-    {   for (int j=0; j<MCMC_Settings.number_of_chains; j++)
+    {
+#pragma omp parallel for
+        for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
             double pp = 0;
             for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
@@ -252,12 +271,13 @@ void CMCMC<T>::initialize(bool random)
                 if (parameter(i)->GetPriorDistribution()=="log-normal")
                     pp += log(Params[j][i]);
             }
-            logp[j] = posterior(Params[j])+pp;
+            logp[j] = posterior(Params[j], j)+pp;
             logp1[j] = logp[j];
         }
     }
     else
     {
+#pragma omp parallel for
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
             double pp = 0;
@@ -266,7 +286,8 @@ void CMCMC<T>::initialize(bool random)
                 if (parameter(i)->GetPriorDistribution()=="log-normal")
                     pp += log(Params[j][i]);
             }
-            logp[j] = posterior(Params[j])+pp;
+
+            logp[j] = posterior(Params[j], j)+pp;
             logp1[j] = logp[j];
         }
     }
@@ -279,6 +300,11 @@ template<class T>
 void CMCMC<T>::initialize(vector<double> par)
 {
 
+    std::ofstream file(FileInformation.detailfilename); // Default mode truncates
+    if (!file) {
+        std::cerr << "Could not open file for clearing: " << FileInformation.detailfilename << std::endl;
+    }
+    file.close();
     if (MCMC_Settings.sensbasedpurt == true)
 	{
 		CVector X = sensitivity(1e-4, par);
@@ -329,7 +355,7 @@ void CMCMC<T>::initialize(vector<double> par)
                     Params[j][i] = par[i] + alpha*ND.getnormalrand(0, pertcoeff[i]);
 
 		}
-		logp[j] = posterior(Params[j]);
+        logp[j] = posterior(Params[j], j);
 		logp1[j] = logp[j] + pp;
 	}
 }
@@ -346,11 +372,18 @@ bool CMCMC<T>::step(int k)
         if (parameter(i)->GetPriorDistribution()=="log-normal")
             pp += log(X[i]);
     }
-    double logp_0 = posterior(X) + pp;
+    double logp_0 = posterior(X, k) + pp;
 
 
     double logp_1 = logp_0;
 	bool res;
+
+#pragma omp critical
+    {
+        std::ofstream file_details(FileInformation.detailfilename, std::ios::app);
+        file_details<<"Sample #" << k << " proposal likelihood: " << logp_0 << ", previous likelihood: " << logp[k-MCMC_Settings.number_of_chains] << "\n";
+        file_details.close();
+    }
 
 
     if (ND.unitrandom() <exp(logp_0-logp[k-MCMC_Settings.number_of_chains]) && !isnan(logp_0))
@@ -359,7 +392,12 @@ bool CMCMC<T>::step(int k)
 		Params[k] = X;
 		logp[k] = logp_0;
 		logp1[k] = logp_1;
-        //accepted_count += 1;
+#pragma omp critical
+        {
+            std::ofstream file_details(FileInformation.detailfilename, std::ios::app);
+            file_details<<"Sample #" << k << " proposal likelihood: " << logp_0 << ", previous likelihood: " << logp[k-MCMC_Settings.number_of_chains] << ", accepted! \n";
+            file_details.close();
+        }
 	}
 	else
 	{
@@ -367,6 +405,12 @@ bool CMCMC<T>::step(int k)
         Params[k] = Params[k-MCMC_Settings.number_of_chains];
         logp[k] = logp[k-MCMC_Settings.number_of_chains];
 		logp1[k] = logp_1;
+#pragma omp critical
+        {
+            std::ofstream file_details(FileInformation.detailfilename, std::ios::app);
+            file_details<<"Sample #" << k << " proposal likelihood: " << logp_0 << ", previous likelihood: " << logp[k-MCMC_Settings.number_of_chains] << ", rejected! \n";
+            file_details.close();
+        }
 
 	}
     //total_count += 1;
@@ -552,13 +596,13 @@ template<class T>
 CVector CMCMC<T>::sensitivity(double d, vector<double> par)
 {
 
-	double base = posterior(par);
+    double base = posterior(par, 0);
     CVector X(MCMC_Settings.number_of_parameters);
     for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
 	{
 		vector<double> par1 = par;
 		par1[i]=par[i]*(1+d);
-		double base_1 = posterior(par1);
+        double base_1 = posterior(par1, 0);
 
 		X[i] = (sqrt(fabs(base))-sqrt(fabs(base_1)))/(d*par[i]);
 	}
