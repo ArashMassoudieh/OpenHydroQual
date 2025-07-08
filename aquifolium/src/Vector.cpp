@@ -32,6 +32,7 @@
 #include <sstream>
 #include <numeric>
 #include <algorithm>
+#include <iomanip>
 
 CVector::CVector() = default;
 
@@ -507,4 +508,53 @@ CVector combinesort_s(const CVector &V1, const CVector &V2)
 
     return V3;
 
+}
+
+void writetofile(const std::vector<CVector>& data,
+                 const std::vector<std::string>& columnlabels,
+                 const std::vector<std::string>& rowlabels,
+                 const std::string& filename)
+{
+    if (data.empty()) {
+        std::cerr << "Error: Data is empty.\n";
+        return;
+    }
+
+    size_t nrows = data[0].size();
+    size_t ncols = data.size();
+
+    // Check consistency
+    if (columnlabels.size() != ncols) {
+        std::cerr << "Error: Column label count does not match number of columns.\n";
+        return;
+    }
+
+    if (rowlabels.size() != nrows) {
+        std::cerr << "Error: Row label count does not match number of rows.\n";
+        return;
+    }
+
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file " << filename << "\n";
+        return;
+    }
+
+    // Write column header
+    file << "RowLabel";
+    for (const auto& label : columnlabels) {
+        file << "\t" << label;
+    }
+    file << "\n";
+
+    // Write rows
+    for (size_t i = 0; i < nrows; ++i) {
+        file << rowlabels[i];
+        for (size_t j = 0; j < ncols; ++j) {
+            file << "\t" << std::setprecision(10) << data[j][i];
+        }
+        file << "\n";
+    }
+
+    file.close();
 }

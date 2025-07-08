@@ -257,6 +257,7 @@ public:
 
     /** Append to file by filename */
     void writetofile_app(const string& filename) const;
+
 };
 
 // Non-member operator overloads and utility functions
@@ -288,5 +289,9 @@ double stdev(const CVector&);
 vector<double> create_vector(int i);
 vector<vector<double>> create_vector(int i, int j);
 double dotproduct(const CVector& v1, const CVector& v2);
+void writetofile(const std::vector<CVector>& data,
+                 const std::vector<std::string>& columnlabels,
+                 const std::vector<std::string>& rowlabels,
+                 const std::string& filename);
 
 #endif CVector_refactored
