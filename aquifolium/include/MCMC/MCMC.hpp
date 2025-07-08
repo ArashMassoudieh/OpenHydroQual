@@ -844,6 +844,9 @@ void CMCMC<T>::Perform()
     if (rtw) rtw->AppendText(string("Creating posterior distribution ..."));
     CTimeSeriesSet<double> all_posterior_distributions;
     CTimeSeriesSet<double> parameter_samples;
+    vector<CVector> posterior_percentiles;
+    vector<string> row_labels;
+    vector<string> columnlabels = {"0.025", "0.5", "0.975", "mean"};
     for (unsigned int i=0; i<parameters->size(); i++)
     {
         CTimeSeriesSet<double> chain_values(MCMC_Settings.number_of_chains);
@@ -868,9 +871,19 @@ void CMCMC<T>::Perform()
         posterior_distribution.name = "Posterior density";
         parameter(i)->SetPosteriorDistribution(posterior_distribution);
         parameter_samples.append(all_samples);
+        CVector posterior_percentiles_for_this_param;
+        row_labels.push_back(chain_values.name);
+        posterior_percentiles_for_this_param.append(all_samples.percentile(0.025,MCMC_Settings.burnout_samples));
+        posterior_percentiles_for_this_param.append(all_samples.percentile(0.5, MCMC_Settings.burnout_samples));
+        posterior_percentiles_for_this_param.append(all_samples.percentile(0.975, MCMC_Settings.burnout_samples));
+        posterior_percentiles_for_this_param.append(all_samples.mean());
+        posterior_percentiles.push_back(posterior_percentiles_for_this_param);
 
     }
+    writetofile(posterior_percentiles,columnlabels, row_labels, FileInformation.outputpath + "posterior_percentiles.txt");
+
     all_posterior_distributions.writetofile(FileInformation.outputpath + "Posterior_distributions.txt");
+
     if (rtw) rtw->AppendText(string("Generating Realizations ..."));
     ProduceRealizations(parameter_samples);
 }
