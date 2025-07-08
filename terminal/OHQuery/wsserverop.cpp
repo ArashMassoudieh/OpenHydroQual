@@ -213,6 +213,10 @@ void WSServerOps::onTextMessageReceived(QString message)
             system.SetDefaultTemplatePath(defaulttemppath);
             system.SetWorkingFolder(newFolderPath.toStdString());
             script.CreateSystemFromQStringList(SelectedWizardScript.Script(),&system);
+            QMap<QString, QString> calculatedscalarvalues = SelectedWizardScript.GetCalculatedScalarValues();
+            for (QMap<QString, QString>::iterator it = calculatedscalarvalues.begin(); it!= calculatedscalarvalues.end(); it++)
+                system.ObjectiveFunctions().AppendExpression(it.key().toStdString(), it.value().toStdString());
+
             QJsonObject responseObj = Execute(&system);
             QJsonObject TimeSeriesData;
 
@@ -285,10 +289,10 @@ void WSServerOps::onSocketDisconnected()
 
 void WSServerOps::sendMessageToClient(QWebSocket *client, const QString &message)
 {
-    qDebug() << "Message to be sent to the client:" << message;
+    //qDebug() << "Message to be sent to the client:" << message;
     if (client) {
         client->sendTextMessage(message);
-        qDebug() << "Sent message to client:" << message;
+        //qDebug() << "Sent message to client:" << message;
     }
 }
 
@@ -318,6 +322,9 @@ QJsonObject WSServerOps::Execute(System *system)
     file.write(doc.toJson(QJsonDocument::Indented));
     file.close();
     system->GetOutputs().writetofile(system->GetWorkingFolder() + "/" + system->OutputFileName());
+    map<string, double> scalar_values = system->ObjectiveFunctionSet()->EvaluateAllExpressions();
+    QJsonObject scalar_values_json = MapToJsonObject(scalar_values);
+    WriteJsonObjectToFile(scalar_values_json, QString::fromStdString(system->GetWorkingFolder() + "/" + "scalar_values.json"));
     QJsonObject output;
 #ifdef LOCAL_HOST
     output = system->GetObservedOutputs().toJson();
@@ -325,6 +332,29 @@ QJsonObject WSServerOps::Execute(System *system)
     output["TemporaryFolderName"] = QString::fromStdString(system->GetWorkingFolder());
 
     return output;
+}
+
+QJsonObject MapToJsonObject(const std::map<std::string, double>& inputMap)
+{
+    QJsonObject jsonObject;
+    for (const auto& [key, value] : inputMap)
+    {
+        jsonObject[QString::fromStdString(key)] = value;
+    }
+    return jsonObject;
+}
+
+bool WriteJsonObjectToFile(const QJsonObject& jsonObject, const QString& filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+
+    QJsonDocument doc(jsonObject);
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    return true;
 }
 
 

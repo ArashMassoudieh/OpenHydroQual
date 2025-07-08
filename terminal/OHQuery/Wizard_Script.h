@@ -55,6 +55,7 @@ public:
         TimeSeriesData[key] = url;
     };
     QMap<QString, QString> GetTimeSeriesData() {return TimeSeriesData;}
+    QMap<QString, QString> GetCalculatedScalarValues() {return CalculatedScalarValues;}
 private:
     QMap<QString, BlockArray> BlockArrays;
     QMap<QString, SingleBlock> SingleBlocks;
@@ -63,6 +64,7 @@ private:
     QMap<QString, Wizard_Entity> Entities;
     QMap<QString, SetVal_Entity> SetValEntities;
     QMap<QString, Connector> Connectors;
+    QMap<QString, QString> CalculatedScalarValues;
     QString iconfilename;
     QString diagramfilename; 
     QString wizardname;

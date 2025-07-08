@@ -182,6 +182,15 @@ WizardScript::WizardScript(const QString& filename)
                     WizardParameterGroups[paramgroupname] = paramgroup;
                 }
             }
+            if (it.key() == "scalar_values")
+            {
+                QJsonObject items = it.value().toObject();
+                qDebug()<<items;
+                for (auto item = items.begin(); item != items.end(); ++item)
+                {
+                    CalculatedScalarValues[item.key()] = item.value().toString();
+                }
+            }
         }
         SetAllParents();
 
@@ -202,6 +211,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     diagramfilename = WS.diagramfilename; 
     url = WS.url;
     workingfolder = WS.workingfolder;
+    CalculatedScalarValues = WS.CalculatedScalarValues;
     SetAllParents(); 
 
 
@@ -257,6 +267,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     WizardParameterGroups = WS.WizardParameterGroups;
     url = WS.url;
     workingfolder = WS.workingfolder;
+    CalculatedScalarValues = WS.CalculatedScalarValues;
     SetAllParents();
     return *this;
 }

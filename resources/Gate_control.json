@@ -33,14 +33,52 @@
       "ask_user": "false",
       "role": "copytolinks"
     },
-    "external_source": {
+    "min_safe_opening": {
+  "type": "value",
+  "default": "0.762",
+  "description": "Minimum Safe Gate Opening (e.g. Manatee Protection)",
+  "delegate": "UnitBox",
+  "unit": "m",
+  "ask_user": "true",
+  "estimate": "true"
+},
+
+"external_source": {
+  "type": "expression",
+  "expression": "_hsd(depth-max_depth_criteria)*increase_rate*_pos(max_gate_opening-mass)/_pos(max_gate_opening-mass+0.01) - _hsd(low_depth_criteria-depth)*decrease_rate*_pos(mass-min_safe_opening)/_pos(mass+0.01)",
+  "includeinoutput": "true",
+  "description": "Rate of Change (with Min Safe Opening)",
+  "ask_user": "false",
+  "role": "copytoblocks"
+},
+
+    "is_below_lower": {
       "type": "expression",
-      "expression": "_pos(mass)/_pos(mass+0.01)*(_hsd(depth-max_depth)*increase_rate-_hsd(min_depth-depth)*decrease_rate)",
+      "expression": "_hsd(low_depth_criteria-depth)",
       "includeinoutput": "true",
-      "description": "Rate of Change",
+      "description": "is_below_lower",
       "ask_user": "false",
       "role": "copytoblocks"
     },
+    "is_above_higher": {
+      "type": "expression",
+      "expression": "_hsd(depth-max_depth_criteria)",
+      "includeinoutput": "true",
+      "description": "is_above_higher",
+      "ask_user": "false",
+      "role": "copytoblocks"
+    },
+
+        "check max opening": {
+      "type": "expression",
+      "expression": "_pos(max_gate_opening-mass)/_pos(max_gate_opening-mass+0.01)",
+      "includeinoutput": "true",
+      "description": "check max opening",
+      "ask_user": "false",
+      "role": "copytoblocks"
+    },
+    
+
     "decrease_rate": {
       "type": "value",
       "default": "10",
@@ -59,25 +97,35 @@
       "ask_user": "true",
       "estimate": "true"
     },
-    "min_depth": {
+    "low_depth_criteria": {
       "type": "value",
       "default": "10",
-      "description": "Minimum depth",
+      "description": "Minimum depth at which gate starts opening",
       "delegate": "UnitBox",
       "unit": "m;ft",
       "ask_user": "true",
       "estimate": "true"
     },
-    "max_depth": {
+    "max_depth_criteria": {
       "type": "value",
       "default": "10",
-      "description": "Maximum depth",
+      "description": "Maximum depth at which gate starts closing",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "ask_user": "true",
+      "estimate": "true"
+    },
+        "max_gate_opening": {
+      "type": "value",
+      "default": "10",
+      "description": "Maximum Gate can Open",
       "delegate": "UnitBox",
       "unit": "m;ft",
       "ask_user": "true",
       "estimate": "true"
     }
   },
+
   "controlable_wier":{
 		"type": "link",
 		"typecategory": "Connectors",
@@ -89,30 +137,6 @@
       			"type": "string",
       			"default": "0,200,200"
     		},
-                "crest_elevation" : {
-			"type": "value",
-			"description": "Crest Elevation",
-			"ask_user" : "true",
-			"delegate": "UnitBox",
-		        "unit": "m;ft",
-			"estimate" : "true"
-		},
-		"alpha": {
-		      "type": "expression",
-		      "description": "Coefficient α in Q=α*(h-z_0)^β",
-		      "expression" : "gate_coeff*_pos(Gate_Opening_1:mass.s)^gate_exp",
-		      "includeinoutput" : "true"
-    		},
-    		"beta": {
-		      "type": "value",
-		      "description": "Exponent β in Q=α*(h-z_0)^β",
-		      "ask_user": "true",
-		      "delegate": "ValueBox",
-		      "estimate": "true",
-		      "default": "2.5",
-		      "criteria": "beta>0",
-		      "warningmessage": "β must be positive"
-   		},
    		"gate_coeff": {
 		      "type": "value",
 		      "description": "Gate-flow relationship coefficient",
@@ -123,30 +147,43 @@
 		      "criteria": "gate_coeff>0",
 		      "warningmessage": "Gate coefficient must be positive"
    		},
-   		"gate_exp": {
+   		"sill_elevation": {
 		      "type": "value",
-		      "description": "Gate-flow relationship exponent",
+		      "description": "Sill elevation",
 		      "ask_user": "true",
-		      "delegate": "ValueBox",
+		      "delegate": "UnitBox",
+          "unit": "m",
 		      "estimate": "true",
-		      "default": "1",
-		      "criteria": "gate_exp>0",
-		      "warningmessage": "Gate exponent must be positive"
+		      "default": "1"
    		},
-	        "flow" : {
-		      	"type": "expression",
-			"description": "Flow rate (m~^3/day)",
-                        "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
-			"includeinoutput" : "true",
-			"applylimit": "true"	
-		},
+           		"width": {
+		      "type": "value",
+		      "description": "width",
+		      "ask_user": "true",
+		      "delegate": "UnitBox",
+          "unit": "m",
+		      "estimate": "true",
+		      "default": "1"
+   		},
+          "flow": {
+         "type": "expression",
+           "description": "Submerged Weir Flow",
+            "expression": "gate_coeff*_pos(gate_opening)*width*(2*9.81*_pos(head.s-sill_elevation))^0.5",
+            "includeinoutput": "true",
+            "applylimit": "true"
+},
+
 	        "area" : {
-		      	"type": "value",
+		      	"type": "expression",
 			"description": "Area",
-			"default": "0",
-                       "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
-			"includeinoutput" : "false",
-			"applylimit": "false"	
+                       "expression" : "_pos(Gate_Opening_1:mass.s)*width",
+			"includeinoutput" : "true"
+		},
+    	        "gate_opening" : {
+		      	"type": "expression",
+			"description": "Gate Opening",
+                       "expression" : "_max(_min(Gate_Opening_1:mass.s;Gate_Opening_1:max_gate_opening);0)",
+			"includeinoutput" : "true"
 		},
 		"length" : {
 		      	"type": "value",
@@ -156,3 +193,4 @@
 		}  	
 	}
 }
+

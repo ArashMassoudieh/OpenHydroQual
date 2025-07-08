@@ -140,7 +140,7 @@ CVector CNormalDist::getlognormal(int m, double mu, double std)
 
 double getpdfnormal(CVector &X, CVector &mu, CMatrix &std)
 {
-	int k = X.num;
+    int k = X.size();
 	double pi = atan(1.0)*4;
 	CMatrix exparg = 0.5*(X.T()-mu.T())*Invert(std)*(X-mu);
 
@@ -151,7 +151,7 @@ double getpdfnormal(CVector &X, CVector &mu, CMatrix &std)
 
 double getpdflognormal(CVector X, CVector mu, CMatrix std)
 {
-	int k = X.num;
+    int k = X.size();
 	double pi = atan(1.0)*4;
     // ARASH: LOOK HERE
     CMatrix exparg = 0.5*(Log(X)-mu.T())*Invert(std)*(Log(X)-mu);
@@ -175,7 +175,7 @@ double CNormalDist::likelihood_mixed(double x_mod, double x_obs, double std_ln, 
 	CVector Y = 1/sqrt(atan(1.0)*4)*Exp(-0.5*(X2*X2));
 	double sum = 0;
 	double a1,a2;
-	for (int i=0; i<X.num-1; i++)
+    for (int i=0; i<X.size()-1; i++)
 	{
 		if (x_obs-std_n*X2[i]>0)
 			a1 = 1/std_ln*exp(-0.5*pow(log((x_obs-std_n*X2[i])/x_mod),2)/(2*pow(std_ln,2)))/(x_obs-std_n*X2[i]);

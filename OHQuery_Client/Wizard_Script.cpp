@@ -234,6 +234,7 @@ WizardScript::WizardScript(const WizardScript &WS)
     Connectors = WS.Connectors; 
     diagramfilename = WS.diagramfilename;
     ParameterPopulateMaps = WS.ParameterPopulateMaps;
+
     url = WS.url;
     SetAllParents(); 
 
@@ -283,6 +284,7 @@ WizardScript& WizardScript::operator=(const WizardScript& WS)
     diagramfilename = WS.diagramfilename;
     WizardParameterGroups = WS.WizardParameterGroups;
     ParameterPopulateMaps = WS.ParameterPopulateMaps;
+
     url = WS.url;
     SetAllParents();
     return *this;

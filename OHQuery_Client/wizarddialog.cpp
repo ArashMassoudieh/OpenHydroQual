@@ -43,7 +43,6 @@ WizardDialog::WizardDialog(QWidget *parent) :
     ui->label_version->setText("Version: " +  version);
     this->setStyleSheet("background-color: white;");
 
-    QString version = "1.0.1";
     svgviewer = new SVGViewer(this);
     svgviewer->setObjectName(QString::fromUtf8("SVGViewer"));
     svgviewer->setMinimumSize(QSize(300, 0));
@@ -332,7 +331,8 @@ bool  WizardDialog::Verify()
 void WizardDialog::GenerateModel()
 {
     if (!Verify())
-    {   emit model_generate_requested(QJsonDocument());
+    {
+        emit model_generate_requested(QJsonDocument());
         return;
     }
 
@@ -444,4 +444,28 @@ void WizardDialog::fetchSvgAsync(const QUrl& svgUrl)
         svgviewer->scene()->setSceneRect(svgitem->boundingRect());
         svgviewer->fitInView(svgitem->boundingRect(), Qt::KeepAspectRatio);
     });
+}
+
+void WizardDialog::SetDisabled(bool state)
+{
+    if (state)
+    {
+        ui->Next->setEnabled(false);
+        ui->Previous->setEnabled(false);
+        ui->tabWidget->setEnabled(false);
+
+        QString disabledStyle = "background-color: lightgray;";
+
+        ui->Next->setStyleSheet(disabledStyle);
+        ui->Previous->setStyleSheet(disabledStyle);
+    }
+    else
+    {
+        ui->Next->setEnabled(true);
+        ui->Previous->setEnabled(true);
+        ui->tabWidget->setEnabled(true);
+
+        ui->Next->setStyleSheet("");      // Reset to default
+        ui->Previous->setStyleSheet("");  // Reset to default
+    }
 }

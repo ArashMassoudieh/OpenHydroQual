@@ -34,7 +34,7 @@
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
       "estimate": "true",
-      "helptext": "Elevation of the sewer pipe bottom relative to the system datum. Influences flow direction and energy gradient."
+      "helptext": "Elevation of the sewer pipe bottom relative to the system datum at the center of the sewer pipe. Influences flow direction and energy gradient."
     },
     "diameter": {
       "type": "value",
@@ -119,7 +119,8 @@
       "applylimit": "true",
       "description": "Inflow time series",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "helptext": "Inflow time series (user input required)."
     }
   },
   "Sewer_pipe": {
@@ -137,7 +138,8 @@
       "unit": "m;ft;cm",
       "estimate": "true",
       "criteria": "diameter>0",
-      "warningmessage": "diameter must be positive"
+      "warningmessage": "diameter must be positive",
+      "helptext": "Diameter (user input required)."
     },
     "ManningCoeff": {
       "type": "value",
@@ -147,7 +149,8 @@
       "unit": "m",
       "estimate": "true",
       "criteria": "ManningCoeff>0",
-      "warningmessage": "Manning's roughness coefficient must be greater than zero"
+      "warningmessage": "Manning's roughness coefficient must be greater than zero",
+      "helptext": "Manning's roughness coefficient (user input required)."
     },
     "length": {
       "type": "value",
@@ -157,21 +160,24 @@
       "unit": "m;ft",
       "estimate": "true",
       "criteria": "length>0",
-      "warningmessage": "lenght must be positive"
+      "warningmessage": "length must be positive",
+      "helptext": "Pipe length (user input required)."
     },
     "start_elevation": {
       "type": "value",
       "description": "Start elevation",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft"
+      "unit": "m;ft",
+      "helptext": "Start elevation (user input required)."
     },
     "end_elevation": {
       "type": "value",
       "description": "End elevation",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft"
+      "unit": "m;ft",
+      "helptext": "End elevation (user input required)."
     },
     "hydraulic_gradient": {
       "type": "expression",
@@ -273,7 +279,8 @@
       "applylimit": "true",
       "description": "Inflow time series",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "helptext": "Inflow time series (user input required)."
     },
     "area": {
       "type": "value",
@@ -283,7 +290,8 @@
       "unit": "m~^2;ft~^2",
       "estimate": "true",
       "criteria": "area>0",
-      "warningmessage": "Base area must be positive"
+      "warningmessage": "Base area must be positive",
+      "helptext": "Base Area (user input required)."
     },
     "bottom_elevation": {
       "type": "value",
@@ -291,7 +299,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Bottom Elevation (user input required)."
     },
     "depth": {
       "type": "expression",
@@ -433,7 +442,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
-      "includeinoutput": "false"
+      "includeinoutput": "false",
+      "helptext": "Pipe bottom elevation at the pond (user input required)."
     },
     "depth_2": {
       "type": "expression",
@@ -534,7 +544,8 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "1/day",
-      "estimate": "true"
+      "estimate": "true",
+      "helptext": "Transmissivity coefficient (user input required)."
     },
     "flow": {
       "type": "expression",

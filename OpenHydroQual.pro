@@ -47,8 +47,6 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_version Aquifolium
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0
 
-
-
 macx: {
     QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -Iusr/local/lib/
     LIBS += -L$$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/lib/ -lgsl
@@ -72,7 +70,7 @@ macx: {
 
 CONFIG(debug, debug|release) {
     message(Building in debug mode)
-    !macx: QMAKE_CXXFLAGS *= "-Xpreprocessor -fopenmp"
+    !macx: QMAKE_CXXFLAGS *= -fopenmp -O3 -march=native
     !macx: QMAKE_LFLAGS +=  -fopenmp
     !macx: LIBS += -lgomp -lpthread
     LIBS += -lpthread
@@ -80,7 +78,7 @@ CONFIG(debug, debug|release) {
 
 } else {
     message(Building in release mode)
-    !macx: QMAKE_CXXFLAGS *= "-Xpreprocessor -fopenmp"
+    !macx: QMAKE_CXXFLAGS *= -fopenmp -O3 -march=native
     !macx: QMAKE_LFLAGS +=  -fopenmp
     # QMAKE_CFLAGS+=-pg
     # QMAKE_CXXFLAGS+=-pg
@@ -88,6 +86,7 @@ CONFIG(debug, debug|release) {
     # macx: DEFINES += NO_OPENMP
     ! macx: LIBS += -lgomp -lpthread
     macx: LIBS += -lpthread
+    DEFINES += DEBUG
 }
 
 

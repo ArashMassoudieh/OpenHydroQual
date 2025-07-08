@@ -19,7 +19,6 @@
 #include "ui_mainwindow.h"
 #include "Wizard_Script.h"
 #include "QDir"
-#include "wizarddialog.h"
 #include <QJsonDocument>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QChart>
@@ -57,10 +56,47 @@ MainWindow::MainWindow(QWidget *parent)
         font-size: 14px;
     }
 
-    QLineEdit, QTextEdit, QComboBox, QPushButton {
-        padding: 6px;
+    QWidget {
+        background-color: white;
     }
-    )");
+
+    QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QPushButton, QDateEdit, QSpinBox {
+        padding: 6px;
+        color: black;
+        background-color: white;
+        border: 1px solid #ccc;
+    }
+
+    QLabel {
+        color: black;
+    }
+
+    QTabWidget::pane {
+        border: 1px solid #ccc;
+        background-color: white;
+    }
+
+    QTabBar::tab {
+        background: #e0e0e0;
+        color: black;
+        padding: 6px 12px;
+        border: 1px solid #bbb;
+        border-bottom: none;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    QTabBar::tab:selected {
+        background: white;
+        border-color: #aaa;
+        font-weight: bold;
+    }
+
+    QTabBar::tab:hover {
+        background: #f0f0f0;
+    }
+)");
+
 #ifdef LOCALHOST
     QUrl url("ws://localhost:12345");  // Change the port to match your server
 #else
@@ -152,8 +188,13 @@ QString socketErrorToString(QAbstractSocket::SocketError error)
 
 void MainWindow::RecieveTemplate()
 {
+    if (templateAlreadyRequested)
+        return;
+
     if (!wsClient->HasConnectedOnce())
-    {   QJsonObject ModelFile;
+    {
+        templateAlreadyRequested = true;
+        QJsonObject ModelFile;
         ModelFile["FileName"] = modeltemplate;
         QJsonObject response;
         response["Model"] = ModelFile;
@@ -161,6 +202,8 @@ void MainWindow::RecieveTemplate()
         disconnect(wsClient, &WSClient::socketError, this, &MainWindow::onError);
         connect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
     }
+    else
+        disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::RecieveTemplate);
 }
 
 void MainWindow::sendParameters(const QJsonDocument& jsonDoc)
@@ -168,9 +211,11 @@ void MainWindow::sendParameters(const QJsonDocument& jsonDoc)
     if (jsonDoc.isNull())
         return;
     QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+    wizDialog->SetDisabled(true);
     disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
     wsClient->sendJson(jsonDoc.object());  // now async
     connect(wsClient, &WSClient::dataReady, this, &MainWindow::handleData);
+    resultsRead = false;
 }
 
 
@@ -184,12 +229,12 @@ void MainWindow::TemplateRecieved(const QJsonDocument &JsonDoc)
     WizardScript wiz;
     qDebug()<<"Template Recieved: "<<JsonDoc;
     wiz.GetFromJsonDoc(JsonDoc);
-    WizardDialog *wizDialog = new WizardDialog(this);
+    wizDialog = new WizardDialog(this);
     wizDialog->setWindowTitle(wiz.Description());
     wizDialog->CreateItems(&wiz);
     ui->label->hide();
     ui->horizontalLayout->addWidget(wizDialog);
-    disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::handleData);
+    disconnect(wsClient, &WSClient::dataReady, this, &MainWindow::TemplateRecieved);
     connect(wizDialog, &WizardDialog::model_generate_requested, this, &MainWindow::sendParameters);
 }
 
@@ -210,7 +255,7 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
 
     QJsonObject rootObj = JsonDoc.object();
 
-    qDebug()<<"Message Recieved: "<<rootObj;
+    //qDebug()<<"Message Recieved: "<<rootObj;
     for (const QString& key : rootObj.keys()) {
         if (key == "TemporaryFolderName")
         {
@@ -244,17 +289,50 @@ void MainWindow::handleData(const QJsonDocument &JsonDoc)
     }
     qDebug()<<"Attempting to download the results ...";
     loader = new TimeSeriesLoader(this);
+    scalarloader = new ScalarLoader(this);
     QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
     QString url = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/output.json";
+    QString url_aggregate = "https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/scalar_values.json";
     qDebug()<<"Loading data from " + url;
     loader->load(QUrl(url));
+    scalarloader->load(QUrl(url_aggregate));
     connect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
+    connect(scalarloader, &ScalarLoader::scalarsLoaded, this, &MainWindow::handleLoadedScalar);
     connect(loader, &TimeSeriesLoader::loadFailed, this, &MainWindow::showErrorWindow);
+    connect(scalarloader, &ScalarLoader::loadFailed, this, &MainWindow::showErrorWindow);
 
+}
+
+void MainWindow::handleLoadedScalar(const QMap<QString, double> data)
+{
+    if (!CalculatedValuesTextBroser)
+    {
+        CalculatedValuesTextBroser = new QTextBrowser(this);
+        CalculatedValuesTextBroser->setText("Aggregate results");
+        ui->horizontalLayout_buttons->addWidget(CalculatedValuesTextBroser);
+    }
+
+    QString content = "<b>Aggregate Results</b><br><br>";
+
+    for (auto it = data.constBegin(); it != data.constEnd(); ++it)
+    {
+        QString keyFormatted = it.key();
+        // Replace all instances of ^X with <sup>X</sup>
+        QRegularExpression regex("\\^(\\w)");
+        keyFormatted.replace(regex, "<sup>\\1</sup>");
+
+        content += QString("<div style='margin-bottom:4px;'>%1: <b>%2</b></div>")
+                       .arg(keyFormatted)
+                       .arg(it.value(), 0, 'f', 3);
+    }
+
+    CalculatedValuesTextBroser->setHtml(content);
 }
 
 void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
 {
+    if (resultsRead) return;
+    resultsRead = true;
     qDebug()<<"Processing loaded time series data ... ";
     for (const QChartView* item : chartviews)
         delete item;
@@ -276,7 +354,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
 
         QChart* chart = new QChart();
         chart->addSeries(series);
-        chart->setTitle(key);
+        chart->setTitle(convertToSuperscript(key));
 
         // X-axis as DateTimeAxis
         QDateTimeAxis* axisX = new QDateTimeAxis;
@@ -287,7 +365,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
 
         // Y-axis
         QValueAxis* axisY = new QValueAxis;
-        axisY->setTitleText(key);
+        axisY->setTitleText(convertToSuperscript(key));
         chart->addAxis(axisY, Qt::AlignLeft);
         series->attachAxis(axisY);
 
@@ -295,7 +373,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
         chartView->setRenderHint(QPainter::Antialiasing);
         chartviews[key] = chartView;
 
-        ui->chartTabs->addTab(chartView, key);
+        ui->chartTabs->addTab(chartView, convertToSuperscript(key));
     }
 
     if (!DownloadModelButton)
@@ -305,7 +383,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
         DownloadModelButton->setText("Download the OpenHydroQual Model");
 
         DownloadPrecipTextBrowser->setText("Download timeseries data");
-        DownloadOutputTextBrowser->setText("Download timeseries data");
+        DownloadOutputTextBrowser->setText("Download model results");
         ui->horizontalLayout_buttons->addWidget(DownloadModelButton);
         ui->horizontalLayout_buttons->addWidget(DownloadPrecipTextBrowser);
         ui->horizontalLayout_buttons->addWidget(DownloadOutputTextBrowser);
@@ -314,6 +392,7 @@ void MainWindow::handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap)
     PopulatePrecipTextBrowser();
     ui->chartTabs->show();
     QGuiApplication::restoreOverrideCursor();
+    wizDialog->SetDisabled(false);
     disconnect(loader, &TimeSeriesLoader::timeSeriesLoaded, this, &MainWindow::handleLoadedTimeSeries);
     qDebug()<<"Charts created!";
 }
@@ -463,4 +542,53 @@ void MainWindow::onDownloadModel()
     QString cleanedFilePath = TemporaryFolderName.remove("/home/ubuntu/OHQueryTemporaryFolder/");
     downloadFileAndTriggerBrowserSave(QUrl("https://www.greeninfraiq.com/modeldata/" + cleanedFilePath + "/System.ohq"),"model.ohq");
 #endif
+}
+
+QString convertToSuperscript(const QString& input) {
+    // Superscript character map
+    static const QMap<QChar, QChar> superscriptMap = {
+        {'0', QChar(0x2070)},
+        {'1', QChar(0x00B9)},
+        {'2', QChar(0x00B2)},
+        {'3', QChar(0x00B3)},
+        {'4', QChar(0x2074)},
+        {'5', QChar(0x2075)},
+        {'6', QChar(0x2076)},
+        {'7', QChar(0x2077)},
+        {'8', QChar(0x2078)},
+        {'9', QChar(0x2079)},
+        {'+', QChar(0x207A)},
+        {'-', QChar(0x207B)},
+        {'=', QChar(0x207C)},
+        {'(', QChar(0x207D)},
+        {')', QChar(0x207E)},
+        {'n', QChar(0x207F)}
+        // Add more as needed
+    };
+
+    QString result;
+    bool inSuperscript = false;
+
+    for (int i = 0; i < input.length(); ++i) {
+        QChar current = input[i];
+
+        if (current == '^') {
+            inSuperscript = true;
+            continue;
+        }
+
+        if (inSuperscript) {
+            if (superscriptMap.contains(current)) {
+                result.append(superscriptMap[current]);
+            } else {
+                // If no superscript equivalent, append as-is or skip
+                result.append(current);
+            }
+            inSuperscript = false;
+        } else {
+            result.append(current);
+        }
+    }
+
+    return result;
 }

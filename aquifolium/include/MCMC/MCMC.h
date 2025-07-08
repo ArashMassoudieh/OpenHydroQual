@@ -39,6 +39,7 @@ struct _MCMC_file_names
 {
     string outputpath;
     string outputfilename;
+    string detailfilename;
 };
 
 
@@ -105,7 +106,7 @@ public:
 	vector<int> params;
     CTimeSeriesSet<double> MData;
     _MCMC_file_names FileInformation;
-    double posterior(vector<double> par, bool out=false);
+    double posterior(vector<double> par, int sample_number, bool out=false);
     void model(T *Model1 , vector<double> par);
     RunTimeWindow *rtw;
     int getparamno(int i,int ts)const;
@@ -139,6 +140,8 @@ public:
 	double accepted_count=0, total_count=0;
     string last_error;
     void Perform();
+private:
+
 };
 
 #include "MCMC.hpp"

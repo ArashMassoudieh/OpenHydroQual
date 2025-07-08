@@ -57,7 +57,7 @@ public:
     void resizeEvent(QResizeEvent *r=nullptr);
     QGraphicsSvgItem* fetchSvgAsGraphicsItem(const QUrl& svgUrl);
     void fetchSvgAsync(const QUrl& svgUrl);
-
+    void SetDisabled(bool state);
 private:
     Ui::WizardDialog *ui;
     QMap<QString,tab> tabs;
@@ -67,7 +67,7 @@ private:
     int currenttabindex=0;
     SVGViewer *svgviewer = nullptr;
     QMap<QString, RosettaFetcher*> rosettaFetchers;
-    QString version = "1.0.3";
+    QString version = "1.0.8";
 public slots:
     void on_next_clicked();
     void on_previous_clicked();

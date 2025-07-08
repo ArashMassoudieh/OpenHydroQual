@@ -3,7 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GreenInfraIQ</title>
+  <title>GreenInfraIQ – Stormwater & Environmental Modeling Tools</title>
+  <meta name="description" content="GreenInfraIQ provides web-based environmental modeling tools for green infrastructure, stormwater systems, and wastewater treatment design." />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "GreenInfraIQ",
+  "url": "https://greeninfraiq.com/",
+  "description": "Web-based tools for water system modeling, sustainable stormwater management, and green infrastructure design.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "GreenInfraIQ",
+    "url": "https://greeninfraiq.com/"
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://greeninfraiq.com/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,7 +33,12 @@
       padding: 2rem;
     }
     h1 {
+      margin-bottom: 0.5rem;
+    }
+    h2 {
       margin-bottom: 2rem;
+      color: #666;
+      font-weight: normal;
     }
     .icon-grid {
       display: flex;
@@ -40,38 +65,75 @@
 </head>
 <body>
   <h1>GreenInfraIQ</h1>
+  <h2>Quick Dynamic Assessment of Green Infrastructure Performance</h2>
+
   <div class="icon-grid">
     <div class="icon-card">
-      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=Bioretention_w_Evaporation.json">
-        <img src="Bioretention_w_Evaporation.png" alt="Bioretention with Evaporation" />
+      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=Bioretention_w_Evaporation.json" title="Bioretention system model with evaporation">
+        <img src="Bioretention_w_Evaporation.png" alt="Bioretention System with Evaporation Modeling" />
       </a>
       <p>Bioretention (with Evaporation)</p>
     </div>
+
     <div class="icon-card">
-      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=Bioretention.json">
-        <img src="Bioretention.png" alt="Bioretention System" />
+      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=Bioretention.json" title="Basic bioretention model for stormwater filtration">
+        <img src="Bioretention.png" alt="Basic Bioretention Stormwater Model" />
       </a>
       <p>Bioretention System</p>
     </div>
+
     <div class="icon-card">
-      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=StormwaterPond.json">
-        <img src="Stormwater.png" alt="Stormwater Pond" />
+      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=StormwaterPond.json" title="Stormwater detention and retention pond model">
+        <img src="Stormwater.png" alt="Stormwater Detention Pond Model" />
       </a>
       <p>Stormwater Pond</p>
     </div>
+
     <div class="icon-card">
-      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=ASMS.json">
-        <img src="ASMS.png" alt="Activated Sludge System" />
+      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=ASMS.json" title="Simplified activated sludge model for wastewater treatment">
+        <img src="ASMS.png" alt="Activated Sludge System (Simplified Model)" />
       </a>
       <p>Activated Sludge Model (Simple)</p>
     </div>
+
     <div class="icon-card">
-      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=BioSwale.json">
-        <img src="Bioswale.png" alt="Bioswale System" />
+      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=BioSwale.json" title="Bioswale modeling for vegetative stormwater filtration">
+        <img src="Bioswale.png" alt="Bioswale Green Infrastructure Model" />
       </a>
       <p>Bioswale</p>
     </div>
+
+    <div class="icon-card">
+      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=InfiltrationBasin.json" title="Infiltration basin for groundwater recharge modeling">
+        <img src="Infiltration_Basin.png" alt="Infiltration Basin Model for Stormwater Infiltration" />
+      </a>
+      <p>Infiltration Basin</p>
+    </div>
+
+    <div class="icon-card">
+      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=InfiltrationTrench.json" title="Infiltration trench for subsurface stormwater management">
+        <img src="Infiltration_Trench.png" alt="Infiltration Trench Model for Subsurface Recharge" />
+      </a>
+      <p>Infiltration Trench</p>
+    </div>
+
+    <div class="icon-card">
+      <a href="https://greeninfraiq.com/OHQuery_Client.html?model=PermeablePavement.json" title="Model for permeable pavement infiltration systems">
+        <img src="Permeable_Pavement.png" alt="Permeable Pavement Stormwater Model" />
+      </a>
+      <p>Permeable Pavement</p>
+    </div>
   </div>
+  <section>
+  <p>
+  GreenInfraIQ provides open-access, web-based modeling tools for analyzing and designing green infrastructure systems. Use our tools to simulate <strong>bioretention systems</strong>, <strong>infiltration basins</strong>, <strong>stormwater ponds</strong>, and <strong>permeable pavements</strong>. Powered by the <strong><a href="https://openhydroqual.com" target="_blank" rel="noopener noreferrer">OpenHydroQual</a></strong> engine, these models support data-driven decision making for stormwater management, water quality, and sustainable urban infrastructure.
+</p>
+</section>
+<footer style="margin-top: 4rem; font-size: 0.85rem; color: #555; text-align: center;">
+  <hr style="margin-bottom: 1rem;" />
+  <p><strong>Disclaimer:</strong> GreenInfraIQ is provided for educational and research purposes only. While every effort has been made to ensure the accuracy of the models and tools, GreenInfraIQ and its developers make no warranties, express or implied, and disclaim any liability for damages or losses resulting from the use of this site or its outputs. Use of this platform constitutes acceptance of these terms.</p>
+</footer>
+
 </body>
 </html>
 

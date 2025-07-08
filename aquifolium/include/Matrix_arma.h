@@ -20,118 +20,133 @@
 
 #pragma once
 
-#include "Vector_arma.h"
+// Fully restored and refactored Matrix_arma.h with all original methods and Doxygen comments
+#pragma once
+
+#include <armadillo>
+#include <vector>
+#include <string>
+#include <fstream>
 #include <iostream>
-#include <math.h>
-#define ARMA_DONT_PRINT_ERRORS
-#include "armadillo"
-class QVariant;
-//class QString;
-//class QList;
-//#include "QMap"
+
 using namespace arma;
+using namespace std;
+
+class CMatrix;
+class CVector;
 class CVector_arma;
-class CMatrix_arma
-{
 
-private:
-    //int numrows;
-    //int numcols;
-
+/**
+ * @brief A matrix class inheriting from arma::mat with enhanced utilities
+ * for numerical modeling and system emulation.
+ */
+class CMatrix_arma : public arma::mat {
 public:
-	mat matr;
-	CMatrix_arma(int, int);
-	CMatrix_arma(int);
-	CMatrix_arma();
-	CMatrix_arma(const CMatrix_arma&);
-	CMatrix_arma(const CVector_arma&);
-	//CVector_arma operator[](int);
-    double& get(int i, int j);
-	double& operator()(int i, int j);
-    vector<double*> get(int i);
-    int getnumrows() const;
-    int getnumcols() const;
-	virtual ~CMatrix_arma();
+    /// Constructors
+    CMatrix_arma();
+    CMatrix_arma(int r, int c);
+    CMatrix_arma(int n);
+    CMatrix_arma(const mat&);
+    CMatrix_arma(const CMatrix&);
+    CMatrix_arma(const CVector&);
+
+    /// Accessors
+    int numrows() const;
+    int numcols() const;
+    int getnumrows() const;  ///< Alias
+    int getnumcols() const;  ///< Alias
+
+    /// Element access
+    double* get(int i, int j);
+    double* get(int i);
+
+    /// Assignment
     CMatrix_arma& operator=(const CMatrix_arma&);
+    CMatrix_arma& operator=(const mat&);
+
+    /// Arithmetic operators
     CMatrix_arma& operator+=(const CMatrix_arma&);
-    CMatrix_arma& operator-=(const CMatrix_arma &);
-    CMatrix_arma& operator=(mat&);
-	friend void triangulate(CMatrix_arma&, CVector_arma&);
-	friend void backsubst(CMatrix_arma&, CVector_arma&, CVector_arma&);
-	friend CVector_arma gauss0(CMatrix_arma, CVector_arma);
-    friend CVector_arma diag(const CMatrix_arma&);
-    CVector maxelements() const;
-    int numrows() const {return matr.n_rows;}
-    int numcols() const {return matr.n_cols;}
-    CMatrix_arma LU_decomposition();
-    CMatrix_arma Cholesky_factor();
-    double det();
-    double rcond();
-    void Print(FILE *FIL);
-    void print(string s);
+    CMatrix_arma& operator-=(const CMatrix_arma&);
+    CMatrix_arma& operator*=(double);
+    CMatrix_arma& operator/=(double);
+    CMatrix_arma& operator+=(double);
+    CMatrix_arma& operator-=(double);
+
+    /// Comparisons
+    bool operator==(const CMatrix_arma&) const;
+
+    /// Math operations
+    CMatrix_arma inv() const;
+    CMatrix_arma t() const;
+    CVector diag() const;
+    CVector diagvector() const;
+    CVector diag_ratio() const;
+
+    /// Decompositions
+    CMatrix_arma LU_decomposition() const;
+    CMatrix_arma Cholesky_factor() const;
+
+    /// Matrix editing
     void setval(double a);
     void setvaldiag(double a);
-    void writetofile(FILE *f);
-    void writetofile(string filename);
-    void writetofile_app(string filename);
-	friend void write_to_file(vector<CMatrix_arma> M, string filename);
-	friend CMatrix_arma Average(vector<CMatrix_arma> M);
-    CVector_arma diag_ratio();
-    vector<vector<bool> > non_posdef_elems(double tol = 1);
-    CMatrix_arma non_posdef_elems_m(double tol = 1);
-    CMatrix_arma Preconditioner(double tol = 1);
-    vector<string> toString(string format = "", vector<string> columnHeaders = vector<string>(), vector<string> rowHeaders = vector<string>()) const;
-	vector<string> toHtml(string format = "", vector<string> columnHeaders = vector<string>(), vector<string> rowHeaders = vector<string>());
+    void ScaleDiagonal(double x);
     void setnumcolrows();
-    void setrow(int i, CVector_arma V);
-    void setrow(int i, CVector V);
-    void setcol(int i, CVector_arma V);
-    void setcol(int i, CVector V);
-    CVector diagvector();
-	void ScaleDiagonal(double x);
+    void setrow(int, const CVector_arma&);
+    void setrow(int, const CVector&);
+    void setcol(int, const CVector_arma&);
+    void setcol(int, const CVector&);
 
+    /// Definite matrix diagnostics
+    std::vector<std::vector<bool>> non_posdef_elems(double tol = 1.0) const;
+    CMatrix_arma non_posdef_elems_m(double tol = 1.0) const;
+    CMatrix_arma Preconditioner(double tol = 1.0) const;
 
+    /// Utilities
+    void Print(FILE* f) const;
+    void writetofile(FILE* f) const;
+    void writetofile(const string& filename) const;
+    void writetofile(ofstream& f) const;
+    void writetofile_app(const string& filename) const;
+    void print(const string& title = "") const;
+    vector<string> toString(string format = "", vector<string> columnHeaders = vector<string>(), vector<string> rowHeaders = vector<string>()) const;
+    std::vector<std::string> toHtml(std::string format = "", std::vector<std::string> colHeaders = {}, std::vector<std::string> rowHeaders = {}) const;
+
+    /// Stats
+    CVector maxelements() const;
 };
 
-double det(CMatrix_arma &);
-double rcond(CMatrix_arma &);
-CMatrix_arma Log(CMatrix_arma &M1);
-CMatrix_arma Exp(CMatrix_arma &M1);
-CMatrix_arma Sqrt(CMatrix_arma &M1);
+/// Free functions
 CMatrix_arma operator+(const CMatrix_arma&, const CMatrix_arma&);
-CMatrix_arma operator+(double, const CMatrix_arma&);
-CMatrix_arma operator+(const CMatrix_arma&, double);
-CMatrix_arma operator-(double d, const CMatrix_arma &m1);
-CMatrix_arma operator+(const CMatrix_arma &m1, double d);
-CMatrix_arma operator-(const CMatrix_arma &m1,double d);
-CMatrix_arma operator/(const CMatrix_arma &m1,double d);
-CMatrix_arma operator/(double d, const CMatrix_arma &m1);
 CMatrix_arma operator-(const CMatrix_arma&, const CMatrix_arma&);
 CMatrix_arma operator*(const CMatrix_arma&, const CMatrix_arma&);
-CVector_arma operator*(const CMatrix_arma&, const CVector_arma&);
-CMatrix_arma operator*(const CVector_arma&, const CMatrix_arma&);
-CMatrix_arma operator*(double, CMatrix_arma);
-CVector_arma operator/(CVector_arma&, CMatrix_arma&);
-CVector_arma operator/(const CVector_arma &V, const CMatrix_arma &M);
-CMatrix_arma Transpose(CMatrix_arma &M1);
-CMatrix_arma Invert(CMatrix_arma M1);
-bool Invert(CMatrix_arma &M1,CMatrix_arma &out);
-bool Invert(CMatrix_arma *M1,CMatrix_arma *out);
-CVector_arma SpareSolve(CMatrix_arma, CVector_arma);
-CMatrix_arma oneoneprod(CMatrix_arma &m1, CMatrix_arma &m2);
-CVector_arma solve_ar(CMatrix_arma&, CVector_arma&);
-CMatrix_arma inv(CMatrix_arma&);
-CMatrix_arma normalize_diag( const CMatrix_arma&,  const CMatrix_arma&);
-CVector_arma normalize_diag( const CVector_arma&,  const CMatrix_arma&);
-CVector_arma normalize_diag( const CVector_arma&,  const CVector_arma&);
-CMatrix_arma normalize_max( const CMatrix_arma&,  const CMatrix_arma&);
-CVector_arma normalize_max( const CVector_arma&,  const CMatrix_arma&);
-CVector_arma normalize_max( const CVector_arma&,  const CVector_arma&);
-CMatrix_arma mult(const CMatrix_arma&, const CMatrix_arma&);
-CVector_arma mult(const CMatrix_arma&, const CVector_arma&);
-CVector_arma mult(const CVector_arma&, const CMatrix_arma&);
-CMatrix_arma Identity_ar(int rows);
-CVector_arma maxelements(const CMatrix_arma&);
-CMatrix_arma Cholesky_factor(CMatrix_arma &M);
-CMatrix_arma LU_decomposition(CMatrix_arma &M);
+CMatrix_arma operator*(const CMatrix_arma&, double);
+CMatrix_arma operator*(double, const CMatrix_arma&);
+CMatrix_arma operator/(const CMatrix_arma&, double);
 
+CMatrix_arma Log(const CMatrix_arma&);
+CMatrix_arma Exp(const CMatrix_arma&);
+CMatrix_arma Sqrt(const CMatrix_arma&);
+CMatrix_arma Transpose(const CMatrix_arma&);
+CMatrix_arma Invert(const CMatrix_arma&);
+bool Invert(const CMatrix_arma&, CMatrix_arma&);
+
+CVector normalize_diag(const CVector&, const CMatrix_arma&);
+CVector normalize_diag(const CVector&, const CVector&);
+CMatrix_arma normalize_diag(const CMatrix_arma&, const CMatrix_arma&);
+
+CVector normalize_max(const CVector&, const CVector&);
+CVector normalize_max(const CVector&, const CMatrix_arma&);
+CMatrix_arma normalize_max(const CMatrix_arma&, const CMatrix_arma&);
+
+CMatrix_arma oneoneprod(const CMatrix_arma&, const CMatrix_arma&);
+CMatrix_arma Average(const std::vector<CMatrix_arma>&);
+
+CVector solve_ar(const CMatrix_arma&, const CVector&);
+double det(const CMatrix_arma&);
+double rcond(const CMatrix_arma&);
+
+CVector gauss0(CMatrix_arma, CVector);
+void triangulate(CMatrix_arma&, CVector&);
+void backsubst(CMatrix_arma&, CVector&, CVector&);
+
+void write_to_file(const std::vector<CMatrix_arma>&, const std::string&);

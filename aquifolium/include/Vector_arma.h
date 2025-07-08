@@ -15,6 +15,7 @@
 
 
 
+// Refactored Vector_arma.h
 #pragma once
 
 #include <iostream>
@@ -22,100 +23,121 @@
 #define ARMA_DONT_PRINT_ERRORS
 #include "armadillo"
 
-
 using namespace arma;
 using namespace std;
 
 class CMatrix_arma;
 class CVector;
 class SizeDist;
-class CVector_arma
-{
-private:
 
-
+/**
+ * @brief An Armadillo-based vector class with enhanced functionality.
+ * Inherits from arma::vec for efficient linear algebra operations.
+ */
+class CVector_arma : public arma::vec {
 public:
-	vec vect;
-	CVector_arma();
-	CVector_arma(int);
-	CVector_arma(const vector<double>, int);
-	CVector_arma(const vector<double> &v);
-	CVector_arma(const vec &v);
-	CVector_arma(CVector &v);
-	CVector_arma(const vector<int> &v);
-	CVector_arma(const double x, int n);
-    CVector_arma(const double x_min, const double x_max, int n);  //CVector_arma:: is redundant. However, works fine here.
-	CVector_arma(const CVector_arma&);
-	double& operator[](int);
-	virtual ~CVector_arma();
-	int num;
-    int range(int);
-	CVector_arma& operator=(const CVector_arma&);
-	CVector_arma& operator=(const CVector&);
-	CVector_arma& operator=(const vector<double>&);
-	CVector_arma& operator=(const double &v);
-	CVector_arma operator=(mat);
-	CVector_arma& operator+();
-	void swap(int , int );
+    /// Constructors
+    CVector_arma();
+    explicit CVector_arma(int n);
+    CVector_arma(const vector<double>& v);
+    CVector_arma(const vector<double>& v, int n);
+    CVector_arma(const arma::vec& v);
+    CVector_arma(const CVector& v);
+    CVector_arma(const vector<int>& v);
+    CVector_arma(double x, int n);
+    CVector_arma(double x_min, double x_max, int n);
+    CVector_arma(const CVector_arma&);
+
+    /// Element access
+    double& operator[](int i);
+    const double& operator[](int i) const;
+
+    /// Assignment operators
+    CVector_arma& operator=(const CVector_arma&);
+    CVector_arma& operator=(const CVector&);
+    CVector_arma& operator=(const vector<double>&);
+    CVector_arma& operator=(const double&);
+    CVector_arma operator=(const mat&);
+
+    /// Unary operations
+    CVector_arma& operator+();
+
+    /// Modifiers
+    void swap(int i, int j);
+
+    /// Utilities
     int getsize() const;
     bool haszeros() const;
-	CVector_arma& operator*=(double);
-	CVector_arma& operator/=(double);
-	CVector_arma& operator+=(const CVector_arma&);
-	CVector_arma& operator-=(const CVector_arma&);
-	CVector_arma& operator*=(const CVector_arma&);
-	friend double dotproduct(CVector_arma, CVector_arma);
-	friend CVector_arma mult(CMatrix_arma&, CVector_arma&);
-	friend double norm(CVector_arma);			//Friend can be deleted. we don't have any private or protected variable in this class  //
-	friend double dotproduct(CVector_arma v1, CVector_arma v2);
-	bool operator==(double v);
-	bool operator==(CVector_arma &v);
-	double max();
-	double min();
-	double norm2();
-	double sum();
-	double abs_max();
-	int abs_max_elems();
-	CMatrix_arma T();
-	CVector_arma Log();
-	CVector_arma abs();
-	CVector_arma H();
-	void writetofile(FILE *f);
-	void writetofile(string filename);
-	void writetofile(ofstream &f);
-	void writetofile_app(string filename);
-	CVector_arma Exp();
-	vector<int> Int();
-	CMatrix_arma diagmat();
-	CVector_arma append(const CVector_arma& V1);
-	CVector_arma append(double d);
-	CVector_arma sort();
-	vector<int> lookup(double val);
-	void print(string s);
-	CVector_arma sub(int i, int j);
-	bool is_finite();
-	vector<int> get_nan_elements();
+    bool is_finite() const;
+
+    /// Arithmetic
+    CVector_arma& operator*=(double);
+    CVector_arma& operator/=(double);
+    CVector_arma& operator+=(const CVector_arma&);
+    CVector_arma& operator-=(const CVector_arma&);
+    CVector_arma& operator*=(const CVector_arma&);
+
+    /// Comparison
+    bool operator==(double v) const;
+    bool operator==(const CVector_arma& v) const;
+
+    /// Math operations
+    double max() const;
+    double min() const;
+    double abs_max() const;
+    int abs_max_elems() const;
+    double norm2() const;
+    double sum() const;
+
+    /// Transformations
+    CMatrix_arma T() const;
+    CVector_arma Log() const;
+    CVector_arma Exp() const;
+    CVector_arma abs() const;
+    CVector_arma H() const;
+    CVector_arma sub(int i, int j) const;
+    CVector_arma append(const CVector_arma&);
+    CVector_arma append(double d);
+    vector<int> Int() const;
+    vector<int> lookup(double val) const;
+    vector<int> get_nan_elements() const;
+    vector<int> negative_elements() const;
+    CMatrix_arma diagmat() const;
+
+    /// File output
+    void writetofile(FILE* f) const;
+    void writetofile(const string& filename) const;
+    void writetofile(ofstream& f) const;
+    void writetofile_app(const string& filename) const;
+    void print(const string& s) const;
+
+    /// Output formatting
     string toString() const;
-    vector<int> negative_elements();
 };
 
-CVector_arma Log(CVector_arma &);
-CVector_arma Exp(CVector_arma &);
-CVector_arma abs(CVector_arma &);  //works w/o reference. if const included means read only
-double abs_max(CVector_arma &);
-double min(CVector_arma &);
-double max(CVector_arma &);
-CVector_arma H(CVector_arma &);
+/// Non-member utility functions
+CVector_arma Log(const CVector_arma&);
+CVector_arma Exp(const CVector_arma&);
+CVector_arma abs(const CVector_arma&);
+double abs_max(const CVector_arma&);
+double min(const CVector_arma&);
+double max(const CVector_arma&);
+CVector_arma H(const CVector_arma&);
+
 CVector_arma operator+(const CVector_arma&, const CVector_arma&);
-CVector_arma operator+(double, CVector_arma);
-CVector_arma operator+(CVector_arma, double);
+CVector_arma operator+(double, const CVector_arma&);
+CVector_arma operator+(const CVector_arma&, double);
 CVector_arma operator-(const CVector_arma&, const CVector_arma&);
-CVector_arma operator-(double, CVector_arma&);
-CVector_arma operator*(CVector_arma, CVector_arma);
-CVector_arma operator*(double, CVector_arma);
-CVector_arma operator*(CVector_arma, double);
-CVector_arma operator/(CVector_arma, double);
-CVector_arma operator/(CVector_arma, CVector_arma);
-CVector_arma operator/(double, CVector_arma);
+CVector_arma operator-(double, const CVector_arma&);
+CVector_arma operator*(const CVector_arma&, const CVector_arma&);
+CVector_arma operator*(double, const CVector_arma&);
+CVector_arma operator*(const CVector_arma&, double);
+CVector_arma operator/(const CVector_arma&, double);
+CVector_arma operator/(const CVector_arma&, const CVector_arma&);
+CVector_arma operator/(double, const CVector_arma&);
+
 CVector_arma zeros_ar(int i);
-double avg(CVector_arma &);
+double avg(const CVector_arma&);
+double dotproduct(const CVector_arma&, const CVector_arma&);
+
+

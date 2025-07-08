@@ -24,6 +24,8 @@
 #include <QtCharts/QChartView>
 #include <QTextBrowser>
 #include "timeseriesloader.h"
+#include "scalarloader.h"
+#include "wizarddialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -57,16 +59,21 @@ private:
     QPushButton* DownloadModelButton = nullptr;
     QTextBrowser* DownloadPrecipTextBrowser = nullptr;
     QTextBrowser* DownloadOutputTextBrowser = nullptr;
+    QTextBrowser* CalculatedValuesTextBroser = nullptr;
     QString modeltemplate;
     QLabel *errorBanner = new QLabel();
     TimeSeriesLoader* loader = nullptr;
-
+    ScalarLoader* scalarloader = nullptr;
+    bool templateAlreadyRequested = false;
+    bool resultsRead = false;
+    WizardDialog *wizDialog = nullptr;
 public slots:
     void handleData(const QJsonDocument &JsonDoc); //Handle the model output data recieved
     void TemplateRecieved(const QJsonDocument &JsonDoc); //Template Recieved
     void onError(QAbstractSocket::SocketError error);
     void onDownloadModel();
     void handleLoadedTimeSeries(const QMap<QString, TimeSeries>& tsMap);
+    void handleLoadedScalar(const QMap<QString, double> data);
 
 
 
@@ -75,5 +82,6 @@ public slots:
 
 QDateTime excelToQDateTime(double excelDate);
 QString socketErrorToString(QAbstractSocket::SocketError error);
+QString convertToSuperscript(const QString& input);
 
 #endif // MAINWINDOW_H

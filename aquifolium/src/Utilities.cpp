@@ -15,7 +15,9 @@
 
 
 #include "Utilities.h"
-
+#if __cplusplus >= 201703L
+#include <filesystem>
+#endif
 
 using namespace std;
 
@@ -662,6 +664,18 @@ namespace aquiutils
     bool FileExists(const std::string& name) {
         ifstream f(name.c_str());
         return f.good();
+    }
+
+
+
+    std::string extract_path(const std::string& filepath) {
+        #if __cplusplus >= 201703L
+                std::filesystem::path p(filepath);
+                return p.has_parent_path() ? p.parent_path().string() : "";
+        #else
+                size_t pos = filepath.find_last_of("/\\");
+                return (pos != std::string::npos) ? filepath.substr(0, pos) : "";
+        #endif
     }
 
     double mod(double x, double y)
