@@ -162,6 +162,8 @@ SOURCES += \
     wizard_select_dialog.cpp
 
 HEADERS += \
+    aquifolium/include/TimeSeries.h \
+    aquifolium/src/TimeSeries.hpp \
     chartview.h \
     qplotter.h \
     qplotwindow.h \

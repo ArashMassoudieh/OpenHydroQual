@@ -457,7 +457,7 @@ T diff_relative(CTimeSeries<T> &BTC_A, CTimeSeries<T> &BTC_B, T m)
 }
 
 template<class T>
-T diff(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, int scale)
+T diff(CTimeSeries<T> BTC_p, CTimeSeries<T> BTC_d, double scale)
 {
     T sum = 0;
 	for (int i=0; i<BTC_d.n; i++)
@@ -938,28 +938,6 @@ CTimeSeries<T> operator-(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 	return S;
 }
 
-template<class T> T KolmogorovSmirnov(const CTimeSeries<T> &BTC1, const CTimeSeries<T> &BTC2)
-{
-    //qDebug()<<"Inside the KS function";
-    CTimeSeries<T> CDF1 = BTC1.GetCummulativeDistribution();
-    CTimeSeries<T> CDF2 = BTC2.GetCummulativeDistribution();
-    //qDebug()<<"CDFs calculated";
-    //qDebug()<<CDF1.n<<","<<CDF1.maxC();
-    //qDebug()<<CDF2.n<<","<<CDF2.maxC();
-    T out = max(fabs((CDF1-CDF2).maxC()),fabs((CDF1-CDF2).minC()));
-    //qDebug()<<out;
-    return out;
-}
-
-template<class T> T KolmogorovSmirnov(CTimeSeries<T> *BTC1, CTimeSeries<T> *BTC2)
-{
-    //qDebug()<<"Inside the KS function";
-    CTimeSeries<T> CDF1 = BTC1->GetCummulativeDistribution();
-    CTimeSeries<T> CDF2 = BTC2->GetCummulativeDistribution();
-    //qDebug()<<"CDFs calculated";
-    return max(fabs((CDF1-CDF2).maxC()),fabs((CDF1-CDF2).minC()));
-}
-
 template<class T>
 CTimeSeries<T> operator*(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 {
@@ -1013,7 +991,7 @@ CTimeSeries<T> operator&(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 }
 
 template<class T>
-T CTimeSeries<T>::maxC() const
+T CTimeSeries<T>::maxC() const //up to here
 {
 	double max = -1e32;
 	for (int i=0; i<n; i++)
@@ -2158,3 +2136,24 @@ QJsonObject CTimeSeries<T>::toJson() const {
     return obj;
 }
 
+template<class T> T KolmogorovSmirnov(const CTimeSeries<T> &BTC1, const CTimeSeries<T> &BTC2)
+{
+    //qDebug()<<"Inside the KS function";
+    CTimeSeries<T> CDF1 = BTC1.GetCummulativeDistribution();
+    CTimeSeries<T> CDF2 = BTC2.GetCummulativeDistribution();
+    //qDebug()<<"CDFs calculated";
+    //qDebug()<<CDF1.n<<","<<CDF1.maxC();
+    //qDebug()<<CDF2.n<<","<<CDF2.maxC();
+    T out = max(fabs((CDF1-CDF2).maxC()),fabs((CDF1-CDF2).minC()));
+    //qDebug()<<out;
+    return out;
+}
+
+template<class T> T KolmogorovSmirnov(CTimeSeries<T> *BTC1, CTimeSeries<T> *BTC2)
+{
+    //qDebug()<<"Inside the KS function";
+    CTimeSeries<T> CDF1 = BTC1->GetCummulativeDistribution();
+    CTimeSeries<T> CDF2 = BTC2->GetCummulativeDistribution();
+    //qDebug()<<"CDFs calculated";
+    return max(fabs((CDF1-CDF2).maxC()),fabs((CDF1-CDF2).minC()));
+}

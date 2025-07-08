@@ -16,6 +16,7 @@
 
 #include "mainwindow.h"
 #include <QApplication>
+#include "TimeSeries.h"
 
 //#undef ARMA_USE_OPENMP
 
