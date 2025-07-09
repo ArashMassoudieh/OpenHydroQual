@@ -991,7 +991,7 @@ CTimeSeries<T> operator&(CTimeSeries<T> &BTC1, CTimeSeries<T> &BTC2)
 }
 
 template<class T>
-T CTimeSeries<T>::maxC() const //up to here
+T CTimeSeries<T>::maxC() const 
 {
 	double max = -1e32;
 	for (int i=0; i<n; i++)

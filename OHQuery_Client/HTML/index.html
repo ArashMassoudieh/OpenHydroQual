@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clickable Icon Grid</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+      max-width: 800px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .grid a {
+      text-align: center;
+      text-decoration: none;
+      color: #333;
+      transition: transform 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .grid a:hover {
+      transform: scale(1.05);
+    }
+    .grid img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    .label {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid">
+    <a href="ASM1.html">
+      <img src="ASM1.png" alt="ASM1">
+      <div class="label">ASM1 Model</div>
+    </a>
+    <a href="ASMS.html">
+      <img src="ASMS.png" alt="ASMS">
+      <div class="label">Advanced ASM System</div>
+    </a>
+    <a href="Bioretention.html">
+      <img src="Bioretention.png" alt="Bioretention">
+      <div class="label">Bioretention System</div>
+    </a>
+    <a href="bioswale.html">
+      <img src="bioswale.png" alt="Bioswale">
+      <div class="label">Bioswale</div>
+    </a>
+    <a href="Filtration.html">
+      <img src="Flitration.png" alt="Filtration">
+      <div class="label">Filtration System</div>
+    </a>
+    <a href="Infiltration_Basin.html">
+      <img src="Infiltration_Basin.png" alt="Infiltration Basin">
+      <div class="label">Infiltration Basin</div>
+    </a>
+    <a href="Infiltration_Trench.html">
+      <img src="Infiltration_trench.png" alt="Infiltration Trench">
+      <div class="label">Infiltration Trench</div>
+    </a>
+    <a href="Permeable_Pavement.html">
+      <img src="PermeablePavement.png" alt="Permeable Pavement">
+      <div class="label">Permeable Pavement</div>
+    </a>
+    <a href="Soil_Grid.html">
+      <img src="soil_grid.png" alt="Soil Grid">
+      <div class="label">Soil Grid Structure</div>
+    </a>
+    <a href="Stormwater.html">
+      <img src="Stormwater.png" alt="Stormwater">
+      <div class="label">Stormwater Management</div>
+    </a>
+  </div>
+</body>
+</html>
