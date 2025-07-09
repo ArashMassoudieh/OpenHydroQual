@@ -110,7 +110,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow rate (m~^3/day)",
-      "expression": "24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs((head.s-head.e)/length;0.00001)*_abs((head.s-head.e)/length)^0.54",
+      "expression": "24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-hydraulic_gradient;0.00001)*_abs(-hydraulic_gradient)^0.54",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
@@ -234,7 +234,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow rate (m~^3/day)",
-      "expression": "24055.44*hz_coeff*diameter^2.63*_pos((head.s-head.e)/length)^0.54",
+      "expression": "24055.44*hz_coeff*diameter^2.63*_pos(-hydraulic_gradient)^0.54",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
@@ -288,7 +288,7 @@
     },
     "head": {
       "type": "expression",
-      "expression": "elevation+elasticity*Storage-0.01",
+      "expression": "elevation+elasticity*(Storage-0.01)",
       "description": "Hydraulic Head",
       "ask_user": "false",
       "includeinoutput": "true"
