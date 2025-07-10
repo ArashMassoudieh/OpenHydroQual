@@ -361,13 +361,13 @@ bool QuanSet::AppendError(const string &objectname, const string &cls, const str
     return true;
 }
 
-SafeVector<TimeSeries<timeseriesprecision>*> QuanSet::GetTimeSeries()
+SafeVector<TimeSeries<timeseriesprecision>*> QuanSet::GetTimeSeries(bool onlyprecip)
 {
 
     SafeVector<TimeSeries<timeseriesprecision>*> out;
     for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
     {
-        if (quans[it->first].GetType() == Quan::_type::timeseries && quans[it->first].GetTimeSeries()!=nullptr)
+        if (quans[it->first].GetType() == Quan::_type::timeseries && quans[it->first].GetTimeSeries()!=nullptr && !onlyprecip)
             out.push_back(quans[it->first].GetTimeSeries());
     }
     for (unordered_map<string, Quan>::iterator it = quans.begin(); it != quans.end(); it++)

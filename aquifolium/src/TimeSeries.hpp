@@ -101,6 +101,7 @@ TimeSeries<T>::TimeSeries(const TimeSeries<T>& other)
     dt_ = other.dt_;
     name_ = other.name_;
     unit_ = other.unit_;
+    filename_ = other.filename_;
 
 }
 
@@ -478,6 +479,7 @@ TimeSeries<T>::TimeSeries(TimeSeries<T>&& other) noexcept
     dt_ = other.dt_;
     name_ = std::move(other.name_);
     unit_ = std::move(other.unit_);
+    filename_ = std::move(other.filename_);
 }
 
 // Copy assignment
@@ -488,6 +490,7 @@ TimeSeries<T>& TimeSeries<T>::operator=(const TimeSeries<T>& other) {
         name_ = other.name_;
         unit_ = other.unit_;
 		structured_ = other.structured_;
+        filename_ = other.filename_;
     }
     return *this;
 }
@@ -547,6 +550,7 @@ bool TimeSeries<T>::readfile(const std::string& filename) {
     }
 
     file.close();
+    filename_ = filename;
     return !this->empty();
 }
 

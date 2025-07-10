@@ -582,7 +582,7 @@ bool System::Solve(bool applyparameters)
     else
         SetNumberOfStateVariables(solvevariableorder.size());
     SolverTempVars.SetUpdateJacobian(true);
-    alltimeseries = GetTimeSeries();
+    alltimeseries = GetTimeSeries(true);
 	bool success = true;
     #ifdef Q_version
     errorhandler.SetRunTimeWindow(rtw);
@@ -3029,33 +3029,36 @@ bool System::Echo(const string &obj, const string &quant, const string &feature)
 
 }
 
-SafeVector<TimeSeries<timeseriesprecision>*> System::GetTimeSeries()
+SafeVector<TimeSeries<timeseriesprecision>*> System::GetTimeSeries(bool onlyprecip)
 {
     SafeVector<TimeSeries<timeseriesprecision>*> out;
     for (unsigned int i=0; i<links.size(); i++)
     {
-        for (unsigned int j=0; j<links[i].GetTimeSeries().size(); j++)
+        vector<TimeSeries<timeseriesprecision>*> linktimeseires = links[i].GetTimeSeries(onlyprecip);
+        for (unsigned int j=0; j<linktimeseires.size(); j++)
         {
             links[i].GetTimeSeries()[j]->assign_D();
-            out.push_back(links[i].GetTimeSeries()[j]);
+            out.push_back(linktimeseires[j]);
         }
     }
 
     for (unsigned int i=0; i<blocks.size(); i++)
     {
-        for (unsigned int j=0; j<blocks[i].GetTimeSeries().size(); j++)
+        vector<TimeSeries<timeseriesprecision>*> blocktimeseires = blocks[i].GetTimeSeries(onlyprecip);
+        for (unsigned int j=0; j<blocktimeseires.size(); j++)
         {
             blocks[i].GetTimeSeries()[j]->assign_D();
-            out.push_back(blocks[i].GetTimeSeries()[j]);
+            out.push_back(blocktimeseires[j]);
         }
     }
 
     for (unsigned int i=0; i<sources.size(); i++)
     {
-        for (unsigned int j=0; j<sources[i].GetTimeSeries().size(); j++)
+        vector<TimeSeries<timeseriesprecision>*> sourcetimeseires = sources[i].GetTimeSeries(onlyprecip);
+        for (unsigned int j=0; j<sourcetimeseires.size(); j++)
         {
             sources[i].GetTimeSeries()[j]->assign_D();
-            out.push_back(sources[i].GetTimeSeries()[j]);
+            out.push_back(sourcetimeseires[j]);
         }
     }
 

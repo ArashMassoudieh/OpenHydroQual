@@ -339,7 +339,7 @@ class System: public Object
         string OutputPath() {return paths.outputpath;}
         string ObservedOutputFileName() {return paths.observedoutputfilename;}
         string OutputFileName() {return paths.outputfilename;}
-        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries();
+        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip=false);
         double GetMinimumNextTimeStepSize();
         Object *GetObjectBasedOnPrimaryKey(const string &s);
         bool SavetoScriptFile(const string &filename, const string &templatefilename="", const vector<string> &addedtemplates = vector<string>());

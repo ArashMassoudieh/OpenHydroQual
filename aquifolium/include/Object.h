@@ -93,7 +93,7 @@ class Object
 		bool CalcExpressions(const Expression::timing& tmg);
         bool EstablishExpressionStructure();
         bool VerifyQuans(ErrorHandler *errorhandler);
-        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries() {return var.GetTimeSeries();}
+        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip = false) {return var.GetTimeSeries(onlyprecip);}
         string TypeCategory() {return GetVars()->CategoryType();}
 		QuanSet* GetVars()
             {
