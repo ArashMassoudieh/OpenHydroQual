@@ -135,7 +135,7 @@ void TimeSeriesSet<T>::write(const std::string& filename, const std::string& del
     // Write header using TimeSeries names
     if (!this->empty()) {
         for (size_t i = 0; i < this->size(); ++i) {
-            file << (*this)[i].name();
+            file << "t, " << (*this)[i].name();
             if (i < this->size() - 1) file << delimiter;
         }
         file << "\n";
@@ -152,9 +152,9 @@ void TimeSeriesSet<T>::write(const std::string& filename, const std::string& del
         for (size_t i = 0; i < this->size(); ++i) {
             const auto& ts = (*this)[i];
             if (j < ts.size())
-                file << ts.getValue(j);
+                file << ts.getTime(j) << "," << ts.getValue(j);
             else
-                file << ""; // Empty if that TimeSeries is shorter
+                file << ","; // Empty if that TimeSeries is shorter
             if (i < this->size() - 1) file << delimiter;
         }
         file << "\n";

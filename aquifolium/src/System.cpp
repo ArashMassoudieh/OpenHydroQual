@@ -1377,7 +1377,7 @@ void System::PopulateOutputs(bool dolinks)
         {
             for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
                 if (it->second.IncludeInOutput())
-                    Outputs.AllOutputs[blocks[i].GetName() + "_" + it->first].append(SolverTempVars.t+SolverTempVars.dt, blocks[i].GetVal(it->first, Expression::timing::present));
+                    Outputs.AllOutputs[blocks[i].GetName() + "_" + it->first].append(SolverTempVars.t, blocks[i].GetVal(it->first, Expression::timing::present));
 
         }
 

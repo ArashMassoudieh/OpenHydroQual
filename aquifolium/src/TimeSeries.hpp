@@ -1479,6 +1479,7 @@ TimeSeries<T> TimeSeries<T>::make_uniform(T increment, bool assignD) const {
 
         if (p1.t <= current_t && current_t <= p2.t) {
             T ratio = (current_t - p1.t) / (p2.t - p1.t);
+            if (p2.t == p1.t) ratio = 0.5; 
             T c_interp = p1.c + ratio * (p2.c - p1.c);
             std::optional<T> d_interp = std::nullopt;
 
