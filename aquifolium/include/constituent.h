@@ -18,7 +18,7 @@
 #define CONSTITUENT_H
 
 #include "Expression.h"
-#include "BTC.h"
+#include "TimeSeries.h"
 #include "Object.h"
 
 class System;

@@ -24,6 +24,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <cmath>
+#include "DistributionNUnif.h"
 #ifdef QT_Version
 #include <QFile>
 #include <QTextStream>
@@ -323,13 +324,29 @@ void TimeSeriesSet<T>::knockout(T t) {
     }
 }
 
+/*
 template <typename T>
 void TimeSeriesSet<T>::ResizeIfNeeded(size_t new_size) {
-    if (this->size() < new_size)
-        this->resize(new_size);
+    for (TimeSeries<T>& ts : *this)
+        ts.adjust_size(new_size);
+}
+*/
+template <typename T>
+void TimeSeriesSet<T>::removeNaNs() {
+    for (size_t i = 0; i < this->size(); ++i)
+        (*this)[i].removeNaNs();
 }
 
+template <typename T>
+TimeSeriesSet<T> TimeSeriesSet<T>::removeNaNs() const {
+    TimeSeriesSet<T> cleaned_set;
 
+    for (const auto& ts : *this) {
+        cleaned_set.append(ts.removeNaNs());
+    }
+
+    return cleaned_set;
+}
 
 // --- Metadata ---
 
@@ -737,19 +754,50 @@ TimeSeriesSet<T> TimeSeriesSet<T>::make_uniform(T increment, bool assign_d) cons
     return result;
 }
 
-template<typename T>
-TimeSeriesSet<T> TimeSeriesSet<T>::getpercentiles(const std::vector<T>& fractions) const {
-    TimeSeriesSet<T> result;
-    for (const TimeSeries<T>& ts : *this) {
-        TimeSeries<T> perc;
-        std::vector<T> vals = percentile(ts, fractions);
-        for (size_t i = 0; i < fractions.size(); ++i) {
-            perc.append(fractions[i], vals[i]);
-        }
-        result.push_back(perc);
+template <typename T>
+TimeSeriesSet<T> TimeSeriesSet<T>::getpercentiles(const std::vector<T>& percents) const {
+    TimeSeriesSet<T> result(1 + percents.size());
+    if (this->empty())
+        return result;
+
+    // Set names: first is "Mean", then percentiles
+    result[0].setName("Mean");
+    for (size_t j = 0; j < percents.size(); ++j) {
+        std::string label = std::to_string(percents[j] * 100) + " %";
+        result[j + 1].setName(label);
     }
+
+    const size_t max_points = this->maxnumpoints();
+
+    for (size_t i = 0; i < max_points; ++i) {
+        std::vector<T> values;
+        int count = 0;
+
+        for (size_t j = 0; j < this->size(); ++j) {
+            if (i < (*this)[j].size()) {
+                values.push_back((*this)[j].getValue(i));
+                ++count;
+            }
+        }
+
+        if (count == 0) continue;
+
+        T mean_val = std::accumulate(values.begin(), values.end(), T(0)) / static_cast<T>(count);
+        std::vector<T> percentile_vals = TimeSeriesMetrics::percentile(values, percents);
+
+        std::vector<T> row(1 + percents.size());
+        row[0] = mean_val;
+        for (size_t j = 0; j < percents.size(); ++j)
+            row[j + 1] = percentile_vals[j];
+
+        // Use time from the first time series (if available)
+        T time = (i < (*this)[0].size()) ? (*this)[0].getTime(i) : T(i);
+        result.append(time, row);
+    }
+
     return result;
 }
+
 
 template<typename T>
 TimeSeriesSet<T> TimeSeriesSet<T>::distribution(int n_bins, int start_index, int end_index) const {
@@ -1025,4 +1073,40 @@ CVector sum_interpolate(std::vector<TimeSeriesSet<T>>& sets, double t) {
         }
     }
     return result;
+}
+
+// Returns the maximum value across all time series
+template <class T>
+T TimeSeriesSet<T>::maxval() const {
+    T max_val = -1e12;
+    for (size_t i = 0; i < this->size(); ++i)
+        max_val = std::max((*this)[i].maxC(), max_val);
+    return max_val;
+}
+
+// Returns the minimum value across all time series
+template <class T>
+T TimeSeriesSet<T>::minval() const {
+    T min_val = 1e12;
+    for (size_t i = 0; i < this->size(); ++i)
+        min_val = std::min((*this)[i].minC(), min_val);
+    return min_val;
+}
+
+// Returns the minimum timestamp across all time series
+template <class T>
+T TimeSeriesSet<T>::mintime() const {
+    T min_time = 1e12;
+    for (size_t i = 0; i < this->size(); ++i)
+        min_time = std::min((*this)[i].mint(), min_time);
+    return min_time;
+}
+
+// Returns the maximum timestamp across all time series
+template <class T>
+T TimeSeriesSet<T>::maxtime() const {
+    T max_time = -1e12;
+    for (size_t i = 0; i < this->size(); ++i)
+        max_time = std::max((*this)[i].maxt(), max_time);
+    return max_time;
 }

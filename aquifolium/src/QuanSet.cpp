@@ -361,19 +361,19 @@ bool QuanSet::AppendError(const string &objectname, const string &cls, const str
     return true;
 }
 
-SafeVector<CTimeSeries<timeseriesprecision>*> QuanSet::TimeSeries()
+SafeVector<TimeSeries<timeseriesprecision>*> QuanSet::GetTimeSeries()
 {
 
-    SafeVector<CTimeSeries<timeseriesprecision>*> out;
+    SafeVector<TimeSeries<timeseriesprecision>*> out;
     for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
     {
-        if (quans[it->first].GetType() == Quan::_type::timeseries && quans[it->first].TimeSeries()!=nullptr)
-            out.push_back(quans[it->first].TimeSeries());
+        if (quans[it->first].GetType() == Quan::_type::timeseries && quans[it->first].GetTimeSeries()!=nullptr)
+            out.push_back(quans[it->first].GetTimeSeries());
     }
     for (unordered_map<string, Quan>::iterator it = quans.begin(); it != quans.end(); it++)
     {
-        if (quans[it->first].GetType() == Quan::_type::prec_timeseries && quans[it->first].TimeSeries() != nullptr)
-            out.push_back(quans[it->first].TimeSeries());
+        if (quans[it->first].GetType() == Quan::_type::prec_timeseries && quans[it->first].GetTimeSeries() != nullptr)
+            out.push_back(quans[it->first].GetTimeSeries());
     }
     return out;
 }

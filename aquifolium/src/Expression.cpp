@@ -451,8 +451,8 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
             W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","In block '"+W->GetName()+ "' property '" + terms[0].parameter + "' must be of type time-series", 7003);
             return 0;
         }
-        if (W->Variable(terms[0].parameter)->TimeSeries())
-            return W->Variable(terms[0].parameter)->TimeSeries()->Exponential_Kernel(W->Parent()->GetTime(),terms[1].calc(W,tmg,limit));
+        if (W->Variable(terms[0].parameter)->GetTimeSeries())
+            return W->Variable(terms[0].parameter)->GetTimeSeries()->Exponential_Kernel(W->Parent()->GetTime(),terms[1].calc(W,tmg,limit));
         else
             return 0;
     }
@@ -473,8 +473,8 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
             W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","In block '"+W->GetName()+ "' property '" + terms[0].parameter + "' must be of type time-series", 7003);
             return 0;
         }
-        if (W->Variable(terms[0].parameter)->TimeSeries())
-            return W->Variable(terms[0].parameter)->TimeSeries()->Gaussian_Kernel(W->Parent()->GetTime(),terms[1].calc(W,tmg,limit),terms[2].calc(W,tmg,limit));
+        if (W->Variable(terms[0].parameter)->GetTimeSeries())
+            return W->Variable(terms[0].parameter)->GetTimeSeries()->Gaussian_Kernel(W->Parent()->GetTime(),terms[1].calc(W,tmg,limit),terms[2].calc(W,tmg,limit));
         else
             return 0;
     }

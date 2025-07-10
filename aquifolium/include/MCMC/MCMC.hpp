@@ -57,10 +57,10 @@ Observation* CMCMC<T>::observation(int i)
 }
 
 template<class T>
-CTimeSeriesSet<double> CMCMC<T>::model(vector<double> par)
+TimeSeriesSet<double> CMCMC<T>::model(vector<double> par)
 {
 	double sum = 0;
-    vector<CTimeSeriesSet<double>> res;
+    vector<TimeSeriesSet<double>> res;
 
 
     T G1 = *Model;
@@ -612,13 +612,13 @@ CVector CMCMC<T>::sensitivity(double d, vector<double> par)
 /*CMatrix CMCMC::sensitivity_mat(double d, vector<double> par)
 {
 
-    vector<CTimeSeriesSet<double>> base = model(par);
+    vector<TimeSeriesSet<double>> base = model(par);
 	CMatrix X(n,base[0].nvars);
 	for (int i=0; i<n; i++)
 	{
 		vector<double> par1 = par;
 		par1[i]=par[i]*(1+d);
-        vector<CTimeSeriesSet<double>> base_1 = model(par1);
+        vector<TimeSeriesSet<double>> base_1 = model(par1);
 
 		for (int j=0; j<1;j++)
 			X[i] = norm2dif(base[j],base_1[j])/d;
@@ -630,7 +630,7 @@ template<class T>
 CMatrix CMCMC<T>::sensitivity_mat_lumped(double d, vector<double> par)
 {
 
-    vector<CTimeSeriesSet<double>> base = model_lumped(par);
+    vector<TimeSeriesSet<double>> base = model_lumped(par);
 #ifdef GIFMOD
 	int ii = G.measured_quan.size();
 #endif
@@ -643,7 +643,7 @@ CMatrix CMCMC<T>::sensitivity_mat_lumped(double d, vector<double> par)
 	{
 		vector<double> par1 = par;
 		par1[i]=par[i]*(1+d);
-        vector<CTimeSeriesSet<double>> base_1 = model_lumped(par1);
+        vector<TimeSeriesSet<double>> base_1 = model_lumped(par1);
 
 		for (int j=0; j<1;j++)
 			X[i] += norm2dif(base[j],base_1[j])/d;
@@ -658,7 +658,7 @@ CMatrix CMCMC<T>::sensitivity_mat_lumped(double d, vector<double> par, T &G) con
 
 {
 
-    vector<CTimeSeriesSet<double>> base = model_lumped(par, G);
+    vector<TimeSeriesSet<double>> base = model_lumped(par, G);
 
 	int ii = G.measured_quan().size();
 
@@ -667,7 +667,7 @@ CMatrix CMCMC<T>::sensitivity_mat_lumped(double d, vector<double> par, T &G) con
 	{
 		vector<double> par1 = par;
 		par1[i] = par[i] * (1 + d);
-        vector<CTimeSeriesSet<double>> base_1 = model_lumped(par1, G);
+        vector<TimeSeriesSet<double>> base_1 = model_lumped(par1, G);
 
 		for (int j = 0; j<1; j++)
 			X[i] += norm2dif(base[j], base_1[j]) / d;
@@ -715,10 +715,10 @@ int CMCMC<T>::readfromfile(string filename)
 }
 
 template<class T>
-CTimeSeriesSet<double> CMCMC<T>::prior_distribution(int n_bins)
+TimeSeriesSet<double> CMCMC<T>::prior_distribution(int n_bins)
 {
-    CTimeSeriesSet<double> prior_dist(MCMC_Settings.number_of_parameters);
-    CTimeSeries<double> B(n_bins);
+    TimeSeriesSet<double> prior_dist(MCMC_Settings.number_of_parameters);
+    TimeSeries<double> B(n_bins);
 
 	double min_range , max_range;
 
@@ -738,17 +738,17 @@ CTimeSeriesSet<double> CMCMC<T>::prior_distribution(int n_bins)
 
 		double dp = abs(max_range - min_range) / n_bins;
 
-        B.SetT(0, min_range + dp/2);
+        B.setTime(0, min_range + dp/2);
 		for (int j=0; j<n_bins-1; j++)
-            B.SetT(j+1, B.GetT(j) + dp);
+            B.setTime(j+1, B.getTime(j) + dp);
 
         if (parameter(i).GetDistribution() != "log-normal")
 			for (int j=0; j<n_bins; j++)
-                B.SetC(j , exp(-pow(B.GetT(j)-parameter(i)->mean(),2)/(2.0*pow(parameter(i)->std(),2)))/(parameter(i)->std()*pow(6.28,0.5)));
+                B.setValue(j , exp(-pow(B.getTime(j)-parameter(i)->mean(),2)/(2.0*pow(parameter(i)->std(),2)))/(parameter(i)->std()*pow(6.28,0.5)));
 
         if (parameter(i).GetDistribution() == "log-normal")
 			for (int j=0; j<n_bins; j++)
-                B.SetC(j, exp(-pow(log(B.GetT(j))-log(parameter(i)->mean()),2)/(2.0*pow(parameter(i)->std(),2)))/(B.GetT(j)*parameter(i)->std()*pow(6.28,0.5)));
+                B.setValue(j, exp(-pow(log(B.getTime(j))-log(parameter(i)->mean()),2)/(2.0*pow(parameter(i)->std(),2)))/(B.getTime(j)*parameter(i)->std()*pow(6.28,0.5)));
 
         prior_dist.BTC[i] = B;
 	}
@@ -757,11 +757,11 @@ CTimeSeriesSet<double> CMCMC<T>::prior_distribution(int n_bins)
 }
 
 template<class T>
-void CMCMC<T>::ProduceRealizations(CTimeSeriesSet<double> &MCMCout)
+void CMCMC<T>::ProduceRealizations(TimeSeriesSet<double> &MCMCout)
 {
 
-    vector<CTimeSeriesSet<double>> realized_timeseries(observations->size());
-    vector<CTimeSeriesSet<double>> predicted_percentiles(observations->size());
+    vector<TimeSeriesSet<double>> realized_timeseries(observations->size());
+    vector<TimeSeriesSet<double>> predicted_percentiles(observations->size());
 
     for (unsigned int jj = 0; jj <=MCMC_Settings.number_of_post_estimate_realizations/MCMC_Settings.numberOfThreads; jj++)
 	{
@@ -790,10 +790,10 @@ void CMCMC<T>::ProduceRealizations(CTimeSeriesSet<double> &MCMCout)
     vector<double> percents; percents.push_back(0.025); percents.push_back(0.5); percents.push_back(0.975);
     for (unsigned int i=0; i<observations->size(); i++)
     {
-        realized_timeseries[i].writetofile(FileInformation.outputpath + "Realizations_" + observation(i)->GetName() + ".txt");
+        realized_timeseries[i].write(FileInformation.outputpath + "Realizations_" + observation(i)->GetName() + ".txt");
         predicted_percentiles[i] = realized_timeseries[i].getpercentiles(percents);
         observation(i)->SetPercentile95(predicted_percentiles[i]);
-        predicted_percentiles[i].writetofile(FileInformation.outputpath + "Predicted_95p_Bracket" + observation(i)->GetName() + ".txt");
+        predicted_percentiles[i].write(FileInformation.outputpath + "Predicted_95p_Bracket" + observation(i)->GetName() + ".txt");
         observation(i)->SetRealizations(realized_timeseries[i]);
 
     }
@@ -801,7 +801,7 @@ void CMCMC<T>::ProduceRealizations(CTimeSeriesSet<double> &MCMCout)
 }
 
 template<class T>
-void CMCMC<T>::get_outputpercentiles(CTimeSeriesSet<double> &MCMCout)
+void CMCMC<T>::get_outputpercentiles(TimeSeriesSet<double> &MCMCout)
 {
 
     ProduceRealizations(MCMCout);
@@ -842,15 +842,15 @@ void CMCMC<T>::Perform()
     if (rtw) rtw->AppendText(string("Generating samples ... "));
     step(mcmcstart, int((MCMC_Settings.total_number_of_samples - mcmcstart) / MCMC_Settings.number_of_chains)*MCMC_Settings.number_of_chains, FileInformation.outputfilename , rtw);
     if (rtw) rtw->AppendText(string("Creating posterior distribution ..."));
-    CTimeSeriesSet<double> all_posterior_distributions;
-    CTimeSeriesSet<double> parameter_samples;
+    TimeSeriesSet<double> all_posterior_distributions;
+    TimeSeriesSet<double> parameter_samples;
     vector<CVector> posterior_percentiles;
     vector<string> col_labels;
     vector<string> row_labels = {"0.025", "0.5", "0.975", "mean"};
     for (unsigned int i=0; i<parameters->size(); i++)
     {
-        CTimeSeriesSet<double> chain_values(MCMC_Settings.number_of_chains);
-        CTimeSeries<double> all_samples;
+        TimeSeriesSet<double> chain_values(MCMC_Settings.number_of_chains);
+        TimeSeries<double> all_samples;
         for (unsigned int i=0; i<MCMC_Settings.number_of_chains; i++)
         {
             chain_values.setname(i,"Chain_" + aquiutils::numbertostring(i));
@@ -866,9 +866,9 @@ void CMCMC<T>::Perform()
         chain_values.name = parameter(i)->GetName();
         parameter(i)->SetMCMCSamples(chain_values);
 
-        CTimeSeries<double> posterior_distribution = all_samples.distribution(all_samples.n/100,0);
+        TimeSeries<double> posterior_distribution = all_samples.distribution(all_samples.size()/100,0);
         all_posterior_distributions.append(posterior_distribution,parameter(i)->GetName());
-        posterior_distribution.name = "Posterior density";
+        posterior_distribution.setName("Posterior density");
         parameter(i)->SetPosteriorDistribution(posterior_distribution);
         parameter_samples.append(all_samples);
         CVector posterior_percentiles_for_this_param;
@@ -882,7 +882,7 @@ void CMCMC<T>::Perform()
     }
     writetofile(posterior_percentiles,col_labels, row_labels, FileInformation.outputpath + "posterior_percentiles.txt");
 
-    all_posterior_distributions.writetofile(FileInformation.outputpath + "Posterior_distributions.txt");
+    all_posterior_distributions.write(FileInformation.outputpath + "Posterior_distributions.txt");
 
     if (rtw) rtw->AppendText(string("Generating Realizations ..."));
     ProduceRealizations(parameter_samples);

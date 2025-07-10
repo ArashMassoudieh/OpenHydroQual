@@ -167,39 +167,38 @@ void CPrecipitation::getfromfile(string _filename)
 }
 
 
-CTimeSeriesSet<double> CPrecipitation::getflow (double A, double dt)
+TimeSeriesSet<double> CPrecipitation::getflow (double A, double dt)
 {
-    CTimeSeriesSet<double> Rainflowout(1);
+    TimeSeriesSet<double> Rainflowout(1);
     Rainflowout.filename = filename;
 	if (n == 0) return Rainflowout;
-	Rainflowout.names.clear();
-	Rainflowout.names.push_back("flow");
+	
+	Rainflowout.append("flow");
 	for (double t = s[0]; t<e[n-1]; t+=dt)
-		Rainflowout.BTC[0].append(t,getval(t)*A);  //i [m]
+		Rainflowout[0].append(t,getval(t)*A);  //i [m]
 
-	Rainflowout.BTC[0].assign_D();
+	Rainflowout[0].assign_D();
 	return Rainflowout;
 }
 
-CTimeSeriesSet<double> CPrecipitation::getflow(double A) const
+TimeSeriesSet<double> CPrecipitation::getflow(double A) const
 {
-    CTimeSeriesSet<double> Rainflowout(1);
+    TimeSeriesSet<double> Rainflowout(1);
     Rainflowout.filename = filename;
-    Rainflowout.names.clear();
-	Rainflowout.names.push_back("flow");
+	Rainflowout.append("flow");
 	for (int ii = 0; ii < n; ii++)
 	{
 		if (ii>0)
 			if (s[ii] > e[ii-1]) 
-				Rainflowout.BTC[0].append(-0.5*e[ii] + 1.5*s[ii] , 0);
+				Rainflowout[0].append(-0.5*e[ii] + 1.5*s[ii] , 0);
 		
-		Rainflowout.BTC[0].append((e[ii] + s[ii]) * 0.5, i[ii] / (e[ii] - s[ii]) * A);  //i [m]
+		Rainflowout[0].append((e[ii] + s[ii]) * 0.5, i[ii] / (e[ii] - s[ii]) * A);  //i [m]
 		if (ii < n - 1)
 			if (e[ii] < s[ii + 1])
-                Rainflowout.BTC[0].append(1.5 * e[ii] - 0.5 * s[ii], 0);
+                Rainflowout[0].append(1.5 * e[ii] - 0.5 * s[ii], 0);
 	}
 
-	Rainflowout.BTC[0].assign_D();
+	Rainflowout[0].assign_D();
 	return Rainflowout;
 }
 

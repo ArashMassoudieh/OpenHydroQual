@@ -825,8 +825,8 @@ void Object::MakeTimeSeriesUniform(const double &increment)
         
         if (var[s->first].GetType() == Quan::_type::timeseries || var[s->first].GetType() == Quan::_type::prec_timeseries)
         {
-            if (var[s->first].TimeSeries()!=nullptr)
-                *(var[s->first].TimeSeries()) = var[s->first].TimeSeries()->make_uniform(increment);
+            if (var[s->first].GetTimeSeries()!=nullptr)
+                *(var[s->first].GetTimeSeries()) = var[s->first].GetTimeSeries()->make_uniform(increment,true);
         }
 }
 

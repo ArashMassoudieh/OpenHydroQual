@@ -106,19 +106,26 @@ public:
 
     void clear();                                          ///< Clear all data
     bool resize(unsigned int newSize);                     ///< Resize internal data vectors
-    void adjust_size(size_t new_size);                     ///< Adjust size to new_size exactly
+    //void adjust_size(size_t new_size);                     ///< Adjust size to new_size exactly
     void setNumPoints(size_t n);                           ///< Resize to n points (alias)
-
+	void removeNaNs();                                     ///< Remove points with NaN values
+	TimeSeries<T> removeNaNs() const; 				       ///< Return new TimeSeries without NaNs
     void addPoint(T t, T c, std::optional<T> d = std::nullopt); ///< Add new DataPoint
     bool append(T value);                                  ///< Append value at t = 0
     bool append(T t, T c);                                 ///< Append time-value pair
-
+	void append(const TimeSeries<T>& other);               ///< Append another TimeSeries to the end
     void assign_D();                                       ///< Assign durations (d) based on value change intervals
 
     // -------------------------------------------------------------------------
     // Structural Properties
     // -------------------------------------------------------------------------
 
+    bool isStructured() const {
+        return structured_;
+    };                                                     ///< Check if series is structured
+	void setStructured(bool structured) {
+		structured_ = structured;
+	}                                                       ///< Set structured status
     void detectStructure();                                ///< Identify if series is regularly spaced
     int Capacity() const;                                  ///< Get internal capacity
 
@@ -287,124 +294,128 @@ private:
     gsl_rng* r_ = nullptr;
     void ensureGSLInitialized();
 #endif
+
+    // Scalar multiplication
+    template<typename T>
+    friend TimeSeries<T> operator*(T alpha, const TimeSeries<T>& ts);
+
+    template<typename T>
+    friend TimeSeries<T> operator*(const TimeSeries<T>& ts, T alpha);
+
+    // Scalar division
+    template<typename T>
+    friend TimeSeries<T> operator/(const TimeSeries<T>& ts, T alpha);
+
+    // Pointwise division by interpolated values
+    template<typename T>
+    friend TimeSeries<T> operator/(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+    // Pointwise subtraction with interpolation
+    template<typename T>
+    friend TimeSeries<T> operator-(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+    // Pointwise product with interpolation
+    template<typename T>
+    friend TimeSeries<T> operator*(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+    // TimeSeries minus scalar
+    template<typename T>
+    friend TimeSeries<T> operator-(const TimeSeries<T>& ts, T scalar);
+
+    // TimeSeries divided by scalar (redundant, already declared but consistent)
+    template<typename T>
+    friend TimeSeries<T> operator/(const TimeSeries<T>& ts, T scalar);
+
+    // Pointwise division without interpolation (assumes same time stamps)
+    template<typename T>
+    friend TimeSeries<T> operator%(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+    // Pointwise addition without interpolation (assumes same time stamps)
+    template<typename T>
+    friend TimeSeries<T> operator&(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+    // --- Scalar Multiplication ---
+    /**
+    * @brief Multiplies a scalar with a time series (scalar * series).
+    */
+    template<typename T>
+    friend TimeSeries<T> operator*(T alpha, const TimeSeries<T>& ts);
+
+    /**
+     * @brief Multiplies a time series with a scalar (series * scalar).
+     */
+    template<typename T>
+    friend TimeSeries<T> operator*(const TimeSeries<T>& ts, T alpha);
+
+
+    // --- Scalar Division ---
+    /**
+     * @brief Divides a time series by a scalar.
+     */
+    template<typename T>
+    friend TimeSeries<T> operator/(const TimeSeries<T>& ts, T alpha);
+
+
+    // --- Pointwise Division (Interpolated) ---
+    /**
+     * @brief Divides one time series by another using interpolation.
+     */
+    template<typename T>
+    friend TimeSeries<T> operator/(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+
+    // --- Pointwise Subtraction (Interpolated) ---
+    /**
+     * @brief Subtracts one time series from another using interpolation.
+     */
+    template<typename T>
+    friend TimeSeries<T> operator-(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+
+    // --- Pointwise Multiplication (Interpolated) ---
+    /**
+     * @brief Multiplies two time series using interpolation.
+     */
+    template<typename T>
+    friend TimeSeries<T> operator*(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+
+    // --- Subtract Scalar ---
+    /**
+     * @brief Subtracts a scalar from all values in the time series.
+     */
+    template<typename T>
+    friend TimeSeries<T> operator-(const TimeSeries<T>& ts, T scalar);
+
+
+    // --- Pointwise Division (Aligned) ---
+    /**
+     * @brief Divides two time series pointwise, assuming aligned time stamps.
+     */
+    template<typename T>
+    friend TimeSeries<T> operator%(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+
+    // --- Pointwise Addition (Aligned) ---
+    /**
+     * @brief Adds two time series pointwise, assuming aligned time stamps.
+     */
+    template<typename T>
+    friend TimeSeries<T> operator&(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+    /**
+    * @brief Computes the sum of interpolated values from multiple time series at a given time.
+    * @param series_list Vector of time series.
+    * @param time Target time.
+    * @return Sum of interpolated values.
+    */
+    template<typename T>
+    friend T sum_interpolate(const std::vector<TimeSeries<T>>& series_list, T time);
+
+
+
 };
 
-// Scalar multiplication
-template<typename T>
-TimeSeries<T> operator*(T alpha, const TimeSeries<T>& ts);
-
-template<typename T>
-TimeSeries<T> operator*(const TimeSeries<T>& ts, T alpha);
-
-// Scalar division
-template<typename T>
-TimeSeries<T> operator/(const TimeSeries<T>& ts, T alpha);
-
-// Pointwise division by interpolated values
-template<typename T>
-TimeSeries<T> operator/(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-// Pointwise subtraction with interpolation
-template<typename T>
-TimeSeries<T> operator-(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-// Pointwise product with interpolation
-template<typename T>
-TimeSeries<T> operator*(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-// TimeSeries minus scalar
-template<typename T>
-TimeSeries<T> operator-(const TimeSeries<T>& ts, T scalar);
-
-// TimeSeries divided by scalar (redundant, already declared but consistent)
-template<typename T>
-TimeSeries<T> operator/(const TimeSeries<T>& ts, T scalar);
-
-// Pointwise division without interpolation (assumes same time stamps)
-template<typename T>
-TimeSeries<T> operator%(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-// Pointwise addition without interpolation (assumes same time stamps)
-template<typename T>
-TimeSeries<T> operator&(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-// --- Scalar Multiplication ---
-    /**
-     * @brief Multiplies a scalar with a time series (scalar * series).
-     */
-template<typename T>
-TimeSeries<T> operator*(T alpha, const TimeSeries<T>& ts);
-
-/**
- * @brief Multiplies a time series with a scalar (series * scalar).
- */
-template<typename T>
-TimeSeries<T> operator*(const TimeSeries<T>& ts, T alpha);
-
-
-// --- Scalar Division ---
-/**
- * @brief Divides a time series by a scalar.
- */
-template<typename T>
-TimeSeries<T> operator/(const TimeSeries<T>& ts, T alpha);
-
-
-// --- Pointwise Division (Interpolated) ---
-/**
- * @brief Divides one time series by another using interpolation.
- */
-template<typename T>
-TimeSeries<T> operator/(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-
-// --- Pointwise Subtraction (Interpolated) ---
-/**
- * @brief Subtracts one time series from another using interpolation.
- */
-template<typename T>
-TimeSeries<T> operator-(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-
-// --- Pointwise Multiplication (Interpolated) ---
-/**
- * @brief Multiplies two time series using interpolation.
- */
-template<typename T>
-TimeSeries<T> operator*(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-
-// --- Subtract Scalar ---
-/**
- * @brief Subtracts a scalar from all values in the time series.
- */
-template<typename T>
-TimeSeries<T> operator-(const TimeSeries<T>& ts, T scalar);
-
-
-// --- Pointwise Division (Aligned) ---
-/**
- * @brief Divides two time series pointwise, assuming aligned time stamps.
- */
-template<typename T>
-TimeSeries<T> operator%(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-
-// --- Pointwise Addition (Aligned) ---
-/**
- * @brief Adds two time series pointwise, assuming aligned time stamps.
- */
-template<typename T>
-TimeSeries<T> operator&(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-/**
-     * @brief Computes the sum of interpolated values from multiple time series at a given time.
-     * @param series_list Vector of time series.
-     * @param time Target time.
-     * @return Sum of interpolated values.
-     */
-template<typename T>
-T sum_interpolate(const std::vector<TimeSeries<T>>& series_list, T time);
 
 /**
  * @brief Computes the squared L2 norm of a time series (sum of squared values).

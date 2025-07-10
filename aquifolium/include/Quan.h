@@ -19,7 +19,7 @@
 
 #include "Expression.h"
 #include "Rule.h"
-#include "BTC.h"
+#include "TimeSeries.h"
 #include "precalculatedfunction.h"
 #include <json/json.h>
 #include "Condition.h"
@@ -61,7 +61,7 @@ class Quan
         double GetVal(const Expression::timing &tmg=Expression::timing::past);
         bool EstablishExpressionStructure();
         double &GetSimulationTime() const;
-        CTimeSeries<timeseriesprecision>* GetTimeSeries();
+        TimeSeries<timeseriesprecision>* GetTimeSeries();
         string last_error;
         void SetType(const _type &t) {type = t;}
         _type GetType() {return type;}
@@ -90,10 +90,9 @@ class Quan
         void SetIncludeInOutput(bool x) {includeinoutput = x;}
         void SetEstimable(bool x) {estimable=x;}
         string GetName() {return _var_name;}
-        CTimeSeries<timeseriesprecision>* TimeSeries();
         bool IncludeInOutput() {return includeinoutput;}
 		bool SetTimeSeries(const string &filename, bool prec=false);
-        bool SetTimeSeries(const CTimeSeries<double> &timeseries);
+        bool SetTimeSeries(const TimeSeries<double> &timeseries);
         bool SetTimeSeries(const CPrecipitation &timeseries);
         string &Description(bool graph=false)
         {
@@ -184,7 +183,7 @@ class Quan
     private:
         Expression _expression;
         Rule _rule;
-        CTimeSeries<timeseriesprecision> _timeseries;
+        TimeSeries<timeseriesprecision> _timeseries;
         Source *source = nullptr;
 		string sourcename = ""; 
 		string _var_name;

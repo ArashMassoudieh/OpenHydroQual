@@ -57,6 +57,41 @@ public:
     std::vector<std::string> getSeriesNames() const; ///< Get all series names
     void setname(int index, const std::string& name); ///< Set name on internal series object
 
+    //Ranges
+    /**
+ * @brief Returns the maximum value across all time series.
+ *
+ * Iterates through each TimeSeries in the set and returns the largest
+ * observed value (`c`) found across all of them.
+ *
+ * @return T Maximum value among all series.
+ */
+    T maxval() const;
+
+    /**
+     * @brief Returns the minimum value across all time series.
+     *
+     * Iterates through each TimeSeries in the set and returns the smallest
+     * observed value (`c`) found across all of them.
+     *
+     * @return T Minimum value among all series.
+     */
+    T minval() const;
+
+    /**
+     * @brief Returns the minimum time value across all time series.
+     *
+     * @return T Minimum time (`t`) among all series.
+     */
+    T mintime() const;
+
+    /**
+     * @brief Returns the maximum time value across all time series.
+     *
+     * @return T Maximum time (`t`) among all series.
+     */
+    T maxtime() const;
+    
     // Query
     bool Contains(const std::string& name) const; ///< Check if series exists by name
     int indexOf(const std::string& name) const; ///< Get index of named series
@@ -75,7 +110,9 @@ public:
     void clearContentsExceptLastRow(); ///< Keep last row only
     void knockout(T t); ///< Knock out all points beyond time t
     void resize(size_t num_series); ///< Resize to given number of series
-    void ResizeIfNeeded(size_t new_size); ///< Expand size only if needed
+    //void ResizeIfNeeded(size_t new_size); ///< Expand size only if needed
+	void removeNaNs(); ///< Remove NaN values from all series
+	TimeSeriesSet<T> removeNaNs() const; ///< Return a new set with NaN values removed
 
     // Interpolation & Extraction
     std::vector<T> interpolate(T t) const; ///< Interpolate all series at given time
@@ -107,7 +144,7 @@ public:
 
     // Transformations
     TimeSeriesSet<T> make_uniform(T increment, bool assign_d = true) const; ///< Make all series uniform
-    TimeSeriesSet<T> getpercentiles(const std::vector<T>& fractions) const; ///< Get specified percentiles
+    TimeSeriesSet<T> getpercentiles(const std::vector<T>& fractions) const; ///< Get specified percentiles at all times
     TimeSeriesSet<T> distribution(int n_bins, int start_index, int end_index) const; ///< Density histograms
     TimeSeriesSet<T> add_noise(const std::vector<T>& stddevs, bool log_noise = false) const; ///< Add Gaussian noise
     TimeSeriesSet<T> sort(int column_index = 0) const; ///< Sort based on a column

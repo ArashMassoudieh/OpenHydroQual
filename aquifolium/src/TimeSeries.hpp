@@ -78,7 +78,7 @@ TimeSeries<T>::TimeSeries(const std::vector<T>& t, const std::vector<T>& c) {
     size_t n = std::min(t.size(), c.size());
     this->reserve(n);
     for (size_t i = 0; i < n; ++i)
-        this->emplace_back(DataPoint{t[i], c[i], std::nullopt});
+        this->emplace_back(DataPoint<T>{t[i], c[i], std::nullopt});
     detectStructure();
 }
 
@@ -87,7 +87,7 @@ template<typename T>
 TimeSeries<T>::TimeSeries(size_t n) {
     this->reserve(n);
     for (size_t i = 0; i < n; ++i)
-        this->emplace_back(DataPoint{T{0}, T{0}, std::nullopt});
+        this->emplace_back(DataPoint<T>{T{0}, T{0}, std::nullopt});
 
     // With all t = 0, we cannot assume it's structured
     structured_ = false;
@@ -163,7 +163,7 @@ T TimeSeries<T>::Exponential_Kernel(const T& t, const T& lambda) const {
     if (this->empty()) return T{};
 
     size_t initial_i = GetElementNumberAt(t);
-    size_t last_i = std::min(GetElementNumberAt(t + T(2.0) / lambda), this->size() - 1);
+    size_t last_i = std::min(GetElementNumberAt(t + T(2.0) / lambda), int(this->size() - 1));
 
     T sum = 0;
     for (size_t i = initial_i; i < last_i; ++i) {
@@ -186,8 +186,8 @@ T TimeSeries<T>::Gaussian_Kernel(const T& t, const T& mu, const T& stdev) const 
     const T sqrt_2pi = std::sqrt(2.0 * 3.14159265358979323846);
     const T var = stdev * stdev;
 
-    size_t initial_i = std::max(GetElementNumberAt(t - 2.0 * stdev + mu), size_t(0));
-    size_t last_i = std::min(GetElementNumberAt(t + 2.0 * stdev + mu), this->size() - 2);
+    size_t initial_i = std::max(GetElementNumberAt(t - 2.0 * stdev + mu), int(size_t(0)));
+    size_t last_i = std::min(GetElementNumberAt(t + 2.0 * stdev + mu), int(this->size() - 2));
 
     T sum = 0;
     for (size_t i = initial_i; i <= last_i; ++i) {
@@ -674,7 +674,7 @@ void TimeSeries<T>::detectStructure() {
 
 template<typename T>
 void TimeSeries<T>::addPoint(T t, T c, std::optional<T> d) {
-    this->emplace_back(DataPoint{t, c, d});
+    this->emplace_back(DataPoint<T>{t, c, d});
 
     size_t n = this->size();
     if (!structured_ || n < 3)
@@ -778,7 +778,7 @@ TimeSeries<T> TimeSeries<T>::log(T minval) const {
     out.reserve(this->size());
     for (const auto& pt : *this) {
         T safe_c = std::max(pt.c, minval);
-        out.emplace_back(DataPoint{pt.t, std::log(safe_c), pt.d});
+        out.emplace_back(DataPoint<T>{pt.t, std::log(safe_c), pt.d});
     }
     out.structured_ = this->structured_;
     out.dt_ = this->dt_;
@@ -889,7 +889,7 @@ TimeSeries<T> TimeSeries<T>::interpol(const TimeSeries<T>* x) const {
     out.reserve(x->size());
 
     for (const auto& pt : *x)
-        out.emplace_back(DataPoint{pt.t, this->interpol(pt.t), std::nullopt});
+        out.emplace_back(DataPoint<T>{pt.t, this->interpol(pt.t), std::nullopt});
 
     out.structured_ = x->structured_;
     out.dt_ = x->dt_;
@@ -954,7 +954,7 @@ TimeSeries<T> operator-(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2) {
 
     for (const auto& pt : ts1) {
         T diff = pt.c - ts2.interpol(pt.t);
-        result.emplace_back(typename TimeSeries<T>::DataPoint{pt.t, diff, pt.d});
+        result.emplace_back(DataPoint<T>{pt.t, diff, pt.d});
     }
 
     result.structured_ = false;
@@ -1353,10 +1353,45 @@ bool TimeSeries<T>::append(T t_val, T c_val) {
 }
 
 template<typename T>
+void TimeSeries<T>::append(const TimeSeries<T>& other) {
+    for (const DataPoint<T>& point : other) {
+        this->addPoint(point.t, point.c, point.d);
+    }
+}
+
+/*template<typename T>
 void TimeSeries<T>::adjust_size(size_t new_size) {
-    this->resize(new_size, DataPoint<T>{T{}, T{}, std::nullopt});
+    this->resize(new_size);
     detectStructure();  // Ensure internal consistency if structure depends on length
     max_fabs_ = computeMaxFabs();  // Recalculate cached max absolute value
+}*/
+
+template <typename T>
+void TimeSeries<T>::removeNaNs() {
+    Base cleaned;
+    cleaned.reserve(this->size());
+
+    for (const DataPoint<T>& pt : *this) {
+        if (!std::isnan(pt.t) && !std::isnan(pt.c))
+            cleaned.push_back(pt);
+    }
+
+    this->assign(cleaned.begin(), cleaned.end());
+    detectStructure();
+}
+
+template <typename T>
+TimeSeries<T> TimeSeries<T>::removeNaNs() const {
+    TimeSeries<T> cleaned;
+    cleaned.reserve(this->size());
+
+    for (const auto& pt : *this) {
+        if (!std::isnan(pt.t) && !std::isnan(pt.c))
+            cleaned.push_back(pt);
+    }
+
+    cleaned.detectStructure();
+    return cleaned;
 }
 
 template<typename T>
@@ -1417,11 +1452,12 @@ template<typename T>
 TimeSeries<T> TimeSeries<T>::make_uniform(T increment, bool assignD) const {
     TimeSeries<T> out;
 
+	TimeSeries<T> nansRemoved = this->removeNaNs();
     if (this->size() < 2) return out;
 
     if (assignD) {
         // Ensure all distances are initialized
-        for (auto& pt : const_cast<TimeSeries<T>&>(*this)) {
+        for (DataPoint<T>& pt : const_cast<TimeSeries<T>&>(nansRemoved)) {
             if (!pt.d.has_value()) {
                 pt.d = T{};
             }
@@ -1434,9 +1470,9 @@ TimeSeries<T> TimeSeries<T>::make_uniform(T increment, bool assignD) const {
     size_t i = 0;
     T current_t = t0;
 
-    while (current_t <= t_end && i < this->size() - 1) {
-        const auto& p1 = (*this)[i];
-        const auto& p2 = (*this)[i + 1];
+    while (current_t <= t_end && i < nansRemoved.size() - 1) {
+        const DataPoint<T>& p1 = nansRemoved[i];
+        const DataPoint<T>& p2 = nansRemoved[i + 1];
 
         if (p1.t <= current_t && current_t <= p2.t) {
             T ratio = (current_t - p1.t) / (p2.t - p1.t);
@@ -1455,6 +1491,10 @@ TimeSeries<T> TimeSeries<T>::make_uniform(T increment, bool assignD) const {
         }
     }
     out.setName(name());
+	if (assignD) {
+        out.assign_D();
+    }
+    
     out.setUnit(unit());
     out.structured_ = true;
     out.dt_ = increment;

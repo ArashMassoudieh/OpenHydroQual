@@ -19,7 +19,7 @@
 
 #include "Objective_Function.h"
 #include <map>
-#include "BTCSet.h"
+#include "TimeSeriesSet.h"
 
 class System;
 
@@ -36,11 +36,11 @@ class Objective_Function_Set
         Objective_Function* operator[](int i) {return &objectivefunctions[i];}
         double Calculate();
         void ClearStoredTimeSeries();
-        CTimeSeriesSet<double> TimeSeries();
+        TimeSeriesSet<double> GetTimeSeries();
         CVector Objective_Values();
         void Update(double t);
         string LastError() {return lasterror;}
-        CTimeSeriesSet<timeseriesprecision> GetTimeSeriesSet();
+        TimeSeriesSet<timeseriesprecision> GetTimeSeriesSet();
         void SetSystem(System* s);
         void clear();
         bool erase(int i);

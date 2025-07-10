@@ -525,7 +525,7 @@ double Quan::CalcVal(Object *block, const Expression::timing &tmg)
         return _rule.calc(block,tmg);
     if (type == _type::timeseries)
     {
-        if (_timeseries.n>0)
+        if (_timeseries.size()>0)
             return _timeseries.interpol(block->GetParent()->GetTime());
         else
             return 0;
@@ -629,9 +629,9 @@ double &Quan::GetSimulationTime() const
     return parent->GetParent()->GetSimulationTime();
 }
 
-CTimeSeries<timeseriesprecision>* Quan::GetTimeSeries()
+TimeSeries<timeseriesprecision>* Quan::GetTimeSeries()
 {
-    if (_timeseries.n != 0)
+    if (_timeseries.size() != 0)
         return &_timeseries;
     else
         return nullptr;
@@ -667,7 +667,7 @@ double Quan::CalcVal(const Expression::timing &tmg)
 
     if (type == _type::timeseries || type == _type::prec_timeseries)
     {
-        if (_timeseries.n>0)
+        if (_timeseries.size()>0)
             return _timeseries.interpol(parent->GetParent()->GetTime());
         else
             return 0;
@@ -903,26 +903,17 @@ void Quan::Update()
 	_val = _val_star;
 }
 
-
-CTimeSeries<timeseriesprecision>* Quan::TimeSeries()
-{
-    if (_timeseries.CSize()!=0)
-        return &_timeseries;
-    else
-        return nullptr;
-}
-
 bool Quan::SetTimeSeries(const string &filename, bool prec)
 {
     if (filename.empty())
     {
-        _timeseries = CTimeSeries<double>();
+        _timeseries = TimeSeries<double>();
         return true;
     }
     if (!prec)
 	{
         _timeseries.readfile(filename);
-        if (_timeseries.file_not_found)
+        if (_timeseries.fileNotFound)
         {
             AppendError(GetName(), "Quan", "SetTimeSeries", filename + " was not found!", 3001);
             return false;
@@ -944,14 +935,14 @@ bool Quan::SetTimeSeries(const string &filename, bool prec)
 		else
 		{
 			Prec.getfromfile(filename);
-			_timeseries = Prec.getflow(1).BTC[0];
-            _timeseries.filename = Prec.filename;
+			_timeseries = Prec.getflow(1)[0];
+            _timeseries.setFilename(Prec.filename);
 			return true;
 		}
 	}
 }
 
-bool Quan::SetTimeSeries(const CTimeSeries<double> &timeseries)
+bool Quan::SetTimeSeries(const TimeSeries<double> &timeseries)
 {
     _timeseries = timeseries;
     return true;
@@ -960,7 +951,7 @@ bool Quan::SetTimeSeries(const CTimeSeries<double> &timeseries)
 
 bool Quan::SetTimeSeries(const CPrecipitation &timeseries)
 {
-    _timeseries = timeseries.getflow(1).BTC[0];
+    _timeseries = timeseries.getflow(1)[0];
     return true; 
 
 }
@@ -999,17 +990,17 @@ string Quan::GetProperty(bool force_value)
     if (type == _type::timeseries)
     {
         //qDebug()<<"FileName: "<<QString::fromStdString(_timeseries.filename);
-        if (aquiutils::GetPath(_timeseries.filename) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
-            return aquiutils::GetOnlyFileName(_timeseries.filename);
+        if (aquiutils::GetPath(_timeseries.getFilename()) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
+            return aquiutils::GetOnlyFileName(_timeseries.getFilename());
         else
-            return _timeseries.filename;
+            return _timeseries.getFilename();
     }
     if (type == _type::prec_timeseries)
     {
-        if (aquiutils::GetPath(_timeseries.filename) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
-            return aquiutils::GetOnlyFileName(_timeseries.filename);
+        if (aquiutils::GetPath(_timeseries.getFilename()) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
+            return aquiutils::GetOnlyFileName(_timeseries.getFilename());
         else
-            return _timeseries.filename;
+            return _timeseries.getFilename();
     }
     else if (type == _type::source)
     {
@@ -1149,27 +1140,27 @@ string Quan::toCommand()
 
 bool Quan::Validate()
 {
-    if (type == _type::timeseries && !_timeseries.filename.empty())
+    if (type == _type::timeseries && !_timeseries.getFilename().empty())
     {
         if (type == _type::timeseries)
         {
-            if (!parent->Parent()->InputPath().empty() && aquiutils::GetPath(parent->Parent()->InputPath())!=aquiutils::GetPath(_timeseries.filename))
-                if (aquiutils::FileExists(parent->Parent()->InputPath() + _timeseries.filename))
-                    return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.filename);
+            if (!parent->Parent()->InputPath().empty() && aquiutils::GetPath(parent->Parent()->InputPath())!=aquiutils::GetPath(_timeseries.getFilename()))
+                if (aquiutils::FileExists(parent->Parent()->InputPath() + _timeseries.getFilename()))
+                    return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.getFilename());
                 else
-                    return SetTimeSeries(_timeseries.filename);
+                    return SetTimeSeries(_timeseries.getFilename());
             else
-                return SetTimeSeries(_timeseries.filename);
+                return SetTimeSeries(_timeseries.getFilename());
         }
         if (type == _type::prec_timeseries)
         {
-            if (!parent->Parent()->InputPath().empty() && aquiutils::GetPath(parent->Parent()->InputPath())!=aquiutils::GetPath(_timeseries.filename))
-                if (aquiutils::FileExists(parent->Parent()->InputPath() + _timeseries.filename))
-                    return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.filename, true);
+            if (!parent->Parent()->InputPath().empty() && aquiutils::GetPath(parent->Parent()->InputPath())!=aquiutils::GetPath(_timeseries.getFilename()))
+                if (aquiutils::FileExists(parent->Parent()->InputPath() + _timeseries.getFilename()))
+                    return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.getFilename(), true);
                 else
-                    return SetTimeSeries(_timeseries.filename, true);
+                    return SetTimeSeries(_timeseries.getFilename(), true);
             else
-                return SetTimeSeries(_timeseries.filename, true);
+                return SetTimeSeries(_timeseries.getFilename(), true);
         }
     }
     return Criteria().calc(parent, Expression::timing::both);
@@ -1226,7 +1217,7 @@ double Quan::InterpolateBasedonPrecalcFunction(const double &val) const
 {
     if (precalcfunction.Logarithmic())
     {
-        if (val<=0) return precalcfunction.GetC(0);
+        if (val<=0) return precalcfunction.getValue(0);
         return precalcfunction.interpol(log(val));
     }
     else
@@ -1253,7 +1244,7 @@ bool Quan::InitializePreCalcFunction(int n_inc)
                 precalcfunction.append(x,CalcVal(Expression::timing::present));
             }
     parent->SetVal(precalcfunction.IndependentVariable(),old_independent_variable_value,Expression::timing::present);
-    precalcfunction.structured=true;
+    precalcfunction.setStructured(true);
     precalcfunction.SetInitiated(true);
     return true;
 }

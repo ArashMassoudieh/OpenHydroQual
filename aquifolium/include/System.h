@@ -24,7 +24,7 @@
 #include "Vector_arma.h"
 #include "Matrix_arma.h"
 #include "MetaModel.h"
-#include "BTCSet.h"
+#include "TimeSeriesSet.h"
 #include "Objective_Function_Set.h"
 #include "observation.h"
 #include "Parameter_Set.h"
@@ -98,8 +98,8 @@ struct function_operators
 
 struct outputs
 {
-    CTimeSeriesSet<outputtimeseriesprecision> AllOutputs;
-    CTimeSeriesSet<timeseriesprecision> ObservedOutputs;
+    TimeSeriesSet<outputtimeseriesprecision> AllOutputs;
+    TimeSeriesSet<timeseriesprecision> ObservedOutputs;
 };
 
 struct solvertemporaryvars
@@ -285,8 +285,8 @@ class System: public Object
         void MakeTimeSeriesUniform(const double &increment);
 		bool SetProp(const string &s, const double &val);
 		bool SetProperty(const string &s, const string &val);
-        CTimeSeriesSet<outputtimeseriesprecision>& GetOutputs() {return Outputs.AllOutputs;}
-        CTimeSeriesSet<timeseriesprecision>& GetObservedOutputs() {return Outputs.ObservedOutputs;}
+        TimeSeriesSet<outputtimeseriesprecision>& GetOutputs() {return Outputs.AllOutputs;}
+        TimeSeriesSet<timeseriesprecision>& GetObservedOutputs() {return Outputs.ObservedOutputs;}
         vector<string> GetAllBlockTypes();
         vector<string> GetAllLinkTypes();
 		vector<string> GetAllSourceTypes();
@@ -321,7 +321,7 @@ class System: public Object
         bool SetParameterValue(const string &paramname, const double &val);
         bool SetParameterValue(int i, const double &val);
         bool ApplyParameters();
-        CTimeSeries<timeseriesprecision> *GetObjectiveFunctionTimeSeries(const string &name) {return ObjectiveFunction(name)->GetTimeSeries();}
+        TimeSeries<timeseriesprecision> *GetObjectiveFunctionTimeSeries(const string &name) {return ObjectiveFunction(name)->GetTimeSeries();}
         void SetSilent(bool _s) {silent = _s;}
         bool IsSilent() {return silent;}
         void ShowMessage(const string &msg) {if (!silent) cout<<msg<<std::endl; }
@@ -339,7 +339,7 @@ class System: public Object
         string OutputPath() {return paths.outputpath;}
         string ObservedOutputFileName() {return paths.observedoutputfilename;}
         string OutputFileName() {return paths.outputfilename;}
-        SafeVector<CTimeSeries<timeseriesprecision>*> TimeSeries();
+        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries();
         double GetMinimumNextTimeStepSize();
         Object *GetObjectBasedOnPrimaryKey(const string &s);
         bool SavetoScriptFile(const string &filename, const string &templatefilename="", const vector<string> &addedtemplates = vector<string>());
@@ -409,7 +409,7 @@ class System: public Object
         void SetParameterEstimationMode(parameter_estimation_options mode = parameter_estimation_options::none);
         void SetQuanPointers();
         bool ResetBasedOnRestorePoint(RestorePoint *rp);
-        CTimeSeriesSet<timeseriesprecision> GetModeledObjectiveFunctions();
+        TimeSeriesSet<timeseriesprecision> GetModeledObjectiveFunctions();
         time_t GetSimulationDuration() 
         {
             return SolverTempVars.simulation_duration;
@@ -496,7 +496,7 @@ class System: public Object
         Parameter_Set parameter_set;
         bool silent;
         _directories paths;
-        vector<CTimeSeries<timeseriesprecision>*> alltimeseries;
+        vector<TimeSeries<timeseriesprecision>*> alltimeseries;
         void CalculateAllExpressions(Expression::timing tmg = Expression::timing::present);
         void SetNumberOfStateVariables(unsigned int n)
 		{

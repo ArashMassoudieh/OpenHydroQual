@@ -125,13 +125,13 @@ void ChartView::mouseReleaseEvent(QMouseEvent *event)
             parent ->graphsClipboard.clear();
             for (int i = 0; i < chart()->series().count() ; i++)
             {
-                parent->graphsClipboard.insert(chart()->series()[i]->name(),  new CTimeSeries<double>(plotWindow->GetTimeSeries(chart()->series()[i]->name())) );
+                parent->graphsClipboard.insert(chart()->series()[i]->name(),  new TimeSeries<double>(plotWindow->GetTimeSeries(chart()->series()[i]->name())) );
             }
 
         }
         if (selectedAction->text().contains("Paste"))
         {
-            for (QMap<QString, CTimeSeries<double>*>::Iterator it = parent->graphsClipboard.begin(); it!= parent->graphsClipboard.end(); it++)
+            for (QMap<QString, TimeSeries<double>*>::Iterator it = parent->graphsClipboard.begin(); it!= parent->graphsClipboard.end(); it++)
                 plotWindow->AddData(*it.value());
 
         }

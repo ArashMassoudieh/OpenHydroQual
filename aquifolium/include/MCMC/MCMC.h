@@ -21,7 +21,7 @@
 #include "NormalDist.h"
 #include "GA.h"
 #include "Vector.h"
-#include "BTCSet.h"
+#include "TimeSeriesSet.h"
 #include "observation.h"
 
 using namespace std;
@@ -104,7 +104,7 @@ public:
 	CNormalDist ND;
     void writeoutput(string filename);
 	vector<int> params;
-    CTimeSeriesSet<double> MData;
+    TimeSeriesSet<double> MData;
     _MCMC_file_names FileInformation;
     double posterior(vector<double> par, int sample_number, bool out=false);
     void model(T *Model1 , vector<double> par);
@@ -121,19 +121,19 @@ public:
     CVector sensitivity_ln(double d, vector<double> par);
 	//runtimeWindow * rtw = 0;
     CMatrix sensitivity_mat_lumped(double d, vector<double> par);
-    CTimeSeriesSet<double> prior_distribution(int n_bins);
+    TimeSeriesSet<double> prior_distribution(int n_bins);
 
     int readfromfile(string filename);
-    CTimeSeriesSet<double> model(vector<double> par);
-    vector<vector<CTimeSeriesSet<double>>> BTCout_obs;
-    vector<vector<CTimeSeriesSet<double>>> BTCout_obs_noise;
-    vector<vector<CTimeSeriesSet<double>>> BTCout_obs_prcntle;
-    vector<vector<CTimeSeriesSet<double>>> BTCout_obs_prcntle_noise;
+    TimeSeriesSet<double> model(vector<double> par);
+    vector<vector<TimeSeriesSet<double>>> BTCout_obs;
+    vector<vector<TimeSeriesSet<double>>> BTCout_obs_noise;
+    vector<vector<TimeSeriesSet<double>>> BTCout_obs_prcntle;
+    vector<vector<TimeSeriesSet<double>>> BTCout_obs_prcntle_noise;
 	vector<CMatrix> global_sens_lumped;
-    CTimeSeriesSet<double> paramsList;
-    CTimeSeriesSet<double> realized_paramsList;
-    void ProduceRealizations(CTimeSeriesSet<double> &MCMCout);
-    void get_outputpercentiles(CTimeSeriesSet<double> &MCMCout);
+    TimeSeriesSet<double> paramsList;
+    TimeSeriesSet<double> realized_paramsList;
+    void ProduceRealizations(TimeSeriesSet<double> &MCMCout);
+    void get_outputpercentiles(TimeSeriesSet<double> &MCMCout);
 
 	vector<double> calc_output_percentiles;
     void SetRunTimeWindow(RunTimeWindow *_rtw);

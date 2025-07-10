@@ -432,8 +432,6 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClCompile Include="wizard_select_dialog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="aquifolium\include\BTC.h" />
-    <ClInclude Include="aquifolium\include\BTCSet.h" />
     <ClInclude Include="aquifolium\include\Condition.h" />
     <ClInclude Include="aquifolium\include\constituent.h" />
     <ClInclude Include="aquifolium\include\GA\Binary.h" />
@@ -484,8 +482,6 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <QtMoc Include="diagramview.h">
     </QtMoc>
     <QtMoc Include="aboutdialog.h" />
-    <ClInclude Include="aquifolium\src\BTC.hpp" />
-    <ClInclude Include="aquifolium\src\BTCSet.hpp" />
     <ClInclude Include="aquifolium\src\TimeSeries.hpp" />
     <ClInclude Include="aquifolium\src\TimeSeriesSet.hpp" />
     <ClInclude Include="chartview.h" />
