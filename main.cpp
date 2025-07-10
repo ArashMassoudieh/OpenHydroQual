@@ -17,11 +17,15 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include "TimeSeries.h"
+#include "TimeSeriesSet.h"
 
 //#undef ARMA_USE_OPENMP
 
 int main(int argc, char *argv[])
 {
+    TimeSeries<double> testts; 
+    TimeSeriesSet<double> testtsset; 
+    
     /*omp_set_nested(0);          // Disable nested parallelism
     omp_set_dynamic(0);         // Optional: disable dynamic thread adjustment
     std::cout << "OMP nested: " << omp_get_nested() << std::endl;

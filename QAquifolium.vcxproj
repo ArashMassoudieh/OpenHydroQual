@@ -471,6 +471,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClInclude Include="aquifolium\include\StringOP.h" />
     <ClInclude Include="aquifolium\include\System.h" />
     <ClInclude Include="aquifolium\include\TimeSeries.h" />
+    <ClInclude Include="aquifolium\include\TimeSeriesSet.h" />
     <ClInclude Include="aquifolium\include\Vector.h" />
     <ClInclude Include="aquifolium\include\Vector_arma.h" />
     <ClInclude Include="..\jsoncpp\include\json\allocator.h" />
@@ -486,6 +487,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClInclude Include="aquifolium\src\BTC.hpp" />
     <ClInclude Include="aquifolium\src\BTCSet.hpp" />
     <ClInclude Include="aquifolium\src\TimeSeries.hpp" />
+    <ClInclude Include="aquifolium\src\TimeSeriesSet.hpp" />
     <ClInclude Include="chartview.h" />
     <ClInclude Include="CustomPlotZoom.h" />
     <ClInclude Include="edge.h" />

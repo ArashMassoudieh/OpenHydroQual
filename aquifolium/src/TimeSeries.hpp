@@ -312,6 +312,7 @@ TimeSeries<T> TimeSeries<T>::MapfromNormalScoreToDistribution(const TimeSeries<d
 }
 #endif
 
+#ifdef Q_version
 template<class T>
 QJsonObject TimeSeries<T>::toJson() const {
     QJsonObject obj;
@@ -348,7 +349,7 @@ void TimeSeries<T>::fromJson(const QJsonObject& obj) {
     detectStructure();
     computeMaxFabs();
 }
-
+#endif // Q_version
 
 #ifdef _arma
 template<typename T>
@@ -1471,30 +1472,6 @@ T TimeSeries<T>::getLastTime() const {
     return this->empty() ? T{} : this->back().t;
 }
 
-// Computes the x-percentile from a vector using QuickSort
-template<typename T>
-T percentile(const std::vector<T>& values, T x) {
-    if (values.empty()) return T{};
-    std::vector<T> sorted = QSort(values);
-    size_t index = std::min(static_cast<size_t>(x * sorted.size()), sorted.size() - 1);
-    return sorted[index];
-}
-
-// Computes multiple percentiles from a vector
-template<typename T>
-std::vector<T> percentile(const std::vector<T>& values, const std::vector<T>& fractions) {
-    std::vector<T> sorted = QSort(values);
-    std::vector<T> result;
-    result.reserve(fractions.size());
-
-    for (const auto& frac : fractions) {
-        size_t index = std::min(static_cast<size_t>(frac * sorted.size()), sorted.size() - 1);
-        result.push_back(sorted[index]);
-    }
-
-    return result;
-}
-
 template<typename T>
 TimeSeries<T> TimeSeries<T>::extract(T t1, T t2) const {
     TimeSeries<T> out;
@@ -2001,284 +1978,311 @@ void TimeSeries<T>::setFilename(const std::string& name) {
     filename_ = name;
 }
 
-namespace TimeSeriesMetrics {
+template<typename T>
+T ADD(const TimeSeries<T>& modeled, const TimeSeries<T>& observed) {
+    if (observed.empty())
+        return T{};
 
-    template<typename T>
-    T ADD(const TimeSeries<T>& modeled, const TimeSeries<T>& observed) {
-        if (observed.empty())
-            return T{};
+    T sum = T{};
 
-        T sum = T{};
+    for (const auto& pt : observed) {
+        T y_obs = pt.c;
+        T y_mod = modeled.interpol(pt.t);
 
-        for (const auto& pt : observed) {
-            T y_obs = pt.c;
-            T y_mod = modeled.interpol(pt.t);
+        if (std::abs(y_obs) < T(1e-3))
+            sum += std::abs(y_obs - y_mod);
+        else
+            sum += std::abs(y_obs - y_mod) / y_obs;
+    }
 
-            if (std::abs(y_obs) < T(1e-3))
-                sum += std::abs(y_obs - y_mod);
-            else
-                sum += std::abs(y_obs - y_mod) / y_obs;
+    return sum / static_cast<T>(observed.size());
+}
+
+template<typename T>
+T diff_relative(const TimeSeries<T>& A, const TimeSeries<T>& B, T threshold) {
+    T sum = T{};
+    size_t n = std::min(A.size(), B.size());
+
+    for (size_t i = 0; i < n; ++i) {
+        T denom = std::abs(A[i].c);
+        T diff_val = std::abs(B[i].c - A.interpol(B[i].t));
+        sum += (denom < threshold) ? diff_val : diff_val / denom;
+    }
+
+    return sum;
+}
+
+template<typename T>
+T diff(const TimeSeries<T>& predicted, const TimeSeries<T>& observed, double scale) {
+    T sum = T{};
+    T norm = std::sqrt(1.0 + scale * scale);
+
+    for (const auto& pt : observed) {
+        T pred = predicted.interpol(pt.t);
+        T err = pt.c - pred;
+        sum += (pt.c > pred ? scale * err * err : err * err) / norm;
+    }
+
+    return sum;
+}
+
+template<typename T>
+T diff(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
+    if (predicted.empty() || observed.empty()) return T{};
+
+    T sum = T{};
+    for (const auto& pt : observed) {
+        T err = pt.c - predicted.interpol(pt.t);
+        sum += err * err;
+    }
+
+    return sum;
+}
+
+template<typename T>
+T diff_abs(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
+    T sum = T{};
+    for (const auto& pt : observed) {
+        sum += std::abs(pt.c - predicted.interpol(pt.t));
+    }
+    return sum;
+}
+
+template<typename T>
+T diff_log(const TimeSeries<T>& predicted, const TimeSeries<T>& observed, T lowlim) {
+    T sum = T{};
+    for (const auto& pt : observed) {
+        T pred = std::max(predicted.interpol(pt.t), lowlim);
+        T obs = std::max(pt.c, lowlim);
+        sum += std::pow(std::log(obs) - std::log(pred), 2);
+    }
+    return sum;
+}
+
+template<typename T>
+T diff2(const TimeSeries<T>* predicted, const TimeSeries<T>& observed) {
+    if (!predicted || observed.empty()) return T{};
+
+    T sum = T{};
+    for (const auto& pt : observed) {
+        sum += std::pow(pt.c - predicted->interpol(pt.t), 2);
+    }
+
+    return sum / static_cast<T>(observed.size());
+}
+
+template<typename T>
+T diff2(const TimeSeries<T>& predicted, const TimeSeries<T>* observed) {
+    if (!observed || predicted.empty()) return T{};
+
+    T sum = T{};
+    int count = 0;
+
+    for (const auto& pt : *observed) {
+        if (pt.t > predicted.mint() && pt.t < predicted.maxt()) {
+            sum += std::pow(pt.c - predicted.interpol(pt.t), 2);
+            ++count;
         }
-
-        return sum / static_cast<T>(observed.size());
     }
 
-    template<typename T>
-    T diff_relative(const TimeSeries<T>& A, const TimeSeries<T>& B, T threshold) {
-        T sum = T{};
-        size_t n = std::min(A.size(), B.size());
+    return (count > 0) ? sum / static_cast<T>(count) : T{};
+}
 
-        for (size_t i = 0; i < n; ++i) {
-            T denom = std::abs(A[i].c);
-            T diff_val = std::abs(B[i].c - A.interpol(B[i].t));
-            sum += (denom < threshold) ? diff_val : diff_val / denom;
+template<typename T>
+T diff2(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
+    if (predicted.empty() || observed.empty()) return T{};
+
+    T sum = T{};
+    int count = 0;
+
+    for (const auto& pt : observed) {
+        if (pt.t > predicted.mint() && pt.t < predicted.maxt()) {
+            sum += std::pow(pt.c - predicted.interpol(pt.t), 2);
+            ++count;
         }
-
-        return sum;
     }
 
-    template<typename T>
-    T diff(const TimeSeries<T>& predicted, const TimeSeries<T>& observed, double scale) {
-        T sum = T{};
-        T norm = std::sqrt(1.0 + scale * scale);
+    return (count > 0) ? sum / static_cast<T>(count) : T{};
+}
 
-        for (const auto& pt : observed) {
-            T pred = predicted.interpol(pt.t);
-            T err = pt.c - pred;
-            sum += (pt.c > pred ? scale * err * err : err * err) / norm;
-        }
+template<typename T>
+T diff_norm(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
+    if (observed.empty()) return T{};
 
-        return sum;
+    T sum = 0;
+    T sumvar1 = 0;
+    T sumvar2 = 0;
+
+    size_t n = observed.size();
+
+    for (const auto& pt : observed) {
+        T pred = predicted.interpol(pt.t);
+        T err = pt.c - pred;
+        sum += err * err / n;
+        sumvar1 += pt.c * pt.c / n;
+        sumvar2 += pred * pred / n;
     }
 
-    template<typename T>
-    T diff(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
-        if (predicted.empty() || observed.empty()) return T{};
+    return sum / std::sqrt(sumvar1 * sumvar2);
+}
 
-        T sum = T{};
-        for (const auto& pt : observed) {
-            T err = pt.c - predicted.interpol(pt.t);
-            sum += err * err;
-        }
+template<typename T>
+T diff(const TimeSeries<T>& predicted, const TimeSeries<T>& observed, const TimeSeries<T>& weights) {
+    T sum = 0;
 
-        return sum;
+    for (const auto& pt : observed) {
+        T pred = predicted.interpol(pt.t);
+        T weight = weights.interpol(pt.t);
+        T err = pt.c - pred;
+        sum += err * err * weight * weight;
     }
 
-    template<typename T>
-    T diff_abs(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
-        T sum = T{};
-        for (const auto& pt : observed) {
-            sum += std::abs(pt.c - predicted.interpol(pt.t));
-        }
-        return sum;
-    }
+    return sum;
+}
 
-    template<typename T>
-    T diff_log(const TimeSeries<T>& predicted, const TimeSeries<T>& observed, T lowlim) {
-        T sum = T{};
-        for (const auto& pt : observed) {
-            T pred = std::max(predicted.interpol(pt.t), lowlim);
-            T obs  = std::max(pt.c, lowlim);
-            sum += std::pow(std::log(obs) - std::log(pred), 2);
-        }
-        return sum;
-    }
+template<typename T>
+T R2(const TimeSeries<T>& modeled, const TimeSeries<T>& observed) {
+    T sum_prod = 0, sum_mod = 0, sum_obs = 0, sum_mod2 = 0, sum_obs2 = 0;
+    int count = 0;
 
-    template<typename T>
-    T diff2(const TimeSeries<T>* predicted, const TimeSeries<T>& observed) {
-        if (!predicted || observed.empty()) return T{};
-
-        T sum = T{};
-        for (const auto& pt : observed) {
-            sum += std::pow(pt.c - predicted->interpol(pt.t), 2);
-        }
-
-        return sum / static_cast<T>(observed.size());
-    }
-
-    template<typename T>
-    T diff2(const TimeSeries<T>& predicted, const TimeSeries<T>* observed) {
-        if (!observed || predicted.empty()) return T{};
-
-        T sum = T{};
-        int count = 0;
-
-        for (const auto& pt : *observed) {
-            if (pt.t > predicted.mint() && pt.t < predicted.maxt()) {
-                sum += std::pow(pt.c - predicted.interpol(pt.t), 2);
-                ++count;
-            }
-        }
-
-        return (count > 0) ? sum / static_cast<T>(count) : T{};
-    }
-
-    template<typename T>
-    T diff2(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
-        if (predicted.empty() || observed.empty()) return T{};
-
-        T sum = T{};
-        int count = 0;
-
-        for (const auto& pt : observed) {
-            if (pt.t > predicted.mint() && pt.t < predicted.maxt()) {
-                sum += std::pow(pt.c - predicted.interpol(pt.t), 2);
-                ++count;
-            }
-        }
-
-        return (count > 0) ? sum / static_cast<T>(count) : T{};
-    }
-
-    template<typename T>
-    T diff_norm(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
-        if (observed.empty()) return T{};
-
-        T sum = 0;
-        T sumvar1 = 0;
-        T sumvar2 = 0;
-
-        size_t n = observed.size();
-
-        for (const auto& pt : observed) {
-            T pred = predicted.interpol(pt.t);
-            T err = pt.c - pred;
-            sum += err * err / n;
-            sumvar1 += pt.c * pt.c / n;
-            sumvar2 += pred * pred / n;
-        }
-
-        return sum / std::sqrt(sumvar1 * sumvar2);
-    }
-
-    template<typename T>
-    T diff(const TimeSeries<T>& predicted, const TimeSeries<T>& observed, const TimeSeries<T>& weights) {
-        T sum = 0;
-
-        for (const auto& pt : observed) {
-            T pred = predicted.interpol(pt.t);
-            T weight = weights.interpol(pt.t);
-            T err = pt.c - pred;
-            sum += err * err * weight * weight;
-        }
-
-        return sum;
-    }
-
-    template<typename T>
-    T R2(const TimeSeries<T>& modeled, const TimeSeries<T>& observed) {
-        T sum_prod = 0, sum_mod = 0, sum_obs = 0, sum_mod2 = 0, sum_obs2 = 0;
-        int count = 0;
-
-        for (const auto& pt : observed) {
-            if (pt.t >= modeled.mint() && pt.t <= modeled.maxt()) {
-                T m = modeled.interpol(pt.t);
-                T o = pt.c;
-                sum_prod += m * o;
-                sum_mod += m;
-                sum_obs += o;
-                sum_mod2 += m * m;
-                sum_obs2 += o * o;
-                count++;
-            }
-        }
-
-        T numerator = pow(count * sum_prod - sum_mod * sum_obs, 2);
-        T denominator = (count * sum_mod2 - sum_mod * sum_mod) * (count * sum_obs2 - sum_obs * sum_obs);
-        return (denominator != 0) ? numerator / denominator : T{};
-    }
-
-    template<typename T>
-    T R2(const TimeSeries<T>* modeled, const TimeSeries<T>* observed) {
-        return R2(*modeled, *observed);
-    }
-
-    template<typename T>
-    T NSE(const TimeSeries<T>& modeled, const TimeSeries<T>& observed) {
-        T avg = observed.mean();
-        T numerator = 0, denominator = 0;
-
-        for (const auto& pt : observed) {
-            if (pt.t >= modeled.mint() && pt.t <= modeled.maxt()) {
-                T err = pt.c - modeled.interpol(pt.t);
-                numerator += err * err;
-                denominator += (pt.c - avg) * (pt.c - avg);
-            }
-        }
-
-        return (denominator != 0) ? (1 - numerator / denominator) : T{};
-    }
-
-    template<typename T>
-    T NSE(const TimeSeries<T>* modeled, const TimeSeries<T>* observed) {
-        return NSE(*modeled, *observed);
-    }
-
-    template<typename T>
-    T R(const TimeSeries<T>& modeled, const TimeSeries<T>& observed, int skipFirstN) {
-        if (observed.size() <= static_cast<size_t>(skipFirstN)) return T{};
-
-        T sum_cov = 0, sum_mod = 0, sum_obs = 0, sum_mod2 = 0, sum_obs2 = 0;
-        int n = observed.size() - skipFirstN;
-
-        for (size_t i = skipFirstN; i < observed.size(); ++i) {
-            T m = modeled.getValue(i);
-            T o = observed.getValue(i);
-            sum_cov += m * o;
+    for (const auto& pt : observed) {
+        if (pt.t >= modeled.mint() && pt.t <= modeled.maxt()) {
+            T m = modeled.interpol(pt.t);
+            T o = pt.c;
+            sum_prod += m * o;
             sum_mod += m;
             sum_obs += o;
             sum_mod2 += m * m;
             sum_obs2 += o * o;
+            count++;
+        }
+    }
+
+    T numerator = pow(count * sum_prod - sum_mod * sum_obs, 2);
+    T denominator = (count * sum_mod2 - sum_mod * sum_mod) * (count * sum_obs2 - sum_obs * sum_obs);
+    return (denominator != 0) ? numerator / denominator : T{};
+}
+
+template<typename T>
+T R2(const TimeSeries<T>* modeled, const TimeSeries<T>* observed) {
+    return R2(*modeled, *observed);
+}
+
+template<typename T>
+T NSE(const TimeSeries<T>& modeled, const TimeSeries<T>& observed) {
+    T avg = observed.mean();
+    T numerator = 0, denominator = 0;
+
+    for (const auto& pt : observed) {
+        if (pt.t >= modeled.mint() && pt.t <= modeled.maxt()) {
+            T err = pt.c - modeled.interpol(pt.t);
+            numerator += err * err;
+            denominator += (pt.c - avg) * (pt.c - avg);
+        }
+    }
+
+    return (denominator != 0) ? (1 - numerator / denominator) : T{};
+}
+
+template<typename T>
+T NSE(const TimeSeries<T>* modeled, const TimeSeries<T>* observed) {
+    return NSE(*modeled, *observed);
+}
+
+template<typename T>
+T R(const TimeSeries<T>& modeled, const TimeSeries<T>& observed, int skipFirstN) {
+    if (observed.size() <= static_cast<size_t>(skipFirstN)) return T{};
+
+    T sum_cov = 0, sum_mod = 0, sum_obs = 0, sum_mod2 = 0, sum_obs2 = 0;
+    int n = observed.size() - skipFirstN;
+
+    for (size_t i = skipFirstN; i < observed.size(); ++i) {
+        T m = modeled.getValue(i);
+        T o = observed.getValue(i);
+        sum_cov += m * o;
+        sum_mod += m;
+        sum_obs += o;
+        sum_mod2 += m * m;
+        sum_obs2 += o * o;
+    }
+
+    T cov = (sum_cov / n) - (sum_mod / n) * (sum_obs / n);
+    T var_m = (sum_mod2 / n) - pow(sum_mod / n, 2);
+    T var_o = (sum_obs2 / n) - pow(sum_obs / n, 2);
+
+    return (var_m > 0 && var_o > 0) ? cov / sqrt(var_m * var_o) : T{};
+}
+
+template<typename T>
+T XYbar(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
+    T sum = 0;
+    for (const auto& pt : observed)
+        sum += pt.c * predicted.interpol(pt.t);
+    return sum / static_cast<T>(observed.size());
+}
+
+template<typename T>
+T X2bar(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
+    T sum = 0;
+    for (const auto& pt : observed)
+        sum += pt.c * pt.c;
+    return sum / static_cast<T>(observed.size());
+}
+
+template<typename T>
+T Y2bar(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
+    T sum = 0;
+    for (const auto& pt : observed) {
+        T yhat = predicted.interpol(pt.t);
+        sum += yhat * yhat;
+    }
+    return sum / static_cast<T>(observed.size());
+}
+
+template<typename T>
+T Xbar(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
+    T sum = 0;
+    for (const auto& pt : observed)
+        sum += pt.c;
+    return sum / static_cast<T>(observed.size());
+}
+
+template<typename T>
+T Ybar(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
+    T sum = 0;
+    for (const auto& pt : observed)
+        sum += predicted.interpol(pt.t);
+    return sum / static_cast<T>(observed.size());
+}
+
+namespace TimeSeriesMetrics {
+
+    // Computes the x-percentile from a vector using QuickSort
+    template<typename T>
+    T percentile(const std::vector<T>& values, T x) {
+        if (values.empty()) return T{};
+        std::vector<T> sorted = QSort(values);
+        size_t index = std::min(static_cast<size_t>(x * sorted.size()), sorted.size() - 1);
+        return sorted[index];
+    }
+
+    // Computes multiple percentiles from a vector
+    template<typename T>
+    std::vector<T> percentile(const std::vector<T>& values, const std::vector<T>& fractions) {
+        std::vector<T> sorted = QSort(values);
+        std::vector<T> result;
+        result.reserve(fractions.size());
+
+        for (const auto& frac : fractions) {
+            size_t index = std::min(static_cast<size_t>(frac * sorted.size()), sorted.size() - 1);
+            result.push_back(sorted[index]);
         }
 
-        T cov = (sum_cov / n) - (sum_mod / n) * (sum_obs / n);
-        T var_m = (sum_mod2 / n) - pow(sum_mod / n, 2);
-        T var_o = (sum_obs2 / n) - pow(sum_obs / n, 2);
-
-        return (var_m > 0 && var_o > 0) ? cov / sqrt(var_m * var_o) : T{};
+        return result;
     }
 
-    template<typename T>
-    T XYbar(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
-        T sum = 0;
-        for (const auto& pt : observed)
-            sum += pt.c * predicted.interpol(pt.t);
-        return sum / static_cast<T>(observed.size());
-    }
-
-    template<typename T>
-    T X2bar(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
-        T sum = 0;
-        for (const auto& pt : observed)
-            sum += pt.c * pt.c;
-        return sum / static_cast<T>(observed.size());
-    }
-
-    template<typename T>
-    T Y2bar(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
-        T sum = 0;
-        for (const auto& pt : observed) {
-            T yhat = predicted.interpol(pt.t);
-            sum += yhat * yhat;
-        }
-        return sum / static_cast<T>(observed.size());
-    }
-
-    template<typename T>
-    T Xbar(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
-        T sum = 0;
-        for (const auto& pt : observed)
-            sum += pt.c;
-        return sum / static_cast<T>(observed.size());
-    }
-
-    template<typename T>
-    T Ybar(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
-        T sum = 0;
-        for (const auto& pt : observed)
-            sum += predicted.interpol(pt.t);
-        return sum / static_cast<T>(observed.size());
-    }
+    
+}
 
     /**
  * @brief Computes the Kolmogorov–Smirnov (KS) statistic between two time series.
@@ -2317,7 +2321,7 @@ namespace TimeSeriesMetrics {
     }
 
 
-} // namespace TimeSeriesMetrics
+// namespace TimeSeriesMetrics
 
 
 

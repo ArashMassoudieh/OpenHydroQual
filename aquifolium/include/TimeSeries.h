@@ -25,7 +25,7 @@
 #include "QuickSort.h"
 #include "NormalDist.h"
 
-#ifdef QT_version
+#ifdef Q_version
 #include "qlist.h"
 #include "qmap.h"
 #include "qvariant.h"
@@ -263,8 +263,12 @@ public:
     // Serialization
     // -------------------------------------------------------------------------
 
+#ifdef Q_version 
     QJsonObject toJson() const;                           ///< Convert to QJsonObject
     void fromJson(const QJsonObject& obj);                ///< Load from QJsonObject
+#endif // Q_version 
+
+    
 
     bool fileNotFound = false;
     bool fileNotCorrect = false;
@@ -393,6 +397,105 @@ TimeSeries<T> operator%(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
 template<typename T>
 TimeSeries<T> operator&(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
 
+/**
+     * @brief Computes the sum of interpolated values from multiple time series at a given time.
+     * @param series_list Vector of time series.
+     * @param time Target time.
+     * @return Sum of interpolated values.
+     */
+template<typename T>
+T sum_interpolate(const std::vector<TimeSeries<T>>& series_list, T time);
+
+/**
+ * @brief Computes the squared L2 norm of a time series (sum of squared values).
+ * @param series Input time series.
+ * @return Norm squared.
+ */
+template<typename T>
+T norm2(const TimeSeries<T>& series);
+
+/**
+ * @brief Computes an R²-style correlation using absolute values of signals.
+ * @param series1 First time series.
+ * @param series2 Second time series.
+ * @return R²-style coefficient.
+ */
+template<typename T>
+T R2_c(const TimeSeries<T>& series1, const TimeSeries<T>& series2);
+
+/**
+ * @brief Returns a copy of the time series with all values clamped below `scalar` raised to `scalar`.
+ * @param series Input series.
+ * @param scalar Threshold.
+ * @return Clamped series.
+ */
+template<typename T>
+TimeSeries<T> max(const TimeSeries<T>& series, T scalar);
+
+/**
+ * @brief Pointwise subtraction: time series 1 - interpolated time series 2.
+ */
+template<typename T>
+TimeSeries<T> operator-(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+/**
+ * @brief Pointwise product using interpolation: ts1 * interpol(ts2).
+ */
+template<typename T>
+TimeSeries<T> operator*(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+/**
+ * @brief Pointwise division using interpolation: ts1 / interpol(ts2).
+ */
+template<typename T>
+TimeSeries<T> operator/(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+/**
+ * @brief Subtracts a scalar from all values.
+ */
+template<typename T>
+TimeSeries<T> operator-(const TimeSeries<T>& ts, T scalar);
+
+/**
+ * @brief Multiplies every value in the series by a scalar.
+ */
+template<typename T>
+TimeSeries<T> operator*(T scalar, const TimeSeries<T>& ts);
+
+/**
+ * @brief Multiplies every value in the series by a scalar (right-hand).
+ */
+template<typename T>
+TimeSeries<T> operator*(const TimeSeries<T>& ts, T scalar);
+
+/**
+ * @brief Divides every value in the series by a scalar.
+ */
+template<typename T>
+TimeSeries<T> operator/(const TimeSeries<T>& ts, T scalar);
+
+/**
+ * @brief Element-wise division without interpolation.
+ * Assumes aligned timestamps.
+ */
+template<typename T>
+TimeSeries<T> operator%(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+/**
+ * @brief Element-wise addition without interpolation.
+ * Assumes aligned timestamps.
+ */
+template<typename T>
+TimeSeries<T> operator&(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+/**
+ * @brief Pointwise difference without interpolation (misused '>' for legacy reasons).
+ */
+template<typename T>
+TimeSeries<T> operator>(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
+
+
+
 namespace TimeSeriesMetrics {
     
     
@@ -413,105 +516,6 @@ namespace TimeSeriesMetrics {
      */
     template<typename T>
     std::vector<T> percentile(const std::vector<T>& values, const std::vector<T>& fractions);
-
-    /**
-     * @brief Computes the sum of interpolated values from multiple time series at a given time.
-     * @param series_list Vector of time series.
-     * @param time Target time.
-     * @return Sum of interpolated values.
-     */
-    template<typename T>
-    T sum_interpolate(const std::vector<TimeSeries<T>>& series_list, T time);
-
-    /**
-     * @brief Computes the squared L2 norm of a time series (sum of squared values).
-     * @param series Input time series.
-     * @return Norm squared.
-     */
-    template<typename T>
-    T norm2(const TimeSeries<T>& series);
-
-    /**
-     * @brief Computes an R²-style correlation using absolute values of signals.
-     * @param series1 First time series.
-     * @param series2 Second time series.
-     * @return R²-style coefficient.
-     */
-    template<typename T>
-    T R2_c(const TimeSeries<T>& series1, const TimeSeries<T>& series2);
-
-    /**
-     * @brief Returns a copy of the time series with all values clamped below `scalar` raised to `scalar`.
-     * @param series Input series.
-     * @param scalar Threshold.
-     * @return Clamped series.
-     */
-    template<typename T>
-    TimeSeries<T> max(const TimeSeries<T>& series, T scalar);
-
-    /**
-     * @brief Pointwise subtraction: time series 1 - interpolated time series 2.
-     */
-    template<typename T>
-    TimeSeries<T> operator-(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-    /**
-     * @brief Pointwise product using interpolation: ts1 * interpol(ts2).
-     */
-    template<typename T>
-    TimeSeries<T> operator*(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-    /**
-     * @brief Pointwise division using interpolation: ts1 / interpol(ts2).
-     */
-    template<typename T>
-    TimeSeries<T> operator/(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-    /**
-     * @brief Subtracts a scalar from all values.
-     */
-    template<typename T>
-    TimeSeries<T> operator-(const TimeSeries<T>& ts, T scalar);
-
-    /**
-     * @brief Multiplies every value in the series by a scalar.
-     */
-    template<typename T>
-    TimeSeries<T> operator*(T scalar, const TimeSeries<T>& ts);
-
-    /**
-     * @brief Multiplies every value in the series by a scalar (right-hand).
-     */
-    template<typename T>
-    TimeSeries<T> operator*(const TimeSeries<T>& ts, T scalar);
-
-    /**
-     * @brief Divides every value in the series by a scalar.
-     */
-    template<typename T>
-    TimeSeries<T> operator/(const TimeSeries<T>& ts, T scalar);
-
-    /**
-     * @brief Element-wise division without interpolation.
-     * Assumes aligned timestamps.
-     */
-    template<typename T>
-    TimeSeries<T> operator%(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-    /**
-     * @brief Element-wise addition without interpolation.
-     * Assumes aligned timestamps.
-     */
-    template<typename T>
-    TimeSeries<T> operator&(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-    /**
-     * @brief Pointwise difference without interpolation (misused '>' for legacy reasons).
-     */
-    template<typename T>
-    TimeSeries<T> operator>(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
-
-
 
 } // namespace TimeSeriesMetrics
 

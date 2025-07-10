@@ -13,144 +13,178 @@
  * commercial license. Contact arash.massoudieh@enviroinformatics.co for details.
  */
 
+ // TimeSeriesSet.h
+ // Refactored from BTCSet.h to use TimeSeries
+
 #pragma once
 
 #include <vector>
 #include <string>
-#include <map>
-#include <QJsonObject>
+#include <optional>
 #include "TimeSeries.h"
-#include "Matrix.h"
-#include "Vector.h"
 
-#ifdef QT_version
-#include <qstring.h>
-#endif
-
- /**
-  * @brief A container class representing a set of TimeSeries<T> with shared metadata.
-  */
-template<class T>
-class TimeSeriesSet {
+/**
+ * @brief A class that represents a collection of TimeSeries objects.
+ */
+template<typename T>
+class TimeSeriesSet : public std::vector<TimeSeries<T>> {
 public:
-    int nvars = 0;
-    std::string name;
-    std::string filename;
-    std::vector<TimeSeries<T>> BTC;
-    std::vector<std::string> names;
-    bool unif = false;
-    bool file_not_found = false;
-
     // Constructors
-    TimeSeriesSet();
-    TimeSeriesSet(int n);
-    TimeSeriesSet(int nvars, int vectorLength);
-    TimeSeriesSet(const TimeSeriesSet<T>& other);
-    TimeSeriesSet(const TimeSeries<T>& single);
-    TimeSeriesSet(std::string filename, bool varytime);
-    TimeSeriesSet(std::vector<std::vector<T>>& matrix, int writeInterval = 1);
+    TimeSeriesSet(); ///< Default constructor
+    TimeSeriesSet(const TimeSeriesSet<T>& other); ///< Copy constructor
+    TimeSeriesSet(const TimeSeries<T>& ts); ///< Construct with a single TimeSeries
+    TimeSeriesSet(int num_series); ///< Construct with specified number of empty series
+    TimeSeriesSet(const std::vector<std::string>& filenames); ///< Construct from multiple file inputs
+    TimeSeriesSet(const std::string& filename, bool has_header = true); ///< Construct from CSV file
 
-    // Assignment
-    TimeSeriesSet& operator=(const TimeSeriesSet<T>& other);
-
-    // Access
-    TimeSeries<T>& operator[](int index);
-    TimeSeries<T>& operator[](std::string BTCName);
-    TimeSeries<T> operator[](int index) const;
-    TimeSeries<T> operator[](std::string BTCName) const;
-#ifdef QT_version
-    TimeSeries<T>& operator[](QString BTCName);
-#endif
+    TimeSeriesSet<T>& operator=(const TimeSeriesSet<T>& other); ///< Copy assignment
+    TimeSeriesSet<T>& operator=(TimeSeriesSet<T>&& other) noexcept; ///< Move assignment
 
     // File I/O
-    void writetofile(std::string outputfile, bool writeColumnHeaders = false);
-    void writetofile(std::string outputfile, int writeinterval);
-    void writetofile(char outputfile[]);
-    void appendtofile(std::string outputfile, bool skipfirstrow = false);
-    bool ReadContentFromFile(std::string filename, bool varytime);
-    void getfromfile(std::string filename, bool varytime);
+    bool read(const std::string& filename, bool has_header = true); ///< Read from CSV
+    void write(const std::string& filename, const std::string& delimiter = ",") const; ///< Write to CSV
+    void appendtofile(const std::string& filename, bool include_time = true) const; ///< Append to existing CSV
 
-    // Structure management
-    void append(const TimeSeries<T>& series, std::string name = "");
-    void append(T t, std::vector<T> c);
-    void clear();
-    void clearContents();
-    void clearContentsExceptLastRow();
-    void resize(unsigned int _size);
-    void ResizeIfNeeded(unsigned int _increment);
-    void adjust_size();
-    void knockout(T t);
+    // Accessors
+    TimeSeries<T>& operator[](int index); ///< Access by index
+    TimeSeries<T>& operator[](const std::string& name); ///< Access by name (mutable)
+    const TimeSeries<T>& operator[](int index) const; ///< Access by index (const)
+    const TimeSeries<T>& operator[](const std::string& name) const; ///< Access by name (const)
 
-    // Statistical analysis
-    std::vector<T> mean(int limit);
-    std::vector<T> mean(int limit, std::vector<int> index);
-    std::vector<T> std(int limit);
-    std::vector<T> std(int limit, std::vector<int> index);
-    std::vector<T> average();
-    std::vector<T> integrate();
-    std::vector<T> percentile(T x);
-    std::vector<T> percentile(T x, int limit);
-    std::vector<T> percentile(T x, int limit, std::vector<int> index);
-    CMatrix correlation(int limit, int n);
+    // Metadata
+    void setSeriesName(int index, const std::string& name); ///< Set series name by index
+    std::string getSeriesName(int index) const; ///< Get series name by index
+    std::vector<std::string> getSeriesNames() const; ///< Get all series names
+    void setname(int index, const std::string& name); ///< Set name on internal series object
 
-    // Other operations
-    T maxtime() const;
-    T mintime() const;
-    T maxval() const;
-    T minval() const;
-    int maxnumpoints() const;
+    // Query
+    bool Contains(const std::string& name) const; ///< Check if series exists by name
+    int indexOf(const std::string& name) const; ///< Get index of named series
+    int lookup(const std::string& name) const; ///< Alias for indexOf
+    int maxnumpoints() const; ///< Get max number of points across all series
+    size_t seriesCount() const; ///< Number of series in the set
+    size_t pointCount(int series_index) const; ///< Number of points in a specific series
 
-    std::vector<T> getrandom();
-    std::vector<T> getrandom(int burnin);
-    std::vector<T> getrow(int a);
+    // Append & Modify
+    void append(const std::vector<T>& values); ///< Append a row of values
+    void append(double t, const std::vector<T>& values); ///< Append a row with time
+    bool append(const TimeSeries<T>& ts, const std::string& name = ""); ///< Append a named TimeSeries
+    void append(const std::string& name); ///< Add empty TimeSeries with given name
+    void clear(); ///< Clear all series
+    void clearContents(); ///< Clear content of each series, retain structure
+    void clearContentsExceptLastRow(); ///< Keep last row only
+    void knockout(T t); ///< Knock out all points beyond time t
+    void resize(size_t num_series); ///< Resize to given number of series
+    void ResizeIfNeeded(size_t new_size); ///< Expand size only if needed
 
-    int indexOf(const std::string& name) const;
-    bool Contains(std::string BTCName) const;
-    void pushBackName(std::string name);
-    void setname(int i, std::string name);
-    int lookup(std::string S);
+    // Interpolation & Extraction
+    std::vector<T> interpolate(T t) const; ///< Interpolate all series at given time
+    std::vector<T> interpolate(T t, int n) const; ///< Interpolate for first n series
+    TimeSeries<T> extract(int index, T t1, T t2) const; ///< Extract a subset of one series
 
-    // Transformation and math
-    TimeSeries<T> add(std::vector<int> ii);
-    TimeSeries<T> add_mult(std::vector<int> ii, std::vector<T> mult);
-    TimeSeries<T> add_mult(std::vector<int> ii, TimeSeriesSet<T>& mult);
-    TimeSeries<T> divide(int ii, int jj);
+    // Series Statistics
+    std::vector<T> getrandom() const; ///< Random row of values
+    std::vector<T> getrandom(int start_item) const; ///< Random row after index
+    std::vector<T> getrow(int index) const; ///< Get values from specific row
+    std::vector<T> percentile(T p) const; ///< Percentiles from each series
+    std::vector<T> percentile(T p, int start_item) const;
+    std::vector<T> percentile(T p, int start_item, const std::vector<int>& indices) const;
+    std::vector<T> mean(int start_item = 0) const; ///< Means from each series
+    std::vector<T> mean(int start_item, const std::vector<int>& indices) const;
+    std::vector<T> standardDeviation(int start_item = 0) const; ///< Stddev from each series
+    std::vector<T> standardDeviation(int start_item, const std::vector<int>& indices) const;
+    std::vector<T> min(int start_item = 0) const; ///< Minimums from each series
+    std::vector<T> max(int start_item = 0) const; ///< Maximums from each series
+    std::vector<T> integrate() const; ///< Trapezoidal integration
+    std::vector<T> average() const; ///< Time-averaged values
 
-    TimeSeriesSet<T> make_uniform(T increment, bool assign_d = true);
-    TimeSeriesSet<T> getpercentiles(std::vector<T> percents);
-    TimeSeriesSet<T> distribution(int n_bins, int n_columns, int limit);
-    TimeSeriesSet<T> add_noise(std::vector<T> stddev, bool logd);
-    CVector out_of_limit(T limit);
-    TimeSeriesSet<T> ConverttoNormalScore();
-    TimeSeriesSet<T> AutoCorrelation(const double& span, const double& increment);
-    TimeSeriesSet<T> GetCummulativeDistribution();
-    TimeSeriesSet<T> Log();
-    TimeSeriesSet<T> sort(int burnOut = 0);
-    std::vector<T> max_wiggle();
-    std::vector<T> max_wiggle_corr(int _n = 10);
-    std::vector<int> max_wiggle_sl(int ii, T tol);
+    // Correlation & Linear Combinations
+    CMatrix correlation(int start_item, int end_item) const; ///< Correlation matrix
+    TimeSeries<T> add(const std::vector<int>& indices) const; ///< Sum multiple series
+    TimeSeries<T> add_mult(const std::vector<int>& indices, const std::vector<T>& weights) const; ///< Weighted sum
+    TimeSeries<T> add_mult(const std::vector<int>& indices, const TimeSeriesSet<T>& other) const; ///< Elementwise multiplication with another set
+    TimeSeries<T> divide(int numerator_index, int denominator_index) const; ///< Pointwise division
 
-    QJsonObject toJson() const;
+    // Transformations
+    TimeSeriesSet<T> make_uniform(T increment, bool assign_d = true) const; ///< Make all series uniform
+    TimeSeriesSet<T> getpercentiles(const std::vector<T>& fractions) const; ///< Get specified percentiles
+    TimeSeriesSet<T> distribution(int n_bins, int start_index, int end_index) const; ///< Density histograms
+    TimeSeriesSet<T> add_noise(const std::vector<T>& stddevs, bool log_noise = false) const; ///< Add Gaussian noise
+    TimeSeriesSet<T> sort(int column_index = 0) const; ///< Sort based on a column
+    TimeSeriesSet<T> ConverttoNormalScore() const; ///< Convert each to normal score
+    TimeSeriesSet<T> AutoCorrelation(const double& span, const double& increment) const; ///< Autocorrelation function
+    TimeSeriesSet<T> GetCummulativeDistribution() const; ///< CDF for each series
+    TimeSeriesSet<T> Log() const; ///< Log-transform values
+
+    // Wiggle Analysis
+    std::vector<T> max_wiggle() const; ///< Max wiggle metric across series
+    std::vector<T> max_wiggle_corr(int back_steps) const; ///< Max wiggle correlation
+    std::vector<int> max_wiggle_sl(int back_steps, T tolerance) const; ///< Wiggle slope test
+
+    // File Serialization (Qt)
+#ifdef Q_version
+    QJsonObject toJson() const; ///< Convert to QJsonObject
+    void fromJson(const QJsonObject& json); ///< Load from QJsonObject
+#endif // Q_version
+
+    // Properties
+    std::string filename; ///< File associated with the set
+    std::string name; ///< Name of the set
+    bool file_not_found = false; ///< Flag for file read failure
+    bool unif = false; ///< Whether time steps are uniform
+
+private:
+
 };
 
-// Free functions
-template<class T>
-T diff(TimeSeriesSet<T> B1, TimeSeriesSet<T> B2);
+// Helper functions
 
+/**
+ * @brief Sum of absolute differences between two sets.
+ */
+template<class T>
+T diff(TimeSeriesSet<T> A, TimeSeriesSet<T> B);
+
+/**
+ * @brief Concatenate two TimeSeriesSets (horizontally).
+ */
+template<class T>
+TimeSeriesSet<T> merge(TimeSeriesSet<T> A, const TimeSeriesSet<T>& B);
+
+/**
+ * @brief Vertically merge multiple TimeSeriesSets.
+ */
+template<class T>
+TimeSeriesSet<T> merge(std::vector<TimeSeriesSet<T>>& sets);
+
+/**
+ * @brief Scalar multiplication.
+ */
+template<class T>
+TimeSeriesSet<T> operator*(const TimeSeriesSet<T>& set, const T& scalar);
+
+/**
+ * @brief Vector of L2 differences between pairs of series.
+ */
 template<class T>
 CVector norm2dif(TimeSeriesSet<T>& A, TimeSeriesSet<T>& B);
 
+/**
+ * @brief Sum of interpolated values at a given time from multiple sets.
+ */
 template<class T>
-TimeSeriesSet<T> merge(TimeSeriesSet<T> A, TimeSeriesSet<T>& B);
+CVector sum_interpolate(std::vector<TimeSeriesSet<T>>& sets, double t);
 
+/**
+ * @brief Sum interpolated values at a time for a given variable.
+ */
 template<class T>
-TimeSeriesSet<T> merge(std::vector<TimeSeriesSet<T>>& A);
+T sum_interpolate(std::vector<TimeSeriesSet<T>>& sets, T t, std::string name);
 
+/**
+ * @brief Determine the maximum number of variables (series) across all sets.
+ */
 template<class T>
-CVector sum_interpolate(std::vector<TimeSeriesSet<T>>& BTC, double t);
+int max_n_vars(std::vector<TimeSeriesSet<T>>& sets);
 
-template<class T>
-T sum_interpolate(std::vector<TimeSeriesSet<T>>& BTC, T t, std::string name);
-
-template<class T>
-int max_n_vars(std::vector<TimeSeriesSet<T>>& BTC);
+#include "TimeSeriesSet.hpp"
