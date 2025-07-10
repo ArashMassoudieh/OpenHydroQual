@@ -34,7 +34,7 @@ class Condition
         bool calc(Object *W, const Expression::timing &tmg);
         string GetLastError() {return last_error;}
         string ToString(int _tabs = 0) const;
-        unsigned int Count() { return exr.size();  }
+        unsigned int Count() const { return exr.size();  }
     protected:
 
     private:

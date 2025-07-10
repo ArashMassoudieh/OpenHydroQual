@@ -507,7 +507,7 @@ Quan& Quan::operator=(const Quan& rhs)
     return *this;
 }
 
-bool Quan::operator==(const Quan& other)
+bool Quan::operator==(const Quan& other) const
 {
     bool out = true;
     out = out && (_val != other._val);
@@ -539,24 +539,9 @@ double Quan::CalcVal(Object *block, const Expression::timing &tmg)
                 return _val_star;
             else
             {
-#ifndef NO_OPENMP
-                omp_lock_t writelock;
-                if (omp_get_num_threads() > 1)
-                {
-                    omp_init_lock(&writelock);
-                    omp_set_lock(&writelock);
-                }
-#endif
+                std::lock_guard<std::mutex> lock(val_star_mutex);
                 _val_star = source->GetValue(block);
-                value_star_updated=true;
-                return _val_star;
-#ifndef NO_OPENMP
-                if (omp_get_num_threads() > 1)
-                {
-                    omp_unset_lock(&writelock);
-                    omp_destroy_lock(&writelock);
-                }
-#endif
+                value_star_updated = true;
             }
         }
         else
