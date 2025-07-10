@@ -15,7 +15,6 @@
 
 
  // TimeSeriesSet.hpp
- // Refactored version of BTCSet.hpp using TimeSeries
 
 #pragma once
 

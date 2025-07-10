@@ -14,7 +14,7 @@
  */
 
  // TimeSeriesSet.h
- // Refactored from BTCSet.h to use TimeSeries
+
 
 #pragma once
 

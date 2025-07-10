@@ -750,7 +750,7 @@ TimeSeriesSet<double> CMCMC<T>::prior_distribution(int n_bins)
 			for (int j=0; j<n_bins; j++)
                 B.setValue(j, exp(-pow(log(B.getTime(j))-log(parameter(i)->mean()),2)/(2.0*pow(parameter(i)->std(),2)))/(B.getTime(j)*parameter(i)->std()*pow(6.28,0.5)));
 
-        prior_dist.BTC[i] = B;
+        prior_dist[i] = B;
 	}
 
     return prior_dist;
@@ -817,12 +817,12 @@ void CMCMC<T>::get_outputpercentiles(TimeSeriesSet<double> &MCMCout)
 			{
 				BTCout_obs_prcntle[j][i] = BTCout_obs[j][i].getpercentiles(calc_output_percentiles);
 
-                BTCout_obs_prcntle[j][i].writetofile(FileInformation.outputpath + "BTC_obs_prcntl_" + Model->Observation(i)->GetName() + ".txt");
+                BTCout_obs_prcntle[j][i].write(FileInformation.outputpath + "BTC_obs_prcntl_" + Model->Observation(i)->GetName() + ".txt");
 
                 if (MCMC_Settings.noise_realization_writeout)
 					BTCout_obs_prcntle_noise[j][i] = BTCout_obs_noise[j][i].getpercentiles(calc_output_percentiles);
 
-                BTCout_obs_prcntle_noise[j][i].writetofile(FileInformation.outputpath + "BTC_obs_prcntl_noise_" + Model->Observation(i)->GetName() + ".txt");
+                BTCout_obs_prcntle_noise[j][i].write(FileInformation.outputpath + "BTC_obs_prcntl_noise_" + Model->Observation(i)->GetName() + ".txt");
 
 			}
 		}

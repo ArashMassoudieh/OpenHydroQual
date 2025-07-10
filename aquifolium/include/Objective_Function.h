@@ -18,7 +18,7 @@
 #define OBJECTIVE_FUNCTION_H
 
 #include "Expression.h"
-#include "BTC.h"
+#include "TimeSeries.h"
 #include "Object.h"
 
 enum class objfunctype {Integrate, Value, Maximum, Variance, Exceedance};

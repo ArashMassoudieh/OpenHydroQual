@@ -153,8 +153,6 @@ HEADERS += \
     ../../aquifolium/include/safevector.h \
     ../../aquifolium/include/safevector.hpp \
     ../../aquifolium/include/Block.h \
-    ../../aquifolium/include/BTC.h \
-    ../../aquifolium/include/BTCSet.h \
     ../../aquifolium/include/Link.h \
     ../../aquifolium/include/Matrix.h \
     ../../aquifolium/include/Matrix_arma.h \

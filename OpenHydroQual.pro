@@ -163,7 +163,9 @@ SOURCES += \
 
 HEADERS += \
     aquifolium/include/TimeSeries.h \
+    aquifolium/include/TimeSeriesSet.h \
     aquifolium/src/TimeSeries.hpp \
+    aquifolium/src/TimeSeriesSet.hpp \
     chartview.h \
     qplotter.h \
     qplotwindow.h \
@@ -195,8 +197,6 @@ HEADERS += \
     gridgenerator.h \
         mainwindow.h \
     ./aquifolium/include/Block.h \
-    ./aquifolium/include/BTC.h \
-    ./aquifolium/include/BTCSet.h \
     ./aquifolium/include/Expression.h \
     ./aquifolium/include/Link.h \
     ./aquifolium/include/Matrix.h \

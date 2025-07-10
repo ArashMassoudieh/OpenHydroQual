@@ -18,9 +18,6 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-
-
-#include "TimeSeries.h"
 #include "math.h"
 #include "string.h"
 #include <iostream>
@@ -41,6 +38,8 @@
 #endif
 #include <QJsonArray>
 #include <QJsonObject>
+#include <mutex>
+
 
 
 using namespace std;
@@ -905,7 +904,7 @@ TimeSeries<T> operator*(T alpha, const TimeSeries<T>& ts) {
     for (const auto& pt : ts)
         result.emplace_back(typename TimeSeries<T>::DataPoint{pt.t, alpha * pt.c, pt.d});
 
-    result.structured_ = ts.structured_;
+    result.setStructured(ts.isStructured());
     result.dt_ = ts.dt_;
     return result;
 }
@@ -957,8 +956,8 @@ TimeSeries<T> operator-(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2) {
         result.emplace_back(DataPoint<T>{pt.t, diff, pt.d});
     }
 
-    result.structured_ = false;
-    result.dt_ = T{};
+    result.setStructured(false);
+    result.setdt(T{});
     return result;
 }
 

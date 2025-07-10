@@ -20,7 +20,7 @@
 #include "Individual.h"
 #include "Distribution.h"
 #include <stdio.h>
-#include "BTC.h"
+#include "TimeSeries.h"
 #include "DistributionNUnif.h"
 #include "math.h"
 #include <iostream>
