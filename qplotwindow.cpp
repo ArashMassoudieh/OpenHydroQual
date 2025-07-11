@@ -119,7 +119,7 @@ bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseri
     {
         if (allowtime)
 #ifndef Qt6
-            lineseries->append(xToDateTime(timeseries.GetT(j)).toMSecsSinceEpoch(),timeseries.GetC(j));
+            lineseries->append(xToDateTime(timeseries.getTime(j)).toMSecsSinceEpoch(),timeseries.getValue(j));
 #else
             lineseries->append(xToDateTime(timeseries.getTime(j)).toMSecsSinceEpoch(),timeseries.getValue(j));
 #endif
@@ -239,7 +239,7 @@ bool QPlotWindow::PlotData(const TimeSeriesSet<outputtimeseriesprecision>& times
         {
             if (allowtime)
 #ifndef Qt6
-            lineseries->append(xToDateTime(timeseriesset.BTC[i].GetT(j)).toMSecsSinceEpoch(),timeseriesset.BTC[i].GetC(j));
+            lineseries->append(xToDateTime(timeseriesset[i].getTime(j)).toMSecsSinceEpoch(),timeseriesset[i].getValue(j));
 #else
             lineseries->append(xToDateTime(timeseriesset[i].getTime(j)).toMSecsSinceEpoch(),timeseriesset[i].getValue(j));
 #endif

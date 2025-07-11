@@ -176,7 +176,7 @@
     "typecategory": "Blocks",
     "description": "Reactor (Flexible)",
     "icon": {
-      "filename": "reactor.png"
+      "filename": "reactor-flex.png"
     },
     "Storage": {
       "type": "balance",
