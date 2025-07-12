@@ -23,11 +23,15 @@
 #ifndef mac_version
 #include <omp.h>
 #endif
-#include "MCMC.h"
 #include "runtimewindow.h"
 #include "Utilities.h"
 #include "Parameter_Set.h"
 
+extern "C" {
+#include <openblas_config.h>
+}
+
+extern "C" void openblas_set_num_threads(int);
 
 using namespace std;
 
@@ -257,8 +261,11 @@ void CMCMC<T>::initialize(bool random)
         }
     }
 
+    openblas_set_num_threads(1);
+
     if (random)
     {
+
 #pragma omp parallel for
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
@@ -292,8 +299,10 @@ void CMCMC<T>::initialize(bool random)
         }
     }
 
-}
+    unsigned int cores = std::thread::hardware_concurrency();
+    openblas_set_num_threads(cores > 0 ? cores : 1);
 
+}
 
 
 template<class T>

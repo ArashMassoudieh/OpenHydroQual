@@ -72,7 +72,7 @@ CONFIG(debug, debug|release) {
     message(Building in debug mode)
     !macx: QMAKE_CXXFLAGS *= -fopenmp -O3 -march=native
     !macx: QMAKE_LFLAGS +=  -fopenmp
-    !macx: LIBS += -lgomp -lpthread
+    !macx: LIBS += -lgomp -lpthread -lopenblas
     LIBS += -lpthread
     DEFINES += _NO_OPENMP DEBUG
 
@@ -84,9 +84,9 @@ CONFIG(debug, debug|release) {
     # QMAKE_CXXFLAGS+=-pg
     # QMAKE_LFLAGS+=-pg
     # macx: DEFINES += NO_OPENMP
-    ! macx: LIBS += -lgomp -lpthread
+    ! macx: LIBS += -lgomp -lpthread -lopenblas
     macx: LIBS += -lpthread
-    #DEFINES += DEBUG
+    DEFINES += DEBUG
 }
 
 
