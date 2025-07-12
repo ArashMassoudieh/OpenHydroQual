@@ -27,9 +27,12 @@
 #include "Utilities.h"
 #include "Parameter_Set.h"
 
+#ifndef _WINDOWS
 extern "C" {
 #include <openblas_config.h>
 }
+#endif // !windows
+
 
 extern "C" void openblas_set_num_threads(int);
 
@@ -261,7 +264,9 @@ void CMCMC<T>::initialize(bool random)
         }
     }
 
+#ifndef _WINDOWS
     openblas_set_num_threads(1);
+#endif
 
     if (random)
     {
@@ -284,6 +289,7 @@ void CMCMC<T>::initialize(bool random)
     }
     else
     {
+
 #pragma omp parallel for
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
@@ -298,9 +304,10 @@ void CMCMC<T>::initialize(bool random)
             logp1[j] = logp[j];
         }
     }
-
+#ifndef _WINDOWS
     unsigned int cores = std::thread::hardware_concurrency();
     openblas_set_num_threads(cores > 0 ? cores : 1);
+#endif
 
 }
 
@@ -478,6 +485,9 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
         omp_set_num_threads(MCMC_Settings.numberOfThreads);
 #endif
 
+#ifndef _WINDOWS
+        openblas_set_num_threads(1);
+#endif
 
 #ifdef WIN64
 #pragma omp parallel
@@ -518,6 +528,11 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
                 }
             }
         }
+
+#ifndef _WINDOWS
+        unsigned int cores = std::thread::hardware_concurrency();
+        openblas_set_num_threads(cores > 0 ? cores : 1);
+#endif
         accepted_count += accepted.sum();
         total_count += accepted.size();
         QCoreApplication::processEvents(QEventLoop::AllEvents,100*1000);
