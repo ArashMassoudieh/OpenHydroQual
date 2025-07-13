@@ -365,6 +365,8 @@ copy libs\gsl\*.dll $(OutDir)</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="aquifolium\src\constituent.cpp" />
+    <ClCompile Include="aquifolium\src\ExpressionNode.cpp" />
+    <ClCompile Include="aquifolium\src\ExpressionParser.cpp" />
     <ClCompile Include="aquifolium\src\GA\Binary.cpp" />
     <ClCompile Include="aquifolium\src\Block.cpp" />
     <ClCompile Include="aquifolium\src\Command.cpp" />
@@ -434,6 +436,8 @@ copy libs\gsl\*.dll $(OutDir)</Command>
   <ItemGroup>
     <ClInclude Include="aquifolium\include\Condition.h" />
     <ClInclude Include="aquifolium\include\constituent.h" />
+    <ClInclude Include="aquifolium\include\ExpressionNode.h" />
+    <ClInclude Include="aquifolium\include\ExpressionParser.h" />
     <ClInclude Include="aquifolium\include\GA\Binary.h" />
     <ClInclude Include="aquifolium\include\Block.h" />
     <ClInclude Include="aquifolium\include\Command.h" />

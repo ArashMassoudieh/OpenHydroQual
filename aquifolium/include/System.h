@@ -355,8 +355,8 @@ class System: public Object
         ErrorHandler VerifyAllQuantities();
         bool CalcAllInitialValues();
         void WriteObjectsToLogger();
-        void WriteBlocksStates(const string &variable, const Expression::timing &tmg);
-        void WriteLinksStates(const string &variable, const Expression::timing &tmg);
+        void WriteBlocksStates(const string &variable, const Timing &tmg);
+        void WriteLinksStates(const string &variable, const Timing &tmg);
         bool InitiatePrecalculatedFunctions();
         bool CopyStateVariablesFrom(System *sys);
         bool EraseConstituentRelatedProperties(const string &constituent_name);
@@ -463,9 +463,9 @@ class System: public Object
         CVector_arma Gradient(Object* obj, const string &independent_var);
 
 		void CorrectStoragesBasedonFluxes(const string& variable);
-        CVector_arma CalcStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past);
-        CVector_arma GetStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past, bool transport=false);
-        CVector_arma GetStateVariables_for_direct_Jacobian(const string &variable, const Expression::timing &tmg, bool transport);
+        CVector_arma CalcStateVariables(const string &variable, const Timing &tmg = Timing::past);
+        CVector_arma GetStateVariables(const string &variable, const Timing &tmg = Timing::past, bool transport=false);
+        CVector_arma GetStateVariables_for_direct_Jacobian(const string &variable, const Timing &tmg, bool transport);
         solversettings SolverSettings;
         simulationparameters SimulationParameters;
         vector<bool> OneStepSolve();
@@ -477,13 +477,13 @@ class System: public Object
         CMatrix_arma_sp JacobianDirect_SP(const string &variable, CVector_arma &X, bool transport);
 #endif
 
-        bool CalculateFlows(const string &var, const Expression::timing &tmg = Expression::timing::present);
-        void SetStateVariables(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present, bool transport=false);
+        bool CalculateFlows(const string &var, const Timing &tmg = Timing::present);
+        void SetStateVariables(const string &variable, CVector_arma &X, const Timing &tmg = Timing::present, bool transport=false);
         string GetBlockConstituent(unsigned int i);
-        void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport);
-        void SetStateVariables_TR(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present);
+        void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Timing &tmg, bool transport);
+        void SetStateVariables_TR(const string &variable, CVector_arma &X, const Timing &tmg = Timing::present);
         vector<bool> GetOutflowLimitedVector();
-        vector<double> GetOutflowLimitFactorVector(const Expression::timing &tmg);
+        vector<double> GetOutflowLimitFactorVector(const Timing &tmg);
         void SetOutflowLimitedVector(vector<bool>& x);
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
@@ -497,7 +497,7 @@ class System: public Object
         bool silent;
         _directories paths;
         vector<TimeSeries<timeseriesprecision>*> alltimeseries;
-        void CalculateAllExpressions(Expression::timing tmg = Expression::timing::present);
+        void CalculateAllExpressions(Timing tmg = Timing::present);
         void SetNumberOfStateVariables(unsigned int n)
 		{
 			SolverTempVars.fail_reason.resize(n);
@@ -508,9 +508,9 @@ class System: public Object
 		}
         SolutionLogger *solutionlogger = nullptr;
         parameter_estimation_options ParameterEstimationMode = parameter_estimation_options::none;
-        CVector GetBlocksOutflowFactors(const Expression::timing &tmg);
+        CVector GetBlocksOutflowFactors(const Timing &tmg);
         bool OutFlowCanOccur(int blockno, const string &variable);
-        CVector GetLinkssOutflowFactors(const Expression::timing &tmg);
+        CVector GetLinkssOutflowFactors(const Timing &tmg);
         unsigned int restore_interval = 200;
         void PopulateFunctionOperators();
 

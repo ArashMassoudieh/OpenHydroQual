@@ -68,7 +68,7 @@ Object& Object::operator=(const Object& rhs)
     return *this;
 }
 
-double Object::CalcVal(const string& s,const Expression::timing &tmg)
+double Object::CalcVal(const string& s,const Timing &tmg)
 {
     if (var.Find(s))
     {
@@ -92,7 +92,7 @@ void Object::SetQuanPointers()
 {
     var.SetQuanPointers();
 }
-double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
+double Object::GetVal(const string& s,const Timing &tmg, bool limit)
 {
     if (var.Find(s))
     {
@@ -156,7 +156,7 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
     return 0;
 }
 
-double Object::GetVal(const string& variable, const string& consttnt, const Expression::timing &tmg, bool limit)
+double Object::GetVal(const string& variable, const string& consttnt, const Timing &tmg, bool limit)
 {
     string fullname = consttnt+":"+variable;
     if (var.Find(fullname))
@@ -201,7 +201,7 @@ double Object::GetVal(const string& variable, const string& consttnt, const Expr
 
 
 
-double Object::GetVal(Quan* quan,const Expression::timing &tmg, bool limit)
+double Object::GetVal(Quan* quan,const Timing &tmg, bool limit)
 {
     if (!limit || !quan->ApplyLimit())
     {
@@ -334,7 +334,7 @@ void Object::SetDefaults()
     }
 }
 
-bool Object::SetVal(const string& s, double value, const Expression::timing &tmg)
+bool Object::SetVal(const string& s, double value, const Timing &tmg)
 {
 
     if (var.find(s)!=var.end())
@@ -356,7 +356,7 @@ bool Object::SetVal(const string& s, double value, const Expression::timing &tmg
     }
 }
 
-bool Object::SetVal(const string& s, const string & value, const Expression::timing &tmg)
+bool Object::SetVal(const string& s, const string & value, const Timing &tmg)
 {
     if (var.find(s)!=var.end())
     {
@@ -551,7 +551,7 @@ bool Object::Update(const string & variable)
 
 }
 
-bool Object::CalcExpressions(const Expression::timing &tmg)
+bool Object::CalcExpressions(const Timing &tmg)
 {
     for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
 		if (var[s->first].GetType() == Quan::_type::expression)
@@ -561,9 +561,9 @@ bool Object::CalcExpressions(const Expression::timing &tmg)
 
 bool Object::EstablishExpressionStructure()
 {
-    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    /*for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
         if (var[s->first].GetType() == Quan::_type::expression)
-            Variable(s->first)->EstablishExpressionStructure();
+            Variable(s->first)->EstablishExpressionStructure();*/
     return true;
 }
 
@@ -610,15 +610,15 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
             {   string unit = aquiutils::split(aquiutils::split(value,'[')[1],']')[0];
                 double coefficient = XString::coefficient(QString::fromStdString(unit));
                 double _value = atof(value.c_str())*coefficient;
-                var[prop].SetVal(_value,Expression::timing::both, check_criteria);
+                var[prop].SetVal(_value,Timing::both, check_criteria);
                 var[prop].Unit() = unit;
             }
             else
-                var[prop].SetVal(aquiutils::atof(value),Expression::timing::both, check_criteria);
+                var[prop].SetVal(aquiutils::atof(value),Timing::both, check_criteria);
         }
         else
 #endif
-        var[prop].SetVal(aquiutils::atof(value),Expression::timing::both);
+        var[prop].SetVal(aquiutils::atof(value),Timing::both);
         return true;
     }
     if (var[prop].GetType() == Quan::_type::expression)
@@ -790,8 +790,9 @@ bool Object::CalculateInitialValues()
     for (unsigned int j = 0; j < QuantitOrder().size(); j++)
     {
         if (Variable(QuantitOrder()[j])->calcinivalue())
-        {   double ini_value = Expression(Variable(QuantitOrder()[j])->InitialValueExpression()).calc(this,Expression::timing::past);
-            Variable(QuantitOrder()[j])->SetVal(ini_value,Expression::timing::both);
+        {   
+            double ini_value = Expression(Variable(QuantitOrder()[j])->InitialValueExpression()).calc(this,Timing::past);
+            Variable(QuantitOrder()[j])->SetVal(ini_value,Timing::both);
         }
     }
     return succeed;
@@ -836,8 +837,8 @@ bool Object::CopyStateVariablesFrom(Object* obj)
     {
         if (var[s->first].GetType() == Quan::_type::balance && obj->HasQuantity(s->first))
         {
-            var[s->first].SetVal(obj->GetVal(s->first,Expression::timing::past),Expression::timing::past);
-            var[s->first].SetVal(obj->GetVal(s->first,Expression::timing::present),Expression::timing::present);
+            var[s->first].SetVal(obj->GetVal(s->first,Timing::past),Timing::past);
+            var[s->first].SetVal(obj->GetVal(s->first,Timing::present),Timing::present);
         }
     }
     SetLimitedOutflow(obj->GetLimitedOutflow());

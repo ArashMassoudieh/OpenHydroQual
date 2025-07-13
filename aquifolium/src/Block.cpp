@@ -51,7 +51,7 @@ void Block::AppendLink(int i, const Expression::loc &loc)
         links_to_ids.push_back(i);
 }
 
-double Block::GetInflowValue(const string &variable, const Expression::timing &tmg)
+double Block::GetInflowValue(const string &variable, const Timing &tmg)
 {
     double inflow = 0;
     corresponding_inflow_var = Variable(variable)->GetCorrespondingInflowVar();
@@ -75,7 +75,7 @@ double Block::GetInflowValue(const string &variable, const Expression::timing &t
     return inflow;
 }
 
-double Block::GetInflowValue(const string &variable, const string &constituent, const Expression::timing &tmg)
+double Block::GetInflowValue(const string &variable, const string &constituent, const Timing &tmg)
 {
     string variablefullname = constituent+":"+variable;
     double inflow=0;
@@ -201,7 +201,7 @@ vector<Quan*> Block::GetAllConstituentProperties(const string &s)
     return out;
 }
 
-CVector Block::GetAllConstituentVals(const string &s, Expression::timing t)
+CVector Block::GetAllConstituentVals(const string &s, Timing t)
 {
     CVector out;
     for (unsigned int i=0; i<GetParent()->ConstituentsCount(); i++)
@@ -211,7 +211,7 @@ CVector Block::GetAllConstituentVals(const string &s, Expression::timing t)
     return out;
 }
 
-CVector Block::GetAllReactionRates(vector<Reaction> *rxns, Expression::timing t)
+CVector Block::GetAllReactionRates(vector<Reaction> *rxns, Timing t)
 {
     CVector out(GetParent()->ConstituentsCount());
     for (unsigned int i=0; i<GetParent()->ReactionsCount(); i++)
@@ -223,7 +223,7 @@ CVector Block::GetAllReactionRates(vector<Reaction> *rxns, Expression::timing t)
     return out;
 }
 
-CVector Block::GetAllReactionRates(Expression::timing t)
+CVector Block::GetAllReactionRates(Timing t)
 {
     CVector out(GetParent()->ConstituentsCount());
     for (unsigned int i=0; i<GetParent()->ReactionsCount(); i++)
@@ -236,7 +236,7 @@ CVector Block::GetAllReactionRates(Expression::timing t)
     return out;
 }
 
-double Block::GetAvgOverLinks(const string& variable,const Expression::timing &tmg)
+double Block::GetAvgOverLinks(const string& variable,const Timing &tmg)
 {
     double sum=0;
     double count = 0;

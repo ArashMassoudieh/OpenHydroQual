@@ -85,7 +85,7 @@ bool Observation::SetProperty(const string &prop, const string &val)
     return false;
 }
 
-double Observation::GetValue(const Expression::timing &tmg)
+double Observation::GetValue(const Timing &tmg)
 {
     if (expression.param_constant_expression == "")
         expression = Variable("expression")->GetProperty();
@@ -185,7 +185,7 @@ void Observation::append_value(double t, double val)
 
 void Observation::append_value(double t)
 {
-    current_value = GetValue(Expression::timing::present);
+    current_value = GetValue(Timing::present);
     modeled_time_series.append(t,current_value);
     return;
 }

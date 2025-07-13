@@ -38,8 +38,8 @@ class Block: public Object
         Block& operator=(const Block& rhs);
         virtual ~Block();
         void AppendLink(int i, const Expression::loc &loc);
-        double GetInflowValue(const string &variable,const Expression::timing &t);
-        double GetInflowValue(const string &variable, const string &constituent, const Expression::timing &tmg);
+        double GetInflowValue(const string &variable,const Timing &t);
+        double GetInflowValue(const string &variable, const string &constituent, const Timing &tmg);
 		void shiftlinkIds(int i);
         bool deletelinkstofrom(const string& linkname="_all"); //deletes a specific links from the list of links to and from the block
         SafeVector<Link*> GetLinksFrom();
@@ -49,10 +49,10 @@ class Block: public Object
         }
         bool isrigid(const string& variable) { return Variable(variable)->isrigid(); }
         vector<Quan*> GetAllConstituentProperties(const string &s);
-        CVector GetAllConstituentVals(const string &s, Expression::timing t);
-        CVector GetAllReactionRates(vector<Reaction> *rxns, Expression::timing t);
-        CVector GetAllReactionRates(Expression::timing t);
-        double GetAvgOverLinks(const string& variable,const Expression::timing &tmg);
+        CVector GetAllConstituentVals(const string &s, Timing t);
+        CVector GetAllReactionRates(vector<Reaction> *rxns, Timing t);
+        CVector GetAllReactionRates(Timing t);
+        double GetAvgOverLinks(const string& variable,const Timing &tmg);
         void SetAllowLimitedFlow(bool allow)
         {
             allow_limited_flow = allow;

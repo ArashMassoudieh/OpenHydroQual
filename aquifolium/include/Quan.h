@@ -26,6 +26,7 @@
 #include "precalculatedfunction.h"
 #include "Condition.h"
 #include <mutex>
+#include "SafeVector.h"
 
 #ifdef Q_version
 #include <QJsonObject>
@@ -79,10 +80,9 @@ public:
     enum class _type { constant, value, balance, expression, timeseries, prec_timeseries, global_quan, rule, source, string, not_assigned, boolean }; ///< Types of quantities handled by the model
     enum class _role { none, copytoblocks, copytolinks, copytosources, copytoreactions }; ///< Roles for automatic copying behavior
 
-    double CalcVal(Object*, const Expression::timing& tmg = Expression::timing::past); ///< Calculates value using context object
-    double CalcVal(const Expression::timing& tmg = Expression::timing::past); ///< Calculates value using parent object
-    double GetVal(const Expression::timing& tmg = Expression::timing::past); ///< Gets value based on evaluation time
-    bool EstablishExpressionStructure(); ///< Initializes expression term dependencies
+    double CalcVal(Object*, const Timing& tmg = Timing::past); ///< Calculates value using context object
+    double CalcVal(const Timing& tmg = Timing::past); ///< Calculates value using parent object
+    double GetVal(const Timing& tmg = Timing::past); ///< Gets value based on evaluation time
     double& GetSimulationTime() const; ///< Retrieves simulation time from the parent system
     TimeSeries<timeseriesprecision>* GetTimeSeries(); ///< Returns pointer to associated time series
 
@@ -98,7 +98,7 @@ public:
     bool SetExpression(const Expression& E);
     bool SetRule(const std::string& R);
 
-    bool SetVal(const double& v, const Expression::timing& tmg = Expression::timing::past, bool check_criteria = false);
+    bool SetVal(const double& v, const Timing& tmg = Timing::past, bool check_criteria = false);
     bool SetSource(const std::string& sourcename);
 
     void SetCorrespondingFlowVar(const std::string& s);

@@ -15,6 +15,7 @@
 
 
 #include "Rule.h"
+#include "Utilities.h"
 
 Rule::Rule()
 {
@@ -37,7 +38,7 @@ Rule& Rule::operator=(const Rule& S)
     return *this;
 }
 
-void Rule::Append(const string &condition, const string &result)
+void Rule::Append(const std::string &condition, const std::string &result)
 {
     _condplusresult x;
     x.condition = Condition(condition);
@@ -53,7 +54,7 @@ void Rule::Append(const Condition &condition, const Expression &result)
     rules.push_back(x);
 }
 
-double Rule::calc(Object *W, const Expression::timing &tmg)
+double Rule::calc(Object *W, const Timing &tmg)
 {
     for (unsigned int i=0;i<rules.size(); i++)
     {
@@ -65,9 +66,9 @@ double Rule::calc(Object *W, const Expression::timing &tmg)
     return 0;
 }
 
-string Rule::ToString(int _tabs) const
+std::string Rule::ToString(int _tabs) const
 {
-    string out = aquiutils::tabs(_tabs) + "{\n";
+    std::string out = aquiutils::tabs(_tabs) + "{\n";
     for (unsigned int i=0; i<rules.size(); i++)
         out += aquiutils::tabs(_tabs) + rules[i].condition.ToString(_tabs+1) + ":" + rules[i].result.ToString()+ "\n";
     out += aquiutils::tabs(_tabs) + "}\n";
