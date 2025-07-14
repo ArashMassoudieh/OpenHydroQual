@@ -320,7 +320,7 @@ bool QPlotWindow::AddData(const TimeSeries<outputtimeseriesprecision>& timeserie
     {
         if (allowtime)
 #ifndef Qt6
-            lineseries->append(xToDateTime(timeseries.GetT(j)).toMSecsSinceEpoch(),timeseries.GetC(j));
+            lineseries->append(xToDateTime(timeseries.getTime(j)).toMSecsSinceEpoch(),timeseries.getValue(j));
 #else
             lineseries->append(xToDateTime(timeseries.getTime(j)).toMSecsSinceEpoch(),timeseries.getValue(j));
 #endif
