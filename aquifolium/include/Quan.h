@@ -118,7 +118,7 @@ public:
 
     void SetIncludeInOutput(bool x) { includeinoutput = x; }
     void SetEstimable(bool x) { estimable = x; }
-    std::string GetName() { return _var_name; }
+    std::string GetName() const { return _var_name; }
     bool IncludeInOutput() { return includeinoutput; }
 
     bool SetTimeSeries(const std::string& filename, bool prec = false);
@@ -196,6 +196,13 @@ public:
     void SetInitialValueExpression(const std::string& expression);
     void SetInitialValueExpression(const Expression& expression);
     Expression& InitialValueExpression() { return initial_value_expression; }
+	Expression GetExpression() const
+	{
+		if (type == _type::expression)
+			return _expression;
+		else
+			return Expression();
+	}
     bool calcinivalue() const { return calculate_initial_value_from_expression; }
 
     std::vector<std::string> AllConstituents() const;

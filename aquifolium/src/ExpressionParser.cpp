@@ -7,8 +7,14 @@
 using namespace std;
 
 ExpressionNode::Ptr ExpressionParser::parse(const std::string& expression) {
-    vector<string> tokens = tokenize(expression);
-    if (tokens.empty()) throw runtime_error("Empty expression.");
+    std::string trimmed = aquiutils::trim(expression);
+    if (ExpressionParser::isNumber(trimmed)) {
+        return std::make_shared<ExpressionNode>(std::stod(trimmed));
+    }
+
+    std::vector<std::string> tokens = tokenize(trimmed);
+    if (tokens.empty()) throw std::runtime_error("Empty expression.");
+
     return parseTokens(tokens, 0, static_cast<int>(tokens.size()) - 1);
 }
 

@@ -61,7 +61,19 @@ Expression::Expression(const std::string& S)
     if (aquiutils::isnumber(inner)) {
         constant = aquiutils::atof(inner);
         param_constant_expression = "constant";
+        rootNode = std::make_shared<ExpressionNode>(constant);  // <--- Add this
         return;
+    }
+
+    if (aquiutils::left(inner, 1) == "(" &&
+        aquiutils::corresponding_parenthesis(inner, 0) == int(inner.size()) - 1) {
+        std::string stripped = inner.substr(1, inner.size() - 2);
+        if (aquiutils::isnumber(stripped)) {
+            constant = aquiutils::atof(stripped);
+            param_constant_expression = "constant";
+            rootNode = std::make_shared<ExpressionNode>(constant);  // <--- Add this
+            return;
+        }
     }
     
     // Check for variable with location suffix (e.g., "conc.s")
@@ -111,8 +123,10 @@ Expression::Expression(const Expression& other)
     unit(other.unit),
     _errors(other._errors),
     location(other.location),
-    quan(nullptr),
-    rootNode(other.rootNode ? std::make_shared<ExpressionNode>(*other.rootNode) : nullptr) {
+    quan(nullptr)
+    {
+
+    rootNode = other.rootNode ? other.rootNode->clone() : nullptr;
 }
 
 // --- Assignment from string ---
@@ -134,7 +148,7 @@ Expression& Expression::operator=(const Expression& other) {
         _errors = other._errors;
         location = other.location;
         quan = nullptr;
-        rootNode = other.rootNode ? std::make_shared<ExpressionNode>(*other.rootNode) : nullptr;
+        rootNode = other.rootNode ? other.rootNode->clone() : nullptr;
     }
     return *this;
 }
@@ -245,80 +259,126 @@ bool Expression::RenameQuantity(const std::string& oldname, const std::string& n
 std::string Expression::ToExpressionStringFromTree(const ExpressionNode::Ptr& node) const {
     if (!node) return "";
 
+    auto opPrecedence = [](ExpressionNode::Operator op) -> int {
+        switch (op) {
+        case ExpressionNode::Operator::Add:
+        case ExpressionNode::Operator::Subtract:
+            return 1;
+        case ExpressionNode::Operator::Multiply:
+        case ExpressionNode::Operator::Divide:
+            return 2;
+        case ExpressionNode::Operator::Power:
+            return 3;
+        case ExpressionNode::Operator::Sequence:
+            return 0;
+        default:
+            return -1;
+        }
+        };
+
     switch (node->type) {
     case ExpressionNode::Type::Constant:
         return aquiutils::numbertostring(node->constantValue);
 
-    case ExpressionNode::Type::Variable:
-        return node->variableName;
+    case ExpressionNode::Type::Variable: {
+        std::string out = node->variableName;
+        switch (node->location) {
+        case ExpressionNode::loc::source: out += ".s"; break;
+        case ExpressionNode::loc::destination: out += ".e"; break;
+        case ExpressionNode::loc::average_of_links: out += ".v"; break;
+        default: break;
+        }
+        return out;
+    }
 
-    case ExpressionNode::Type::Operator:
+    case ExpressionNode::Type::Operator: {
         if (node->children.size() == 2) {
-            std::string lhs = ToExpressionStringFromTree(node->children[0]);
-            std::string rhs = ToExpressionStringFromTree(node->children[1]);
-            return lhs + " " + ExpressionNode::toStringOperator(node->op) + " " + rhs;
+            auto lhs = node->children[0];
+            auto rhs = node->children[1];
+
+            std::string lhsStr = ToExpressionStringFromTree(lhs);
+            std::string rhsStr = ToExpressionStringFromTree(rhs);
+
+            int parentPrec = opPrecedence(node->op);
+            int lhsPrec = (lhs->type == ExpressionNode::Type::Operator) ? opPrecedence(lhs->op) : 10;
+            int rhsPrec = (rhs->type == ExpressionNode::Type::Operator) ? opPrecedence(rhs->op) : 10;
+
+            if (lhsPrec < parentPrec)
+                lhsStr = "(" + lhsStr + ")";
+            if (rhsPrec < parentPrec ||
+                (rhsPrec == parentPrec && (node->op != ExpressionNode::Operator::Power)) ||
+                (node->op == ExpressionNode::Operator::Subtract && rhs->type == ExpressionNode::Type::Operator)) {
+                rhsStr = "(" + rhsStr + ")";
+            }
+
+
+            return lhsStr + " " + ExpressionNode::toStringOperator(node->op) + " " + rhsStr;
         }
         break;
+    }
 
-    case ExpressionNode::Type::Function:
-    {
+    case ExpressionNode::Type::Function: {
         std::string args;
         for (size_t i = 0; i < node->children.size(); ++i) {
             if (i > 0) args += ";";
             args += ToExpressionStringFromTree(node->children[i]);
         }
-        return node->functionName + "(" + args + ")";
+        return "_" + node->functionName + "(" + args + ")";
     }
     }
 
     return "?";
 }
 
+// --- Rebuild expression text from the parsed tree ---
+std::string Expression::ToExpressionStringFromTree() const {
+    if (!rootNode) return "";
+	std::string result = ToExpressionStringFromTree(rootNode);
+    return result;
+}
+
+
+// --- Helper function to revise a variable name with location ---
+void Expression::ReviseName(std::string& name, ExpressionNode::loc& loc_ref, const std::string& constituent_name, const std::string& quantity) {
+    if (aquiutils::ends_with(name, ".s")) {
+        loc_ref = ExpressionNode::loc::source;
+        name = name.substr(0, name.size() - 2);
+    }
+    else if (aquiutils::ends_with(name, ".e")) {
+        loc_ref = ExpressionNode::loc::destination;
+        name = name.substr(0, name.size() - 2);
+    }
+    else if (aquiutils::ends_with(name, ".v")) {
+        loc_ref = ExpressionNode::loc::average_of_links;
+        name = name.substr(0, name.size() - 2);
+    }
+    else {
+        loc_ref = ExpressionNode::loc::self;
+    }
+
+    if (name == quantity) {
+        name = constituent_name + ":" + quantity;
+    }
+}
+
+
+
+
 // --- Revise constituent (e.g., add prefix to parameter) ---
 Expression Expression::ReviseConstituent(const std::string& constituent_name, const std::string& quantity) {
     Expression out = *this;
 
-    auto revise = [&](std::string& name, ExpressionNode::loc& loc_ref) {
-        std::string suffix;
-        if (aquiutils::ends_with(name, ".s")) {
-            loc_ref = ExpressionNode::loc::source;
-            name = name.substr(0, name.size() - 2);
-        }
-        else if (aquiutils::ends_with(name, ".e")) {
-            loc_ref = ExpressionNode::loc::destination;
-            name = name.substr(0, name.size() - 2);
-        }
-        else if (aquiutils::ends_with(name, ".v")) {
-            loc_ref = ExpressionNode::loc::average_of_links;
-            name = name.substr(0, name.size() - 2);
-        }
-        else {
-            loc_ref = ExpressionNode::loc::self;
-        }
-
-        if (name == quantity) {
-            name = constituent_name + ":" + quantity;
-        }
-        };
+    //qDebug() << "ReviseConstituent: " << constituent_name.c_str() << ":" << quantity.c_str() << ":" << ToExpressionStringFromTree();
 
     if (param_constant_expression == "parameter") {
-        revise(out.parameter, out.location);
+        ReviseName(out.parameter, out.location, constituent_name, quantity);
     }
-    else if (param_constant_expression == "expression" && rootNode) {
-        std::function<void(ExpressionNode::Ptr&)> walk;
-        walk = [&](ExpressionNode::Ptr& node) {
-            if (!node) return;
-            if (node->type == ExpressionNode::Type::Variable) {
-                ExpressionNode::loc dummy = ExpressionNode::loc::self;
-                revise(node->variableName, dummy);
-            }
-            for (ExpressionNode::Ptr& child : node->children) {
-                walk(child);
-            }
-            };
-        walk(out.rootNode);
+    else if (param_constant_expression == "expression" && out.rootNode) {
+        out.rootNode->ReviseConstituentInTree(constituent_name, quantity);
     }
 
+    out.text = out.ToExpressionStringFromTree();
+    //qDebug() << "ReviseConstituent: " << constituent_name.c_str() << ":" << quantity.c_str() << ":" << out.text;
     return out;
 }
 
@@ -361,8 +421,9 @@ Expression Expression::RenameConstituent(const std::string& old_constituent_name
         apply(out.rootNode);
     }
 
-    out.text = out.ToString(); 
+    out.text = out.ToExpressionStringFromTree();
 
+    
     return out;
 }
 
@@ -458,7 +519,18 @@ double Expression::calc(Object* W, const Timing& tmg, bool limit) {
     }
 
     if (param_constant_expression == "expression" && rootNode)
-        return rootNode->evaluate(W, tmg, limit);
+    {
+        //"Col1-1" : Expression evaluated : "porosity / rho_f" = 3.25e+22
+        if (W->GetName() == "Col1-1" && ToExpressionStringFromTree() == "porosity / rho_f")
+        {
+            cout << "";
+        }
+
+        double out = rootNode->evaluate(W, tmg, limit);
+		//qDebug() << W->GetName() << ":" << "Expression evaluated: " << ToExpressionStringFromTree() << " = " << out;
+        return out;
+
+    }
 
     return 0.0;
 }

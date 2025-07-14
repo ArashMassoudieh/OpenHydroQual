@@ -88,6 +88,7 @@ public:
      */
     double evaluate(Object* W, Timing timing, bool limit = false);
 
+    ExpressionNode::Ptr clone() const;
 
     /**
      * @brief Converts a string representation of an operator to the corresponding enum.
@@ -103,6 +104,9 @@ public:
      */
     static std::string toStringOperator(Operator op);
     std::string toStringFromTree() const;
+
+    
+    void ReviseConstituentInTree(const std::string& constituent_name, const std::string& quantity);
 
     // --- Data members ---
     Type type;                          ///< Node type

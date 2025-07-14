@@ -440,6 +440,7 @@ class System: public Object
         Objective_Function_Set *ObjectiveFunctionSet() {return &objective_function_set;}
         bool WriteOutPuts();
         bool SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariable = false, bool calculatevalue = false);
+        bool SaveEquationstoJson(const string& filename);
         bool LoadfromJson(const QJsonDocument &jsondoc);
         bool LoadfromJson(const QJsonObject &jsondoc);
     protected:

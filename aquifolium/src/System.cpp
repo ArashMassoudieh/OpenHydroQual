@@ -848,7 +848,7 @@ bool System::Solve(bool applyparameters)
     }
     
 #ifdef Q_version
-    qDebug() << "Adjusting outputs ....";
+    //qDebug() << "Adjusting outputs ....";
     if (rtw)
     {
         rtw->AppendText(QString("Adjusting outputs ..."));
@@ -2026,8 +2026,8 @@ string System::GetBlockConstituent(unsigned int i)
 {
     int BlockNo = i / this->constituents.size();
     int ConstituentNo = i % this->constituents.size();
-    qDebug() << BlockNo; 
-    qDebug() << ConstituentNo; 
+    //qDebug() << BlockNo; 
+    //qDebug() << ConstituentNo; 
     string out = blocks[BlockNo].GetName() + ":" + constituents[ConstituentNo].GetName();
     return out;
 }
@@ -4373,6 +4373,70 @@ bool System::SavetoJson(const string &filename, const vector<string> &_addedtemp
 
 }
 
+bool System::SaveEquationstoJson(const string& filename) 
+{
+    QJsonObject out;
+    QJsonObject SourcesJsonObject;
+    for (unsigned int i = 0; i < sources.size(); i++)
+        SourcesJsonObject[QString::fromStdString(sources[i].GetName())] = sources[i].ExpressionstoJson();
+    out["Sources"] = SourcesJsonObject;
+
+    QJsonObject ParametersJsonObject;
+    for (unsigned int i = 0; i < ParametersCount(); i++)
+        ParametersJsonObject[QString::fromStdString(Parameters()[i]->GetName())] = Parameters()[i]->ExpressionstoJson();
+    out["Parameters"] = ParametersJsonObject;
+
+
+    QJsonObject ConstituentsJsonObject;
+    for (unsigned int i = 0; i < ConstituentsCount(); i++)
+        ConstituentsJsonObject[QString::fromStdString(constituents[i].GetName())] = constituents[i].ExpressionstoJson();
+    out["Constituents"] = ConstituentsJsonObject;
+
+    QJsonObject ReactionParametersJsonObject;
+    for (unsigned int i = 0; i < ReactionParametersCount(); i++)
+        ReactionParametersJsonObject[QString::fromStdString(reaction_parameters[i].GetName())] = reaction_parameters[i].ExpressionstoJson();
+    out["Reaction Parameters"] = ReactionParametersJsonObject;
+
+    QJsonObject ReactionsJsonObject;
+    for (unsigned int i = 0; i < ReactionsCount(); i++)
+        ReactionsJsonObject[QString::fromStdString(reactions[i].GetName())] = reactions[i].ExpressionstoJson();
+    out["Reactions"] = ReactionsJsonObject;
+
+    QJsonObject BlocksJsonObject;
+    for (unsigned int i = 0; i < blocks.size(); i++)
+        BlocksJsonObject[QString::fromStdString(blocks[i].GetName())] = blocks[i].ExpressionstoJson();
+    out["Blocks"] = BlocksJsonObject;
+
+    QJsonObject LinksJsonObject;
+    for (unsigned int i = 0; i < links.size(); i++)
+        LinksJsonObject[QString::fromStdString(links[i].GetName())] = links[i].ExpressionstoJson();
+    out["Links"] = LinksJsonObject;
+
+    QJsonObject ObjectiveFunctionsJsonObject;
+    for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
+        ObjectiveFunctionsJsonObject[QString::fromStdString(ObjectiveFunctions()[i]->GetName())] = ObjectiveFunctions()[i]->ExpressionstoJson();
+    out["Objective Functions"] = ObjectiveFunctionsJsonObject;
+
+    QJsonObject ObservationsJsonObject;
+    for (unsigned int i = 0; i < ObservationsCount(); i++)
+        ObservationsJsonObject[QString::fromStdString(observation(i)->GetName())] = observation(i)->ExpressionstoJson();
+    out["Observations"] = ObservationsJsonObject;
+      
+    QFile file(QString::fromStdString(filename));
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning() << "Could not open file for writing:" << file.errorString();
+        return false;
+    }
+
+    QJsonDocument jsonDoc(out);
+    file.write(jsonDoc.toJson(QJsonDocument::Indented));  // Use Indented or Compact
+    file.close();
+
+    return true;
+
+}
+
+
 bool System::LoadfromJson(const QJsonDocument &jsondoc)
 {
     QJsonObject root = jsondoc.object();
@@ -4384,7 +4448,7 @@ bool System::LoadfromJson(const QJsonObject &root)
 {
     bool outcome = true;
     QJsonArray TemplatesJson = root["Templates"].toArray();
-    qDebug()<<TemplatesJson;
+    //qDebug()<<TemplatesJson;
 
     for (const QJsonValue& temp : TemplatesJson)
     {   if (AppendQuanTemplate(temp.toString().toStdString()))
@@ -4494,7 +4558,7 @@ bool System::LoadfromJson(const QJsonObject &root)
         {
             if (property!="type" && property!="to" && property!="from")
             {
-                qDebug()<<linkname;
+                //qDebug()<<linkname;
                 if (!link(linkname.toStdString())->SetProperty(property.toStdString(),LinkJson[property].toString().toStdString(),true, false))
                     errorhandler.Append("System", "Link","ReadFromJson","Link '" + linkname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10013 );
             }

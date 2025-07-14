@@ -27,6 +27,15 @@ ExpressionNode::ExpressionNode(const std::string& func, std::vector<Ptr> args)
     : type(Type::Function), functionName(func), children(std::move(args)) {
 }
 
+ExpressionNode::Ptr ExpressionNode::clone() const {
+    auto copy = std::make_shared<ExpressionNode>(*this);
+    copy->children.clear();
+    for (const auto& child : this->children) {
+        if (child) copy->children.push_back(child->clone());
+    }
+    return copy;
+}
+
 double ExpressionNode::evaluate(Object* W, Timing timing, bool limit)
 {
     
@@ -219,7 +228,7 @@ std::string ExpressionNode::toStringFromTree() const {
         std::string opStr = ExpressionNode::toStringOperator(op);
         std::string lhs = children.size() > 0 ? children[0]->toStringFromTree() : "";
         std::string rhs = children.size() > 1 ? children[1]->toStringFromTree() : "";
-        return lhs + opStr + rhs;
+        return "(" + lhs + opStr + rhs + ")";
     }
 
     case Type::Function: {
@@ -235,4 +244,39 @@ std::string ExpressionNode::toStringFromTree() const {
     return "?";
 }
 
+void ExpressionNode::ReviseConstituentInTree(const std::string& constituent_name, const std::string& quantity) {
+    if (type == ExpressionNode::Type::Variable) {
+        std::string name = variableName;
+        ExpressionNode::loc dummy_loc = ExpressionNode::loc::self;
 
+        if (aquiutils::ends_with(name, ".s")) {
+            dummy_loc = ExpressionNode::loc::source;
+            name = name.substr(0, name.size() - 2);
+        }
+        else if (aquiutils::ends_with(name, ".e")) {
+            dummy_loc = ExpressionNode::loc::destination;
+            name = name.substr(0, name.size() - 2);
+        }
+        else if (aquiutils::ends_with(name, ".v")) {
+            dummy_loc = ExpressionNode::loc::average_of_links;
+            name = name.substr(0, name.size() - 2);
+        }
+
+        if (name == quantity) {
+            variableName = constituent_name + ":" + quantity;
+
+            switch (dummy_loc) {
+            case ExpressionNode::loc::source: variableName += ".s"; break;
+            case ExpressionNode::loc::destination: variableName += ".e"; break;
+            case ExpressionNode::loc::average_of_links: variableName += ".v"; break;
+            default: break;
+            }
+        }
+    }
+
+    for (auto& child : children) {
+        if (child) {
+            child->ReviseConstituentInTree(constituent_name, quantity);
+        }
+    }
+}

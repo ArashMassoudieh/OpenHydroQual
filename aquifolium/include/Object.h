@@ -129,6 +129,7 @@ class Object
         void AssignRandomPrimaryKey();
         string toCommand();
         QJsonObject toJson(bool allvariables = false, bool calculatevalue = false);
+        QJsonObject ExpressionstoJson() const;
         string toCommandSetAsParam();
         vector<string> ItemswithOutput();
         vector<string> quantitative_variable_list() {return var.quantitative_variable_list();}

@@ -65,7 +65,9 @@ public:
     std::vector<std::string> GetAllRequieredStartingBlockProperties();
     std::vector<std::string> GetAllRequieredEndingBlockProperties();
     std::string ToExpressionStringFromTree(const ExpressionNode::Ptr& node) const;
+    std::string ToExpressionStringFromTree() const;
     Expression ReviseConstituent(const std::string& constituent_name, const std::string& quantity);
+    void ReviseName(std::string& name, ExpressionNode::loc& loc_ref, const std::string& constituent_name, const std::string& quantity);
     Expression RenameConstituent(const std::string& old_constituent_name, const std::string& new_constituent_name, const std::string& quantity);
     bool RenameQuantity(const std::string& oldname, const std::string& newname);
 
