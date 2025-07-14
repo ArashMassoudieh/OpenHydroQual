@@ -876,7 +876,7 @@ bool GridGenerator::AssignProperty(const string &name, QuanSet &quanset, QMap<st
         value = dynamic_cast<UnitTextBox3*>(it->value)->text().toDouble()*coefficient;
         increment_x = dynamic_cast<UnitTextBox3*>(it->increment_H)->text().toDouble();
         increment_y = dynamic_cast<UnitTextBox3*>(it->increment_V)->text().toDouble();
-        r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Expression::timing::both);
+        r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Timing::both);
     }
     else if (QString::fromStdString(it->delegate).contains("ValueBox"))
     {
@@ -886,7 +886,7 @@ bool GridGenerator::AssignProperty(const string &name, QuanSet &quanset, QMap<st
         value = dynamic_cast<QLineEdit*>(it->value)->text().toDouble();
         increment_x = dynamic_cast<QLineEdit*>(it->increment_H)->text().toDouble();
         increment_y = dynamic_cast<QLineEdit*>(it->increment_V)->text().toDouble();
-        r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Expression::timing::both);
+        r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Timing::both);
     }
     else if (QString::fromStdString(it->delegate).contains("String") && it.key()!="name")
     {

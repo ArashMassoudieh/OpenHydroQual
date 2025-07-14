@@ -1915,6 +1915,7 @@ void MainWindow::onrunmodel()
     rtw = new RunTimeWindow(this,config::forward);
     rtw->show();
     copiedsystem.SetRunTimeWindow(rtw);
+	copiedsystem.SaveEquationstoJson(workingfolder.toStdString() + "/equations.json");
     copiedsystem.Solve(true);
     rtw->AppendText(string("Saving outputs in '" + workingfolder.toStdString() + "'"));
     qDebug()<<"Working folder" << workingfolder;

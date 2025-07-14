@@ -26,6 +26,7 @@
 #include "precalculatedfunction.h"
 #include "Condition.h"
 #include <mutex>
+#include "SafeVector.h"
 
 #ifdef Q_version
 #include <QJsonObject>
@@ -79,10 +80,9 @@ public:
     enum class _type { constant, value, balance, expression, timeseries, prec_timeseries, global_quan, rule, source, string, not_assigned, boolean }; ///< Types of quantities handled by the model
     enum class _role { none, copytoblocks, copytolinks, copytosources, copytoreactions }; ///< Roles for automatic copying behavior
 
-    double CalcVal(Object*, const Expression::timing& tmg = Expression::timing::past); ///< Calculates value using context object
-    double CalcVal(const Expression::timing& tmg = Expression::timing::past); ///< Calculates value using parent object
-    double GetVal(const Expression::timing& tmg = Expression::timing::past); ///< Gets value based on evaluation time
-    bool EstablishExpressionStructure(); ///< Initializes expression term dependencies
+    double CalcVal(Object*, const Timing& tmg = Timing::past); ///< Calculates value using context object
+    double CalcVal(const Timing& tmg = Timing::past); ///< Calculates value using parent object
+    double GetVal(const Timing& tmg = Timing::past); ///< Gets value based on evaluation time
     double& GetSimulationTime() const; ///< Retrieves simulation time from the parent system
     TimeSeries<timeseriesprecision>* GetTimeSeries(); ///< Returns pointer to associated time series
 
@@ -98,7 +98,7 @@ public:
     bool SetExpression(const Expression& E);
     bool SetRule(const std::string& R);
 
-    bool SetVal(const double& v, const Expression::timing& tmg = Expression::timing::past, bool check_criteria = false);
+    bool SetVal(const double& v, const Timing& tmg = Timing::past, bool check_criteria = false);
     bool SetSource(const std::string& sourcename);
 
     void SetCorrespondingFlowVar(const std::string& s);
@@ -118,7 +118,7 @@ public:
 
     void SetIncludeInOutput(bool x) { includeinoutput = x; }
     void SetEstimable(bool x) { estimable = x; }
-    std::string GetName() { return _var_name; }
+    std::string GetName() const { return _var_name; }
     bool IncludeInOutput() { return includeinoutput; }
 
     bool SetTimeSeries(const std::string& filename, bool prec = false);
@@ -196,6 +196,13 @@ public:
     void SetInitialValueExpression(const std::string& expression);
     void SetInitialValueExpression(const Expression& expression);
     Expression& InitialValueExpression() { return initial_value_expression; }
+	Expression GetExpression() const
+	{
+		if (type == _type::expression)
+			return _expression;
+		else
+			return Expression();
+	}
     bool calcinivalue() const { return calculate_initial_value_from_expression; }
 
     std::vector<std::string> AllConstituents() const;

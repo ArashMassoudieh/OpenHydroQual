@@ -109,6 +109,7 @@ class QuanSet
         void CreateCPPcode(const string &source, const string header);
         QJsonObject toJson(bool allvariables = false, bool calculatevalue = false);
         QJsonArray toJsonSetAsParameter();
+        QJsonObject EquationsToJson() const; 
     protected:
 
     private:

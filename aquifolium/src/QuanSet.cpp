@@ -731,3 +731,21 @@ QJsonArray QuanSet::toJsonSetAsParameter()
     }
     return array;
 }
+
+QJsonObject QuanSet::EquationsToJson() const {
+    QJsonObject json;
+
+    for (const auto& pair : quans) {
+        const Quan& q = pair.second;
+        if (q.GetName() == "Cu_aq:stoichiometric_constant")
+        {
+            cout << "";
+        }
+        
+        QString name = QString::fromStdString(q.GetName());
+        QString expr = QString::fromStdString(q.GetExpression().ToExpressionStringFromTree());
+        json.insert(name, expr);
+    }
+
+    return json;
+}

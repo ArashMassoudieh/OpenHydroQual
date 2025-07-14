@@ -34,7 +34,7 @@ class Objective_Function: public Object
         Objective_Function(const Objective_Function& other);
         Objective_Function(System *_system, const Expression &expr, const string &loc);
         Objective_Function& operator=(const Objective_Function& other);
-        double GetValue(const Expression::timing &tmg = Expression::timing::present); //return the current value of the objective function
+        double GetValue(const Timing &tmg = Timing::present); //return the current value of the objective function
         double GetObjective(); //calculates the objective function
         void append_value(double t, double val); //append a value to the stored time-series;
         void append_value(double t); //append the evaluated expression value to the stored time-series;

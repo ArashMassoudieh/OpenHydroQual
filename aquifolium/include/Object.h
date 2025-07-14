@@ -39,18 +39,18 @@ class Object
         virtual ~Object();
         Object(const Object& other);
         Object& operator=(const Object& other);
-        double CalcVal(const string& s, const Expression::timing &tmg=Expression::timing::past);
-        double GetVal(const string& s, const Expression::timing &tmg=Expression::timing::past, bool limit=false);
-        double GetVal(const string& var, const string& consttnt, const Expression::timing &tmg, bool limit=false);
-        double GetVal(Quan* quan,const Expression::timing &tmg, bool limit);
+        double CalcVal(const string& s, const Timing &tmg=Timing::past);
+        double GetVal(const string& s, const Timing &tmg=Timing::past, bool limit=false);
+        double GetVal(const string& var, const string& consttnt, const Timing &tmg, bool limit=false);
+        double GetVal(Quan* quan,const Timing &tmg, bool limit);
         bool AddQnantity(const string &name,const Quan &Q);
         bool SetQuantities(MetaModel &m, const string& typ);
         bool SetQuantities(MetaModel *m, const string& typ );
         bool SetQuantities(System *sys, const string& typ );
         bool SetQuantities(QuanSet &Q);
         bool HasQuantity(const string &q);
-        bool SetVal(const string& s, double value, const Expression::timing &tmg = Expression::timing::both);
-        bool SetVal(const string& s, const string & value, const Expression::timing &tmg = Expression::timing::both);
+        bool SetVal(const string& s, double value, const Timing &tmg = Timing::both);
+        bool SetVal(const string& s, const string & value, const Timing &tmg = Timing::both);
         double GetProperty(const string& s) {
             if (Variable(s) != nullptr)
             {
@@ -70,8 +70,8 @@ class Object
         string GetName() const;
         void SetDefaults();
         virtual bool SetName(const string &_name, bool setprop=true);
-        Object* GetConnectedBlock(Expression::loc l);
-        void SetConnectedBlock(Expression::loc l, const string &blockname);
+        Object* GetConnectedBlock(ExpressionNode::loc l);
+        void SetConnectedBlock(ExpressionNode::loc l, const string &blockname);
         void AppendError(const string &s);
         void SetParent(System *s);
         Quan* CorrespondingFlowVariable(const string &s);
@@ -90,7 +90,7 @@ class Object
         Object* Get_e_Block() { return e_Block; }
 		bool Renew(const string &variable);
 		bool Update(const string &variable);
-		bool CalcExpressions(const Expression::timing& tmg);
+		bool CalcExpressions(const Timing& tmg);
         bool EstablishExpressionStructure();
         bool VerifyQuans(ErrorHandler *errorhandler);
         SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip = false) {return var.GetTimeSeries(onlyprecip);}
@@ -100,17 +100,17 @@ class Object
                 return &var;
             }
         vector<Quan> GetCopyofAllQuans();
-        void SetOutflowLimitFactor(const double &val, const Expression::timing &tmg)
+        void SetOutflowLimitFactor(const double &val, const Timing &tmg)
 		{
-			if (tmg == Expression::timing::past)
+			if (tmg == Timing::past)
                 outflowlimitfactor_past = val; // max(0.0,val);
 			else
                 outflowlimitfactor_current = val; //max(0.0,val);
 		}
-        double GetOutflowLimitFactor(const Expression::timing &tmg)
+        double GetOutflowLimitFactor(const Timing &tmg)
 		{
 
-			if (tmg == Expression::timing::past)
+			if (tmg == Timing::past)
                 return outflowlimitfactor_past;
 			else
                 return outflowlimitfactor_current;
@@ -129,6 +129,7 @@ class Object
         void AssignRandomPrimaryKey();
         string toCommand();
         QJsonObject toJson(bool allvariables = false, bool calculatevalue = false);
+        QJsonObject ExpressionstoJson() const;
         string toCommandSetAsParam();
         vector<string> ItemswithOutput();
         vector<string> quantitative_variable_list() {return var.quantitative_variable_list();}

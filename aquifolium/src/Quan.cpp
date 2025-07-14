@@ -515,7 +515,7 @@ bool Quan::operator==(const Quan& other) const
     return out; 
 }
 
-double Quan::CalcVal(Object *block, const Expression::timing &tmg)
+double Quan::CalcVal(Object *block, const Timing &tmg)
 {
     if (type == _type::constant || type== _type::boolean)
         return _val;
@@ -551,9 +551,9 @@ double Quan::CalcVal(Object *block, const Expression::timing &tmg)
     return 0;
 }
 
-double Quan::GetVal(const Expression::timing &tmg)
+double Quan::GetVal(const Timing &tmg)
 {
-    if (tmg==Expression::timing::past)
+    if (tmg==Timing::past)
         return _val;
     else
     {
@@ -623,19 +623,12 @@ TimeSeries<timeseriesprecision>* Quan::GetTimeSeries()
 
 }
 
-bool Quan::EstablishExpressionStructure()
-{
-    if (type == _type::expression)
-        _expression.ResetTermsSources();
-    return true;
-}
-
-double Quan::CalcVal(const Expression::timing &tmg)
+double Quan::CalcVal(const Timing &tmg)
 {
 
     if (type == _type::constant || type == _type::boolean)
     {
-        if (tmg==Expression::timing::past)
+        if (tmg==Timing::past)
             return _val;
         else
             return _val_star;
@@ -659,14 +652,14 @@ double Quan::CalcVal(const Expression::timing &tmg)
     }
     if (type == _type::value)
     {
-        if (tmg==Expression::timing::past)
+        if (tmg==Timing::past)
             return _val;
         else
             return _val_star;
     }
     if (type == _type::balance)
     {
-        if (tmg==Expression::timing::past)
+        if (tmg==Timing::past)
             return _val;
         else
             return _val_star;
@@ -737,13 +730,13 @@ string tostring(const Quan::_type &typ)
 }
 
 
-bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_criteria)
+bool Quan::SetVal(const double &v, const Timing &tmg, bool check_criteria)
 {
     const double past_val = _val;
 
-    if (tmg == Expression::timing::past || tmg == Expression::timing::both)
+    if (tmg == Timing::past || tmg == Timing::both)
         _val = v;
-    if (tmg == Expression::timing::present || tmg == Expression::timing::both)
+    if (tmg == Timing::present || tmg == Timing::both)
 {
 #ifndef NO_OPENMP
         omp_lock_t writelock;
@@ -763,7 +756,7 @@ bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_cri
         }
 #endif
     }
-    if (tmg == Expression::timing::both)
+    if (tmg == Timing::both)
     {
         if (HasCriteria() && parent != nullptr)
         {
@@ -969,7 +962,7 @@ string Quan::GetProperty(bool force_value)
     //qDebug()<<QString::fromStdString(this->GetName());
     if (type == _type::balance || type== _type::constant || type==_type::global_quan || type==_type::value || (type==_type::expression && force_value))
     {
-        return aquiutils::numbertostring(GetVal(Expression::timing::present));
+        return aquiutils::numbertostring(GetVal(Timing::present));
 
     }
     if (type == _type::timeseries)
@@ -1001,7 +994,7 @@ string Quan::GetProperty(bool force_value)
     }
     else if (type == _type::boolean)
     {
-        if (aquiutils::numbertostring(GetVal(Expression::timing::present))=="1")
+        if (aquiutils::numbertostring(GetVal(Timing::present))=="1")
             return "Yes";
         else
             return "No";
@@ -1013,7 +1006,7 @@ string Quan::GetProperty(bool force_value)
 bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
 {
     if (type == _type::balance || type== _type::constant || type==_type::global_quan || type==_type::value || (type==_type::expression && force_value))
-        return SetVal(aquiutils::atof(val),Expression::timing::both, check_criteria);
+        return SetVal(aquiutils::atof(val),Timing::both, check_criteria);
     if (type == _type::timeseries)
     {
         if (val.empty())
@@ -1080,14 +1073,14 @@ bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
     if (type == _type::boolean)
     {
         if (val=="1")
-            SetVal(1,Expression::timing::both, check_criteria);
+            SetVal(1,Timing::both, check_criteria);
         else
-            SetVal(0,Expression::timing::both, check_criteria);
+            SetVal(0,Timing::both, check_criteria);
     }
     _string_value = val;
 
 
-    return SetVal(aquiutils::atof(val),Expression::timing::both, check_criteria);
+    return SetVal(aquiutils::atof(val),Timing::both, check_criteria);
     
 }
 
@@ -1148,7 +1141,7 @@ bool Quan::Validate()
                 return SetTimeSeries(_timeseries.getFilename(), true);
         }
     }
-    return Criteria().calc(parent, Expression::timing::both);
+    return Criteria().calc(parent, Timing::both);
 
 }
 
@@ -1210,7 +1203,7 @@ double Quan::InterpolateBasedonPrecalcFunction(const double &val) const
 }
 bool Quan::InitializePreCalcFunction(int n_inc)
 {
-    const double old_independent_variable_value = parent->GetVal(precalcfunction.IndependentVariable(),Expression::timing::present);
+    const double old_independent_variable_value = parent->GetVal(precalcfunction.IndependentVariable(),Timing::present);
     if (parent==nullptr) return false;
     if (precalcfunction.IndependentVariable().empty()) return false;
     precalcfunction.clear();
@@ -1218,17 +1211,17 @@ bool Quan::InitializePreCalcFunction(int n_inc)
         for (double x=precalcfunction.xmin(); x<=precalcfunction.xmax(); x+=(precalcfunction.xmax()-precalcfunction.xmin())/double(n_inc))
             {
                 parent->UnUpdateAllValues();
-                parent->SetVal(precalcfunction.IndependentVariable(),x,Expression::timing::present);
-                precalcfunction.append(x,CalcVal(Expression::timing::present));
+                parent->SetVal(precalcfunction.IndependentVariable(),x,Timing::present);
+                precalcfunction.append(x,CalcVal(Timing::present));
             }
     else
         for (double x=log(precalcfunction.xmin()); x<=log(precalcfunction.xmax()); x+=(log(precalcfunction.xmax())-log(precalcfunction.xmin()))/double(n_inc))
             {
                 parent->UnUpdateAllValues();
-                parent->SetVal(precalcfunction.IndependentVariable(),exp(x),Expression::timing::present);
-                precalcfunction.append(x,CalcVal(Expression::timing::present));
+                parent->SetVal(precalcfunction.IndependentVariable(),exp(x),Timing::present);
+                precalcfunction.append(x,CalcVal(Timing::present));
             }
-    parent->SetVal(precalcfunction.IndependentVariable(),old_independent_variable_value,Expression::timing::present);
+    parent->SetVal(precalcfunction.IndependentVariable(),old_independent_variable_value,Timing::present);
     precalcfunction.setStructured(true);
     precalcfunction.SetInitiated(true);
     return true;
