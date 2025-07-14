@@ -37,7 +37,7 @@ class Block: public Object
         Block(const Block& other);
         Block& operator=(const Block& rhs);
         virtual ~Block();
-        void AppendLink(int i, const Expression::loc &loc);
+        void AppendLink(int i, const ExpressionNode::loc &loc);
         double GetInflowValue(const string &variable,const Timing &t);
         double GetInflowValue(const string &variable, const string &constituent, const Timing &tmg);
 		void shiftlinkIds(int i);

@@ -69,14 +69,17 @@ Expression::Expression(const std::string& S)
         std::vector<std::string> parts = aquiutils::split(inner, '.');
         if (parts.size() == 1) {
             parameter = parts[0];
-            location = loc::self;
+            location = ExpressionNode::loc::self;
         }
         else if (parts.size() == 2) {
             parameter = parts[0];
             std::string tag = aquiutils::tolower(parts[1]);
-            if (tag == "s") location = loc::source;
-            else if (tag == "e") location = loc::destination;
-            else if (tag == "v") location = loc::average_of_links;
+            if (tag == "s")
+                location = ExpressionNode::loc::source;
+            else if (tag == "e")
+                location = ExpressionNode::loc::destination;
+            else if (tag == "v")
+                location = ExpressionNode::loc::average_of_links;
             else _errors.push_back("Unknown location tag: ." + parts[1]);
         }
         param_constant_expression = "parameter";
@@ -85,7 +88,10 @@ Expression::Expression(const std::string& S)
 
     // Otherwise: it's an expression
     try {
-        rootNode = ExpressionParser::parse(inner);
+        if (!function.empty())
+            rootNode = ExpressionParser::parse("_" + function + "(" + inner + ")");
+        else
+            rootNode = ExpressionParser::parse(inner);
         param_constant_expression = "expression";
     }
     catch (const std::exception& e) {
@@ -143,9 +149,9 @@ Expression::~Expression() {
 // --- Set Quan Pointers ---
 bool Expression::SetQuanPointers(Object* W) {
     if (param_constant_expression == "parameter") {
-        if (location == loc::self)
+        if (location == ExpressionNode::loc::self)
             quan = W->Variable(parameter);
-        else if (location != loc::average_of_links && W->ObjectType() == object_type::link)
+        else if (location != ExpressionNode::loc::average_of_links && W->ObjectType() == object_type::link)
             quan = W->GetConnectedBlock(location)->Variable(parameter);
         else
             quan = nullptr;
@@ -163,9 +169,9 @@ std::string Expression::ToString() const {
     if (param_constant_expression == "parameter") {
         std::string out = parameter;
         switch (location) {
-        case loc::source: out += ".s"; break;
-        case loc::destination: out += ".e"; break;
-        case loc::average_of_links: out += ".v"; break;
+        case ExpressionNode::loc::source: out += ".s"; break;
+        case ExpressionNode::loc::destination: out += ".e"; break;
+        case ExpressionNode::loc::average_of_links: out += ".v"; break;
         default: break;
         }
         return out;
@@ -272,22 +278,22 @@ std::string Expression::ToExpressionStringFromTree(const ExpressionNode::Ptr& no
 Expression Expression::ReviseConstituent(const std::string& constituent_name, const std::string& quantity) {
     Expression out = *this;
 
-    auto revise = [&](std::string& name, Expression::loc& loc_ref) {
+    auto revise = [&](std::string& name, ExpressionNode::loc& loc_ref) {
         std::string suffix;
         if (aquiutils::ends_with(name, ".s")) {
-            loc_ref = Expression::loc::source;
+            loc_ref = ExpressionNode::loc::source;
             name = name.substr(0, name.size() - 2);
         }
         else if (aquiutils::ends_with(name, ".e")) {
-            loc_ref = Expression::loc::destination;
+            loc_ref = ExpressionNode::loc::destination;
             name = name.substr(0, name.size() - 2);
         }
         else if (aquiutils::ends_with(name, ".v")) {
-            loc_ref = Expression::loc::average_of_links;
+            loc_ref = ExpressionNode::loc::average_of_links;
             name = name.substr(0, name.size() - 2);
         }
         else {
-            loc_ref = Expression::loc::self;
+            loc_ref = ExpressionNode::loc::self;
         }
 
         if (name == quantity) {
@@ -303,7 +309,7 @@ Expression Expression::ReviseConstituent(const std::string& constituent_name, co
         walk = [&](ExpressionNode::Ptr& node) {
             if (!node) return;
             if (node->type == ExpressionNode::Type::Variable) {
-                Expression::loc dummy = Expression::loc::self;
+                ExpressionNode::loc dummy = ExpressionNode::loc::self;
                 revise(node->variableName, dummy);
             }
             for (ExpressionNode::Ptr& child : node->children) {
@@ -366,7 +372,7 @@ Expression Expression::RenameConstituent(const std::string& old_constituent_name
 std::vector<std::string> Expression::GetAllRequieredEndingBlockProperties() {
     std::vector<std::string> props;
 
-    if (param_constant_expression == "parameter" && location == loc::destination) {
+    if (param_constant_expression == "parameter" && location == ExpressionNode::loc::destination) {
         props.push_back(parameter);
     }
     else if (param_constant_expression == "expression" && rootNode) {
@@ -393,7 +399,7 @@ std::vector<std::string> Expression::GetAllRequieredEndingBlockProperties() {
 std::vector<std::string> Expression::GetAllRequieredStartingBlockProperties() {
     std::vector<std::string> props;
 
-    if (param_constant_expression == "parameter" && location == loc::source) {
+    if (param_constant_expression == "parameter" && location == ExpressionNode::loc::source) {
         props.push_back(parameter);
     }
     else if (param_constant_expression == "expression" && rootNode) {
@@ -418,112 +424,41 @@ std::vector<std::string> Expression::GetAllRequieredStartingBlockProperties() {
 
 
 // --- Evaluate the expression ---
-// Adds support for special _ups and _bkw function handling
-// These rely on flow direction and source/destination object evaluation
 double Expression::calc(Object* W, const Timing& tmg, bool limit) {
     if (!W) return 0.0;
 
-    if (param_constant_expression == "constant") {
-        return constant;
-    }
+    if (param_constant_expression == "constant") return constant;
 
     if (param_constant_expression == "parameter") {
         if (!parameter.empty()) {
             Object* context = nullptr;
             switch (location) {
-            case loc::self:
-                context = W;
-                break;
-            case loc::source:
-            case loc::destination:
-            case loc::average_of_links:
+            case ExpressionNode::loc::self: context = W; break;
+            case ExpressionNode::loc::source:
                 if (W->ObjectType() == object_type::link)
                     context = W->GetConnectedBlock(location);
-                else if (location == loc::average_of_links)
+                else if (location == ExpressionNode::loc::average_of_links)
+                    return dynamic_cast<Block*>(W)->GetAvgOverLinks(parameter, tmg);
+                break;
+            case ExpressionNode::loc::destination:
+                if (W->ObjectType() == object_type::link)
+                    context = W->GetConnectedBlock(location);
+                else if (location == ExpressionNode::loc::average_of_links)
+                    return dynamic_cast<Block*>(W)->GetAvgOverLinks(parameter, tmg);
+                break;
+            case ExpressionNode::loc::average_of_links:
+                if (W->ObjectType() == object_type::link)
+                    context = W->GetConnectedBlock(location);
+                else if (location == ExpressionNode::loc::average_of_links)
                     return dynamic_cast<Block*>(W)->GetAvgOverLinks(parameter, tmg);
                 break;
             }
-            if (!context) return 0.0;
-            return context->GetVal(parameter, tmg, limit);
+            return context ? context->GetVal(parameter, tmg, limit) : 0.0;
         }
     }
 
-    if (param_constant_expression == "expression" && rootNode) {
-        std::string tmg_str = (tmg == Timing::past ? "past" : (tmg == Timing::present ? "present" : "both"));
-        if (function == "ups") {
-            if (!W || W->ObjectType() != object_type::link) return 0.0;
-            if (W->GetConnectedBlock(loc::source) == nullptr || W->GetConnectedBlock(loc::destination) == nullptr)
-                return 0.0;
-            const double flow = rootNode->children[0]->evaluate(W, tmg, limit);
-            const double val = (flow >= 0)
-                ? rootNode->children[1]->evaluate(W->GetConnectedBlock(loc::source), tmg, limit)
-                : rootNode->children[1]->evaluate(W->GetConnectedBlock(loc::destination), tmg, limit);
-            return flow * val;
-        }
-
-        if (function == "bkw") {
-            if (!W || W->ObjectType() != object_type::link) return 0.0;
-            if (W->GetConnectedBlock(loc::source) == nullptr || W->GetConnectedBlock(loc::destination) == nullptr)
-                return 0.0;
-            const double srcVal = rootNode->children[0]->evaluate(W->GetConnectedBlock(loc::source), tmg, limit);
-            const double dstVal = rootNode->children[0]->evaluate(W->GetConnectedBlock(loc::destination), tmg, limit);
-            const double slope = srcVal - dstVal;
-            return (slope >= 0)
-                ? rootNode->children[1]->evaluate(W->GetConnectedBlock(loc::source), tmg, limit)
-                : rootNode->children[1]->evaluate(W->GetConnectedBlock(loc::destination), tmg, limit);
-        }
-
-        if (function == "min") {
-            if (rootNode->children.size() != 2) return 0.0;
-            const double a = rootNode->children[0]->evaluate(W, tmg, limit);
-            const double b = rootNode->children[1]->evaluate(W, tmg, limit);
-            return std::min(a, b);
-        }
-
-        if (function == "max") {
-            if (rootNode->children.size() != 2) return 0.0;
-            const double a = rootNode->children[0]->evaluate(W, tmg, limit);
-            const double b = rootNode->children[1]->evaluate(W, tmg, limit);
-            return std::max(a, b);
-        }
-
+    if (param_constant_expression == "expression" && rootNode)
         return rootNode->evaluate(W, tmg, limit);
-    }
 
-    if (function == "mon") {
-        if (rootNode->children.size() != 2) return 0.0;
-        const double a = rootNode->children[0]->evaluate(W, tmg, limit);
-        const double b = rootNode->children[1]->evaluate(W, tmg, limit);
-        return (a + b != 0) ? a / (a + b) : 0.0;
-    }
-
-    if (function == "mbs") {
-        if (rootNode->children.size() != 2) return 0.0;
-        const double a = std::abs(rootNode->children[0]->evaluate(W, tmg, limit));
-        const double b = rootNode->children[1]->evaluate(W, tmg, limit);
-        return (a + b != 0) ? a / (a + b) : 0.0;
-    }
-
-    if (function == "ekr") {
-        if (rootNode->children.size() != 2 || !W) return 0.0;
-        const std::string var = rootNode->children[0]->variableName;
-        if (!W->HasQuantity(var)) return 0.0;
-        TimeSeries<timeseriesprecision>* ts = W->Variable(var)->GetTimeSeries();
-        if (!ts) return 0.0;
-        const double decay = rootNode->children[1]->evaluate(W, tmg, limit);
-        return ts->Exponential_Kernel(W->Parent()->GetTime(), decay);
-    }
-
-    if (function == "gkr") {
-        if (rootNode->children.size() != 3 || !W) return 0.0;
-        const std::string var = rootNode->children[0]->variableName;
-        if (!W->HasQuantity(var)) return 0.0;
-        TimeSeries<timeseriesprecision>* ts = W->Variable(var)->GetTimeSeries();
-        if (!ts) return 0.0;
-        const double mu = rootNode->children[1]->evaluate(W, tmg, limit);
-        const double sigma = rootNode->children[2]->evaluate(W, tmg, limit);
-        return ts->Gaussian_Kernel(W->Parent()->GetTime(), mu, sigma);
-    }
-
-    return 0.0; // fallback
+    return 0.0;
 }

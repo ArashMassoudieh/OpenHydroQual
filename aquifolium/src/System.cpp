@@ -260,10 +260,10 @@ bool System::AddLink(Link &lnk, const string &source, const string &destination,
         return false;
     links.push_back(lnk);
     link(lnk.GetName())->SetParent(this);
-    link(lnk.GetName())->SetConnectedBlock(Expression::loc::source, source);
-    link(lnk.GetName())->SetConnectedBlock(Expression::loc::destination, destination);
-	block(source)->AppendLink(links.size()-1,Expression::loc::source);
-	block(destination)->AppendLink(links.size()-1,Expression::loc::destination);
+    link(lnk.GetName())->SetConnectedBlock(ExpressionNode::loc::source, source);
+    link(lnk.GetName())->SetConnectedBlock(ExpressionNode::loc::destination, destination);
+	block(source)->AppendLink(links.size()-1,ExpressionNode::loc::source);
+	block(destination)->AppendLink(links.size()-1,ExpressionNode::loc::destination);
     if (SetQuantities)
         link(lnk.GetName())->SetQuantities(metamodel, lnk.GetType());
 	link(lnk.GetName())->SetParent(this);
@@ -2463,8 +2463,8 @@ void System::SetVariableParents()
 		links[i].SetVariableParents();
         links[i].Set_s_Block(&blocks[int(links[i].s_Block_No())]);
 		links[i].Set_e_Block(&blocks[links[i].e_Block_No()]);
-        blocks[links[i].e_Block_No()].AppendLink(i, Expression::loc::destination);
-        blocks[links[i].s_Block_No()].AppendLink(i, Expression::loc::source);
+        blocks[links[i].e_Block_No()].AppendLink(i, ExpressionNode::loc::destination);
+        blocks[links[i].s_Block_No()].AppendLink(i, ExpressionNode::loc::source);
     }
 
 
@@ -3309,7 +3309,7 @@ void System::DisconnectLink(const string linkname)
     for (unsigned int i = 0; i < links.size(); i++)
         if (links[i].GetName() == linkname)
         {
-            block(links[i].GetConnectedBlock(Expression::loc::source)->GetName())->deletelinkstofrom(links[i].GetName());
+            block(links[i].GetConnectedBlock(ExpressionNode::loc::source)->GetName())->deletelinkstofrom(links[i].GetName());
         }
 }
 
@@ -3318,7 +3318,7 @@ bool System::Delete(const string& objectname)
     for (unsigned int i = 0; i < links.size(); i++)
         if (links[i].GetName() == objectname)
         {
-            block(links[i].GetConnectedBlock(Expression::loc::source)->GetName())->deletelinkstofrom(links[i].GetName());
+            block(links[i].GetConnectedBlock(ExpressionNode::loc::source)->GetName())->deletelinkstofrom(links[i].GetName());
             for (unsigned int j = 0; j < blocks.size(); j++)
             {
                 blocks[j].shiftlinkIds(i);
@@ -3348,9 +3348,9 @@ bool System::Delete(const string& objectname)
             for (unsigned int j = 0; j < links.size(); j++)
             {
                 if (links[j].s_Block_No() >= i)
-                    links[j].ShiftLinkedBlock(-1, Expression::loc::source);
+                    links[j].ShiftLinkedBlock(-1, ExpressionNode::loc::source);
                 if (links[j].e_Block_No() >= i)
-                    links[j].ShiftLinkedBlock(-1, Expression::loc::destination);
+                    links[j].ShiftLinkedBlock(-1, ExpressionNode::loc::destination);
             }
 
             return true;
@@ -4021,19 +4021,19 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
 #endif
     for (int i=0; i<LinksCount(); i++)
     {
-        if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
-        {   jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
-            jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+        if (!link(i)->GetConnectedBlock(ExpressionNode::loc::source)->GetLimitedOutflow())
+        {   jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+            jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
         }
         else
         {
             jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
             jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
         }
-        if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
+        if (!link(i)->GetConnectedBlock(ExpressionNode::loc::destination)->GetLimitedOutflow())
         {
-            jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
-            jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+            jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+            jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
         }
         else
         {
@@ -4116,19 +4116,19 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
 #endif
     for (int i=0; i<LinksCount(); i++)
     {
-        if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
-        {   jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
-            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+        if (!link(i)->GetConnectedBlock(ExpressionNode::loc::source)->GetLimitedOutflow())
+        {   jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
         }
         else
         {
             jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
             jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
         }
-        if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
+        if (!link(i)->GetConnectedBlock(ExpressionNode::loc::destination)->GetLimitedOutflow())
         {
-            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
-            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
         }
         else
         {

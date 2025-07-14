@@ -44,7 +44,7 @@ Link& Link::operator=(const Link& rhs)
 
 string Link::toCommand()
 {
-    string out = "from=" + Object::GetConnectedBlock(Expression::loc::source)->GetName() + "," + "to=" + Object::GetConnectedBlock(Expression::loc::destination)->GetName() + ",";
+    string out = "from=" + Object::GetConnectedBlock(ExpressionNode::loc::source)->GetName() + "," + "to=" + Object::GetConnectedBlock(ExpressionNode::loc::destination)->GetName() + ",";
     out += Object::toCommand();
     return out;
 }
@@ -74,11 +74,11 @@ vector<string> Link::GetAllRequieredDestinationBlockProperties()
     return s;
 }
 
-bool Link::ShiftLinkedBlock(int shift, Expression::loc loc)
+bool Link::ShiftLinkedBlock(int shift, ExpressionNode::loc loc)
 {
-    if (loc == Expression::loc::source)
+    if (loc == ExpressionNode::loc::source)
         SetSBlockNo( s_Block_No() + shift);
-    if (loc == Expression::loc::destination)
+    if (loc == ExpressionNode::loc::destination)
         SetEBlockNo(e_Block_No() + shift);
 
     return true; 

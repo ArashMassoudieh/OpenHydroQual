@@ -42,12 +42,12 @@ Block& Block::operator=(const Block& rhs)
 }
 
 
-void Block::AppendLink(int i, const Expression::loc &loc)
+void Block::AppendLink(int i, const ExpressionNode::loc &loc)
 {
-    if (loc==Expression::loc::source)
+    if (loc==ExpressionNode::loc::source)
         links_from_ids.push_back(i);
 
-    if (loc==Expression::loc::destination)
+    if (loc==ExpressionNode::loc::destination)
         links_to_ids.push_back(i);
 }
 

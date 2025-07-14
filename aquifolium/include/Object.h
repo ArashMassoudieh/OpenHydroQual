@@ -70,8 +70,8 @@ class Object
         string GetName() const;
         void SetDefaults();
         virtual bool SetName(const string &_name, bool setprop=true);
-        Object* GetConnectedBlock(Expression::loc l);
-        void SetConnectedBlock(Expression::loc l, const string &blockname);
+        Object* GetConnectedBlock(ExpressionNode::loc l);
+        void SetConnectedBlock(ExpressionNode::loc l, const string &blockname);
         void AppendError(const string &s);
         void SetParent(System *s);
         Quan* CorrespondingFlowVariable(const string &s);

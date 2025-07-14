@@ -34,8 +34,6 @@ class Quan; // Forward declaration for Quan class
 class Expression {
 public:
 
-    enum class loc { self, source, destination, average_of_links };
-
     // --- Constructors and lifecycle ---
     Expression();
     explicit Expression(const std::string& S);
@@ -58,7 +56,7 @@ public:
     std::string unit = "";                      ///< Optional unit label
     std::string text = "";                      ///< Original expression string
     Quan* quan = nullptr;                       ///< Pointer to resolved Quan object (if applicable)
-    loc location = loc::self;                   ///< Source of the parameter value
+    ExpressionNode::loc location = ExpressionNode::loc::self;                   ///< Source of the parameter value
 
     // --- Error and diagnostics ---
     std::vector<std::string> _errors; ///< Any parsing or evaluation errors

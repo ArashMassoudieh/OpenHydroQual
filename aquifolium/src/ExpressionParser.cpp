@@ -44,52 +44,91 @@ vector<string> ExpressionParser::tokenize(const std::string& s) {
     return tokens;
 }
 
-ExpressionNode::Ptr ExpressionParser::parseTokens(const vector<string>& tokens, int start, int end) {
-    if (start > end) throw runtime_error("Invalid token range");
+ExpressionNode::Ptr ExpressionParser::parseTokens(const std::vector<std::string>& tokens, int start, int end) {
+    if (start > end) throw std::runtime_error("Invalid token range");
 
     // Remove outer parentheses
     if (tokens[start] == "(" && tokens[end] == ")") {
-        int level = 0, match = -1;
+        int level = 0;
         for (int i = start; i <= end; ++i) {
             if (tokens[i] == "(") level++;
             if (tokens[i] == ")") level--;
             if (level == 0 && i < end) break;
-            if (i == end && level == 0) return parseTokens(tokens, start + 1, end - 1);
+            if (i == end && level == 0)
+                return parseTokens(tokens, start + 1, end - 1);
         }
     }
 
-    int opIndex = findMainOperator(tokens, start, end);
+    // Handle unary minus: "-X" => "0 - X"
+    if (tokens[start] == "-" && start + 1 <= end) {
+        auto zero = std::make_shared<ExpressionNode>(0.0);
+        auto right = parseTokens(tokens, start + 1, end);
+        return std::make_shared<ExpressionNode>(ExpressionNode::Operator::Subtract, zero, right);
+    }
+
+    int opIndex = ExpressionParser::findMainOperator(tokens, start, end);
     if (opIndex != -1) {
         auto op = ExpressionNode::parseOperator(tokens[opIndex]);
         auto left = parseTokens(tokens, start, opIndex - 1);
         auto right = parseTokens(tokens, opIndex + 1, end);
-        return make_shared<ExpressionNode>(op, left, right);
+        return std::make_shared<ExpressionNode>(op, left, right);
     }
 
     // Function call or variable/constant
     if (start == end) {
-        const string& token = tokens[start];
-        if (isNumber(token)) return make_shared<ExpressionNode>(stod(token));
-        return make_shared<ExpressionNode>(token);
+        const std::string& token = tokens[start];
+        if (ExpressionParser::isNumber(token)) return std::make_shared<ExpressionNode>(std::stod(token));
+
+        std::string base = token;
+        ExpressionNode::loc loc = ExpressionNode::loc::self;
+
+        if (aquiutils::ends_with(token, ".s")) {
+            loc = ExpressionNode::loc::source;
+            base = token.substr(0, token.size() - 2);
+        }
+        else if (aquiutils::ends_with(token, ".e")) {
+            loc = ExpressionNode::loc::destination;
+            base = token.substr(0, token.size() - 2);
+        }
+        else if (aquiutils::ends_with(token, ".v")) {
+            loc = ExpressionNode::loc::average_of_links;
+            base = token.substr(0, token.size() - 2);
+        }
+
+        auto node = std::make_shared<ExpressionNode>(base);
+        node->location = loc;
+        return node;
     }
-    if (isFunction(tokens[start])) {
-        if (tokens[start + 1] != "(") throw runtime_error("Expected '('");
+
+    if (ExpressionParser::isFunction(tokens[start])) {
+        std::string func = tokens[start];
+        static const std::vector<std::string> supportedFunctions = {
+            "_min", "_max", "_exp", "_log", "_abs", "_sgn", "_sqr", "_sqt", "_lpw", "_pos", "_hsd",
+            "_ups", "_bkw", "_mon", "_mbs", "_ekr", "_gkr"
+        };
+        if (std::find(supportedFunctions.begin(), supportedFunctions.end(), func) == supportedFunctions.end()) {
+            throw std::runtime_error("Unsupported function: " + func);
+        }
+
+        if (tokens[start + 1] != "(") throw std::runtime_error("Expected '('");
         int level = 1, split = start + 2;
-        vector<ExpressionNode::Ptr> args;
+        std::vector<ExpressionNode::Ptr> args;
         int last = split;
         for (int i = split; i < end; ++i) {
             if (tokens[i] == "(") level++;
             else if (tokens[i] == ")") level--;
-            else if (tokens[i] == "," && level == 1) {
+            else if ((tokens[i] == "," || tokens[i] == ";") && level == 1) {
                 args.push_back(parseTokens(tokens, last, i - 1));
                 last = i + 1;
             }
         }
         args.push_back(parseTokens(tokens, last, end - 1));
-        return make_shared<ExpressionNode>(tokens[start], args);
+        return std::make_shared<ExpressionNode>(func.substr(1), args);
     }
-    throw runtime_error("Unrecognized expression.");
+
+    throw std::runtime_error("Unrecognized expression.");
 }
+
 
 int ExpressionParser::findMainOperator(const vector<string>& tokens, int start, int end) {
     int minPrecedence = 1000, opIndex = -1, level = 0;

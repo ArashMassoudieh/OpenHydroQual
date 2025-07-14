@@ -17,12 +17,18 @@ class Expression; // Forward declaration of timing enum
  * This class is designed to support constants, variables, binary operations, and functions. It allows recursive
  * evaluation of expressions given a simulation context (i.e., an Object pointer).
  */
+
+
+
 class ExpressionNode {
 public:
     /**
      * @enum Type
      * @brief Describes the kind of node.
      */
+    
+    enum class loc { self, source, destination, average_of_links };
+    loc location = loc::self;  // default
     enum class Type {
         Constant,   ///< Represents a numeric constant
         Variable,   ///< Represents a variable name to be resolved from an Object
@@ -96,6 +102,7 @@ public:
      * @return String equivalent of the operator.
      */
     static std::string toStringOperator(Operator op);
+    std::string toStringFromTree() const;
 
     // --- Data members ---
     Type type;                          ///< Node type

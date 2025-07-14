@@ -401,18 +401,18 @@ bool Object::SetName(const string &s, bool setprop)
 }
 
 
-Object* Object::GetConnectedBlock(Expression::loc l)
+Object* Object::GetConnectedBlock(ExpressionNode::loc l)
 {
-    if (l==Expression::loc::destination)
+    if (l==ExpressionNode::loc::destination)
         return e_Block;
-    if (l==Expression::loc::source)
+    if (l==ExpressionNode::loc::source)
         return s_Block;
 
     return this;
 
 }
 
-void Object::SetConnectedBlock(Expression::loc l, const string &blockname)
+void Object::SetConnectedBlock(ExpressionNode::loc l, const string &blockname)
 {
     if (GetParent()->block(blockname)==nullptr)
     {
@@ -422,12 +422,12 @@ void Object::SetConnectedBlock(Expression::loc l, const string &blockname)
     }
     else
     {
-        if (l==Expression::loc::source)
+        if (l==ExpressionNode::loc::source)
         {
             s_Block = GetParent()->block(blockname);
             s_Block_no = GetParent()->blockid(blockname);
         }
-        if (l==Expression::loc::destination)
+        if (l==ExpressionNode::loc::destination)
         {
             e_Block = GetParent()->block(blockname);
             e_Block_no = GetParent()->blockid(blockname);
@@ -745,9 +745,9 @@ bool Object::RenameConstituents(const string &oldname, const string &newname)
             }
         }
     }
-    if (GetConnectedBlock(Expression::loc::source) != nullptr)
+    if (GetConnectedBlock(ExpressionNode::loc::source) != nullptr)
     {
-        for (unordered_map<string, Quan>::iterator it = GetConnectedBlock(Expression::loc::source)->GetVars()->begin(); it != GetConnectedBlock(Expression::loc::source)->GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = GetConnectedBlock(ExpressionNode::loc::source)->GetVars()->begin(); it != GetConnectedBlock(ExpressionNode::loc::source)->GetVars()->end(); it++)
         {
             if (aquiutils::split(it->first, ':').size() == 2)
             {

@@ -34,18 +34,18 @@ class Link: public Object
         virtual ~Link();
         Link(const Link& other);
         Link& operator=(const Link& other);
-        Object* GetConnectedBlock(Expression::loc l) 
+        Object* GetConnectedBlock(ExpressionNode::loc l) 
         {
-            if (l == Expression::loc::source)
+            if (l == ExpressionNode::loc::source)
                 return Get_s_Block();
-            if (l == Expression::loc::destination)
+            if (l == ExpressionNode::loc::destination)
                 return Get_e_Block();
             return nullptr;
         };
         string toCommand();
         vector<string> GetAllRequieredStartingBlockProperties(); 
         vector<string> GetAllRequieredDestinationBlockProperties();
-        bool ShiftLinkedBlock(int shift, Expression::loc loc);
+        bool ShiftLinkedBlock(int shift, ExpressionNode::loc loc);
     protected:
 
     private:
