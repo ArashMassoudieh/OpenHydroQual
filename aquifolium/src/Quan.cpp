@@ -224,6 +224,10 @@ Quan::Quan(Json::ValueIterator &it)
     }
 }
 
+System* Quan::GetSystem() const {
+    return (parent && parent->Parent()) ? parent->Parent() : nullptr;
+}
+
 #ifdef  Q_version
 Quan::Quan(QJsonObject& it)
 {
@@ -596,9 +600,8 @@ double Quan::GetVal(const Timing& tmg)
     return _val_star;
 }
 
-double &Quan::GetSimulationTime() const
-{
-    return parent->GetParent()->GetSimulationTime();
+double& Quan::GetSimulationTime() const {
+    return GetSystem()->GetSimulationTime();
 }
 
 TimeSeries<timeseriesprecision>* Quan::GetTimeSeries()
@@ -807,12 +810,16 @@ Object* Quan::GetParent()
 
 void Quan::Renew()
 {
-	_val_star = _val;
+    std::scoped_lock lock(_mutex_val_star);
+    _val_star = _val;
+
 }
 
 void Quan::Update()
 {
-	_val = _val_star;
+    std::scoped_lock lock(_mutex_val_star);
+    _val = _val_star;
+
 }
 
 bool Quan::SetTimeSeries(const std::string& filename, bool prec)
@@ -832,10 +839,9 @@ bool Quan::SetTimeSeries(const std::string& filename, bool prec)
 
 std::string Quan::resolveTimeSeriesFile(const std::string& filename) const
 {
-    if (parent && parent->Parent())
+    if (System* sys = GetSystem())
     {
-        const std::string base_path = parent->Parent()->InputPath();
-        const std::string try_path = base_path + filename;
+        const std::string try_path = sys->InputPath() + filename;
         if (aquiutils::FileExists(try_path))
             return try_path;
     }
@@ -918,15 +924,14 @@ string Quan::GetProperty(bool force_value)
     }
     if (type == _type::timeseries)
     {
-        //qDebug()<<"FileName: "<<QString::fromStdString(_timeseries.filename);
-        if (aquiutils::GetPath(_timeseries.getFilename()) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
+        if (aquiutils::GetPath(_timeseries.getFilename()) == aquiutils::GetPath(GetSystem()->GetWorkingFolder()))
             return aquiutils::GetOnlyFileName(_timeseries.getFilename());
         else
             return _timeseries.getFilename();
     }
     if (type == _type::prec_timeseries)
     {
-        if (aquiutils::GetPath(_timeseries.getFilename()) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
+        if (aquiutils::GetPath(_timeseries.getFilename()) == aquiutils::GetPath(GetSystem()->GetWorkingFolder()))
             return aquiutils::GetOnlyFileName(_timeseries.getFilename());
         else
             return _timeseries.getFilename();
@@ -1007,8 +1012,8 @@ bool Quan::resolveAndSetTimeSeries(const std::string& filename, bool prec)
 
     std::string fullpath = filename;
 
-    if (parent && parent->Parent()) {
-        std::string try_path = parent->Parent()->InputPath() + filename;
+    if (System* sys = GetSystem()) {
+        std::string try_path = sys->InputPath() + filename;
         if (aquiutils::FileExists(try_path))
             fullpath = try_path;
     }
@@ -1028,15 +1033,14 @@ bool Quan::setStringProperty(const std::string& val)
 }
 
 
-bool Quan::AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code) const
+bool Quan::AppendError(const std::string& objectname, const std::string& cls, const std::string& funct, const std::string& description, const int& code) const
 {
-    if (!parent)
-        return false;
-    if (!parent->Parent())
-        return false;
+    if (System* sys = GetSystem()) {
 #pragma omp critical (quan_append_error)
-    parent->Parent()->errorhandler.Append(objectname, cls, funct, description, code);
-    return true;
+        sys->errorhandler.Append(objectname, cls, funct, description, code);
+        return true;
+    }
+    return false;
 }
 
 string Quan::toCommand()
@@ -1065,7 +1069,7 @@ bool Quan::Validate()
     if ((type == _type::timeseries || type == _type::prec_timeseries) && !_timeseries.getFilename().empty())
     {
         const std::string path = _timeseries.getFilename();
-        const std::string input_path = parent && parent->Parent() ? parent->Parent()->InputPath() : "";
+        const std::string input_path = GetSystem() ? GetSystem()->InputPath() : "";
 
         bool path_mismatch = !input_path.empty() &&
             aquiutils::GetPath(input_path) != aquiutils::GetPath(path);

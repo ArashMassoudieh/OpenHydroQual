@@ -69,6 +69,8 @@ public:
     Quan(const Quan& other); ///< Copy constructor
     Quan(Json::ValueIterator& it); ///< Constructor from JSON iterator
 
+    System* GetSystem() const;
+
 #ifdef Q_version
     Quan(QJsonObject& qjobject); ///< Constructor from QJsonObject (Qt integration)
 #endif // QT_version
