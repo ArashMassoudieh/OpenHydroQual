@@ -32,7 +32,7 @@ using namespace std;
 
 enum class object_type {none, block, link, source, parameter, objective_function, reaction, reaction_parameter, constituent, observation};
 
-class Object
+class Object : protected QuanSet
 {
     public:
         Object();
@@ -50,6 +50,7 @@ class Object
         bool SetQuantities(QuanSet &Q);
         bool HasQuantity(const string &q);
         bool SetVal(const string& s, double value, const Timing &tmg = Timing::both);
+        QuanSet* GetQuanSet() { return this; }
         bool SetVal(const string& s, const string & value, const Timing &tmg = Timing::both);
         double GetProperty(const string& s) {
             if (Variable(s) != nullptr)
@@ -93,11 +94,11 @@ class Object
 		bool CalcExpressions(const Timing& tmg);
         bool EstablishExpressionStructure();
         bool VerifyQuans(ErrorHandler *errorhandler);
-        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip = false) {return var.GetTimeSeries(onlyprecip);}
+        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip = false) {return QuanSet::GetTimeSeries(onlyprecip);}
         string TypeCategory() {return GetVars()->CategoryType();}
 		QuanSet* GetVars()
             {
-                return &var;
+                return this;
             }
         vector<Quan> GetCopyofAllQuans();
         void SetOutflowLimitFactor(const double &val, const Timing &tmg)
@@ -132,17 +133,17 @@ class Object
         QJsonObject ExpressionstoJson() const;
         string toCommandSetAsParam();
         vector<string> ItemswithOutput();
-        vector<string> quantitative_variable_list() {return var.quantitative_variable_list();}
+        vector<string> quantitative_variable_list() {return quantitative_variable_list();}
         unique_ptr<vector<string>> &operators();
         unique_ptr<vector<string>> &functions();
         string& lasterror() {
             return last_error;
         }
-        vector<string>& QuantitOrder() { return var.Quantity_Order();  }
-        void UnUpdateAllValues() { var.UnUpdateAllValues(); }
+        vector<string>& QuantitOrder() { return Quantity_Order();  }
+        void UnUpdateAllValues() { QuanSet::UnUpdateAllValues(); }
         bool RenameProperty(const string &oldname, const string &newname)
         {
-            return var.RenameProperty(oldname, newname);
+            return RenameProperty(oldname, newname);
         }
         bool RenameConstituents(const string &oldname, const string &newname);
         bool CalculateInitialValues();
@@ -165,7 +166,6 @@ class Object
     private:
         string current_corresponding_source="";
         string current_corresponding_constituent="";
-        QuanSet var;
         vector<string> errors;
         string last_error;
         bool last_operation_success;

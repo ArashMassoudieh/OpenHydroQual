@@ -62,6 +62,7 @@ using namespace std;
 
 class Script;
 class RestorePoint;
+class QuanSet; 
 
 enum class parameter_estimation_options {none, optimize, inverse_model};
 
@@ -293,7 +294,7 @@ class System: public Object
 		vector<string> GetAllTypesOf(const string& type);
         void SetVariableParents();
         MetaModel *GetMetaModel() {return  &metamodel;}
-        QuanSet* GetModel(const string &type) {if (metamodel.Count(type)==1) return metamodel[type]; else return nullptr;}
+        QuanSet* GetModel(const string& type);
         void clear();
         int EpochCount() {return SolverTempVars.epoch_count;}
         bool WriteIntermittently() {return SimulationParameters.write_outputs_intermittently;}

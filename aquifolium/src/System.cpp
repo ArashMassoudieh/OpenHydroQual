@@ -2452,7 +2452,12 @@ CVector_arma System::Jacobian(const string &variable, CVector_arma &V, CVector_a
 
 }
 
-
+QuanSet* System::GetModel(const string& type) { 
+    if (metamodel.Count(type) == 1) 
+        return metamodel[type]; 
+    else return 
+        nullptr; 
+}
 
 void System::SetVariableParents()
 {
