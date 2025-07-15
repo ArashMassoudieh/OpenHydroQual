@@ -26,7 +26,7 @@
 #include "precalculatedfunction.h"
 #include "Condition.h"
 #include <mutex>
-#include "SafeVector.h"
+#include "safevector.h"
 
 #ifdef Q_version
 #include <QJsonObject>

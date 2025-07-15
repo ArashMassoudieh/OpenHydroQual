@@ -86,12 +86,14 @@ CONFIG(debug, debug|release) {
     # macx: DEFINES += NO_OPENMP
     ! macx: LIBS += -lgomp -lpthread -lopenblas
     macx: LIBS += -lpthread
-    DEFINES += DEBUG
+    #DEFINES += DEBUG
 }
 
 
 
 SOURCES += \
+    aquifolium/src/ExpressionNode.cpp \
+    aquifolium/src/ExpressionParser.cpp \
     chartview.cpp \
     qplotter.cpp \
     ./aquifolium/src/RxnParameter.cpp \
@@ -162,6 +164,8 @@ SOURCES += \
     wizard_select_dialog.cpp
 
 HEADERS += \
+    aquifolium/include/ExpressionNode.h \
+    aquifolium/include/ExpressionParser.h \
     aquifolium/include/TimeSeries.h \
     aquifolium/include/TimeSeriesSet.h \
     aquifolium/src/TimeSeries.hpp \
@@ -249,8 +253,6 @@ HEADERS += \
     statusviewer.h \
     expressioneditor.h \
     ./aquifolium/include/GA/GA.hpp \
-    ./aquifolium/src/BTC.hpp \
-    ./aquifolium/src/BTCSet.hpp \
     logwindow.h \
     ./aquifolium/include/reaction.h \
     wizard_select_dialog.h

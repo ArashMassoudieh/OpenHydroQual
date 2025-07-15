@@ -796,8 +796,8 @@ bool Object::CalculateInitialValues()
     for (unsigned int j = 0; j < QuantitOrder().size(); j++)
     {
         if (Variable(QuantitOrder()[j])->calcinivalue())
-        {   
-            qDebug() << QuantitOrder()[j] ; 
+        {
+            //qDebug() << QuantitOrder()[j] ;
             if (QuantitOrder()[j] == "rho_s:mass")
             {
                 cout << "";
