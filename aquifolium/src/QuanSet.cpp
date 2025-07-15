@@ -171,6 +171,76 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
     //qDebug()<<QString::fromStdString(Name())<< " Done!";
 }
 
+Quan& QuanSet::Var(const std::string& s) {
+    return (*this)[s]; // uses operator[]
+}
+
+size_t QuanSet::Count(const std::string& s) const {
+    return quans.count(s);
+}
+
+std::unordered_map<std::string, Quan>::iterator QuanSet::find(const std::string& name) {
+    return quans.find(name);
+}
+
+std::unordered_map<std::string, Quan>::iterator QuanSet::begin() {
+    return quans.begin();
+}
+
+std::unordered_map<std::string, Quan>::iterator QuanSet::end() {
+    return quans.end();
+}
+
+std::unordered_map<std::string, Quan>::const_iterator QuanSet::const_begin() const {
+    return quans.cbegin();
+}
+
+std::unordered_map<std::string, Quan>::const_iterator QuanSet::const_end() const {
+    return quans.cend();
+}
+
+unsigned long QuanSet::size() {
+    return quans.size();
+}
+
+std::string& QuanSet::Description() {
+    return description;
+}
+
+std::string& QuanSet::IconFileName() {
+    return iconfilename;
+}
+
+std::string& QuanSet::Name() {
+    return name;
+}
+
+Object* QuanSet::Parent() {
+    return parent;
+}
+
+void QuanSet::SetParent(Object* p) {
+    parent = p;
+    SetAllParents();
+}
+
+bool QuanSet::Find(const std::string& s) {
+    return quans.find(s) != quans.end();
+}
+
+std::string& QuanSet::CategoryType() {
+    return typecategory;
+}
+
+std::string& QuanSet::Normalizing_Quantity() {
+    return normalizing_quantity;
+}
+
+std::vector<std::string>& QuanSet::Quantity_Order() {
+    return quantity_order;
+}
+
+
 QuanSet::QuanSet(const QuanSet& other)
 {
     quans = other.quans;
