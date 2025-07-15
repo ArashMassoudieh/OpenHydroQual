@@ -797,12 +797,6 @@ bool Object::CalculateInitialValues()
     {
         if (Variable(QuantitOrder()[j])->calcinivalue())
         {   
-            qDebug() << QuantitOrder()[j] ; 
-            if (QuantitOrder()[j] == "rho_s:mass")
-            {
-                cout << "";
-            }
-
             double ini_value = Expression(Variable(QuantitOrder()[j])->InitialValueExpression()).calc(this,Timing::past);
             Variable(QuantitOrder()[j])->SetVal(ini_value,Timing::both);
         }
