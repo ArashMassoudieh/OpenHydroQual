@@ -15,8 +15,8 @@
 
 
 #include "Condition.h"
-#ifdef Q_version
-    #include "QDebug"
+#ifdef Q_GUI_SUPPORT
+    #include <QDebug>
 #endif
 
 #include "Utilities.h"

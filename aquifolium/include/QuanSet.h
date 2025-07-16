@@ -17,7 +17,7 @@
 #ifndef QUANSET_H
 #define QUANSET_H
 
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
 #include <QStringList>
 #include <QJsonObject>
 #endif
@@ -100,7 +100,7 @@ public:
     bool Find(const string& s); ///< Test if Quan exists
     void SetQuanPointers(); ///< Link pointers for expression eval
 
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
     QStringList QQuanNames(); ///< Qt list of quantity names
     QuanSet(QJsonObject& object_types); ///< Load from JSON object
     QJsonObject toJson(bool allvariables = false, bool calculatevalue = false); ///< Export to JSON

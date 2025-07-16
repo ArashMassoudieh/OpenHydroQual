@@ -24,10 +24,10 @@
 #include <stdexcept>
 #include <cmath>
 #include "DistributionNUnif.h"
-#ifdef QT_Version
+#ifdef Q_JSON_SUPPORT
 #include <QFile>
 #include <QTextStream>
-#endif // QT_Version
+#endif // Q_JSON_SUPPORT
 
 
 // --- Constructors ---
@@ -938,7 +938,7 @@ std::vector<int> TimeSeriesSet<T>::max_wiggle_sl(int back_steps, T tolerance) co
 }
 
 // File Serialization (Qt)
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
 template<typename T>
 QJsonObject TimeSeriesSet<T>::toJson() const {
     QJsonObject obj;
@@ -965,7 +965,7 @@ void TimeSeriesSet<T>::fromJson(const QJsonObject& json) {
         this->push_back(ts);
     }
 }
-#endif // Q_version
+#endif // Q_JSON_SUPPORT
 
 //Helper functions:
 

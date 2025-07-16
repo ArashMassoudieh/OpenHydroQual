@@ -28,7 +28,7 @@
 #include <mutex>
 #include "safevector.h"
 
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
 #include <QJsonObject>
 #endif
 
@@ -71,9 +71,9 @@ public:
 
     System* GetSystem() const;
 
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
     Quan(QJsonObject& qjobject); ///< Constructor from QJsonObject (Qt integration)
-#endif // QT_version
+#endif // Q_JSON_SUPPORT
 
     std::string GetStringValue() { return _string_value; } ///< Returns string value for string-type quantities
     Quan& operator=(const Quan& other); ///< Assignment operator

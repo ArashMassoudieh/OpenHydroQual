@@ -23,7 +23,9 @@
 #ifndef mac_version
 #include <omp.h>
 #endif
+#ifdef Q_GUI_SUPPORT
 #include "runtimewindow.h"
+#endif
 #include "Utilities.h"
 #include "Parameter_Set.h"
 

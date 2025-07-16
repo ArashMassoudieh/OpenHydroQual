@@ -317,11 +317,11 @@ QJsonObject WSServerOps::Execute(System *system)
     }
 
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + "/" + system->OutputFileName() +"'";
-    system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + "/" + system->ObservedOutputFileName());
+    system->GetObservedOutputs().write(system->GetWorkingFolder() + "/" + system->ObservedOutputFileName());
     QJsonDocument doc(system->GetObservedOutputs().toJson());
     file.write(doc.toJson(QJsonDocument::Indented));
     file.close();
-    system->GetOutputs().writetofile(system->GetWorkingFolder() + "/" + system->OutputFileName());
+    system->GetOutputs().write(system->GetWorkingFolder() + "/" + system->OutputFileName());
     map<string, double> scalar_values = system->ObjectiveFunctionSet()->EvaluateAllExpressions();
     QJsonObject scalar_values_json = MapToJsonObject(scalar_values);
     WriteJsonObjectToFile(scalar_values_json, QString::fromStdString(system->GetWorkingFolder() + "/" + "scalar_values.json"));

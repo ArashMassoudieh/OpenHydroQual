@@ -22,7 +22,7 @@
 #include <vector>
 #include <iostream>
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     #include "runtimewindow.h"
     #include "QString"
 #endif
@@ -72,7 +72,7 @@ class ErrorHandler
             }
             return false;
         }
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
         void Flush(RunTimeWindow *_rtw=nullptr)
         {
             if (flushed_counter<errors.size())
@@ -114,7 +114,7 @@ class ErrorHandler
             }
             else return false;
         }
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
         void SetRunTimeWindow(RunTimeWindow *_rtw) {rtw = _rtw;}
 #endif
 
@@ -123,7 +123,7 @@ class ErrorHandler
     private:
         int flushed_counter=0;
         vector<_error> errors;
-        #ifdef Q_version
+        #ifdef Q_GUI_SUPPORT
         RunTimeWindow *rtw = nullptr;
         #endif // Q_version
 

@@ -20,7 +20,7 @@
 #include "System.h"
 #include "Precipitation.h"
 #include "Expression.h"
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     #include "XString.h"
 #endif
 #ifndef mac_version
@@ -228,7 +228,7 @@ System* Quan::GetSystem() const {
     return (parent && parent->Parent()) ? parent->Parent() : nullptr;
 }
 
-#ifdef  Q_version
+#ifdef  Q_JSON_SUPPORT
 Quan::Quan(QJsonObject& it)
 {
 	//SetName(it.key().asString());
@@ -405,7 +405,7 @@ Quan::Quan(QJsonObject& it)
     }
 
 }
-#endif //  QT_version
+#endif //  Q_JSON_SUPPORT
 
 Quan::~Quan()
 {
@@ -1047,7 +1047,7 @@ string Quan::toCommand()
 {
     string s;
     if (delegate=="UnitBox")
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
         if (unit!=default_unit)
         {
             const double coefficient = XString::coefficient(QString::fromStdString(unit));

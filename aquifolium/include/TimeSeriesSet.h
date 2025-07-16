@@ -159,10 +159,10 @@ public:
     std::vector<int> max_wiggle_sl(int back_steps, T tolerance) const; ///< Wiggle slope test
 
     // File Serialization (Qt)
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
     QJsonObject toJson() const; ///< Convert to QJsonObject
     void fromJson(const QJsonObject& json); ///< Load from QJsonObject
-#endif // Q_version
+#endif // Q_JSON_SUPPORT
 
     // Properties
     std::string filename; ///< File associated with the set
