@@ -31,8 +31,8 @@
 #include "reaction.h"
 #include "RxnParameter.h"
 #include "solutionlogger.h"
-#ifdef QT_version
-    #include "runtimeWindow.h"
+#ifdef Q_GUI_SUPPORT
+    #include "runtimewindow.h"
     class GWidget;
     class logWindow;
 #endif
@@ -40,9 +40,8 @@
 #include "safevector.h"
 #include <string>
 #define outputtimeseriesprecision double
-#if Q_version
+#if Q_GUI_SUPPORT
 #include <QStringList>
-#include "runtimewindow.h"
 #include "QTime"
 #endif
 
@@ -368,12 +367,12 @@ class System: public Object
         int NumThreads() { return SolverSettings.n_threads; }
         void ResetAllowLimitedFlows(bool allow);
 
-#if defined(QT_version)
+#if defined(Q_GUI_SUPPORT)
         logWindow *LogWindow() {return logwindow;}
         void SetLogWindow(logWindow *lgwnd) {logwindow=lgwnd;}
 #endif
         bool stop_triggered = false;
-#if defined(QT_version) || defined (Q_version)
+#ifdef Q_GUI_SUPPORT
         QStringList QGetAllCategoryTypes();
 		QStringList QGetAllObjectsofTypes(QString _type);
 		QStringList QGetAllObjectsofTypeCategory(QString _type);
@@ -521,16 +520,13 @@ class System: public Object
 #ifndef NO_OPENMP
         omp_lock_t lock;
 #endif
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     RunTimeWindow *rtw = nullptr;
+    void updateProgress(bool finished);
+    logWindow *logwindow = nullptr;
 #endif
 
-#ifdef QT_version
-        GraphWidget *diagramview;
-        runtimeWindow *rtw = nullptr;
-        void updateProgress(bool finished);
-        logWindow *logwindow = nullptr;
-#endif
+
 };
 
 

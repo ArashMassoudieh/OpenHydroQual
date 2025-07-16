@@ -20,16 +20,16 @@
 #include <json/json.h>
 #include <list>
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     #include <QDebug>
 #endif
 
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonArray>
-#endif // Qt_version
+#endif // Q_JSON_SUPPORT
 
 
 QuanSet::QuanSet()
@@ -478,7 +478,7 @@ bool QuanSet::DeleteConstituentRelatedProperties(const string &constituent_name)
     return out;
 }
 
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
 QStringList QuanSet::QQuanNames()
 {
     QStringList out;
@@ -763,6 +763,7 @@ void QuanSet::CreateCPPcode(const string &source, const string header)
     sourcefile.close();
 }
 
+#ifdef Q_JSON_SUPPORT
 QJsonObject QuanSet::toJson(bool allvariables, bool calculatevalue)
 {
     QJsonObject out;
@@ -780,7 +781,6 @@ QJsonObject QuanSet::toJson(bool allvariables, bool calculatevalue)
 
     return out;
 }
-
 
 QJsonArray QuanSet::toJsonSetAsParameter()
 {
@@ -819,3 +819,4 @@ QJsonObject QuanSet::EquationsToJson() const {
 
     return json;
 }
+#endif

@@ -19,16 +19,16 @@
 #include <string>
 #include <optional>
 #include <map>
-#include <QJsonObject>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include "QuickSort.h"
 #include "NormalDist.h"
 
-#ifdef Q_version
-#include "qlist.h"
-#include "qmap.h"
-#include "qvariant.h"
+#ifdef Q_JSON_SUPPORT
+#include <QList>
+#include <QJsonObject>
+#include <QMap>
+#include <QVariant>
 #endif
 
  /**
@@ -270,10 +270,10 @@ public:
     // Serialization
     // -------------------------------------------------------------------------
 
-#ifdef Q_version 
+#ifdef Q_JSON_SUPPORT
     QJsonObject toJson() const;                           ///< Convert to QJsonObject
     void fromJson(const QJsonObject& obj);                ///< Load from QJsonObject
-#endif // Q_version 
+#endif // Q_JSON_SUPPORT
 
     
 

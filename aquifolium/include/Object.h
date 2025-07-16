@@ -23,7 +23,7 @@
 #include "Quan.h"
 #include "MetaModel.h"
 #include "memory"
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
 #include <qdebug.h>
 #endif
 #include "ErrorHandler.h"
