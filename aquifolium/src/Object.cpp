@@ -22,7 +22,7 @@
 #include "XString.h"
 #endif
 
-Object::Object()
+Object::Object() : QuanSet()
 {
     //ctor
 }

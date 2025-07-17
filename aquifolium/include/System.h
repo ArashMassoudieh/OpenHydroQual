@@ -370,14 +370,14 @@ class System: public Object
 #if defined(Q_GUI_SUPPORT)
         logWindow *LogWindow() {return logwindow;}
         void SetLogWindow(logWindow *lgwnd) {logwindow=lgwnd;}
+        RunTimeWindow *RunTimewindow() {return rtw;}
+        void SetRunTimeWindow(RunTimeWindow* _rtw) {rtw = _rtw;}
 #endif
         bool stop_triggered = false;
-#ifdef Q_GUI_SUPPORT
+#ifdef Q_JSON_SUPPORT
         QStringList QGetAllCategoryTypes();
 		QStringList QGetAllObjectsofTypes(QString _type);
 		QStringList QGetAllObjectsofTypeCategory(QString _type);
-        RunTimeWindow *RunTimewindow() {return rtw;}
-        void SetRunTimeWindow(RunTimeWindow* _rtw) {rtw = _rtw;}
 #endif
         unique_ptr<vector<string>> operators;
         unique_ptr<vector<string>> functions;

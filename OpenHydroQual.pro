@@ -87,7 +87,7 @@ CONFIG(debug, debug|release) {
     # macx: DEFINES += NO_OPENMP
     ! macx: LIBS += -lgomp -lpthread -lopenblas
     macx: LIBS += -lpthread
-    DEFINES += DEBUG
+    #DEFINES += DEBUG
 }
 
 

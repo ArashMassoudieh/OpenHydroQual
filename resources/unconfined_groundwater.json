@@ -294,6 +294,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
+      "inflow": "pumping_rate_exp",
       "includeinoutput": "true",
       "description": "Storage",
       "initial_value_expression": "0.25*3.141521*diameter*diameter*depth",
@@ -307,6 +308,12 @@
       "ask_user": "true",
       "delegate": "Browser",
       "helptext": "Pumping rate time series [m~^3/d]"
+    },
+    "pumping_rate_exp": {
+      "type": "expression",
+      "expression": "-pumping_rate*_pos(depth)/(_pos(depth)+0.1)",
+      "includeinoutput": "true",
+      "description": "- Actual pumping rate [m~^3/d]"
     },
     "head": {
       "type": "expression",
