@@ -26,8 +26,9 @@
 #include "precalculatedfunction.h"
 #include "Condition.h"
 #include <mutex>
+#include "safevector.h"
 
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
 #include <QJsonObject>
 #endif
 
@@ -68,9 +69,11 @@ public:
     Quan(const Quan& other); ///< Copy constructor
     Quan(Json::ValueIterator& it); ///< Constructor from JSON iterator
 
-#ifdef Q_version
+    System* GetSystem() const;
+
+#ifdef Q_JSON_SUPPORT
     Quan(QJsonObject& qjobject); ///< Constructor from QJsonObject (Qt integration)
-#endif // QT_version
+#endif // Q_JSON_SUPPORT
 
     std::string GetStringValue() { return _string_value; } ///< Returns string value for string-type quantities
     Quan& operator=(const Quan& other); ///< Assignment operator
@@ -79,10 +82,9 @@ public:
     enum class _type { constant, value, balance, expression, timeseries, prec_timeseries, global_quan, rule, source, string, not_assigned, boolean }; ///< Types of quantities handled by the model
     enum class _role { none, copytoblocks, copytolinks, copytosources, copytoreactions }; ///< Roles for automatic copying behavior
 
-    double CalcVal(Object*, const Expression::timing& tmg = Expression::timing::past); ///< Calculates value using context object
-    double CalcVal(const Expression::timing& tmg = Expression::timing::past); ///< Calculates value using parent object
-    double GetVal(const Expression::timing& tmg = Expression::timing::past); ///< Gets value based on evaluation time
-    bool EstablishExpressionStructure(); ///< Initializes expression term dependencies
+    double CalcVal(Object*, const Timing& tmg = Timing::past); ///< Calculates value using context object
+    double CalcVal(const Timing& tmg = Timing::past); ///< Calculates value using parent object
+    double GetVal(const Timing& tmg = Timing::past); ///< Gets value based on evaluation time
     double& GetSimulationTime() const; ///< Retrieves simulation time from the parent system
     TimeSeries<timeseriesprecision>* GetTimeSeries(); ///< Returns pointer to associated time series
 
@@ -98,7 +100,7 @@ public:
     bool SetExpression(const Expression& E);
     bool SetRule(const std::string& R);
 
-    bool SetVal(const double& v, const Expression::timing& tmg = Expression::timing::past, bool check_criteria = false);
+    bool SetVal(const double& v, const Timing& tmg = Timing::past, bool check_criteria = false);
     bool SetSource(const std::string& sourcename);
 
     void SetCorrespondingFlowVar(const std::string& s);
@@ -118,10 +120,13 @@ public:
 
     void SetIncludeInOutput(bool x) { includeinoutput = x; }
     void SetEstimable(bool x) { estimable = x; }
-    std::string GetName() { return _var_name; }
+    std::string GetName() const { return _var_name; }
     bool IncludeInOutput() { return includeinoutput; }
 
     bool SetTimeSeries(const std::string& filename, bool prec = false);
+    std::string resolveTimeSeriesFile(const std::string& filename) const;
+    bool loadRegularTimeSeries(const std::string& path);
+    bool loadPrecipitationTimeSeries(const std::string& path);
     bool SetTimeSeries(const TimeSeries<double>& timeseries);
     bool SetTimeSeries(const CPrecipitation& timeseries);
 
@@ -169,6 +174,8 @@ public:
     void SetName(const std::string& name) { _var_name = name; }
     bool AppendError(const std::string& objectname, const std::string& cls, const std::string& funct, const std::string& description, const int& code) const;
     bool SetProperty(const std::string& val, bool force_value = false, bool check_criteria = true);
+    bool resolveAndSetTimeSeries(const std::string& filename, bool prec);
+    bool setStringProperty(const std::string& val);
     std::string GetProperty(bool force_value = false);
 
     std::string SourceName() { return sourcename; }
@@ -196,6 +203,13 @@ public:
     void SetInitialValueExpression(const std::string& expression);
     void SetInitialValueExpression(const Expression& expression);
     Expression& InitialValueExpression() { return initial_value_expression; }
+	Expression GetExpression() const
+	{
+		if (type == _type::expression)
+			return _expression;
+		else
+			return Expression();
+	}
     bool calcinivalue() const { return calculate_initial_value_from_expression; }
 
     std::vector<std::string> AllConstituents() const;
@@ -219,7 +233,7 @@ public:
 protected:
 
 private:
-    mutable std::mutex val_star_mutex;
+    mutable std::mutex _mutex_val_star;
     Expression _expression; ///< Mathematical expression used if type is expression
     Rule _rule; ///< Rule-based logic used if type is rule
     TimeSeries<timeseriesprecision> _timeseries; ///< Time series data for timeseries types

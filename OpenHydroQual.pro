@@ -16,6 +16,7 @@ greaterThan(QT_MAJOR_VERSION, 5): {
 
 
 DEFINES += QCharts
+DEFINES += Q_JSON_SUPPORT
 INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
@@ -39,7 +40,7 @@ win32:QMAKE_CXXFLAGS += /MP
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS Q_version Aquifolium
+DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Aquifolium
 #DEFINES += Debug_GA
 #DEFINES += VALGRIND
 # You can also make your code fail to compile if you use deprecated APIs.
@@ -92,6 +93,8 @@ CONFIG(debug, debug|release) {
 
 
 SOURCES += \
+    aquifolium/src/ExpressionNode.cpp \
+    aquifolium/src/ExpressionParser.cpp \
     chartview.cpp \
     qplotter.cpp \
     ./aquifolium/src/RxnParameter.cpp \
@@ -162,6 +165,8 @@ SOURCES += \
     wizard_select_dialog.cpp
 
 HEADERS += \
+    aquifolium/include/ExpressionNode.h \
+    aquifolium/include/ExpressionParser.h \
     aquifolium/include/TimeSeries.h \
     aquifolium/include/TimeSeriesSet.h \
     aquifolium/src/TimeSeries.hpp \
@@ -249,8 +254,6 @@ HEADERS += \
     statusviewer.h \
     expressioneditor.h \
     ./aquifolium/include/GA/GA.hpp \
-    ./aquifolium/src/BTC.hpp \
-    ./aquifolium/src/BTCSet.hpp \
     logwindow.h \
     ./aquifolium/include/reaction.h \
     wizard_select_dialog.h

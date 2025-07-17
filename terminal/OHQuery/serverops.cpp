@@ -130,7 +130,7 @@ QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
     system2.LoadfromJson(doc);
     system2.SavetoScriptFile("Recreated.ohq");
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
-    system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + system->OutputFileName());
+    system->GetObservedOutputs().write(system->GetWorkingFolder() + system->OutputFileName());
     return QJsonDocument(system->GetObservedOutputs().toJson());
 
 }

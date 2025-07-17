@@ -31,8 +31,8 @@
 #include "reaction.h"
 #include "RxnParameter.h"
 #include "solutionlogger.h"
-#ifdef QT_version
-    #include "runtimeWindow.h"
+#ifdef Q_GUI_SUPPORT
+    #include "runtimewindow.h"
     class GWidget;
     class logWindow;
 #endif
@@ -40,9 +40,8 @@
 #include "safevector.h"
 #include <string>
 #define outputtimeseriesprecision double
-#if Q_version
+#if Q_GUI_SUPPORT
 #include <QStringList>
-#include "runtimewindow.h"
 #include "QTime"
 #endif
 
@@ -62,6 +61,7 @@ using namespace std;
 
 class Script;
 class RestorePoint;
+class QuanSet; 
 
 enum class parameter_estimation_options {none, optimize, inverse_model};
 
@@ -293,7 +293,7 @@ class System: public Object
 		vector<string> GetAllTypesOf(const string& type);
         void SetVariableParents();
         MetaModel *GetMetaModel() {return  &metamodel;}
-        QuanSet* GetModel(const string &type) {if (metamodel.Count(type)==1) return metamodel[type]; else return nullptr;}
+        QuanSet* GetModel(const string& type);
         void clear();
         int EpochCount() {return SolverTempVars.epoch_count;}
         bool WriteIntermittently() {return SimulationParameters.write_outputs_intermittently;}
@@ -355,8 +355,8 @@ class System: public Object
         ErrorHandler VerifyAllQuantities();
         bool CalcAllInitialValues();
         void WriteObjectsToLogger();
-        void WriteBlocksStates(const string &variable, const Expression::timing &tmg);
-        void WriteLinksStates(const string &variable, const Expression::timing &tmg);
+        void WriteBlocksStates(const string &variable, const Timing &tmg);
+        void WriteLinksStates(const string &variable, const Timing &tmg);
         bool InitiatePrecalculatedFunctions();
         bool CopyStateVariablesFrom(System *sys);
         bool EraseConstituentRelatedProperties(const string &constituent_name);
@@ -367,12 +367,12 @@ class System: public Object
         int NumThreads() { return SolverSettings.n_threads; }
         void ResetAllowLimitedFlows(bool allow);
 
-#if defined(QT_version)
+#if defined(Q_GUI_SUPPORT)
         logWindow *LogWindow() {return logwindow;}
         void SetLogWindow(logWindow *lgwnd) {logwindow=lgwnd;}
 #endif
         bool stop_triggered = false;
-#if defined(QT_version) || defined (Q_version)
+#ifdef Q_GUI_SUPPORT
         QStringList QGetAllCategoryTypes();
 		QStringList QGetAllObjectsofTypes(QString _type);
 		QStringList QGetAllObjectsofTypeCategory(QString _type);
@@ -440,6 +440,7 @@ class System: public Object
         Objective_Function_Set *ObjectiveFunctionSet() {return &objective_function_set;}
         bool WriteOutPuts();
         bool SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariable = false, bool calculatevalue = false);
+        bool SaveEquationstoJson(const string& filename);
         bool LoadfromJson(const QJsonDocument &jsondoc);
         bool LoadfromJson(const QJsonObject &jsondoc);
     protected:
@@ -463,9 +464,9 @@ class System: public Object
         CVector_arma Gradient(Object* obj, const string &independent_var);
 
 		void CorrectStoragesBasedonFluxes(const string& variable);
-        CVector_arma CalcStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past);
-        CVector_arma GetStateVariables(const string &variable, const Expression::timing &tmg = Expression::timing::past, bool transport=false);
-        CVector_arma GetStateVariables_for_direct_Jacobian(const string &variable, const Expression::timing &tmg, bool transport);
+        CVector_arma CalcStateVariables(const string &variable, const Timing &tmg = Timing::past);
+        CVector_arma GetStateVariables(const string &variable, const Timing &tmg = Timing::past, bool transport=false);
+        CVector_arma GetStateVariables_for_direct_Jacobian(const string &variable, const Timing &tmg, bool transport);
         solversettings SolverSettings;
         simulationparameters SimulationParameters;
         vector<bool> OneStepSolve();
@@ -477,13 +478,13 @@ class System: public Object
         CMatrix_arma_sp JacobianDirect_SP(const string &variable, CVector_arma &X, bool transport);
 #endif
 
-        bool CalculateFlows(const string &var, const Expression::timing &tmg = Expression::timing::present);
-        void SetStateVariables(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present, bool transport=false);
+        bool CalculateFlows(const string &var, const Timing &tmg = Timing::present);
+        void SetStateVariables(const string &variable, CVector_arma &X, const Timing &tmg = Timing::present, bool transport=false);
         string GetBlockConstituent(unsigned int i);
-        void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport);
-        void SetStateVariables_TR(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present);
+        void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Timing &tmg, bool transport);
+        void SetStateVariables_TR(const string &variable, CVector_arma &X, const Timing &tmg = Timing::present);
         vector<bool> GetOutflowLimitedVector();
-        vector<double> GetOutflowLimitFactorVector(const Expression::timing &tmg);
+        vector<double> GetOutflowLimitFactorVector(const Timing &tmg);
         void SetOutflowLimitedVector(vector<bool>& x);
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
@@ -497,7 +498,7 @@ class System: public Object
         bool silent;
         _directories paths;
         vector<TimeSeries<timeseriesprecision>*> alltimeseries;
-        void CalculateAllExpressions(Expression::timing tmg = Expression::timing::present);
+        void CalculateAllExpressions(Timing tmg = Timing::present);
         void SetNumberOfStateVariables(unsigned int n)
 		{
 			SolverTempVars.fail_reason.resize(n);
@@ -508,9 +509,9 @@ class System: public Object
 		}
         SolutionLogger *solutionlogger = nullptr;
         parameter_estimation_options ParameterEstimationMode = parameter_estimation_options::none;
-        CVector GetBlocksOutflowFactors(const Expression::timing &tmg);
+        CVector GetBlocksOutflowFactors(const Timing &tmg);
         bool OutFlowCanOccur(int blockno, const string &variable);
-        CVector GetLinkssOutflowFactors(const Expression::timing &tmg);
+        CVector GetLinkssOutflowFactors(const Timing &tmg);
         unsigned int restore_interval = 200;
         void PopulateFunctionOperators();
 
@@ -519,16 +520,13 @@ class System: public Object
 #ifndef NO_OPENMP
         omp_lock_t lock;
 #endif
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     RunTimeWindow *rtw = nullptr;
+    void updateProgress(bool finished);
+    logWindow *logwindow = nullptr;
 #endif
 
-#ifdef QT_version
-        GraphWidget *diagramview;
-        runtimeWindow *rtw = nullptr;
-        void updateProgress(bool finished);
-        logWindow *logwindow = nullptr;
-#endif
+
 };
 
 

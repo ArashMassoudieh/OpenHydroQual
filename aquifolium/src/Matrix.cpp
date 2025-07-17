@@ -27,7 +27,7 @@
 #define ARMA_DONT_PRINT_ERRORS
 #include "Vector.h"
 #include "Expression.h"
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
 #include "qstring.h"
 #include "qmap.h"
 #include "qvariant.h"

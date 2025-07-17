@@ -15,85 +15,79 @@
 
 
 #include "safevector.h"
-#include "iostream"
-
-using namespace std; 
+#include <iostream>
 
 template<class T>
-SafeVector<T>::SafeVector() : vector<T> ()
-{
-
-}
+SafeVector<T>::SafeVector() : std::vector<T>() {}
 
 template<class T>
-SafeVector<T>::~SafeVector()
-{
-
-}
+SafeVector<T>::~SafeVector() {}
 
 template<class T>
 T& SafeVector<T>::operator[](int i)
 {
-
-    if (i>int(this->size())-1)
-    {   cout<<int(this->size());
-        cout<<"Exceeded the size"<<std::endl;
-        T x;
-        return x;
+    if (i < 0 || i >= static_cast<int>(this->size())) {
+        static T dummy{};
+        std::cerr << "SafeVector: Index " << i << " out of bounds [0, " << this->size() - 1 << "]\n";
+        return dummy;
     }
-    else if (i<0)
-    {
-        cout<<"Counter is negative!"<<std::endl;
-        T x;
-        return x;
-    }
-    else
-        return vector<T>::operator[](i);
-
+    return std::vector<T>::operator[](i);
 }
 
 template<class T>
 T& SafeVector<T>::operator[](unsigned int i)
 {
-
-    if (i > int(this->size()) - 1)
-    {
-        cout << int(this->size());
-        cout << "Exceeded the size" << std::endl;
-        T x;
-        return x;
+    if (i >= this->size()) {
+        static T dummy{};
+        std::cerr << "SafeVector: Index " << i << " out of bounds [0, " << this->size() - 1 << "]\n";
+        return dummy;
     }
-    else
-        return vector<T>::operator[](i);
-
+    return std::vector<T>::operator[](i);
 }
 
 template<class T>
-bool SafeVector<T>::SetVal(unsigned int i, const T &val)
+std::vector<T> SafeVector<T>::toStdVector() const
 {
-    if (i>int(this->size())-1)
-    {
-        cout<<"Exceeded the size"<<std::endl;
-        return false;
-    }
-    else if (i<0)
-    {
-        cout<<"Counter is negative!"<<std::endl;
-        return false;
-    }
-    vector<T>::at(i)=val;
-
+    return *this;
 }
 
 template<class T>
-unsigned int SafeVector<T>::lookup(const T &x)
+SafeVector<T> SafeVector<T>::fromStdVector(const std::vector<T>& x)
 {
-    for (unsigned int i=0; i<this->size(); i++)
-    {
+    SafeVector<T> s;
+    s.assign(x.begin(), x.end());
+    return s;
+}
+
+template<class T>
+bool SafeVector<T>::SetVal(unsigned int i, const T& val)
+{
+    if (i >= this->size()) {
+        std::cerr << "SafeVector: SetVal index " << i << " out of bounds\n";
+        return false;
+    }
+    this->at(i) = val;
+    return true;
+}
+
+template<class T>
+unsigned int SafeVector<T>::lookup(const T& x) const
+{
+    for (unsigned int i = 0; i < this->size(); ++i) {
         if (this->at(i) == x)
             return i;
     }
-    return -1;
+    return this->size();  // not found
 }
 
+template<class T>
+void SafeVector<T>::append(const SafeVector<T>& v)
+{
+    this->insert(this->end(), v.begin(), v.end());
+}
 
+template<class T>
+void SafeVector<T>::append(const T& x)
+{
+    this->push_back(x);
+}

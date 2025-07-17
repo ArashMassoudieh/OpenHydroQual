@@ -20,16 +20,16 @@
 #include <json/json.h>
 #include <list>
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     #include <QDebug>
 #endif
 
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonArray>
-#endif // Qt_version
+#endif // Q_JSON_SUPPORT
 
 
 QuanSet::QuanSet()
@@ -170,6 +170,76 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
     }
     //qDebug()<<QString::fromStdString(Name())<< " Done!";
 }
+
+Quan& QuanSet::Var(const std::string& s) {
+    return (*this)[s]; // uses operator[]
+}
+
+size_t QuanSet::Count(const std::string& s) const {
+    return quans.count(s);
+}
+
+std::unordered_map<std::string, Quan>::iterator QuanSet::find(const std::string& name) {
+    return quans.find(name);
+}
+
+std::unordered_map<std::string, Quan>::iterator QuanSet::begin() {
+    return quans.begin();
+}
+
+std::unordered_map<std::string, Quan>::iterator QuanSet::end() {
+    return quans.end();
+}
+
+std::unordered_map<std::string, Quan>::const_iterator QuanSet::const_begin() const {
+    return quans.cbegin();
+}
+
+std::unordered_map<std::string, Quan>::const_iterator QuanSet::const_end() const {
+    return quans.cend();
+}
+
+unsigned long QuanSet::size() {
+    return quans.size();
+}
+
+std::string& QuanSet::Description() {
+    return description;
+}
+
+std::string& QuanSet::IconFileName() {
+    return iconfilename;
+}
+
+std::string& QuanSet::Name() {
+    return name;
+}
+
+Object* QuanSet::Parent() {
+    return parent;
+}
+
+void QuanSet::SetParent(Object* p) {
+    parent = p;
+    SetAllParents();
+}
+
+bool QuanSet::Find(const std::string& s) {
+    return quans.find(s) != quans.end();
+}
+
+std::string& QuanSet::CategoryType() {
+    return typecategory;
+}
+
+std::string& QuanSet::Normalizing_Quantity() {
+    return normalizing_quantity;
+}
+
+std::vector<std::string>& QuanSet::Quantity_Order() {
+    return quantity_order;
+}
+
 
 QuanSet::QuanSet(const QuanSet& other)
 {
@@ -408,7 +478,7 @@ bool QuanSet::DeleteConstituentRelatedProperties(const string &constituent_name)
     return out;
 }
 
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
 QStringList QuanSet::QQuanNames()
 {
     QStringList out;
@@ -693,6 +763,7 @@ void QuanSet::CreateCPPcode(const string &source, const string header)
     sourcefile.close();
 }
 
+#ifdef Q_JSON_SUPPORT
 QJsonObject QuanSet::toJson(bool allvariables, bool calculatevalue)
 {
     QJsonObject out;
@@ -710,7 +781,6 @@ QJsonObject QuanSet::toJson(bool allvariables, bool calculatevalue)
 
     return out;
 }
-
 
 QJsonArray QuanSet::toJsonSetAsParameter()
 {
@@ -731,3 +801,22 @@ QJsonArray QuanSet::toJsonSetAsParameter()
     }
     return array;
 }
+
+QJsonObject QuanSet::EquationsToJson() const {
+    QJsonObject json;
+
+    for (const auto& pair : quans) {
+        const Quan& q = pair.second;
+        if (q.GetName() == "Cu_aq:stoichiometric_constant")
+        {
+            cout << "";
+        }
+        
+        QString name = QString::fromStdString(q.GetName());
+        QString expr = QString::fromStdString(q.GetExpression().ToExpressionStringFromTree());
+        json.insert(name, expr);
+    }
+
+    return json;
+}
+#endif

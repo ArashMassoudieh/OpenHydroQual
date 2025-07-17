@@ -27,7 +27,7 @@
 #include "armadillo"
 
 class QVariant;
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
 #include <QMap>
 #endif
 
@@ -120,7 +120,7 @@ public:
 
 
 
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
     QMap<QString, QVariant> compact() const;
     static CMatrix unCompact(QMap<QString, QVariant>);
 #endif

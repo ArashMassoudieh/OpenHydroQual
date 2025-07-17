@@ -17,112 +17,119 @@
 #ifndef QUANSET_H
 #define QUANSET_H
 
-#ifdef QT_version
-    #include <QStringList>
-	#include <QJsonObject>
+#ifdef Q_JSON_SUPPORT
+#include <QStringList>
+#include <QJsonObject>
 #endif
 
 #include <map>
 #include <unordered_map>
-#include <map>
 #include <Quan.h>
 
 #define unordered_map map
 
 class Object;
 
-enum class blocklink {block, link, source, reaction, entity};
+/// Enum indicating linkage category for the object type
+enum class blocklink { block, link, source, reaction, entity };
 
+/**
+ * @class QuanSet
+ * @brief A container for managing named Quan objects along with their metadata, evaluation order, and parent context.
+ */
 class QuanSet
 {
-    public:
-        QuanSet();
-        QuanSet(Json::ValueIterator &object_type);
-        virtual ~QuanSet();
-        QuanSet(const QuanSet& other);
-        QuanSet& operator=(const QuanSet& other);
-        bool Append(const string &s, const Quan &q);
-        void Append(QuanSet &qset);
-        size_t Count(const string &s) const {return quans.count(s);}
-        Quan& operator[] (const string &s);
-        Quan& GetVar(const string &s);
-        Quan* GetVar(int i);
-        Quan* GetVarAskable(int i);
-        void UnUpdateAllValues();
-        std::unordered_map<string,Quan>::iterator find(const string &name) {return quans.find(name);}
-        std::unordered_map<string,Quan>::iterator end() {return quans.end();}
-        std::unordered_map<string,Quan>::iterator begin() {return quans.begin();}
-        std::unordered_map<string,Quan>::const_iterator const_end() const {return quans.cend();}
-        std::unordered_map<string,Quan>::const_iterator const_begin() const {return quans.cbegin();}
-        unsigned long size() {return quans.size();}
-        unsigned long AskableSize();
-        string &Description() 
-        {
-            return description;
-        }
-        string &IconFileName() {return iconfilename;}
-        string &Name() {return name;}
-        void ShowMessage(const string &msg);
-        string ToString(int tabs=0);
-        blocklink BlockLink;
-        void SetParent(Object *p) {parent = p; SetAllParents();}
-        void SetAllParents();
-        Object *Parent() {return parent; }
-        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip = false);
-        SafeVector<string> QuanNames();
-        string toCommand();
-        string toCommandSetAsParam();
-        vector<string> quantitative_variable_list();
-        bool RenameProperty(const string &oldname, const string &newname);
-        bool RenameInQuantityOrder(const string &oldname, const string &newname);
-        bool DeleteInQuantityOrder(const string& oldname);
-        vector<string> AllConstituents();
-        vector<string> AllReactionParameters();
-        bool RenameQuantity(const string &oldname, const string &newname);
-        bool RenameConstituents(const string &oldname, const string &newname);
-        bool DeleteConstituentRelatedProperties(const string &constituent_name);
-        bool Find(const string &s)
-        {
-            if (quans.find(s)!=quans.end())
-                return true;
-            else
-                return false;
-        }
-        void SetQuanPointers();
+public:
+    QuanSet(); ///< Default constructor
+    QuanSet(Json::ValueIterator& object_type); ///< Constructor from JSON definition
+	Quan& Var(const std::string& s); //<< Getter for Quan by name
+    virtual ~QuanSet(); ///< Destructor
+    QuanSet(const QuanSet& other); ///< Copy constructor
+    QuanSet& operator=(const QuanSet& other); ///< Copy assignment
 
-#ifdef QT_version
-        QStringList QQuanNames();
-		QuanSet(QJsonObject& object_types);
+    bool Append(const string& s, const Quan& q); ///< Add a new Quan
+    void Append(QuanSet& qset); ///< Add all Quans from another set
+
+    size_t Count(const string& s) const; ///< Number of Quans with given name
+    Quan& operator[](const string& s); ///< Direct access (unsafe if missing)
+    Quan& GetVar(const string& s); ///< Safe access (raises error if missing)
+    Quan* GetVar(int i); ///< Get by index
+    Quan* GetVarAskable(int i); ///< Get ith user-askable Quan
+
+    void UnUpdateAllValues(); ///< Clear update flags
+
+    std::unordered_map<string, Quan>::iterator find(const string& name); ///< Lookup by name
+    std::unordered_map<string, Quan>::iterator begin(); ///< Begin iterator
+    std::unordered_map<string, Quan>::iterator end(); ///< End iterator
+    std::unordered_map<string, Quan>::const_iterator const_end() const; ///< Const end iterator
+    std::unordered_map<string, Quan>::const_iterator const_begin() const; ///< Const begin iterator
+
+    unsigned long size(); ///< Total number of Quans
+    unsigned long AskableSize(); ///< Count of askable Quans
+
+    string& Description(); ///< Get description
+    string& IconFileName(); ///< Get icon path
+    string& Name(); ///< Get object name
+    void ShowMessage(const string& msg); ///< Output if not silent
+    string ToString(int tabs = 0); ///< Serialize as string
+
+    blocklink BlockLink; ///< Role of the object (block, link, etc.)
+
+    void SetParent(Object* p); ///< Set parent object
+    void SetAllParents(); ///< Assign parent to all Quans
+    Object* Parent(); ///< Access parent
+
+    SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip = false); ///< Time series references
+    SafeVector<string> QuanNames(); ///< List of all Quan names
+
+    string toCommand(); ///< Serialize askable Quans as CLI string
+    string toCommandSetAsParam(); ///< Serialize askables as parameters
+
+    vector<string> quantitative_variable_list(); ///< Names of quantitative variables
+    bool RenameProperty(const string& oldname, const string& newname); ///< Rename a quantity
+    bool RenameInQuantityOrder(const string& oldname, const string& newname); ///< Rename in order
+    bool DeleteInQuantityOrder(const string& oldname); ///< Remove from order
+
+    vector<string> AllConstituents(); ///< All known constituents
+    vector<string> AllReactionParameters(); ///< All known parameters
+
+    bool RenameQuantity(const string& oldname, const string& newname); ///< Rename in expression
+    bool RenameConstituents(const string& oldname, const string& newname); ///< Rename scoped constituent
+    bool DeleteConstituentRelatedProperties(const string& constituent_name); ///< Remove scoped Quans
+
+    bool Find(const string& s); ///< Test if Quan exists
+    void SetQuanPointers(); ///< Link pointers for expression eval
+
+#ifdef Q_JSON_SUPPORT
+    QStringList QQuanNames(); ///< Qt list of quantity names
+    QuanSet(QJsonObject& object_types); ///< Load from JSON object
+    QJsonObject toJson(bool allvariables = false, bool calculatevalue = false); ///< Export to JSON
+    QJsonArray toJsonSetAsParameter(); ///< Export parameter bindings
+    QJsonObject EquationsToJson() const; ///< Export expressions
 #endif
-        bool AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code);
-		string ObjectType; 
-		string& CategoryType() { return typecategory; }
-        string& Normalizing_Quantity()
-        {
-            return normalizing_quantity;
-        }
-        vector<string>& Quantity_Order() {
-            return quantity_order;
-        }
-        vector<string> ReviseQuanityOrder(const vector<string> &quantity, const string &constituent);
-        bool InitializePrecalcFunctions();
-        void CreateCPPcode(const string &source, const string header);
-        QJsonObject toJson(bool allvariables = false, bool calculatevalue = false);
-        QJsonArray toJsonSetAsParameter();
-    protected:
 
-    private:
-        Object* parent = nullptr;
-        string name = "";
-        unordered_map<string, Quan> quans;
-        string last_error = "";
-        string description = "";
-        string iconfilename = "";
-        string typecategory = "";
-        string normalizing_quantity="Storage";
-        vector<string> quantity_order; 
+    bool AppendError(const string& objectname, const string& cls, const string& funct, const string& description, const int& code); ///< Log error
 
+    string ObjectType; ///< Descriptive label of object type
+    string& CategoryType(); ///< Reference to type category
+    string& Normalizing_Quantity(); ///< Name of normalization variable
+    vector<string>& Quantity_Order(); ///< Ordered list of quantities
 
+    vector<string> ReviseQuanityOrder(const vector<string>& quantity, const string& constituent); ///< Prefix quantities
+    bool InitializePrecalcFunctions(); ///< Setup precalculated data
+    void CreateCPPcode(const string& source, const string header); ///< Auto-generate class boilerplate
+
+private:
+    Object* parent = nullptr;
+    string name = "";
+    unordered_map<string, Quan> quans;
+    string last_error = "";
+    string description = "";
+    string iconfilename = "";
+    string typecategory = "";
+    string normalizing_quantity = "Storage";
+    vector<string> quantity_order;
 };
 
 #endif // QUANSET_H
+

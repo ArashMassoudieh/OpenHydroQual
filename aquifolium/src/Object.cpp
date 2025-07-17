@@ -17,7 +17,7 @@
 #include "Object.h"
 #include "System.h"
 #include <string>
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
 #include <qdebug.h>
 #include "XString.h"
 #endif
@@ -32,9 +32,9 @@ Object::~Object()
     //dtor
 }
 
-Object::Object(const Object& other)
+Object::Object(const Object& other) : QuanSet(other) // Initialize base class QuanSet with other.var
 {
-    var = other.var;
+    
     setting = other.setting;
     name = other.GetName();
     parent = other.GetParent();
@@ -55,7 +55,7 @@ Object& Object::operator=(const Object& rhs)
     setting = rhs.setting;
     name = rhs.GetName();
     parent = rhs.GetParent();
-    var = rhs.var;
+    QuanSet::operator=(rhs);
 	s_Block_no = rhs.s_Block_no;
 	e_Block_no = rhs.e_Block_no;
 	type = rhs.type;
@@ -68,14 +68,14 @@ Object& Object::operator=(const Object& rhs)
     return *this;
 }
 
-double Object::CalcVal(const string& s,const Expression::timing &tmg)
+double Object::CalcVal(const string& s,const Timing &tmg)
 {
-    if (var.Find(s))
+    if (Find(s))
     {
         #ifdef Debug_mode
         //ShowMessage(string("Object: ") + name + " Variable: " + s + " Value: " + numbertostring(var[s].CalcVal(tmg)));
         #endif // Debug_mode
-		return var[s].CalcVal(tmg);
+		return (*this)[s].CalcVal(tmg);
     }
     else
     {
@@ -90,27 +90,27 @@ double Object::CalcVal(const string& s,const Expression::timing &tmg)
 
 void Object::SetQuanPointers()
 {
-    var.SetQuanPointers();
+    QuanSet::SetQuanPointers();
 }
-double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
+double Object::GetVal(const string& s,const Timing &tmg, bool limit)
 {
-    if (var.Find(s))
+    if (Find(s))
     {
-        if (!limit || !var[s].ApplyLimit())
-            return var[s].GetVal(tmg);
+        if (!limit || !Var(s).ApplyLimit())
+            return Var(s).GetVal(tmg);
         else
-            return var[s].GetVal(tmg)*GetOutflowLimitFactor(tmg);
+            return Var(s).GetVal(tmg)*GetOutflowLimitFactor(tmg);
     }
     if (Parent())
-    {   if (Parent()->constituent(s)!=nullptr && var.Count(s+":concentration")==1)
+    {   if (Parent()->constituent(s)!=nullptr && Count(s+":concentration")==1)
         {
-            return aquiutils::Pos(var[s+":concentration"].GetVal(tmg));
+            return aquiutils::Pos(Var(s+":concentration").GetVal(tmg));
         }
         if (Parent()->reactionparameter(s)!=nullptr)
         {
-            if (var.Count(s+":value"))
+            if (Count(s+":value"))
             {
-                return var[s+":value"].GetVal(tmg);
+                return Var(s+":value").GetVal(tmg);
             }
             else
                 return Parent()->reactionparameter(s)->GetVal("value",tmg);
@@ -122,7 +122,7 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
         }
         if (HasQuantity(GetCurrentCorrespondingConstituent()+":"+s))
         {
-            return aquiutils::Pos(var[GetCurrentCorrespondingConstituent()+":"+s].GetVal(tmg));
+            return aquiutils::Pos(Var(GetCurrentCorrespondingConstituent()+":"+s).GetVal(tmg));
         }
         if (Parent()->reaction(GetCurrentCorrespondingConstituent())!=nullptr)
         {
@@ -156,33 +156,33 @@ double Object::GetVal(const string& s,const Expression::timing &tmg, bool limit)
     return 0;
 }
 
-double Object::GetVal(const string& variable, const string& consttnt, const Expression::timing &tmg, bool limit)
+double Object::GetVal(const string& variable, const string& consttnt, const Timing &tmg, bool limit)
 {
     string fullname = consttnt+":"+variable;
-    if (var.Find(fullname))
+    if (Find(fullname))
     {
         if (!limit)
         {
-            if (var[fullname].Value_Updated())
-                return var[fullname].GetVal(tmg);
+            if (Var(fullname).Value_Updated())
+                return Var(fullname).GetVal(tmg);
             else
             {
               double val;
 //#pragma omp critical(variable_change)
-              val = var[fullname].GetVal(tmg);
+              val = Var(fullname).GetVal(tmg);
               return val;
             }
 
         }
         else
         {
-            if (var[fullname].Value_Updated())
-                return var[fullname].GetVal(tmg)*GetOutflowLimitFactor(tmg);
+            if (Var(fullname).Value_Updated())
+                return Var(fullname).GetVal(tmg)*GetOutflowLimitFactor(tmg);
             else
             {
               double val;
 //#pragma omp critical(variable_change_2)
-              val = var[fullname].GetVal(tmg)*GetOutflowLimitFactor(tmg);
+              val = Var(fullname).GetVal(tmg)*GetOutflowLimitFactor(tmg);
               return val;
             }
 
@@ -201,7 +201,7 @@ double Object::GetVal(const string& variable, const string& consttnt, const Expr
 
 
 
-double Object::GetVal(Quan* quan,const Expression::timing &tmg, bool limit)
+double Object::GetVal(Quan* quan,const Timing &tmg, bool limit)
 {
     if (!limit || !quan->ApplyLimit())
     {
@@ -234,14 +234,14 @@ double Object::GetVal(Quan* quan,const Expression::timing &tmg, bool limit)
 
 bool Object::AddQnantity(const string &name,const Quan &Q)
 {
-    if (var.find(name)!=var.end() && !var.size())
+    if (find(name)!=end() && !size())
     {
         Parent()->errorhandler.Append(GetName(),"Object","AddQnantity","Variable " + name + " already exists! ",1003);
         return false;
     }
     else
     {
-		var.Append(name, Q);
+		Append(name, Q);
         return true;
     }
 
@@ -257,8 +257,8 @@ bool Object::SetQuantities(QuanSet &Q)
     }
     else
     {
-        var = Q;
-        var.SetParent(this);
+        QuanSet::operator=(Q);
+        QuanSet::SetParent(this);
         SetName(Q["name"].GetProperty());
         return true;
     }
@@ -275,10 +275,10 @@ bool Object::SetQuantities(MetaModel &m, const string& typ )
 		return false;
 	}
     else
-        var = *m[typ];
+        QuanSet::operator=(*m[typ]);
     SetDefaults();
-    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
-        var[s->first].SetParent(this);
+    for (unordered_map<string, Quan>::const_iterator s = begin(); s != end(); ++s)
+        Var(s->first).SetParent(this);
 
     return true;
 }
@@ -293,10 +293,10 @@ bool Object::SetQuantities(MetaModel *m, const string& typ )
         return false;
     }
     else
-        var = *(m->GetItem(typ));
+        QuanSet::operator=(*(m->GetItem(typ)));
     SetDefaults();
-    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
-        var[s->first].SetParent(this);
+    for (unordered_map<string, Quan>::const_iterator s = begin(); s != end(); ++s)
+        Var(s->first).SetParent(this);
     return true;
 }
 
@@ -312,34 +312,34 @@ bool Object::SetQuantities(System *sys, const string& typ )
         return false;
     }
     else
-        var = *(m->GetItem(typ));
+        QuanSet::operator=(*(m->GetItem(typ)));
     SetDefaults();
-    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
-        var[s->first].SetParent(this);
+    for (unordered_map<string, Quan>::const_iterator s = begin(); s != end(); ++s)
+        Var(s->first).SetParent(this);
     return true;
 }
 
 void Object::SetDefaults()
 {
-    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    for (unordered_map<string, Quan>::const_iterator s = begin(); s != end(); ++s)
     {
         //qDebug() << "Setting Defults for variable " << QString::fromStdString(s->first);
-        if (var[s->first].Default() != "")
+        if (Var(s->first).Default() != "")
         {
             //qDebug()<<QString::fromStdString(s->first);
-            var[s->first].SetProperty(var[s->first].Default().c_str(),true);
+            Var(s->first).SetProperty(Var(s->first).Default().c_str(),true);
             //qDebug()<<"Done!";
             //qDebug() << "Default Value was set to " << QString::fromStdString(var[s->first].Default());
         }
     }
 }
 
-bool Object::SetVal(const string& s, double value, const Expression::timing &tmg)
+bool Object::SetVal(const string& s, double value, const Timing &tmg)
 {
 
-    if (var.find(s)!=var.end())
+    if (find(s)!=end())
     {
-        var[s].SetVal(value,tmg);
+        Var(s).SetVal(value,tmg);
         return true;
     }
     else
@@ -356,11 +356,11 @@ bool Object::SetVal(const string& s, double value, const Expression::timing &tmg
     }
 }
 
-bool Object::SetVal(const string& s, const string & value, const Expression::timing &tmg)
+bool Object::SetVal(const string& s, const string & value, const Timing &tmg)
 {
-    if (var.find(s)!=var.end())
+    if (find(s)!=end())
     {
-        var[s].SetVal(aquiutils::atof(value),tmg);
+        Var(s).SetVal(aquiutils::atof(value),tmg);
         return true;
     }
     else
@@ -393,26 +393,26 @@ bool Object::SetName(const string &s, bool setprop)
 
     if (setprop)
     {
-        if (var.Count("name")>0)
-            var["name"].SetProperty(s);
+        if (Count("name")>0)
+            Var("name").SetProperty(s);
     }
     name = s;
     return true;
 }
 
 
-Object* Object::GetConnectedBlock(Expression::loc l)
+Object* Object::GetConnectedBlock(ExpressionNode::loc l)
 {
-    if (l==Expression::loc::destination)
+    if (l==ExpressionNode::loc::destination)
         return e_Block;
-    if (l==Expression::loc::source)
+    if (l==ExpressionNode::loc::source)
         return s_Block;
 
     return this;
 
 }
 
-void Object::SetConnectedBlock(Expression::loc l, const string &blockname)
+void Object::SetConnectedBlock(ExpressionNode::loc l, const string &blockname)
 {
     if (GetParent()->block(blockname)==nullptr)
     {
@@ -422,12 +422,12 @@ void Object::SetConnectedBlock(Expression::loc l, const string &blockname)
     }
     else
     {
-        if (l==Expression::loc::source)
+        if (l==ExpressionNode::loc::source)
         {
             s_Block = GetParent()->block(blockname);
             s_Block_no = GetParent()->blockid(blockname);
         }
-        if (l==Expression::loc::destination)
+        if (l==ExpressionNode::loc::destination)
         {
             e_Block = GetParent()->block(blockname);
             e_Block_no = GetParent()->blockid(blockname);
@@ -450,7 +450,7 @@ void Object::SetParent(System *s)
 
 Quan* Object::CorrespondingFlowVariable(const string &s)
 {
-    if (!var.Find(Variable(s)->GetCorrespondingFlowVar()))
+    if (!Find(Variable(s)->GetCorrespondingFlowVar()))
     {
         Parent()->errorhandler.Append(GetName(),"Object","CorrespondingFlowVariable","Variable '" + s +"' does not exist!",1009);
         return nullptr;
@@ -461,7 +461,7 @@ Quan* Object::CorrespondingFlowVariable(const string &s)
 
 Quan* Object::Variable(const string &s)
 {
-    if (!var.Find(s))
+    if (!Find(s))
     {
         //qDebug() << QString::fromStdString("In '" + name + "': " + "Variable '" + s + "' does not exist!"); 
 #ifdef Debug_mode
@@ -471,13 +471,13 @@ Quan* Object::Variable(const string &s)
 		return nullptr;
     }
     else
-        return &var[s];
+        return &Var(s);
 }
 
 Quan* Object::Variable(const string &variable, const string &constituent)
 {
     string variablefullname = constituent+":"+variable;
-    if (!var.Find(variablefullname))
+    if (!Find(variablefullname))
     {
         //qDebug() << QString::fromStdString("In '" + name + "': " + "Variable '" + variablefullname + "' does not exist!");
 #ifdef Debug_mode
@@ -487,13 +487,13 @@ Quan* Object::Variable(const string &variable, const string &constituent)
         return nullptr;
     }
     else
-        return &var[variablefullname];
+        return &Var(variablefullname);
 }
 
 bool Object::VerifyQuans(ErrorHandler *errorhandler)
 {
     bool fine = true; 
-    for (unordered_map<string,Quan>::iterator it = var.begin(); it!=var.end(); it++)
+    for (unordered_map<string,Quan>::iterator it = begin(); it!=end(); it++)
     {
         if (!it->second.Validate())
         {
@@ -516,7 +516,7 @@ vector<Quan> Object::GetCopyofAllQuans()
 
 bool Object::HasQuantity(const string &q)
 {
-    if (var.Count(q)==0)
+    if (Count(q)==0)
         return false;
     else
         return true;
@@ -551,31 +551,31 @@ bool Object::Update(const string & variable)
 
 }
 
-bool Object::CalcExpressions(const Expression::timing &tmg)
+bool Object::CalcExpressions(const Timing &tmg)
 {
-    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
-		if (var[s->first].GetType() == Quan::_type::expression)
+    for (unordered_map<string, Quan>::const_iterator s = begin(); s != end(); ++s)
+		if (Var(s->first).GetType() == Quan::_type::expression)
 			Variable(s->first)->SetVal(Variable(s->first)->CalcVal(tmg),tmg);
 	return true; 
 }
 
 bool Object::EstablishExpressionStructure()
 {
-    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    /*for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
         if (var[s->first].GetType() == Quan::_type::expression)
-            Variable(s->first)->EstablishExpressionStructure();
+            Variable(s->first)->EstablishExpressionStructure();*/
     return true;
 }
 
 void Object::SetVariableParents()
 {
-	var.SetParent(this);
-    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+	QuanSet::SetParent(this);
+    for (unordered_map<string, Quan>::const_iterator s = begin(); s != end(); ++s)
 	{
-		var[s->first].SetParent(this);
-		if (var[s->first].GetType() == Quan::_type::source)
-            if (var[s->first].SourceName() != "")
-			    var[s->first].SetProperty(var[s->first].SourceName());
+		Var(s->first).SetParent(this);
+		if (Var(s->first).GetType() == Quan::_type::source)
+            if (Var(s->first).SourceName() != "")
+			    Var(s->first).SetProperty(Var(s->first).SourceName());
 	}
 }
 
@@ -588,7 +588,7 @@ void Object::ShowMessage(const string &msg) {if (!parent->IsSilent()) cout<<msg<
 
 void Object::SetAllParents()
 {
-    var.SetParent(this);
+    QuanSet::SetParent(this);
 }
 
 bool Object::SetProperty(const string &prop, const string &value, bool force_value, bool check_criteria)
@@ -601,47 +601,47 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
         }
         return false;
     }
-    if (var[prop].GetType() == Quan::_type::value || var[prop].GetType() == Quan::_type::balance || var[prop].GetType() == Quan::_type::constant || (var[prop].GetType() == Quan::_type::expression && (var[prop].Delegate()=="UnitBox"||var[prop].Delegate()=="ValueBox" )))
+    if (Var(prop).GetType() == Quan::_type::value || Var(prop).GetType() == Quan::_type::balance || Var(prop).GetType() == Quan::_type::constant || (Var(prop).GetType() == Quan::_type::expression && (Var(prop).Delegate()=="UnitBox"||Var(prop).Delegate()=="ValueBox" )))
     {
-#ifdef Q_version
-        if (var[prop].Delegate()=="UnitBox")
+#ifdef Q_GUI_SUPPORT
+        if (Var(prop).Delegate()=="UnitBox")
         {
             if (aquiutils::split(value,'[').size()>1)
             {   string unit = aquiutils::split(aquiutils::split(value,'[')[1],']')[0];
                 double coefficient = XString::coefficient(QString::fromStdString(unit));
                 double _value = atof(value.c_str())*coefficient;
-                var[prop].SetVal(_value,Expression::timing::both, check_criteria);
-                var[prop].Unit() = unit;
+                Var(prop).SetVal(_value,Timing::both, check_criteria);
+                Var(prop).Unit() = unit;
             }
             else
-                var[prop].SetVal(aquiutils::atof(value),Expression::timing::both, check_criteria);
+                Var(prop).SetVal(aquiutils::atof(value),Timing::both, check_criteria);
         }
         else
 #endif
-        var[prop].SetVal(aquiutils::atof(value),Expression::timing::both);
+        Var(prop).SetVal(aquiutils::atof(value),Timing::both);
         return true;
     }
-    if (var[prop].GetType() == Quan::_type::expression)
+    if (Var(prop).GetType() == Quan::_type::expression)
     {
-        return var[prop].SetExpression(value);
+        return Var(prop).SetExpression(value);
     }
-    if (var[prop].GetType() == Quan::_type::rule)
+    if (Var(prop).GetType() == Quan::_type::rule)
     {
         Parent()->errorhandler.Append(GetName(),"Object","SetProperty","In object '" + GetName() + "', property '" + prop + "' is a rule and cannot be set during the run time",1014);
         return false;
     }
 
-    if (var[prop].GetType() == Quan::_type::timeseries || var[prop].GetType() == Quan::_type::prec_timeseries)
+    if (Var(prop).GetType() == Quan::_type::timeseries || Var(prop).GetType() == Quan::_type::prec_timeseries)
     {
-        return var[prop].SetProperty(value);
+        return Var(prop).SetProperty(value);
     }
-    if (var[prop].GetType() == Quan::_type::source)
+    if (Var(prop).GetType() == Quan::_type::source)
     {
-        return var[prop].SetProperty(value);
+        return Var(prop).SetProperty(value);
     }
-    if (var[prop].GetType() == Quan::_type::string)
+    if (Var(prop).GetType() == Quan::_type::string)
     {
-        return var[prop].SetProperty(value);
+        return Var(prop).SetProperty(value);
     }
     return false;
 
@@ -651,7 +651,7 @@ string Object::toString(int _tabs)
 {
     string out = aquiutils::tabs(_tabs) + "Name: " + GetName() + "\n";
     out += aquiutils::tabs(_tabs) + "Type: " + GetType() + "\n";
-    out += this->var.ToString(_tabs + 1);
+    out += QuanSet::ToString(_tabs + 1);
     return out;
 }
 
@@ -666,13 +666,13 @@ void Object::AssignRandomPrimaryKey()
 string Object::toCommand()
 {
     string out = "type=" + GetType() + ",";
-    out += var.toCommand();
+    out += QuanSet::toCommand();
     return out;
 }
 
 QJsonObject Object::toJson(bool allvariables, bool calculatevalue)
 {
-    QJsonObject out = var.toJson(allvariables, calculatevalue);
+    QJsonObject out = QuanSet::toJson(allvariables, calculatevalue);
     out["type"] = QString::fromStdString(type);
     if (ObjectType() == object_type::link)
     {
@@ -682,10 +682,16 @@ QJsonObject Object::toJson(bool allvariables, bool calculatevalue)
     return out;
 }
 
+QJsonObject Object::ExpressionstoJson() const
+{
+    QJsonObject out = QuanSet::EquationsToJson();
+    return out; 
+}
+
 string Object::toCommandSetAsParam()
 {
     string out;
-    out += var.toCommandSetAsParam();
+    out += QuanSet::toCommandSetAsParam();
     return out;
 }
 
@@ -745,9 +751,9 @@ bool Object::RenameConstituents(const string &oldname, const string &newname)
             }
         }
     }
-    if (GetConnectedBlock(Expression::loc::source) != nullptr)
+    if (GetConnectedBlock(ExpressionNode::loc::source) != nullptr)
     {
-        for (unordered_map<string, Quan>::iterator it = GetConnectedBlock(Expression::loc::source)->GetVars()->begin(); it != GetConnectedBlock(Expression::loc::source)->GetVars()->end(); it++)
+        for (unordered_map<string, Quan>::iterator it = GetConnectedBlock(ExpressionNode::loc::source)->GetVars()->begin(); it != GetConnectedBlock(ExpressionNode::loc::source)->GetVars()->end(); it++)
         {
             if (aquiutils::split(it->first, ':').size() == 2)
             {
@@ -790,8 +796,9 @@ bool Object::CalculateInitialValues()
     for (unsigned int j = 0; j < QuantitOrder().size(); j++)
     {
         if (Variable(QuantitOrder()[j])->calcinivalue())
-        {   double ini_value = Expression(Variable(QuantitOrder()[j])->InitialValueExpression()).calc(this,Expression::timing::past);
-            Variable(QuantitOrder()[j])->SetVal(ini_value,Expression::timing::both);
+        {   
+            double ini_value = Expression(Variable(QuantitOrder()[j])->InitialValueExpression()).calc(this,Timing::past);
+            Variable(QuantitOrder()[j])->SetVal(ini_value,Timing::both);
         }
     }
     return succeed;
@@ -815,29 +822,29 @@ vector<string> Object::AllReactionParameters()
 
 bool Object::InitializePrecalcFunctions()
 {
-    var.InitializePrecalcFunctions();
+    QuanSet::InitializePrecalcFunctions();
     return true; 
 }
 
 void Object::MakeTimeSeriesUniform(const double &increment)
 {
-    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    for (unordered_map<string, Quan>::const_iterator s = begin(); s != end(); ++s)
         
-        if (var[s->first].GetType() == Quan::_type::timeseries || var[s->first].GetType() == Quan::_type::prec_timeseries)
+        if (Var(s->first).GetType() == Quan::_type::timeseries || Var(s->first).GetType() == Quan::_type::prec_timeseries)
         {
-            if (var[s->first].GetTimeSeries()!=nullptr)
-                *(var[s->first].GetTimeSeries()) = var[s->first].GetTimeSeries()->make_uniform(increment,true);
+            if (Var(s->first).GetTimeSeries() != nullptr)
+                *(Var(s->first).GetTimeSeries()) = Var(s->first).GetTimeSeries()->make_uniform(increment, true);
         }
 }
 
 bool Object::CopyStateVariablesFrom(Object* obj)
 {
-    for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
+    for (unordered_map<string, Quan>::const_iterator s = begin(); s != end(); ++s)
     {
-        if (var[s->first].GetType() == Quan::_type::balance && obj->HasQuantity(s->first))
+        if (Var(s->first).GetType() == Quan::_type::balance && obj->HasQuantity(s->first))
         {
-            var[s->first].SetVal(obj->GetVal(s->first,Expression::timing::past),Expression::timing::past);
-            var[s->first].SetVal(obj->GetVal(s->first,Expression::timing::present),Expression::timing::present);
+            Var(s->first).SetVal(obj->GetVal(s->first, Timing::past), Timing::past);
+            Var(s->first).SetVal(obj->GetVal(s->first, Timing::present), Timing::present);
         }
     }
     SetLimitedOutflow(obj->GetLimitedOutflow());
@@ -847,15 +854,15 @@ bool Object::CopyStateVariablesFrom(Object* obj)
 unordered_map<string, Quan*> Object::AllSourceParameters()
 {
     unordered_map<string, Quan* > out;
-    for (unordered_map<string, Quan>::iterator s = var.begin(); s != var.end(); ++s)
+    for (unordered_map<string, Quan>::iterator s = begin(); s != end(); ++s)
     {
-        if (var[s->first].GetType()==Quan::_type::source)
+        if (Var(s->first).GetType() == Quan::_type::source)
         {
-            if(var[s->first].GetSource()!=nullptr)
+            if(Var(s->first).GetSource()!=nullptr)
             {
-                for (unordered_map<string, Quan>::const_iterator s1 = var[s->first].GetSource()->GetVars()->begin(); s1 != var[s->first].GetSource()->GetVars()->end(); ++s1)
+                for (unordered_map<string, Quan>::const_iterator s1 = Var(s->first).GetSource()->GetVars()->begin(); s1 != Var(s->first).GetSource()->GetVars()->end(); ++s1)
                 {
-                    out[s1->first] = var[s->first].GetSource()->Variable(s1->first);
+                    out[s1->first] = Var(s->first).GetSource()->Variable(s1->first);
                 }
             }
         }

@@ -27,7 +27,7 @@
 #include "NormalDist.h"
 #include <chrono>
 #include <ctime>
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
 #include "qfile.h"
 #include "qdatastream.h"
 #include <qdebug.h>
@@ -312,7 +312,7 @@ TimeSeries<T> TimeSeries<T>::MapfromNormalScoreToDistribution(const TimeSeries<d
 }
 #endif
 
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
 template<class T>
 QJsonObject TimeSeries<T>::toJson() const {
     QJsonObject obj;
@@ -349,7 +349,7 @@ void TimeSeries<T>::fromJson(const QJsonObject& obj) {
     detectStructure();
     computeMaxFabs();
 }
-#endif // Q_version
+#endif // Q_JSON_SUPPORT
 
 #ifdef _arma
 template<typename T>

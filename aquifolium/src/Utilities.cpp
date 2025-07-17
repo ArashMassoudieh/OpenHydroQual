@@ -121,6 +121,14 @@ namespace aquiutils
         return false;
     }
 
+    bool contains_any(const std::string& s, const std::string& chars) {
+        for (char c : s) {
+            if (chars.find(c) != std::string::npos)
+                return true;
+        }
+        return false;
+    }
+
     string left(const string &s, int i)
     {
         return s.substr(0,i);
@@ -128,6 +136,11 @@ namespace aquiutils
     string right(const string &s, int i)
     {
         return s.substr(s.size()-i,i);
+    }
+
+    bool ends_with(const std::string& value, const std::string& ending) {
+        return value.size() >= ending.size() &&
+            value.compare(value.size() - ending.size(), ending.size(), ending) == 0;
     }
 
     void remove(string &s,unsigned int i)

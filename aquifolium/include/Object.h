@@ -23,7 +23,7 @@
 #include "Quan.h"
 #include "MetaModel.h"
 #include "memory"
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
 #include <qdebug.h>
 #endif
 #include "ErrorHandler.h"
@@ -32,25 +32,26 @@ using namespace std;
 
 enum class object_type {none, block, link, source, parameter, objective_function, reaction, reaction_parameter, constituent, observation};
 
-class Object
+class Object : protected QuanSet
 {
     public:
         Object();
         virtual ~Object();
         Object(const Object& other);
         Object& operator=(const Object& other);
-        double CalcVal(const string& s, const Expression::timing &tmg=Expression::timing::past);
-        double GetVal(const string& s, const Expression::timing &tmg=Expression::timing::past, bool limit=false);
-        double GetVal(const string& var, const string& consttnt, const Expression::timing &tmg, bool limit=false);
-        double GetVal(Quan* quan,const Expression::timing &tmg, bool limit);
+        double CalcVal(const string& s, const Timing &tmg=Timing::past);
+        double GetVal(const string& s, const Timing &tmg=Timing::past, bool limit=false);
+        double GetVal(const string& var, const string& consttnt, const Timing &tmg, bool limit=false);
+        double GetVal(Quan* quan,const Timing &tmg, bool limit);
         bool AddQnantity(const string &name,const Quan &Q);
         bool SetQuantities(MetaModel &m, const string& typ);
         bool SetQuantities(MetaModel *m, const string& typ );
         bool SetQuantities(System *sys, const string& typ );
         bool SetQuantities(QuanSet &Q);
         bool HasQuantity(const string &q);
-        bool SetVal(const string& s, double value, const Expression::timing &tmg = Expression::timing::both);
-        bool SetVal(const string& s, const string & value, const Expression::timing &tmg = Expression::timing::both);
+        bool SetVal(const string& s, double value, const Timing &tmg = Timing::both);
+        QuanSet* GetQuanSet() { return this; }
+        bool SetVal(const string& s, const string & value, const Timing &tmg = Timing::both);
         double GetProperty(const string& s) {
             if (Variable(s) != nullptr)
             {
@@ -70,8 +71,8 @@ class Object
         string GetName() const;
         void SetDefaults();
         virtual bool SetName(const string &_name, bool setprop=true);
-        Object* GetConnectedBlock(Expression::loc l);
-        void SetConnectedBlock(Expression::loc l, const string &blockname);
+        Object* GetConnectedBlock(ExpressionNode::loc l);
+        void SetConnectedBlock(ExpressionNode::loc l, const string &blockname);
         void AppendError(const string &s);
         void SetParent(System *s);
         Quan* CorrespondingFlowVariable(const string &s);
@@ -90,27 +91,27 @@ class Object
         Object* Get_e_Block() { return e_Block; }
 		bool Renew(const string &variable);
 		bool Update(const string &variable);
-		bool CalcExpressions(const Expression::timing& tmg);
+		bool CalcExpressions(const Timing& tmg);
         bool EstablishExpressionStructure();
         bool VerifyQuans(ErrorHandler *errorhandler);
-        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip = false) {return var.GetTimeSeries(onlyprecip);}
+        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip = false) {return QuanSet::GetTimeSeries(onlyprecip);}
         string TypeCategory() {return GetVars()->CategoryType();}
 		QuanSet* GetVars()
             {
-                return &var;
+                return this;
             }
         vector<Quan> GetCopyofAllQuans();
-        void SetOutflowLimitFactor(const double &val, const Expression::timing &tmg)
+        void SetOutflowLimitFactor(const double &val, const Timing &tmg)
 		{
-			if (tmg == Expression::timing::past)
+			if (tmg == Timing::past)
                 outflowlimitfactor_past = val; // max(0.0,val);
 			else
                 outflowlimitfactor_current = val; //max(0.0,val);
 		}
-        double GetOutflowLimitFactor(const Expression::timing &tmg)
+        double GetOutflowLimitFactor(const Timing &tmg)
 		{
 
-			if (tmg == Expression::timing::past)
+			if (tmg == Timing::past)
                 return outflowlimitfactor_past;
 			else
                 return outflowlimitfactor_current;
@@ -129,19 +130,20 @@ class Object
         void AssignRandomPrimaryKey();
         string toCommand();
         QJsonObject toJson(bool allvariables = false, bool calculatevalue = false);
+        QJsonObject ExpressionstoJson() const;
         string toCommandSetAsParam();
         vector<string> ItemswithOutput();
-        vector<string> quantitative_variable_list() {return var.quantitative_variable_list();}
+        vector<string> quantitative_variable_list() {return quantitative_variable_list();}
         unique_ptr<vector<string>> &operators();
         unique_ptr<vector<string>> &functions();
         string& lasterror() {
             return last_error;
         }
-        vector<string>& QuantitOrder() { return var.Quantity_Order();  }
-        void UnUpdateAllValues() { var.UnUpdateAllValues(); }
+        vector<string>& QuantitOrder() { return Quantity_Order();  }
+        void UnUpdateAllValues() { QuanSet::UnUpdateAllValues(); }
         bool RenameProperty(const string &oldname, const string &newname)
         {
-            return var.RenameProperty(oldname, newname);
+            return RenameProperty(oldname, newname);
         }
         bool RenameConstituents(const string &oldname, const string &newname);
         bool CalculateInitialValues();
@@ -164,7 +166,6 @@ class Object
     private:
         string current_corresponding_source="";
         string current_corresponding_constituent="";
-        QuanSet var;
         vector<string> errors;
         string last_error;
         bool last_operation_success;

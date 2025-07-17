@@ -17,13 +17,13 @@
 //template <class T> const T& min(const T& a, const T& b) {
 //	return !(b<a) ? a : b;     // or: return !comp(b,a)?a:b; for version (2)
 //}
-#if Q_version
+#if Q_JSON_SUPPORT
 #include <qstring.h>
 #include <qdatetime.h>
 #include <qstringlist.h>
 #include <qdebug.h>
 #include <qfileinfo.h>
-#endif // Q_version
+#endif // Q_JSON_SUPPORT
 #include "math.h"
 
 #include <utilityfuncs.h>
@@ -56,7 +56,7 @@ int max(int x, int y)
     return -min(-x, -y);
 }
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
 QString float2date(const double d, QString format, bool ignorefirst50years)
 {
     if (ignorefirst50years && d < 18264)
@@ -178,7 +178,7 @@ double timetodayfraction(int hh, int mm, int ss)
     return fraction;
 }
 
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
 QList<int> dayfractiontotime(double dayFraction)
 {
     dayFraction = fmod(dayFraction, 1.0);
