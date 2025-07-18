@@ -153,130 +153,125 @@ System& System::operator=(const System& rhs)
     return *this;
 }
 
-void System::Clear()
-{
+void System::Clear() {
     blocks.clear();
     links.clear();
     sources.clear();
-    objective_function_set.clear();
-    parameter_set.clear();
+    constituents.clear();
     reactions.clear();
     reaction_parameters.clear();
-    constituents.clear();
+    Settings.clear();
+    observations.clear();
     Outputs.AllOutputs.clear();
     Outputs.ObservedOutputs.clear();
     metamodel.Clear();
+    objective_function_set.clear();
+    parameter_set.clear();
+    addedpropertiestoallblocks.clear();
+    addedpropertiestoalllinks.clear();
+    alltimeseries.clear();
+    addedtemplates.clear();
+    fit_measures.clear();
+    errorhandler.clear();
 }
 
 
-bool System::AddBlock(Block &blk, bool SetQuantities)
-{
+bool System::AddBlock(Block& blk, bool set_quantities) {
     blocks.push_back(blk);
-
-    block(blk.GetName())->SetParent(this);
-    if (SetQuantities)
-        block(blk.GetName())->SetQuantities(metamodel, blk.GetType());
-    block(blk.GetName())->SetParent(this);
-
-    AddAllConstituentRelateProperties(block(blk.GetName()));
-	return true;
+    auto* added = block(blk.GetName());
+    added->SetParent(this);
+    if (set_quantities)
+        added->SetQuantities(metamodel, blk.GetType());
+    AddAllConstituentRelateProperties(added);
+    return true;
 }
 
-bool System::AddSource(Source &src, bool SetQuantities)
-{
+bool System::AddSource(Source& src, bool set_quantities) {
     sources.push_back(src);
-    source(src.GetName())->SetParent(this);
-    if (SetQuantities)
-        source(src.GetName())->SetQuantities(metamodel, src.GetType());
-    source(src.GetName())->SetParent(this);
-    AddAllConstituentRelateProperties(source(src.GetName()));
-	return true;
+    auto* added = source(src.GetName());
+    added->SetParent(this);
+    if (set_quantities)
+        added->SetQuantities(metamodel, src.GetType());
+    AddAllConstituentRelateProperties(added);
+    return true;
 }
 
-bool System::AddConstituent(Constituent &cnst, bool SetQuantities)
-{
+bool System::AddLink(Link& lnk, const std::string& src_name, const std::string& dst_name, bool set_quantities) {
+    auto* src_blk = block(src_name);
+    auto* dst_blk = block(dst_name);
+
+    if (!src_blk ) {
+        errorhandler.Append("System", "System", "AddLink", "Block '" + src_name + "' not found", 8790);
+        return false;
+    }
+
+    if (!dst_blk) {
+        errorhandler.Append("System", "System", "AddLink", "Block '" + dst_name + "' not found", 8790);
+        return false;
+    }
+
+    if (!VerifyAsSource(src_blk, &lnk) || !VerifyAsDestination(dst_blk, &lnk))
+        return false;
+
+    links.push_back(lnk);
+    auto* added = link(lnk.GetName());
+    added->SetParent(this);
+    added->SetConnectedBlock(ExpressionNode::loc::source, src_name);
+    added->SetConnectedBlock(ExpressionNode::loc::destination, dst_name);
+    src_blk->AppendLink(links.size() - 1, ExpressionNode::loc::source);
+    dst_blk->AppendLink(links.size() - 1, ExpressionNode::loc::destination);
+    if (set_quantities)
+        added->SetQuantities(metamodel, lnk.GetType());
+    AddAllConstituentRelateProperties(added);
+    return true;
+}
+
+bool System::AddConstituent(Constituent& cnst, bool set_quantities) {
     constituents.push_back(cnst);
-    constituent(cnst.GetName())->SetParent(this);
-    if (SetQuantities)
-        constituent(cnst.GetName())->SetQuantities(metamodel, cnst.GetType());
-    constituent(cnst.GetName())->SetParent(this);
-    AddConstituentRelateProperties(constituent(cnst.GetName()));
+    auto* added = constituent(cnst.GetName());
+    added->SetParent(this);
+    if (set_quantities)
+        added->SetQuantities(metamodel, cnst.GetType());
+    AddConstituentRelateProperties(added);
     AddConstituentRelatePropertiestoMetalModel();
     return true;
 }
 
-bool System::AddReaction(Reaction &rxn, bool SetQuantities)
-{
+bool System::AddReaction(Reaction& rxn, bool set_quantities) {
     reactions.push_back(rxn);
-
-    reaction(rxn.GetName())->SetParent(this);
-     if (SetQuantities)
-        reaction(rxn.GetName())->SetQuantities(metamodel, rxn.GetType());
-    reaction(rxn.GetName())->SetParent(this);
-    AddAllConstituentRelateProperties(reaction(rxn.GetName()));
-    AddConstituentRelateProperties(reaction(rxn.GetName()));
+    auto* added = reaction(rxn.GetName());
+    added->SetParent(this);
+    if (set_quantities)
+        added->SetQuantities(metamodel, rxn.GetType());
+    AddAllConstituentRelateProperties(added);
+    AddConstituentRelateProperties(added);
     return true;
 }
 
-bool System::AddReactionParameter(RxnParameter &rxnparam, bool SetQuantities)
-{
-    reaction_parameters.push_back(rxnparam);
-    reactionparameter(rxnparam.GetName())->SetParent(this);
-     if (SetQuantities)
-        reactionparameter(rxnparam.GetName())->SetQuantities(metamodel, rxnparam.GetType());
-    reactionparameter(rxnparam.GetName())->SetParent(this);
+bool System::AddReactionParameter(RxnParameter& rp, bool set_quantities) {
+    reaction_parameters.push_back(rp);
+    auto* added = reactionparameter(rp.GetName());
+    added->SetParent(this);
+    if (set_quantities)
+        added->SetQuantities(metamodel, rp.GetType());
     return true;
 }
 
-bool System::AddObservation(Observation &obs, bool SetQuantities)
-{
+bool System::AddObservation(Observation& obs, bool set_quantities) {
     observations.push_back(obs);
-    observation(obs.GetName())->SetParent(this);
-    if (SetQuantities)
-        observation(obs.GetName())->SetQuantities(metamodel, obs.GetType());
-    observation(obs.GetName())->SetParent(this);
+    auto* added = observation(obs.GetName());
+    added->SetParent(this);
+    if (set_quantities)
+        added->SetQuantities(metamodel, obs.GetType());
     return true;
-
 }
 
-bool System::AddLink(Link &lnk, const string &source, const string &destination, bool SetQuantities)
-{
-	if (!block(source))
-	{
-		errorhandler.Append("System", "System", "AddLink", "Block '" + source + "' does not exist!", 8791);
-		return false;
-	}
-
-	if (!block(destination))
-	{
-		errorhandler.Append("System", "System", "AddLink", "Block '" + destination + "' does not exist!", 8792);
-		return false;
-	}
 
 
-	if (!VerifyAsDestination(block(destination), &lnk))
-        return false;
-    if (!VerifyAsSource(block(source), &lnk))
-        return false;
-    links.push_back(lnk);
-    link(lnk.GetName())->SetParent(this);
-    link(lnk.GetName())->SetConnectedBlock(ExpressionNode::loc::source, source);
-    link(lnk.GetName())->SetConnectedBlock(ExpressionNode::loc::destination, destination);
-	block(source)->AppendLink(links.size()-1,ExpressionNode::loc::source);
-	block(destination)->AppendLink(links.size()-1,ExpressionNode::loc::destination);
-    if (SetQuantities)
-        link(lnk.GetName())->SetQuantities(metamodel, lnk.GetType());
-	link(lnk.GetName())->SetParent(this);
-    AddAllConstituentRelateProperties(link(lnk.GetName()));
-	return true;
-}
-
-Block *System::block(const string &s)
-{
-    for (unsigned int i=0; i<blocks.size(); i++)
-        if (blocks[i].GetName() == s) return &blocks[i];
-
-    //errorhandler.Append(GetName(),"System","block","Block '" + s + "' was not found",101);
+Block* System::block(const std::string& name) {
+    for (auto& blk : blocks)
+        if (blk.GetName() == name)
+            return &blk;
     return nullptr;
 }
 
@@ -299,56 +294,47 @@ int System::linkid(const string &s)
     return -1;
 }
 
-Link *System::link(const string &s)
-{
-    for (unsigned int i=0; i<links.size(); i++)
-        if (links[i].GetName() == s) return &links[i];
-
-    //errorhandler.Append(GetName(),"System","link","Link '" + s + "' was not found",104);
-
+Link* System::link(const std::string& name) {
+    for (auto& lnk : links)
+        if (lnk.GetName() == name)
+            return &lnk;
     return nullptr;
 }
 
-Source *System::source(const string &s)
-{
-    for (unsigned int i=0; i<sources.size(); i++)
-        if (sources[i].GetName() == s) return &sources[i];
-
+Source* System::source(const std::string& name) {
+    for (auto& src : sources)
+        if (src.GetName() == name)
+            return &src;
     return nullptr;
 }
 
-Constituent *System::constituent(const string &s)
-{
-    for (unsigned int i=0; i<constituents.size(); i++)
-        if (constituents[i].GetName() == s) return &constituents[i];
 
+Constituent* System::constituent(const std::string& name) {
+    for (auto& c : constituents)
+        if (c.GetName() == name)
+            return &c;
     return nullptr;
 }
 
-Reaction *System::reaction(const string &s)
-{
-    for (unsigned int i=0; i<reactions.size(); i++)
-        if (reactions[i].GetName() == s) return &reactions[i];
-
+Reaction* System::reaction(const std::string& name) {
+    for (auto& r : reactions)
+        if (r.GetName() == name)
+            return &r;
     return nullptr;
 }
 
-RxnParameter *System::reactionparameter(const string &s)
-{
-    for (unsigned int i=0; i<reaction_parameters.size(); i++)
-        if (reaction_parameters[i].GetName() == s) return &reaction_parameters[i];
-
+RxnParameter* System::reactionparameter(const std::string& name) {
+    for (auto& p : reaction_parameters)
+        if (p.GetName() == name)
+            return &p;
     return nullptr;
-
 }
 
-Observation *System::observation(const string &s)
-{
-    for (unsigned int i=0; i<observations.size(); i++)
-        if (observations[i].GetName() == s) return &observations[i];
-
+Observation* System::observation(const std::string& name) {
+    for (auto& obs : observations)
+        if (obs.GetName() == name)
+            return &obs;
     return nullptr;
-
 }
 
 Object *System::settings(const string &s)
@@ -941,6 +927,27 @@ ShowMessage("Simulation finished!");
     return true;
 }
 
+
+bool System::SetSystemSettingsObjectProperties(const string &s, const string &val, bool check_criteria)
+{
+    bool out = SetProperty(s,val);
+    for (unsigned int i=0; i<Settings.size(); i++)
+    {
+        for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
+        {   if (j->first==s)
+            {
+                j->second.SetProperty(val,false, check_criteria);
+                return true;
+            }
+
+        }
+    }
+    if (!out)
+        errorhandler.Append("","System","SetSystemSettingsObjectProperties","Property '" + s + "' was not found!", 631);
+    return false;
+
+}
+
 bool System::SetProp(const string &s, const double &val)
 {
     if (s=="cn_weight")
@@ -993,25 +1000,8 @@ bool System::SetProp(const string &s, const double &val)
     return false;
 }
 
-bool System::SetSystemSettingsObjectProperties(const string &s, const string &val, bool check_criteria)
-{
-    bool out = SetProperty(s,val);
-    for (unsigned int i=0; i<Settings.size(); i++)
-    {
-        for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
-        {   if (j->first==s)
-            {
-                j->second.SetProperty(val,false, check_criteria);
-                return true;
-            }
 
-        }
-    }
-    if (!out)
-        errorhandler.Append("","System","SetSystemSettingsObjectProperties","Property '" + s + "' was not found!", 631);
-    return false;
 
-}
 bool System::SetProperty(const string &s, const string &val)
 {
 
@@ -1107,9 +1097,6 @@ bool System::SetProperty(const string &s, const string &val)
         SimulationParameters.write_interval = aquiutils::atof(val);
         return true;
     }
-
-
-    //errorhandler.Append("","System","SetProperty","Property '" + s + "' was not found!", 622);
 
     return false;
 }
@@ -1347,8 +1334,8 @@ void System::SetOutputItems()
 
 }
 
-bool System::TransferResultsFrom(System *other)
-{
+bool System::TransferResultsFrom(System* other) {
+    if (!other) return false;
     Outputs = other->Outputs;
     return true;
 }
