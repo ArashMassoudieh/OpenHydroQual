@@ -1465,11 +1465,72 @@ vector<double> System::GetOutflowLimitFactorVector(const Timing &tmg)
 }
 
 
-void System::SetOutflowLimitedVector(vector<bool> &x)
+void System::SetOutflowLimitedVector(const vector<bool> &x)
 {
     for (unsigned int i = 0; i < blocks.size(); i++)
         blocks[i].SetLimitedOutflow(x[i]);
 
+}
+
+void System::PropagateOutflowLimitFactors(Timing from, Timing to)
+{
+    for (unsigned int i = 0; i < links.size(); ++i)
+        links[i].SetOutflowLimitFactor(links[i].GetOutflowLimitFactor(from), to);
+
+    for (unsigned int i = 0; i < blocks.size(); ++i)
+        blocks[i].SetOutflowLimitFactor(blocks[i].GetOutflowLimitFactor(from), to);
+}
+
+bool System::PrepareSolveStateForInitialGuess(const std::string& variable, bool transport,
+    CVector_arma& X, CVector_arma& F, CVector_arma& X_past,
+    const std::vector<bool>& outflowlimitstatus_old)
+{
+    // Step 1: Get initial guess from the previous time step
+    X = GetStateVariables(variable, Timing::past, transport);
+
+    // Step 2: Apply outflow limitations before computing residuals
+    if (!transport)
+    {
+        for (unsigned int i = 0; i < blocks.size(); ++i)
+        {
+            if (blocks[i].GetLimitedOutflow())
+                X[i] = blocks[i].GetOutflowLimitFactor(Timing::present);
+        }
+    }
+
+    // Step 3: Store backup of initial guess
+    X_past = X;
+
+    // Step 4: Compute initial residual
+    F = GetResiduals(variable, X, transport);
+
+    // Step 5: Validate residual vector
+    if (!F.is_finite())
+    {
+        SolverTempVars.fail_reason.push_back("Residual vector F is infinite during initial guess preparation.");
+        if (!transport)
+            SetOutflowLimitedVector(outflowlimitstatus_old);
+        return false;
+    }
+
+    return true;
+}
+
+void System::LogResidualFailure(const std::string& variable,
+    const CVector_arma& X,
+    const CVector_arma& F)
+{
+    std::string time_str = aquiutils::numbertostring(SolverTempVars.t);
+    SolverTempVars.fail_reason.push_back("at " + time_str + ": F is infinite");
+
+    if (GetSolutionLogger())
+    {
+        GetSolutionLogger()->WriteString("at " + time_str + ": F is infinite, dt = " +
+            aquiutils::numbertostring(SolverTempVars.dt));
+        GetSolutionLogger()->WriteString("at " + time_str + ": X = " + X.toString());
+        GetSolutionLogger()->WriteString("at " + time_str + ": F = " + F.toString());
+        GetSolutionLogger()->Flush();
+    }
 }
 
 bool System::OneStepSolve(unsigned int statevarno, bool transport)
@@ -1483,8 +1544,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
     Renew(variable);
     if (!transport)
     {
-        for (unsigned int i = 0; i < links.size(); i++) links[i].SetOutflowLimitFactor(links[i].GetOutflowLimitFactor(Timing::past), Timing::present);
-        for (unsigned int i = 0; i < blocks.size(); i++) blocks[i].SetOutflowLimitFactor(blocks[i].GetOutflowLimitFactor(Timing::past), Timing::present);
+        PropagateOutflowLimitFactors(Timing::past, Timing::present);
     }
     SolverTempVars.numiterations[statevarno] = 0;
     vector<bool> outflowlimitstatus_old;
@@ -1493,45 +1553,25 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
     bool switchvartonegpos = true;
 
-    if (!transport)
-    {   for (unsigned int i = 0; i < blocks.size(); i++)
-        {
-            if (blocks[i].GetLimitedOutflow())
-                blocks[i].SetOutflowLimitFactor(blocks[i].GetOutflowLimitFactor(Timing::past),Timing::present);
-        }
-    }
     ResetAllowLimitedFlows(true);
     unsigned int attempts = 0;
     while (attempts<BlockCount() && switchvartonegpos)
     {
-        CVector_arma X = GetStateVariables(variable, Timing::past,transport);
-        double X_norm = X.norm2();
-        double dx_norm = X_norm*10+1;
-        if (!transport)
-        {   for (unsigned int i = 0; i < blocks.size(); i++)
-            {
-                if (blocks[i].GetLimitedOutflow())
-                    X[i] = blocks[i].GetOutflowLimitFactor(Timing::present);
-            }
-        }
+        CVector_arma X, F, X_past;
+        if (!PrepareSolveStateForInitialGuess(variable, transport, X, F, X_past, outflowlimitstatus_old))
+            return false;
 
-		CVector_arma X_past = X;
-        //qDebug()<<"Getting residuals";
-        CVector_arma F = GetResiduals(variable, X, transport);
-        //qDebug()<<"Getting residuals done";
+        double X_norm = X.norm2();
+        double dx_norm = X_norm * 10 + 1;
+
 #ifdef DEBUG
         CVector_arma F_ini = F;
 #endif // DEBUG
         int ini_max_error_block = F.abs_max_elems();
         if (!F.is_finite())
         {
-            SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
-            if (GetSolutionLogger())
-            {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite, dt = " + aquiutils::numbertostring(SolverTempVars.dt));
-                GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "X=" + X.toString());
-                GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "F=" + F.toString());
-                GetSolutionLogger()->Flush();
-            }
+            LogResidualFailure(variable, X, F);
+
             if (!transport)
                 SetOutflowLimitedVector(outflowlimitstatus_old);
             return false;
@@ -1862,6 +1902,9 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 	return true;
 }
+
+
+
 
 SafeVector<int> System::SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited)
 {

@@ -276,7 +276,21 @@ class System: public Object
         bool OneStepSolve(unsigned int i, bool transport=false);
         bool Renew(const string &variable);
         SafeVector<int> ConnectedBlocksTo(int blockid); // Get the list of blocks the block 'blockid' is connected to
-        SafeVector<int> ConnectedBlocksFrom(int blockid); // Get the list of connected to the block 'blockid'
+        SafeVector<int> ConnectedBlocksFrom(int blockid);
+        
+        /**
+     * @brief Initializes the state vector and residuals for Newton-Raphson iterations.
+     *
+     * @param variable Name of the state variable to solve for
+     * @param transport Whether this is a transport solve
+     * @param X Output: initial state vector (from past state)
+     * @param F Output: initial residual vector
+     * @return true if successful, false if residuals are invalid
+     **/
+        bool InitializeNRState(const std::string& variable, bool transport, CVector_arma& X, CVector_arma& F);
+        
+        
+        // Get the list of connected to the block 'blockid'
         SafeVector<int> SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited); //Set outflow limitation status for block blockid and the connected rigid blocks to it
 		bool Update(const string &variable="");
         void UnUpdateAllVariables();
@@ -552,7 +566,50 @@ class System: public Object
         void SetStateVariables_TR(const string &variable, CVector_arma &X, const Timing &tmg = Timing::present);
         vector<bool> GetOutflowLimitedVector();
         vector<double> GetOutflowLimitFactorVector(const Timing &tmg);
-        void SetOutflowLimitedVector(vector<bool>& x);
+        void SetOutflowLimitedVector(const vector<bool>& x);
+        
+        /**
+         * @brief Copies outflow limit factors from one time step to another for all links and blocks.
+         *
+         * This function transfers the outflow limitation values (which may represent flow caps or physical constraints)
+         * from a source time step (e.g., Timing::past) to a destination time step (e.g., Timing::present).
+         *
+         * @param from The time context to read the current outflow limit factors (typically Timing::past)
+         * @param to The time context to apply the propagated outflow limit factors (typically Timing::present)
+         */
+        void PropagateOutflowLimitFactors(Timing from, Timing to);
+
+
+        /**
+         * @brief Prepares the initial guess and residual vector for Newton-Raphson iteration.
+         *
+         * This function retrieves the state variable values from the previous time step,
+         * applies any relevant outflow limits (for non-transport mode),
+         * computes the residual vector, and stores a backup of the initial guess.
+         *
+         * @param variable The name of the state variable being solved
+         * @param transport Indicates whether the solve is for transport (mass flow)
+         * @param[out] X The initial guess vector (possibly limited)
+         * @param[out] F The residual vector at the initial guess
+         * @param[out] X_past Backup copy of the initial guess (used to restore state on divergence)
+         * @param outflowlimitstatus_old Original outflow limitation flags (restored on failure)
+         * @return true if residuals are finite and initialization succeeded; false otherwise
+         */
+        bool PrepareSolveStateForInitialGuess(const std::string& variable, bool transport, CVector_arma& X, CVector_arma& F, CVector_arma& X_past, const std::vector<bool>& outflowlimitstatus_old);
+
+        /**
+         * @brief Logs detailed information when the residual vector becomes non-finite.
+         *
+         * This function appends a diagnostic message to the fail_reason vector and writes
+         * detailed solver diagnostics (time, residual, state vector, and timestep) to the
+         * solution logger, if one is available.
+         *
+         * @param variable The name of the state variable being solved
+         * @param X The current state vector at failure
+         * @param F The residual vector at failure
+         */
+        void LogResidualFailure(const std::string& variable, const CVector_arma& X, const CVector_arma& F);
+
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
         void InitiateOutputs();
