@@ -168,13 +168,13 @@ class System: public Object
         {
             return SolverTempVars.t;
         }
-        bool AddBlock(Block &blk, bool SetQuantities=true);
-        bool AddSource(Source &src, bool SetQuantities=true);
-        bool AddLink(Link &lnk, const string &source, const string &destination, bool SetQuantities=true);
-        bool AddConstituent(Constituent &cnst, bool SetQuantities=true);
-        bool AddReaction(Reaction &rxn, bool SetQuantities=true);
-        bool AddObservation(Observation &obs, bool SetQuantities=true);
-        bool AddReactionParameter(RxnParameter &rxn, bool SetQuantities=true);
+        bool AddBlock(const Block &blk, bool SetQuantities=true);
+        bool AddSource(const Source &src, bool SetQuantities=true);
+        bool AddLink(const Link &lnk, const string &source, const string &destination, bool SetQuantities=true);
+        bool AddConstituent(const Constituent &cnst, bool SetQuantities=true);
+        bool AddReaction(const Reaction &rxn, bool SetQuantities=true);
+        bool AddObservation(const Observation &obs, bool SetQuantities=true);
+        bool AddReactionParameter(const RxnParameter &rxn, bool SetQuantities=true);
         Block *block(const string &s);
         Block *block(unsigned int i)
         {
@@ -431,8 +431,8 @@ class System: public Object
         bool SetSystemSettingsObjectProperties(const string &s, const string &val, bool checkcritetia = false);
         bool Delete(const string& objectname);
         void PopulateOperatorsFunctions();
-        bool VerifyAsSource(Block* blk, Link* lnk);
-        bool VerifyAsDestination(Block* blk, Link* lnk);
+        bool VerifyAsSource(const Block* blk, const Link* lnk);
+        bool VerifyAsDestination(const Block* blk, const Link* lnk);
         ErrorHandler VerifyAllQuantities();
         bool CalcAllInitialValues();
         void WriteObjectsToLogger();
@@ -539,8 +539,8 @@ class System: public Object
         map<string, Quan> addedpropertiestoallblocks;
         map<string, Quan> addedpropertiestoalllinks;
         MetaModel metamodel;
-        CVector_arma GetResiduals(const string &variable, CVector_arma &X, bool transport=false);
-        CVector_arma GetResiduals_TR(const string &variable, CVector_arma &X);
+        CVector_arma GetResiduals(const string &variable, const CVector_arma &X, bool transport=false);
+        CVector_arma GetResiduals_TR(const string &variable, const CVector_arma &X);
         double Gradient(Object* obj, Object* wrt, const string &dependent_var, const string &independent_var);
         CVector_arma Gradient(Object* obj, const string &independent_var);
 
@@ -560,10 +560,10 @@ class System: public Object
 #endif
 
         bool CalculateFlows(const string &var, const Timing &tmg = Timing::present);
-        void SetStateVariables(const string &variable, CVector_arma &X, const Timing &tmg = Timing::present, bool transport=false);
+        void SetStateVariables(const string &variable, const CVector_arma &X, const Timing &tmg = Timing::present, bool transport=false);
         string GetBlockConstituent(unsigned int i);
         void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Timing &tmg, bool transport);
-        void SetStateVariables_TR(const string &variable, CVector_arma &X, const Timing &tmg = Timing::present);
+        void SetStateVariables_TR(const string &variable, const CVector_arma &X, const Timing &tmg = Timing::present);
         vector<bool> GetOutflowLimitedVector();
         vector<double> GetOutflowLimitFactorVector(const Timing &tmg);
         void SetOutflowLimitedVector(const vector<bool>& x);
@@ -609,6 +609,29 @@ class System: public Object
          * @param F The residual vector at failure
          */
         void LogResidualFailure(const std::string& variable, const CVector_arma& X, const CVector_arma& F);
+
+         /**
+         * @brief Executes Newton-Raphson iterations to solve F(X) = 0 for a single state variable.
+         *
+         * This function iteratively updates the state vector X by solving linear systems of the form:
+         *     J * dx = -F(X)
+         * where J is the Jacobian of F, and dx is the update direction.
+         *
+         * It supports both direct Jacobian use or its inverse, and can optionally optimize the Newton coefficient
+         * using lambda tuning. The function checks convergence based on residual norms and iteration limits.
+         *
+         * On failure (non-convergence, divergence, or NaN values), a diagnostic reason is added to
+         * `SolverTempVars.fail_reason`, and (optionally) detailed logs are written to the solution logger.
+         *
+         * @param statevarno The index of the variable in the solve variable order
+         * @param variable The name of the state variable being solved (e.g., "head" or "mass")
+         * @param[in,out] X The state vector (initial guess in, final solution out)
+         * @param[in,out] F The residual vector (updated at each iteration)
+         * @param transport Whether the solve is for transport (true = transport, false = hydraulic)
+         * @return true if the solver converges successfully; false otherwise
+         */
+        bool NewtonRaphsonLoop(unsigned int statevarno, const std::string& variable, CVector_arma& X, CVector_arma& F, const CVector_arma& X_past, bool transport);
+
 
         solvertemporaryvars SolverTempVars;
         outputs Outputs;

@@ -62,8 +62,8 @@ public:
     std::vector<std::string> _errors; ///< Any parsing or evaluation errors
 
     // --- Utility accessors ---
-    std::vector<std::string> GetAllRequieredStartingBlockProperties();
-    std::vector<std::string> GetAllRequieredEndingBlockProperties();
+    std::vector<std::string> GetAllRequieredStartingBlockProperties() const;
+    std::vector<std::string> GetAllRequieredEndingBlockProperties() const;
     std::string ToExpressionStringFromTree(const ExpressionNode::Ptr& node) const;
     std::string ToExpressionStringFromTree() const;
     Expression ReviseConstituent(const std::string& constituent_name, const std::string& quantity);

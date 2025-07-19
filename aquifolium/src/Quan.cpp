@@ -1088,13 +1088,13 @@ bool Quan::Validate()
     return Criteria().calc(parent, Timing::both);
 }
 
-vector<string> Quan::GetAllRequieredStartingBlockProperties()
+vector<string> Quan::GetAllRequieredStartingBlockProperties() const
 {
     return _expression.GetAllRequieredStartingBlockProperties();
 
 }
 
-vector<string> Quan::GetAllRequieredEndingBlockProperties()
+vector<string> Quan::GetAllRequieredEndingBlockProperties() const
 {
     return _expression.GetAllRequieredEndingBlockProperties();
 }

@@ -176,7 +176,7 @@ void System::Clear() {
 }
 
 
-bool System::AddBlock(Block& blk, bool set_quantities) {
+bool System::AddBlock(const Block& blk, bool set_quantities) {
     blocks.push_back(blk);
     auto* added = block(blk.GetName());
     added->SetParent(this);
@@ -186,7 +186,7 @@ bool System::AddBlock(Block& blk, bool set_quantities) {
     return true;
 }
 
-bool System::AddSource(Source& src, bool set_quantities) {
+bool System::AddSource(const Source& src, bool set_quantities) {
     sources.push_back(src);
     auto* added = source(src.GetName());
     added->SetParent(this);
@@ -196,7 +196,7 @@ bool System::AddSource(Source& src, bool set_quantities) {
     return true;
 }
 
-bool System::AddLink(Link& lnk, const std::string& src_name, const std::string& dst_name, bool set_quantities) {
+bool System::AddLink(const Link& lnk, const std::string& src_name, const std::string& dst_name, bool set_quantities) {
     auto* src_blk = block(src_name);
     auto* dst_blk = block(dst_name);
 
@@ -226,7 +226,7 @@ bool System::AddLink(Link& lnk, const std::string& src_name, const std::string& 
     return true;
 }
 
-bool System::AddConstituent(Constituent& cnst, bool set_quantities) {
+bool System::AddConstituent(const Constituent& cnst, bool set_quantities) {
     constituents.push_back(cnst);
     auto* added = constituent(cnst.GetName());
     added->SetParent(this);
@@ -237,7 +237,7 @@ bool System::AddConstituent(Constituent& cnst, bool set_quantities) {
     return true;
 }
 
-bool System::AddReaction(Reaction& rxn, bool set_quantities) {
+bool System::AddReaction(const Reaction& rxn, bool set_quantities) {
     reactions.push_back(rxn);
     auto* added = reaction(rxn.GetName());
     added->SetParent(this);
@@ -248,7 +248,7 @@ bool System::AddReaction(Reaction& rxn, bool set_quantities) {
     return true;
 }
 
-bool System::AddReactionParameter(RxnParameter& rp, bool set_quantities) {
+bool System::AddReactionParameter(const RxnParameter& rp, bool set_quantities) {
     reaction_parameters.push_back(rp);
     auto* added = reactionparameter(rp.GetName());
     added->SetParent(this);
@@ -257,7 +257,7 @@ bool System::AddReactionParameter(RxnParameter& rp, bool set_quantities) {
     return true;
 }
 
-bool System::AddObservation(Observation& obs, bool set_quantities) {
+bool System::AddObservation(const Observation& obs, bool set_quantities) {
     observations.push_back(obs);
     auto* added = observation(obs.GetName());
     added->SetParent(this);
@@ -744,7 +744,7 @@ void System::RunTimeLoop(bool& success)
 
                 if (rtw->detailson)
                 {
-                    rtw->AppendtoDetails("Number of iterations:" + QString::number(iters) +
+                    rtw->AppendtoDetails("Number of iterations: " + QString::fromStdString(CVector(SolverTempVars.numiterations).toString()) +
                         ", dt = " + QString::number(SolverTempVars.dt) +
                         ", t = " + QString::number(SolverTempVars.t, 'f', 6) +
                         ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
@@ -1533,6 +1533,117 @@ void System::LogResidualFailure(const std::string& variable,
     }
 }
 
+bool System::NewtonRaphsonLoop(unsigned int statevarno, const std::string& variable,
+    CVector_arma& X, CVector_arma& F, const CVector_arma& X_past,
+    bool transport)
+{
+    double X_norm = X.norm2();
+    double dx_norm = X_norm * 10 + 1;
+
+    double err_ini = F.norm2();
+    double err;
+    double err_p = err = err_ini;
+    SolverTempVars.NR_coefficient[statevarno] = 1;
+
+    int error_increase_counter = 0;
+
+    while ((err / (err_ini + 1e-8 * X_norm) > SolverSettings.NRtolerance) &&
+        err > 1e-12 &&
+        dx_norm / X_norm > 1e-10)
+    {
+        SolverTempVars.numiterations[statevarno]++;
+
+        if (SolverTempVars.updatejacobian[statevarno])
+        {
+            CMatrix_arma J = (transport)
+                ? Jacobian(variable, X, transport)
+                : JacobianDirect(variable, X, transport);
+
+            SolverTempVars.epoch_count++;
+
+            if (SolverSettings.scalediagonal)
+                J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
+
+            SolverTempVars.Inverse_Jacobian[statevarno] =
+                (!SolverSettings.direct_jacobian) ? Invert(J) : J;
+
+            SolverTempVars.updatejacobian[statevarno] = false;
+        }
+
+        CVector_arma dx;
+        if (SolverSettings.scalediagonal)
+        {
+            dx = (!SolverSettings.direct_jacobian)
+                ? SolverTempVars.Inverse_Jacobian[statevarno] * F
+                : F / SolverTempVars.Inverse_Jacobian[statevarno];
+        }
+        else
+        {
+            dx = (!SolverSettings.direct_jacobian)
+                ? SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F
+                : SolverTempVars.NR_coefficient[statevarno] * (F / SolverTempVars.Inverse_Jacobian[statevarno]);
+        }
+
+        X -= dx;
+        dx_norm = dx.norm2();
+
+        if (!X.is_finite())
+        {
+            LogResidualFailure(variable, X, F);
+            return false;
+        }
+
+        CVector_arma F1;
+        if (SolverSettings.optimize_lambda)
+            F1 = GetResiduals(variable, X + 0.5 * dx, transport);
+
+        F = GetResiduals(variable, X, transport);
+
+        if (!F.is_finite())
+        {
+            LogResidualFailure(variable, X, F);
+            return false;
+        }
+
+        err_p = err;
+        err = F.norm2();
+
+        if (SolverSettings.optimize_lambda)
+        {
+            double err2 = F1.norm2();
+            if (err2 < err)
+            {
+                SolverTempVars.NR_coefficient[statevarno] =
+                    std::max(SolverTempVars.NR_coefficient[statevarno] / 2.0, 0.05);
+                SolverTempVars.updatejacobian[statevarno] = true;
+                X += 0.5 * dx;
+            }
+            else
+            {
+                SolverTempVars.NR_coefficient[statevarno] =
+                    std::min(SolverTempVars.NR_coefficient[statevarno] * 1.25, 1.0);
+            }
+        }
+
+        if (err > err_p * 0.9 && !SolverSettings.optimize_lambda)
+        {
+            SolverTempVars.NR_coefficient[statevarno] =
+                std::max(SolverTempVars.NR_coefficient[statevarno] * SolverSettings.NR_coeff_reduction_factor, 0.05);
+            SolverTempVars.updatejacobian[statevarno] = true;
+            X = X_past;
+        }
+
+        if (++error_increase_counter > 10 ||
+            SolverTempVars.numiterations[statevarno] >= SolverSettings.NR_niteration_max)
+        {
+            SolverTempVars.fail_reason.push_back("Solver failed to converge within iteration limits.");
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool System::OneStepSolve(unsigned int statevarno, bool transport)
 {
     string variable;
@@ -1577,287 +1688,8 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             return false;
         }
 
-        double error_increase_counter = 0;
-		double err_ini = F.norm2();
-        double err;
-        double err_p = err = err_ini;
-
-		//if (SolverTempVars.NR_coefficient[statevarno]==0)
-            SolverTempVars.NR_coefficient[statevarno] = 1;
-        while ((err/(err_ini+1e-8*X_norm)>SolverSettings.NRtolerance && err>1e-12 && dx_norm/X_norm>1e-10))
-        {
-            SolverTempVars.numiterations[statevarno]++;
-
-            if (SolverTempVars.updatejacobian[statevarno])
-            {
-                CMatrix_arma J;
-                if (transport)
-                    J = Jacobian(variable, X, transport);
-
-                else
-                    J = JacobianDirect(variable, X, transport);
-
-
-                SolverTempVars.epoch_count ++;
-                if (SolverSettings.scalediagonal)
-                    J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
-#ifdef NormalizeByDiagonal
-                CMatrix_arma J_normalized = normalize_max(J,J);
-                SolverTempVars.Jacobia_Diagonal = maxelements(J);
-                double determinant = det(J_normalized);
-                if (determinant == 0 || SolverTempVars.Jacobia_Diagonal.haszeros())
-				{
-                    GetSolutionLogger()->WriteString("Jacobian determinant = " + aquiutils::numbertostring(determinant));
-                    if (determinant==0)
-                    {
-                        GetSolutionLogger()->WriteString("Jacobian determinant is zero");
-                    }
-
-                    {
-                        GetSolutionLogger()->WriteString("Max elements of the jacobian matrix: ");
-                        GetSolutionLogger()->WriteVector(SolverTempVars.Jacobia_Diagonal);
-                    }
-                    if (GetSolutionLogger())
-                    {
-                        GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
-                        GetSolutionLogger()->WriteMatrix(J);
-                        GetSolutionLogger()->WriteString("Normalized Jacobian Matrix");
-                        GetSolutionLogger()->WriteMatrix(J_normalized);
-                        GetSolutionLogger()->WriteString("Residual Vector:");
-                        GetSolutionLogger()->WriteVector(F);
-                        GetSolutionLogger()->WriteString("State variable:");
-                        GetSolutionLogger()->WriteVector(X);
-                        GetSolutionLogger()->WriteString("Block states - present: ");
-                        WriteBlocksStates(variable, Timing::present);
-                        GetSolutionLogger()->WriteString("Block states - past: ");
-                        WriteBlocksStates(variable, Timing::past);
-                        GetSolutionLogger()->WriteString("Link states - present: ");
-                        WriteLinksStates(variable, Timing::present);
-                        GetSolutionLogger()->WriteString("Links states - past: ");
-                        WriteLinksStates(variable, Timing::past);
-                        GetSolutionLogger()->Flush();
-                    }
-
-                    SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
-                    SetOutflowLimitedVector(outflowlimitstatus_old);
-                    return false;
-				}
-				if (!SolverSettings.direct_jacobian)
-                    SolverTempVars.Inverse_Jacobian[statevarno] = Invert(J_normalized);
-                else
-                    SolverTempVars.Inverse_Jacobian[statevarno] = J_normalized;
-                SolverTempVars.updatejacobian[statevarno] = false;
-
-            }
-            CVector_arma X1;
-            if (SolverSettings.scalediagonal)
-            {
-                if (!SolverSettings.direct_jacobian)
-                    X = X - SolverTempVars.Inverse_Jacobian[statevarno] * normalize_max(F, SolverTempVars.Jacobia_Diagonal);
-                else
-                    X = X - normalize_max(F, SolverTempVars.Jacobia_Diagonal)/SolverTempVars.Inverse_Jacobian[statevarno];
-            }
-            else
-            {
-                if (!SolverSettings.direct_jacobian)
-                    X = X - SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * normalize_max(F, SolverTempVars.Jacobia_Diagonal);
-                else
-                    X -= SolverTempVars.NR_coefficient[statevarno] * (normalize_max(F, SolverTempVars.Jacobia_Diagonal)/ SolverTempVars.Inverse_Jacobian[statevarno]);
-                if (SolverSettings.optimize_lambda)
-                {
-                    if (!SolverSettings.direct_jacobian)
-                        X1 = X + 0.5 * SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * normalize_max(F, SolverTempVars.Jacobia_Diagonal);
-                    else
-                        X1 = X + 0.5 * SolverTempVars.NR_coefficient[statevarno] * (normalize_max(F, SolverTempVars.Jacobia_Diagonal) / SolverTempVars.Inverse_Jacobian[statevarno]);
-                }
-            }
-#else
-
-                if (!SolverSettings.direct_jacobian)
-                {   if (!Invert(J,SolverTempVars.Inverse_Jacobian[statevarno]))
-                    {
-
-                        if (GetSolutionLogger())
-                        {
-                            GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
-                            //if (transport) GetSolutionLogger()->WriteString("In transport!");
-                            GetSolutionLogger()->WriteString("Diagonal vector!");
-                            GetSolutionLogger()->WriteVector(J.diagvector());
-                            if (J.diagvector().lookup(0).size()>0)
-                            {
-                                GetSolutionLogger()->WriteString("Blocks corresponding to the zero diagonal element:");
-                                for (unsigned int j=0; j<J.diagvector().lookup(0).size(); j++)
-                                {
-                                    GetSolutionLogger()->WriteString(blocks[J.diagvector().lookup(0)[j]].GetName());
-                                }
-                            }
-
-                            GetSolutionLogger()->Flush();
-                        }
-
-                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
-                        if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
-                        return false;
-
-                    }
-                }
-                else
-                    SolverTempVars.Inverse_Jacobian[statevarno] = J;
-                SolverTempVars.updatejacobian[statevarno] = false;
-
-            }
-            CVector_arma X1;
-            CVector_arma dx; 
-            if (SolverSettings.scalediagonal)
-            {
-                if (!SolverSettings.direct_jacobian)
-                {
-                    dx = SolverTempVars.Inverse_Jacobian[statevarno] * F;
-                    X -= dx;
-                }
-                else
-                {
-                    dx = F / SolverTempVars.Inverse_Jacobian[statevarno];
-                    if (dx.size()!=X.size())
-                    {
-                        if (GetSolutionLogger())
-                        {   GetSolutionLogger()->WriteString("Jacobian matrix is singular");
-                            GetSolutionLogger()->Flush();
-                        }
-                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
-                        if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
-                        return false;
-                    }
-
-                    X -= dx; 
-                }
-            }
-            else
-            {
-                if (!SolverSettings.direct_jacobian)
-                {
-                    dx = SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
-                    X -= dx; 
-                }
-                else
-                {
-                    dx = SolverTempVars.NR_coefficient[statevarno] * (F / SolverTempVars.Inverse_Jacobian[statevarno]);
-                    X -= dx; 
-
-                }
-                if (SolverSettings.optimize_lambda)
-                {
-                    X1 = X + 0.5 * dx;
-                }
-            }
-#endif
-            dx_norm = dx.norm2(); 
-
-            if (!X.is_finite())
-			{
-                SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": X is infinite, X=" + X.toString() + ", F = " + F.toString());
-                SetOutflowLimitedVector(outflowlimitstatus_old);
-                return false;
-			}
-
-            CVector_arma F1;
-            if (SolverSettings.optimize_lambda)
-                F1 = GetResiduals(variable, X1, transport);
-
-            F = GetResiduals(variable, X, transport);
-
-			if (!F.is_finite())
-			{
-				SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
-                if (GetSolutionLogger())
-                {
-                    GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
-                    //GetSolutionLogger()->WriteString("Block states - present: ");
-                    //WriteBlocksStates(variable, Timing::present);
-                    //GetSolutionLogger()->WriteString("Block states - past: ");
-                    //WriteBlocksStates(variable, Timing::past);
-                    //GetSolutionLogger()->WriteString("Link states - present: ");
-                    //WriteLinksStates(variable, Timing::present);
-                    //GetSolutionLogger()->WriteString("Links states - past: ");
-                    //WriteLinksStates(variable, Timing::past);
-                    GetSolutionLogger()->Flush();
-                }
-                SetOutflowLimitedVector(outflowlimitstatus_old);
-                return false;
-			}
-            err_p = err;
-            err = F.norm2();
-            double err2;
-            if (SolverSettings.optimize_lambda)
-            {
-                err2 = F1.norm2();
-                if (err2 < err)
-                {
-                    SolverTempVars.NR_coefficient[statevarno] = max(SolverTempVars.NR_coefficient[statevarno]/2.0, 0.05);
-                    SolverTempVars.updatejacobian[statevarno] = true;
-                    X = X1;
-                }
-                else
-                {
-                    SolverTempVars.NR_coefficient[statevarno] = max(min(SolverTempVars.NR_coefficient[statevarno] * 1.25, 1.0), 0.05);
-                }
-                if (min(err2, err) > err_p)
-                {
-                    error_increase_counter++;
-                }
-            }
-            #ifdef Debug_mode
-            //ShowMessage(numbertostring(err));
-            #endif // Debug_mode
-			if (err > err_p*0.9 && !SolverSettings.optimize_lambda)
-			{
-				SolverTempVars.NR_coefficient[statevarno] = max(SolverTempVars.NR_coefficient[statevarno]*SolverSettings.NR_coeff_reduction_factor,0.05);
-				SolverTempVars.updatejacobian[statevarno] = true;
-                X = X_past;
-			}
-            if (err>err_p && !SolverSettings.optimize_lambda)
-                error_increase_counter++;
-            else if (err<err_p/2.0 && !SolverSettings.optimize_lambda)
-            {
-                if (SolverTempVars.NR_coefficient[statevarno] < 0.99)
-                    SolverTempVars.updatejacobian[statevarno] = true;
-                SolverTempVars.NR_coefficient[statevarno] = max(min(SolverTempVars.NR_coefficient[statevarno] / SolverSettings.NR_coeff_reduction_factor, 1.0), 0.05);
-             }
-            if (error_increase_counter > 10)
-            {
-                SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Error kept increasing, state_variable:" + aquiutils::numbertostring(statevarno));
-                if (GetSolutionLogger())
-                    GetSolutionLogger()->WriteString("Outflow limit vector " + CVector(GetOutflowLimitFactorVector(Timing::present)).toString());
-                if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
-                return false;
-            }
-
-            if (SolverTempVars.numiterations[statevarno] > SolverSettings.NR_niteration_max)
-            {
-                SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": number of iterations exceeded the maximum threshold, state_variable:" + aquiutils::numbertostring(statevarno));
-                if (GetSolutionLogger())
-                {   if (!transport)
-                    {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
-                        GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
-                    }
-                else
-                {
-                    string BlockConst = GetBlockConstituent(F.abs_max_elems());
-                    GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at state variable '" + GetBlockConstituent(F.abs_max_elems()) + "', dt = " + aquiutils::numbertostring(dt()));
-                }
-                    GetSolutionLogger()->WriteString("Error criteria number: " + aquiutils::numbertostring(err/(err_ini+1e-10*X_norm)));
-                    GetSolutionLogger()->WriteString("X_norm: " + aquiutils::numbertostring(X_norm));
-                    GetSolutionLogger()->WriteString("Block outflow factors: " + GetBlocksOutflowFactors(Timing::present).toString());
-                    GetSolutionLogger()->WriteString("Link outflow factors: " + GetLinkssOutflowFactors(Timing::present).toString());
-                    GetSolutionLogger()->WriteVector(F);
-                    GetSolutionLogger()->WriteString("Error norm = " + aquiutils::numbertostring(err) + ",Initial Error norm = " + aquiutils::numbertostring(err_ini));
-                    GetSolutionLogger()->WriteMatrix(SolverTempVars.Inverse_Jacobian[statevarno]);
-                    GetSolutionLogger()->Flush();
-                }
-                if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
-                return false;
-            }
-        }
+		NewtonRaphsonLoop(statevarno, variable, X, F, X_past, transport);
+        
         switchvartonegpos = false;
 
         if (!transport)
@@ -2064,7 +1896,7 @@ string System::GetBlockConstituent(unsigned int i)
     return out;
 }
 
-void System::SetStateVariables(const string &variable, CVector_arma &X, const Timing &tmg, bool transport)
+void System::SetStateVariables(const string &variable, const CVector_arma &X, const Timing &tmg, bool transport)
 {
     if (!transport)
     {   for (unsigned int i=0; i<blocks.size(); i++)
@@ -2136,7 +1968,7 @@ void System::SetStateVariables_for_direct_Jacobian(const string &variable, CVect
     }
 }
 
-void System::SetStateVariables_TR(const string &variable, CVector_arma &X, const Timing &tmg)
+void System::SetStateVariables_TR(const string &variable, const CVector_arma &X, const Timing &tmg)
 {
     for (unsigned int i=0; i<blocks.size(); i++)
     {
@@ -2196,7 +2028,7 @@ void System::CalculateAllExpressions(Timing tmg)
     }
 }
 
-CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool transport)
+CVector_arma System::GetResiduals(const string &variable, const CVector_arma &X, bool transport)
 {
     if (transport)
         return GetResiduals_TR(variable, X);
@@ -2347,7 +2179,7 @@ CVector System::GetLinkssOutflowFactors(const Timing &tmg)
 }
 
 
-CVector_arma System::GetResiduals_TR(const string &variable, CVector_arma &X)
+CVector_arma System::GetResiduals_TR(const string &variable, const CVector_arma &X)
 {
     CVector_arma F(blocks.size()*ConstituentsCount());
     SetStateVariables_TR(variable,X,Timing::present);
@@ -3466,7 +3298,7 @@ bool System::EraseConstituentRelatedProperties(const string &constituent_name)
     return true;
 }
 
-bool System::VerifyAsSource(Block* blk, Link* lnk)
+bool System::VerifyAsSource(const Block* blk, const Link* lnk)
 {
     for (unsigned int i = 0; i < lnk->GetAllRequieredStartingBlockProperties().size(); i++)
     {
@@ -3481,7 +3313,7 @@ bool System::VerifyAsSource(Block* blk, Link* lnk)
 }
 
 
-bool System::VerifyAsDestination(Block* blk, Link* lnk)
+bool System::VerifyAsDestination(const Block* blk, const Link* lnk)
 {
     for (unsigned int i = 0; i < lnk->GetAllRequieredDestinationBlockProperties().size(); i++)
     {

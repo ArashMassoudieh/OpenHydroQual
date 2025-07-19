@@ -43,8 +43,8 @@ class Link: public Object
             return nullptr;
         };
         string toCommand();
-        vector<string> GetAllRequieredStartingBlockProperties(); 
-        vector<string> GetAllRequieredDestinationBlockProperties();
+        vector<string> GetAllRequieredStartingBlockProperties() const; 
+        vector<string> GetAllRequieredDestinationBlockProperties() const;
         bool ShiftLinkedBlock(int shift, ExpressionNode::loc loc);
     protected:
 

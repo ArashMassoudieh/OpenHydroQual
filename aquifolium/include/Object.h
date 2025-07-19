@@ -48,7 +48,7 @@ class Object : protected QuanSet
         bool SetQuantities(MetaModel *m, const string& typ );
         bool SetQuantities(System *sys, const string& typ );
         bool SetQuantities(QuanSet &Q);
-        bool HasQuantity(const string &q);
+        bool HasQuantity(const string &q) const;
         bool SetVal(const string& s, double value, const Timing &tmg = Timing::both);
         QuanSet* GetQuanSet() { return this; }
         bool SetVal(const string& s, const string & value, const Timing &tmg = Timing::both);
@@ -80,7 +80,7 @@ class Object : protected QuanSet
         Quan* Variable(const string &s);
         Quan* Variable(const string &variable, const string &constituent);
         void SetType(const string &typ) {type = typ;}
-        string GetType() {return type;}
+        string GetType() const {return type;}
         unsigned int s_Block_No() {return s_Block_no; }
         void SetSBlockNo(int i) { s_Block_no = i; }
         unsigned int e_Block_No() {return e_Block_no; }
@@ -100,6 +100,12 @@ class Object : protected QuanSet
             {
                 return this;
             }
+
+        const QuanSet* GetVars() const
+        {
+            return this;
+        }
+
         vector<Quan> GetCopyofAllQuans();
         void SetOutflowLimitFactor(const double &val, const Timing &tmg)
 		{
