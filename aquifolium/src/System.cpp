@@ -552,289 +552,274 @@ void System::MakeTimeSeriesUniform(const double &increment)
 
 }
 
-bool System::Solve(bool applyparameters)
+void System::InitializeSolverEnvironment()
 {
 #ifndef NO_OPENMP
+    // Initialize OpenMP lock for thread safety
     omp_init_lock(&lock);
 #endif
-    double timestepminfactor = 100000;
-    double timestepmaxfactor = 50;
-    fit_measures.resize(ObservationsCount()*3);
+
+    // Resize the fit measures vector to accommodate all observation metrics
+    fit_measures.resize(ObservationsCount() * 3);
+
+    // Record simulation start time
     SolverTempVars.time_start = time(nullptr);
+
+    // Set pointer and parent relationships between objects
     SetAllParents();
     SetQuanPointers();
-    if (ConstituentsCount()>0)
-        SetNumberOfStateVariables(solvevariableorder.size()+1);
+
+    // Allocate space for Newton-Raphson solver variables
+    if (ConstituentsCount() > 0)
+        SetNumberOfStateVariables(solvevariableorder.size() + 1);
     else
         SetNumberOfStateVariables(solvevariableorder.size());
-    SolverTempVars.SetUpdateJacobian(true);
-    alltimeseries = GetTimeSeries(true);
-	bool success = true;
-    #ifdef Q_GUI_SUPPORT
-    errorhandler.SetRunTimeWindow(rtw);
-    #endif // Q_GUI_SUPPORT
-	if (applyparameters) ApplyParameters();
-    //qDebug()<<"Initiating outputs";
-    InitiateOutputs();
-    //qDebug()<<"Writing objects to logger";
-    WriteObjectsToLogger();
-#ifdef Q_GUI_SUPPORT
-    QCoreApplication::processEvents();
-#endif
-    //qDebug()<<"Processes Events...";
-    MakeTimeSeriesUniform(SimulationParameters.dt0);
-#ifdef Q_GUI_SUPPORT
-    QCoreApplication::processEvents();
-#endif
-    //qDebug()<<"Made uniform done!...";
 
+    SolverTempVars.SetUpdateJacobian(true);
+
+    // Collect all time series data (e.g., precipitation)
+    alltimeseries = GetTimeSeries(true);
+}
+
+void System::InitializeModelState(bool applyparameters)
+{
+    if (applyparameters)
+        ApplyParameters();
+
+    // Set up output structures and initialize logger
+    InitiateOutputs();
+    WriteObjectsToLogger();
+
+#ifdef Q_GUI_SUPPORT
+    QCoreApplication::processEvents();
+#endif
+
+    // Ensure all time series are on a common time grid
+    MakeTimeSeriesUniform(SimulationParameters.dt0);
+
+#ifdef Q_GUI_SUPPORT
+    QCoreApplication::processEvents();
+#endif
+
+    // Set solver clock and initialize precalculated terms
     SolverTempVars.dt_base = SimulationParameters.dt0;
     SolverTempVars.dt = SolverTempVars.dt_base;
     SolverTempVars.t = SimulationParameters.tstart;
-    //qDebug()<<"Initiating pre-calculated functions";
+
     InitiatePrecalculatedFunctions();
-    //qDebug()<<"Calculating all expressions";
     CalculateAllExpressions(Timing::present);
-    //qDebug()<<"Calculating initial values";
     CalcAllInitialValues();
-    //qDebug()<<"Unupdating all values";
     UnUpdateAllVariables();
-    for (unsigned int i=0; i<ObjectiveFunctionsCount(); i++)
+}
+
+void System::ClearObservationTimeSeries()
+{
+    for (unsigned int i = 0; i < ObjectiveFunctionsCount(); ++i)
     {
-        ObjectiveFunctions()[i]->GetTimeSeries()->clear();
-    }
-    for (unsigned int i=0; i<ObservationsCount(); i++)
-    {
-        observation(i)->GetTimeSeries()->clear();
+        if (ObjectiveFunctions()[i]->GetTimeSeries())
+            ObjectiveFunctions()[i]->GetTimeSeries()->clear();
     }
 
+    for (unsigned int i = 0; i < ObservationsCount(); ++i)
+    {
+        if (observation(i)->GetTimeSeries())
+            observation(i)->GetTimeSeries()->clear();
+    }
+}
+
+void System::InitializeSimulationUI()
+{
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {
         rtw->AppendText("Simulation Started at " + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
-        rtw->SetXRange(SimulationParameters.tstart,SimulationParameters.tend);
-        rtw->SetYRange(0,SimulationParameters.dt0*timestepmaxfactor);
+        rtw->SetXRange(SimulationParameters.tstart, SimulationParameters.tend);
+        rtw->SetYRange(0, SimulationParameters.dt0 * 50); // 50 = max timestep multiplier
         QCoreApplication::processEvents();
     }
 #endif
+}
 
-    Update();
+void System::RunTimeLoop(bool& success)
+{
+    const double timestepminfactor = 100000;
+    const double timestepmaxfactor = 50;
+
     int counter = 0;
     int fail_counter = 0;
     double progress = 0;
     double progress_p = 0;
-#ifdef VALGRIND
-    CALLGRIND_START_INSTRUMENTATION;
-    CALLGRIND_TOGGLE_COLLECT;
-#endif
+
     PopulateOutputs(false);
     RestorePoint restorepoint(this);
+
 #ifdef Terminal_version
-    cout<<"Running from time " << SolverTempVars.t << " to " << SimulationParameters.tend << endl;
+    cout << "Running from time " << SolverTempVars.t << " to " << SimulationParameters.tend << endl;
 #endif
+
     UpdateObjectiveFunctions(SolverTempVars.t);
     UpdateObservations(SolverTempVars.t);
-    
-    while (SolverTempVars.t<SimulationParameters.tend+SolverTempVars.dt && !stop_triggered)
+
+    while (SolverTempVars.t < SimulationParameters.tend + SolverTempVars.dt && !stop_triggered)
     {
-        //qDebug()<<SolverTempVars.t;
         progress_p = progress;
         progress = (SolverTempVars.t - SimulationParameters.tstart) / (SimulationParameters.tend - SimulationParameters.tstart);
         counter++;
-		if (counter%50==0)
-            SolverTempVars.SetUpdateJacobian(true);
-        //qDebug()<<"First Jacobian update...";
-        SolverTempVars.dt = min(SolverTempVars.dt_base,GetMinimumNextTimeStepSize());
-        if (SolverTempVars.dt<SimulationParameters.dt0/ timestepminfactor) SolverTempVars.dt=SimulationParameters.dt0/ timestepminfactor;
-        #ifdef Terminal_version
-        ShowMessage(string("t = ") + aquiutils::numbertostring(SolverTempVars.t) + ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt) + ", SolverTempVars.numiterations =" + aquiutils::numbertostring(SolverTempVars.numiterations));
-        #endif // Debug_mode
 
-        //qDebug()<<"Trying to solve...";
-        vector<bool> _success = OneStepSolve();
-        //qDebug()<<"Solved...";
-		success = aquiutils::And(_success);
-		if (!success)
+        if (counter % 50 == 0)
+            SolverTempVars.SetUpdateJacobian(true);
+
+        SolverTempVars.dt = std::min(SolverTempVars.dt_base, GetMinimumNextTimeStepSize());
+        if (SolverTempVars.dt < SimulationParameters.dt0 / timestepminfactor)
+            SolverTempVars.dt = SimulationParameters.dt0 / timestepminfactor;
+
+#ifdef Terminal_version
+        ShowMessage("t = " + aquiutils::numbertostring(SolverTempVars.t) +
+            ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) +
+            ", dt = " + aquiutils::numbertostring(SolverTempVars.dt));
+#endif
+
+        vector<bool> step_success = OneStepSolve();
+        success = aquiutils::And(step_success);
+
+        if (!success)
         {
             fail_counter++;
-            #ifdef Debug_mode
-            ShowMessage("failed!");
-            #endif // Debug_mode
-#ifdef Q_GUI_SUPPORT
-            if (rtw)
-            {
-                if (rtw->detailson)
-                {
-                    rtw->AppendtoDetails(QString::fromStdString(SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1]) + ", dt = " + QString::number(SolverTempVars.dt,'e'));
-                    if (rtw->stoptriggered) stop_triggered = true;
-
-                }
-                QCoreApplication::processEvents();
-                //qDebug()<<"Processes Events...";
-            }
-#else
-            cout<<SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1] << ", dt = " << SolverTempVars.dt<<endl;
-#endif
-            if (GetSolutionLogger())
-                GetSolutionLogger()->WriteString(SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1] + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt));
-
             SolverTempVars.dt_base *= SolverSettings.NR_timestep_reduction_factor_fail;
-            SolverTempVars.dt_base = max(SolverTempVars.dt_base,SimulationParameters.dt0/(2*timestepminfactor));
+            SolverTempVars.dt_base = std::max(SolverTempVars.dt_base, SimulationParameters.dt0 / (2 * timestepminfactor));
             SolverTempVars.SetUpdateJacobian(true);
 
             if (fail_counter > 20)
             {
                 if (!ResetBasedOnRestorePoint(&restorepoint))
                 {
-#ifdef Q_GUI_SUPPORT
-                    if (rtw)
-                    {
-                        if (rtw->detailson)
-                            rtw->AppendtoDetails("The attempt to solve the problem failed");
-
-                        rtw->AppendErrorMessage("The attempt to solve the problem failed!");
-                        QCoreApplication::processEvents();
-                    }
-    #endif
-                    if (GetSolutionLogger())
-                        GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
-                    cout<<"The attempt to solve the problem failed!"<<std::endl;
                     SolverTempVars.SolutionFailed = true;
                     stop_triggered = true;
+                    return;
                 }
                 else
                 {
-                    if (GetSolutionLogger())
-                        GetSolutionLogger()->WriteString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t) );
-#ifdef Q_GUI_SUPPORT
-                    if (rtw)
-                        if (rtw->detailson)
-                            rtw->AppendtoDetails(QString::fromStdString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t)));
-#endif
-
+                    restorepoint.used_counter = 0;
                 }
             }
+
+#ifdef Q_GUI_SUPPORT
+            if (rtw && rtw->detailson)
+                rtw->AppendtoDetails(QString::fromStdString(SolverTempVars.fail_reason.back()) + ", dt = " + QString::number(SolverTempVars.dt, 'e'));
+#endif
+            if (GetSolutionLogger())
+                GetSolutionLogger()->WriteString(SolverTempVars.fail_reason.back() + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt));
         }
         else
         {
-#ifdef Q_GUI_SUPPORT
-            if (rtw)
-            {
-                rtw->SetProgress(progress);
-                rtw->AddDataPoint(SolverTempVars.t, SolverTempVars.dt);
-                if (int(progress/0.01)>int(progress_p/0.01) || rtw->detailson)
-                    rtw->Replot();
-                if (rtw->detailson) rtw->AppendtoDetails("Number of iterations:" + QString::number(SolverTempVars.MaxNumberOfIterations()) + ",dt = " + QString::number(SolverTempVars.dt) + ",t = " + QString::number(SolverTempVars.t, 'f', 6) + ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
-                if (rtw->stoptriggered) stop_triggered = true;
-
-            if ((counter-1)%restore_interval==0)
-            {
-                restorepoint.GetSystem()->CopyStateVariablesFrom(this);
-                restorepoint.t = SolverTempVars.t;
-                restorepoint.dt = SolverTempVars.dt;
-                if (rtw!=nullptr)
-                    if (rtw->detailson)
-                    {
-                        rtw->AppendtoDetails("Restore point saved!");
-                    }
-                restorepoint.used_counter = 0;
-                if (GetSolutionLogger())
-                    GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
-            }
-            if (SimulationParameters.write_outputs_intermittently)
-                if (aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart,SimulationParameters.write_interval)<aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart-SolverTempVars.dt,SimulationParameters.write_interval))
-                    WriteOutPuts();
-            QCoreApplication::processEvents();
-            //cout<<"Processes Events...";
-        }
-#endif
             fail_counter = 0;
             Update();
             UpdateObjectiveFunctions(SolverTempVars.t);
             UpdateObservations(SolverTempVars.t);
             PopulateOutputs();
             SolverTempVars.t += SolverTempVars.dt;
-            if (SolverTempVars.MaxNumberOfIterations()>SolverSettings.NR_niteration_upper)
+
+            // Adaptive timestep adjustment
+            int iters = SolverTempVars.MaxNumberOfIterations();
+            if (iters > SolverSettings.NR_niteration_upper)
             {
-                SolverTempVars.dt_base = max(SolverTempVars.dt*SolverSettings.NR_timestep_reduction_factor,SolverSettings.minimum_timestep);
+                SolverTempVars.dt_base = std::max(SolverTempVars.dt * SolverSettings.NR_timestep_reduction_factor, SolverSettings.minimum_timestep);
                 SolverTempVars.SetUpdateJacobian(true);
                 SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1);
             }
-            if (SolverTempVars.MaxNumberOfIterations() < SolverSettings.NR_niteration_lower)
+            else if (iters < SolverSettings.NR_niteration_lower)
             {
-                SolverTempVars.dt_base = min(SolverTempVars.dt_base / SolverSettings.NR_timestep_reduction_factor, SimulationParameters.dt0 * timestepmaxfactor);
+                SolverTempVars.dt_base = std::min(SolverTempVars.dt_base / SolverSettings.NR_timestep_reduction_factor,
+                    SimulationParameters.dt0 * timestepmaxfactor);
                 SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1);
             }
 
-
-
-
-        }
-        if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time)
-        {
 #ifdef Q_GUI_SUPPORT
-                if (rtw)
+            if (rtw)
+            {
+                rtw->SetProgress(progress);
+                rtw->AddDataPoint(SolverTempVars.t, SolverTempVars.dt);
+                if (int(progress / 0.01) > int(progress_p / 0.01) || rtw->detailson)
+                    rtw->Replot();
+
+                if (rtw->detailson)
                 {
+                    rtw->AppendtoDetails("Number of iterations:" + QString::number(iters) +
+                        ", dt = " + QString::number(SolverTempVars.dt) +
+                        ", t = " + QString::number(SolverTempVars.t, 'f', 6) +
+                        ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
+                }
+
+                if ((counter - 1) % restore_interval == 0)
+                {
+                    restorepoint.GetSystem()->CopyStateVariablesFrom(this);
+                    restorepoint.t = SolverTempVars.t;
+                    restorepoint.dt = SolverTempVars.dt;
+                    restorepoint.used_counter = 0;
+
                     if (rtw->detailson)
-                        rtw->AppendtoDetails("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+                        rtw->AppendtoDetails("Restore point saved!");
 
-                    rtw->AppendErrorMessage("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
-                    QCoreApplication::processEvents();
+                    if (GetSolutionLogger())
+                        GetSolutionLogger()->WriteString("@ t = " + aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
                 }
+
+                if (rtw->stoptriggered)
+                    stop_triggered = true;
+
+                if (SimulationParameters.write_outputs_intermittently)
+                    if (aquiutils::mod(SolverTempVars.t - SimulationParameters.tstart, SimulationParameters.write_interval) <
+                        aquiutils::mod(SolverTempVars.t - SimulationParameters.tstart - SolverTempVars.dt, SimulationParameters.write_interval))
+                        WriteOutPuts();
+
+                QCoreApplication::processEvents();
+            }
 #endif
-                if (GetSolutionLogger())
-                {
-                    GetSolutionLogger()->WriteString("Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
-                    GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
-                }
-                cout<<"Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!"<<std::endl;
-                cout<<"The attempt to solve the problem failed!"<<std::endl;
-                SolverTempVars.SolutionFailed = true;
-                stop_triggered = true;
-
         }
-        else if (SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
-        {
-#ifdef Q_GUI_SUPPORT
-                if (rtw)
-                {
-                    if (rtw->detailson)
-                        rtw->AppendtoDetails("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
 
-                    rtw->AppendErrorMessage("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
-                    QCoreApplication::processEvents();
-                }
+        // Global termination criteria
+        if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time ||
+            SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
+        {
+            SolverTempVars.SolutionFailed = true;
+            stop_triggered = true;
+
+#ifdef Q_GUI_SUPPORT
+            if (rtw)
+            {
+                QString msg = "Simulation failed due to ";
+                msg += (SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
+                    ? "matrix inversion limit."
+                    : "time limit.";
+                rtw->AppendErrorMessage(msg);
+                QCoreApplication::processEvents();
+            }
 #endif
-                if (GetSolutionLogger())
-                {
-                    GetSolutionLogger()->WriteString("Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
-                    GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
-                }
-                cout<<"Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!"<<std::endl;
-                cout<<"The attempt to solve the problem failed!"<<std::endl;
-                SolverTempVars.SolutionFailed = true;
-                stop_triggered = true;
+
+            if (GetSolutionLogger())
+            {
+                GetSolutionLogger()->WriteString("Simulation aborted by global limit.");
+            }
+            return;
+        }
+
+        // Periodically flush errors
 #ifdef Q_GUI_SUPPORT
         if (rtw)
-        {   errorhandler.Flush(rtw);
-            QCoreApplication::processEvents();
-        }
-#endif
-
-        }
-
-#ifdef Q_GUI_SUPPORT
-        if (rtw)
-        {   errorhandler.Flush(rtw);
+        {
+            errorhandler.Flush(rtw);
             QCoreApplication::processEvents();
         }
 #else
         errorhandler.Flush();
 #endif
     }
-    
+
+}
+
+void System::FinalizeOutputs()
+{
 #ifdef Q_GUI_SUPPORT
-    //qDebug() << "Adjusting outputs ....";
     if (rtw)
     {
         rtw->AppendText(QString("Adjusting outputs ..."));
@@ -843,87 +828,102 @@ bool System::Solve(bool applyparameters)
 #else
     ShowMessage("Adjusting outputs ...");
 #endif
-    //Outputs.AllOutputs.adjust_size();
-#ifdef Q_GUI_SUPPORT
-    if (rtw)
-    {
-        rtw->AppendText(QString("Adjusting outputs, Done!"));
-        QCoreApplication::processEvents();
-    }
-#endif
+
     Outputs.AllOutputs.unif = false;
 
 #ifdef Q_GUI_SUPPORT
-    qDebug() << "Uniformizing outputs ....";
-	if (rtw)
+    if (rtw)
     {
         rtw->AppendText(QString("Uniformizing outputs ..."));
         QCoreApplication::processEvents();
     }
-#else
-    ShowMessage("Uniformizing outputs ...");
 #endif
-    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
+    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0, false);
 
 #ifdef Q_GUI_SUPPORT
-    qDebug() << "Uniformizing observations ....";
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing observations ..."));
         QCoreApplication::processEvents();
     }
 #endif
-    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
+    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0, false);
 
 #ifdef Q_GUI_SUPPORT
-    qDebug() << "Uniformizing objective functions ....";
     if (rtw)
     {
-        rtw->AppendText(QString("Uniformizing objective functions ...."));
+        rtw->AppendText(QString("Uniformizing objective functions ..."));
         QCoreApplication::processEvents();
     }
-    qDebug() << "Making objective function expressions uniform ....";
 #endif
-
     MakeObjectiveFunctionExpressionUniform();
+
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing observation expressions ..."));
         QCoreApplication::processEvents();
     }
-    qDebug() << "Making observation expressions uniform ....";
 #endif
-
     MakeObservationsExpressionUniform();
+
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {
         if (!stop_triggered)
             rtw->SetProgress(1);
-        rtw->AddDataPoint(SolverTempVars.t,SolverTempVars.dt);
-        rtw->AppendText("Simulation finished!" + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
+        rtw->AddDataPoint(SolverTempVars.t, SolverTempVars.dt);
+        rtw->AppendText("Simulation finished! " + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
         QCoreApplication::processEvents();
     }
 #endif
-    if (!stop_triggered)
-        if (GetSolutionLogger())
-            GetSolutionLogger()->WriteString("Simulation finished successfully!");
 
-ShowMessage("Simulation finished!");
+    if (!stop_triggered && GetSolutionLogger())
+        GetSolutionLogger()->WriteString("Simulation finished successfully!");
+
+    ShowMessage("Simulation finished!");
+
 #ifdef Q_GUI_SUPPORT
+    if (GetSolutionLogger())
+        GetSolutionLogger()->Flush();
+#endif
+}
 
+
+bool System::Solve(bool applyparameters)
+{
+    // 1. Setup
+    InitializeSolverEnvironment();
+    InitializeModelState(applyparameters);
+    ClearObservationTimeSeries();
+    InitializeSimulationUI();
+
+    // 2. Solve
+    bool success = true;
+#ifdef VALGRIND
+    CALLGRIND_START_INSTRUMENTATION;
+    CALLGRIND_TOGGLE_COLLECT;
+#endif
+
+    RunTimeLoop(success);
+
+    // 3. Finalize model outputs and state
+    FinalizeOutputs();
+
+#ifdef Q_GUI_SUPPORT
     if (GetSolutionLogger())
     {
-        cout<<"Flushing solution logger ..."<<std::endl;
+        cout << "Flushing solution logger ..." << std::endl;
         GetSolutionLogger()->Flush();
     }
-    #endif
+#endif
+
 #ifdef VALGRIND
     CALLGRIND_TOGGLE_COLLECT;
     CALLGRIND_STOP_INSTRUMENTATION;
 #endif
-    SetSimulationDuration(time(nullptr)-SolverTempVars.time_start);
+
+    SetSimulationDuration(time(nullptr) - SolverTempVars.time_start);
     return true;
 }
 
@@ -947,6 +947,7 @@ bool System::SetSystemSettingsObjectProperties(const string &s, const string &va
     return false;
 
 }
+
 
 bool System::SetProp(const string &s, const double &val)
 {
@@ -1106,6 +1107,7 @@ void System::InitiateOutputs()
 {
     Outputs.AllOutputs.clear();
     Outputs.ObservedOutputs.clear();
+
     for (unsigned int i=0; i<blocks.size(); i++)
     {
         blocks[i].EstablishExpressionStructure();

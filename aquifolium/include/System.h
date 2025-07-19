@@ -283,7 +283,74 @@ class System: public Object
 		//bool Solve(const string &variable, bool ApplyParams = false);
 		bool Solve(bool ApplyParams = false);
         void MakeTimeSeriesUniform(const double &increment);
-		bool SetProp(const string &s, const double &val);
+        /**
+     * @brief Prepares the system for numerical solving by initializing solver parameters and internal state.
+     *
+     * This includes:
+     * - Initializing OpenMP locks (if enabled)
+     * - Resizing observation fit metrics
+     * - Recording simulation start time
+     * - Setting parent-child relationships across all model components
+     * - Preparing state variable storage based on the number of state variables
+     * - Enabling Jacobian updates for the Newton-Raphson solver
+     * - Extracting all relevant time series inputs (e.g., precipitation)
+     */
+        void InitializeSolverEnvironment();
+        /**
+     * @brief Initializes the simulation state, expressions, initial conditions and output structures.
+     *
+     * This function performs the following tasks:
+     * - Applies model parameters to objects (if requested)
+     * - Initializes simulation outputs and registers logging
+     * - Uniformizes all time series to the base time step
+     * - Initializes symbolic and precalculated expressions
+     * - Computes initial values for state variables
+     * - Clears update flags on all model objects
+     *
+     * @param applyparameters If true, parameters will be applied to the model before initialization.
+     */
+        void InitializeModelState(bool applyparameters);
+        /**
+ * @brief Clears existing time series for all objective functions and observations.
+ *
+ * This ensures that previous simulation results do not interfere with the current run.
+ */
+        void ClearObservationTimeSeries();
+        
+        /**
+ * @brief Initializes the runtime window GUI with simulation metadata.
+ *
+ * If GUI support is enabled and a runtime window exists:
+ * - Displays a simulation start message with timestamp
+ * - Sets the X axis to time range [tstart, tend]
+ * - Sets the Y axis to timestep range
+ * - Triggers event processing to refresh the UI
+ */
+        void InitializeSimulationUI();
+        /**
+ * @brief Executes the main adaptive time-stepping loop for solving the system.
+ *
+ * This function runs the simulation forward in time using the Newton-Raphson solver,
+ * updating system states, logging outputs, handling convergence and failure recovery,
+ * and interacting with GUI elements if enabled.
+ *
+ * It adjusts time step size based on solver convergence, writes outputs periodically,
+ * and terminates early if global limits (e.g. simulation time or number of matrix inversions) are exceeded.
+ *
+ * @param success Reference to a boolean that will be set to true if the loop completes successfully, or false on failure.
+ */
+        void RunTimeLoop(bool& success);
+        /**
+ * @brief Finalizes simulation by uniformizing outputs, updating logs, and flushing GUI.
+ *
+ * This function:
+ * - Uniformizes all output and observation time series
+ * - Applies final expression processing for objective functions and observations
+ * - Updates GUI progress bars and completion messages
+ * - Writes a final status message to the solution logger
+ */
+        void FinalizeOutputs();
+        bool SetProp(const string &s, const double &val);
 		bool SetProperty(const string &s, const string &val);
         TimeSeriesSet<outputtimeseriesprecision>& GetOutputs() {return Outputs.AllOutputs;}
         TimeSeriesSet<timeseriesprecision>& GetObservedOutputs() {return Outputs.ObservedOutputs;}
