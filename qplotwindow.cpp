@@ -316,18 +316,19 @@ bool QPlotWindow::AddData(const TimeSeries<outputtimeseriesprecision>& timeserie
         lineseries->attachAxis(axisY_log);
         axisY->setRange(max(y_min_val,1e-6),max(y_max_val,1e-6));
     }
-    for (int j=0; j<timeseries.size(); j++)
+    QVector<QPointF> points;
+    points.reserve(timeseries.size());
+
+    for (int j = 0; j < timeseries.size(); ++j)
     {
-        if (allowtime)
-#ifndef Qt6
-            lineseries->append(xToDateTime(timeseries.getTime(j)).toMSecsSinceEpoch(),timeseries.getValue(j));
-#else
-            lineseries->append(xToDateTime(timeseries.getTime(j)).toMSecsSinceEpoch(),timeseries.getValue(j));
-#endif
-        else
-            lineseries->append(timeseries.getTime(j),timeseries.getValue(j));
+        double x = allowtime
+            ? xToDateTime(timeseries.getTime(j)).toMSecsSinceEpoch()
+            : timeseries.getTime(j);
+        double y = timeseries.getValue(j);
+        points.append(QPointF(x, y));
     }
 
+    lineseries->append(points);
 
     QPen pen = lineseries->pen();
     pen.setWidth(2);
