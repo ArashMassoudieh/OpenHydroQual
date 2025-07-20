@@ -278,18 +278,8 @@ class System: public Object
         SafeVector<int> ConnectedBlocksTo(int blockid); // Get the list of blocks the block 'blockid' is connected to
         SafeVector<int> ConnectedBlocksFrom(int blockid);
         
-        /**
-     * @brief Initializes the state vector and residuals for Newton-Raphson iterations.
-     *
-     * @param variable Name of the state variable to solve for
-     * @param transport Whether this is a transport solve
-     * @param X Output: initial state vector (from past state)
-     * @param F Output: initial residual vector
-     * @return true if successful, false if residuals are invalid
-     **/
-        bool InitializeNRState(const std::string& variable, bool transport, CVector_arma& X, CVector_arma& F);
-        
-        
+        bool OneStepSolve_(unsigned int statevarno, bool transport);
+
         // Get the list of connected to the block 'blockid'
         SafeVector<int> SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited); //Set outflow limitation status for block blockid and the connected rigid blocks to it
 		bool Update(const string &variable="");
