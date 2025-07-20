@@ -4,7 +4,10 @@
 #
 #-------------------------------------------------
 
-#CONFIG -= app_bundle
+macx:{
+    CONFIG += app_bundle
+    ICON = OHQ.icns
+}
 
 CONFIG += c++17
 
