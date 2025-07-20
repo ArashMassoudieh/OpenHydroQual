@@ -30,13 +30,19 @@
 #include "Parameter_Set.h"
 
 #ifndef _WINDOWS
+#ifndef _MacOS
 extern "C" {
 #include <openblas_config.h>
 }
+#endif // !MacOS
 #endif // !windows
 
 
+#ifndef _WINDOWS
+#ifndef _MacOS
 extern "C" void openblas_set_num_threads(int);
+#endif
+#endif
 
 using namespace std;
 
@@ -267,7 +273,9 @@ void CMCMC<T>::initialize(bool random)
     }
 
 #ifndef _WINDOWS
+#ifndef _MacOS
     openblas_set_num_threads(1);
+#endif
 #endif
 
     if (random)
@@ -307,8 +315,10 @@ void CMCMC<T>::initialize(bool random)
         }
     }
 #ifndef _WINDOWS
+#ifndef _MacOS
     unsigned int cores = std::thread::hardware_concurrency();
     openblas_set_num_threads(cores > 0 ? cores : 1);
+#endif
 #endif
 
 }
@@ -488,7 +498,9 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 #endif
 
 #ifndef _WINDOWS
+#ifndef _MacOS
         openblas_set_num_threads(1);
+#endif
 #endif
 
 #ifdef WIN64
@@ -532,8 +544,10 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
         }
 
 #ifndef _WINDOWS
+#ifndef _MacOS
         unsigned int cores = std::thread::hardware_concurrency();
         openblas_set_num_threads(cores > 0 ? cores : 1);
+#endif
 #endif
         accepted_count += accepted.sum();
         total_count += accepted.size();

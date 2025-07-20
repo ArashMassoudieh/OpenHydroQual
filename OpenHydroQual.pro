@@ -20,6 +20,7 @@ greaterThan(QT_MAJOR_VERSION, 5): {
 
 DEFINES += QCharts
 DEFINES += Q_JSON_SUPPORT
+
 INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
@@ -61,6 +62,7 @@ macx: {
 
 macx: {
     QMAKE_LFLAGS += -lomp
+    DEFINES += _MacOS
 }
 
 macx: {
@@ -89,6 +91,7 @@ CONFIG(debug, debug|release) {
     # QMAKE_LFLAGS+=-pg
     # macx: DEFINES += NO_OPENMP
     ! macx: LIBS += -lgomp -lpthread -lopenblas
+    LIBS += lgomp
     macx: LIBS += -lpthread
     #DEFINES += DEBUG
 }
