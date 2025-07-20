@@ -146,6 +146,12 @@
     <ClCompile Include="..\TOpenHydroQual\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\aquifolium\src\ExpressionNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\aquifolium\src\ExpressionParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\aquifolium\include\BTC.h">
@@ -315,6 +321,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\jsoncpp\src\lib_json\version.h.in" />
     <ClInclude Include="..\..\..\jsoncpp\include\json\writer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\aquifolium\include\ExpressionNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\aquifolium\include\ExpressionParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

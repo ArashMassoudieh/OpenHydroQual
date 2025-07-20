@@ -68,6 +68,9 @@
     <PostBuildEvent>
       <Command>copy ..\..\libs\lapack-blas_lib_win64\*.dll $(OutDir)</Command>
     </PostBuildEvent>
+    <ClCompile>
+      <OpenMPSupport>true</OpenMPSupport>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
@@ -77,6 +80,9 @@
     <PostBuildEvent>
       <Command>copy ..\..\libs\lapack-blas_lib_win64\*.dll $(OutDir)</Command>
     </PostBuildEvent>
+    <ClCompile>
+      <OpenMPSupport>true</OpenMPSupport>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
@@ -97,7 +103,7 @@
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>..\..\include;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\..\jsoncpp\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GSL;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GSL;_CONSOLE;Q_JSON_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -107,6 +113,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\aquifolium\src\ExpressionNode.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\ExpressionParser.cpp" />
     <ClCompile Include="..\..\aquifolium\src\GA\Binary.cpp" />
     <ClCompile Include="..\..\aquifolium\src\Block.cpp" />
     <ClCompile Include="..\..\aquifolium\src\Command.cpp" />
@@ -151,6 +159,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\aquifolium\include\BTC.h" />
+    <ClInclude Include="..\..\aquifolium\include\ExpressionNode.h" />
+    <ClInclude Include="..\..\aquifolium\include\ExpressionParser.h" />
     <ClInclude Include="..\..\aquifolium\src\BTC.hpp" />
     <ClInclude Include="..\..\aquifolium\include\BTCSet.h" />
     <ClInclude Include="..\..\aquifolium\src\BTCSet.hpp" />
