@@ -600,28 +600,67 @@ class System: public Object
          */
         void LogResidualFailure(const std::string& variable, const CVector_arma& X, const CVector_arma& F);
 
-         /**
-         * @brief Executes Newton-Raphson iterations to solve F(X) = 0 for a single state variable.
+        /**
+         * @brief Handles the case when the residual vector F is invalid (NaN or Inf).
          *
-         * This function iteratively updates the state vector X by solving linear systems of the form:
-         *     J * dx = -F(X)
-         * where J is the Jacobian of F, and dx is the update direction.
+         * Logs diagnostic messages, flushes the solution logger, and restores outflow limit vector if necessary.
          *
-         * It supports both direct Jacobian use or its inverse, and can optionally optimize the Newton coefficient
-         * using lambda tuning. The function checks convergence based on residual norms and iteration limits.
-         *
-         * On failure (non-convergence, divergence, or NaN values), a diagnostic reason is added to
-         * `SolverTempVars.fail_reason`, and (optionally) detailed logs are written to the solution logger.
-         *
-         * @param statevarno The index of the variable in the solve variable order
-         * @param variable The name of the state variable being solved (e.g., "head" or "mass")
-         * @param[in,out] X The state vector (initial guess in, final solution out)
-         * @param[in,out] F The residual vector (updated at each iteration)
-         * @param transport Whether the solve is for transport (true = transport, false = hydraulic)
-         * @return true if the solver converges successfully; false otherwise
+         * @param variable Name of the variable being solved
+         * @param X Current state vector
+         * @param F Residual vector (invalid)
+         * @param transport Whether the simulation is in transport mode
+         * @param outflowlimitstatus_old Saved outflow limitation status to restore
+         * @return Always returns false to allow inline usage as `return HandleInvalidResidual(...)`
          */
-        bool NewtonRaphsonLoop(unsigned int statevarno, const std::string& variable, CVector_arma& X, CVector_arma& F, const CVector_arma& X_past, bool transport);
+        bool HandleInvalidResidual(const std::string& variable, const CVector_arma& X, const CVector_arma& F, bool transport, const std::vector<bool>& outflowlimitstatus_old);
 
+        /**
+         * @brief Logs detailed information when the Jacobian matrix is found to be not full-ranked.
+         *
+         * This includes:
+         * - A message about Jacobian singularity
+         * - The diagonal vector
+         * - Indices of blocks with zero diagonal values
+         * - Appends failure reason to SolverTempVars
+         *
+         * @param J The Jacobian matrix
+         */
+        void LogJacobianSingularity(const CMatrix_arma& J);
+
+        /**
+         * @brief Handles failure due to exceeding maximum allowed Newton-Raphson iterations.
+         *
+         * Logs the failure reason, outputs detailed diagnostic information,
+         * and restores outflow-limited status if needed.
+         *
+         * @param variable The state variable being solved
+         * @param X The current state vector
+         * @param F The current residual vector
+         * @param statevarno Index of the state variable in solve order
+         * @param ini_max_error_block Index of the block with the initial max error
+         * @param err Current residual norm
+         * @param err_ini Initial residual norm
+         * @param X_norm Norm of the state vector X
+         * @param transport Whether this is a transport solve
+         * @param outflowlimitstatus_old Outflow limitation status to restore if needed
+         * @return Always returns false to allow inline usage like `return HandleIterationLimitFailure(...)`
+         */
+        bool HandleIterationLimitFailure(const std::string& variable, const CVector_arma& X, const CVector_arma& F, unsigned int statevarno, int ini_max_error_block, double err, double err_ini, double X_norm, bool transport, const std::vector<bool>& outflowlimitstatus_old);
+
+        /**
+         * @brief Handles failure when storage becomes negative in a block after maximum allowed attempts.
+         *
+         * Logs the failure, outputs the block name and time step, flushes the logger,
+         * and restores the outflow limit status if applicable.
+         *
+         * @param block_index Index of the block with negative storage
+         * @param transport Whether this is a transport solve
+         * @param outflowlimitstatus_old Previously saved outflow limit vector
+         * @return Always returns false for inline usage
+         */
+        bool HandleNegativeStorageFailure(unsigned int block_index, bool transport, const std::vector<bool>& outflowlimitstatus_old);
+
+         
 
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
