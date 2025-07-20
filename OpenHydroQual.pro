@@ -52,12 +52,12 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Aquifolium
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0
 
-macx: {
-    QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -Iusr/local/lib/
-    LIBS += -L$$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/lib/ -lgsl
-    INCLUDEPATH += $$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/include
-    DEPENDPATH += $$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/include
+CONFIG += c++14 app_bundle
 
+
+
+macx: {
+    QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -I/Users/arash/Projects/clang+llvm/lib
 }
 
 macx: {
@@ -89,9 +89,8 @@ CONFIG(debug, debug|release) {
     # QMAKE_CFLAGS+=-pg
     # QMAKE_CXXFLAGS+=-pg
     # QMAKE_LFLAGS+=-pg
-    # macx: DEFINES += NO_OPENMP
-    ! macx: LIBS += -lgomp -lpthread -lopenblas
-    LIBS += lgomp
+    macx: DEFINES += NO_OPENMP
+    ! macx: LIBS += -lgomp -lpthread
     macx: LIBS += -lpthread
     #DEFINES += DEBUG
 }
@@ -317,15 +316,6 @@ linux {
 
 macx {
     #sudo apt-get install libblas-dev liblapack-dev
-    message( $$PWD )
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -L$$PWD/../Armadillo/ -llapack.3.10.1
-     LIBS += -L$$PWD/../Armadillo/ -lblas.3.10.1
-     LIBS += -L$$PWD/../Armadillo/ -larmadillo.11.2.3
-     INCLUDEPATH += $$PWD/../Armadillo/include/
-     DEPENDPATH += $$PWD/../Armadillo
+     LIBS += -llapack -lblas
 }
-
-RESOURCES +=
-
-

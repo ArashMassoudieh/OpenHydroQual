@@ -388,3 +388,13 @@ build/
 enc_temp_folder/19aad853d6ba4a94f9df2a58eb61a47/
 
 OpenHydroQual
+
+*.stash
+
+*.idx
+
+terminal/build-TOpenHydroQual-Qt_6_3_1_for_macOS-Debug/.qtc_clangd/
+
+terminal/build-TOpenHydroQual-Qt_6_3_1_for_macOS-Debug/
+
+terminal/build-TOpenHydroQual-Replacement_for_Desktop_Qt_5_15_2_clang_64bit-Debug/
