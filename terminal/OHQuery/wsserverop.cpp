@@ -207,8 +207,8 @@ void WSServerOps::onTextMessageReceived(QString message)
 
             Script script;
             System system;
-            string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
-            system.ReadSystemSettingsTemplate(qApp->applicationDirPath().toStdString() + "/../../resources/settings.json");
+            string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/resources/";
+            system.ReadSystemSettingsTemplate(qApp->applicationDirPath().toStdString() + "/resources/settings.json");
             cout << "Default Template path = " + defaulttemppath +"\n";
             system.SetDefaultTemplatePath(defaulttemppath);
             system.SetWorkingFolder(newFolderPath.toStdString());
@@ -239,15 +239,15 @@ void WSServerOps::onTextMessageReceived(QString message)
 
 QJsonDocument WSServerOps::SendModelTemplate(const QString &TemplateName)
 {
-    QFile file(QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName);
-    qDebug()<<QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+    QFile file(QCoreApplication::applicationDirPath() + "/resources/Wizard_Scripts_server/" + TemplateName);
+    qDebug()<<QCoreApplication::applicationDirPath() + "/resources/Wizard_Scripts_server/" + TemplateName;
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "Failed to open file:" << QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+        qWarning() << "Failed to open file:" << QCoreApplication::applicationDirPath() + "/resources/Wizard_Scripts_server/" + TemplateName;
         return QJsonDocument(); // returns a null document
     }
     else
     {
-        TemplateFile_Fullpath = QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+        TemplateFile_Fullpath = QCoreApplication::applicationDirPath() + "/resources/Wizard_Scripts_server/" + TemplateName;
     }
     QByteArray jsonData = file.readAll();
     file.close();
@@ -299,7 +299,7 @@ void WSServerOps::sendMessageToClient(QWebSocket *client, const QString &message
 QJsonObject WSServerOps::Execute(System *system)
 {
 
-    string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
+    string settingfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
 
     cout<<"Executing script ..."<<endl;
 
