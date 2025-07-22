@@ -168,13 +168,13 @@ class System: public Object
         {
             return SolverTempVars.t;
         }
-        bool AddBlock(Block &blk, bool SetQuantities=true);
-        bool AddSource(Source &src, bool SetQuantities=true);
-        bool AddLink(Link &lnk, const string &source, const string &destination, bool SetQuantities=true);
-        bool AddConstituent(Constituent &cnst, bool SetQuantities=true);
-        bool AddReaction(Reaction &rxn, bool SetQuantities=true);
-        bool AddObservation(Observation &obs, bool SetQuantities=true);
-        bool AddReactionParameter(RxnParameter &rxn, bool SetQuantities=true);
+        bool AddBlock(const Block &blk, bool SetQuantities=true);
+        bool AddSource(const Source &src, bool SetQuantities=true);
+        bool AddLink(const Link &lnk, const string &source, const string &destination, bool SetQuantities=true);
+        bool AddConstituent(const Constituent &cnst, bool SetQuantities=true);
+        bool AddReaction(const Reaction &rxn, bool SetQuantities=true);
+        bool AddObservation(const Observation &obs, bool SetQuantities=true);
+        bool AddReactionParameter(const RxnParameter &rxn, bool SetQuantities=true);
         Block *block(const string &s);
         Block *block(unsigned int i)
         {
@@ -276,14 +276,85 @@ class System: public Object
         bool OneStepSolve(unsigned int i, bool transport=false);
         bool Renew(const string &variable);
         SafeVector<int> ConnectedBlocksTo(int blockid); // Get the list of blocks the block 'blockid' is connected to
-        SafeVector<int> ConnectedBlocksFrom(int blockid); // Get the list of connected to the block 'blockid'
+        SafeVector<int> ConnectedBlocksFrom(int blockid);
+        
+        bool OneStepSolve_(unsigned int statevarno, bool transport);
+
+        // Get the list of connected to the block 'blockid'
         SafeVector<int> SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited); //Set outflow limitation status for block blockid and the connected rigid blocks to it
 		bool Update(const string &variable="");
         void UnUpdateAllVariables();
 		//bool Solve(const string &variable, bool ApplyParams = false);
 		bool Solve(bool ApplyParams = false);
         void MakeTimeSeriesUniform(const double &increment);
-		bool SetProp(const string &s, const double &val);
+        /**
+     * @brief Prepares the system for numerical solving by initializing solver parameters and internal state.
+     *
+     * This includes:
+     * - Initializing OpenMP locks (if enabled)
+     * - Resizing observation fit metrics
+     * - Recording simulation start time
+     * - Setting parent-child relationships across all model components
+     * - Preparing state variable storage based on the number of state variables
+     * - Enabling Jacobian updates for the Newton-Raphson solver
+     * - Extracting all relevant time series inputs (e.g., precipitation)
+     */
+        void InitializeSolverEnvironment();
+        /**
+     * @brief Initializes the simulation state, expressions, initial conditions and output structures.
+     *
+     * This function performs the following tasks:
+     * - Applies model parameters to objects (if requested)
+     * - Initializes simulation outputs and registers logging
+     * - Uniformizes all time series to the base time step
+     * - Initializes symbolic and precalculated expressions
+     * - Computes initial values for state variables
+     * - Clears update flags on all model objects
+     *
+     * @param applyparameters If true, parameters will be applied to the model before initialization.
+     */
+        void InitializeModelState(bool applyparameters);
+        /**
+ * @brief Clears existing time series for all objective functions and observations.
+ *
+ * This ensures that previous simulation results do not interfere with the current run.
+ */
+        void ClearObservationTimeSeries();
+        
+        /**
+ * @brief Initializes the runtime window GUI with simulation metadata.
+ *
+ * If GUI support is enabled and a runtime window exists:
+ * - Displays a simulation start message with timestamp
+ * - Sets the X axis to time range [tstart, tend]
+ * - Sets the Y axis to timestep range
+ * - Triggers event processing to refresh the UI
+ */
+        void InitializeSimulationUI();
+        /**
+ * @brief Executes the main adaptive time-stepping loop for solving the system.
+ *
+ * This function runs the simulation forward in time using the Newton-Raphson solver,
+ * updating system states, logging outputs, handling convergence and failure recovery,
+ * and interacting with GUI elements if enabled.
+ *
+ * It adjusts time step size based on solver convergence, writes outputs periodically,
+ * and terminates early if global limits (e.g. simulation time or number of matrix inversions) are exceeded.
+ *
+ * @param success Reference to a boolean that will be set to true if the loop completes successfully, or false on failure.
+ */
+        void RunTimeLoop(bool& success);
+        /**
+ * @brief Finalizes simulation by uniformizing outputs, updating logs, and flushing GUI.
+ *
+ * This function:
+ * - Uniformizes all output and observation time series
+ * - Applies final expression processing for objective functions and observations
+ * - Updates GUI progress bars and completion messages
+ * - Writes a final status message to the solution logger
+ */
+        void FinalizeOutputs();
+        bool SetProp(const string &s, const double &val);
 		bool SetProperty(const string &s, const string &val);
         TimeSeriesSet<outputtimeseriesprecision>& GetOutputs() {return Outputs.AllOutputs;}
         TimeSeriesSet<timeseriesprecision>& GetObservedOutputs() {return Outputs.ObservedOutputs;}
@@ -350,8 +421,8 @@ class System: public Object
         bool SetSystemSettingsObjectProperties(const string &s, const string &val, bool checkcritetia = false);
         bool Delete(const string& objectname);
         void PopulateOperatorsFunctions();
-        bool VerifyAsSource(Block* blk, Link* lnk);
-        bool VerifyAsDestination(Block* blk, Link* lnk);
+        bool VerifyAsSource(const Block* blk, const Link* lnk);
+        bool VerifyAsDestination(const Block* blk, const Link* lnk);
         ErrorHandler VerifyAllQuantities();
         bool CalcAllInitialValues();
         void WriteObjectsToLogger();
@@ -458,8 +529,8 @@ class System: public Object
         map<string, Quan> addedpropertiestoallblocks;
         map<string, Quan> addedpropertiestoalllinks;
         MetaModel metamodel;
-        CVector_arma GetResiduals(const string &variable, CVector_arma &X, bool transport=false);
-        CVector_arma GetResiduals_TR(const string &variable, CVector_arma &X);
+        CVector_arma GetResiduals(const string &variable, const CVector_arma &X, bool transport=false);
+        CVector_arma GetResiduals_TR(const string &variable, const CVector_arma &X);
         double Gradient(Object* obj, Object* wrt, const string &dependent_var, const string &independent_var);
         CVector_arma Gradient(Object* obj, const string &independent_var);
 
@@ -479,13 +550,118 @@ class System: public Object
 #endif
 
         bool CalculateFlows(const string &var, const Timing &tmg = Timing::present);
-        void SetStateVariables(const string &variable, CVector_arma &X, const Timing &tmg = Timing::present, bool transport=false);
+        void SetStateVariables(const string &variable, const CVector_arma &X, const Timing &tmg = Timing::present, bool transport=false);
         string GetBlockConstituent(unsigned int i);
         void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Timing &tmg, bool transport);
-        void SetStateVariables_TR(const string &variable, CVector_arma &X, const Timing &tmg = Timing::present);
+        void SetStateVariables_TR(const string &variable, const CVector_arma &X, const Timing &tmg = Timing::present);
         vector<bool> GetOutflowLimitedVector();
         vector<double> GetOutflowLimitFactorVector(const Timing &tmg);
-        void SetOutflowLimitedVector(vector<bool>& x);
+        void SetOutflowLimitedVector(const vector<bool>& x);
+        
+        /**
+         * @brief Copies outflow limit factors from one time step to another for all links and blocks.
+         *
+         * This function transfers the outflow limitation values (which may represent flow caps or physical constraints)
+         * from a source time step (e.g., Timing::past) to a destination time step (e.g., Timing::present).
+         *
+         * @param from The time context to read the current outflow limit factors (typically Timing::past)
+         * @param to The time context to apply the propagated outflow limit factors (typically Timing::present)
+         */
+        void PropagateOutflowLimitFactors(Timing from, Timing to);
+
+
+        /**
+         * @brief Prepares the initial guess and residual vector for Newton-Raphson iteration.
+         *
+         * This function retrieves the state variable values from the previous time step,
+         * applies any relevant outflow limits (for non-transport mode),
+         * computes the residual vector, and stores a backup of the initial guess.
+         *
+         * @param variable The name of the state variable being solved
+         * @param transport Indicates whether the solve is for transport (mass flow)
+         * @param[out] X The initial guess vector (possibly limited)
+         * @param[out] F The residual vector at the initial guess
+         * @param[out] X_past Backup copy of the initial guess (used to restore state on divergence)
+         * @param outflowlimitstatus_old Original outflow limitation flags (restored on failure)
+         * @return true if residuals are finite and initialization succeeded; false otherwise
+         */
+        bool PrepareSolveStateForInitialGuess(const std::string& variable, bool transport, CVector_arma& X, CVector_arma& F, CVector_arma& X_past, const std::vector<bool>& outflowlimitstatus_old);
+
+        /**
+         * @brief Logs detailed information when the residual vector becomes non-finite.
+         *
+         * This function appends a diagnostic message to the fail_reason vector and writes
+         * detailed solver diagnostics (time, residual, state vector, and timestep) to the
+         * solution logger, if one is available.
+         *
+         * @param variable The name of the state variable being solved
+         * @param X The current state vector at failure
+         * @param F The residual vector at failure
+         */
+        void LogResidualFailure(const std::string& variable, const CVector_arma& X, const CVector_arma& F);
+
+        /**
+         * @brief Handles the case when the residual vector F is invalid (NaN or Inf).
+         *
+         * Logs diagnostic messages, flushes the solution logger, and restores outflow limit vector if necessary.
+         *
+         * @param variable Name of the variable being solved
+         * @param X Current state vector
+         * @param F Residual vector (invalid)
+         * @param transport Whether the simulation is in transport mode
+         * @param outflowlimitstatus_old Saved outflow limitation status to restore
+         * @return Always returns false to allow inline usage as `return HandleInvalidResidual(...)`
+         */
+        bool HandleInvalidResidual(const std::string& variable, const CVector_arma& X, const CVector_arma& F, bool transport, const std::vector<bool>& outflowlimitstatus_old);
+
+        /**
+         * @brief Logs detailed information when the Jacobian matrix is found to be not full-ranked.
+         *
+         * This includes:
+         * - A message about Jacobian singularity
+         * - The diagonal vector
+         * - Indices of blocks with zero diagonal values
+         * - Appends failure reason to SolverTempVars
+         *
+         * @param J The Jacobian matrix
+         */
+        void LogJacobianSingularity(const CMatrix_arma& J);
+
+        /**
+         * @brief Handles failure due to exceeding maximum allowed Newton-Raphson iterations.
+         *
+         * Logs the failure reason, outputs detailed diagnostic information,
+         * and restores outflow-limited status if needed.
+         *
+         * @param variable The state variable being solved
+         * @param X The current state vector
+         * @param F The current residual vector
+         * @param statevarno Index of the state variable in solve order
+         * @param ini_max_error_block Index of the block with the initial max error
+         * @param err Current residual norm
+         * @param err_ini Initial residual norm
+         * @param X_norm Norm of the state vector X
+         * @param transport Whether this is a transport solve
+         * @param outflowlimitstatus_old Outflow limitation status to restore if needed
+         * @return Always returns false to allow inline usage like `return HandleIterationLimitFailure(...)`
+         */
+        bool HandleIterationLimitFailure(const std::string& variable, const CVector_arma& X, const CVector_arma& F, unsigned int statevarno, int ini_max_error_block, double err, double err_ini, double X_norm, bool transport, const std::vector<bool>& outflowlimitstatus_old);
+
+        /**
+         * @brief Handles failure when storage becomes negative in a block after maximum allowed attempts.
+         *
+         * Logs the failure, outputs the block name and time step, flushes the logger,
+         * and restores the outflow limit status if applicable.
+         *
+         * @param block_index Index of the block with negative storage
+         * @param transport Whether this is a transport solve
+         * @param outflowlimitstatus_old Previously saved outflow limit vector
+         * @return Always returns false for inline usage
+         */
+        bool HandleNegativeStorageFailure(unsigned int block_index, bool transport, const std::vector<bool>& outflowlimitstatus_old);
+
+         
+
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
         void InitiateOutputs();

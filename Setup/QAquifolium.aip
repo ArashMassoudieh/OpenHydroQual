@@ -27,10 +27,10 @@
     <ROW Property="ARPURLUPDATEINFO" Value="www.OpenHydroQual.com"/>
     <ROW Property="AppLogoIcon" Value="applogoicon" MultiBuildValue="DefaultBuild:Aquifolium.jpg_1" Type="1" MsiKey="AppLogoIcon"/>
     <ROW Property="Manufacturer" Value="EnviroInformatics, LLC"/>
-    <ROW Property="ProductCode" Value="1033:{B3A02BEE-9DD5-44DC-92AB-4C338C833BC7} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{C7935DB6-13EB-4E89-A2DC-27CC2E0AAA23} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="OpenHydroQual"/>
-    <ROW Property="ProductVersion" Value="1.2.2" Type="32"/>
+    <ROW Property="ProductVersion" Value="1.2.5" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{22A5F0D0-785C-400D-99C4-4FBF0A322AB6}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -61,7 +61,7 @@
     <ROW Directory="resources_Dir" Directory_Parent="APPDIR" DefaultDir="RESOUR~1|resources"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
-    <ROW Component="AI_CustomARPName" ComponentId="{42400746-49C9-4E60-BD11-C497D1A99C26}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
+    <ROW Component="AI_CustomARPName" ComponentId="{FE7A5BA0-CBBF-4FEE-BEC6-F631E34D3C93}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
     <ROW Component="AI_ExePath" ComponentId="{E9233AF7-0339-4898-BA7A-0EA6DCB0522F}" Directory_="APPDIR" Attributes="4" KeyPath="AI_ExePath"/>
     <ROW Component="AI_IA_ENABLE" ComponentId="{9961D3AC-A7F7-45C8-9F93-9695250B97F1}" Directory_="APPDIR" Attributes="4" KeyPath="AI_IA_ENABLE" Options="1"/>
     <ROW Component="Bioretention.png" ComponentId="{F01F4FC1-0721-4F89-8CAF-F9B6A4F658CD}" Directory_="Wizard_Icons_Dir" Attributes="0" KeyPath="Bioretention.png_1" Type="0"/>
@@ -88,7 +88,7 @@
     <ROW Component="gslcblas.dll" ComponentId="{368FCED3-0206-48D1-9DDE-C933493012C8}" Directory_="bin_1_Dir" Attributes="256" KeyPath="gslcblas.dll"/>
     <ROW Component="lapack_win64_MT.dll" ComponentId="{F87E591E-7E83-4C46-85F8-7ADD18193F13}" Directory_="bin_1_Dir" Attributes="256" KeyPath="lapack_win64_MT.dll"/>
     <ROW Component="mass_transfer.json" ComponentId="{257014D1-AE27-4BAF-BEC5-2F36BDCC146C}" Directory_="resources_Dir" Attributes="0" KeyPath="mass_transfer.json" Type="0"/>
-    <ROW Component="pd.nfo" ComponentId="{55F0147A-9963-4409-BE0F-C68AA6C78D3B}" Directory_="Icons_Dir" Attributes="0" KeyPath="pd.nfo" Type="0"/>
+    <ROW Component="pd.nfo" ComponentId="{55F0147A-9963-4409-BE0F-C68AA6C78D3B}" Directory_="Icons_Dir" Attributes="0" KeyPath="Amenities.png" Type="0"/>
     <ROW Component="qwindows.dll" ComponentId="{8C436F42-BA9C-40C0-BDAB-030477991FCF}" Directory_="platform_Dir" Attributes="256" KeyPath="qwindows.dll"/>
     <ROW Component="regid.199509.com.example" ComponentId="{4137D2EE-914D-4A57-A419-5DA792FA0CF6}" Directory_="regid.199509.com.example_Dir" Attributes="0"/>
     <ROW Component="updater.exe" ComponentId="{15A6D915-0F43-4D3D-A3EB-8230607FF6B5}" Directory_="APPDIR" Attributes="0" KeyPath="updater.exe"/>
@@ -148,6 +148,7 @@
     <ROW File="GWA.png" Component_="pd.nfo" FileName="GWA.png" Attributes="0" SourcePath="..\resources\Icons\GWA.png" SelfReg="false" NextFile="iconoutlinehandpalmcartoontoolpanfree.png"/>
     <ROW File="GW_to_Stream.png" Component_="pd.nfo" FileName="GW_TO_~2.PNG|GW_to_Stream.png" Attributes="0" SourcePath="..\resources\Icons\GW_to_Stream.png" SelfReg="false" NextFile="GWA.ico"/>
     <ROW File="GW_to_lake.png" Component_="pd.nfo" FileName="GW_TO_~1.PNG|GW_to_lake.png" Attributes="0" SourcePath="..\resources\Icons\GW_to_lake.png" SelfReg="false" NextFile="GW_to_Stream.png"/>
+    <ROW File="Gate_Opening.png" Component_="pd.nfo" FileName="GATE_O~1.PNG|Gate_Opening.png" Attributes="0" SourcePath="..\resources\Icons\Gate_Opening.png" SelfReg="false" NextFile="orifice.png"/>
     <ROW File="GoogleNotoEmojiSymbols73016potablewater.ico" Component_="pd.nfo" FileName="GOOGLE~1.ICO|Google-Noto-Emoji-Symbols-73016-potable-water.ico" Attributes="0" SourcePath="..\resources\Icons\Google-Noto-Emoji-Symbols-73016-potable-water.ico" SelfReg="false" NextFile="Governmental_user.png"/>
     <ROW File="Governmental_user.png" Component_="pd.nfo" FileName="GOVERN~1.PNG|Governmental_user.png" Attributes="0" SourcePath="..\resources\Icons\Governmental_user.png" SelfReg="false" NextFile="Graph.png"/>
     <ROW File="Graph.png" Component_="pd.nfo" FileName="Graph.png" Attributes="0" SourcePath="..\resources\Icons\Graph.png" SelfReg="false" NextFile="Groundwater.png"/>
@@ -212,7 +213,10 @@
     <ROW File="Soil2Soil_KS.png" Component_="pd.nfo" FileName="SOIL2S~3.PNG|Soil2Soil_KS.png" Attributes="0" SourcePath="..\resources\Icons\Soil2Soil_KS.png" SelfReg="false" NextFile="soil2soilH.png"/>
     <ROW File="Splillway.png" Component_="pd.nfo" FileName="SPLILL~1.PNG|Splillway.png" Attributes="0" SourcePath="..\resources\Icons\Splillway.png" SelfReg="false" NextFile="Storage.png"/>
     <ROW File="Storage.png" Component_="pd.nfo" FileName="Storage.png" Attributes="0" SourcePath="..\resources\Icons\Storage.png" SelfReg="false" NextFile="stormwaterpond.png"/>
-    <ROW File="Stormwater.png" Component_="Bioretention.png" FileName="STORMW~1.PNG|Stormwater.png" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Wizard_Icons\Stormwater.png" SelfReg="false" NextFile="pd.nfo"/>
+    <ROW File="StorageUnit.png" Component_="pd.nfo" FileName="STORAG~2.PNG|StorageUnit.png" Attributes="0" SourcePath="..\resources\Icons\StorageUnit.png" SelfReg="false" NextFile="StorageUnitLink.png"/>
+    <ROW File="StorageUnitLink.png" Component_="pd.nfo" FileName="STORAG~3.PNG|StorageUnitLink.png" Attributes="0" SourcePath="..\resources\Icons\StorageUnitLink.png" SelfReg="false"/>
+    <ROW File="StorageUnitPowerLaw.png" Component_="pd.nfo" FileName="STORAG~1.PNG|StorageUnitPowerLaw.png" Attributes="0" SourcePath="..\resources\Icons\StorageUnitPowerLaw.png" SelfReg="false" NextFile="physicsbaseddd.png"/>
+    <ROW File="Stormwater.png" Component_="Bioretention.png" FileName="STORMW~1.PNG|Stormwater.png" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Wizard_Icons\Stormwater.png" SelfReg="false" NextFile="activate_sludge_reactor.png"/>
     <ROW File="StormwaterPond.json" Component_="D_Soil.json" FileName="STORMW~1.JSO|StormwaterPond.json" Attributes="0" SourcePath="..\resources\Wizard_Scripts\StormwaterPond.json" SelfReg="false" NextFile="Wizard_list.txt"/>
     <ROW File="Stormwater_control_measures.json" Component_="mass_transfer.json" FileName="STORMW~1.JSO|Stormwater_control_measures.json" Attributes="0" SourcePath="..\resources\Stormwater_control_measures.json" SelfReg="false" NextFile="test_expression.json"/>
     <ROW File="Stream.jpg" Component_="pd.nfo" FileName="Stream.jpg" Attributes="0" SourcePath="..\resources\Icons\Stream.jpg" SelfReg="false" NextFile="Stream.png"/>
@@ -229,11 +233,9 @@
     <ROW File="Water_Transfer_to_Groundwater.png" Component_="pd.nfo" FileName="WATER_~3.PNG|Water_Transfer_to_Groundwater.png" Attributes="0" SourcePath="..\resources\Icons\Water_Transfer_to_Groundwater.png" SelfReg="false" NextFile="watertank.png"/>
     <ROW File="Well.json" Component_="mass_transfer.json" FileName="WELL~1.JSO|Well.json" Attributes="0" SourcePath="..\resources\Well.json" SelfReg="false" NextFile="D_Soil.json"/>
     <ROW File="Well.png" Component_="pd.nfo" FileName="Well.png" Attributes="0" SourcePath="..\resources\Icons\Well.png" SelfReg="false" NextFile="Well_aggregate.png"/>
-    <ROW File="Well_aggregate.png" Component_="pd.nfo" FileName="WELL_A~1.PNG|Well_aggregate.png" Attributes="0" SourcePath="..\resources\Icons\Well_aggregate.png" SelfReg="false" NextFile="well_aggregate.svg"/>
+    <ROW File="Well_aggregate.png" Component_="pd.nfo" FileName="WELL_A~1.PNG|Well_aggregate.png" Attributes="0" SourcePath="..\resources\Icons\Well_aggregate.png" SelfReg="false" NextFile="well_template.png"/>
     <ROW File="WindowZoom.png" Component_="pd.nfo" FileName="WINDOW~1.PNG|WindowZoom.png" Attributes="0" SourcePath="..\resources\Icons\WindowZoom.png" SelfReg="false" NextFile="wizardblue.png"/>
     <ROW File="Wizard_list.txt" Component_="D_Soil.json" FileName="WIZARD~1.TXT|Wizard_list.txt" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Wizard_list.txt" SelfReg="false" NextFile="Bioretention.png"/>
-    <ROW File="_Redo.png" Component_="pd.nfo" FileName="143925~2.PNG|1439255778_Redo.png" Attributes="0" SourcePath="..\resources\Icons\1439255778_Redo.png" SelfReg="false" NextFile="kivio_connector.svg.hi.png"/>
-    <ROW File="_newfile.png" Component_="pd.nfo" FileName="143925~1.PNG|1439255260_new-file.png" Attributes="0" SourcePath="..\resources\Icons\1439255260_new-file.png" SelfReg="false" NextFile="_Redo.png"/>
     <ROW File="activate_sludge_reactor.png" Component_="pd.nfo" FileName="ACTIVA~1.PNG|activate_sludge_reactor.png" Attributes="0" SourcePath="..\resources\Icons\activate_sludge_reactor.png" SelfReg="false" NextFile="Age_tracer.png"/>
     <ROW File="aggregate2aggregate_H.png" Component_="pd.nfo" FileName="AGGREG~1.PNG|aggregate2aggregate_H.png" Attributes="0" SourcePath="..\resources\Icons\aggregate2aggregate_H.png" SelfReg="false" NextFile="aggregate2soil.png"/>
     <ROW File="aggregate2soil.png" Component_="pd.nfo" FileName="AGGREG~2.PNG|aggregate2soil.png" Attributes="0" SourcePath="..\resources\Icons\aggregate2soil.png" SelfReg="false" NextFile="aggregates.png"/>
@@ -257,8 +259,7 @@
     <ROW File="build_up_sat.png" Component_="pd.nfo" FileName="BUILD_~1.PNG|build_up_sat.png" Attributes="0" SourcePath="..\resources\Icons\build_up_sat.png" SelfReg="false" NextFile="buildup_washoff_template.png"/>
     <ROW File="buildup_washoff.json" Component_="mass_transfer.json" FileName="BUILDU~1.JSO|buildup_washoff.json" Attributes="0" SourcePath="..\resources\buildup_washoff.json" SelfReg="false" NextFile="default_templates.list"/>
     <ROW File="buildup_washoff_template.png" Component_="pd.nfo" FileName="BUILDU~1.PNG|buildup_washoff_template.png" Attributes="0" SourcePath="..\resources\Icons\buildup_washoff_template.png" SelfReg="false" NextFile="Catch_basin.png"/>
-    <ROW File="catchment.ico" Component_="pd.nfo" FileName="CATCHM~1.ICO|catchment.ico" Attributes="0" SourcePath="..\resources\Icons\catchment.ico" SelfReg="false" NextFile="catchment.jpg"/>
-    <ROW File="catchment.jpg" Component_="pd.nfo" FileName="CATCHM~1.JPG|catchment.jpg" Attributes="0" SourcePath="..\resources\Icons\catchment.jpg" SelfReg="false" NextFile="catchment.png"/>
+    <ROW File="catchment.ico" Component_="pd.nfo" FileName="CATCHM~1.ICO|catchment.ico" Attributes="0" SourcePath="..\resources\Icons\catchment.ico" SelfReg="false" NextFile="catchment.png"/>
     <ROW File="catchment.png" Component_="pd.nfo" FileName="CATCHM~1.PNG|catchment.png" Attributes="0" SourcePath="..\resources\Icons\catchment.png" SelfReg="false" NextFile="Catchment_outlet.png"/>
     <ROW File="channel2fixed.png" Component_="pd.nfo" FileName="CHANNE~1.PNG|channel2fixed.png" Attributes="0" SourcePath="..\resources\Icons\channel2fixed.png" SelfReg="false" NextFile="Chemical_source_constant.png"/>
     <ROW File="city.png" Component_="pd.nfo" FileName="city.png" Attributes="0" SourcePath="..\resources\Icons\city.png" SelfReg="false" NextFile="cloud.jpg"/>
@@ -269,6 +270,7 @@
     <ROW File="commertial.png" Component_="pd.nfo" FileName="COMMER~1.PNG|commertial.png" Attributes="0" SourcePath="..\resources\Icons\commertial.png" SelfReg="false" NextFile="constituent.png"/>
     <ROW File="constituent.png" Component_="pd.nfo" FileName="CONSTI~1.PNG|constituent.png" Attributes="0" SourcePath="..\resources\Icons\constituent.png" SelfReg="false" NextFile="Control.png"/>
     <ROW File="control_valve.png" Component_="pd.nfo" FileName="CONTRO~1.PNG|control_valve.png" Attributes="0" SourcePath="..\resources\Icons\control_valve.png" SelfReg="false" NextFile="copy.png"/>
+    <ROW File="controlable_weir.png" Component_="pd.nfo" FileName="CONTRO~2.PNG|controlable_weir.png" Attributes="0" SourcePath="..\resources\Icons\controlable_weir.png" SelfReg="false" NextFile="Gate_Opening.png"/>
     <ROW File="copy.png" Component_="pd.nfo" FileName="copy.png" Attributes="0" SourcePath="..\resources\Icons\copy.png" SelfReg="false" NextFile="copydisk.png"/>
     <ROW File="copydisk.png" Component_="pd.nfo" FileName="COPY-D~1.PNG|copy-disk.png" Attributes="0" SourcePath="..\resources\Icons\copy-disk.png" SelfReg="false" NextFile="Curve.png"/>
     <ROW File="cuticon.png" Component_="pd.nfo" FileName="cut-icon.png" Attributes="0" SourcePath="..\resources\Icons\cut-icon.png" SelfReg="false" NextFile="Darcy.png"/>
@@ -298,8 +300,9 @@
     <ROW File="fixed_flow.png" Component_="pd.nfo" FileName="FIXED_~1.PNG|fixed_flow.png" Attributes="0" SourcePath="..\resources\Icons\fixed_flow.png" SelfReg="false" NextFile="fixed_hydro_gradient.png"/>
     <ROW File="fixed_hydro_gradient.png" Component_="pd.nfo" FileName="FIXED_~2.PNG|fixed_hydro_gradient.png" Attributes="0" SourcePath="..\resources\Icons\fixed_hydro_gradient.png" SelfReg="false" NextFile="fixed2channel.png"/>
     <ROW File="fixedhead.png" Component_="pd.nfo" FileName="FIXEDH~1.PNG|fixedhead.png" Attributes="0" SourcePath="..\resources\Icons\fixedhead.png" SelfReg="false" NextFile="fixedhead_timeseries.png"/>
-    <ROW File="fixedhead2soilv.png" Component_="pd.nfo" FileName="FIXEDH~3.PNG|fixedhead2soil-v.png" Attributes="0" SourcePath="..\resources\Icons\fixedhead2soil-v.png" SelfReg="false"/>
+    <ROW File="fixedhead2soilv.png" Component_="pd.nfo" FileName="FIXEDH~3.PNG|fixedhead2soil-v.png" Attributes="0" SourcePath="..\resources\Icons\fixedhead2soil-v.png" SelfReg="false" NextFile="controlable_weir.png"/>
     <ROW File="fixedhead_timeseries.png" Component_="pd.nfo" FileName="FIXEDH~2.PNG|fixedhead_timeseries.png" Attributes="0" SourcePath="..\resources\Icons\fixedhead_timeseries.png" SelfReg="false" NextFile="Flowofrecycledwater.png"/>
+    <ROW File="flexflow.png" Component_="pd.nfo" FileName="FLEX-F~1.PNG|flex-flow.png" Attributes="0" SourcePath="..\resources\Icons\flex-flow.png" SelfReg="false" NextFile="StorageUnitPowerLaw.png"/>
     <ROW File="flow_arrow.png" Component_="pd.nfo" FileName="FLOW_A~1.PNG|flow_arrow.png" Attributes="0" SourcePath="..\resources\Icons\flow_arrow.png" SelfReg="false" NextFile="Full_screen_view.png"/>
     <ROW File="full_screen_zoomicon.gif" Component_="pd.nfo" FileName="FULL_S~1.GIF|full_screen_zoom-icon.gif" Attributes="0" SourcePath="..\resources\Icons\full_screen_zoom-icon.gif" SelfReg="false" NextFile="gear_run.png"/>
     <ROW File="gear_run.png" Component_="pd.nfo" FileName="gear_run.png" Attributes="0" SourcePath="..\resources\Icons\gear_run.png" SelfReg="false" NextFile="generatescript.jpg"/>
@@ -318,7 +321,6 @@
     <ROW File="isometric_sand_block_icon__hd__by_memoryleakxxxd8e3mwa.png" Component_="pd.nfo" FileName="ISOMET~1.PNG|isometric_sand_block_icon__hd__by_memoryleakxxx-d8e3mwa.png" Attributes="0" SourcePath="..\resources\Icons\isometric_sand_block_icon__hd__by_memoryleakxxx-d8e3mwa.png" SelfReg="false" NextFile="junction.png"/>
     <ROW File="junction.png" Component_="pd.nfo" FileName="junction.png" Attributes="0" SourcePath="..\resources\Icons\junction.png" SelfReg="false" NextFile="junction_rigid.png"/>
     <ROW File="junction_rigid.png" Component_="pd.nfo" FileName="JUNCTI~1.PNG|junction_rigid.png" Attributes="0" SourcePath="..\resources\Icons\junction_rigid.png" SelfReg="false" NextFile="Lake2GWlink.png"/>
-    <ROW File="kivio_connector.svg.hi.png" Component_="pd.nfo" FileName="119499~1.PNG|1194994606310980771kivio_connector.svg.hi.png" Attributes="0" SourcePath="..\resources\Icons\1194994606310980771kivio_connector.svg.hi.png" SelfReg="false" NextFile="activate_sludge_reactor.png"/>
     <ROW File="lapack_win64_MT.dll" Component_="lapack_win64_MT.dll" FileName="LAPACK~1.DLL|lapack_win64_MT.dll" Attributes="0" SourcePath="..\libs\lapack-blas_lib_win64\lapack_win64_MT.dll" SelfReg="false" NextFile="qwindows.dll"/>
     <ROW File="log_icon.jpg" Component_="pd.nfo" FileName="log_icon.jpg" Attributes="0" SourcePath="..\resources\Icons\log_icon.jpg" SelfReg="false" NextFile="log_icon.png"/>
     <ROW File="log_icon.png" Component_="pd.nfo" FileName="log_icon.png" Attributes="0" SourcePath="..\resources\Icons\log_icon.png" SelfReg="false" NextFile="mass_transfer_template.png"/>
@@ -333,13 +335,14 @@
     <ROW File="open_channel.json" Component_="mass_transfer.json" FileName="OPEN_C~1.JSO|open_channel.json" Attributes="0" SourcePath="..\resources\open_channel.json" SelfReg="false" NextFile="pipe_pump_tank.json"/>
     <ROW File="open_channel_template.png" Component_="pd.nfo" FileName="OPEN_C~1.PNG|open_channel_template.png" Attributes="0" SourcePath="..\resources\Icons\open_channel_template.png" SelfReg="false" NextFile="optimize.png"/>
     <ROW File="optimize.png" Component_="pd.nfo" FileName="optimize.png" Attributes="0" SourcePath="..\resources\Icons\optimize.png" SelfReg="false" NextFile="oscilloscope.jpg"/>
+    <ROW File="orifice.png" Component_="pd.nfo" FileName="orifice.png" Attributes="0" SourcePath="..\resources\Icons\orifice.png" SelfReg="false" NextFile="reactorflex.png"/>
     <ROW File="oscilloscope.jpg" Component_="pd.nfo" FileName="OSCILL~1.JPG|oscilloscope.jpg" Attributes="0" SourcePath="..\resources\Icons\oscilloscope.jpg" SelfReg="false" NextFile="oscilloscope.png"/>
     <ROW File="oscilloscope.png" Component_="pd.nfo" FileName="OSCILL~1.PNG|oscilloscope.png" Attributes="0" SourcePath="..\resources\Icons\oscilloscope.png" SelfReg="false" NextFile="pan2.png"/>
     <ROW File="pan2.png" Component_="pd.nfo" FileName="pan2.png" Attributes="0" SourcePath="..\resources\Icons\pan2.png" SelfReg="false" NextFile="panicon.gif"/>
     <ROW File="panicon.gif" Component_="pd.nfo" FileName="pan-icon.gif" Attributes="0" SourcePath="..\resources\Icons\pan-icon.gif" SelfReg="false" NextFile="parameter.png"/>
     <ROW File="parameter.png" Component_="pd.nfo" FileName="PARAME~1.PNG|parameter.png" Attributes="0" SourcePath="..\resources\Icons\parameter.png" SelfReg="false" NextFile="Particle.png"/>
     <ROW File="pd.jpg" Component_="pd.nfo" FileName="pd.jpg" Attributes="0" SourcePath="..\resources\Icons\pd.jpg" SelfReg="false" NextFile="pipe.png"/>
-    <ROW File="pd.nfo" Component_="pd.nfo" FileName="!pd.nfo" Attributes="0" SourcePath="..\resources\Icons\!pd.nfo" SelfReg="false" NextFile="png"/>
+    <ROW File="physicsbaseddd.png" Component_="pd.nfo" FileName="PHYSIC~1.PNG|physicsbaseddd.png" Attributes="0" SourcePath="..\resources\Icons\physicsbaseddd.png" SelfReg="false" NextFile="StorageUnit.png"/>
     <ROW File="pipe.png" Component_="pd.nfo" FileName="pipe.png" Attributes="0" SourcePath="..\resources\Icons\pipe.png" SelfReg="false" NextFile="pipe_1w.png"/>
     <ROW File="pipe_1w.png" Component_="pd.nfo" FileName="pipe_1w.png" Attributes="0" SourcePath="..\resources\Icons\pipe_1w.png" SelfReg="false" NextFile="pipe_pump_template.png"/>
     <ROW File="pipe_pump_tank.json" Component_="mass_transfer.json" FileName="PIPE_P~1.JSO|pipe_pump_tank.json" Attributes="0" SourcePath="..\resources\pipe_pump_tank.json" SelfReg="false" NextFile="plants.json"/>
@@ -348,7 +351,6 @@
     <ROW File="plant.png" Component_="pd.nfo" FileName="plant.png" Attributes="0" SourcePath="..\resources\Icons\plant.png" SelfReg="false" NextFile="plant_template.png"/>
     <ROW File="plant_template.png" Component_="pd.nfo" FileName="PLANT_~1.PNG|plant_template.png" Attributes="0" SourcePath="..\resources\Icons\plant_template.png" SelfReg="false" NextFile="png_pond_by_paradise234d5g6gky.png"/>
     <ROW File="plants.json" Component_="mass_transfer.json" FileName="PLANTS~1.JSO|plants.json" Attributes="0" SourcePath="..\resources\plants.json" SelfReg="false" NextFile="Pond_Plugin.json"/>
-    <ROW File="png" Component_="pd.nfo" FileName="37.png" Attributes="0" SourcePath="..\resources\Icons\37.png" SelfReg="false" NextFile="_newfile.png"/>
     <ROW File="png_pond_by_paradise234d5g6gky.png" Component_="pd.nfo" FileName="PNG_PO~1.PNG|png_pond_by_paradise234-d5g6gky.png" Attributes="0" SourcePath="..\resources\Icons\png_pond_by_paradise234-d5g6gky.png" SelfReg="false" NextFile="Pond.png"/>
     <ROW File="pond.svg" Component_="Bioswale.png" FileName="pond.svg" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Diagrams\pond.svg" SelfReg="false" NextFile="Bioretention.png_1"/>
     <ROW File="pond_template.png" Component_="pd.nfo" FileName="POND_T~1.PNG|pond_template.png" Attributes="0" SourcePath="..\resources\Icons\pond_template.png" SelfReg="false" NextFile="Pondicon.png"/>
@@ -365,6 +367,7 @@
     <ROW File="reaction.png" Component_="pd.nfo" FileName="reaction.png" Attributes="0" SourcePath="..\resources\Icons\reaction.png" SelfReg="false" NextFile="reactionparameter.png"/>
     <ROW File="reactionparameter.png" Component_="pd.nfo" FileName="REACTI~1.PNG|reactionparameter.png" Attributes="0" SourcePath="..\resources\Icons\reactionparameter.png" SelfReg="false" NextFile="reactor.png"/>
     <ROW File="reactor.png" Component_="pd.nfo" FileName="reactor.png" Attributes="0" SourcePath="..\resources\Icons\reactor.png" SelfReg="false" NextFile="rect3016.png"/>
+    <ROW File="reactorflex.png" Component_="pd.nfo" FileName="REACTO~1.PNG|reactor-flex.png" Attributes="0" SourcePath="..\resources\Icons\reactor-flex.png" SelfReg="false" NextFile="flexflow.png"/>
     <ROW File="rect3016.png" Component_="pd.nfo" FileName="rect3016.png" Attributes="0" SourcePath="..\resources\Icons\rect3016.png" SelfReg="false" NextFile="release.png"/>
     <ROW File="release.png" Component_="pd.nfo" FileName="release.png" Attributes="0" SourcePath="..\resources\Icons\release.png" SelfReg="false" NextFile="Reservoid_Control.png"/>
     <ROW File="reservoir.png" Component_="pd.nfo" FileName="RESERV~2.PNG|reservoir.png" Attributes="0" SourcePath="..\resources\Icons\reservoir.png" SelfReg="false" NextFile="Reservoir_Control.png"/>
@@ -433,15 +436,12 @@
     <ROW File="updater.exe" Component_="updater.exe" FileName="updater.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="&lt;AI_STUBS&gt;updater.exe" SelfReg="false" NextFile="Bioswale.png" DigSign="true"/>
     <ROW File="urban_water_management.json" Component_="mass_transfer.json" FileName="URBAN_~1.JSO|urban_water_management.json" Attributes="0" SourcePath="..\resources\urban_water_management.json" SelfReg="false" NextFile="urban_water_management_old.json"/>
     <ROW File="urban_water_management_old.json" Component_="mass_transfer.json" FileName="URBAN_~2.JSO|urban_water_management_old.json" Attributes="0" SourcePath="..\resources\urban_water_management_old.json" SelfReg="false" NextFile="wastewater.json"/>
-    <ROW File="valve.png" Component_="pd.nfo" FileName="valve.png" Attributes="0" SourcePath="..\resources\Icons\valve.png" SelfReg="false" NextFile="vectorstock_22209863.png"/>
-    <ROW File="vectorstock_22209863.png" Component_="pd.nfo" FileName="VECTOR~1.PNG|vectorstock_22209863.png" Attributes="0" SourcePath="..\resources\Icons\vectorstock_22209863.png" SelfReg="false" NextFile="vectorstock_30450796.png"/>
-    <ROW File="vectorstock_30450796.png" Component_="pd.nfo" FileName="VECTOR~2.PNG|vectorstock_30450796.png" Attributes="0" SourcePath="..\resources\Icons\vectorstock_30450796.png" SelfReg="false" NextFile="vnotchweir.png"/>
+    <ROW File="valve.png" Component_="pd.nfo" FileName="valve.png" Attributes="0" SourcePath="..\resources\Icons\valve.png" SelfReg="false" NextFile="vnotchweir.png"/>
     <ROW File="vnotchweir.png" Component_="pd.nfo" FileName="VNOTCH~1.PNG|vnotchweir.png" Attributes="0" SourcePath="..\resources\Icons\vnotchweir.png" SelfReg="false" NextFile="Wastewater_flow.png"/>
     <ROW File="wastewater.json" Component_="mass_transfer.json" FileName="WASTEW~1.JSO|wastewater.json" Attributes="0" SourcePath="..\resources\wastewater.json" SelfReg="false" NextFile="Well.json"/>
     <ROW File="wastewater_template.png" Component_="pd.nfo" FileName="WASTEW~2.PNG|wastewater_template.png" Attributes="0" SourcePath="..\resources\Icons\wastewater_template.png" SelfReg="false" NextFile="Wastewater_Treatment_plant.png"/>
     <ROW File="water_supply_well.png" Component_="pd.nfo" FileName="WATER_~1.PNG|water_supply_well.png" Attributes="0" SourcePath="..\resources\Icons\water_supply_well.png" SelfReg="false" NextFile="Water_Transfer.png"/>
     <ROW File="watertank.png" Component_="pd.nfo" FileName="WATERT~1.PNG|watertank.png" Attributes="0" SourcePath="..\resources\Icons\watertank.png" SelfReg="false" NextFile="Well.png"/>
-    <ROW File="well_aggregate.svg" Component_="pd.nfo" FileName="WELL_A~1.SVG|well_aggregate.svg" Attributes="0" SourcePath="..\resources\Icons\well_aggregate.svg" SelfReg="false" NextFile="well_template.png"/>
     <ROW File="well_template.png" Component_="pd.nfo" FileName="WELL_T~1.PNG|well_template.png" Attributes="0" SourcePath="..\resources\Icons\well_template.png" SelfReg="false" NextFile="welltosoilHlink.png"/>
     <ROW File="welltosoilHlink.png" Component_="pd.nfo" FileName="WELL-T~1.PNG|well-to-soil-H-link.png" Attributes="0" SourcePath="..\resources\Icons\well-to-soil-H-link.png" SelfReg="false" NextFile="welltosoilVlink.png"/>
     <ROW File="welltosoilVlink.png" Component_="pd.nfo" FileName="WELL-T~2.PNG|well-to-soil-V-link.png" Attributes="0" SourcePath="..\resources\Icons\well-to-soil-V-link.png" SelfReg="false" NextFile="wide_channel.png"/>
@@ -834,7 +834,7 @@
     <ROW XmlAttribute="xsischemaLocation" XmlElement="swidsoftware_identification_tag" Name="xsi:schemaLocation" Flags="14" Order="3" Value="http://standards.iso.org/iso/19770/-2/2008/schema.xsd software_identification_tag.xsd"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
-    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="2"/>
+    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="5"/>
     <ROW XmlElement="swidentitlement_required_indicator" ParentElement="swidsoftware_identification_tag" Name="swid:entitlement_required_indicator" Condition="1" Order="0" Flags="14" Text="false"/>
     <ROW XmlElement="swidmajor" ParentElement="swidnumeric" Name="swid:major" Condition="1" Order="0" Flags="14" Text="1"/>
     <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="2"/>

@@ -187,7 +187,15 @@ std::unordered_map<std::string, Quan>::iterator QuanSet::begin() {
     return quans.begin();
 }
 
+std::unordered_map<std::string, Quan>::const_iterator QuanSet::cbegin() const {
+    return quans.cbegin();
+}
+
 std::unordered_map<std::string, Quan>::iterator QuanSet::end() {
+    return quans.end();
+}
+
+std::unordered_map<std::string, Quan>::const_iterator QuanSet::cend() const {
     return quans.end();
 }
 

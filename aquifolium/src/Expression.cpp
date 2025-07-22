@@ -430,7 +430,7 @@ Expression Expression::RenameConstituent(const std::string& old_constituent_name
 
 
 // --- Collect all required properties from destination-linked expressions ---
-std::vector<std::string> Expression::GetAllRequieredEndingBlockProperties() {
+std::vector<std::string> Expression::GetAllRequieredEndingBlockProperties() const {
     std::vector<std::string> props;
 
     if (param_constant_expression == "parameter" && location == ExpressionNode::loc::destination) {
@@ -457,7 +457,7 @@ std::vector<std::string> Expression::GetAllRequieredEndingBlockProperties() {
 }
 
 // --- Collect all required properties from source-linked expressions ---
-std::vector<std::string> Expression::GetAllRequieredStartingBlockProperties() {
+std::vector<std::string> Expression::GetAllRequieredStartingBlockProperties() const {
     std::vector<std::string> props;
 
     if (param_constant_expression == "parameter" && location == ExpressionNode::loc::source) {

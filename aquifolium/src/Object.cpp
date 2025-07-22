@@ -514,7 +514,7 @@ vector<Quan> Object::GetCopyofAllQuans()
     return out;
 }
 
-bool Object::HasQuantity(const string &q)
+bool Object::HasQuantity(const string &q) const
 {
     if (Count(q)==0)
         return false;

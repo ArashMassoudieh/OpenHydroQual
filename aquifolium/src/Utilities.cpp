@@ -682,13 +682,13 @@ namespace aquiutils
 
 
     std::string extract_path(const std::string& filepath) {
-        #if __cplusplus >= 201703L
-                std::filesystem::path p(filepath);
-                return p.has_parent_path() ? p.parent_path().string() : "";
-        #else
-                size_t pos = filepath.find_last_of("/\\");
-                return (pos != std::string::npos) ? filepath.substr(0, pos) : "";
-        #endif
+    #if __cplusplus >= 201703L && (!defined(__APPLE__) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500)
+        std::filesystem::path p(filepath);
+        return p.has_parent_path() ? p.parent_path().string() : "";
+    #else
+        size_t pos = filepath.find_last_of("/\\");
+        return (pos != std::string::npos) ? filepath.substr(0, pos) : "";
+    #endif
     }
 
     double mod(double x, double y)

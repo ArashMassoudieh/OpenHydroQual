@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     cout<<"Solving ..."<<endl;
     system->Solve();
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + system->OutputFileName() +"'";
-    system->GetOutputs().writetofile(system->GetWorkingFolder() + system->OutputFileName());
+    system->GetOutputs().write(system->GetWorkingFolder() + system->OutputFileName());
     return 0;
 
 }

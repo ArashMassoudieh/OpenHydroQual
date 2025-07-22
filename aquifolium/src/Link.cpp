@@ -49,10 +49,10 @@ string Link::toCommand()
     return out;
 }
 
-vector<string> Link::GetAllRequieredStartingBlockProperties()
+vector<string> Link::GetAllRequieredStartingBlockProperties() const
 {
     vector<string> s; 
-    for (unordered_map<string, Quan>::iterator it = GetVars()->begin(); it!= GetVars()->end(); it++)
+    for (unordered_map<string, Quan>::const_iterator it = GetVars()->cbegin(); it!= GetVars()->cend(); it++)
     {
         for (unsigned int i = 0; i< it->second.GetAllRequieredStartingBlockProperties().size(); i++)
         {
@@ -61,10 +61,10 @@ vector<string> Link::GetAllRequieredStartingBlockProperties()
     }
     return s; 
 }
-vector<string> Link::GetAllRequieredDestinationBlockProperties()
+vector<string> Link::GetAllRequieredDestinationBlockProperties() const
 {
     vector<string> s;
-    for (unordered_map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)
+    for (unordered_map<string, Quan>::const_iterator it = GetVars()->cbegin(); it != GetVars()->cend(); it++)
     {
         for (unsigned int i = 0; i< it->second.GetAllRequieredEndingBlockProperties().size(); i++)
         {

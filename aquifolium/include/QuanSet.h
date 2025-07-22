@@ -60,7 +60,9 @@ public:
 
     std::unordered_map<string, Quan>::iterator find(const string& name); ///< Lookup by name
     std::unordered_map<string, Quan>::iterator begin(); ///< Begin iterator
+    std::unordered_map<std::string, Quan>::const_iterator cbegin() const; ///< const Begin iterator;
     std::unordered_map<string, Quan>::iterator end(); ///< End iterator
+    std::unordered_map<std::string, Quan>::const_iterator cend() const; ///< const End iterator
     std::unordered_map<string, Quan>::const_iterator const_end() const; ///< Const end iterator
     std::unordered_map<string, Quan>::const_iterator const_begin() const; ///< Const begin iterator
 

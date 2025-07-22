@@ -192,8 +192,8 @@ public:
     bool Validate();
 
     bool HasCriteria() { if (criteria.Count() > 0) return true; else return false; }
-    std::vector<std::string> GetAllRequieredStartingBlockProperties();
-    std::vector<std::string> GetAllRequieredEndingBlockProperties();
+    std::vector<std::string> GetAllRequieredStartingBlockProperties() const;
+    std::vector<std::string> GetAllRequieredEndingBlockProperties() const;
 
     void Set_Value_Update(bool x) { value_star_updated = x; }
     bool Value_Updated() { return value_star_updated; }

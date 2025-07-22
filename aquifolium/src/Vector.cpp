@@ -289,9 +289,15 @@ bool CVector::is_finite() const {
     return true;
 }
 
-string CVector::toString() const {
-    stringstream ss;
-    for (const auto& x : *this) ss << x << ", ";
+std::string CVector::toString() const {
+    std::stringstream ss;
+    ss << "[";
+    for (size_t i = 0; i < this->size(); ++i) {
+        ss << (*this)[i];
+        if (i != this->size() - 1)
+            ss << ", ";
+    }
+    ss << "]";
     return ss.str();
 }
 
