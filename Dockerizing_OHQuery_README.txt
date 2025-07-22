@@ -62,3 +62,16 @@ You’ve now rebuilt and deployed your updated OHQuery container.
 to stop the container
 sudo docker stop ohquery-container
 
+Save image to tar file: 
+sudo docker save -o ohquery-app.tar ohquery-app
+
+
+Pushing to DockerHub: 
+
+docker tag ohquery-app enviroinformatics/ohquery-app:latest
+docker login
+docker push enviroinformatics/ohquery-app:latest
+
+Pulling from Dockerhub: 
+docker pull enviroinformatics/ohquery-app:latest
+
