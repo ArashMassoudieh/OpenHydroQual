@@ -23,7 +23,7 @@ INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
 INCLUDEPATH += ../qcustomplot6/
-if==macx:CONFIG += staticlib
+
 macx: DEFINES +=mac_version
 linux: DEFINES +=ubuntu_version
 win32: DEFINES +=windows_version
@@ -47,24 +47,38 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Q_JSON_SUPPORT Aquifolium
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0
 
-macx: {
-    QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -Iusr/local/lib/
-    LIBS += -L$$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/lib/ -lgsl
-    INCLUDEPATH += $$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/include
-    DEPENDPATH += $$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/include
 
-}
 
 macx: {
     QMAKE_LFLAGS += -lomp
 }
 
-macx: {
-    LIBS += -L /usr/local/lib /usr/local/lib/libomp.dylib
-}
 
-macx: {
-    INCLUDEPATH += /usr/local/include/
+macx {
+    CONFIG += c++17 app_bundle
+
+    LLVM_DIR = /opt/homebrew/opt/llvm
+
+    QMAKE_CC  = $$LLVM_DIR/bin/clang
+    QMAKE_CXX = $$LLVM_DIR/bin/clang++
+
+    QMAKE_CXXFLAGS += -fopenmp -I$$LLVM_DIR/include
+    QMAKE_LFLAGS   += -L$$LLVM_DIR/lib -lomp
+
+    INCLUDEPATH += $$LLVM_DIR/include
+    LIBS += -L$$LLVM_DIR/lib -lomp
+
+    DEFINES += mac_version ARMA_USE_LAPACK ARMA_USE_BLAS
+
+    # Armadillo and GSL (adjust versions if needed)
+    INCLUDEPATH += $$PWD/../Armadillo
+    DEPENDPATH  += $$PWD/../Armadillo
+    LIBS += -L$$PWD/../Armadillo -larmadillo.11.2.3 -llapack.3.10.1 -lblas.3.10.1
+
+    INCLUDEPATH += /opt/homebrew/Cellar/gsl/2.8/include
+    LIBS += -L/opt/homebrew/Cellar/gsl/2.8/lib -lgsl
+
+    QMAKE_POST_LINK += cp -R $$PWD/resources $$OUT_PWD/OpenHydroQual.app/Contents/
 }
 
 
@@ -84,7 +98,7 @@ CONFIG(debug, debug|release) {
     # QMAKE_CXXFLAGS+=-pg
     # QMAKE_LFLAGS+=-pg
     # macx: DEFINES += NO_OPENMP
-    ! macx: LIBS += -lgomp -lpthread
+    ! macx: LIBS += -lgomp -lpthread -lopenblas
     macx: LIBS += -lpthread
     DEFINES += DEBUG
 }
@@ -269,8 +283,6 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-# LAPACK — Linear Algebra PACKage lib and include locations
-
 
 win32 {
 
@@ -303,18 +315,4 @@ linux {
      LIBS += -larmadillo -llapack -lblas -lgsl -lopenblas
 
 }
-
-macx {
-    #sudo apt-get install libblas-dev liblapack-dev
-    message( $$PWD )
-     DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -L$$PWD/../Armadillo/ -llapack.3.10.1
-     LIBS += -L$$PWD/../Armadillo/ -lblas.3.10.1
-     LIBS += -L$$PWD/../Armadillo/ -larmadillo.11.2.3
-     INCLUDEPATH += $$PWD/../Armadillo/include/
-     DEPENDPATH += $$PWD/../Armadillo
-}
-
-RESOURCES +=
-
 

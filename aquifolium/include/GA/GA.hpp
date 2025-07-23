@@ -228,7 +228,7 @@ void CGA<T>::setnumpop(int n)
 template<class T>
 CGA<T>::CGA(const CGA<T> &C)
 {
-    GA_params.maxpop = C.maxpop;
+    GA_params.maxpop = C.GA_params.maxpop;
 	Ind.resize(GA_params.maxpop);
 	Ind_old.resize(GA_params.maxpop);
 	Ind = C.Ind;
