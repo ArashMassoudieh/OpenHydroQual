@@ -4,10 +4,7 @@
 #
 #-------------------------------------------------
 
-macx:{
-    CONFIG += app_bundle
-    ICON = OHQ.icns
-}
+#CONFIG -= app_bundle
 
 CONFIG += c++17
 
@@ -19,8 +16,6 @@ greaterThan(QT_MAJOR_VERSION, 5): {
 
 
 DEFINES += QCharts
-DEFINES += Q_JSON_SUPPORT
-
 INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
@@ -44,7 +39,7 @@ win32:QMAKE_CXXFLAGS += /MP
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Aquifolium
+DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Q_JSON_SUPPORT Aquifolium
 #DEFINES += Debug_GA
 #DEFINES += VALGRIND
 # You can also make your code fail to compile if you use deprecated APIs.
@@ -54,6 +49,9 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Aquifolium
 
 
 
+macx: {
+    QMAKE_LFLAGS += -lomp
+}
 
 
 macx {
@@ -84,32 +82,31 @@ macx {
 }
 
 
-linux: {
-    CONFIG(debug, debug|release) {
-        message(Building in debug mode)
-        QMAKE_CXXFLAGS *= -fopenmp -O3 -march=native
-        QMAKE_LFLAGS +=  -fopenmp
-        LIBS += -lgomp -lpthread -lopenblas
-        LIBS += -lpthread
-        DEFINES += _NO_OPENMP DEBUG
-        LIBS += -larmadillo -llapack -lblas
+CONFIG(debug, debug|release) {
+    message(Building in debug mode)
+    !macx: QMAKE_CXXFLAGS *= -fopenmp -O3 -march=native
+    !macx: QMAKE_LFLAGS +=  -fopenmp
+    !macx: LIBS += -lgomp -lpthread -lopenblas
+    LIBS += -lpthread
+    DEFINES += _NO_OPENMP DEBUG
 
-
-    } else {
-        message(Building in release mode)
-        QMAKE_CXXFLAGS *= -fopenmp -O3 -march=native
-        QMAKE_LFLAGS +=  -fopenmp
-        LIBS += -larmadillo -llapack -lblas
-        LIBS += -lgomp -lpthread
-
-    }
+} else {
+    message(Building in release mode)
+    !macx: QMAKE_CXXFLAGS *= -fopenmp -O3 -march=native
+    !macx: QMAKE_LFLAGS +=  -fopenmp
+    # QMAKE_CFLAGS+=-pg
+    # QMAKE_CXXFLAGS+=-pg
+    # QMAKE_LFLAGS+=-pg
+    # macx: DEFINES += NO_OPENMP
+    ! macx: LIBS += -lgomp -lpthread -lopenblas
+    LIBS += lgomp
+    macx: LIBS += -lpthread
+    #DEFINES += DEBUG
 }
 
 
 
 SOURCES += \
-    aquifolium/src/ExpressionNode.cpp \
-    aquifolium/src/ExpressionParser.cpp \
     chartview.cpp \
     qplotter.cpp \
     ./aquifolium/src/RxnParameter.cpp \
@@ -180,8 +177,6 @@ SOURCES += \
     wizard_select_dialog.cpp
 
 HEADERS += \
-    aquifolium/include/ExpressionNode.h \
-    aquifolium/include/ExpressionParser.h \
     aquifolium/include/TimeSeries.h \
     aquifolium/include/TimeSeriesSet.h \
     aquifolium/src/TimeSeries.hpp \
@@ -318,7 +313,7 @@ win32 {
 linux {
     #sudo apt-get install libblas-dev liblapack-dev
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -larmadillo -llapack -lblas -lgsl
+     LIBS += -larmadillo -llapack -lblas -lgsl -lopenblas
 
 }
 

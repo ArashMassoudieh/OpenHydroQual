@@ -91,7 +91,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="QtSettings">
-    <QtInstall>6.7</QtInstall>
+    <QtInstall>Qt 6.8</QtInstall>
     <QtModules>core;opengl;gui;svg;widgets;printsupport;charts;svgwidgets</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -99,7 +99,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="QtSettings">
-    <QtInstall>6.7</QtInstall>
+    <QtInstall>Qt 6.8</QtInstall>
     <QtModules>core;gui;widgets;opengl;printsupport;svg;svgwidgets;charts</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
@@ -192,7 +192,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_GUI_SUPPORT;Q_JSON_SUPPORT;Aquifolium;Qt6;GSL;ARMA_USE_LAPACK;ARMA_USE_BLAS;QT_NO_DEBUG;NDEBUG;WIN64;windows_version;%(PreprocessorDefinitions);QCharts</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_version;Aquifolium;Qt6;GSL;ARMA_USE_LAPACK;ARMA_USE_BLAS;QT_NO_DEBUG;NDEBUG;WIN64;windows_version;%(PreprocessorDefinitions);QCharts</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -310,7 +310,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_GUI_SUPPORT;Q_JSON_SUPPORT;Aquifolium;Qt6;GSL;DEBUG;NO_OPENMP;ARMA_USE_LAPACK;ARMA_USE_BLAS;WIN64;windows_version;%(PreprocessorDefinitions);QCharts</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_DEPRECATED_WARNINGS;Q_version;Aquifolium;Qt6;GSL;DEBUG;NO_OPENMP;ARMA_USE_LAPACK;ARMA_USE_BLAS;WIN64;windows_version;%(PreprocessorDefinitions);QCharts</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -365,8 +365,6 @@ copy libs\gsl\*.dll $(OutDir)</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="aquifolium\src\constituent.cpp" />
-    <ClCompile Include="aquifolium\src\ExpressionNode.cpp" />
-    <ClCompile Include="aquifolium\src\ExpressionParser.cpp" />
     <ClCompile Include="aquifolium\src\GA\Binary.cpp" />
     <ClCompile Include="aquifolium\src\Block.cpp" />
     <ClCompile Include="aquifolium\src\Command.cpp" />
@@ -436,8 +434,6 @@ copy libs\gsl\*.dll $(OutDir)</Command>
   <ItemGroup>
     <ClInclude Include="aquifolium\include\Condition.h" />
     <ClInclude Include="aquifolium\include\constituent.h" />
-    <ClInclude Include="aquifolium\include\ExpressionNode.h" />
-    <ClInclude Include="aquifolium\include\ExpressionParser.h" />
     <ClInclude Include="aquifolium\include\GA\Binary.h" />
     <ClInclude Include="aquifolium\include\Block.h" />
     <ClInclude Include="aquifolium\include\Command.h" />

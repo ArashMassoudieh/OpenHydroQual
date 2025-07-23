@@ -84,13 +84,13 @@ QJsonDocument ServerOps::Execute(const QJsonObject &instructions)
 {
     System *system=new System();
     cout<<"Reading script ..."<<endl;
-    string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
+    string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/resources/";
     cout << "Default Template path = " + defaulttemppath +"\n";
     system->SetDefaultTemplatePath(defaulttemppath);
     system->SetWorkingFolder(QFileInfo(modelFile).canonicalPath().toStdString() + "/");
 
     qDebug()<<"Model File: " << modelFile;
-    string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
+    string settingfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
     Script scr(modelFile.toStdString(),system);
     cout<<"Executing script ..."<<endl;
     system->CreateFromScript(scr,settingfilename);

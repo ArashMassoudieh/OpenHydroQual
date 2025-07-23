@@ -14,8 +14,8 @@
  */
 
 
-#define openhydroqual_version "1.2.5"
-#define last_modified "July, 20, 2025"
+#define openhydroqual_version "1.2.3"
+#define last_modified "May, 12, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -1354,8 +1354,8 @@ void MainWindow::showgraph()
         }
     }
     else
-    {    
-        if (GetSystem()->GetOutputs()[item.toStdString()].size() == 0)
+    {
+        if (GetSystem()->GetOutputs()[item.toStdString()].size()==0)
         {
             QMessageBox::question(this, "Time Series is empty!", "The result for this quantity is empty!", QMessageBox::Ok);
             return;
@@ -1915,7 +1915,6 @@ void MainWindow::onrunmodel()
     rtw = new RunTimeWindow(this,config::forward);
     rtw->show();
     copiedsystem.SetRunTimeWindow(rtw);
-	copiedsystem.SaveEquationstoJson(workingfolder.toStdString() + "/equations.json");
     copiedsystem.Solve(true);
     rtw->AppendText(string("Saving outputs in '" + workingfolder.toStdString() + "'"));
     qDebug()<<"Working folder" << workingfolder;
@@ -2135,7 +2134,7 @@ Plotter* MainWindow::Plot(TimeSeriesSet<timeseriesprecision>& plotitem, bool all
     return plotter;
 }
 
-Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved)
+Plotter* MainWindow::Plot(TimeSeries<timeseriesprecision>& plotmodeled, TimeSeries<timeseriesprecision>& plotobserved)
 {
     Plotter* plotter = new Plotter(this);
     if (plotmodeled.n>0)

@@ -29,8 +29,6 @@
 #define SMALLNUMBER 1e-23
 #define PI 3.14159265359
 
-enum class Timing { past, present, both };
-
 using namespace std;
 
 namespace aquiutils
@@ -43,10 +41,8 @@ namespace aquiutils
     int count(const string &s, const string &s1);
     bool parantheses_balance(string S);
     bool contains(const string &s, const string &s1);
-    bool contains_any(const std::string& s, const std::string& chars);
     string left(const string &s, int i);
     string right(const string &s, int i);
-    bool ends_with(const std::string& value, const std::string& ending);
     void remove(string &s,unsigned int i);
     void replace(string &s,unsigned int i,string p);
     void remove(string &s,unsigned int pos, unsigned int len);

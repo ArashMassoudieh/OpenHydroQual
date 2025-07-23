@@ -21,6 +21,8 @@
 int main(int argc, char *argv[])
 {
 
+    std::cout<<"OHQuery version 1.0.8 is running ..."<<std::endl;
+
     QCoreApplication a(argc,argv);
     QJsonObject configuration = loadJsonObjectFromFile("config.json");
     ServerOps *server = nullptr;

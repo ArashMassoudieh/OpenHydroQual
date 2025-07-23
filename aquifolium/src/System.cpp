@@ -33,9 +33,8 @@
 #endif
 //#define NormalizeByDiagonal
 
-#ifdef Q_GUI_SUPPORT
-    #include <QDebug>
-#endif
+#include <QDebug>
+
 
 #ifdef SUPER_LU
     #include "Matrix_arma_sp.h"
@@ -153,125 +152,130 @@ System& System::operator=(const System& rhs)
     return *this;
 }
 
-void System::Clear() {
+void System::Clear()
+{
     blocks.clear();
     links.clear();
     sources.clear();
-    constituents.clear();
+    objective_function_set.clear();
+    parameter_set.clear();
     reactions.clear();
     reaction_parameters.clear();
-    Settings.clear();
-    observations.clear();
+    constituents.clear();
     Outputs.AllOutputs.clear();
     Outputs.ObservedOutputs.clear();
     metamodel.Clear();
-    objective_function_set.clear();
-    parameter_set.clear();
-    addedpropertiestoallblocks.clear();
-    addedpropertiestoalllinks.clear();
-    alltimeseries.clear();
-    addedtemplates.clear();
-    fit_measures.clear();
-    errorhandler.clear();
 }
 
 
-bool System::AddBlock(const Block& blk, bool set_quantities) {
+bool System::AddBlock(Block &blk, bool SetQuantities)
+{
     blocks.push_back(blk);
-    auto* added = block(blk.GetName());
-    added->SetParent(this);
-    if (set_quantities)
-        added->SetQuantities(metamodel, blk.GetType());
-    AddAllConstituentRelateProperties(added);
-    return true;
+
+    block(blk.GetName())->SetParent(this);
+    if (SetQuantities)
+        block(blk.GetName())->SetQuantities(metamodel, blk.GetType());
+    block(blk.GetName())->SetParent(this);
+
+    AddAllConstituentRelateProperties(block(blk.GetName()));
+	return true;
 }
 
-bool System::AddSource(const Source& src, bool set_quantities) {
+bool System::AddSource(Source &src, bool SetQuantities)
+{
     sources.push_back(src);
-    auto* added = source(src.GetName());
-    added->SetParent(this);
-    if (set_quantities)
-        added->SetQuantities(metamodel, src.GetType());
-    AddAllConstituentRelateProperties(added);
-    return true;
+    source(src.GetName())->SetParent(this);
+    if (SetQuantities)
+        source(src.GetName())->SetQuantities(metamodel, src.GetType());
+    source(src.GetName())->SetParent(this);
+    AddAllConstituentRelateProperties(source(src.GetName()));
+	return true;
 }
 
-bool System::AddLink(const Link& lnk, const std::string& src_name, const std::string& dst_name, bool set_quantities) {
-    auto* src_blk = block(src_name);
-    auto* dst_blk = block(dst_name);
-
-    if (!src_blk ) {
-        errorhandler.Append("System", "System", "AddLink", "Block '" + src_name + "' not found", 8790);
-        return false;
-    }
-
-    if (!dst_blk) {
-        errorhandler.Append("System", "System", "AddLink", "Block '" + dst_name + "' not found", 8790);
-        return false;
-    }
-
-    if (!VerifyAsSource(src_blk, &lnk) || !VerifyAsDestination(dst_blk, &lnk))
-        return false;
-
-    links.push_back(lnk);
-    auto* added = link(lnk.GetName());
-    added->SetParent(this);
-    added->SetConnectedBlock(ExpressionNode::loc::source, src_name);
-    added->SetConnectedBlock(ExpressionNode::loc::destination, dst_name);
-    src_blk->AppendLink(links.size() - 1, ExpressionNode::loc::source);
-    dst_blk->AppendLink(links.size() - 1, ExpressionNode::loc::destination);
-    if (set_quantities)
-        added->SetQuantities(metamodel, lnk.GetType());
-    AddAllConstituentRelateProperties(added);
-    return true;
-}
-
-bool System::AddConstituent(const Constituent& cnst, bool set_quantities) {
+bool System::AddConstituent(Constituent &cnst, bool SetQuantities)
+{
     constituents.push_back(cnst);
-    auto* added = constituent(cnst.GetName());
-    added->SetParent(this);
-    if (set_quantities)
-        added->SetQuantities(metamodel, cnst.GetType());
-    AddConstituentRelateProperties(added);
+    constituent(cnst.GetName())->SetParent(this);
+    if (SetQuantities)
+        constituent(cnst.GetName())->SetQuantities(metamodel, cnst.GetType());
+    constituent(cnst.GetName())->SetParent(this);
+    AddConstituentRelateProperties(constituent(cnst.GetName()));
     AddConstituentRelatePropertiestoMetalModel();
     return true;
 }
 
-bool System::AddReaction(const Reaction& rxn, bool set_quantities) {
+bool System::AddReaction(Reaction &rxn, bool SetQuantities)
+{
     reactions.push_back(rxn);
-    auto* added = reaction(rxn.GetName());
-    added->SetParent(this);
-    if (set_quantities)
-        added->SetQuantities(metamodel, rxn.GetType());
-    AddAllConstituentRelateProperties(added);
-    AddConstituentRelateProperties(added);
+
+    reaction(rxn.GetName())->SetParent(this);
+     if (SetQuantities)
+        reaction(rxn.GetName())->SetQuantities(metamodel, rxn.GetType());
+    reaction(rxn.GetName())->SetParent(this);
+    AddAllConstituentRelateProperties(reaction(rxn.GetName()));
+    AddConstituentRelateProperties(reaction(rxn.GetName()));
     return true;
 }
 
-bool System::AddReactionParameter(const RxnParameter& rp, bool set_quantities) {
-    reaction_parameters.push_back(rp);
-    auto* added = reactionparameter(rp.GetName());
-    added->SetParent(this);
-    if (set_quantities)
-        added->SetQuantities(metamodel, rp.GetType());
+bool System::AddReactionParameter(RxnParameter &rxnparam, bool SetQuantities)
+{
+    reaction_parameters.push_back(rxnparam);
+    reactionparameter(rxnparam.GetName())->SetParent(this);
+     if (SetQuantities)
+        reactionparameter(rxnparam.GetName())->SetQuantities(metamodel, rxnparam.GetType());
+    reactionparameter(rxnparam.GetName())->SetParent(this);
     return true;
 }
 
-bool System::AddObservation(const Observation& obs, bool set_quantities) {
+bool System::AddObservation(Observation &obs, bool SetQuantities)
+{
     observations.push_back(obs);
-    auto* added = observation(obs.GetName());
-    added->SetParent(this);
-    if (set_quantities)
-        added->SetQuantities(metamodel, obs.GetType());
+    observation(obs.GetName())->SetParent(this);
+    if (SetQuantities)
+        observation(obs.GetName())->SetQuantities(metamodel, obs.GetType());
+    observation(obs.GetName())->SetParent(this);
     return true;
+
 }
 
+bool System::AddLink(Link &lnk, const string &source, const string &destination, bool SetQuantities)
+{
+	if (!block(source))
+	{
+		errorhandler.Append("System", "System", "AddLink", "Block '" + source + "' does not exist!", 8791);
+		return false;
+	}
+
+	if (!block(destination))
+	{
+		errorhandler.Append("System", "System", "AddLink", "Block '" + destination + "' does not exist!", 8792);
+		return false;
+	}
 
 
-Block* System::block(const std::string& name) {
-    for (auto& blk : blocks)
-        if (blk.GetName() == name)
-            return &blk;
+	if (!VerifyAsDestination(block(destination), &lnk))
+        return false;
+    if (!VerifyAsSource(block(source), &lnk))
+        return false;
+    links.push_back(lnk);
+    link(lnk.GetName())->SetParent(this);
+    link(lnk.GetName())->SetConnectedBlock(Expression::loc::source, source);
+    link(lnk.GetName())->SetConnectedBlock(Expression::loc::destination, destination);
+	block(source)->AppendLink(links.size()-1,Expression::loc::source);
+	block(destination)->AppendLink(links.size()-1,Expression::loc::destination);
+    if (SetQuantities)
+        link(lnk.GetName())->SetQuantities(metamodel, lnk.GetType());
+	link(lnk.GetName())->SetParent(this);
+    AddAllConstituentRelateProperties(link(lnk.GetName()));
+	return true;
+}
+
+Block *System::block(const string &s)
+{
+    for (unsigned int i=0; i<blocks.size(); i++)
+        if (blocks[i].GetName() == s) return &blocks[i];
+
+    //errorhandler.Append(GetName(),"System","block","Block '" + s + "' was not found",101);
     return nullptr;
 }
 
@@ -294,47 +298,56 @@ int System::linkid(const string &s)
     return -1;
 }
 
-Link* System::link(const std::string& name) {
-    for (auto& lnk : links)
-        if (lnk.GetName() == name)
-            return &lnk;
+Link *System::link(const string &s)
+{
+    for (unsigned int i=0; i<links.size(); i++)
+        if (links[i].GetName() == s) return &links[i];
+
+    //errorhandler.Append(GetName(),"System","link","Link '" + s + "' was not found",104);
+
     return nullptr;
 }
 
-Source* System::source(const std::string& name) {
-    for (auto& src : sources)
-        if (src.GetName() == name)
-            return &src;
+Source *System::source(const string &s)
+{
+    for (unsigned int i=0; i<sources.size(); i++)
+        if (sources[i].GetName() == s) return &sources[i];
+
     return nullptr;
 }
 
+Constituent *System::constituent(const string &s)
+{
+    for (unsigned int i=0; i<constituents.size(); i++)
+        if (constituents[i].GetName() == s) return &constituents[i];
 
-Constituent* System::constituent(const std::string& name) {
-    for (auto& c : constituents)
-        if (c.GetName() == name)
-            return &c;
     return nullptr;
 }
 
-Reaction* System::reaction(const std::string& name) {
-    for (auto& r : reactions)
-        if (r.GetName() == name)
-            return &r;
+Reaction *System::reaction(const string &s)
+{
+    for (unsigned int i=0; i<reactions.size(); i++)
+        if (reactions[i].GetName() == s) return &reactions[i];
+
     return nullptr;
 }
 
-RxnParameter* System::reactionparameter(const std::string& name) {
-    for (auto& p : reaction_parameters)
-        if (p.GetName() == name)
-            return &p;
+RxnParameter *System::reactionparameter(const string &s)
+{
+    for (unsigned int i=0; i<reaction_parameters.size(); i++)
+        if (reaction_parameters[i].GetName() == s) return &reaction_parameters[i];
+
     return nullptr;
+
 }
 
-Observation* System::observation(const std::string& name) {
-    for (auto& obs : observations)
-        if (obs.GetName() == name)
-            return &obs;
+Observation *System::observation(const string &s)
+{
+    for (unsigned int i=0; i<observations.size(); i++)
+        if (observations[i].GetName() == s) return &observations[i];
+
     return nullptr;
+
 }
 
 Object *System::settings(const string &s)
@@ -552,274 +565,287 @@ void System::MakeTimeSeriesUniform(const double &increment)
 
 }
 
-void System::InitializeSolverEnvironment()
+bool System::Solve(bool applyparameters)
 {
 #ifndef NO_OPENMP
-    // Initialize OpenMP lock for thread safety
     omp_init_lock(&lock);
 #endif
-
-    // Resize the fit measures vector to accommodate all observation metrics
-    fit_measures.resize(ObservationsCount() * 3);
-
-    // Record simulation start time
+    double timestepminfactor = 100000;
+    double timestepmaxfactor = 50;
+    fit_measures.resize(ObservationsCount()*3);
     SolverTempVars.time_start = time(nullptr);
-
-    // Set pointer and parent relationships between objects
     SetAllParents();
     SetQuanPointers();
-
-    // Allocate space for Newton-Raphson solver variables
-    if (ConstituentsCount() > 0)
-        SetNumberOfStateVariables(solvevariableorder.size() + 1);
+    if (ConstituentsCount()>0)
+        SetNumberOfStateVariables(solvevariableorder.size()+1);
     else
         SetNumberOfStateVariables(solvevariableorder.size());
-
     SolverTempVars.SetUpdateJacobian(true);
-
-    // Collect all time series data (e.g., precipitation)
     alltimeseries = GetTimeSeries(true);
-}
 
-void System::InitializeModelState(bool applyparameters)
-{
-    if (applyparameters)
-        ApplyParameters();
-
-    // Set up output structures and initialize logger
+	bool success = true;
+#ifdef Q_GUI_SUPPORT
+    errorhandler.SetRunTimeWindow(rtw);
+#endif // Q_GUI_SUPPORT
+	if (applyparameters) ApplyParameters();
+    //qDebug()<<"Initiating outputs";
     InitiateOutputs();
+    //qDebug()<<"Writing objects to logger";
     WriteObjectsToLogger();
-
 #ifdef Q_GUI_SUPPORT
     QCoreApplication::processEvents();
 #endif
-
-    // Ensure all time series are on a common time grid
+    //qDebug()<<"Processes Events...";
     MakeTimeSeriesUniform(SimulationParameters.dt0);
-
 #ifdef Q_GUI_SUPPORT
     QCoreApplication::processEvents();
 #endif
+    //qDebug()<<"Made uniform done!...";
 
-    // Set solver clock and initialize precalculated terms
     SolverTempVars.dt_base = SimulationParameters.dt0;
     SolverTempVars.dt = SolverTempVars.dt_base;
     SolverTempVars.t = SimulationParameters.tstart;
-
+    //qDebug()<<"Initiating pre-calculated functions";
     InitiatePrecalculatedFunctions();
-    CalculateAllExpressions(Timing::present);
+    //qDebug()<<"Calculating all expressions";
+    CalculateAllExpressions(Expression::timing::present);
+    //qDebug()<<"Calculating initial values";
     CalcAllInitialValues();
+    //qDebug()<<"Unupdating all values";
     UnUpdateAllVariables();
-}
-
-void System::ClearObservationTimeSeries()
-{
-    for (unsigned int i = 0; i < ObjectiveFunctionsCount(); ++i)
+    for (unsigned int i=0; i<ObjectiveFunctionsCount(); i++)
     {
-        if (ObjectiveFunctions()[i]->GetTimeSeries())
-            ObjectiveFunctions()[i]->GetTimeSeries()->clear();
+        ObjectiveFunctions()[i]->GetTimeSeries()->clear();
+    }
+    for (unsigned int i=0; i<ObservationsCount(); i++)
+    {
+        observation(i)->GetTimeSeries()->clear();
     }
 
-    for (unsigned int i = 0; i < ObservationsCount(); ++i)
-    {
-        if (observation(i)->GetTimeSeries())
-            observation(i)->GetTimeSeries()->clear();
-    }
-}
-
-void System::InitializeSimulationUI()
-{
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {
         rtw->AppendText("Simulation Started at " + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
-        rtw->SetXRange(SimulationParameters.tstart, SimulationParameters.tend);
-        rtw->SetYRange(0, SimulationParameters.dt0 * 50); // 50 = max timestep multiplier
+        rtw->SetXRange(SimulationParameters.tstart,SimulationParameters.tend);
+        rtw->SetYRange(0,SimulationParameters.dt0*timestepmaxfactor);
         QCoreApplication::processEvents();
     }
 #endif
-}
 
-void System::RunTimeLoop(bool& success)
-{
-    const double timestepminfactor = 100000;
-    const double timestepmaxfactor = 50;
-
+    Update();
     int counter = 0;
     int fail_counter = 0;
     double progress = 0;
     double progress_p = 0;
-
+#ifdef VALGRIND
+    CALLGRIND_START_INSTRUMENTATION;
+    CALLGRIND_TOGGLE_COLLECT;
+#endif
     PopulateOutputs(false);
     RestorePoint restorepoint(this);
-
 #ifdef Terminal_version
-    cout << "Running from time " << SolverTempVars.t << " to " << SimulationParameters.tend << endl;
+    cout<<"Running from time " << SolverTempVars.t << " to " << SimulationParameters.tend << endl;
 #endif
-
-    UpdateObjectiveFunctions(SolverTempVars.t);
-    UpdateObservations(SolverTempVars.t);
-
-    while (SolverTempVars.t < SimulationParameters.tend + SolverTempVars.dt && !stop_triggered)
+    while (SolverTempVars.t<SimulationParameters.tend+SolverTempVars.dt && !stop_triggered)
     {
+        //qDebug()<<SolverTempVars.t;
         progress_p = progress;
         progress = (SolverTempVars.t - SimulationParameters.tstart) / (SimulationParameters.tend - SimulationParameters.tstart);
         counter++;
-
-        if (counter % 50 == 0)
+		if (counter%50==0)
             SolverTempVars.SetUpdateJacobian(true);
+        //qDebug()<<"First Jacobian update...";
+        SolverTempVars.dt = min(SolverTempVars.dt_base,GetMinimumNextTimeStepSize());
+        if (SolverTempVars.dt<SimulationParameters.dt0/ timestepminfactor) SolverTempVars.dt=SimulationParameters.dt0/ timestepminfactor;
+        #ifdef Terminal_version
+        ShowMessage(string("t = ") + aquiutils::numbertostring(SolverTempVars.t) + ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt) + ", SolverTempVars.numiterations =" + aquiutils::numbertostring(SolverTempVars.numiterations));
+        #endif // Debug_mode
 
-        SolverTempVars.dt = std::min(SolverTempVars.dt_base, GetMinimumNextTimeStepSize());
-        if (SolverTempVars.dt < SimulationParameters.dt0 / timestepminfactor)
-            SolverTempVars.dt = SimulationParameters.dt0 / timestepminfactor;
-
-#ifdef Terminal_version
-        ShowMessage("t = " + aquiutils::numbertostring(SolverTempVars.t) +
-            ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) +
-            ", dt = " + aquiutils::numbertostring(SolverTempVars.dt));
-#endif
-
-        vector<bool> step_success = OneStepSolve();
-        success = aquiutils::And(step_success);
-
-        if (!success)
+        //qDebug()<<"Trying to solve...";
+        vector<bool> _success = OneStepSolve();
+        //qDebug()<<"Solved...";
+		success = aquiutils::And(_success);
+		if (!success)
         {
             fail_counter++;
+            #ifdef Debug_mode
+            ShowMessage("failed!");
+            #endif // Debug_mode
+#ifdef Q_GUI_SUPPORT
+            if (rtw)
+            {
+                if (rtw->detailson)
+                {
+                    rtw->AppendtoDetails(QString::fromStdString(SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1]) + ", dt = " + QString::number(SolverTempVars.dt,'e'));
+                    if (rtw->stoptriggered) stop_triggered = true;
+
+                }
+                QCoreApplication::processEvents();
+                //qDebug()<<"Processes Events...";
+            }
+#else
+            cout<<SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1] << ", dt = " << SolverTempVars.dt<<endl;
+#endif
+            if (GetSolutionLogger())
+                GetSolutionLogger()->WriteString(SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1] + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt));
+
             SolverTempVars.dt_base *= SolverSettings.NR_timestep_reduction_factor_fail;
-            SolverTempVars.dt_base = std::max(SolverTempVars.dt_base, SimulationParameters.dt0 / (2 * timestepminfactor));
+            SolverTempVars.dt_base = max(SolverTempVars.dt_base,SimulationParameters.dt0/(2*timestepminfactor));
             SolverTempVars.SetUpdateJacobian(true);
 
             if (fail_counter > 20)
             {
                 if (!ResetBasedOnRestorePoint(&restorepoint))
                 {
+#ifdef Q_GUI_SUPPORT
+                    if (rtw)
+                    {
+                        if (rtw->detailson)
+                            rtw->AppendtoDetails("The attempt to solve the problem failed");
+
+                        rtw->AppendErrorMessage("The attempt to solve the problem failed!");
+                        QCoreApplication::processEvents();
+                    }
+    #endif
+                    if (GetSolutionLogger())
+                        GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
+                    cout<<"The attempt to solve the problem failed!"<<std::endl;
                     SolverTempVars.SolutionFailed = true;
                     stop_triggered = true;
-                    return;
                 }
                 else
                 {
-                    restorepoint.used_counter = 0;
+                    if (GetSolutionLogger())
+                        GetSolutionLogger()->WriteString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t) );
+#ifdef Q_GUI_SUPPORT
+                    if (rtw)
+                        if (rtw->detailson)
+                            rtw->AppendtoDetails(QString::fromStdString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t)));
+#endif
+
                 }
             }
-
-#ifdef Q_GUI_SUPPORT
-            if (rtw && rtw->detailson)
-                rtw->AppendtoDetails(QString::fromStdString(SolverTempVars.fail_reason.back()) + ", dt = " + QString::number(SolverTempVars.dt, 'e'));
-#endif
-            if (GetSolutionLogger())
-                GetSolutionLogger()->WriteString(SolverTempVars.fail_reason.back() + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt));
         }
         else
         {
+#ifdef Q_GUI_SUPPORT
+            if (rtw)
+            {
+                rtw->SetProgress(progress);
+                rtw->AddDataPoint(SolverTempVars.t, SolverTempVars.dt);
+                if (int(progress/0.01)>int(progress_p/0.01) || rtw->detailson)
+                    rtw->Replot();
+                if (rtw->detailson) rtw->AppendtoDetails("Number of iterations:" + QString::number(SolverTempVars.MaxNumberOfIterations()) + ",dt = " + QString::number(SolverTempVars.dt) + ",t = " + QString::number(SolverTempVars.t, 'f', 6) + ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
+                if (rtw->stoptriggered) stop_triggered = true;
+
+            if ((counter-1)%restore_interval==0)
+            {
+                restorepoint.GetSystem()->CopyStateVariablesFrom(this);
+                restorepoint.t = SolverTempVars.t;
+                restorepoint.dt = SolverTempVars.dt;
+                if (rtw!=nullptr)
+                    if (rtw->detailson)
+                    {
+                        rtw->AppendtoDetails("Restore point saved!");
+                    }
+                restorepoint.used_counter = 0;
+                if (GetSolutionLogger())
+                    GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
+            }
+            if (SimulationParameters.write_outputs_intermittently)
+                if (aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart,SimulationParameters.write_interval)<aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart-SolverTempVars.dt,SimulationParameters.write_interval))
+                    WriteOutPuts();
+            QCoreApplication::processEvents();
+            //cout<<"Processes Events...";
+        }
+#endif
             fail_counter = 0;
             Update();
             UpdateObjectiveFunctions(SolverTempVars.t);
             UpdateObservations(SolverTempVars.t);
             PopulateOutputs();
             SolverTempVars.t += SolverTempVars.dt;
-
-            // Adaptive timestep adjustment
-            int iters = SolverTempVars.MaxNumberOfIterations();
-            if (iters > SolverSettings.NR_niteration_upper)
+            if (SolverTempVars.MaxNumberOfIterations()>SolverSettings.NR_niteration_upper)
             {
-                SolverTempVars.dt_base = std::max(SolverTempVars.dt * SolverSettings.NR_timestep_reduction_factor, SolverSettings.minimum_timestep);
+                SolverTempVars.dt_base = max(SolverTempVars.dt*SolverSettings.NR_timestep_reduction_factor,SolverSettings.minimum_timestep);
                 SolverTempVars.SetUpdateJacobian(true);
                 SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1);
             }
-            else if (iters < SolverSettings.NR_niteration_lower)
+            if (SolverTempVars.MaxNumberOfIterations() < SolverSettings.NR_niteration_lower)
             {
-                SolverTempVars.dt_base = std::min(SolverTempVars.dt_base / SolverSettings.NR_timestep_reduction_factor,
-                    SimulationParameters.dt0 * timestepmaxfactor);
+                SolverTempVars.dt_base = min(SolverTempVars.dt_base / SolverSettings.NR_timestep_reduction_factor, SimulationParameters.dt0 * timestepmaxfactor);
                 SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1);
             }
 
-#ifdef Q_GUI_SUPPORT
-            if (rtw)
-            {
-                rtw->SetProgress(progress);
-                rtw->AddDataPoint(SolverTempVars.t, SolverTempVars.dt);
-                if (int(progress / 0.01) > int(progress_p / 0.01) || rtw->detailson)
-                    rtw->Replot();
 
-                if (rtw->detailson)
-                {
-                    rtw->AppendtoDetails("Number of iterations: " + QString::fromStdString(CVector(SolverTempVars.numiterations).toString()) +
-                        ", dt = " + QString::number(SolverTempVars.dt) +
-                        ", t = " + QString::number(SolverTempVars.t, 'f', 6) +
-                        ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
-                }
 
-                if ((counter - 1) % restore_interval == 0)
-                {
-                    restorepoint.GetSystem()->CopyStateVariablesFrom(this);
-                    restorepoint.t = SolverTempVars.t;
-                    restorepoint.dt = SolverTempVars.dt;
-                    restorepoint.used_counter = 0;
 
-                    if (rtw->detailson)
-                        rtw->AppendtoDetails("Restore point saved!");
-
-                    if (GetSolutionLogger())
-                        GetSolutionLogger()->WriteString("@ t = " + aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
-                }
-
-                if (rtw->stoptriggered)
-                    stop_triggered = true;
-
-                if (SimulationParameters.write_outputs_intermittently)
-                    if (aquiutils::mod(SolverTempVars.t - SimulationParameters.tstart, SimulationParameters.write_interval) <
-                        aquiutils::mod(SolverTempVars.t - SimulationParameters.tstart - SolverTempVars.dt, SimulationParameters.write_interval))
-                        WriteOutPuts();
-
-                QCoreApplication::processEvents();
-            }
-#endif
         }
-
-        // Global termination criteria
-        if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time ||
-            SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
+        if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time)
         {
-            SolverTempVars.SolutionFailed = true;
-            stop_triggered = true;
-
 #ifdef Q_GUI_SUPPORT
-            if (rtw)
-            {
-                QString msg = "Simulation failed due to ";
-                msg += (SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
-                    ? "matrix inversion limit."
-                    : "time limit.";
-                rtw->AppendErrorMessage(msg);
-                QCoreApplication::processEvents();
-            }
+                if (rtw)
+                {
+                    if (rtw->detailson)
+                        rtw->AppendtoDetails("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+
+                    rtw->AppendErrorMessage("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+                    QCoreApplication::processEvents();
+                }
 #endif
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString("Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+                    GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
+                }
+                cout<<"Simulation time exceeded the limit of " + aquiutils::numbertostring(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!"<<std::endl;
+                cout<<"The attempt to solve the problem failed!"<<std::endl;
+                SolverTempVars.SolutionFailed = true;
+                stop_triggered = true;
 
-            if (GetSolutionLogger())
-            {
-                GetSolutionLogger()->WriteString("Simulation aborted by global limit.");
-            }
-            return;
         }
+        else if (SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
+        {
+#ifdef Q_GUI_SUPPORT
+                if (rtw)
+                {
+                    if (rtw->detailson)
+                        rtw->AppendtoDetails("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
 
-        // Periodically flush errors
+                    rtw->AppendErrorMessage("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+                    QCoreApplication::processEvents();
+                }
+#endif
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString("Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+                    GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
+                }
+                cout<<"Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!"<<std::endl;
+                cout<<"The attempt to solve the problem failed!"<<std::endl;
+                SolverTempVars.SolutionFailed = true;
+                stop_triggered = true;
 #ifdef Q_GUI_SUPPORT
         if (rtw)
-        {
-            errorhandler.Flush(rtw);
+        {   errorhandler.Flush(rtw);
+            QCoreApplication::processEvents();
+        }
+#endif
+
+        }
+
+#ifdef Q_GUI_SUPPORT
+        if (rtw)
+        {   errorhandler.Flush(rtw);
             QCoreApplication::processEvents();
         }
 #else
         errorhandler.Flush();
 #endif
     }
-
-}
-
-void System::FinalizeOutputs()
-{
+    
 #ifdef Q_GUI_SUPPORT
+    qDebug() << "Adjusting outputs ....";
     if (rtw)
     {
         rtw->AppendText(QString("Adjusting outputs ..."));
@@ -829,125 +855,88 @@ void System::FinalizeOutputs()
     ShowMessage("Adjusting outputs ...");
 #endif
 
+#ifdef Q_GUI_SUPPORT
+    if (rtw)
+    {
+        rtw->AppendText(QString("Adjusting outputs, Done!"));
+        QCoreApplication::processEvents();
+    }
+#endif
     Outputs.AllOutputs.unif = false;
 
 #ifdef Q_GUI_SUPPORT
-    if (rtw)
+    qDebug() << "Uniformizing outputs ....";
+	if (rtw)
     {
         rtw->AppendText(QString("Uniformizing outputs ..."));
         QCoreApplication::processEvents();
     }
+#else
+    ShowMessage("Uniformizing outputs ...");
 #endif
-    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0, false);
+    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
 
 #ifdef Q_GUI_SUPPORT
+    qDebug() << "Uniformizing observations ....";
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing observations ..."));
         QCoreApplication::processEvents();
     }
 #endif
-    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0, false);
+    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
 
 #ifdef Q_GUI_SUPPORT
+    qDebug() << "Uniformizing objective functions ....";
     if (rtw)
     {
-        rtw->AppendText(QString("Uniformizing objective functions ..."));
+        rtw->AppendText(QString("Uniformizing objective functions ...."));
         QCoreApplication::processEvents();
     }
+    qDebug() << "Making objective function expressions uniform ....";
 #endif
-    MakeObjectiveFunctionExpressionUniform();
 
+    MakeObjectiveFunctionExpressionUniform();
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing observation expressions ..."));
         QCoreApplication::processEvents();
     }
+    qDebug() << "Making observation expressions uniform ....";
 #endif
-    MakeObservationsExpressionUniform();
 
+    MakeObservationsExpressionUniform();
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {
         if (!stop_triggered)
             rtw->SetProgress(1);
-        rtw->AddDataPoint(SolverTempVars.t, SolverTempVars.dt);
-        rtw->AppendText("Simulation finished! " + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
+        rtw->AddDataPoint(SolverTempVars.t,SolverTempVars.dt);
+        rtw->AppendText("Simulation finished!" + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
         QCoreApplication::processEvents();
     }
 #endif
+    if (!stop_triggered)
+        if (GetSolutionLogger())
+            GetSolutionLogger()->WriteString("Simulation finished successfully!");
 
-    if (!stop_triggered && GetSolutionLogger())
-        GetSolutionLogger()->WriteString("Simulation finished successfully!");
-
-    ShowMessage("Simulation finished!");
-
+ShowMessage("Simulation finished!");
 #ifdef Q_GUI_SUPPORT
-    if (GetSolutionLogger())
-        GetSolutionLogger()->Flush();
-#endif
-}
 
-
-bool System::Solve(bool applyparameters)
-{
-    // 1. Setup
-    InitializeSolverEnvironment();
-    InitializeModelState(applyparameters);
-    ClearObservationTimeSeries();
-    InitializeSimulationUI();
-
-    // 2. Solve
-    bool success = true;
-#ifdef VALGRIND
-    CALLGRIND_START_INSTRUMENTATION;
-    CALLGRIND_TOGGLE_COLLECT;
-#endif
-
-    RunTimeLoop(success);
-
-    // 3. Finalize model outputs and state
-    FinalizeOutputs();
-
-#ifdef Q_GUI_SUPPORT
     if (GetSolutionLogger())
     {
-        cout << "Flushing solution logger ..." << std::endl;
+        cout<<"Flushing solution logger ..."<<std::endl;
         GetSolutionLogger()->Flush();
     }
-#endif
-
+    #endif
 #ifdef VALGRIND
     CALLGRIND_TOGGLE_COLLECT;
     CALLGRIND_STOP_INSTRUMENTATION;
 #endif
-
-    SetSimulationDuration(time(nullptr) - SolverTempVars.time_start);
+    SetSimulationDuration(time(nullptr)-SolverTempVars.time_start);
     return true;
 }
-
-
-bool System::SetSystemSettingsObjectProperties(const string &s, const string &val, bool check_criteria)
-{
-    bool out = SetProperty(s,val);
-    for (unsigned int i=0; i<Settings.size(); i++)
-    {
-        for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
-        {   if (j->first==s)
-            {
-                j->second.SetProperty(val,false, check_criteria);
-                return true;
-            }
-
-        }
-    }
-    if (!out)
-        errorhandler.Append("","System","SetSystemSettingsObjectProperties","Property '" + s + "' was not found!", 631);
-    return false;
-
-}
-
 
 bool System::SetProp(const string &s, const double &val)
 {
@@ -1001,8 +990,25 @@ bool System::SetProp(const string &s, const double &val)
     return false;
 }
 
+bool System::SetSystemSettingsObjectProperties(const string &s, const string &val, bool check_criteria)
+{
+    bool out = SetProperty(s,val);
+    for (unsigned int i=0; i<Settings.size(); i++)
+    {
+        for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
+        {   if (j->first==s)
+            {
+                j->second.SetProperty(val,false, check_criteria);
+                return true;
+            }
 
+        }
+    }
+    if (!out)
+        errorhandler.Append("","System","SetSystemSettingsObjectProperties","Property '" + s + "' was not found!", 631);
+    return false;
 
+}
 bool System::SetProperty(const string &s, const string &val)
 {
 
@@ -1099,6 +1105,9 @@ bool System::SetProperty(const string &s, const string &val)
         return true;
     }
 
+
+    //errorhandler.Append("","System","SetProperty","Property '" + s + "' was not found!", 622);
+
     return false;
 }
 
@@ -1107,7 +1116,6 @@ void System::InitiateOutputs()
 {
     Outputs.AllOutputs.clear();
     Outputs.ObservedOutputs.clear();
-
     for (unsigned int i=0; i<blocks.size(); i++)
     {
         blocks[i].EstablishExpressionStructure();
@@ -1199,7 +1207,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), blocks[i].GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),blocks[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1211,7 +1219,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), reaction_parameters[i].GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),reaction_parameters[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(reaction_parameters[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1223,7 +1231,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), links[i].GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),links[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(links[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1235,7 +1243,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), sources[i].GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),sources[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1248,7 +1256,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), objective_function_set[i]->GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),objective_function_set[i]->GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 varcount++;
@@ -1261,7 +1269,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), observations[i].GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),observations[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
                 varcount++;
@@ -1336,8 +1344,8 @@ void System::SetOutputItems()
 
 }
 
-bool System::TransferResultsFrom(System* other) {
-    if (!other) return false;
+bool System::TransferResultsFrom(System *other)
+{
     Outputs = other->Outputs;
     return true;
 }
@@ -1352,7 +1360,7 @@ void System::PopulateOutputs(bool dolinks)
 #pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
         for (int i = 0; i < blocks.size(); i++)
-            blocks[i].CalcExpressions(Timing::present);
+            blocks[i].CalcExpressions(Expression::timing::present);
 
         if (dolinks)
         {
@@ -1360,13 +1368,13 @@ void System::PopulateOutputs(bool dolinks)
 #pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
             for (int i = 0; i < links.size(); i++)
-                links[i].CalcExpressions(Timing::present);
+                links[i].CalcExpressions(Expression::timing::present);
         }
         for (unsigned int i = 0; i < blocks.size(); i++)
         {
             for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
                 if (it->second.IncludeInOutput())
-                    Outputs.AllOutputs[blocks[i].GetName() + "_" + it->first].append(SolverTempVars.t, blocks[i].GetVal(it->first, Timing::present));
+                    Outputs.AllOutputs[blocks[i].GetName() + "_" + it->first].append(SolverTempVars.t, blocks[i].GetVal(it->first, Expression::timing::present));
 
         }
 
@@ -1376,7 +1384,7 @@ void System::PopulateOutputs(bool dolinks)
                 for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
                     if (it->second.IncludeInOutput())
                     {
-                        Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(SolverTempVars.t + SolverTempVars.dt, links[i].GetVal(it->first, Timing::present, true));
+                        Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(SolverTempVars.t, links[i].GetVal(it->first, Expression::timing::present, true));
                     }
             }
 
@@ -1385,8 +1393,8 @@ void System::PopulateOutputs(bool dolinks)
             for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
                 if (it->second.IncludeInOutput())
                 {
-                    //sources[i].CalcExpressions(Timing::present);
-                    Outputs.AllOutputs[sources[i].GetName() + "_" + it->first].append(SolverTempVars.t + SolverTempVars.dt, sources[i].GetVal(it->first, Timing::present, true));
+                    //sources[i].CalcExpressions(Expression::timing::present);
+                    Outputs.AllOutputs[sources[i].GetName() + "_" + it->first].append(SolverTempVars.t, sources[i].GetVal(it->first, Expression::timing::present, true));
                 }
         }
 
@@ -1397,8 +1405,8 @@ void System::PopulateOutputs(bool dolinks)
             for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
                 if (it->second.IncludeInOutput())
                 {
-                    //sources[i].CalcExpressions(Timing::present);
-                    Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName() + "_" + it->first].append(SolverTempVars.t + SolverTempVars.dt, objective_function_set[i]->Variable(it->first)->CalcVal(object(objective_function_set[i]->GetLocation()), Timing::present));
+                    //sources[i].CalcExpressions(Expression::timing::present);
+                    Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName() + "_" + it->first].append(SolverTempVars.t, objective_function_set[i]->Variable(it->first)->CalcVal(object(objective_function_set[i]->GetLocation()), Expression::timing::present));
                 }
         }
 
@@ -1407,8 +1415,8 @@ void System::PopulateOutputs(bool dolinks)
             for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
                 if (it->second.IncludeInOutput())
                 {
-                    //sources[i].CalcExpressions(Timing::present);
-                    Outputs.AllOutputs[reaction_parameters[i].GetName() + "_" + it->first].append(SolverTempVars.t, reaction_parameters[i].GetVal(it->first, Timing::present, true));
+                    //sources[i].CalcExpressions(Expression::timing::present);
+                    Outputs.AllOutputs[reaction_parameters[i].GetName() + "_" + it->first].append(SolverTempVars.t, reaction_parameters[i].GetVal(it->first, Expression::timing::present, true));
                 }
         }
 
@@ -1420,18 +1428,18 @@ void System::PopulateOutputs(bool dolinks)
             for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
                 if (it->second.IncludeInOutput())
                 {
-                    //sources[i].CalcExpressions(Timing::present);
+                    //sources[i].CalcExpressions(Expression::timing::present);
                     Object* location;
                     if (it->second.GetType() == Quan::_type::expression)
                     {   location = object(observations[i].GetLocation());
                         if (location)
                             if (location->ObjectType() != object_type::link || dolinks)
-                                Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Timing::present)*location->GetOutflowLimitFactor(Timing::present));
+                                Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present)*location->GetOutflowLimitFactor(Expression::timing::present));
                     }
                     else
                     {   location = observation(i);
                         if (location)
-                            Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Timing::present));
+                            Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present));
                     }
                 }
         }
@@ -1455,7 +1463,7 @@ vector<bool> System::GetOutflowLimitedVector()
     return out;
 }
 
-vector<double> System::GetOutflowLimitFactorVector(const Timing &tmg)
+vector<double> System::GetOutflowLimitFactorVector(const Expression::timing &tmg)
 {
     vector<double> out;
     for (unsigned int i = 0; i<blocks.size(); i++)
@@ -1465,202 +1473,12 @@ vector<double> System::GetOutflowLimitFactorVector(const Timing &tmg)
 }
 
 
-void System::SetOutflowLimitedVector(const vector<bool> &x)
+void System::SetOutflowLimitedVector(vector<bool> &x)
 {
     for (unsigned int i = 0; i < blocks.size(); i++)
         blocks[i].SetLimitedOutflow(x[i]);
 
 }
-
-void System::PropagateOutflowLimitFactors(Timing from, Timing to)
-{
-    for (unsigned int i = 0; i < links.size(); ++i)
-        links[i].SetOutflowLimitFactor(links[i].GetOutflowLimitFactor(from), to);
-
-    for (unsigned int i = 0; i < blocks.size(); ++i)
-        blocks[i].SetOutflowLimitFactor(blocks[i].GetOutflowLimitFactor(from), to);
-}
-
-bool System::PrepareSolveStateForInitialGuess(const std::string& variable, bool transport,
-    CVector_arma& X, CVector_arma& F, CVector_arma& X_past,
-    const std::vector<bool>& outflowlimitstatus_old)
-{
-    // Step 1: Get initial guess from the previous time step
-    X = GetStateVariables(variable, Timing::past, transport);
-
-    // Step 2: Apply outflow limitations before computing residuals
-    if (!transport)
-    {
-        for (unsigned int i = 0; i < blocks.size(); ++i)
-        {
-            if (blocks[i].GetLimitedOutflow())
-                X[i] = blocks[i].GetOutflowLimitFactor(Timing::present);
-        }
-    }
-
-    // Step 3: Store backup of initial guess
-    X_past = X;
-
-    // Step 4: Compute initial residual
-    F = GetResiduals(variable, X, transport);
-
-    // Step 5: Validate residual vector
-    if (!F.is_finite())
-    {
-        SolverTempVars.fail_reason.push_back("Residual vector F is infinite during initial guess preparation.");
-        if (!transport)
-            SetOutflowLimitedVector(outflowlimitstatus_old);
-        return false;
-    }
-
-    return true;
-}
-
-void System::LogResidualFailure(const std::string& variable,
-    const CVector_arma& X,
-    const CVector_arma& F)
-{
-    std::string time_str = aquiutils::numbertostring(SolverTempVars.t);
-    SolverTempVars.fail_reason.push_back("at " + time_str + ": F is infinite");
-
-    if (GetSolutionLogger())
-    {
-        GetSolutionLogger()->WriteString("at " + time_str + ": F is infinite, dt = " +
-            aquiutils::numbertostring(SolverTempVars.dt));
-        GetSolutionLogger()->WriteString("at " + time_str + ": X = " + X.toString());
-        GetSolutionLogger()->WriteString("at " + time_str + ": F = " + F.toString());
-        GetSolutionLogger()->Flush();
-    }
-}
-
-bool System::HandleInvalidResidual(
-    const std::string& variable,
-    const CVector_arma& X,
-    const CVector_arma& F,
-    bool transport,
-    const std::vector<bool>& outflowlimitstatus_old)
-{
-    SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
-
-    if (auto* logger = GetSolutionLogger())
-    {
-        logger->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) +
-            ": F is infinite, dt = " + aquiutils::numbertostring(SolverTempVars.dt));
-        logger->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + " X = " + X.toString());
-        logger->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + " F = " + F.toString());
-        logger->Flush();
-    }
-
-    if (!transport)
-        SetOutflowLimitedVector(outflowlimitstatus_old);
-
-    return false;
-}
-
-void System::LogJacobianSingularity(const CMatrix_arma& J)
-{
-    if (GetSolutionLogger())
-    {
-        GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
-        GetSolutionLogger()->WriteString("Diagonal vector!");
-        GetSolutionLogger()->WriteVector(J.diagvector());
-
-        auto zero_diag_indices = J.diagvector().lookup(0);
-        if (!zero_diag_indices.empty())
-        {
-            GetSolutionLogger()->WriteString("Blocks corresponding to the zero diagonal element:");
-            for (int idx : zero_diag_indices)
-                GetSolutionLogger()->WriteString(blocks[idx].GetName());
-        }
-
-        GetSolutionLogger()->Flush();
-    }
-
-    SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
-}
-
-bool System::HandleIterationLimitFailure(
-    const std::string& variable,
-    const CVector_arma& X,
-    const CVector_arma& F,
-    unsigned int statevarno,
-    int ini_max_error_block,
-    double err,
-    double err_ini,
-    double X_norm,
-    bool transport,
-    const std::vector<bool>& outflowlimitstatus_old)
-{
-    SolverTempVars.fail_reason.push_back(
-        "at " + aquiutils::numbertostring(SolverTempVars.t) +
-        ": number of iterations exceeded the maximum threshold, state_variable:" +
-        aquiutils::numbertostring(statevarno)
-    );
-
-    if (auto* logger = GetSolutionLogger())
-    {
-        if (!transport)
-        {
-            logger->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" +
-                blocks[F.abs_max_elems()].GetName() + "', dt = " + aquiutils::numbertostring(dt()));
-            logger->WriteString("The block with the initial max error: '" +
-                blocks[ini_max_error_block].GetName() + "'");
-        }
-        else
-        {
-            string BlockConst = GetBlockConstituent(F.abs_max_elems());
-            logger->WriteString("Number of iterations exceeded the maximum threshold, max error at state variable '" +
-                BlockConst + "', dt = " + aquiutils::numbertostring(dt()));
-        }
-
-        logger->WriteString("Error criteria number: " +
-            aquiutils::numbertostring(err / (err_ini + 1e-10 * X_norm)));
-        logger->WriteString("X_norm: " + aquiutils::numbertostring(X_norm));
-        logger->WriteString("Block outflow factors: " +
-            GetBlocksOutflowFactors(Timing::present).toString());
-        logger->WriteString("Link outflow factors: " +
-            GetLinkssOutflowFactors(Timing::present).toString());
-        logger->WriteVector(F);
-        logger->WriteString("Error norm = " + aquiutils::numbertostring(err) +
-            ",Initial Error norm = " + aquiutils::numbertostring(err_ini));
-        logger->WriteMatrix(SolverTempVars.Inverse_Jacobian[statevarno]);
-        logger->Flush();
-    }
-
-    if (!transport)
-        SetOutflowLimitedVector(outflowlimitstatus_old);
-
-    return false;
-}
-
-bool System::HandleNegativeStorageFailure(
-    unsigned int block_index,
-    bool transport,
-    const std::vector<bool>& outflowlimitstatus_old)
-{
-    SolverTempVars.fail_reason.push_back(
-        "at " + aquiutils::numbertostring(SolverTempVars.t) +
-        ": Storage is negative in block '" + blocks[block_index].GetName() +
-        "' after " + aquiutils::numbertostring(int(BlockCount())) + " attempts"
-    );
-
-    if (auto* logger = GetSolutionLogger())
-    {
-        logger->WriteString(
-            "at " + aquiutils::numbertostring(SolverTempVars.t) +
-            ": Storage is negative in block '" + blocks[block_index].GetName() +
-            "' after " + aquiutils::numbertostring(int(BlockCount())) +
-            " attempts , dt = " + aquiutils::numbertostring(dt()));
-        logger->Flush();
-    }
-
-    if (!transport)
-        SetOutflowLimitedVector(outflowlimitstatus_old);
-
-    return false;
-}
-
-
 
 bool System::OneStepSolve(unsigned int statevarno, bool transport)
 {
@@ -1673,7 +1491,8 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
     Renew(variable);
     if (!transport)
     {
-        PropagateOutflowLimitFactors(Timing::past, Timing::present);
+        for (unsigned int i = 0; i < links.size(); i++) links[i].SetOutflowLimitFactor(links[i].GetOutflowLimitFactor(Expression::timing::past), Expression::timing::present);
+        for (unsigned int i = 0; i < blocks.size(); i++) blocks[i].SetOutflowLimitFactor(blocks[i].GetOutflowLimitFactor(Expression::timing::past), Expression::timing::present);
     }
     SolverTempVars.numiterations[statevarno] = 0;
     vector<bool> outflowlimitstatus_old;
@@ -1682,60 +1501,169 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
     bool switchvartonegpos = true;
 
+    if (!transport)
+    {   for (unsigned int i = 0; i < blocks.size(); i++)
+        {
+            if (blocks[i].GetLimitedOutflow())
+                blocks[i].SetOutflowLimitFactor(blocks[i].GetOutflowLimitFactor(Expression::timing::past),Expression::timing::present);
+        }
+    }
     ResetAllowLimitedFlows(true);
     unsigned int attempts = 0;
-
-    while (attempts < BlockCount() && switchvartonegpos)
+    while (attempts<BlockCount() && switchvartonegpos)
     {
-        CVector_arma X = GetStateVariables(variable, Timing::past, transport);
+        CVector_arma X = GetStateVariables(variable, Expression::timing::past,transport);
         double X_norm = X.norm2();
-        double dx_norm = X_norm * 10 + 1;
+        double dx_norm = X_norm*10+1;
         if (!transport)
-        {
-            for (unsigned int i = 0; i < blocks.size(); i++)
+        {   for (unsigned int i = 0; i < blocks.size(); i++)
             {
                 if (blocks[i].GetLimitedOutflow())
-                    X[i] = blocks[i].GetOutflowLimitFactor(Timing::present);
+                    X[i] = blocks[i].GetOutflowLimitFactor(Expression::timing::present);
             }
         }
 
-        CVector_arma X_past = X;
-        
+		CVector_arma X_past = X;
+        //qDebug()<<"Getting residuals";
         CVector_arma F = GetResiduals(variable, X, transport);
-        
+        //qDebug()<<"Getting residuals done";
 #ifdef DEBUG
         CVector_arma F_ini = F;
 #endif // DEBUG
         int ini_max_error_block = F.abs_max_elems();
         if (!F.is_finite())
-            return HandleInvalidResidual(variable, X, F, transport, outflowlimitstatus_old);
-
+        {
+            SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
+            if (GetSolutionLogger())
+            {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite, dt = " + aquiutils::numbertostring(SolverTempVars.dt));
+                GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "X=" + X.toString());
+                GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + "F=" + F.toString());
+                GetSolutionLogger()->Flush();
+            }
+            if (!transport)
+                SetOutflowLimitedVector(outflowlimitstatus_old);
+            return false;
+        }
 
         double error_increase_counter = 0;
-        double err_ini = F.norm2();
+		double err_ini = F.norm2();
         double err;
         double err_p = err = err_ini;
 
-        SolverTempVars.NR_coefficient[statevarno] = 1;
-        while ((err / (err_ini + 1e-8 * X_norm) > SolverSettings.NRtolerance && err > 1e-12 && dx_norm / X_norm > 1e-10))
+		//if (SolverTempVars.NR_coefficient[statevarno]==0)
+            SolverTempVars.NR_coefficient[statevarno] = 1;
+        while ((err/(err_ini+1e-8*X_norm)>SolverSettings.NRtolerance && err>1e-12 && dx_norm/X_norm>1e-10))
         {
             SolverTempVars.numiterations[statevarno]++;
 
             if (SolverTempVars.updatejacobian[statevarno])
             {
-                CMatrix_arma J = transport ? Jacobian(variable, X, transport) : JacobianDirect(variable, X, transport);
+                CMatrix_arma J;
+                if (transport)
+                    J = Jacobian(variable, X, transport);
 
-                SolverTempVars.epoch_count++;
+                else
+                    J = JacobianDirect(variable, X, transport);
+
+
+                SolverTempVars.epoch_count ++;
                 if (SolverSettings.scalediagonal)
                     J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
+#ifdef NormalizeByDiagonal
+                CMatrix_arma J_normalized = normalize_max(J,J);
+                SolverTempVars.Jacobia_Diagonal = maxelements(J);
+                double determinant = det(J_normalized);
+                if (determinant == 0 || SolverTempVars.Jacobia_Diagonal.haszeros())
+				{
+                    GetSolutionLogger()->WriteString("Jacobian determinant = " + aquiutils::numbertostring(determinant));
+                    if (determinant==0)
+                    {
+                        GetSolutionLogger()->WriteString("Jacobian determinant is zero");
+                    }
+
+                    {
+                        GetSolutionLogger()->WriteString("Max elements of the jacobian matrix: ");
+                        GetSolutionLogger()->WriteVector(SolverTempVars.Jacobia_Diagonal);
+                    }
+                    if (GetSolutionLogger())
+                    {
+                        GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
+                        GetSolutionLogger()->WriteMatrix(J);
+                        GetSolutionLogger()->WriteString("Normalized Jacobian Matrix");
+                        GetSolutionLogger()->WriteMatrix(J_normalized);
+                        GetSolutionLogger()->WriteString("Residual Vector:");
+                        GetSolutionLogger()->WriteVector(F);
+                        GetSolutionLogger()->WriteString("State variable:");
+                        GetSolutionLogger()->WriteVector(X);
+                        GetSolutionLogger()->WriteString("Block states - present: ");
+                        WriteBlocksStates(variable, Expression::timing::present);
+                        GetSolutionLogger()->WriteString("Block states - past: ");
+                        WriteBlocksStates(variable, Expression::timing::past);
+                        GetSolutionLogger()->WriteString("Link states - present: ");
+                        WriteLinksStates(variable, Expression::timing::present);
+                        GetSolutionLogger()->WriteString("Links states - past: ");
+                        WriteLinksStates(variable, Expression::timing::past);
+                        GetSolutionLogger()->Flush();
+                    }
+
+                    SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
+                    SetOutflowLimitedVector(outflowlimitstatus_old);
+                    return false;
+				}
+				if (!SolverSettings.direct_jacobian)
+                    SolverTempVars.Inverse_Jacobian[statevarno] = Invert(J_normalized);
+                else
+                    SolverTempVars.Inverse_Jacobian[statevarno] = J_normalized;
+                SolverTempVars.updatejacobian[statevarno] = false;
+
+            }
+            CVector_arma X1;
+            if (SolverSettings.scalediagonal)
+            {
+                if (!SolverSettings.direct_jacobian)
+                    X = X - SolverTempVars.Inverse_Jacobian[statevarno] * normalize_max(F, SolverTempVars.Jacobia_Diagonal);
+                else
+                    X = X - normalize_max(F, SolverTempVars.Jacobia_Diagonal)/SolverTempVars.Inverse_Jacobian[statevarno];
+            }
+            else
+            {
+                if (!SolverSettings.direct_jacobian)
+                    X = X - SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * normalize_max(F, SolverTempVars.Jacobia_Diagonal);
+                else
+                    X -= SolverTempVars.NR_coefficient[statevarno] * (normalize_max(F, SolverTempVars.Jacobia_Diagonal)/ SolverTempVars.Inverse_Jacobian[statevarno]);
+                if (SolverSettings.optimize_lambda)
+                {
+                    if (!SolverSettings.direct_jacobian)
+                        X1 = X + 0.5 * SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * normalize_max(F, SolverTempVars.Jacobia_Diagonal);
+                    else
+                        X1 = X + 0.5 * SolverTempVars.NR_coefficient[statevarno] * (normalize_max(F, SolverTempVars.Jacobia_Diagonal) / SolverTempVars.Inverse_Jacobian[statevarno]);
+                }
+            }
+#else
 
                 if (!SolverSettings.direct_jacobian)
-                {
-                    if (!Invert(J, SolverTempVars.Inverse_Jacobian[statevarno]))
+                {   if (!Invert(J,SolverTempVars.Inverse_Jacobian[statevarno]))
                     {
 
-                        LogJacobianSingularity(J);
+                        if (GetSolutionLogger())
+                        {
+                            GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
+                            //if (transport) GetSolutionLogger()->WriteString("In transport!");
+                            GetSolutionLogger()->WriteString("Diagonal vector!");
+                            GetSolutionLogger()->WriteVector(J.diagvector());
+                            if (J.diagvector().lookup(0).size()>0)
+                            {
+                                GetSolutionLogger()->WriteString("Blocks corresponding to the zero diagonal element:");
+                                for (unsigned int j=0; j<J.diagvector().lookup(0).size(); j++)
+                                {
+                                    GetSolutionLogger()->WriteString(blocks[J.diagvector().lookup(0)[j]].GetName());
+                                }
+                            }
 
+                            GetSolutionLogger()->Flush();
+                        }
+
+                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
                         if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
                         return false;
 
@@ -1745,9 +1673,9 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     SolverTempVars.Inverse_Jacobian[statevarno] = J;
                 SolverTempVars.updatejacobian[statevarno] = false;
 
-        }
+            }
             CVector_arma X1;
-            CVector_arma dx;
+            CVector_arma dx; 
             if (SolverSettings.scalediagonal)
             {
                 if (!SolverSettings.direct_jacobian)
@@ -1758,14 +1686,18 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 else
                 {
                     dx = F / SolverTempVars.Inverse_Jacobian[statevarno];
-                    if (dx.size() != X.size())
+                    if (dx.size()!=X.size())
                     {
-                        LogJacobianSingularity(SolverTempVars.Inverse_Jacobian[statevarno]);
+                        if (GetSolutionLogger())
+                        {   GetSolutionLogger()->WriteString("Jacobian matrix is singular");
+                            GetSolutionLogger()->Flush();
+                        }
+                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
                         if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
                         return false;
                     }
 
-                    X -= dx;
+                    X -= dx; 
                 }
             }
             else
@@ -1773,12 +1705,12 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 if (!SolverSettings.direct_jacobian)
                 {
                     dx = SolverTempVars.NR_coefficient[statevarno] * SolverTempVars.Inverse_Jacobian[statevarno] * F;
-                    X -= dx;
+                    X -= dx; 
                 }
                 else
                 {
                     dx = SolverTempVars.NR_coefficient[statevarno] * (F / SolverTempVars.Inverse_Jacobian[statevarno]);
-                    X -= dx;
+                    X -= dx; 
 
                 }
                 if (SolverSettings.optimize_lambda)
@@ -1786,15 +1718,15 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     X1 = X + 0.5 * dx;
                 }
             }
-
-            dx_norm = dx.norm2();
+#endif
+            dx_norm = dx.norm2(); 
 
             if (!X.is_finite())
-            {
+			{
                 SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": X is infinite, X=" + X.toString() + ", F = " + F.toString());
                 SetOutflowLimitedVector(outflowlimitstatus_old);
                 return false;
-            }
+			}
 
             CVector_arma F1;
             if (SolverSettings.optimize_lambda)
@@ -1802,11 +1734,25 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
             F = GetResiduals(variable, X, transport);
 
-            if (!F.is_finite())
-            {
+			if (!F.is_finite())
+			{
+				SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": F is infinite");
+                    //GetSolutionLogger()->WriteString("Block states - present: ");
+                    //WriteBlocksStates(variable, Expression::timing::present);
+                    //GetSolutionLogger()->WriteString("Block states - past: ");
+                    //WriteBlocksStates(variable, Expression::timing::past);
+                    //GetSolutionLogger()->WriteString("Link states - present: ");
+                    //WriteLinksStates(variable, Expression::timing::present);
+                    //GetSolutionLogger()->WriteString("Links states - past: ");
+                    //WriteLinksStates(variable, Expression::timing::past);
+                    GetSolutionLogger()->Flush();
+                }
                 SetOutflowLimitedVector(outflowlimitstatus_old);
-                return HandleInvalidResidual(variable, X, F, transport, outflowlimitstatus_old);
-            }
+                return false;
+			}
             err_p = err;
             err = F.norm2();
             double err2;
@@ -1815,7 +1761,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 err2 = F1.norm2();
                 if (err2 < err)
                 {
-                    SolverTempVars.NR_coefficient[statevarno] = max(SolverTempVars.NR_coefficient[statevarno] / 2.0, 0.05);
+                    SolverTempVars.NR_coefficient[statevarno] = max(SolverTempVars.NR_coefficient[statevarno]/2.0, 0.05);
                     SolverTempVars.updatejacobian[statevarno] = true;
                     X = X1;
                 }
@@ -1828,68 +1774,93 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     error_increase_counter++;
                 }
             }
-#ifdef Debug_mode
+            #ifdef Debug_mode
             //ShowMessage(numbertostring(err));
-#endif // Debug_mode
-            if (err > err_p * 0.9 && !SolverSettings.optimize_lambda)
-            {
-                SolverTempVars.NR_coefficient[statevarno] = max(SolverTempVars.NR_coefficient[statevarno] * SolverSettings.NR_coeff_reduction_factor, 0.05);
-                SolverTempVars.updatejacobian[statevarno] = true;
+            #endif // Debug_mode
+			if (err > err_p*0.9 && !SolverSettings.optimize_lambda)
+			{
+				SolverTempVars.NR_coefficient[statevarno] = max(SolverTempVars.NR_coefficient[statevarno]*SolverSettings.NR_coeff_reduction_factor,0.05);
+				SolverTempVars.updatejacobian[statevarno] = true;
                 X = X_past;
-            }
-            if (err > err_p && !SolverSettings.optimize_lambda)
+			}
+            if (err>err_p && !SolverSettings.optimize_lambda)
                 error_increase_counter++;
-            else if (err < err_p / 2.0 && !SolverSettings.optimize_lambda)
+            else if (err<err_p/2.0 && !SolverSettings.optimize_lambda)
             {
                 if (SolverTempVars.NR_coefficient[statevarno] < 0.99)
                     SolverTempVars.updatejacobian[statevarno] = true;
                 SolverTempVars.NR_coefficient[statevarno] = max(min(SolverTempVars.NR_coefficient[statevarno] / SolverSettings.NR_coeff_reduction_factor, 1.0), 0.05);
-            }
+             }
             if (error_increase_counter > 10)
             {
                 SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Error kept increasing, state_variable:" + aquiutils::numbertostring(statevarno));
                 if (GetSolutionLogger())
-                    GetSolutionLogger()->WriteString("Outflow limit vector " + CVector(GetOutflowLimitFactorVector(Timing::present)).toString());
+                    GetSolutionLogger()->WriteString("Outflow limit vector " + CVector(GetOutflowLimitFactorVector(Expression::timing::present)).toString());
                 if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
                 return false;
             }
 
             if (SolverTempVars.numiterations[statevarno] > SolverSettings.NR_niteration_max)
             {
-                return HandleIterationLimitFailure(variable, X, F, statevarno,
-                    ini_max_error_block, err, err_ini,
-                    X_norm, transport, outflowlimitstatus_old);
+                SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": number of iterations exceeded the maximum threshold, state_variable:" + aquiutils::numbertostring(statevarno));
+                if (GetSolutionLogger())
+                {   if (!transport)
+                    {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
+                        GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
+                    }
+                else
+                {
+                    string BlockConst = GetBlockConstituent(F.abs_max_elems());
+                    GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at state variable '" + GetBlockConstituent(F.abs_max_elems()) + "', dt = " + aquiutils::numbertostring(dt()));
+                }
+                    GetSolutionLogger()->WriteString("Error criteria number: " + aquiutils::numbertostring(err/(err_ini+1e-10*X_norm)));
+                    GetSolutionLogger()->WriteString("X_norm: " + aquiutils::numbertostring(X_norm));
+                    GetSolutionLogger()->WriteString("Block outflow factors: " + GetBlocksOutflowFactors(Expression::timing::present).toString());
+                    GetSolutionLogger()->WriteString("Link outflow factors: " + GetLinkssOutflowFactors(Expression::timing::present).toString());
+                    GetSolutionLogger()->WriteVector(F);
+                    GetSolutionLogger()->WriteString("Error norm = " + aquiutils::numbertostring(err) + ",Initial Error norm = " + aquiutils::numbertostring(err_ini));
+                    GetSolutionLogger()->WriteMatrix(SolverTempVars.Inverse_Jacobian[statevarno]);
+                    GetSolutionLogger()->Flush();
+                }
+                if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+                return false;
             }
-    }
+        }
         switchvartonegpos = false;
 
         if (!transport)
         {
-            for (unsigned int i = 0; i < blocks.size(); i++)
+            for (unsigned int i=0; i<blocks.size(); i++)
             {
-                if (X[i] < -1e-13 && !blocks[i].GetLimitedOutflow() && OutFlowCanOccur(i, variable))
+                if (X[i]<-1e-13 && !blocks[i].GetLimitedOutflow() && OutFlowCanOccur(i,variable))
                 {
                     SafeVector<int> blocks_affected = SetLimitedOutFlow(i, variable, true);
                     switchvartonegpos = true;
                     SolverTempVars.updatejacobian[statevarno] = true;
-                    if (attempts == BlockCount())
+                    if (attempts==BlockCount())
                     {
-                        return HandleNegativeStorageFailure(i, transport, outflowlimitstatus_old);
-
+                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after " + aquiutils::numbertostring(int(BlockCount())) +" attempts");
+                        if (GetSolutionLogger())
+                        {   GetSolutionLogger()->WriteString("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Storage is negative in block '" + blocks[i].GetName() + "' after " + aquiutils::numbertostring(int(BlockCount())) +" attempts , dt = "  + aquiutils::numbertostring(dt()));
+                            GetSolutionLogger()->Flush();
+                        }
+                        if (!transport)
+                            SetOutflowLimitedVector(outflowlimitstatus_old);
+                        return false;
                     }
-                    for (unsigned int j = 0; j < blocks_affected.size(); j++)
+                    for (unsigned int j=0; j<blocks_affected.size(); j++)
                         X[blocks_affected[j]] = 0.9999;
                 }
-                else if (X[i] >= 1 && blocks[i].GetLimitedOutflow())
+                else if (X[i]>=1 && blocks[i].GetLimitedOutflow())
                 {
-                    SetLimitedOutFlow(i, variable, false);
+                    SetLimitedOutFlow(i,variable, false);
                     blocks[i].SetAllowLimitedFlow(false);
                     switchvartonegpos = true;
                     SolverTempVars.updatejacobian[statevarno] = true;
                 }
-                else if (X[i] < 0)
+                else if (X[i]<0)
                 {
-                    blocks[i].SetOutflowLimitFactor(0, Timing::present);
+                    blocks[i].SetOutflowLimitFactor(0,Expression::timing::present);
                 }
             }
 
@@ -1897,21 +1868,20 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
         if (switchvartonegpos) attempts++;
     }
 
-    return true;
+	return true;
 }
-
 
 SafeVector<int> System::SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited)
 {
     SafeVector<int> blocks_affected;
     blocks_affected.push_back(blockid);
     blocks[blockid].SetLimitedOutflow(outflowlimited);
-    blocks[blockid].SetOutflowLimitFactor(1,Timing::present);
+    blocks[blockid].SetOutflowLimitFactor(1,Expression::timing::present);
     SafeVector<int> connected_blocks = ConnectedBlocksFrom(blockid);
     SafeVector<Link*> connected_links = blocks[blockid].GetLinksFrom();
     for (unsigned int i=0; i<connected_blocks.size(); i++)
     {
-        if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::ispositive(blocks[blockid].GetLinksFrom()[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Timing::present)))
+        if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::ispositive(blocks[blockid].GetLinksFrom()[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present)))
         {
             if (blocks[i].AllowLimitedFlow())
                 blocks_affected.append(SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited));
@@ -1921,7 +1891,7 @@ SafeVector<int> System::SetLimitedOutFlow(int blockid, const string &variable, b
     connected_links = blocks[blockid].GetLinksTo();
     for (unsigned int i=0; i<connected_blocks.size(); i++)
     {
-        if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::isnegative(blocks[blockid].GetLinksTo()[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Timing::present)))
+        if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::isnegative(blocks[blockid].GetLinksTo()[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present)))
         {
             blocks_affected.append(SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited));
         }
@@ -1984,7 +1954,7 @@ bool System::Update(const string & variable)
         {
             for (unsigned j=0; j<blocks[i].GetVars()->Quantity_Order().size(); j++)
                 out &= blocks[i].Update(blocks[i].GetVars()->Quantity_Order()[j]);
-            blocks[i].SetOutflowLimitFactor(blocks[i].GetOutflowLimitFactor(Timing::present), Timing::past);
+            blocks[i].SetOutflowLimitFactor(blocks[i].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::past);
         }
         for (unsigned int i = 0; i < links.size(); i++)
             for (unsigned j = 0; j < links[i].GetVars()->Quantity_Order().size(); j++)
@@ -1995,7 +1965,7 @@ bool System::Update(const string & variable)
         for (unsigned int i = 0; i < blocks.size(); i++)
         {
             out &= blocks[i].Update(variable);
-            blocks[i].SetOutflowLimitFactor(blocks[i].GetOutflowLimitFactor(Timing::present), Timing::past);
+            blocks[i].SetOutflowLimitFactor(blocks[i].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::past);
         }
     }
 
@@ -2006,7 +1976,7 @@ bool System::Update(const string & variable)
 }
 
 
-CVector_arma System::CalcStateVariables(const string &variable, const Timing &tmg)
+CVector_arma System::CalcStateVariables(const string &variable, const Expression::timing &tmg)
 {
     CVector_arma X(blocks.size());
     for (unsigned int i=0; i<blocks.size(); i++)
@@ -2014,22 +1984,22 @@ CVector_arma System::CalcStateVariables(const string &variable, const Timing &tm
     return X;
 }
 
-CVector_arma System::GetStateVariables_for_direct_Jacobian(const string &variable, const Timing &tmg, bool transport)
+CVector_arma System::GetStateVariables_for_direct_Jacobian(const string &variable, const Expression::timing &tmg, bool transport)
 {
-    CVector_arma X = GetStateVariables(variable, Timing::past,transport);
+    CVector_arma X = GetStateVariables(variable, Expression::timing::past,transport);
 
     if (!transport)
     {   for (unsigned int i = 0; i < blocks.size(); i++)
         {
             if (blocks[i].GetLimitedOutflow())
-                X[i] = blocks[i].GetOutflowLimitFactor(Timing::past);
+                X[i] = blocks[i].GetOutflowLimitFactor(Expression::timing::past);
         }
     }
 
     return X;
 }
 
-CVector_arma System::GetStateVariables(const string &variable, const Timing &tmg, bool transport)
+CVector_arma System::GetStateVariables(const string &variable, const Expression::timing &tmg, bool transport)
 {
     if (!transport)
     {
@@ -2053,13 +2023,13 @@ string System::GetBlockConstituent(unsigned int i)
 {
     int BlockNo = i / this->constituents.size();
     int ConstituentNo = i % this->constituents.size();
-    //qDebug() << BlockNo; 
-    //qDebug() << ConstituentNo; 
+    qDebug() << BlockNo; 
+    qDebug() << ConstituentNo; 
     string out = blocks[BlockNo].GetName() + ":" + constituents[ConstituentNo].GetName();
     return out;
 }
 
-void System::SetStateVariables(const string &variable, const CVector_arma &X, const Timing &tmg, bool transport)
+void System::SetStateVariables(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport)
 {
     if (!transport)
     {   for (unsigned int i=0; i<blocks.size(); i++)
@@ -2075,7 +2045,7 @@ void System::SetStateVariables(const string &variable, const CVector_arma &X, co
                 if (!blocks[i].isrigid(variable))
                     blocks[i].SetVal(variable, 0, tmg);
                 else
-                    blocks[i].SetVal(variable, blocks[i].GetVal(variable,Timing::past), tmg);
+                    blocks[i].SetVal(variable, blocks[i].GetVal(variable,Expression::timing::past), tmg);
             }
         }
     }
@@ -2090,7 +2060,7 @@ void System::SetStateVariables(const string &variable, const CVector_arma &X, co
     }
 }
 
-void System::SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Timing &tmg, bool transport)
+void System::SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport)
 {
     if (!transport)
     {   for (unsigned int i=0; i<blocks.size(); i++)
@@ -2106,7 +2076,7 @@ void System::SetStateVariables_for_direct_Jacobian(const string &variable, CVect
                 if (!blocks[i].isrigid(variable))
                     blocks[i].SetVal(variable, 0, tmg);
                 else
-                    blocks[i].SetVal(variable, blocks[i].GetVal(variable,Timing::past), tmg);
+                    blocks[i].SetVal(variable, blocks[i].GetVal(variable,Expression::timing::past), tmg);
             }
         }
     }
@@ -2125,13 +2095,13 @@ void System::SetStateVariables_for_direct_Jacobian(const string &variable, CVect
     {
         if (blocks[i].GetLimitedOutflow())
         {
-            blocks[i].SetOutflowLimitFactor(X[i],Timing::present);
-            blocks[i].SetVal(variable, blocks[i].GetVal(variable, Timing::past) * SolverSettings.landtozero_factor,Timing::present);
+            blocks[i].SetOutflowLimitFactor(X[i],Expression::timing::present);
+            blocks[i].SetVal(variable, blocks[i].GetVal(variable, Expression::timing::past) * SolverSettings.landtozero_factor,Expression::timing::present);
         }
     }
 }
 
-void System::SetStateVariables_TR(const string &variable, const CVector_arma &X, const Timing &tmg)
+void System::SetStateVariables_TR(const string &variable, CVector_arma &X, const Expression::timing &tmg)
 {
     for (unsigned int i=0; i<blocks.size(); i++)
     {
@@ -2141,7 +2111,7 @@ void System::SetStateVariables_TR(const string &variable, const CVector_arma &X,
     }
 }
 
-void System::CalculateAllExpressions(Timing tmg)
+void System::CalculateAllExpressions(Expression::timing tmg)
 {
     for (int i=0; i<blocks.size(); i++)
     {
@@ -2191,15 +2161,15 @@ void System::CalculateAllExpressions(Timing tmg)
     }
 }
 
-CVector_arma System::GetResiduals(const string &variable, const CVector_arma &X, bool transport)
+CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool transport)
 {
     if (transport)
         return GetResiduals_TR(variable, X);
 
     CVector_arma F(blocks.size());
-    SetStateVariables(variable,X,Timing::present);
+    SetStateVariables(variable,X,Expression::timing::present);
     UnUpdateAllVariables();
-    //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Timing::present);
+    //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
     CVector LinkFlow(links.size());
 #ifndef NO_OPENMP
 #pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
@@ -2209,29 +2179,29 @@ CVector_arma System::GetResiduals(const string &variable, const CVector_arma &X,
         //qDebug()<<QString::fromStdString(blocks[i].GetName());
         if (blocks[i].isrigid(variable))
         {
-            F[i] = - blocks[i].GetInflowValue(variable, Timing::present);
+            F[i] = - blocks[i].GetInflowValue(variable, Expression::timing::present);
         }
         else if (blocks[i].GetLimitedOutflow())
         {
-            blocks[i].SetOutflowLimitFactor(X[i],Timing::present); //max(X[i],0.0)
-            blocks[i].SetVal(variable, blocks[i].GetVal(variable, Timing::past) * SolverSettings.landtozero_factor,Timing::present);
-            double inflow = blocks[i].GetInflowValue(variable, Timing::present);
-            if (inflow<0) inflow*=blocks[i].GetOutflowLimitFactor(Timing::present);
-            F[i] = -blocks[i].GetVal(variable,Timing::past)*(1.0-SolverSettings.landtozero_factor)/dt() - inflow;
+            blocks[i].SetOutflowLimitFactor(X[i],Expression::timing::present); //max(X[i],0.0)
+            blocks[i].SetVal(variable, blocks[i].GetVal(variable, Expression::timing::past) * SolverSettings.landtozero_factor,Expression::timing::present);
+            double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
+            if (inflow<0) inflow*=blocks[i].GetOutflowLimitFactor(Expression::timing::present);
+            F[i] = -blocks[i].GetVal(variable,Expression::timing::past)*(1.0-SolverSettings.landtozero_factor)/dt() - inflow;
         }
         else
-            F[i] = (X[i]-blocks[i].GetVal(variable,Timing::past))/dt() - blocks[i].GetInflowValue(variable,Timing::present);
+            F[i] = (X[i]-blocks[i].GetVal(variable,Expression::timing::past))/dt() - blocks[i].GetInflowValue(variable,Expression::timing::present);
     }
 
 
     for (unsigned int i=0; i<links.size(); i++)
     {
-        if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Timing::present) > 0)
-            links[i].SetOutflowLimitFactor(blocks[links[i].s_Block_No()].GetOutflowLimitFactor(Timing::present), Timing::present);
-        else if (blocks[links[i].e_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present)<0)
-            links[i].SetOutflowLimitFactor(blocks[links[i].e_Block_No()].GetOutflowLimitFactor(Timing::present), Timing::present);
+        if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) > 0)
+            links[i].SetOutflowLimitFactor(blocks[links[i].s_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
+        else if (blocks[links[i].e_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)<0)
+            links[i].SetOutflowLimitFactor(blocks[links[i].e_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
         else
-            links[i].SetOutflowLimitFactor(1, Timing::present);
+            links[i].SetOutflowLimitFactor(1, Expression::timing::present);
 
     }
 
@@ -2241,7 +2211,7 @@ CVector_arma System::GetResiduals(const string &variable, const CVector_arma &X,
 #pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
     for (int i=0; i<links.size(); i++)
-       LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present)*links[i].GetOutflowLimitFactor(Timing::present);
+       LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
 
 
 
@@ -2258,17 +2228,17 @@ CVector_arma System::GetResiduals(const string &variable, const CVector_arma &X,
     }
 }
     /*for (unsigned int i = 0; i < links.size(); i++)
-        if (links[i].GetOutflowLimitFactor(Timing::present) < 0)
+        if (links[i].GetOutflowLimitFactor(Expression::timing::present) < 0)
         {
-            F[links[i].e_Block_No()] += (double(sgn(F[links[i].e_Block_No()])) - 0.5) * pow(links[i].GetOutflowLimitFactor(Timing::present), 2)*fabs(links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Timing::present));
-            F[links[i].s_Block_No()] += (double(sgn(F[links[i].s_Block_No()])) - 0.5) * pow(links[i].GetOutflowLimitFactor(Timing::present), 2)*fabs(links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Timing::present));
+            F[links[i].e_Block_No()] += (double(sgn(F[links[i].e_Block_No()])) - 0.5) * pow(links[i].GetOutflowLimitFactor(Expression::timing::present), 2)*fabs(links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present));
+            F[links[i].s_Block_No()] += (double(sgn(F[links[i].s_Block_No()])) - 0.5) * pow(links[i].GetOutflowLimitFactor(Expression::timing::present), 2)*fabs(links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present));
         }
     */
     /*for (unsigned int i = 0; i < blocks.size(); i++)
     {
-        if (blocks[i].GetOutflowLimitFactor(Timing::present)<0 && blocks[i].GetLimitedOutflow() )
+        if (blocks[i].GetOutflowLimitFactor(Expression::timing::present)<0 && blocks[i].GetLimitedOutflow() )
         {
-            F[i] = -pow(blocks[i].GetOutflowLimitFactor(Timing::present),2);
+            F[i] = -pow(blocks[i].GetOutflowLimitFactor(Expression::timing::present),2);
         }
     }*/
 //qDebug()<<"Correction factors!";
@@ -2312,18 +2282,18 @@ bool System::OutFlowCanOccur(int blockno, const string &variable)
 
     for (unsigned int j = 0; j < blocks[blockno].GetLinksFrom().size(); j++)
     {
-        outflow = blocks[blockno].GetLinksFrom()[j]->GetVal(blocks[blockno].Variable(variable)->GetCorrespondingFlowVar(), Timing::present);
+        outflow = blocks[blockno].GetLinksFrom()[j]->GetVal(blocks[blockno].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present);
         alloutflowszero &= !aquiutils::ispositive(outflow);
     }
     for (unsigned int j = 0; j < blocks[blockno].GetLinksTo().size(); j++)
     {
-        outflow = blocks[blockno].GetLinksTo()[j]->GetVal(blocks[blockno].Variable(variable)->GetCorrespondingFlowVar(), Timing::present);
+        outflow = blocks[blockno].GetLinksTo()[j]->GetVal(blocks[blockno].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present);
         alloutflowszero &= !aquiutils::isnegative(outflow);
     }
     return !alloutflowszero;
 }
 
-CVector System::GetBlocksOutflowFactors(const Timing &tmg)
+CVector System::GetBlocksOutflowFactors(const Expression::timing &tmg)
 {
     CVector out(blocks.size());
     for (unsigned int i=0; i<blocks.size(); i++)
@@ -2332,7 +2302,7 @@ CVector System::GetBlocksOutflowFactors(const Timing &tmg)
     return out;
 }
 
-CVector System::GetLinkssOutflowFactors(const Timing &tmg)
+CVector System::GetLinkssOutflowFactors(const Expression::timing &tmg)
 {
     CVector out(links.size());
     for (unsigned int i=0; i<links.size(); i++)
@@ -2342,27 +2312,27 @@ CVector System::GetLinkssOutflowFactors(const Timing &tmg)
 }
 
 
-CVector_arma System::GetResiduals_TR(const string &variable, const CVector_arma &X)
+CVector_arma System::GetResiduals_TR(const string &variable, CVector_arma &X)
 {
     CVector_arma F(blocks.size()*ConstituentsCount());
-    SetStateVariables_TR(variable,X,Timing::present);
+    SetStateVariables_TR(variable,X,Expression::timing::present);
     UnUpdateAllVariables();
-    //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Timing::present);
+    //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
 
 
    for (unsigned int i=0; i<blocks.size(); i++)
     {
-       CVector V = blocks[i].GetAllReactionRates(Timing::present);
+       CVector V = blocks[i].GetAllReactionRates(Expression::timing::present);
        for (unsigned int j=0; j<ConstituentsCount(); j++)
-            F[j+i*ConstituentsCount()] = (X[j+i*ConstituentsCount()]-blocks[i].GetVal(variable, constituent(j)->GetName(), Timing::past))/dt() - blocks[i].GetInflowValue(variable,constituent(j)->GetName(), Timing::present) - V[j];
+            F[j+i*ConstituentsCount()] = (X[j+i*ConstituentsCount()]-blocks[i].GetVal(variable, constituent(j)->GetName(), Expression::timing::past))/dt() - blocks[i].GetInflowValue(variable,constituent(j)->GetName(), Expression::timing::present) - V[j];
     }
 
     for (unsigned int i=0; i<links.size(); i++)
     {
         for (unsigned int j=0; j<ConstituentsCount(); j++)
         {
-            F[j+ConstituentsCount()*links[i].s_Block_No()] += links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable,constituent(j)->GetName())->GetCorrespondingFlowVar(),constituent(j)->GetName(),Timing::present, true);
-            F[j+ConstituentsCount()*links[i].e_Block_No()] -= links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable,constituent(j)->GetName())->GetCorrespondingFlowVar(),constituent(j)->GetName(),Timing::present, true);
+            F[j+ConstituentsCount()*links[i].s_Block_No()] += links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable,constituent(j)->GetName())->GetCorrespondingFlowVar(),constituent(j)->GetName(),Expression::timing::present, true);
+            F[j+ConstituentsCount()*links[i].e_Block_No()] -= links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable,constituent(j)->GetName())->GetCorrespondingFlowVar(),constituent(j)->GetName(),Expression::timing::present, true);
         }
 
     }
@@ -2375,31 +2345,31 @@ void System::CorrectStoragesBasedonFluxes(const string& variable)
 {
     CVector_arma UpdatedStorage(blocks.size());
     for (unsigned int i = 0; i < blocks.size(); i++)
-        UpdatedStorage[i] = (blocks[i].GetVal(variable, Timing::past)) + blocks[i].GetInflowValue(variable, Timing::present)*dt();
+        UpdatedStorage[i] = (blocks[i].GetVal(variable, Expression::timing::past)) + blocks[i].GetInflowValue(variable, Expression::timing::present)*dt();
 
     for (unsigned int i = 0; i < links.size(); i++)
     {
-        if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Timing::present) > 0)
-            links[i].SetOutflowLimitFactor(blocks[links[i].s_Block_No()].GetOutflowLimitFactor(Timing::present), Timing::present);
-        else if (blocks[links[i].e_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Timing::present) < 0)
-            links[i].SetOutflowLimitFactor(blocks[links[i].e_Block_No()].GetOutflowLimitFactor(Timing::present), Timing::present);
+        if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) > 0)
+            links[i].SetOutflowLimitFactor(blocks[links[i].s_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
+        else if (blocks[links[i].e_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) < 0)
+            links[i].SetOutflowLimitFactor(blocks[links[i].e_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
         else
-            links[i].SetOutflowLimitFactor(1, Timing::present);
+            links[i].SetOutflowLimitFactor(1, Expression::timing::present);
 
     }
 
     for (unsigned int i = 0; i < links.size(); i++)
     {
-        UpdatedStorage[links[i].s_Block_No()] -= links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Timing::present) * links[i].GetOutflowLimitFactor(Timing::present)* dt();
-        UpdatedStorage[links[i].e_Block_No()] += links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Timing::present) * links[i].GetOutflowLimitFactor(Timing::present)* dt();
+        UpdatedStorage[links[i].s_Block_No()] -= links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) * links[i].GetOutflowLimitFactor(Expression::timing::present)* dt();
+        UpdatedStorage[links[i].e_Block_No()] += links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) * links[i].GetOutflowLimitFactor(Expression::timing::present)* dt();
     }
 
     for (unsigned int i = 0; i < blocks.size(); i++)
-        blocks[i].SetVal(variable, UpdatedStorage[i], Timing::present);
+        blocks[i].SetVal(variable, UpdatedStorage[i], Expression::timing::present);
 
 }
 
-bool System::CalculateFlows(const string &var, const Timing &tmg)
+bool System::CalculateFlows(const string &var, const Expression::timing &tmg)
 {
     for (unsigned int i=0; i<links.size(); i++)
     {
@@ -2479,12 +2449,7 @@ CVector_arma System::Jacobian(const string &variable, CVector_arma &V, CVector_a
 
 }
 
-QuanSet* System::GetModel(const string& type) { 
-    if (metamodel.Count(type) == 1) 
-        return metamodel[type]; 
-    else return 
-        nullptr; 
-}
+
 
 void System::SetVariableParents()
 {
@@ -2495,8 +2460,8 @@ void System::SetVariableParents()
 		links[i].SetVariableParents();
         links[i].Set_s_Block(&blocks[int(links[i].s_Block_No())]);
 		links[i].Set_e_Block(&blocks[links[i].e_Block_No()]);
-        blocks[links[i].e_Block_No()].AppendLink(i, ExpressionNode::loc::destination);
-        blocks[links[i].s_Block_No()].AppendLink(i, ExpressionNode::loc::source);
+        blocks[links[i].e_Block_No()].AppendLink(i, Expression::loc::destination);
+        blocks[links[i].s_Block_No()].AppendLink(i, Expression::loc::source);
     }
 
 
@@ -3108,7 +3073,7 @@ double System::GetMinimumNextTimeStepSize()
     return max(x,timeseriesprecision(0.001));
 }
 
-#if defined(Q_JSON_SUPPORT) || defined(Q_GUI_SUPPORT)
+#if defined(QT_version) || defined(Q_JSON_SUPPORT)
 QStringList System::QGetAllCategoryTypes()
 {
 	QStringList out;
@@ -3145,7 +3110,7 @@ QStringList System::QGetAllObjectsofTypeCategory(QString _type)
 
 	return out;
 }
-#endif // Q_JSON_SUPPORT
+#endif // Qt_version
 
 
 bool System::SavetoScriptFile(const string &filename, const string &templatefilename, const vector<string> &_addedtemplates)
@@ -3329,7 +3294,7 @@ void System::SetSettingsParameter(const string &name, const double &value)
     {
         for (unordered_map<string, Quan>::iterator j=Settings[i].GetVars()->begin(); j!=Settings[i].GetVars()->end(); j++)
             if (j->first == name)
-                j->second.SetVal(value,Timing::both);
+                j->second.SetVal(value,Expression::timing::both);
 
     }
 
@@ -3341,7 +3306,7 @@ void System::DisconnectLink(const string linkname)
     for (unsigned int i = 0; i < links.size(); i++)
         if (links[i].GetName() == linkname)
         {
-            block(links[i].GetConnectedBlock(ExpressionNode::loc::source)->GetName())->deletelinkstofrom(links[i].GetName());
+            block(links[i].GetConnectedBlock(Expression::loc::source)->GetName())->deletelinkstofrom(links[i].GetName());
         }
 }
 
@@ -3350,7 +3315,7 @@ bool System::Delete(const string& objectname)
     for (unsigned int i = 0; i < links.size(); i++)
         if (links[i].GetName() == objectname)
         {
-            block(links[i].GetConnectedBlock(ExpressionNode::loc::source)->GetName())->deletelinkstofrom(links[i].GetName());
+            block(links[i].GetConnectedBlock(Expression::loc::source)->GetName())->deletelinkstofrom(links[i].GetName());
             for (unsigned int j = 0; j < blocks.size(); j++)
             {
                 blocks[j].shiftlinkIds(i);
@@ -3380,9 +3345,9 @@ bool System::Delete(const string& objectname)
             for (unsigned int j = 0; j < links.size(); j++)
             {
                 if (links[j].s_Block_No() >= i)
-                    links[j].ShiftLinkedBlock(-1, ExpressionNode::loc::source);
+                    links[j].ShiftLinkedBlock(-1, Expression::loc::source);
                 if (links[j].e_Block_No() >= i)
-                    links[j].ShiftLinkedBlock(-1, ExpressionNode::loc::destination);
+                    links[j].ShiftLinkedBlock(-1, Expression::loc::destination);
             }
 
             return true;
@@ -3461,7 +3426,7 @@ bool System::EraseConstituentRelatedProperties(const string &constituent_name)
     return true;
 }
 
-bool System::VerifyAsSource(const Block* blk, const Link* lnk)
+bool System::VerifyAsSource(Block* blk, Link* lnk)
 {
     for (unsigned int i = 0; i < lnk->GetAllRequieredStartingBlockProperties().size(); i++)
     {
@@ -3476,7 +3441,7 @@ bool System::VerifyAsSource(const Block* blk, const Link* lnk)
 }
 
 
-bool System::VerifyAsDestination(const Block* blk, const Link* lnk)
+bool System::VerifyAsDestination(Block* blk, Link* lnk)
 {
     for (unsigned int i = 0; i < lnk->GetAllRequieredDestinationBlockProperties().size(); i++)
     {
@@ -3931,14 +3896,14 @@ void System::WriteObjectsToLogger()
 }
 
 
-void System::WriteBlocksStates(const string &variable, const Timing &tmg)
+void System::WriteBlocksStates(const string &variable, const Expression::timing &tmg)
 {
     for (unsigned int i=0; i<blocks.size(); i++)
         GetSolutionLogger()->WriteString("    " + blocks[i].GetName() + ", Storage= " + aquiutils::numbertostring(blocks[i].GetVal(variable,tmg)) + ", correction factor= " + aquiutils::numbertostring(blocks[i].GetOutflowLimitFactor(tmg)) + ", Outflow limiting status:" + aquiutils::numbertostring(blocks[i].GetLimitedOutflow()));
 
 }
 
-void System::WriteLinksStates(const string &variable, const Timing &tmg)
+void System::WriteLinksStates(const string &variable, const Expression::timing &tmg)
 {
     for (unsigned int i=0; i<links.size(); i++)
         GetSolutionLogger()->WriteString("    " + links[i].GetName() + ", Flow = " + aquiutils::numbertostring(links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),tmg)) + ", correction factor= " + aquiutils::numbertostring(links[i].GetOutflowLimitFactor(tmg)));
@@ -3971,17 +3936,17 @@ bool System::InitiatePrecalculatedFunctions()
 
 double System::Gradient(Object* obj, Object* wrt, const string &dependent_var, const string &independent_var)
 {
-    double basevalue = obj->GetVal(dependent_var,Timing::present);
-    double original_state = wrt->GetVal(independent_var,Timing::present);
+    double basevalue = obj->GetVal(dependent_var,Expression::timing::present);
+    double original_state = wrt->GetVal(independent_var,Expression::timing::present);
     double u;
     if (EpochCount()%2==0) u=1; else u=-1;
     double epsilon = -1e-6*u*(fabs(original_state)+1);
-    wrt->SetVal(independent_var,original_state+epsilon,Timing::present);
+    wrt->SetVal(independent_var,original_state+epsilon,Expression::timing::present);
     wrt->UnUpdateAllValues();
     obj->UnUpdateAllValues();
-    double permutedvalue = obj->GetVal(dependent_var,Timing::present);
+    double permutedvalue = obj->GetVal(dependent_var,Expression::timing::present);
     double derivative = (permutedvalue - basevalue)/epsilon;
-    wrt->SetVal(independent_var,original_state,Timing::present);
+    wrt->SetVal(independent_var,original_state,Expression::timing::present);
     wrt->UnUpdateAllValues();
     obj->UnUpdateAllValues();
     return derivative;
@@ -4031,46 +3996,46 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
 {
     for (unsigned int i=0; i<links.size(); i++)
     {
-        if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Timing::present) > 0)
-        {   links[i].SetOutflowLimitFactor(blocks[links[i].s_Block_No()].GetOutflowLimitFactor(Timing::present), Timing::present);
+        if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) > 0)
+        {   links[i].SetOutflowLimitFactor(blocks[links[i].s_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
             links[i].SetLimitedOutflow(true);
         }
-        else if (blocks[links[i].e_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present)<0)
-        {   links[i].SetOutflowLimitFactor(blocks[links[i].e_Block_No()].GetOutflowLimitFactor(Timing::present), Timing::present);
+        else if (blocks[links[i].e_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)<0)
+        {   links[i].SetOutflowLimitFactor(blocks[links[i].e_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
             links[i].SetLimitedOutflow(true);
         }
         else
-        {   links[i].SetOutflowLimitFactor(1, Timing::present);
+        {   links[i].SetOutflowLimitFactor(1, Expression::timing::present);
             links[i].SetLimitedOutflow(false);
         }
 
     }
-    CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Timing::present,transport);
-    SetStateVariables_for_direct_Jacobian(variable,X,Timing::present,transport);
+    CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Expression::timing::present,transport);
+    SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma jacobian(BlockCount());
 #ifndef NO_OPENMP
 //#pragma omp parallel for schedule(static)
 #endif
     for (int i=0; i<LinksCount(); i++)
     {
-        if (!link(i)->GetConnectedBlock(ExpressionNode::loc::source)->GetLimitedOutflow())
-        {   jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
-            jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+        if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
+        {   jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
         }
         else
         {
-            jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
-            jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
+            jacobian(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jacobian(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
         }
-        if (!link(i)->GetConnectedBlock(ExpressionNode::loc::destination)->GetLimitedOutflow())
+        if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
         {
-            jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
-            jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+            jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
         }
         else
         {
-            jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) -= aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
-            jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
+            jacobian(link(i)->s_Block_No(),link(i)->e_Block_No()) -= aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
         }
     }
 #ifndef NO_OPENMP
@@ -4089,7 +4054,7 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
                     if (!block(i)->GetLimitedOutflow())
                         jacobian(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
                     else
-                    {   double inflow = blocks[i].GetInflowValue(variable, Timing::present);
+                    {   double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
                         if (inflow<0) jacobian(i,i) -= inflow;
                     }
                 }
@@ -4111,13 +4076,13 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
 
     /*for (unsigned int i = 0; i < blocks.size(); i++)
     {
-        if (blocks[i].GetOutflowLimitFactor(Timing::present)<0 && blocks[i].GetLimitedOutflow() )
+        if (blocks[i].GetOutflowLimitFactor(Expression::timing::present)<0 && blocks[i].GetLimitedOutflow() )
         {
-            jacobian(i,i) = -2.0*blocks[i].GetOutflowLimitFactor(Timing::present);
+            jacobian(i,i) = -2.0*blocks[i].GetOutflowLimitFactor(Expression::timing::present);
         }
     }*/
 
-    SetStateVariables_for_direct_Jacobian(variable,current_state,Timing::present,transport);
+    SetStateVariables_for_direct_Jacobian(variable,current_state,Expression::timing::present,transport);
     return jacobian;
 }
 
@@ -4126,46 +4091,46 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
 {
     for (unsigned int i=0; i<links.size(); i++)
     {
-        if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Timing::present) > 0)
-        {   links[i].SetOutflowLimitFactor(blocks[links[i].s_Block_No()].GetOutflowLimitFactor(Timing::present), Timing::present);
+        if (blocks[links[i].s_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present) > 0)
+        {   links[i].SetOutflowLimitFactor(blocks[links[i].s_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
             links[i].SetLimitedOutflow(true);
         }
-        else if (blocks[links[i].e_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present)<0)
-        {   links[i].SetOutflowLimitFactor(blocks[links[i].e_Block_No()].GetOutflowLimitFactor(Timing::present), Timing::present);
+        else if (blocks[links[i].e_Block_No()].GetLimitedOutflow() && links[i].GetVal(blocks[links[i].e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)<0)
+        {   links[i].SetOutflowLimitFactor(blocks[links[i].e_Block_No()].GetOutflowLimitFactor(Expression::timing::present), Expression::timing::present);
             links[i].SetLimitedOutflow(true);
         }
         else
-        {   links[i].SetOutflowLimitFactor(1, Timing::present);
+        {   links[i].SetOutflowLimitFactor(1, Expression::timing::present);
             links[i].SetLimitedOutflow(false);
         }
 
     }
-    CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Timing::present,transport);
-    SetStateVariables_for_direct_Jacobian(variable,X,Timing::present,transport);
+    CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Expression::timing::present,transport);
+    SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma_sp jacobian_sp(BlockCount());
 #ifndef NO_OPENMP
 #pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
     for (int i=0; i<LinksCount(); i++)
     {
-        if (!link(i)->GetConnectedBlock(ExpressionNode::loc::source)->GetLimitedOutflow())
-        {   jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
-            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+        if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
+        {   jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
         }
         else
         {
-            jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
-            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
+            jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
         }
-        if (!link(i)->GetConnectedBlock(ExpressionNode::loc::destination)->GetLimitedOutflow())
+        if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
         {
-            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
-            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(ExpressionNode::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Timing::present);
+            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
         }
         else
         {
-            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) -= aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
-            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Timing::present));
+            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) -= aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
         }
     }
 #ifndef NO_OPENMP
@@ -4184,7 +4149,7 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
                     if (!block(i)->GetLimitedOutflow())
                         jacobian_sp(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
                     else
-                    {   double inflow = blocks[i].GetInflowValue(variable, Timing::present);
+                    {   double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
                         if (inflow<0) jacobian_sp(i,i) -= inflow;
                     }
                 }
@@ -4206,13 +4171,13 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
 
     /*for (unsigned int i = 0; i < blocks.size(); i++)
     {
-        if (blocks[i].GetOutflowLimitFactor(Timing::present)<0 && blocks[i].GetLimitedOutflow() )
+        if (blocks[i].GetOutflowLimitFactor(Expression::timing::present)<0 && blocks[i].GetLimitedOutflow() )
         {
-            jacobian(i,i) = -2.0*blocks[i].GetOutflowLimitFactor(Timing::present);
+            jacobian(i,i) = -2.0*blocks[i].GetOutflowLimitFactor(Expression::timing::present);
         }
     }*/
 
-    SetStateVariables_for_direct_Jacobian(variable,current_state,Timing::present,transport);
+    SetStateVariables_for_direct_Jacobian(variable,current_state,Expression::timing::present,transport);
     return jacobian_sp;
 }
 #endif
@@ -4405,70 +4370,6 @@ bool System::SavetoJson(const string &filename, const vector<string> &_addedtemp
 
 }
 
-bool System::SaveEquationstoJson(const string& filename) 
-{
-    QJsonObject out;
-    QJsonObject SourcesJsonObject;
-    for (unsigned int i = 0; i < sources.size(); i++)
-        SourcesJsonObject[QString::fromStdString(sources[i].GetName())] = sources[i].ExpressionstoJson();
-    out["Sources"] = SourcesJsonObject;
-
-    QJsonObject ParametersJsonObject;
-    for (unsigned int i = 0; i < ParametersCount(); i++)
-        ParametersJsonObject[QString::fromStdString(Parameters()[i]->GetName())] = Parameters()[i]->ExpressionstoJson();
-    out["Parameters"] = ParametersJsonObject;
-
-
-    QJsonObject ConstituentsJsonObject;
-    for (unsigned int i = 0; i < ConstituentsCount(); i++)
-        ConstituentsJsonObject[QString::fromStdString(constituents[i].GetName())] = constituents[i].ExpressionstoJson();
-    out["Constituents"] = ConstituentsJsonObject;
-
-    QJsonObject ReactionParametersJsonObject;
-    for (unsigned int i = 0; i < ReactionParametersCount(); i++)
-        ReactionParametersJsonObject[QString::fromStdString(reaction_parameters[i].GetName())] = reaction_parameters[i].ExpressionstoJson();
-    out["Reaction Parameters"] = ReactionParametersJsonObject;
-
-    QJsonObject ReactionsJsonObject;
-    for (unsigned int i = 0; i < ReactionsCount(); i++)
-        ReactionsJsonObject[QString::fromStdString(reactions[i].GetName())] = reactions[i].ExpressionstoJson();
-    out["Reactions"] = ReactionsJsonObject;
-
-    QJsonObject BlocksJsonObject;
-    for (unsigned int i = 0; i < blocks.size(); i++)
-        BlocksJsonObject[QString::fromStdString(blocks[i].GetName())] = blocks[i].ExpressionstoJson();
-    out["Blocks"] = BlocksJsonObject;
-
-    QJsonObject LinksJsonObject;
-    for (unsigned int i = 0; i < links.size(); i++)
-        LinksJsonObject[QString::fromStdString(links[i].GetName())] = links[i].ExpressionstoJson();
-    out["Links"] = LinksJsonObject;
-
-    QJsonObject ObjectiveFunctionsJsonObject;
-    for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
-        ObjectiveFunctionsJsonObject[QString::fromStdString(ObjectiveFunctions()[i]->GetName())] = ObjectiveFunctions()[i]->ExpressionstoJson();
-    out["Objective Functions"] = ObjectiveFunctionsJsonObject;
-
-    QJsonObject ObservationsJsonObject;
-    for (unsigned int i = 0; i < ObservationsCount(); i++)
-        ObservationsJsonObject[QString::fromStdString(observation(i)->GetName())] = observation(i)->ExpressionstoJson();
-    out["Observations"] = ObservationsJsonObject;
-      
-    QFile file(QString::fromStdString(filename));
-    if (!file.open(QIODevice::WriteOnly)) {
-        qWarning() << "Could not open file for writing:" << file.errorString();
-        return false;
-    }
-
-    QJsonDocument jsonDoc(out);
-    file.write(jsonDoc.toJson(QJsonDocument::Indented));  // Use Indented or Compact
-    file.close();
-
-    return true;
-
-}
-
-
 bool System::LoadfromJson(const QJsonDocument &jsondoc)
 {
     QJsonObject root = jsondoc.object();
@@ -4480,7 +4381,7 @@ bool System::LoadfromJson(const QJsonObject &root)
 {
     bool outcome = true;
     QJsonArray TemplatesJson = root["Templates"].toArray();
-    //qDebug()<<TemplatesJson;
+    qDebug()<<TemplatesJson;
 
     for (const QJsonValue& temp : TemplatesJson)
     {   if (AppendQuanTemplate(temp.toString().toStdString()))
@@ -4590,7 +4491,7 @@ bool System::LoadfromJson(const QJsonObject &root)
         {
             if (property!="type" && property!="to" && property!="from")
             {
-                //qDebug()<<linkname;
+                qDebug()<<linkname;
                 if (!link(linkname.toStdString())->SetProperty(property.toStdString(),LinkJson[property].toString().toStdString(),true, false))
                     errorhandler.Append("System", "Link","ReadFromJson","Link '" + linkname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10013 );
             }

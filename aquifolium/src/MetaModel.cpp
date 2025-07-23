@@ -16,9 +16,8 @@
 
 #include "MetaModel.h"
 #include <json/json.h>
-#ifdef Q_GUI_SUPPORT
-    #include <QDebug>
-#endif
+#include <QDebug>
+
 
 MetaModel::MetaModel()
 {

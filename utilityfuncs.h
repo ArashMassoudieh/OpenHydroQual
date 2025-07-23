@@ -17,15 +17,15 @@
 #pragma once
 #include <string>
 #include <vector>
-#ifdef Q_JSON_SUPPORT
+#ifdef Q_GUI_SUPPORT
 #include "qdatetime.h"
-#endif // Q_JSON_SUPPORT
+#endif // Q_GUI_SUPPORT
 using namespace std;
 
 bool isnumber(string S);
 double dayOfYear(const double xldate);
 
-#ifdef Q_JSON_SUPPORT
+#ifdef Q_GUI_SUPPORT
 qint64 xldate2julian(const qint64 xldate);
 qint64 julian2xldate(const qint64 juliandate);
 int dayOfYear(const qint64 xldate);
@@ -45,6 +45,6 @@ bool fileExists(QString path);
 QStringList toQStringList(const vector<string> &s);
 #else
 string string2QString_nqt(string s);
-#endif // Q_JSON_SUPPORT
+#endif // Q_version
 
 

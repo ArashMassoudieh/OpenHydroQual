@@ -15,11 +15,9 @@
 
 
 #include "Condition.h"
-#ifdef Q_GUI_SUPPORT
-    #include <QDebug>
-#endif
+#include <QDebug>
 
-#include "Utilities.h"
+using namespace aquiutils;
 
 Condition::Condition()
 {
@@ -49,23 +47,23 @@ Condition& Condition::operator=(const Condition& S)
 
 Condition::Condition(const string &str)
 {
-    if (aquiutils::split(str,'<').size()>1)
+    if (split(str,'<').size()>1)
     {
-        for (unsigned int i=0; i< aquiutils::split(str,'<').size(); i++)
+        for (unsigned int i=0; i<split(str,'<').size(); i++)
         {
-            exr.push_back(Expression(aquiutils::split(str,'<')[i]));
+            exr.push_back(Expression(split(str,'<')[i]));
         }
-        for (unsigned int i=0; i< aquiutils::split(str,'<').size()-1; i++)
+        for (unsigned int i=0; i<split(str,'<').size()-1; i++)
             oprtr.push_back(_oprtr::lessthan);
         return;
     }
-    else if (aquiutils::split(str,'>').size()>1)
+    else if (split(str,'>').size()>1)
     {
-        for (unsigned int i=0; i< aquiutils::split(str,'>').size(); i++)
+        for (unsigned int i=0; i<split(str,'>').size(); i++)
         {
-            exr.push_back(Expression(aquiutils::split(str,'>')[i]));
+            exr.push_back(Expression(split(str,'>')[i]));
         }
-        for (unsigned int i=0; i< aquiutils::split(str,'>').size()-1; i++)
+        for (unsigned int i=0; i<split(str,'>').size()-1; i++)
             oprtr.push_back(_oprtr::greaterthan);
         return;
     }
@@ -75,7 +73,7 @@ Condition::Condition(const string &str)
 
 }
 
-bool Condition::calc(Object *W, const Timing &tmg)
+bool Condition::calc(Object *W, const Expression::timing &tmg)
 {
     bool out = true;
     for (unsigned int i=0; i<oprtr.size(); i++)
@@ -98,7 +96,7 @@ bool Condition::calc(Object *W, const Timing &tmg)
 
 string Condition::ToString(int _tabs) const
 {
-    string s = aquiutils::tabs(_tabs+1);
+    string s = tabs(_tabs+1);
     for (unsigned int i=0; i<oprtr.size(); i++)
     {
         s += exr[i].ToString();
