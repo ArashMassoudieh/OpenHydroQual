@@ -1208,14 +1208,14 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         {
             QMenu* posterior_results = menu.addMenu("Posterior results");
             timeseriestobeshown = "distribution";
-            if (system.parameter(nd->text(0).toStdString())->GetPosteriorDistribution().n!=0)
+            if (system.parameter(nd->text(0).toStdString())->GetPosteriorDistribution().size()!=0)
             {
                 QAction* graphaction = posterior_results->addAction("Distribution");
                 QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
                 graphaction->setData(v);
                 connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
             }
-            if (system.parameter(nd->text(0).toStdString())->GetMCMCSamples().nvars!=0)
+            if (system.parameter(nd->text(0).toStdString())->GetMCMCSamples().size()!=0)
             {
                 QAction* graphaction = posterior_results->addAction("Marcov Chain");
                 QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
@@ -1229,14 +1229,14 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         {
             QMenu* posterior_results = menu.addMenu("Posterior results");
             timeseriestobeshown = "posterior";
-            if (system.observation(nd->text(0).toStdString())->Realizations().nvars!=0)
+            if (system.observation(nd->text(0).toStdString())->Realizations().size()!=0)
             {
                 QAction* graphaction = posterior_results->addAction("Realizations");
                 QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
                 graphaction->setData(v);
                 connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
             }
-            if (system.observation(nd->text(0).toStdString())->Percentile95().nvars!=0)
+            if (system.observation(nd->text(0).toStdString())->Percentile95().size()!=0)
             {
                 QAction* graphaction = posterior_results->addAction("95 percent bracket");
                 QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->GetName()));
@@ -1354,8 +1354,8 @@ void MainWindow::showgraph()
         }
     }
     else
-    {    
-        if (GetSystem()->GetOutputs()[item.toStdString()].n==0)
+    {
+        if (GetSystem()->GetOutputs()[item.toStdString()].size()==0)
         {
             QMessageBox::question(this, "Time Series is empty!", "The result for this quantity is empty!", QMessageBox::Ok);
             return;
@@ -1925,12 +1925,12 @@ void MainWindow::onrunmodel()
             if (copiedsystem.WriteIntermittently())
                 copiedsystem.GetOutputs().appendtofile(copiedsystem.OutputFileName(),true);
             else
-                copiedsystem.GetOutputs().writetofile(copiedsystem.OutputFileName());
+                copiedsystem.GetOutputs().write(copiedsystem.OutputFileName());
         else
             if (copiedsystem.WriteIntermittently())
                 copiedsystem.GetOutputs().appendtofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName(),true);
             else
-                copiedsystem.GetOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName());
+                copiedsystem.GetOutputs().write(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName());
     }
     if (copiedsystem.ObservedOutputFileName() != "")
     {
@@ -1938,29 +1938,29 @@ void MainWindow::onrunmodel()
             if (copiedsystem.WriteIntermittently())
                 copiedsystem.GetObservedOutputs().appendtofile(copiedsystem.ObservedOutputFileName(),true);
             else
-                copiedsystem.GetObservedOutputs().writetofile(copiedsystem.ObservedOutputFileName());
+                copiedsystem.GetObservedOutputs().write(copiedsystem.ObservedOutputFileName());
 
         else
             if (copiedsystem.WriteIntermittently())
                 copiedsystem.GetObservedOutputs().appendtofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName(),true);
             else
-                copiedsystem.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
+                copiedsystem.GetObservedOutputs().write(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName());
     }
 
-    copiedsystem.ObjectiveFunctionSet()->GetTimeSeriesSet().writetofile(workingfolder.toStdString() + "/Objective_Function_TimeSeries.txt");
+    copiedsystem.ObjectiveFunctionSet()->GetTimeSeriesSet().write(workingfolder.toStdString() + "/Objective_Function_TimeSeries.txt");
     if (copiedsystem.WriteIntermittently())
     {
         if (copiedsystem.OutputFileName() != "")
         {   if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
-                copiedsystem.GetOutputs().ReadContentFromFile(copiedsystem.OutputFileName(),true);
+                copiedsystem.GetOutputs().read(copiedsystem.OutputFileName(),true);
             else
-                copiedsystem.GetOutputs().ReadContentFromFile(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName(),true);
+                copiedsystem.GetOutputs().read(workingfolder.toStdString() + "/" + copiedsystem.OutputFileName(),true);
         }
 
         if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
-            copiedsystem.GetObservedOutputs().ReadContentFromFile(copiedsystem.ObservedOutputFileName(),true);
+            copiedsystem.GetObservedOutputs().read(copiedsystem.ObservedOutputFileName(),true);
         else
-            copiedsystem.GetObservedOutputs().ReadContentFromFile(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName(),true);
+            copiedsystem.GetObservedOutputs().read(workingfolder.toStdString() + "/" + copiedsystem.ObservedOutputFileName(),true);
     }
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
@@ -1971,7 +1971,7 @@ void MainWindow::onrunmodel()
     CVector FitMeasures(3*copiedsystem.ObservationsCount());
     copiedsystem.ObjectiveFunctionSet()->Calculate();
     CVector ObjectiveFunctionValues = copiedsystem.ObjectiveFunctionSet()->Objective_Values();
-    CTimeSeriesSet<double> mapped_modeled_results;
+    TimeSeriesSet<double> mapped_modeled_results;
     for (unsigned int i=0; i<copiedsystem.ObservationsCount();  i++)
     {
         copiedsystem.observation(i)->CalcMisfit();
@@ -1986,7 +1986,7 @@ void MainWindow::onrunmodel()
 
     ObjectiveFunctionValues.writetofile(workingfolder.toStdString() + "/" + "objective_function_values.txt");
     FitMeasures.writetofile(workingfolder.toStdString() + "/" + "fit_measures.txt");
-    mapped_modeled_results.writetofile(workingfolder.toStdString() + "/" + "mapped_modeled_results.txt");
+    mapped_modeled_results.write(workingfolder.toStdString() + "/" + "mapped_modeled_results.txt");
     actionrun->setEnabled(true);
     rtw->AppendText(string("All tasks finished!"));
 }
@@ -2036,8 +2036,8 @@ void MainWindow::onoptimize()
     optimizer->SetRunTimeWindow(rtw);
     system.SetParameterEstimationMode(parameter_estimation_options::optimize);
     optimizer->optimize();
-    optimizer->Model_out.GetOutputs().writetofile(workingfolder.toStdString() + "/outputs.txt");
-    optimizer->Model_out.GetObservedOutputs().writetofile(workingfolder.toStdString() + "/observedoutputs.txt");
+    optimizer->Model_out.GetOutputs().write(workingfolder.toStdString() + "/outputs.txt");
+    optimizer->Model_out.GetObservedOutputs().write(workingfolder.toStdString() + "/observedoutputs.txt");
     optimizer->Model_out.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
 
     system.TransferResultsFrom(&optimizer->Model_out);
@@ -2116,7 +2116,7 @@ void MainWindow::onmcmc()
 }
 
 #ifndef QCharts
-Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime)
+Plotter* MainWindow::Plot(TimeSeries<timeseriesprecision>& plotitem, bool allowtime)
 {
     Plotter* plotter = new Plotter(this);
     plotter->PlotData(plotitem,allowtime);
@@ -2124,7 +2124,7 @@ Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allow
     return plotter;
 }
 
-Plotter* MainWindow::Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime)
+Plotter* MainWindow::Plot(TimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime)
 {
     Plotter* plotter = new Plotter(this);
     qDebug()<<"plotting ...";
@@ -2134,7 +2134,7 @@ Plotter* MainWindow::Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool al
     return plotter;
 }
 
-Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved)
+Plotter* MainWindow::Plot(TimeSeries<timeseriesprecision>& plotmodeled, TimeSeries<timeseriesprecision>& plotobserved)
 {
     Plotter* plotter = new Plotter(this);
     if (plotmodeled.n>0)
@@ -2145,7 +2145,7 @@ Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSe
     return plotter;
 }
 #else
-QPlotWindow* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime)
+QPlotWindow* MainWindow::Plot(TimeSeries<timeseriesprecision>& plotitem, bool allowtime)
 {
     QPlotWindow* plotter = new QPlotWindow(this);
     plotter->PlotData(plotitem,allowtime);
@@ -2153,7 +2153,7 @@ QPlotWindow* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotitem, bool a
     return plotter;
 }
 
-QPlotWindow* MainWindow::Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime)
+QPlotWindow* MainWindow::Plot(TimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime)
 {
     QPlotWindow* plotter = new QPlotWindow(this);
     qDebug()<<"plotting ...";
@@ -2163,12 +2163,12 @@ QPlotWindow* MainWindow::Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, boo
     return plotter;
 }
 
-QPlotWindow* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved)
+QPlotWindow* MainWindow::Plot(TimeSeries<timeseriesprecision>& plotmodeled, TimeSeries<timeseriesprecision>& plotobserved)
 {
     QPlotWindow* plotter = new QPlotWindow(this);
-    if (plotmodeled.n>0)
+    if (plotmodeled.size()>0)
         plotter->PlotData(plotmodeled,false, "line");
-    if (plotobserved.n>0)
+    if (plotobserved.size()>0)
     plotter->AddData(plotobserved,false, "dots");
     plotter->show();
     return plotter;
@@ -2286,8 +2286,8 @@ void MainWindow::loadresults()
             tr("Open"), "",
             tr("Output files (*.txt);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
-    CTimeSeriesSet<double> outputs(fileName.toStdString(),true);
-    CTimeSeriesSet<double> past_output = system.GetOutputs();
+    TimeSeriesSet<double> outputs(fileName.toStdString(),true);
+    TimeSeriesSet<double> past_output = system.GetOutputs();
     system.GetOutputs() = outputs;
     if (!system.SetLoadedOutputItems())
     {   system.GetOutputs()=past_output;

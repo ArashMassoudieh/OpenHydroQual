@@ -582,7 +582,8 @@ bool System::Solve(bool applyparameters)
     else
         SetNumberOfStateVariables(solvevariableorder.size());
     SolverTempVars.SetUpdateJacobian(true);
-    alltimeseries = TimeSeries();
+    alltimeseries = GetTimeSeries(true);
+
 	bool success = true;
     #ifdef Q_version
     errorhandler.SetRunTimeWindow(rtw);
@@ -854,7 +855,7 @@ bool System::Solve(bool applyparameters)
 #else
     ShowMessage("Adjusting outputs ...");
 #endif
-    Outputs.AllOutputs.adjust_size();
+
 #ifdef Q_version
     if (rtw)
     {
@@ -1122,7 +1123,7 @@ void System::InitiateOutputs()
         for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), blocks[i].GetName() + "_" + it->first);
+                Outputs.AllOutputs.append(TimeSeries<outputtimeseriesprecision>(), blocks[i].GetName() + "_" + it->first);
                 it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
             }
     }
@@ -1133,7 +1134,7 @@ void System::InitiateOutputs()
         for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), links[i].GetName() + "_" + it->first);
+                Outputs.AllOutputs.append(TimeSeries<outputtimeseriesprecision>(), links[i].GetName() + "_" + it->first);
                 it->second.SetOutputItem(links[i].GetName() + "_" + it->first);
             }
     }
@@ -1144,7 +1145,7 @@ void System::InitiateOutputs()
         for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), reaction_parameters[i].GetName() + "_" + it->first);
+                Outputs.AllOutputs.append(TimeSeries<outputtimeseriesprecision>(), reaction_parameters[i].GetName() + "_" + it->first);
                 it->second.SetOutputItem(reaction_parameters[i].GetName() + "_" + it->first);
             }
     }
@@ -1152,12 +1153,12 @@ void System::InitiateOutputs()
     for (unsigned int i=0; i<objective_function_set.size(); i++)
     {
         objective_function_set[i]->EstablishExpressionStructure();
-        Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), "Obj_" + objective_function_set[i]->GetName());
+        Outputs.AllOutputs.append(TimeSeries<outputtimeseriesprecision>(), "Obj_" + objective_function_set[i]->GetName());
         objective_function_set[i]->SetOutputItem("Obj_" + objective_function_set[i]->GetName());
         for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
+                Outputs.AllOutputs.append(TimeSeries<outputtimeseriesprecision>(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 //qDebug()<<QString::fromStdString(it->second.GetOutputItem());
             }
@@ -1166,16 +1167,16 @@ void System::InitiateOutputs()
     for (unsigned int i=0; i<observations.size(); i++)
     {
         observations[i].EstablishExpressionStructure();
-        Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), "Obs_" + observations[i].GetName());
+        Outputs.AllOutputs.append(TimeSeries<outputtimeseriesprecision>(), "Obs_" + observations[i].GetName());
         observations[i].SetOutputItem("Obs_" + observations[i].GetName());
         for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), "Obs_" + observations[i].GetName()+"_"+it->first);
+                Outputs.AllOutputs.append(TimeSeries<outputtimeseriesprecision>(), "Obs_" + observations[i].GetName()+"_"+it->first);
                 it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
                 //qDebug()<<QString::fromStdString(it->second.GetOutputItem());
             }
-         Outputs.ObservedOutputs.append(CTimeSeries<timeseriesprecision>(), observations[i].GetName());
+         Outputs.ObservedOutputs.append(TimeSeries<timeseriesprecision>(), observations[i].GetName());
     }
 
     for (unsigned int i=0; i<sources.size(); i++)
@@ -1185,7 +1186,7 @@ void System::InitiateOutputs()
         {
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CTimeSeries<outputtimeseriesprecision>(), sources[i].GetName() + "_" + it->first);
+                Outputs.AllOutputs.append(TimeSeries<outputtimeseriesprecision>(), sources[i].GetName() + "_" + it->first);
                 it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
             }
         }
@@ -1207,7 +1208,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().names,blocks[i].GetName() + "_" + it->first)==-1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),blocks[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1219,7 +1220,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().names,reaction_parameters[i].GetName() + "_" + it->first)==-1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),reaction_parameters[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(reaction_parameters[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1231,7 +1232,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().names,links[i].GetName() + "_" + it->first)==-1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),links[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(links[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1243,7 +1244,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().names,sources[i].GetName() + "_" + it->first)==-1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),sources[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1256,7 +1257,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().names,objective_function_set[i]->GetName() + "_" + it->first)==-1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),objective_function_set[i]->GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 varcount++;
@@ -1269,13 +1270,13 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().names,observations[i].GetName() + "_" + it->first)==-1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),observations[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
                 varcount++;
             }
     }
-    if (GetOutputs().nvars!=varcount) res=false;
+    if (GetOutputs().size()!=varcount) res=false;
     return res;
 }
 
@@ -1324,7 +1325,7 @@ void System::SetOutputItems()
         for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CTimeSeries<timeseriesprecision>(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
+                Outputs.AllOutputs.append(TimeSeries<timeseriesprecision>(), "Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
 
             }
@@ -1336,7 +1337,7 @@ void System::SetOutputItems()
         for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                Outputs.AllOutputs.append(CTimeSeries<timeseriesprecision>(), "Obs_" + observations[i].GetName()+"_"+it->first);
+                Outputs.AllOutputs.append(TimeSeries<timeseriesprecision>(), "Obs_" + observations[i].GetName()+"_"+it->first);
                 it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
 
             }
@@ -1355,7 +1356,7 @@ void System::PopulateOutputs(bool dolinks)
 
     if (RecordResults())
     {
-        Outputs.AllOutputs.ResizeIfNeeded(1000);
+        //Outputs.AllOutputs.ResizeIfNeeded(1000);
 #ifndef NO_OPENMP
 #pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
@@ -3026,33 +3027,36 @@ bool System::Echo(const string &obj, const string &quant, const string &feature)
 
 }
 
-SafeVector<CTimeSeries<timeseriesprecision>*> System::TimeSeries()
+SafeVector<TimeSeries<timeseriesprecision>*> System::GetTimeSeries(bool onlyprecip)
 {
-    SafeVector<CTimeSeries<timeseriesprecision>*> out;
+    SafeVector<TimeSeries<timeseriesprecision>*> out;
     for (unsigned int i=0; i<links.size(); i++)
     {
-        for (unsigned int j=0; j<links[i].TimeSeries().size(); j++)
+        vector<TimeSeries<timeseriesprecision>*> linktimeseires = links[i].GetTimeSeries(onlyprecip);
+        for (unsigned int j=0; j<linktimeseires.size(); j++)
         {
-            links[i].TimeSeries()[j]->assign_D();
-            out.push_back(links[i].TimeSeries()[j]);
+            links[i].GetTimeSeries()[j]->assign_D();
+            out.push_back(linktimeseires[j]);
         }
     }
 
     for (unsigned int i=0; i<blocks.size(); i++)
     {
-        for (unsigned int j=0; j<blocks[i].TimeSeries().size(); j++)
+        vector<TimeSeries<timeseriesprecision>*> blocktimeseires = blocks[i].GetTimeSeries(onlyprecip);
+        for (unsigned int j=0; j<blocktimeseires.size(); j++)
         {
-            blocks[i].TimeSeries()[j]->assign_D();
-            out.push_back(blocks[i].TimeSeries()[j]);
+            blocks[i].GetTimeSeries()[j]->assign_D();
+            out.push_back(blocktimeseires[j]);
         }
     }
 
     for (unsigned int i=0; i<sources.size(); i++)
     {
-        for (unsigned int j=0; j<sources[i].TimeSeries().size(); j++)
+        vector<TimeSeries<timeseriesprecision>*> sourcetimeseires = sources[i].GetTimeSeries(onlyprecip);
+        for (unsigned int j=0; j<sourcetimeseires.size(); j++)
         {
-            sources[i].TimeSeries()[j]->assign_D();
-            out.push_back(sources[i].TimeSeries()[j]);
+            sources[i].GetTimeSeries()[j]->assign_D();
+            out.push_back(sourcetimeseires[j]);
         }
     }
 
@@ -4178,9 +4182,9 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
     return jacobian_sp;
 }
 #endif
-CTimeSeriesSet<timeseriesprecision> System::GetModeledObjectiveFunctions()
+TimeSeriesSet<timeseriesprecision> System::GetModeledObjectiveFunctions()
 {
-    CTimeSeriesSet<timeseriesprecision> out;
+    TimeSeriesSet<timeseriesprecision> out;
     for (unsigned int i=0; i<ObjectiveFunctionsCount(); i++)
     {
         out.append(*objectivefunction(objective_function_set[i]->GetName())->GetTimeSeries(),objective_function_set[i]->GetName());
@@ -4227,12 +4231,12 @@ bool System::WriteOutPuts()
     {
         if (QString::fromStdString(OutputFileName()).contains("/") || QString::fromStdString(OutputFileName()).contains("\\"))
             if (SolverTempVars.first_write)
-                GetOutputs().writetofile(OutputFileName());
+                GetOutputs().write(OutputFileName());
             else
                 GetOutputs().appendtofile(OutputFileName());
         else
             if (SolverTempVars.first_write)
-                GetOutputs().writetofile(paths.inputpath + "/" + OutputFileName());
+                GetOutputs().write(paths.inputpath + "/" + OutputFileName());
             else
                 GetOutputs().appendtofile(paths.inputpath + "/" + OutputFileName());
     }
@@ -4240,12 +4244,12 @@ bool System::WriteOutPuts()
     {
         if (QString::fromStdString(ObservedOutputFileName()).contains("/") || QString::fromStdString(ObservedOutputFileName()).contains("\\"))
             if (SolverTempVars.first_write)
-                GetObservedOutputs().writetofile(ObservedOutputFileName());
+                GetObservedOutputs().write(ObservedOutputFileName());
             else
                 GetObservedOutputs().appendtofile(ObservedOutputFileName(),true);
         else
             if (SolverTempVars.first_write)
-                GetObservedOutputs().writetofile(paths.inputpath + "/" + ObservedOutputFileName());
+                GetObservedOutputs().write(paths.inputpath + "/" + ObservedOutputFileName());
             else
                 GetObservedOutputs().appendtofile(paths.inputpath + "/" + ObservedOutputFileName(),true);
     }

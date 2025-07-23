@@ -18,8 +18,8 @@
 #define QPLOTWINDOW_H
 
 #include <QDialog>
-#include <BTC.h>
-#include <BTCSet.h>
+#include <TimeSeries.h>
+#include <TimeSeriesSet.h>
 #include <qplotter.h>
 
 #define outputtimeseriesprecision double
@@ -57,7 +57,7 @@ struct _timeseries
 {
     QString filename;
     QString name;
-    CTimeSeriesSet<outputtimeseriesprecision> Data;
+    TimeSeriesSet<outputtimeseriesprecision> Data;
 };
 */
 
@@ -72,9 +72,9 @@ class QPlotWindow : public QDialog
 public:
     explicit QPlotWindow(MainWindow *parent = nullptr);
     ~QPlotWindow();
-    bool PlotData(const CTimeSeries<outputtimeseriesprecision>& BTC, bool allowtime=true, string style="line");
-    bool PlotData(const CTimeSeriesSet<outputtimeseriesprecision>& BTC, bool allowtime=true, string style="line");
-    bool AddData(const CTimeSeries<outputtimeseriesprecision>& BTC,bool allowtime=true, string style="line");
+    bool PlotData(const TimeSeries<outputtimeseriesprecision>& BTC, bool allowtime=true, string style="line");
+    bool PlotData(const TimeSeriesSet<outputtimeseriesprecision>& BTC, bool allowtime=true, string style="line");
+    bool AddData(const TimeSeries<outputtimeseriesprecision>& BTC,bool allowtime=true, string style="line");
     void SetYAxisTitle(const QString& s)
     {
         y_Axis_Title = s;
@@ -91,7 +91,7 @@ public:
     }
     void SetLegend(bool val);
     void SetTimeFormat(bool timedate);
-    CTimeSeries<double> GetTimeSeries(const QString &name) {return TimeSeries[name];}
+    TimeSeries<double> GetTimeSeries(const QString &name) {return timeSeries[name];}
     bool SetYAxis(bool log);
 private:
     Ui::QPlotWindow *ui;
@@ -113,7 +113,7 @@ private:
         return out;
 
     }
-    QMap<QString,CTimeSeries<double>> TimeSeries;
+    QMap<QString,TimeSeries<double>> timeSeries;
     QValueAxis* axisY = nullptr;
     QLogValueAxis* axisY_log = nullptr;
     QValueAxis* axisX_normal = nullptr;

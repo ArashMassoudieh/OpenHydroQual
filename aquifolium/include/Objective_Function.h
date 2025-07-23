@@ -18,7 +18,7 @@
 #define OBJECTIVE_FUNCTION_H
 
 #include "Expression.h"
-#include "BTC.h"
+#include "TimeSeries.h"
 #include "Object.h"
 
 enum class objfunctype {Integrate, Value, Maximum, Variance, Exceedance};
@@ -41,8 +41,8 @@ class Objective_Function: public Object
         void SetSystem(System *_system) {system = _system;}
         string GetLastError() {return lasterror;}
         void SetLastError(const string &lerror) {lasterror = lerror;}
-        CTimeSeries<timeseriesprecision> *GetTimeSeries() {return &stored_time_series;}
-        void SetTimeSeries(const CTimeSeries<timeseriesprecision> &X)
+        TimeSeries<timeseriesprecision> *GetTimeSeries() {return &stored_time_series;}
+        void SetTimeSeries(const TimeSeries<timeseriesprecision> &X)
         {
             stored_time_series = X;
         }
@@ -71,7 +71,7 @@ class Objective_Function: public Object
     private:
         string location; // location at which the objective function will be evaluated
         Expression expression; // Function
-        CTimeSeries<timeseriesprecision> stored_time_series; // Stored time series values;
+        TimeSeries<timeseriesprecision> stored_time_series; // Stored time series values;
         System *system; // pointer to the system the objective function is evaluated at
         string lasterror;
         objfunctype type = objfunctype::Integrate;

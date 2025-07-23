@@ -15,7 +15,7 @@
 
 
 #include "observation.h"
-#include "BTC.h"
+#include "TimeSeries.h"
 #include "System.h"
 
 
@@ -124,18 +124,18 @@ double Observation::CalcMisfit()
                 fit_measures.push_back(fit_mse);
                 fit_measures.push_back(_R2);
                 fit_measures.push_back(Nash_Sutcliffe_efficiency);
-                return Variable("observed_data")->GetTimeSeries()->n*(fit_mse/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
+                return Variable("observed_data")->GetTimeSeries()->size()*(fit_mse/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
 
             }
             else if (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal")
             {
-                fit_mse = diff2(modeled_time_series.Log(1e-8),Variable("observed_data")->GetTimeSeries()->Log(1e-8));
-                _R2 = R2(modeled_time_series.Log(1e-8),Variable("observed_data")->GetTimeSeries()->Log(1e-8));
-                Nash_Sutcliffe_efficiency = NSE(modeled_time_series.Log(1e-8),Variable("observed_data")->GetTimeSeries()->Log(1e-8));
+                fit_mse = diff2(modeled_time_series.log(1e-8),Variable("observed_data")->GetTimeSeries()->log(1e-8));
+                _R2 = R2(modeled_time_series.log(1e-8),Variable("observed_data")->GetTimeSeries()->log(1e-8));
+                Nash_Sutcliffe_efficiency = NSE(modeled_time_series.log(1e-8),Variable("observed_data")->GetTimeSeries()->log(1e-8));
                 fit_measures.push_back(fit_mse);
                 fit_measures.push_back(_R2);
                 fit_measures.push_back(Nash_Sutcliffe_efficiency);
-                return Variable("observed_data")->GetTimeSeries()->n*(fit_mse/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
+                return Variable("observed_data")->GetTimeSeries()->size()*(fit_mse/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
             }
             else
                 return 0;
@@ -146,8 +146,8 @@ double Observation::CalcMisfit()
             double CDF_diff = 0;
             double time_span = Variable("autocorrelation_time-span")->GetVal();
             double increment = time_span/20.0;
-            CTimeSeries<double> autocorr_measured = Variable("observed_data")->GetTimeSeries()->ConverttoNormalScore().AutoCorrelation(time_span,increment);
-            CTimeSeries<double> autocorr_modeled = modeled_time_series.ConverttoNormalScore().AutoCorrelation(time_span,increment);
+            TimeSeries<double> autocorr_measured = Variable("observed_data")->GetTimeSeries()->ConvertToNormalScore().AutoCorrelation(time_span,increment);
+            TimeSeries<double> autocorr_modeled = modeled_time_series.ConvertToNormalScore().AutoCorrelation(time_span,increment);
             auto_correlation_diff =  diff2(autocorr_measured, autocorr_modeled);
             if (Variable("error_structure")->GetProperty()=="normal")
             {
@@ -159,7 +159,7 @@ double Observation::CalcMisfit()
             else
             {
                 //qDebug()<<"Calculating Misfit Log-Normal";
-                CDF_diff = KolmogorovSmirnov(Variable("observed_data")->GetTimeSeries()->Log(1e-8),modeled_time_series.Log(1e-8));
+                CDF_diff = KolmogorovSmirnov(Variable("observed_data")->GetTimeSeries()->log(1e-8),modeled_time_series.log(1e-8));
                 //qDebug()<<"CDF diff calculated";
             }
             fit_measures.push_back(auto_correlation_diff + CDF_diff);

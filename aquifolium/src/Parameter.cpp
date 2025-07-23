@@ -160,10 +160,10 @@ double Parameter::ExpandedHigh(const double &factor)
     }
 }
 
-CTimeSeries<double> Parameter::PriorDistribution(unsigned int nbins)
+TimeSeries<double> Parameter::PriorDistribution(unsigned int nbins)
 {
-    CTimeSeries<double> prior_dist;
-    prior_dist.name = "Prior density";
+    TimeSeries<double> prior_dist;
+    prior_dist.setName("Prior density");
     for (unsigned int i=0; i<nbins; i++)
     {
         double x = ExpandedLow() + i*(ExpandedHigh() - ExpandedLow())/double(nbins);

@@ -18,9 +18,9 @@
 #define OBSERVATION_H
 
 #include "Expression.h"
-#include "BTC.h"
+#include "TimeSeries.h"
 #include "Object.h"
-#include "BTCSet.h"
+#include "TimeSeriesSet.h"
 
 class System;
 
@@ -39,7 +39,7 @@ class Observation: public Object
         void SetSystem(System *_system) {system = _system;}
         string GetLastError() {return lasterror;}
         void SetLastError(const string &lerror) {lasterror = lerror;}
-        CTimeSeries<timeseriesprecision> *GetTimeSeries() {return &modeled_time_series;}
+        TimeSeries<timeseriesprecision> *GetTimeSeries() {return &modeled_time_series;}
         void SetLocation(const string &loc) {location = loc;}
         string GetLocation() {
             if (Variable("object"))
@@ -56,26 +56,26 @@ class Observation: public Object
         string GetOutputItem() { return outputitem; }
         vector<string> ItemswithOutput();
         double CalcMisfit();
-        void SetModeledTimeSeries(const CTimeSeries<timeseriesprecision> &X) {modeled_time_series = X;}
-        CTimeSeries<timeseriesprecision>* GetModeledTimeSeries() {return &modeled_time_series;}
-        void SetRealizations(const CTimeSeriesSet<double>& rlztions) {realizations = rlztions;}
-        CTimeSeriesSet<double>& Realizations() {return realizations;}
-        void SetPercentile95(const CTimeSeriesSet<double>& rpct95) {percentile95 = rpct95;}
-        CTimeSeriesSet<double>& Percentile95() {return percentile95;}
+        void SetModeledTimeSeries(const TimeSeries<timeseriesprecision> &X) {modeled_time_series = X;}
+        TimeSeries<timeseriesprecision>* GetModeledTimeSeries() {return &modeled_time_series;}
+        void SetRealizations(const TimeSeriesSet<double>& rlztions) {realizations = rlztions;}
+        TimeSeriesSet<double>& Realizations() {return realizations;}
+        void SetPercentile95(const TimeSeriesSet<double>& rpct95) {percentile95 = rpct95;}
+        TimeSeriesSet<double>& Percentile95() {return percentile95;}
         vector<double> fit_measures;
     protected:
 
     private:
         string location; // location at which the objective function will be evaluated
         Expression expression; // Function
-        CTimeSeries<timeseriesprecision> modeled_time_series; // Stored time series values;
-        CTimeSeries<timeseriesprecision> observed_time_series; // Stored time series values;
+        TimeSeries<timeseriesprecision> modeled_time_series; // Stored time series values;
+        TimeSeries<timeseriesprecision> observed_time_series; // Stored time series values;
         System *system; // pointer to the system the observation is evaluated at
         string lasterror;
         double current_value=0;
         string outputitem="";
-        CTimeSeriesSet<double> realizations;
-        CTimeSeriesSet<double> percentile95;
+        TimeSeriesSet<double> realizations;
+        TimeSeriesSet<double> percentile95;
 
 };
 #endif // OBSERVATION_H

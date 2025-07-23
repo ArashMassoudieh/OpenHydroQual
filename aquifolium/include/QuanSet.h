@@ -68,7 +68,7 @@ class QuanSet
         void SetParent(Object *p) {parent = p; SetAllParents();}
         void SetAllParents();
         Object *Parent() {return parent; }
-        SafeVector<CTimeSeries<timeseriesprecision>*> TimeSeries();
+        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip);
         SafeVector<string> QuanNames();
         string toCommand();
         string toCommandSetAsParam();

@@ -81,12 +81,12 @@ void Objective_Function_Set::ClearStoredTimeSeries()
         objectivefunctions[i].GetTimeSeries()->clear();
 }
 
-CTimeSeriesSet<double> Objective_Function_Set::TimeSeries()
+TimeSeriesSet<double> Objective_Function_Set::TimeSeries()
 {
-    CTimeSeriesSet<double> output(objectivefunctions.size());
+    TimeSeriesSet<double> output(objectivefunctions.size());
     for (unsigned int i=0; i < objectivefunctions.size(); i++)
     {
-        output.BTC[i] = *objectivefunctions[i].GetTimeSeries();
+        output[i] = *objectivefunctions[i].GetTimeSeries();
         output.setname(i,objectivefunctions[i].GetName());
     }
     return output;
@@ -108,9 +108,9 @@ void Objective_Function_Set::Update(double t)
     return;
 }
 
-CTimeSeriesSet<timeseriesprecision> Objective_Function_Set::GetTimeSeriesSet()
+TimeSeriesSet<timeseriesprecision> Objective_Function_Set::GetTimeSeriesSet()
 {
-    CTimeSeriesSet<timeseriesprecision> out;
+    TimeSeriesSet<timeseriesprecision> out;
     for (unsigned int i=0; i < objectivefunctions.size(); i++)
         out.append(*objectivefunctions[i].GetTimeSeries(),objectivefunctions[i].GetName());
     return out;

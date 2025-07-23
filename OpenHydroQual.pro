@@ -162,6 +162,10 @@ SOURCES += \
     wizard_select_dialog.cpp
 
 HEADERS += \
+    aquifolium/include/TimeSeries.h \
+    aquifolium/include/TimeSeriesSet.h \
+    aquifolium/src/TimeSeries.hpp \
+    aquifolium/src/TimeSeriesSet.hpp \
     chartview.h \
     qplotter.h \
     qplotwindow.h \
@@ -193,8 +197,6 @@ HEADERS += \
     gridgenerator.h \
         mainwindow.h \
     ./aquifolium/include/Block.h \
-    ./aquifolium/include/BTC.h \
-    ./aquifolium/include/BTCSet.h \
     ./aquifolium/include/Expression.h \
     ./aquifolium/include/Link.h \
     ./aquifolium/include/Matrix.h \
@@ -247,8 +249,6 @@ HEADERS += \
     statusviewer.h \
     expressioneditor.h \
     ./aquifolium/include/GA/GA.hpp \
-    ./aquifolium/src/BTC.hpp \
-    ./aquifolium/src/BTCSet.hpp \
     logwindow.h \
     ./aquifolium/include/reaction.h \
     wizard_select_dialog.h
@@ -300,7 +300,7 @@ win32 {
 linux {
     #sudo apt-get install libblas-dev liblapack-dev
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -larmadillo -llapack -lblas -lgsl
+     LIBS += -larmadillo -llapack -lblas -lgsl -lopenblas
 
 }
 

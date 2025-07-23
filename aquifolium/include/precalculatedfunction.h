@@ -17,9 +17,9 @@
 #ifndef PRECALCULATEDFUNCTION_H
 #define PRECALCULATEDFUNCTION_H
 
-#include "BTC.h"
+#include "TimeSeries.h"
 
-class PreCalculatedFunction : public CTimeSeries<double>
+class PreCalculatedFunction : public TimeSeries<double>
 {
 public:
     PreCalculatedFunction();

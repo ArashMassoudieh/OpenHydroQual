@@ -237,7 +237,7 @@ bool Command::Execute(System *_sys)
 			}
 			if (Validate())
 			{
-				sys->GetOutputs().writetofile(sys->OutputPath() + assignments["filename"]);
+                sys->GetOutputs().write(sys->OutputPath() + assignments["filename"]);
 			}
 		}
 		if (arguments[0] == "errors")

@@ -70,13 +70,13 @@ public:
     void RefreshTreeView();
     QString resource_directory;
 #ifndef QCharts
-    Plotter* Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
-    Plotter* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);
-    Plotter* Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime=true);
+    Plotter* Plot(TimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
+    Plotter* Plot(TimeSeries<timeseriesprecision>& plotmodeled, TimeSeries<timeseriesprecision>& plotobserved);
+    Plotter* Plot(TimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime=true);
 #else
-    QPlotWindow* Plot(CTimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
-    QPlotWindow* Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved);
-    QPlotWindow* Plot(CTimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime=true);
+    QPlotWindow* Plot(TimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
+    QPlotWindow* Plot(TimeSeries<timeseriesprecision>& plotmodeled, TimeSeries<timeseriesprecision>& plotobserved);
+    QPlotWindow* Plot(TimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime=true);
 #endif
     string CreateNewName(string type, bool allow_paranthesis = true);
     DiagramView* GetDiagramView() { return dView; }
@@ -87,7 +87,7 @@ public:
 #ifndef QCharts
     QMap<QCPGraph *, plotformat> graphsClipboard;
 #else
-    QMap<QString, CTimeSeries<timeseriesprecision>*> graphsClipboard = QMap<QString, CTimeSeries<timeseriesprecision>*>();
+    QMap<QString, TimeSeries<timeseriesprecision>*> graphsClipboard = QMap<QString, TimeSeries<timeseriesprecision>*>();
 #endif
     void SetPan(bool panmode) {actionpan->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
     void SetZoomWindow(bool panmode) {actionzoomwindow->setChecked(panmode); if (!panmode) dView->setMode(Operation_Modes::NormalMode); dView->setModeCursor(); }
