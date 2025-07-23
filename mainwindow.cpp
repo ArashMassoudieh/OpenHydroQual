@@ -1354,8 +1354,8 @@ void MainWindow::showgraph()
         }
     }
     else
-    {    
-        if (GetSystem()->GetOutputs()[item.toStdString()].size() == 0)
+    {
+        if (GetSystem()->GetOutputs()[item.toStdString()].size()==0)
         {
             QMessageBox::question(this, "Time Series is empty!", "The result for this quantity is empty!", QMessageBox::Ok);
             return;
@@ -2135,7 +2135,7 @@ Plotter* MainWindow::Plot(TimeSeriesSet<timeseriesprecision>& plotitem, bool all
     return plotter;
 }
 
-Plotter* MainWindow::Plot(CTimeSeries<timeseriesprecision>& plotmodeled, CTimeSeries<timeseriesprecision>& plotobserved)
+Plotter* MainWindow::Plot(TimeSeries<timeseriesprecision>& plotmodeled, TimeSeries<timeseriesprecision>& plotobserved)
 {
     Plotter* plotter = new Plotter(this);
     if (plotmodeled.n>0)

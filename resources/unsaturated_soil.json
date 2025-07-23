@@ -231,9 +231,30 @@
     },
     "pressure_head": {
       "type": "expression",
-      "expression": "-_min((1/alpha)*(Se^(-1/m)-1)^(1/n);10000) + theta_sat*_pos((theta-theta_res)/(theta_sat-theta_res)-0.999)/specific_storage",
+      "expression": "suction_pressure + excess_pressure",
       "description": "Pressure Head",
-      "precalcbasedon": "theta::0:1",
+      "precalcbasedon": "theta:0:10",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "excess_moisture": {
+      "type": "expression",
+      "expression": "_pos((theta-theta_res)/(theta_sat-theta_res)-0.999)",
+      "description": "Excess moisture",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "excess_pressure": {
+      "type": "expression",
+      "expression": "theta_sat*_pos((theta-theta_res)/(theta_sat-theta_res)-0.999)/specific_storage",
+      "description": "Excess pressure",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "suction_pressure": {
+      "type": "expression",
+      "expression": "-_min((1/alpha)*(Se^(-1/m)-1)^(1/n);10000)",
+      "description": "Suction pressure",
       "ask_user": "false",
       "includeinoutput": "true"
     },
@@ -241,7 +262,7 @@
       "type": "expression",
       "expression": "depth+bottom_elevation+pressure_head",
       "description": "Hydraulic Head",
-      "precalcbasedon": "theta::0:1",
+      "precalcbasedon": "theta:0:10",
       "ask_user": "false",
       "includeinoutput": "true"
     },

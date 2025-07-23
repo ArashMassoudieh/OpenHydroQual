@@ -31,8 +31,8 @@
 #include "reaction.h"
 #include "RxnParameter.h"
 #include "solutionlogger.h"
-#ifdef Q_GUI_SUPPORT
-    #include "runtimewindow.h"
+#ifdef QT_version
+    #include "runtimeWindow.h"
     class GWidget;
     class logWindow;
 #endif
@@ -445,11 +445,17 @@ class System: public Object
         void SetRunTimeWindow(RunTimeWindow* _rtw) {rtw = _rtw;}
 #endif
         bool stop_triggered = false;
-#ifdef Q_JSON_SUPPORT
+#if defined(QT_GUI_SUPPORT) || defined (Q_JSON_SUPPORT)
         QStringList QGetAllCategoryTypes();
 		QStringList QGetAllObjectsofTypes(QString _type);
 		QStringList QGetAllObjectsofTypeCategory(QString _type);
 #endif
+
+#ifdef QT_GUI_SUPPORT
+        RunTimeWindow *RunTimewindow() {return rtw;}
+        void SetRunTimeWindow(RunTimeWindow* _rtw) {rtw = _rtw;}
+#endif
+
         unique_ptr<vector<string>> operators;
         unique_ptr<vector<string>> functions;
         void SetOutputItems();
@@ -674,7 +680,7 @@ class System: public Object
         bool silent;
         _directories paths;
         vector<TimeSeries<timeseriesprecision>*> alltimeseries;
-        void CalculateAllExpressions(Timing tmg = Timing::present);
+        void CalculateAllExpressions(Expression::timing tmg = Expression::timing::present);
         void SetNumberOfStateVariables(unsigned int n)
 		{
 			SolverTempVars.fail_reason.resize(n);

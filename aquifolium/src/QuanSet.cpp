@@ -20,9 +20,8 @@
 #include <json/json.h>
 #include <list>
 
-#ifdef Q_GUI_SUPPORT
-    #include <QDebug>
-#endif
+#include <QDebug>
+
 
 #ifdef Q_JSON_SUPPORT
 #include <QJsonDocument>

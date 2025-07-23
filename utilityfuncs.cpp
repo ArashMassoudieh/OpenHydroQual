@@ -17,13 +17,13 @@
 //template <class T> const T& min(const T& a, const T& b) {
 //	return !(b<a) ? a : b;     // or: return !comp(b,a)?a:b; for version (2)
 //}
-#if Q_JSON_SUPPORT
+#if Q_GUI_SUPPORT
 #include <qstring.h>
 #include <qdatetime.h>
 #include <qstringlist.h>
 #include <qdebug.h>
 #include <qfileinfo.h>
-#endif // Q_JSON_SUPPORT
+#endif // Q_GUI_SUPPORT
 #include "math.h"
 
 #include <utilityfuncs.h>
@@ -178,7 +178,7 @@ double timetodayfraction(int hh, int mm, int ss)
     return fraction;
 }
 
-#ifdef Q_JSON_SUPPORT
+#ifdef Q_GUI_SUPPORT
 QList<int> dayfractiontotime(double dayFraction)
 {
     dayFraction = fmod(dayFraction, 1.0);

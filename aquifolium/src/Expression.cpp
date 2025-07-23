@@ -14,7 +14,7 @@
  */
 
 
- // Expression.cpp — Refactored Legacy-Compatible Implementation
+ // Expression.cpp ï¿½ Refactored Legacy-Compatible Implementation
 #include "Expression.h"
 #include <stdexcept>
 #include <iostream>
@@ -198,6 +198,50 @@ std::string Expression::ToString() const {
         else {
             return "_" + function + "(" + text + ")";
         }
+    }
+    if (function=="ekr")
+    {
+        if (terms.size()!=2)
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Function 'ekr' requiers two arguments", 7002);
+            return 0;
+        }
+        if (!W->HasQuantity(terms[0].parameter))
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Block '"+W->GetName()+ "' has no property " + terms[0].parameter, 7003);
+            return 0;
+        }
+        if (W->Variable(terms[0].parameter)->GetType()!=Quan::_type::prec_timeseries && W->Variable(terms[0].parameter)->GetType()!=Quan::_type::timeseries)
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","In block '"+W->GetName()+ "' property '" + terms[0].parameter + "' must be of type time-series", 7003);
+            return 0;
+        }
+        if (W->Variable(terms[0].parameter)->GetTimeSeries())
+            return W->Variable(terms[0].parameter)->GetTimeSeries()->Exponential_Kernel(W->Parent()->GetTime(),terms[1].calc(W,tmg,limit));
+        else
+            return 0;
+    }
+    if (function=="gkr")
+    {
+        if (terms.size()!=3)
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Function 'gkr' requiers three arguments", 7002);
+            return 0;
+        }
+        if (!W->HasQuantity(terms[0].parameter))
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","Block '"+W->GetName()+ "' has no property " + terms[0].parameter, 7003);
+            return 0;
+        }
+        if (W->Variable(terms[0].parameter)->GetType()!=Quan::_type::prec_timeseries && W->Variable(terms[0].parameter)->GetType()!=Quan::_type::timeseries)
+        {
+            W->Parent()->errorhandler.Append(W->GetName(),"Expression","calc","In block '"+W->GetName()+ "' property '" + terms[0].parameter + "' must be of type time-series", 7003);
+            return 0;
+        }
+        if (W->Variable(terms[0].parameter)->GetTimeSeries())
+            return W->Variable(terms[0].parameter)->GetTimeSeries()->Gaussian_Kernel(W->Parent()->GetTime(),terms[1].calc(W,tmg,limit),terms[2].calc(W,tmg,limit));
+        else
+            return 0;
     }
 
     return text; // fallback or unknown type

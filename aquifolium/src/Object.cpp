@@ -604,7 +604,7 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
     if (Var(prop).GetType() == Quan::_type::value || Var(prop).GetType() == Quan::_type::balance || Var(prop).GetType() == Quan::_type::constant || (Var(prop).GetType() == Quan::_type::expression && (Var(prop).Delegate()=="UnitBox"||Var(prop).Delegate()=="ValueBox" )))
     {
 #ifdef Q_GUI_SUPPORT
-        if (Var(prop).Delegate()=="UnitBox")
+        if (var[prop].Delegate()=="UnitBox")
         {
             if (aquiutils::split(value,'[').size()>1)
             {   string unit = aquiutils::split(aquiutils::split(value,'[')[1],']')[0];
@@ -832,8 +832,8 @@ void Object::MakeTimeSeriesUniform(const double &increment)
         
         if (Var(s->first).GetType() == Quan::_type::timeseries || Var(s->first).GetType() == Quan::_type::prec_timeseries)
         {
-            if (Var(s->first).GetTimeSeries() != nullptr)
-                *(Var(s->first).GetTimeSeries()) = Var(s->first).GetTimeSeries()->make_uniform(increment, true);
+            if (var[s->first].TimeSeries()!=nullptr)
+                *(var[s->first].TimeSeries()) = var[s->first].TimeSeries()->make_uniform(increment);
         }
 }
 

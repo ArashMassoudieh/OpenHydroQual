@@ -23,9 +23,7 @@
 #include "Quan.h"
 #include "MetaModel.h"
 #include "memory"
-#ifdef Q_GUI_SUPPORT
 #include <qdebug.h>
-#endif
 #include "ErrorHandler.h"
 
 using namespace std;
@@ -94,7 +92,7 @@ class Object : protected QuanSet
 		bool CalcExpressions(const Timing& tmg);
         bool EstablishExpressionStructure();
         bool VerifyQuans(ErrorHandler *errorhandler);
-        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip = false) {return QuanSet::GetTimeSeries(onlyprecip);}
+        SafeVector<CTimeSeries<timeseriesprecision>*> TimeSeries() {return var.TimeSeries();}
         string TypeCategory() {return GetVars()->CategoryType();}
 		QuanSet* GetVars()
             {

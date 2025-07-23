@@ -44,7 +44,7 @@ win32:QMAKE_CXXFLAGS += /MP
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Aquifolium
+DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Q_JSON_SUPPORT Aquifolium
 #DEFINES += Debug_GA
 #DEFINES += VALGRIND
 # You can also make your code fail to compile if you use deprecated APIs.
@@ -171,8 +171,6 @@ SOURCES += \
     wizard_select_dialog.cpp
 
 HEADERS += \
-    aquifolium/include/ExpressionNode.h \
-    aquifolium/include/ExpressionParser.h \
     aquifolium/include/TimeSeries.h \
     aquifolium/include/TimeSeriesSet.h \
     aquifolium/src/TimeSeries.hpp \
@@ -311,7 +309,7 @@ win32 {
 linux {
     #sudo apt-get install libblas-dev liblapack-dev
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -larmadillo -llapack -lblas -lgsl
+     LIBS += -larmadillo -llapack -lblas -lgsl -lopenblas
 
 }
 

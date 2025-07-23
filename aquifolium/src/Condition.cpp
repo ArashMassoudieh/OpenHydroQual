@@ -15,9 +15,9 @@
 
 
 #include "Condition.h"
-#ifdef Q_GUI_SUPPORT
-    #include <QDebug>
-#endif
+#include <QDebug>
+
+using namespace aquiutils;
 
 #include "Utilities.h"
 

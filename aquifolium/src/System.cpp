@@ -33,9 +33,8 @@
 #endif
 //#define NormalizeByDiagonal
 
-#ifdef Q_GUI_SUPPORT
-    #include <QDebug>
-#endif
+#include <QDebug>
+
 
 #ifdef SUPER_LU
     #include "Matrix_arma_sp.h"
@@ -576,28 +575,22 @@ void System::InitializeSolverEnvironment()
         SetNumberOfStateVariables(solvevariableorder.size());
 
     SolverTempVars.SetUpdateJacobian(true);
-
-    // Collect all time series data (e.g., precipitation)
-    alltimeseries = GetTimeSeries(true);
-}
-
-void System::InitializeModelState(bool applyparameters)
-{
-    if (applyparameters)
-        ApplyParameters();
-
-    // Set up output structures and initialize logger
+    alltimeseries = TimeSeries();
+	bool success = true;
+    #ifdef Q_version
+    errorhandler.SetRunTimeWindow(rtw);
+    #endif // Q_version
+	if (applyparameters) ApplyParameters();
+    //qDebug()<<"Initiating outputs";
     InitiateOutputs();
     WriteObjectsToLogger();
-
-#ifdef Q_GUI_SUPPORT
+#ifdef Q_version
     QCoreApplication::processEvents();
 #endif
 
     // Ensure all time series are on a common time grid
     MakeTimeSeriesUniform(SimulationParameters.dt0);
-
-#ifdef Q_GUI_SUPPORT
+#ifdef Q_version
     QCoreApplication::processEvents();
 #endif
 
@@ -627,9 +620,7 @@ void System::ClearObservationTimeSeries()
     }
 }
 
-void System::InitializeSimulationUI()
-{
-#ifdef Q_GUI_SUPPORT
+#ifdef Q_version
     if (rtw)
     {
         rtw->AppendText("Simulation Started at " + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
@@ -669,9 +660,23 @@ void System::RunTimeLoop(bool& success)
         if (counter % 50 == 0)
             SolverTempVars.SetUpdateJacobian(true);
 
-        SolverTempVars.dt = std::min(SolverTempVars.dt_base, GetMinimumNextTimeStepSize());
-        if (SolverTempVars.dt < SimulationParameters.dt0 / timestepminfactor)
-            SolverTempVars.dt = SimulationParameters.dt0 / timestepminfactor;
+        //qDebug()<<"Trying to solve...";
+        vector<bool> _success = OneStepSolve();
+        //qDebug()<<"Solved...";
+		success = aquiutils::And(_success);
+		if (!success)
+        {
+            fail_counter++;
+            #ifdef Debug_mode
+            ShowMessage("failed!");
+            #endif // Debug_mode
+#ifdef Q_version
+            if (rtw)
+            {
+                if (rtw->detailson)
+                {
+                    rtw->AppendtoDetails(QString::fromStdString(SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1]) + ", dt = " + QString::number(SolverTempVars.dt,'e'));
+                    if (rtw->stoptriggered) stop_triggered = true;
 
 #ifdef Terminal_version
         ShowMessage("t = " + aquiutils::numbertostring(SolverTempVars.t) +
@@ -693,13 +698,33 @@ void System::RunTimeLoop(bool& success)
             {
                 if (!ResetBasedOnRestorePoint(&restorepoint))
                 {
+#ifdef Q_version
+                    if (rtw)
+                    {
+                        if (rtw->detailson)
+                            rtw->AppendtoDetails("The attempt to solve the problem failed");
+
+                        rtw->AppendErrorMessage("The attempt to solve the problem failed!");
+                        QCoreApplication::processEvents();
+                    }
+    #endif
+                    if (GetSolutionLogger())
+                        GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
+                    cout<<"The attempt to solve the problem failed!"<<std::endl;
                     SolverTempVars.SolutionFailed = true;
                     stop_triggered = true;
                     return;
                 }
                 else
                 {
-                    restorepoint.used_counter = 0;
+                    if (GetSolutionLogger())
+                        GetSolutionLogger()->WriteString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t) );
+#ifdef Q_version
+                    if (rtw)
+                        if (rtw->detailson)
+                            rtw->AppendtoDetails(QString::fromStdString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t)));
+#endif
+
                 }
             }
 
@@ -712,6 +737,37 @@ void System::RunTimeLoop(bool& success)
         }
         else
         {
+#ifdef Q_version
+            if (rtw)
+            {
+                rtw->SetProgress(progress);
+                rtw->AddDataPoint(SolverTempVars.t, SolverTempVars.dt);
+                if (int(progress/0.01)>int(progress_p/0.01) || rtw->detailson)
+                    rtw->Replot();
+                if (rtw->detailson) rtw->AppendtoDetails("Number of iterations:" + QString::number(SolverTempVars.MaxNumberOfIterations()) + ",dt = " + QString::number(SolverTempVars.dt) + ",t = " + QString::number(SolverTempVars.t, 'f', 6) + ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
+                if (rtw->stoptriggered) stop_triggered = true;
+
+            if ((counter-1)%restore_interval==0)
+            {
+                restorepoint.GetSystem()->CopyStateVariablesFrom(this);
+                restorepoint.t = SolverTempVars.t;
+                restorepoint.dt = SolverTempVars.dt;
+                if (rtw!=nullptr)
+                    if (rtw->detailson)
+                    {
+                        rtw->AppendtoDetails("Restore point saved!");
+                    }
+                restorepoint.used_counter = 0;
+                if (GetSolutionLogger())
+                    GetSolutionLogger()->WriteString("@ t = " +aquiutils::numbertostring(SolverTempVars.t) + ": Restore point saved!");
+            }
+            if (SimulationParameters.write_outputs_intermittently)
+                if (aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart,SimulationParameters.write_interval)<aquiutils::mod(SolverTempVars.t-SimulationParameters.tstart-SolverTempVars.dt,SimulationParameters.write_interval))
+                    WriteOutPuts();
+            QCoreApplication::processEvents();
+            //cout<<"Processes Events...";
+        }
+#endif
             fail_counter = 0;
             Update();
             UpdateObjectiveFunctions(SolverTempVars.t);
@@ -757,6 +813,12 @@ void System::RunTimeLoop(bool& success)
                     restorepoint.dt = SolverTempVars.dt;
                     restorepoint.used_counter = 0;
 
+        }
+        if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time)
+        {
+#ifdef Q_version
+                if (rtw)
+                {
                     if (rtw->detailson)
                         rtw->AppendtoDetails("Restore point saved!");
 
@@ -781,8 +843,11 @@ void System::RunTimeLoop(bool& success)
         if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time ||
             SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
         {
-            SolverTempVars.SolutionFailed = true;
-            stop_triggered = true;
+#ifdef Q_version
+                if (rtw)
+                {
+                    if (rtw->detailson)
+                        rtw->AppendtoDetails("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
 
 #ifdef Q_GUI_SUPPORT
             if (rtw)
@@ -795,6 +860,21 @@ void System::RunTimeLoop(bool& success)
                 QCoreApplication::processEvents();
             }
 #endif
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString("Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+                    GetSolutionLogger()->WriteString("The attempt to solve the problem failed!");
+                }
+                cout<<"Maximum number of matrix inverstions the limit of " + aquiutils::numbertostring(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!"<<std::endl;
+                cout<<"The attempt to solve the problem failed!"<<std::endl;
+                SolverTempVars.SolutionFailed = true;
+                stop_triggered = true;
+#ifdef Q_version
+        if (rtw)
+        {   errorhandler.Flush(rtw);
+            QCoreApplication::processEvents();
+        }
+#endif
 
             if (GetSolutionLogger())
             {
@@ -803,8 +883,7 @@ void System::RunTimeLoop(bool& success)
             return;
         }
 
-        // Periodically flush errors
-#ifdef Q_GUI_SUPPORT
+#ifdef Q_version
         if (rtw)
         {
             errorhandler.Flush(rtw);
@@ -814,12 +893,9 @@ void System::RunTimeLoop(bool& success)
         errorhandler.Flush();
 #endif
     }
-
-}
-
-void System::FinalizeOutputs()
-{
-#ifdef Q_GUI_SUPPORT
+    
+#ifdef Q_version
+    qDebug() << "Adjusting outputs ....";
     if (rtw)
     {
         rtw->AppendText(QString("Adjusting outputs ..."));
@@ -828,11 +904,19 @@ void System::FinalizeOutputs()
 #else
     ShowMessage("Adjusting outputs ...");
 #endif
-
+    Outputs.AllOutputs.adjust_size();
+#ifdef Q_version
+    if (rtw)
+    {
+        rtw->AppendText(QString("Adjusting outputs, Done!"));
+        QCoreApplication::processEvents();
+    }
+#endif
     Outputs.AllOutputs.unif = false;
 
-#ifdef Q_GUI_SUPPORT
-    if (rtw)
+#ifdef Q_version
+    qDebug() << "Uniformizing outputs ....";
+	if (rtw)
     {
         rtw->AppendText(QString("Uniformizing outputs ..."));
         QCoreApplication::processEvents();
@@ -840,7 +924,8 @@ void System::FinalizeOutputs()
 #endif
     Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0, false);
 
-#ifdef Q_GUI_SUPPORT
+#ifdef Q_version
+    qDebug() << "Uniformizing observations ....";
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing observations ..."));
@@ -849,7 +934,8 @@ void System::FinalizeOutputs()
 #endif
     Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0, false);
 
-#ifdef Q_GUI_SUPPORT
+#ifdef Q_version
+    qDebug() << "Uniformizing objective functions ....";
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing objective functions ..."));
@@ -858,7 +944,8 @@ void System::FinalizeOutputs()
 #endif
     MakeObjectiveFunctionExpressionUniform();
 
-#ifdef Q_GUI_SUPPORT
+    MakeObjectiveFunctionExpressionUniform();
+#ifdef Q_version
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing observation expressions ..."));
@@ -867,7 +954,8 @@ void System::FinalizeOutputs()
 #endif
     MakeObservationsExpressionUniform();
 
-#ifdef Q_GUI_SUPPORT
+    MakeObservationsExpressionUniform();
+#ifdef Q_version
     if (rtw)
     {
         if (!stop_triggered)
@@ -878,8 +966,8 @@ void System::FinalizeOutputs()
     }
 #endif
 
-    if (!stop_triggered && GetSolutionLogger())
-        GetSolutionLogger()->WriteString("Simulation finished successfully!");
+ShowMessage("Simulation finished!");
+#ifdef Q_version
 
     ShowMessage("Simulation finished!");
 
@@ -1199,7 +1287,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), blocks[i].GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().names,blocks[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1211,7 +1299,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), reaction_parameters[i].GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().names,reaction_parameters[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(reaction_parameters[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1223,7 +1311,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), links[i].GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().names,links[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(links[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1235,7 +1323,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), sources[i].GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().names,sources[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
                 varcount++;
@@ -1248,7 +1336,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), objective_function_set[i]->GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().names,objective_function_set[i]->GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 varcount++;
@@ -1261,7 +1349,7 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), observations[i].GetName() + "_" + it->first) == -1)
+                if (aquiutils::lookup(GetOutputs().names,observations[i].GetName() + "_" + it->first)==-1)
                     res = false;
                 it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
                 varcount++;
@@ -3108,7 +3196,7 @@ double System::GetMinimumNextTimeStepSize()
     return max(x,timeseriesprecision(0.001));
 }
 
-#if defined(Q_JSON_SUPPORT) || defined(Q_GUI_SUPPORT)
+#if defined(QT_version) || defined(Q_version)
 QStringList System::QGetAllCategoryTypes()
 {
 	QStringList out;

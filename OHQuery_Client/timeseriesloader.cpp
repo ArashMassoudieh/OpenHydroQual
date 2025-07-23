@@ -36,9 +36,12 @@ void TimeSeriesLoader::onReplyFinished()
         return;
     }
 
-    QJsonObject obj = doc.object();
-    for (const QString& key : obj.keys()) {
-        QJsonObject tsObj = obj[key].toObject();
+    QJsonObject obj_root = doc.object();
+
+    QJsonArray array = obj_root["series"].toArray();
+
+    for (const QJsonValue& value : array) {
+        QJsonObject tsObj = value.toObject();
         QJsonArray tArray = tsObj["t"].toArray();
         QJsonArray valArray = tsObj["value"].toArray();
 
@@ -47,7 +50,7 @@ void TimeSeriesLoader::onReplyFinished()
             ts.t.append(tArray[i].toDouble());
             ts.value.append(valArray[i].toDouble());
         }
-        tsMap[key] = ts;
+        tsMap[tsObj["name"].toString()] = ts;
     }
 
     emit timeSeriesLoaded(tsMap);

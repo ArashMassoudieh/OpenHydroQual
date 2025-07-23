@@ -20,8 +20,8 @@
 #include "System.h"
 #include "Precipitation.h"
 #include "Expression.h"
-#ifdef Q_GUI_SUPPORT
-    #include "XString.h"
+#ifdef Q_JSON_SUPPORT
+#include "XString.h"
 #endif
 #ifndef mac_version
 #ifndef NO_OPENMP
@@ -222,10 +222,6 @@ Quan::Quan(Json::ValueIterator &it)
     {
         SetProperty((*it)["setvalue"].asString());
     }
-}
-
-System* Quan::GetSystem() const {
-    return (parent && parent->Parent()) ? parent->Parent() : nullptr;
 }
 
 #ifdef  Q_JSON_SUPPORT
@@ -523,9 +519,12 @@ double Quan::CalcVal(Object* block, const Timing& tmg)
 {
     switch (type)
     {
-    case _type::constant:
-    case _type::boolean:
-    case _type::value:
+        if (_timeseries.size()>0)
+            return _timeseries.interpol(block->GetParent()->GetTime());
+        else
+            return 0;
+    }
+    if (type == _type::value)
         return _val;
 
     case _type::expression:
@@ -629,16 +628,10 @@ double Quan::CalcVal(const Timing& tmg)
         else
             return InterpolateBasedonPrecalcFunction(parent->GetVal(precalcfunction.IndependentVariable(), tmg));
 
-    case _type::rule:
-        return _rule.calc(parent, tmg);
-
-    case _type::timeseries:
-    case _type::prec_timeseries:
-        return (_timeseries.size() > 0) ? _timeseries.interpol(parent->GetParent()->GetTime()) : 0;
-
-    case _type::source:
-        if (source != nullptr)
-            return source->GetValue(parent);
+    if (type == _type::timeseries || type == _type::prec_timeseries)
+    {
+        if (_timeseries.size()>0)
+            return _timeseries.interpol(parent->GetParent()->GetTime());
         else
             return 0;
 
@@ -830,52 +823,45 @@ bool Quan::SetTimeSeries(const std::string& filename, bool prec)
         return true;
     }
 
-    std::string resolved_path = resolveTimeSeriesFile(filename);
-
-    return prec
-        ? loadPrecipitationTimeSeries(resolved_path)
-        : loadRegularTimeSeries(resolved_path);
-}
-
-std::string Quan::resolveTimeSeriesFile(const std::string& filename) const
-{
-    if (System* sys = GetSystem())
-    {
-        const std::string try_path = sys->InputPath() + filename;
-        if (aquiutils::FileExists(try_path))
-            return try_path;
-    }
-    return filename;
-}
-
-bool Quan::loadRegularTimeSeries(const std::string& path)
+bool Quan::SetTimeSeries(const string &filename, bool prec)
 {
     _timeseries.readfile(path);
     if (_timeseries.fileNotFound)
     {
-        AppendError(GetName(), "Quan", "SetTimeSeries", path + " was not found!", 3001);
-        return false;
+        _timeseries = TimeSeries<double>();
+        return true;
     }
-    return true;
+    if (!prec)
+	{
+        _timeseries.readfile(filename);
+        if (_timeseries.fileNotFound)
+        {
+            AppendError(GetName(), "Quan", "SetTimeSeries", filename + " was not found!", 3001);
+            return false;
+        }
+        else
+        {
+
+            return true;
+        }
+	}
+	else
+	{
+		CPrecipitation Prec;
+		if (!CPrecipitation::isFileValid(filename))
+		{
+            AppendError(GetName(), "Quan", "SetTimeSeries", filename + " is not a valid precipitation file", 3023);
+			return false;
+		}
+		else
+		{
+			Prec.getfromfile(filename);
+            _timeseries = Prec.getflow(1)[0];
+            _timeseries.setFilename(Prec.filename);
+			return true;
+		}
+	}
 }
-
-bool Quan::loadPrecipitationTimeSeries(const std::string& path)
-{
-    if (!CPrecipitation::isFileValid(path))
-    {
-        AppendError(GetName(), "Quan", "SetTimeSeries", path + " is not a valid precipitation file", 3023);
-        return false;
-    }
-
-    CPrecipitation Prec;
-    Prec.getfromfile(path);
-    _timeseries = Prec.getflow(1)[0];
-    _timeseries.setFilename(Prec.filename);
-    return true;
-}
-
-
-
 
 bool Quan::SetTimeSeries(const TimeSeries<double> &timeseries)
 {
@@ -924,14 +910,15 @@ string Quan::GetProperty(bool force_value)
     }
     if (type == _type::timeseries)
     {
-        if (aquiutils::GetPath(_timeseries.getFilename()) == aquiutils::GetPath(GetSystem()->GetWorkingFolder()))
+        //qDebug()<<"FileName: "<<QString::fromStdString(_timeseries.filename);
+        if (aquiutils::GetPath(_timeseries.getFilename()) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
             return aquiutils::GetOnlyFileName(_timeseries.getFilename());
         else
             return _timeseries.getFilename();
     }
     if (type == _type::prec_timeseries)
     {
-        if (aquiutils::GetPath(_timeseries.getFilename()) == aquiutils::GetPath(GetSystem()->GetWorkingFolder()))
+        if (aquiutils::GetPath(_timeseries.getFilename()) == aquiutils::GetPath(parent->Parent()->GetWorkingFolder()))
             return aquiutils::GetOnlyFileName(_timeseries.getFilename());
         else
             return _timeseries.getFilename();
@@ -1047,7 +1034,7 @@ string Quan::toCommand()
 {
     string s;
     if (delegate=="UnitBox")
-#ifdef Q_GUI_SUPPORT
+#ifdef Q_JSON_SUPPORT
         if (unit!=default_unit)
         {
             const double coefficient = XString::coefficient(QString::fromStdString(unit));
@@ -1066,7 +1053,7 @@ string Quan::toCommand()
 
 bool Quan::Validate()
 {
-    if ((type == _type::timeseries || type == _type::prec_timeseries) && !_timeseries.getFilename().empty())
+    if (type == _type::timeseries && !_timeseries.getFilename().empty())
     {
         const std::string path = _timeseries.getFilename();
         const std::string input_path = GetSystem() ? GetSystem()->InputPath() : "";
@@ -1076,12 +1063,23 @@ bool Quan::Validate()
 
         if (path_mismatch)
         {
-            std::string resolved = resolveTimeSeriesFile(path);
-            return SetTimeSeries(resolved, type == _type::prec_timeseries);
+            if (!parent->Parent()->InputPath().empty() && aquiutils::GetPath(parent->Parent()->InputPath())!=aquiutils::GetPath(_timeseries.getFilename()))
+                if (aquiutils::FileExists(parent->Parent()->InputPath() + _timeseries.getFilename()))
+                    return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.getFilename());
+                else
+                    return SetTimeSeries(_timeseries.getFilename());
+            else
+                return SetTimeSeries(_timeseries.getFilename());
         }
         else
         {
-            return SetTimeSeries(path, type == _type::prec_timeseries);
+            if (!parent->Parent()->InputPath().empty() && aquiutils::GetPath(parent->Parent()->InputPath())!=aquiutils::GetPath(_timeseries.getFilename()))
+                if (aquiutils::FileExists(parent->Parent()->InputPath() + _timeseries.getFilename()))
+                    return SetTimeSeries(parent->Parent()->InputPath() + _timeseries.getFilename(), true);
+                else
+                    return SetTimeSeries(_timeseries.getFilename(), true);
+            else
+                return SetTimeSeries(_timeseries.getFilename(), true);
         }
     }
 
@@ -1164,7 +1162,7 @@ bool Quan::InitializePreCalcFunction(int n_inc)
                 parent->SetVal(precalcfunction.IndependentVariable(),exp(x),Timing::present);
                 precalcfunction.append(x,CalcVal(Timing::present));
             }
-    parent->SetVal(precalcfunction.IndependentVariable(),old_independent_variable_value,Timing::present);
+    parent->SetVal(precalcfunction.IndependentVariable(),old_independent_variable_value,Expression::timing::present);
     precalcfunction.setStructured(true);
     precalcfunction.SetInitiated(true);
     return true;

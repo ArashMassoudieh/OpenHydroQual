@@ -374,7 +374,7 @@
     "typecategory": "Connectors",
     "description": "Unconfined Aquifer to Well connector (pumped withdrawal)",
     "icon": {
-      "filename": "unconfined_aquifer2well.png"
+      "filename": "unconfined_aquifer2well_pumped.png"
     },
     "flow": {
       "type": "expression",

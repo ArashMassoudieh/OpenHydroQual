@@ -39,13 +39,60 @@ enum class blocklink { block, link, source, reaction, entity };
  */
 class QuanSet
 {
-public:
-    QuanSet(); ///< Default constructor
-    QuanSet(Json::ValueIterator& object_type); ///< Constructor from JSON definition
-	Quan& Var(const std::string& s); //<< Getter for Quan by name
-    virtual ~QuanSet(); ///< Destructor
-    QuanSet(const QuanSet& other); ///< Copy constructor
-    QuanSet& operator=(const QuanSet& other); ///< Copy assignment
+    public:
+        QuanSet();
+        QuanSet(Json::ValueIterator &object_type);
+        virtual ~QuanSet();
+        QuanSet(const QuanSet& other);
+        QuanSet& operator=(const QuanSet& other);
+        bool Append(const string &s, const Quan &q);
+        void Append(QuanSet &qset);
+        size_t Count(const string &s) const {return quans.count(s);}
+        Quan& operator[] (const string &s);
+        Quan& GetVar(const string &s);
+        Quan* GetVar(int i);
+        Quan* GetVarAskable(int i);
+        void UnUpdateAllValues();
+        std::unordered_map<string,Quan>::iterator find(const string &name) {return quans.find(name);}
+        std::unordered_map<string,Quan>::iterator end() {return quans.end();}
+        std::unordered_map<string,Quan>::iterator begin() {return quans.begin();}
+        std::unordered_map<string,Quan>::const_iterator const_end() const {return quans.cend();}
+        std::unordered_map<string,Quan>::const_iterator const_begin() const {return quans.cbegin();}
+        unsigned long size() {return quans.size();}
+        unsigned long AskableSize();
+        string &Description() 
+        {
+            return description;
+        }
+        string &IconFileName() {return iconfilename;}
+        string &Name() {return name;}
+        void ShowMessage(const string &msg);
+        string ToString(int tabs=0);
+        blocklink BlockLink;
+        void SetParent(Object *p) {parent = p; SetAllParents();}
+        void SetAllParents();
+        Object *Parent() {return parent; }
+        SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip);
+        SafeVector<string> QuanNames();
+        string toCommand();
+        string toCommandSetAsParam();
+        vector<string> quantitative_variable_list();
+        bool RenameProperty(const string &oldname, const string &newname);
+        bool RenameInQuantityOrder(const string &oldname, const string &newname);
+        bool DeleteInQuantityOrder(const string& oldname);
+        vector<string> AllConstituents();
+        vector<string> AllReactionParameters();
+        bool RenameQuantity(const string &oldname, const string &newname);
+        bool RenameConstituents(const string &oldname, const string &newname);
+        bool DeleteConstituentRelatedProperties(const string &constituent_name);
+        bool Find(const string &s)
+        {
+            if (quans.find(s)!=quans.end())
+                return true;
+            else
+                return false;
+        }
+        void SetQuanPointers();
 
     bool Append(const string& s, const Quan& q); ///< Add a new Quan
     void Append(QuanSet& qset); ///< Add all Quans from another set
