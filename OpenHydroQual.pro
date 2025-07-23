@@ -4,10 +4,7 @@
 #
 #-------------------------------------------------
 
-macx:{
-    CONFIG += app_bundle
-    ICON = OHQ.icns
-}
+#CONFIG -= app_bundle
 
 CONFIG += c++17
 
@@ -19,8 +16,6 @@ greaterThan(QT_MAJOR_VERSION, 5): {
 
 
 DEFINES += QCharts
-DEFINES += Q_JSON_SUPPORT
-
 INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
@@ -62,7 +57,6 @@ macx: {
 
 macx: {
     QMAKE_LFLAGS += -lomp
-    DEFINES += _MacOS
 }
 
 macx: {
@@ -78,7 +72,7 @@ CONFIG(debug, debug|release) {
     message(Building in debug mode)
     !macx: QMAKE_CXXFLAGS *= -fopenmp -O3 -march=native
     !macx: QMAKE_LFLAGS +=  -fopenmp
-    !macx: LIBS += -lgomp -lpthread -lopenblas
+    !macx: LIBS += -lgomp -lpthread
     LIBS += -lpthread
     DEFINES += _NO_OPENMP DEBUG
 
@@ -90,17 +84,14 @@ CONFIG(debug, debug|release) {
     # QMAKE_CXXFLAGS+=-pg
     # QMAKE_LFLAGS+=-pg
     # macx: DEFINES += NO_OPENMP
-    ! macx: LIBS += -lgomp -lpthread -lopenblas
-    LIBS += lgomp
+    ! macx: LIBS += -lgomp -lpthread
     macx: LIBS += -lpthread
-    #DEFINES += DEBUG
+    DEFINES += DEBUG
 }
 
 
 
 SOURCES += \
-    aquifolium/src/ExpressionNode.cpp \
-    aquifolium/src/ExpressionParser.cpp \
     chartview.cpp \
     qplotter.cpp \
     ./aquifolium/src/RxnParameter.cpp \

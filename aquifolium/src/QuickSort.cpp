@@ -19,9 +19,9 @@
 #include <algorithm>	// std::swap()
 #include <vector>
 #include "time.h"
-#ifdef Q_JSON_SUPPORT
+#ifdef QT_version
 #include "qdebug.h"
-#endif // Q_JSON_SUPPORT
+#endif // QT_version
 using namespace std;
 
 CQuickSort::CQuickSort(void)

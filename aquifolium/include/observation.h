@@ -33,7 +33,7 @@ class Observation: public Object
         Observation(const Observation& other);
         Observation(System *_system, const Expression &expr, const string &loc);
         Observation& operator=(const Observation& other);
-        double GetValue(const Timing &tmg = Timing::present); //return the current value of the objective function
+        double GetValue(const Expression::timing &tmg = Expression::timing::present); //return the current value of the objective function
         void append_value(double t, double val); //append a value to the modeled time series
         void append_value(double t); //append the corresponding modeled value to the modeled time series
         void SetSystem(System *_system) {system = _system;}

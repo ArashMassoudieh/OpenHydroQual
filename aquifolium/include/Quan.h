@@ -13,26 +13,23 @@
  * commercial license. Contact arash.massoudieh@enviroinformatics.co for details.
  */
 
-#define timeseriesprecision double
 
 #ifndef QUAN_H
 #define QUAN_H
 
-#include <string>
-#include <json/json.h>
 #include "Expression.h"
 #include "Rule.h"
 #include "TimeSeries.h"
 #include "precalculatedfunction.h"
+#include <json/json.h>
 #include "Condition.h"
-#include <mutex>
-#include "safevector.h"
+#include <string>
 
 #ifdef Q_JSON_SUPPORT
 #include <qjsonobject.h>
 #endif
 
- // Forward declarations
+#define timeseriesprecision double
 class Block;
 class Link;
 class System;
@@ -41,35 +38,16 @@ class Source;
 class QuanSet;
 class CPrecipitation;
 
-#ifndef NO_OPENMP
-struct ScopedOmpLock {
-    omp_lock_t lock;
-    bool active = false;
-    ScopedOmpLock() {
-        if (omp_get_num_threads() > 1) {
-            omp_init_lock(&lock);
-            omp_set_lock(&lock);
-            active = true;
-        }
-    }
-    ~ScopedOmpLock() {
-        if (active) {
-            omp_unset_lock(&lock);
-            omp_destroy_lock(&lock);
-        }
-    }
-};
-#endif
 
 class Quan
 {
-public:
-    Quan(); ///< Default constructor
-    virtual ~Quan(); ///< Destructor cleans up internal structures
-    Quan(const Quan& other); ///< Copy constructor
-    Quan(Json::ValueIterator& it); ///< Constructor from JSON iterator
+    public:
+        Quan();
+        virtual ~Quan();
+        Quan(const Quan& other);
+        Quan(Json::ValueIterator &it);
 
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
 		Quan(QJsonObject& qjobject);
 #endif // QT_version
 
@@ -83,7 +61,7 @@ public:
         double GetVal(const Expression::timing &tmg=Expression::timing::past);
         bool EstablishExpressionStructure();
         double &GetSimulationTime() const;
-        CTimeSeries<timeseriesprecision>* GetTimeSeries();
+        TimeSeries<timeseriesprecision>* GetTimeSeries();
         string last_error;
         void SetType(const _type &t) {type = t;}
         _type GetType() {return type;}
@@ -112,26 +90,100 @@ public:
         void SetIncludeInOutput(bool x) {includeinoutput = x;}
         void SetEstimable(bool x) {estimable=x;}
         string GetName() {return _var_name;}
-        CTimeSeries<timeseriesprecision>* TimeSeries();
         bool IncludeInOutput() {return includeinoutput;}
 		bool SetTimeSeries(const string &filename, bool prec=false);
-        bool SetTimeSeries(const CTimeSeries<double> &timeseries);
+        bool SetTimeSeries(const TimeSeries<double> &timeseries);
         bool SetTimeSeries(const CPrecipitation &timeseries);
         string &Description(bool graph=false)
         {
-            _expression.SetQuanPointers(W);
-            return true;
+            if (!graph)
+                return description;
+            else
+                return description_graph;
+        }
+        string &HelpText() {return helptext;}
+        string &Unit() {return unit;}
+        string &Units() {return units;}
+        string &DefaultUnit() {return default_unit;}
+        string &Defaults() {return defaults;}
+        string &Delegate() {return delegate;}
+        bool Estimable() {return estimable;}
+        string &Category() {return category;}
+        string &Input() {return input;}
+        string &Default() {return default_val;}
+        bool &ExperimentDependent() {return experiment_dependent;}
+        string &DescriptionCode() {return description_code;}
+        string &Abbreviation() {return abbreviation;}
+        string &WarningError() {return warning_error;}
+        string &WarningMessage() {return warning_message;}
+        Condition &Criteria () {return criteria;}
+        string &InputType() {return input_type;}
+        string ToString(int _tabs=1) const;
+        bool &AskFromUser() {return ask_from_user;}
+        bool WhenCopied() {
+            if (role == _role::copytoblocks || role==_role::copytolinks || role==_role::copytosources || role==_role::copytoreactions)
+                return true;
+            else {
+                return false;
+            }
+        }
+        void SetRole(const _role &r)
+        {
+            role = r;
+        }
+        _role GetRole() const
+        {
+            return role;
+        }
+		void SetName(const string &name) {_var_name=name;}
+		bool AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code) const;
+        bool SetProperty(const string &val, bool force_value = false, bool check_criteria=true);
+        string GetProperty(bool force_value = false);
+		string SourceName() { return sourcename;}
+        bool SetSourceName(const string& s) { sourcename = s; return true;}
+        string toCommand();
+        void SetOutputItem(const string& s)
+        {
+            OutputItem = s;
+        }
+        string GetOutputItem() { return OutputItem; }
+        void SetParameterAssignedTo(const string &s) {_parameterassignedto=s;}
+        string GetParameterAssignedTo() {return _parameterassignedto;}
+        bool Validate();
+        bool HasCriteria() { if (criteria.Count() > 0) return true; else return false; }
+        vector<string> GetAllRequieredStartingBlockProperties();
+        vector<string> GetAllRequieredEndingBlockProperties();
+        void Set_Value_Update(bool x) { value_star_updated = x; }
+        bool Value_Updated() { return value_star_updated;}
+        bool ApplyLimit() { return applylimit; }
+        bool isrigid() { return rigid; }
+        void SetInitialValueExpression(const string &expression);
+        void SetInitialValueExpression(const Expression &expression);
+        Expression &InitialValueExpression() {return initial_value_expression;}
+        bool calcinivalue() const { return calculate_initial_value_from_expression; }
+        vector<std::string> AllConstituents() const;
+        vector<string> AllReactionParameters() const;
+        bool RenameQuantity(const string &oldname, const string &newname);
+        bool SetPrecalcIndependentVariable(const string &varname) {return precalcfunction.SetIndependentVariable(varname);}
+        PreCalculatedFunction* PreCalcFunction() {return &precalcfunction;}
+        double InterpolateBasedonPrecalcFunction(const double &val) const;
+        bool InitializePreCalcFunction(int n_inc=100);
+        bool SetQuanPointers(Object *W)
+        {
+            if (type==_type::expression)
+            {   _expression.SetQuanPointers(W);
+                return true;
+            }
+
+            return false;
         }
 
-        return false;
-    }
-
-protected:
+    protected:
 
     private:
         Expression _expression;
         Rule _rule;
-        CTimeSeries<timeseriesprecision> _timeseries;
+        TimeSeries<timeseriesprecision> _timeseries;
         Source *source = nullptr;
 		string sourcename = ""; 
 		string _var_name;
@@ -175,6 +227,7 @@ protected:
         PreCalculatedFunction precalcfunction;
 };
 
-std::string tostring(const Quan::_type& typ);
+string tostring(const Quan::_type &typ);
+
 
 #endif // QUAN_H

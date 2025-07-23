@@ -45,6 +45,6 @@ bool fileExists(QString path);
 QStringList toQStringList(const vector<string> &s);
 #else
 string string2QString_nqt(string s);
-#endif // Q_JSON_SUPPORT
+#endif // Q_version
 
 

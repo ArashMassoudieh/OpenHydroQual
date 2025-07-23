@@ -46,17 +46,17 @@ double Source::GetValue(Object *obj)
     if (Variable("coefficient")==nullptr)
         coeff = 1;
     else
-        coeff = Variable("coefficient")->CalcVal(obj,Timing::present);
+        coeff = Variable("coefficient")->CalcVal(obj,Expression::timing::present);
 
     double value;
     if (Variable("timeseries")!=nullptr)
-        value = Variable("timeseries")->CalcVal(Timing::present);
+        value = Variable("timeseries")->CalcVal(Expression::timing::present);
     else
         value = 1;
 
     double rate;
     if (Variable("rate")!=nullptr)
-        rate = Variable("rate")->CalcVal(Timing::present);
+        rate = Variable("rate")->CalcVal(Expression::timing::present);
     else
         rate = 1;
 

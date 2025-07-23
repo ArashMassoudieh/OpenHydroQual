@@ -171,7 +171,7 @@ private:
 	int numberOfThreads;
         #ifdef Q_GUI_SUPPORT
             RunTimeWindow *rtw=nullptr;
-        #endif // Q_GUI_SUPPORT
+        #endif // QT_version
 
 
 };

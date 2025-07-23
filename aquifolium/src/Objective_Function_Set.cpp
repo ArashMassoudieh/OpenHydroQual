@@ -81,7 +81,7 @@ void Objective_Function_Set::ClearStoredTimeSeries()
         objectivefunctions[i].GetTimeSeries()->clear();
 }
 
-TimeSeriesSet<double> Objective_Function_Set::GetTimeSeries()
+TimeSeriesSet<double> Objective_Function_Set::TimeSeries()
 {
     TimeSeriesSet<double> output(objectivefunctions.size());
     for (unsigned int i=0; i < objectivefunctions.size(); i++)
