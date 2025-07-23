@@ -328,7 +328,7 @@
       "type": "value",
       "delegate": "ValueBox",
       "code": "number_of_post_estimate_realizations",
-      "criteria": "number_of_post_estimate_realizations>0",
+      "criteria": "number_of_post_estimate_realizations>-1",
       "warningmessage": "Number of realizations must be greater than zero"
     },
     "add_noise_to_realizations": {

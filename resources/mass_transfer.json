@@ -176,7 +176,7 @@
     "typecategory": "Blocks",
     "description": "Reactor (Flexible)",
     "icon": {
-      "filename": "reactor.png"
+      "filename": "reactor-flex.png"
     },
     "Storage": {
       "type": "balance",
@@ -304,7 +304,7 @@
     "typecategory": "Connectors",
     "description": "Storage-based flow",
     "icon": {
-      "filename": "fixed_flow.png"
+      "filename": "flex-flow.png"
     },
     "flow": {
       "type": "expression",
