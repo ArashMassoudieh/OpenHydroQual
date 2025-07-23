@@ -51,6 +51,7 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Q_JSON_SUPPORT Aquifolium
 
 macx: {
     QMAKE_LFLAGS += -lomp
+    DEFINES += _MacOS
 }
 
 
@@ -99,7 +100,6 @@ CONFIG(debug, debug|release) {
     # QMAKE_LFLAGS+=-pg
     # macx: DEFINES += NO_OPENMP
     ! macx: LIBS += -lgomp -lpthread -lopenblas
-    LIBS += lgomp
     macx: LIBS += -lpthread
     #DEFINES += DEBUG
 }

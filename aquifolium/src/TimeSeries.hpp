@@ -1103,7 +1103,7 @@ T TimeSeries<T>::maxAbsVal() const {
 }
 
 template<typename T>
-T TimeSeries<T>::minAbsVal() const {
+T TimeSeries<T>::minAbsVal() {
     if (this->empty()) return T{};
 
     if (!max_fabs_valid_) {
