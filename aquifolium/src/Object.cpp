@@ -17,7 +17,7 @@
 #include "Object.h"
 #include "System.h"
 #include <string>
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
 #include <qdebug.h>
 #include "XString.h"
 #endif
@@ -603,7 +603,7 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
     }
     if (var[prop].GetType() == Quan::_type::value || var[prop].GetType() == Quan::_type::balance || var[prop].GetType() == Quan::_type::constant || (var[prop].GetType() == Quan::_type::expression && (var[prop].Delegate()=="UnitBox"||var[prop].Delegate()=="ValueBox" )))
     {
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
         if (var[prop].Delegate()=="UnitBox")
         {
             if (aquiutils::split(value,'[').size()>1)

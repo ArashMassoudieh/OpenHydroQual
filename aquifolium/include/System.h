@@ -31,16 +31,11 @@
 #include "reaction.h"
 #include "RxnParameter.h"
 #include "solutionlogger.h"
-#ifdef QT_version
-    #include "runtimeWindow.h"
-    class GWidget;
-    class logWindow;
-#endif
 #include "ErrorHandler.h"
 #include "safevector.h"
 #include <string>
 #define outputtimeseriesprecision double
-#if Q_version
+#if Q_GUI_SUPPORT
 #include <QStringList>
 #include "runtimewindow.h"
 #include "QTime"
@@ -372,13 +367,17 @@ class System: public Object
         void SetLogWindow(logWindow *lgwnd) {logwindow=lgwnd;}
 #endif
         bool stop_triggered = false;
-#if defined(QT_version) || defined (Q_version)
+#if defined(QT_GUI_SUPPORT) || defined (Q_JSON_SUPPORT)
         QStringList QGetAllCategoryTypes();
 		QStringList QGetAllObjectsofTypes(QString _type);
 		QStringList QGetAllObjectsofTypeCategory(QString _type);
+#endif
+
+#ifdef QT_GUI_SUPPORT
         RunTimeWindow *RunTimewindow() {return rtw;}
         void SetRunTimeWindow(RunTimeWindow* _rtw) {rtw = _rtw;}
 #endif
+
         unique_ptr<vector<string>> operators;
         unique_ptr<vector<string>> functions;
         void SetOutputItems();
@@ -519,16 +518,11 @@ class System: public Object
 #ifndef NO_OPENMP
         omp_lock_t lock;
 #endif
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     RunTimeWindow *rtw = nullptr;
 #endif
 
-#ifdef QT_version
-        GraphWidget *diagramview;
-        runtimeWindow *rtw = nullptr;
-        void updateProgress(bool finished);
-        logWindow *logwindow = nullptr;
-#endif
+
 };
 
 

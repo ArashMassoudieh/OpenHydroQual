@@ -15,9 +15,8 @@
 
 
 #include "Condition.h"
-#ifdef Q_version
-    #include "QDebug"
-#endif
+#include <QDebug>
+
 using namespace aquiutils;
 
 Condition::Condition()

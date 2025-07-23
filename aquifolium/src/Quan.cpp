@@ -20,8 +20,8 @@
 #include "System.h"
 #include "Precipitation.h"
 #include "Expression.h"
-#ifdef Q_version
-    #include "XString.h"
+#ifdef Q_JSON_SUPPORT
+#include "XString.h"
 #endif
 #ifndef mac_version
 #ifndef NO_OPENMP
@@ -224,7 +224,7 @@ Quan::Quan(Json::ValueIterator &it)
     }
 }
 
-#ifdef  Q_version
+#ifdef  Q_JSON_SUPPORT
 Quan::Quan(QJsonObject& it)
 {
 	//SetName(it.key().asString());
@@ -1122,7 +1122,7 @@ string Quan::toCommand()
 {
     string s;
     if (delegate=="UnitBox")
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
         if (unit!=default_unit)
         {
             const double coefficient = XString::coefficient(QString::fromStdString(unit));

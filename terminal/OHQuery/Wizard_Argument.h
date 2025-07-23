@@ -18,7 +18,22 @@
 #include <qstring.h>
 #include <qjsonobject.h>
 #include "wizardparameter.h"
-#include "Expression.h" // for struct_calculation_pattern and struct_calculation_struct
+#include "Expression.h"
+/*struct _calculation_pattern
+{
+    std::vector<int> operands; // a vector of size two containing the indicators to the terms being oprated
+    int output_cell_id;
+    std::string operatr; //operator
+    double value; // value of the term
+    std::string sign = "+";
+};
+
+struct _calculation_struct
+{
+    std::vector<_calculation_pattern> CalcOrder;
+    std::vector<int> sources;
+    std::vector<int> targets;
+};*/
 
 using namespace std;
 

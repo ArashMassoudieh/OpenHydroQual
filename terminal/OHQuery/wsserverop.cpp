@@ -207,11 +207,19 @@ void WSServerOps::onTextMessageReceived(QString message)
 
             Script script;
             System system;
+#ifndef LOCAL_HOST
+            string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/resources/";
+            system.ReadSystemSettingsTemplate(qApp->applicationDirPath().toStdString() + "/resources/settings.json");
+            qDebug()<<"Reading settings from " << qApp->applicationDirPath() + "/resources/settings.json";
+#else
             string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
             system.ReadSystemSettingsTemplate(qApp->applicationDirPath().toStdString() + "/../../resources/settings.json");
+            qDebug()<<"Reading settings from " << (qApp->applicationDirPath() + "/resources/settings.json";
+#endif
             cout << "Default Template path = " + defaulttemppath +"\n";
             system.SetDefaultTemplatePath(defaulttemppath);
             system.SetWorkingFolder(newFolderPath.toStdString());
+            qDebug()<<"Working directory set to " << newFolderPath;
             script.CreateSystemFromQStringList(SelectedWizardScript.Script(),&system);
             QMap<QString, QString> calculatedscalarvalues = SelectedWizardScript.GetCalculatedScalarValues();
             for (QMap<QString, QString>::iterator it = calculatedscalarvalues.begin(); it!= calculatedscalarvalues.end(); it++)
@@ -239,15 +247,24 @@ void WSServerOps::onTextMessageReceived(QString message)
 
 QJsonDocument WSServerOps::SendModelTemplate(const QString &TemplateName)
 {
+#ifdef LOCAL_HOST
     QFile file(QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName);
     qDebug()<<QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "Failed to open file:" << QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+        qWarning() << "Failed to open file:" << QCoreApplication::applicationDirPath() + "../../resources/Wizard_Scripts_server/" + TemplateName;
         return QJsonDocument(); // returns a null document
     }
+#else
+    QFile file(QCoreApplication::applicationDirPath() + "/resources/Wizard_Scripts_server/" + TemplateName);
+    qDebug()<<QCoreApplication::applicationDirPath() + "/resources/Wizard_Scripts_server/" + TemplateName;
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Failed to open file:" << QCoreApplication::applicationDirPath() + "/resources/Wizard_Scripts_server/" + TemplateName;
+        return QJsonDocument(); // returns a null document
+    }
+#endif
     else
     {
-        TemplateFile_Fullpath = QCoreApplication::applicationDirPath() + "/../../resources/Wizard_Scripts_server/" + TemplateName;
+        TemplateFile_Fullpath = QCoreApplication::applicationDirPath() + "/resources/Wizard_Scripts_server/" + TemplateName;
     }
     QByteArray jsonData = file.readAll();
     file.close();
@@ -299,7 +316,7 @@ void WSServerOps::sendMessageToClient(QWebSocket *client, const QString &message
 QJsonObject WSServerOps::Execute(System *system)
 {
 
-    string settingfilename = qApp->applicationDirPath().toStdString() + "/../../resources/settings.json";
+    string settingfilename = qApp->applicationDirPath().toStdString() + "/resources/settings.json";
 
     cout<<"Executing script ..."<<endl;
 
@@ -317,11 +334,11 @@ QJsonObject WSServerOps::Execute(System *system)
     }
 
     cout<<"Writing outputs in '"<< system->GetWorkingFolder() + "/" + system->OutputFileName() +"'";
-    system->GetObservedOutputs().writetofile(system->GetWorkingFolder() + "/" + system->ObservedOutputFileName());
+    system->GetObservedOutputs().write(system->GetWorkingFolder() + "/" + system->ObservedOutputFileName());
     QJsonDocument doc(system->GetObservedOutputs().toJson());
     file.write(doc.toJson(QJsonDocument::Indented));
     file.close();
-    system->GetOutputs().writetofile(system->GetWorkingFolder() + "/" + system->OutputFileName());
+    system->GetOutputs().write(system->GetWorkingFolder() + "/" + system->OutputFileName());
     map<string, double> scalar_values = system->ObjectiveFunctionSet()->EvaluateAllExpressions();
     QJsonObject scalar_values_json = MapToJsonObject(scalar_values);
     WriteJsonObjectToFile(scalar_values_json, QString::fromStdString(system->GetWorkingFolder() + "/" + "scalar_values.json"));

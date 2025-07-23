@@ -4,7 +4,7 @@ CONFIG += console
 CONFIG -= app_bundle
 
 #DEFINES += HTTPS
-DEFINES += LOCAL_HOST #for local host testing
+#DEFINES += LOCAL_HOST #for local host testing
 DEFINES += Q_JSON_SUPPORT
 
 
@@ -85,8 +85,6 @@ SOURCES += \
         aquifolium/src/Condition.cpp \
         aquifolium/src/ErrorHandler.cpp \
         aquifolium/src/Expression.cpp \
-        aquifolium/src/ExpressionNode.cpp \
-        aquifolium/src/ExpressionParser.cpp \
         aquifolium/src/Link.cpp \
         aquifolium/src/Matrix.cpp \
         aquifolium/src/Matrix_arma.cpp \

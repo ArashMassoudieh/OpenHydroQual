@@ -25,7 +25,7 @@
 #include "Condition.h"
 #include <string>
 
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
 #include <qjsonobject.h>
 #endif
 
@@ -47,7 +47,7 @@ class Quan
         Quan(const Quan& other);
         Quan(Json::ValueIterator &it);
 
-#ifdef Q_version
+#ifdef Q_JSON_SUPPORT
 		Quan(QJsonObject& qjobject);
 #endif // QT_version
 

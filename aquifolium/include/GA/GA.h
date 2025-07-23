@@ -132,7 +132,7 @@ public:
     bool SetProperty(const string &varname, const string &value);
     string last_error;
     void SetParameters(Object *obj);
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     void SetRunTimeWindow(RunTimeWindow *_rtw) {rtw=_rtw;}
 #endif
 private:
@@ -169,7 +169,7 @@ private:
 
 	// GUI
 	int numberOfThreads;
-        #ifdef Q_version
+        #ifdef Q_GUI_SUPPORT
             RunTimeWindow *rtw=nullptr;
         #endif // QT_version
 

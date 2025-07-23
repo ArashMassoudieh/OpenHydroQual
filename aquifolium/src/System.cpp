@@ -33,9 +33,8 @@
 #endif
 //#define NormalizeByDiagonal
 
-#ifdef Q_version
-    #include <QDebug>
-#endif
+#include <QDebug>
+
 
 #ifdef SUPER_LU
     #include "Matrix_arma_sp.h"
@@ -547,7 +546,7 @@ vector<bool> System::OneStepSolve()
 void System::MakeTimeSeriesUniform(const double &increment)
 {
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     if (rtw!=nullptr)
         rtw->AppendText(string("Uniformizing of time-series..."));
 #endif
@@ -559,7 +558,7 @@ void System::MakeTimeSeriesUniform(const double &increment)
 
     for (unsigned int i=0; i<blocks.size(); i++)
         blocks[i].MakeTimeSeriesUniform(increment);
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     if (rtw!=nullptr)
         rtw->AppendText(string("Uniformizing of time-series (done!)"));
 #endif
@@ -585,20 +584,20 @@ bool System::Solve(bool applyparameters)
     alltimeseries = GetTimeSeries(true);
 
 	bool success = true;
-    #ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     errorhandler.SetRunTimeWindow(rtw);
-    #endif // Q_version
+#endif // Q_GUI_SUPPORT
 	if (applyparameters) ApplyParameters();
     //qDebug()<<"Initiating outputs";
     InitiateOutputs();
     //qDebug()<<"Writing objects to logger";
     WriteObjectsToLogger();
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     QCoreApplication::processEvents();
 #endif
     //qDebug()<<"Processes Events...";
     MakeTimeSeriesUniform(SimulationParameters.dt0);
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     QCoreApplication::processEvents();
 #endif
     //qDebug()<<"Made uniform done!...";
@@ -623,7 +622,7 @@ bool System::Solve(bool applyparameters)
         observation(i)->GetTimeSeries()->clear();
     }
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     if (rtw)
     {
         rtw->AppendText("Simulation Started at " + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
@@ -672,7 +671,7 @@ bool System::Solve(bool applyparameters)
             #ifdef Debug_mode
             ShowMessage("failed!");
             #endif // Debug_mode
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
             if (rtw)
             {
                 if (rtw->detailson)
@@ -698,7 +697,7 @@ bool System::Solve(bool applyparameters)
             {
                 if (!ResetBasedOnRestorePoint(&restorepoint))
                 {
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
                     if (rtw)
                     {
                         if (rtw->detailson)
@@ -718,7 +717,7 @@ bool System::Solve(bool applyparameters)
                 {
                     if (GetSolutionLogger())
                         GetSolutionLogger()->WriteString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t) );
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
                     if (rtw)
                         if (rtw->detailson)
                             rtw->AppendtoDetails(QString::fromStdString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t)));
@@ -729,7 +728,7 @@ bool System::Solve(bool applyparameters)
         }
         else
         {
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
             if (rtw)
             {
                 rtw->SetProgress(progress);
@@ -784,7 +783,7 @@ bool System::Solve(bool applyparameters)
         }
         if ((time(nullptr) - SolverTempVars.time_start) > SolverSettings.maximum_simulation_time)
         {
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
                 if (rtw)
                 {
                     if (rtw->detailson)
@@ -807,7 +806,7 @@ bool System::Solve(bool applyparameters)
         }
         else if (SolverTempVars.epoch_count > SolverSettings.maximum_number_of_matrix_inversions)
         {
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
                 if (rtw)
                 {
                     if (rtw->detailson)
@@ -826,7 +825,7 @@ bool System::Solve(bool applyparameters)
                 cout<<"The attempt to solve the problem failed!"<<std::endl;
                 SolverTempVars.SolutionFailed = true;
                 stop_triggered = true;
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
         if (rtw)
         {   errorhandler.Flush(rtw);
             QCoreApplication::processEvents();
@@ -835,7 +834,7 @@ bool System::Solve(bool applyparameters)
 
         }
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
         if (rtw)
         {   errorhandler.Flush(rtw);
             QCoreApplication::processEvents();
@@ -845,7 +844,7 @@ bool System::Solve(bool applyparameters)
 #endif
     }
     
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     qDebug() << "Adjusting outputs ....";
     if (rtw)
     {
@@ -856,7 +855,7 @@ bool System::Solve(bool applyparameters)
     ShowMessage("Adjusting outputs ...");
 #endif
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     if (rtw)
     {
         rtw->AppendText(QString("Adjusting outputs, Done!"));
@@ -865,7 +864,7 @@ bool System::Solve(bool applyparameters)
 #endif
     Outputs.AllOutputs.unif = false;
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     qDebug() << "Uniformizing outputs ....";
 	if (rtw)
     {
@@ -877,7 +876,7 @@ bool System::Solve(bool applyparameters)
 #endif
     Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     qDebug() << "Uniformizing observations ....";
     if (rtw)
     {
@@ -887,7 +886,7 @@ bool System::Solve(bool applyparameters)
 #endif
     Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     qDebug() << "Uniformizing objective functions ....";
     if (rtw)
     {
@@ -898,7 +897,7 @@ bool System::Solve(bool applyparameters)
 #endif
 
     MakeObjectiveFunctionExpressionUniform();
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing observation expressions ..."));
@@ -908,7 +907,7 @@ bool System::Solve(bool applyparameters)
 #endif
 
     MakeObservationsExpressionUniform();
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     if (rtw)
     {
         if (!stop_triggered)
@@ -923,7 +922,7 @@ bool System::Solve(bool applyparameters)
             GetSolutionLogger()->WriteString("Simulation finished successfully!");
 
 ShowMessage("Simulation finished!");
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
 
     if (GetSolutionLogger())
     {
@@ -3074,7 +3073,7 @@ double System::GetMinimumNextTimeStepSize()
     return max(x,timeseriesprecision(0.001));
 }
 
-#if defined(QT_version) || defined(Q_version)
+#if defined(QT_version) || defined(Q_JSON_SUPPORT)
 QStringList System::QGetAllCategoryTypes()
 {
 	QStringList out;

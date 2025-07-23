@@ -29,7 +29,7 @@
 #include "QDebug"
 
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     #include "runtimewindow.h"
 #endif
 
@@ -405,7 +405,7 @@ int counter=0;
 #pragma omp critical
 #endif
         {
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
 			if (rtw != nullptr)
 			{
 #ifndef NO_OPENMP
@@ -427,7 +427,7 @@ int counter=0;
 		}
     }
 	Model_out = Models[maxfitness()];
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     if (rtw != nullptr)
     {
         rtw->SetProgress2(1);
@@ -552,9 +552,9 @@ void CGA<T>::SetParameters(Object *obj)
 template<class T>
 int CGA<T>::optimize()
 {
-	#ifdef Q_version
+    #ifdef Q_GUI_SUPPORT
 	QCoreApplication::processEvents();
-	#endif // Q_version
+    #endif // Q_GUI_SUPPORT
     string RunFileName;
     if (aquiutils::contains(filenames.outputfilename,"/"))
         RunFileName = filenames.outputfilename;
@@ -629,7 +629,7 @@ int CGA<T>::optimize()
 
         Fitness[current_generation][0] = Ind[j].actual_fitness;
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
     if (rtw)
     {   if (current_generation==0) rtw->SetYRange(0,Ind[j].actual_fitness*1.1);
         rtw->SetProgress(double(current_generation)/double(GA_params.nGen));
@@ -725,7 +725,7 @@ int CGA<T>::optimize()
 
 	assignfitnesses(final_params);
 
-#ifdef Q_version
+#ifdef Q_GUI_SUPPORT
 	if (rtw)
 	{
 		rtw->SetProgress(1.0);
