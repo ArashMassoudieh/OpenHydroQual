@@ -31,17 +31,17 @@ class Rule
         virtual ~Rule();
         Rule(const Rule &S);
         Rule& operator=(const Rule& S);
-        void Append(const std::string &condition, const std::string &result);
+        void Append(const string &condition, const string &result);
         void Append(const Condition &condition, const Expression &result);
-        double calc(Object *W, const Timing &tmg);
-        std::string GetLastError() {return last_error;}
+        double calc(Object *W, const Expression::timing &tmg);
+        string GetLastError() {return last_error;}
         _condplusresult *operator[](int i) {return &rules[i];}
-        std::string ToString(int _tabs = 0) const;
+        string ToString(int _tabs = 0) const;
     protected:
 
     private:
-        std::vector<_condplusresult> rules;
-        std::string last_error;
+        vector<_condplusresult> rules;
+        string last_error;
 };
 
 #endif // RULE_H

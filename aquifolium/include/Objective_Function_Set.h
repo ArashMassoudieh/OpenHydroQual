@@ -36,7 +36,7 @@ class Objective_Function_Set
         Objective_Function* operator[](int i) {return &objectivefunctions[i];}
         double Calculate();
         void ClearStoredTimeSeries();
-        TimeSeriesSet<double> GetTimeSeries();
+        TimeSeriesSet<double> TimeSeries();
         CVector Objective_Values();
         void Update(double t);
         string LastError() {return lasterror;}

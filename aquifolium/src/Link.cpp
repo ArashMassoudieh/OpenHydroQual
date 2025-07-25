@@ -44,15 +44,15 @@ Link& Link::operator=(const Link& rhs)
 
 string Link::toCommand()
 {
-    string out = "from=" + Object::GetConnectedBlock(ExpressionNode::loc::source)->GetName() + "," + "to=" + Object::GetConnectedBlock(ExpressionNode::loc::destination)->GetName() + ",";
+    string out = "from=" + Object::GetConnectedBlock(Expression::loc::source)->GetName() + "," + "to=" + Object::GetConnectedBlock(Expression::loc::destination)->GetName() + ",";
     out += Object::toCommand();
     return out;
 }
 
-vector<string> Link::GetAllRequieredStartingBlockProperties() const
+vector<string> Link::GetAllRequieredStartingBlockProperties()
 {
     vector<string> s; 
-    for (unordered_map<string, Quan>::const_iterator it = GetVars()->cbegin(); it!= GetVars()->cend(); it++)
+    for (unordered_map<string, Quan>::iterator it = GetVars()->begin(); it!= GetVars()->end(); it++)
     {
         for (unsigned int i = 0; i< it->second.GetAllRequieredStartingBlockProperties().size(); i++)
         {
@@ -61,10 +61,10 @@ vector<string> Link::GetAllRequieredStartingBlockProperties() const
     }
     return s; 
 }
-vector<string> Link::GetAllRequieredDestinationBlockProperties() const
+vector<string> Link::GetAllRequieredDestinationBlockProperties()
 {
     vector<string> s;
-    for (unordered_map<string, Quan>::const_iterator it = GetVars()->cbegin(); it != GetVars()->cend(); it++)
+    for (unordered_map<string, Quan>::iterator it = GetVars()->begin(); it != GetVars()->end(); it++)
     {
         for (unsigned int i = 0; i< it->second.GetAllRequieredEndingBlockProperties().size(); i++)
         {
@@ -74,11 +74,11 @@ vector<string> Link::GetAllRequieredDestinationBlockProperties() const
     return s;
 }
 
-bool Link::ShiftLinkedBlock(int shift, ExpressionNode::loc loc)
+bool Link::ShiftLinkedBlock(int shift, Expression::loc loc)
 {
-    if (loc == ExpressionNode::loc::source)
+    if (loc == Expression::loc::source)
         SetSBlockNo( s_Block_No() + shift);
-    if (loc == ExpressionNode::loc::destination)
+    if (loc == Expression::loc::destination)
         SetEBlockNo(e_Block_No() + shift);
 
     return true; 

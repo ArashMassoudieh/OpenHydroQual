@@ -42,16 +42,16 @@ Block& Block::operator=(const Block& rhs)
 }
 
 
-void Block::AppendLink(int i, const ExpressionNode::loc &loc)
+void Block::AppendLink(int i, const Expression::loc &loc)
 {
-    if (loc==ExpressionNode::loc::source)
+    if (loc==Expression::loc::source)
         links_from_ids.push_back(i);
 
-    if (loc==ExpressionNode::loc::destination)
+    if (loc==Expression::loc::destination)
         links_to_ids.push_back(i);
 }
 
-double Block::GetInflowValue(const string &variable, const Timing &tmg)
+double Block::GetInflowValue(const string &variable, const Expression::timing &tmg)
 {
     double inflow = 0;
     corresponding_inflow_var = Variable(variable)->GetCorrespondingInflowVar();
@@ -75,7 +75,7 @@ double Block::GetInflowValue(const string &variable, const Timing &tmg)
     return inflow;
 }
 
-double Block::GetInflowValue(const string &variable, const string &constituent, const Timing &tmg)
+double Block::GetInflowValue(const string &variable, const string &constituent, const Expression::timing &tmg)
 {
     string variablefullname = constituent+":"+variable;
     double inflow=0;
@@ -201,7 +201,7 @@ vector<Quan*> Block::GetAllConstituentProperties(const string &s)
     return out;
 }
 
-CVector Block::GetAllConstituentVals(const string &s, Timing t)
+CVector Block::GetAllConstituentVals(const string &s, Expression::timing t)
 {
     CVector out;
     for (unsigned int i=0; i<GetParent()->ConstituentsCount(); i++)
@@ -211,7 +211,7 @@ CVector Block::GetAllConstituentVals(const string &s, Timing t)
     return out;
 }
 
-CVector Block::GetAllReactionRates(vector<Reaction> *rxns, Timing t)
+CVector Block::GetAllReactionRates(vector<Reaction> *rxns, Expression::timing t)
 {
     CVector out(GetParent()->ConstituentsCount());
     for (unsigned int i=0; i<GetParent()->ReactionsCount(); i++)
@@ -223,7 +223,7 @@ CVector Block::GetAllReactionRates(vector<Reaction> *rxns, Timing t)
     return out;
 }
 
-CVector Block::GetAllReactionRates(Timing t)
+CVector Block::GetAllReactionRates(Expression::timing t)
 {
     CVector out(GetParent()->ConstituentsCount());
     for (unsigned int i=0; i<GetParent()->ReactionsCount(); i++)
@@ -236,7 +236,7 @@ CVector Block::GetAllReactionRates(Timing t)
     return out;
 }
 
-double Block::GetAvgOverLinks(const string& variable,const Timing &tmg)
+double Block::GetAvgOverLinks(const string& variable,const Expression::timing &tmg)
 {
     double sum=0;
     double count = 0;

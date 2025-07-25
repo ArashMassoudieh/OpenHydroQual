@@ -99,13 +99,12 @@ bool TimeSeriesSet<T>::read(const std::string& filename, bool has_header) {
 
     // Header line with names
     if (has_header && std::getline(file, line)) {
-        std::istringstream ss(line);
-        std::string name;
-        this->clear();  // Clear any existing series
 
-        while (std::getline(ss, name, ',')) {
+        this->clear();  // Clear any existing series
+        vector<string> header_time_and_label = aquiutils::split(line,',');
+        for (int i=1; i<header_time_and_label.size(); i+=2) {
             TimeSeries<T> ts;
-            ts.setName(name);
+            ts.setName(header_time_and_label[i]);
             this->emplace_back(std::move(ts));
         }
     }
@@ -114,14 +113,12 @@ bool TimeSeriesSet<T>::read(const std::string& filename, bool has_header) {
     while (std::getline(file, line)) {
         std::istringstream ss(line);
         std::string cell;
-        std::vector<T> values;
 
-        while (std::getline(ss, cell, ',')) {
-            values.push_back(static_cast<T>(std::stod(cell)));
+        vector<string> all_values_and_time = aquiutils::split(line,',');
+        for (int i=0; i<all_values_and_time.size(); i+=2) {
+            operator[](i/2).append(atof(all_values_and_time[i].c_str()), atof(all_values_and_time[i+1].c_str()));
         }
 
-        if (!values.empty())
-            this->append(values);  // append to each TimeSeries
     }
 
     return true;

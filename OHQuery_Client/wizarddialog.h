@@ -67,7 +67,7 @@ private:
     int currenttabindex=0;
     SVGViewer *svgviewer = nullptr;
     QMap<QString, RosettaFetcher*> rosettaFetchers;
-    QString version = "1.0.8";
+    QString version = "1.0.9";
 public slots:
     void on_next_clicked();
     void on_previous_clicked();

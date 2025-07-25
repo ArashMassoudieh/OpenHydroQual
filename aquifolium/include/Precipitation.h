@@ -19,6 +19,7 @@
 #include <vector>
 #include <string>
 
+//MM
 #include "TimeSeriesSet.h"
 
 
@@ -47,8 +48,8 @@ public:
 	//MM
     //CBTCSet getflow_Evap(double A);
 	
-    CTimeSeriesSet<double> getflow (double A) const;
-    CTimeSeriesSet<double> getflow(double A, double dt);
+    TimeSeriesSet<double> getflow (double A) const;
+    TimeSeriesSet<double> getflow(double A, double dt);
     void writefile(string Filename);
 
 	static bool isFileValid(string filename);

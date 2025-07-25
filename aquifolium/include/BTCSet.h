@@ -77,6 +77,7 @@ public:
     vector<T> max_wiggle();
     vector<T> max_wiggle_corr(int _n = 10);
     vector<int> max_wiggle_sl(int ii, T tol);
+    CTimeSeriesSet getflow (T A);
     void knockout(T t);
     int lookup(string S);
     vector<T> getrow(int a);

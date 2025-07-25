@@ -13,13 +13,13 @@
  * commercial license. Contact arash.massoudieh@cua.edu for details.
  */
 
+
 #ifndef CONDITION_H
 #define CONDITION_H
-#include <string>
 #include "Expression.h"
 
-class Object;
 
+class Object;
 
 enum class _oprtr{lessthan, greaterthan};
 
@@ -27,20 +27,20 @@ class Condition
 {
     public:
         Condition();
-        Condition(const std::string &str);
+        Condition(const string &str);
         Condition(const Condition &S);
         Condition& operator=(const Condition&);
         virtual ~Condition();
-        bool calc(Object *W, const Timing &tmg);
-        std::string GetLastError() {return last_error;}
-        std::string ToString(int _tabs = 0) const;
-        unsigned int Count() const { return exr.size();  }
+        bool calc(Object *W, const Expression::timing &tmg);
+        string GetLastError() {return last_error;}
+        string ToString(int _tabs = 0) const;
+        unsigned int Count() { return exr.size();  }
     protected:
 
     private:
-        std::vector<Expression> exr;
-        std::vector<_oprtr> oprtr;
-        std::string last_error;
+        vector<Expression> exr;
+        vector<_oprtr> oprtr;
+        string last_error;
 };
 
 #endif // CONDITION_H

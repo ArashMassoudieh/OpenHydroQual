@@ -4,23 +4,25 @@
 #
 #-------------------------------------------------
 
-macx:{
-    CONFIG += app_bundle
-    ICON = OHQ.icns
-}
+#CONFIG -= app_bundle
 
 CONFIG += c++17
 
-lessThan(QT_MAJOR_VERSION, 6): QT += core gui opengl printsupport svg charts
-greaterThan(QT_MAJOR_VERSION, 5): {
-    QT += core gui opengl printsupport svgwidgets charts
+QT += core gui opengl printsupport widgets
+
+# For Qt5
+lessThan(QT_MAJOR_VERSION, 6): {
+    QT += svg charts
+}
+
+# For Qt6
+equals(QT_MAJOR_VERSION, 6): {
+    QT += svgwidgets charts
     DEFINES += Qt6
 }
 
 
 DEFINES += QCharts
-DEFINES += Q_JSON_SUPPORT
-
 INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
@@ -28,7 +30,7 @@ INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += ../jsoncpp/include/
 INCLUDEPATH += include/
 INCLUDEPATH += ../qcustomplot6/
-if==macx:CONFIG += staticlib
+
 macx: DEFINES +=mac_version
 linux: DEFINES +=ubuntu_version
 win32: DEFINES +=windows_version
@@ -52,25 +54,38 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Q_JSON_SUPPORT Aquifolium
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0
 
-macx: {
-    QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -Iusr/local/lib/
-    LIBS += -L$$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/lib/ -lgsl
-    INCLUDEPATH += $$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/include
-    DEPENDPATH += $$PWD/../../../../opt/homebrew/Cellar/gsl/2.8/include
 
-}
 
 macx: {
     QMAKE_LFLAGS += -lomp
-    DEFINES += _MacOS
 }
 
-macx: {
-    LIBS += -L /usr/local/lib /usr/local/lib/libomp.dylib
-}
 
-macx: {
-    INCLUDEPATH += /usr/local/include/
+macx {
+    CONFIG += c++17 app_bundle
+
+    LLVM_DIR = /opt/homebrew/opt/llvm
+
+    QMAKE_CC  = $$LLVM_DIR/bin/clang
+    QMAKE_CXX = $$LLVM_DIR/bin/clang++
+
+    QMAKE_CXXFLAGS += -fopenmp -I$$LLVM_DIR/include
+    QMAKE_LFLAGS   += -L$$LLVM_DIR/lib -lomp
+
+    INCLUDEPATH += $$LLVM_DIR/include
+    LIBS += -L$$LLVM_DIR/lib -lomp
+
+    DEFINES += mac_version ARMA_USE_LAPACK ARMA_USE_BLAS
+
+    # Armadillo and GSL (adjust versions if needed)
+    INCLUDEPATH += $$PWD/../Armadillo
+    DEPENDPATH  += $$PWD/../Armadillo
+    LIBS += -L$$PWD/../Armadillo -larmadillo.11.2.3 -llapack.3.10.1 -lblas.3.10.1
+
+    INCLUDEPATH += /opt/homebrew/Cellar/gsl/2.8/include
+    LIBS += -L/opt/homebrew/Cellar/gsl/2.8/lib -lgsl
+
+    QMAKE_POST_LINK += cp -R $$PWD/resources $$OUT_PWD/OpenHydroQual.app/Contents/
 }
 
 
@@ -78,7 +93,7 @@ CONFIG(debug, debug|release) {
     message(Building in debug mode)
     !macx: QMAKE_CXXFLAGS *= -fopenmp -O3 -march=native
     !macx: QMAKE_LFLAGS +=  -fopenmp
-    !macx: LIBS += -lgomp -lpthread -lopenblas
+    !macx: LIBS += -lgomp -lpthread
     LIBS += -lpthread
     DEFINES += _NO_OPENMP DEBUG
 
@@ -91,16 +106,13 @@ CONFIG(debug, debug|release) {
     # QMAKE_LFLAGS+=-pg
     # macx: DEFINES += NO_OPENMP
     ! macx: LIBS += -lgomp -lpthread -lopenblas
-    LIBS += lgomp
     macx: LIBS += -lpthread
-    #DEFINES += DEBUG
+    DEFINES += DEBUG
 }
 
 
 
 SOURCES += \
-    aquifolium/src/ExpressionNode.cpp \
-    aquifolium/src/ExpressionParser.cpp \
     chartview.cpp \
     qplotter.cpp \
     ./aquifolium/src/RxnParameter.cpp \
@@ -278,8 +290,6 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-# LAPACK — Linear Algebra PACKage lib and include locations
-
 
 win32 {
 
@@ -312,18 +322,4 @@ linux {
      LIBS += -larmadillo -llapack -lblas -lgsl -lopenblas
 
 }
-
-macx {
-    #sudo apt-get install libblas-dev liblapack-dev
-    message( $$PWD )
-     DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS
-     LIBS += -L$$PWD/../Armadillo/ -llapack.3.10.1
-     LIBS += -L$$PWD/../Armadillo/ -lblas.3.10.1
-     LIBS += -L$$PWD/../Armadillo/ -larmadillo.11.2.3
-     INCLUDEPATH += $$PWD/../Armadillo/include/
-     DEPENDPATH += $$PWD/../Armadillo
-}
-
-RESOURCES +=
-
 

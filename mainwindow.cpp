@@ -15,7 +15,7 @@
 
 
 #define openhydroqual_version "1.2.6"
-#define last_modified "July, 23, 2025"
+#define last_modified "June, 23, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -1915,7 +1915,6 @@ void MainWindow::onrunmodel()
     rtw = new RunTimeWindow(this,config::forward);
     rtw->show();
     copiedsystem.SetRunTimeWindow(rtw);
-	copiedsystem.SaveEquationstoJson(workingfolder.toStdString() + "/equations.json");
     copiedsystem.Solve(true);
     rtw->AppendText(string("Saving outputs in '" + workingfolder.toStdString() + "'"));
     qDebug()<<"Working folder" << workingfolder;

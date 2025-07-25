@@ -22,9 +22,9 @@
 #include "math.h"
 #include <iostream>
 #include "DistributionNUnif.h"
-#ifdef Q_GUI_SUPPORT
+#ifdef QT_version
 #include "qdebug.h"
-#endif // Q_GUI_SUPPORT
+#endif // QT_version
 
 using namespace std;
 

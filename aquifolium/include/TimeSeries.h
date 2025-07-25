@@ -167,7 +167,7 @@ public:
     T maxVal() const;                                      ///< Max alias
     T minVal() const;                                      ///< Min alias
     T maxAbsVal() const;                                   ///< Max abs
-    T minAbsVal() const;                                   ///< Min abs
+    T minAbsVal();                                         ///< Min abs
 
     T maxt() const;                                        ///< Max time
     T mint() const;                                        ///< Min time

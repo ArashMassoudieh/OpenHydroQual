@@ -32,7 +32,7 @@ PreCalculatedFunction::PreCalculatedFunction(const PreCalculatedFunction& other)
     x_min=other.x_min;
     logarithmic = other.logarithmic;
     indepenentvariable=other.indepenentvariable;
-    
+    TimeSeries::operator=(other);
 }
 
 PreCalculatedFunction& PreCalculatedFunction::operator=(const PreCalculatedFunction& rhs)

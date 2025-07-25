@@ -89,7 +89,7 @@ bool Objective_Function::SetProperty(const string &prop, const string &val)
     return false;
 }
 
-double Objective_Function::GetValue(const Timing &tmg)
+double Objective_Function::GetValue(const Expression::timing &tmg)
 {
     if (expression.param_constant_expression == "") 
         expression = Variable("expression")->GetProperty();
@@ -116,7 +116,7 @@ void Objective_Function::append_value(double t, double val)
 
 void Objective_Function::append_value(double t)
 {
-    stored_time_series.append(t,GetValue(Timing::present));
+    stored_time_series.append(t,GetValue(Expression::timing::present));
     return;
 }
 
@@ -137,7 +137,7 @@ double Objective_Function::GetObjective()
     }
     else if (type == objfunctype::Value)
     {
-        objective_value = GetValue(Timing::present);
+        objective_value = GetValue(Expression::timing::present);
         return objective_value;
     }
     else if (type == objfunctype::Maximum)

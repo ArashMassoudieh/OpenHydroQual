@@ -401,7 +401,7 @@ Quan::Quan(QJsonObject& it)
     }
 
 }
-#endif //  Q_JSON_SUPPORT
+#endif //  QT_version
 
 Quan::~Quan()
 {
@@ -507,7 +507,7 @@ Quan& Quan::operator=(const Quan& rhs)
     return *this;
 }
 
-bool Quan::operator==(const Quan& other) const
+bool Quan::operator==(const Quan& other)
 {
     bool out = true;
     out = out && (_val != other._val);
@@ -515,9 +515,15 @@ bool Quan::operator==(const Quan& other) const
     return out; 
 }
 
-double Quan::CalcVal(Object* block, const Timing& tmg)
+double Quan::CalcVal(Object *block, const Expression::timing &tmg)
 {
-    switch (type)
+    if (type == _type::constant || type== _type::boolean)
+        return _val;
+    if (type == _type::expression)
+        return _expression.calc(block,tmg);
+    if (type == _type::rule)
+        return _rule.calc(block,tmg);
+    if (type == _type::timeseries)
     {
         if (_timeseries.size()>0)
             return _timeseries.interpol(block->GetParent()->GetTime());
@@ -526,81 +532,101 @@ double Quan::CalcVal(Object* block, const Timing& tmg)
     }
     if (type == _type::value)
         return _val;
-
-    case _type::expression:
-        return _expression.calc(block, tmg);
-
-    case _type::rule:
-        return _rule.calc(block, tmg);
-
-    case _type::timeseries:
-        return (_timeseries.size() > 0)
-            ? _timeseries.interpol(block->GetParent()->GetTime())
-            : 0;
-
-    case _type::source:
-        if (source != nullptr)
-        {
-            std::scoped_lock lock(_mutex_val_star);
-            if (!value_star_updated)
+    if (type == _type::source)
+    {
+        if (source!=nullptr)
+        {   if (value_star_updated)
+                return _val_star;
+            else
             {
+#ifndef NO_OPENMP
+                omp_lock_t writelock;
+                if (omp_get_num_threads() > 1)
+                {
+                    omp_init_lock(&writelock);
+                    omp_set_lock(&writelock);
+                }
+#endif
                 _val_star = source->GetValue(block);
+                value_star_updated=true;
+                return _val_star;
+#ifndef NO_OPENMP
+                if (omp_get_num_threads() > 1)
+                {
+                    omp_unset_lock(&writelock);
+                    omp_destroy_lock(&writelock);
+                }
+#endif
+            }
+        }
+        else
+            return 0;
+    }
+    last_error = "Quantity cannot be evaluated";
+    return 0;
+}
+
+double Quan::GetVal(const Expression::timing &tmg)
+{
+    if (tmg==Expression::timing::past)
+        return _val;
+    else
+    {
+        if (value_star_updated)
+            return _val_star;
+        else
+        {
+#ifndef NO_OPENMP
+            omp_lock_t writelock;
+            if (omp_get_num_threads() > 1)
+            {
+                omp_init_lock(&writelock);
+                omp_set_lock(&writelock);
+            }
+#endif
+            if (type == _type::expression)
+            {
+                _val_star = CalcVal(tmg);
+                value_star_updated = true;
+
+            }
+            if (type == _type::rule)
+            {
+                _val_star = CalcVal(tmg);
                 value_star_updated = true;
             }
+            if (type == _type::timeseries)
+            {
+                if (GetTimeSeries()!=nullptr)
+                    _val_star = GetTimeSeries()->interpol(GetSimulationTime());
+                else
+                    _val_star = 0;
+                value_star_updated = true;
+            }
+            if (type == _type::prec_timeseries)
+            {
+                if (GetTimeSeries()!=nullptr)
+                    _val_star = GetTimeSeries()->interpol(GetSimulationTime());
+                else
+                    _val_star = 0;
+                value_star_updated = true;
+            }
+            
+#ifndef NO_OPENMP
+            if (omp_get_num_threads() > 1)
+            {
+                omp_unset_lock(&writelock);
+                omp_destroy_lock(&writelock);
+            }
+#endif
             return _val_star;
         }
-        return 0;
-
-    default:
-        last_error = "Quantity cannot be evaluated";
-        return 0;
     }
 }
 
-double Quan::GetVal(const Timing& tmg)
+double &Quan::GetSimulationTime() const
 {
-    if (tmg == Timing::past)
-        return _val;
-
-    {
-        std::scoped_lock lock(_mutex_val_star);  // Protect shared state
-        if (!value_star_updated)
-        {
-            switch (type)
-            {
-            case _type::expression:
-                _val_star = CalcVal(tmg);
-                break;
-            case _type::rule:
-                _val_star = CalcVal(tmg);
-                break;
-
-            case _type::timeseries:
-                if (auto* ts = GetTimeSeries())
-                    _val_star = ts->interpol(GetSimulationTime());
-                else
-                    _val_star = 0;
-                break;
-            case _type::prec_timeseries:
-                if (auto* ts = GetTimeSeries())
-                    _val_star = ts->interpol(GetSimulationTime());
-                else
-                    _val_star = 0;
-                break;
-
-            default:
-                _val_star = CalcVal(tmg);
-                break;
-            }
-            value_star_updated = true;
-        }
-    }
-
-    return _val_star;
-}
-
-double& Quan::GetSimulationTime() const {
-    return GetSystem()->GetSimulationTime();
+    return parent->GetParent()->GetSimulationTime();
 }
 
 TimeSeries<timeseriesprecision>* Quan::GetTimeSeries()
@@ -612,21 +638,32 @@ TimeSeries<timeseriesprecision>* Quan::GetTimeSeries()
 
 }
 
-double Quan::CalcVal(const Timing& tmg)
+bool Quan::EstablishExpressionStructure()
 {
-    switch (type)
-    {
-    case _type::constant:
-    case _type::boolean:
-    case _type::value:
-    case _type::balance:
-        return (tmg == Timing::past) ? _val : _val_star;
+    if (type == _type::expression)
+        _expression.ResetTermsSources();
+    return true;
+}
 
-    case _type::expression:
-        if (precalcfunction.IndependentVariable().empty() || !precalcfunction.Initiated())
-            return _expression.calc(parent, tmg);
+double Quan::CalcVal(const Expression::timing &tmg)
+{
+
+    if (type == _type::constant || type == _type::boolean)
+    {
+        if (tmg==Expression::timing::past)
+            return _val;
         else
-            return InterpolateBasedonPrecalcFunction(parent->GetVal(precalcfunction.IndependentVariable(), tmg));
+            return _val_star;
+    }
+    if (type == _type::expression)
+    {   
+        if (precalcfunction.IndependentVariable().empty() || precalcfunction.Initiated()==false)
+            return _expression.calc(parent,tmg);
+        else
+            return InterpolateBasedonPrecalcFunction(parent->GetVal(precalcfunction.IndependentVariable(),tmg));
+    }
+    if (type == _type::rule)
+        return _rule.calc(parent,tmg);
 
     if (type == _type::timeseries || type == _type::prec_timeseries)
     {
@@ -634,12 +671,55 @@ double Quan::CalcVal(const Timing& tmg)
             return _timeseries.interpol(parent->GetParent()->GetTime());
         else
             return 0;
-
-    default:
-        last_error = "Quantity cannot be evaluated";
-        return 0;
     }
+    if (type == _type::value)
+    {
+        if (tmg==Expression::timing::past)
+            return _val;
+        else
+            return _val_star;
+    }
+    if (type == _type::balance)
+    {
+        if (tmg==Expression::timing::past)
+            return _val;
+        else
+            return _val_star;
+    }
+    if (type == _type::source)
+    {
+        if (source!=nullptr)
+        {   if (value_star_updated)
+                return _val_star;
+            else
+            {
+#ifndef NO_OPENMP
+                omp_lock_t writelock;
+                if (omp_get_num_threads() > 1)
+                {
+                    omp_init_lock(&writelock);
+                    omp_set_lock(&writelock);
+                }
+#endif
+                _val_star = source->GetValue(parent);
+                value_star_updated=true;
+                return _val_star;
+#ifndef NO_OPENMP
+                if (omp_get_num_threads() > 1)
+                {
+                    omp_unset_lock(&writelock);
+                    omp_destroy_lock(&writelock);
+                }
+#endif
+            }
+        }
+        else
+            return 0;
+    }
+    last_error = "Quantity cannot be evaluated";
+    return 0;
 }
+
 bool Quan::SetExpression(const string &E)
 {
     _expression = E;
@@ -672,41 +752,53 @@ string tostring(const Quan::_type &typ)
 }
 
 
-bool Quan::SetVal(const double& v, const Timing& tmg, bool check_criteria)
+bool Quan::SetVal(const double &v, const Expression::timing &tmg, bool check_criteria)
 {
-    const double previous_val = _val;
+    const double past_val = _val;
 
-    // Update _val if needed
-    if (tmg == Timing::past || tmg == Timing::both)
+    if (tmg == Expression::timing::past || tmg == Expression::timing::both)
         _val = v;
-
-    // Update _val_star if needed
-    if (tmg == Timing::present || tmg == Timing::both)
-    {
+    if (tmg == Expression::timing::present || tmg == Expression::timing::both)
+{
+#ifndef NO_OPENMP
+        omp_lock_t writelock;
+        if (omp_get_num_threads() > 1)
         {
-            std::scoped_lock lock(_mutex_val_star);
-            _val_star = v;
-            value_star_updated = true;
+            omp_init_lock(&writelock);
+            omp_set_lock(&writelock);
         }
-    }
-
-    // Criteria check only when setting both
-    if (tmg == Timing::both && HasCriteria() && parent != nullptr)
-    {
-        const bool valid = !check_criteria || Criteria().calc(parent, tmg);
-        if (!valid)
+#endif
+        _val_star = v;
+        value_star_updated = true;
+#ifndef NO_OPENMP
+        if (omp_get_num_threads() > 1)
         {
-            AppendError(parent->GetName(), "Quan", "SetVal", warning_message, 8012);
-            _val = previous_val;
-            std::scoped_lock lock(_mutex_val_star);
-            _val_star = previous_val;
-            return false;
+            omp_unset_lock(&writelock);
+            omp_destroy_lock(&writelock);
+        }
+#endif
+    }
+    if (tmg == Expression::timing::both)
+    {
+        if (HasCriteria() && parent != nullptr)
+        {
+            //qDebug()<<"Validating";
+            bool validate = Criteria().calc(parent, tmg) || !check_criteria;
+            //qDebug()<<"Validated";
+            if (!validate)
+            {
+                //qDebug()<<"Appending error...";
+                AppendError(parent->GetName(), "Quan", "SetVal", warning_message, 8012);
+                _val = past_val;
+                _val_star = past_val;
+                return false; 
+            }
+
         }
     }
 
     return true;
 }
-
 
 Expression* Quan::GetExpression()
 {
@@ -803,30 +895,18 @@ Object* Quan::GetParent()
 
 void Quan::Renew()
 {
-    std::scoped_lock lock(_mutex_val_star);
-    _val_star = _val;
-
+	_val_star = _val;
 }
 
 void Quan::Update()
 {
-    std::scoped_lock lock(_mutex_val_star);
-    _val = _val_star;
-
+	_val = _val_star;
 }
 
-bool Quan::SetTimeSeries(const std::string& filename, bool prec)
-{
-    if (filename.empty())
-    {
-        _timeseries.clear();
-        return true;
-    }
 
 bool Quan::SetTimeSeries(const string &filename, bool prec)
 {
-    _timeseries.readfile(path);
-    if (_timeseries.fileNotFound)
+    if (filename.empty())
     {
         _timeseries = TimeSeries<double>();
         return true;
@@ -905,7 +985,7 @@ string Quan::GetProperty(bool force_value)
     //qDebug()<<QString::fromStdString(this->GetName());
     if (type == _type::balance || type== _type::constant || type==_type::global_quan || type==_type::value || (type==_type::expression && force_value))
     {
-        return aquiutils::numbertostring(GetVal(Timing::present));
+        return aquiutils::numbertostring(GetVal(Expression::timing::present));
 
     }
     if (type == _type::timeseries)
@@ -937,7 +1017,7 @@ string Quan::GetProperty(bool force_value)
     }
     else if (type == _type::boolean)
     {
-        if (aquiutils::numbertostring(GetVal(Timing::present))=="1")
+        if (aquiutils::numbertostring(GetVal(Expression::timing::present))=="1")
             return "Yes";
         else
             return "No";
@@ -946,88 +1026,96 @@ string Quan::GetProperty(bool force_value)
 
 }
 
-bool Quan::SetProperty(const std::string& val, bool force_value, bool check_criteria)
+bool Quan::SetProperty(const string &val, bool force_value, bool check_criteria)
 {
-    // Normalize whitespace or input
-    if (val.empty()) return false;
-
-    switch (type)
+    if (type == _type::balance || type== _type::constant || type==_type::global_quan || type==_type::value || (type==_type::expression && force_value))
+        return SetVal(aquiutils::atof(val),Expression::timing::both, check_criteria);
+    if (type == _type::timeseries)
     {
-    case _type::balance:
-    case _type::constant:
-    case _type::global_quan:
-    case _type::value:
-        return SetVal(aquiutils::atof(val), Timing::both, check_criteria);
-
-    case _type::expression:
-        if (force_value)
-            return SetVal(aquiutils::atof(val), Timing::both, check_criteria);
-        else
-            return SetExpression(val);
-
-    case _type::rule:
-        AppendError(GetName(), "Quan", "SetProperty", "Rule cannot be set during runtime", 3011);
-        return false;
-
-    case _type::timeseries:
-        return resolveAndSetTimeSeries(val, /*prec=*/false);
-
-    case _type::prec_timeseries:
-        return resolveAndSetTimeSeries(val, /*prec=*/true);
-
-    case _type::source:
-        sourcename = val;
-        return SetSource(val);
-
-    case _type::string:
-        return setStringProperty(val);
-
-    case _type::boolean:
-        return SetVal((val == "1" || aquiutils::tolower(val) == "yes") ? 1.0 : 0.0, Timing::both, check_criteria);
-
-    default:
-        return false;
-    }
-}
-
-bool Quan::resolveAndSetTimeSeries(const std::string& filename, bool prec)
-{
-    if (filename.empty()) {
-        _timeseries.clear();
-        return false;
-    }
-
-    std::string fullpath = filename;
-
-    if (System* sys = GetSystem()) {
-        std::string try_path = sys->InputPath() + filename;
-        if (aquiutils::FileExists(try_path))
-            fullpath = try_path;
-    }
-
-    return SetTimeSeries(fullpath, prec);
-}
-
-bool Quan::setStringProperty(const std::string& val)
-{
-    if (GetName() == "name" && parent) {
-        if (!parent->SetName(val, false))
+        if (val.empty())
+        {
+            SetTimeSeries("");
             return false;
+        }
+        if (!parent->Parent())
+            return SetTimeSeries(val);
+        else if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
+            return SetTimeSeries(parent->Parent()->InputPath() + val);
+        else
+            return SetTimeSeries(val);
     }
+	if (type == _type::prec_timeseries)
+	{
+        if (val.empty())
+        {
+            SetTimeSeries("");
+            return false;
+        }
+        if (parent->Parent()!=nullptr)
+        {   if (!parent->Parent()->InputPath().empty() && aquiutils::FileExists(parent->Parent()->InputPath() + val))
+                return SetTimeSeries(parent->Parent()->InputPath() + val,true);
+            else
+                return SetTimeSeries(val,true);
+        }
+        else
+            return SetTimeSeries(val,true);
+	}
+    if (type == _type::source)
+    {
+		sourcename = val; 
+		return SetSource(val);
 
+    }
+    if (type == _type::expression)
+    {
+        _expression = val;
+        return SetExpression(val);
+    }
+    if (type== _type::rule)
+    {
+        AppendError(GetName(),"Quan","SetProperty","Rule cannot be set during runtime", 3011);
+        return false;
+    }
+	if (type == _type::string)
+	{
+		
+        bool outcome=true; 
+        if (GetName()=="name")
+        {
+            if (parent)
+                outcome = parent->SetName(val,false);
+        }
+        if (outcome)
+        {
+            _string_value = val;
+            return true;
+        }
+        else
+            return false; 
+	}
+    if (type == _type::boolean)
+    {
+        if (val=="1")
+            SetVal(1,Expression::timing::both, check_criteria);
+        else
+            SetVal(0,Expression::timing::both, check_criteria);
+    }
     _string_value = val;
-    return true;
+
+
+    return SetVal(aquiutils::atof(val),Expression::timing::both, check_criteria);
+    
 }
 
-
-bool Quan::AppendError(const std::string& objectname, const std::string& cls, const std::string& funct, const std::string& description, const int& code) const
+bool Quan::AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code) const
 {
-    if (System* sys = GetSystem()) {
+    if (!parent)
+        return false;
+    if (!parent->Parent())
+        return false;
 #pragma omp critical (quan_append_error)
-        sys->errorhandler.Append(objectname, cls, funct, description, code);
-        return true;
-    }
-    return false;
+    parent->Parent()->errorhandler.Append(objectname, cls, funct, description, code);
+    return true;
 }
 
 string Quan::toCommand()
@@ -1055,13 +1143,7 @@ bool Quan::Validate()
 {
     if (type == _type::timeseries && !_timeseries.getFilename().empty())
     {
-        const std::string path = _timeseries.getFilename();
-        const std::string input_path = GetSystem() ? GetSystem()->InputPath() : "";
-
-        bool path_mismatch = !input_path.empty() &&
-            aquiutils::GetPath(input_path) != aquiutils::GetPath(path);
-
-        if (path_mismatch)
+        if (type == _type::timeseries)
         {
             if (!parent->Parent()->InputPath().empty() && aquiutils::GetPath(parent->Parent()->InputPath())!=aquiutils::GetPath(_timeseries.getFilename()))
                 if (aquiutils::FileExists(parent->Parent()->InputPath() + _timeseries.getFilename()))
@@ -1071,7 +1153,7 @@ bool Quan::Validate()
             else
                 return SetTimeSeries(_timeseries.getFilename());
         }
-        else
+        if (type == _type::prec_timeseries)
         {
             if (!parent->Parent()->InputPath().empty() && aquiutils::GetPath(parent->Parent()->InputPath())!=aquiutils::GetPath(_timeseries.getFilename()))
                 if (aquiutils::FileExists(parent->Parent()->InputPath() + _timeseries.getFilename()))
@@ -1082,17 +1164,17 @@ bool Quan::Validate()
                 return SetTimeSeries(_timeseries.getFilename(), true);
         }
     }
+    return Criteria().calc(parent, Expression::timing::both);
 
-    return Criteria().calc(parent, Timing::both);
 }
 
-vector<string> Quan::GetAllRequieredStartingBlockProperties() const
+vector<string> Quan::GetAllRequieredStartingBlockProperties()
 {
     return _expression.GetAllRequieredStartingBlockProperties();
 
 }
 
-vector<string> Quan::GetAllRequieredEndingBlockProperties() const
+vector<string> Quan::GetAllRequieredEndingBlockProperties()
 {
     return _expression.GetAllRequieredEndingBlockProperties();
 }
@@ -1144,7 +1226,7 @@ double Quan::InterpolateBasedonPrecalcFunction(const double &val) const
 }
 bool Quan::InitializePreCalcFunction(int n_inc)
 {
-    const double old_independent_variable_value = parent->GetVal(precalcfunction.IndependentVariable(),Timing::present);
+    const double old_independent_variable_value = parent->GetVal(precalcfunction.IndependentVariable(),Expression::timing::present);
     if (parent==nullptr) return false;
     if (precalcfunction.IndependentVariable().empty()) return false;
     precalcfunction.clear();
@@ -1152,15 +1234,15 @@ bool Quan::InitializePreCalcFunction(int n_inc)
         for (double x=precalcfunction.xmin(); x<=precalcfunction.xmax(); x+=(precalcfunction.xmax()-precalcfunction.xmin())/double(n_inc))
             {
                 parent->UnUpdateAllValues();
-                parent->SetVal(precalcfunction.IndependentVariable(),x,Timing::present);
-                precalcfunction.append(x,CalcVal(Timing::present));
+                parent->SetVal(precalcfunction.IndependentVariable(),x,Expression::timing::present);
+                precalcfunction.append(x,CalcVal(Expression::timing::present));
             }
     else
         for (double x=log(precalcfunction.xmin()); x<=log(precalcfunction.xmax()); x+=(log(precalcfunction.xmax())-log(precalcfunction.xmin()))/double(n_inc))
             {
                 parent->UnUpdateAllValues();
-                parent->SetVal(precalcfunction.IndependentVariable(),exp(x),Timing::present);
-                precalcfunction.append(x,CalcVal(Timing::present));
+                parent->SetVal(precalcfunction.IndependentVariable(),exp(x),Expression::timing::present);
+                precalcfunction.append(x,CalcVal(Expression::timing::present));
             }
     parent->SetVal(precalcfunction.IndependentVariable(),old_independent_variable_value,Expression::timing::present);
     precalcfunction.setStructured(true);
