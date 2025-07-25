@@ -8,9 +8,16 @@
 
 CONFIG += c++17
 
-lessThan(QT_MAJOR_VERSION, 6): QT += core gui opengl printsupport svg charts
-greaterThan(QT_MAJOR_VERSION, 5): {
-    QT += core gui opengl printsupport svgwidgets charts
+QT += core gui opengl printsupport widgets
+
+# For Qt5
+lessThan(QT_MAJOR_VERSION, 6): {
+    QT += svg charts
+}
+
+# For Qt6
+equals(QT_MAJOR_VERSION, 6): {
+    QT += svgwidgets charts
     DEFINES += Qt6
 }
 
