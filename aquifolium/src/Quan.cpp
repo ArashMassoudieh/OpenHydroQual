@@ -1309,15 +1309,46 @@ bool Quan::EstablishExpressionStructure()
 
 string tostring(const Quan::_type &typ)
 {
-    if (typ==Quan::_type::balance) return "Balance";
-    if (typ==Quan::_type::constant) return "Constant";
-    if (typ==Quan::_type::expression) return "Expression";
-    if (typ==Quan::_type::global_quan) return "Global";
-    if (typ==Quan::_type::rule) return "Rule";
-    if (typ==Quan::_type::timeseries) return "TimeSeries";
-    if (typ==Quan::_type::value) return "Value";
-    if (typ==Quan::_type::source) return "Source";
-    return "";
+    switch (typ) {
+    case Quan::_type::balance:
+        return "Balance";
+
+    case Quan::_type::constant:
+        return "Constant";
+
+    case Quan::_type::expression:
+        return "Expression";
+
+    case Quan::_type::global_quan:
+        return "Global";
+
+    case Quan::_type::rule:
+        return "Rule";
+
+    case Quan::_type::timeseries:
+        return "TimeSeries";
+
+    case Quan::_type::prec_timeseries:
+        return "PrecipitationTimeSeries";
+
+    case Quan::_type::value:
+        return "Value";
+
+    case Quan::_type::source:
+        return "Source";
+
+    case Quan::_type::string:
+        return "String";
+
+    case Quan::_type::boolean:
+        return "Boolean";
+
+    case Quan::_type::not_assigned:
+        return "NotAssigned";
+
+    default:
+        return "Unknown";
+    }
 }
 
 
@@ -1371,24 +1402,29 @@ Object* Quan::GetParent() const
 
 bool Quan::SetSource(const string &sourcename)
 {
-    if (sourcename.empty())
-    {
+    // Handle empty source name - clear source
+    if (sourcename.empty()) {
         source = nullptr;
         return true;
     }
-    if (parent->GetParent()->source(sourcename))
-	{
-        if (parent->GetParent())
-            source = parent->GetParent()->source(sourcename);
-        return true;
-	}
-	else
-	{
-        source = nullptr;
-        AppendError(GetName(),"Quan", "Source", sourcename + " was not found!", 3062);
-		return false;
-	}
 
+    // Validate parent hierarchy exists
+    if (!parent || !parent->GetParent()) {
+        source = nullptr;
+        AppendError(GetName(), "Quan", "SetSource", "No parent system available to find source: " + sourcename, 3062);
+        return false;
+    }
+
+    // Attempt to find the source in the parent system
+    Source* foundSource = parent->GetParent()->source(sourcename);
+    if (foundSource) {
+        source = foundSource;
+        return true;
+    } else {
+        source = nullptr;
+        AppendError(GetName(), "Quan", "SetSource", sourcename + " was not found!", 3062);
+        return false;
+    }
 }
 
 
@@ -1488,29 +1524,64 @@ double Quan::InterpolateBasedonPrecalcFunction(const double &val) const
     else
         return precalcfunction.interpol(val);
 }
+
+
 bool Quan::InitializePreCalcFunction(int n_inc)
 {
-    const double old_independent_variable_value = parent->GetVal(precalcfunction.IndependentVariable(),Expression::timing::present);
-    if (parent==nullptr) return false;
-    if (precalcfunction.IndependentVariable().empty()) return false;
+    // Validate prerequisites
+    if (!parent) {
+        return false;
+    }
+
+    if (precalcfunction.IndependentVariable().empty()) {
+        return false;
+    }
+
+    // Store original independent variable value for restoration
+    const string& independentVar = precalcfunction.IndependentVariable();
+    const double originalValue = parent->GetVal(independentVar, Expression::timing::present);
+
+    // Clear existing function data
     precalcfunction.clear();
-    if (!precalcfunction.Logarithmic())
-        for (double x=precalcfunction.xmin(); x<=precalcfunction.xmax(); x+=(precalcfunction.xmax()-precalcfunction.xmin())/double(n_inc))
-            {
-                parent->UnUpdateAllValues();
-                parent->SetVal(precalcfunction.IndependentVariable(),x,Expression::timing::present);
-                precalcfunction.append(x,CalcVal(Expression::timing::present));
-            }
-    else
-        for (double x=log(precalcfunction.xmin()); x<=log(precalcfunction.xmax()); x+=(log(precalcfunction.xmax())-log(precalcfunction.xmin()))/double(n_inc))
-            {
-                parent->UnUpdateAllValues();
-                parent->SetVal(precalcfunction.IndependentVariable(),exp(x),Expression::timing::present);
-                precalcfunction.append(x,CalcVal(Expression::timing::present));
-            }
-    parent->SetVal(precalcfunction.IndependentVariable(),old_independent_variable_value,Expression::timing::present);
+
+    // Calculate step size and bounds
+    const double xMin = precalcfunction.xmin();
+    const double xMax = precalcfunction.xmax();
+    const bool isLogarithmic = precalcfunction.Logarithmic();
+
+    // Determine calculation bounds and step size
+    double startBound, endBound, stepSize;
+    if (isLogarithmic) {
+        startBound = log(xMin);
+        endBound = log(xMax);
+        stepSize = (endBound - startBound) / double(n_inc);
+    } else {
+        startBound = xMin;
+        endBound = xMax;
+        stepSize = (endBound - startBound) / double(n_inc);
+    }
+
+    // Calculate function values across the domain
+    for (int i = 0; i <= n_inc; ++i) {
+        const double x = startBound + (i * stepSize);
+        const double actualValue = isLogarithmic ? exp(x) : x;
+
+        // Set independent variable and calculate dependent value
+        parent->UnUpdateAllValues();
+        parent->SetVal(independentVar, actualValue, Expression::timing::present);
+
+        const double calculatedValue = CalcVal(Expression::timing::present);
+
+        // Store the calculated point
+        precalcfunction.append(x, calculatedValue);
+    }
+
+    // Restore original independent variable value
+    parent->SetVal(independentVar, originalValue, Expression::timing::present);
+
+    // Mark function as properly initialized
     precalcfunction.setStructured(true);
     precalcfunction.SetInitiated(true);
+
     return true;
 }
-
