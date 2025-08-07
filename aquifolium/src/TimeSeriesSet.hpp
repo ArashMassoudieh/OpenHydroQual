@@ -25,6 +25,7 @@
 #include <cmath>
 #include "DistributionNUnif.h"
 #include <iomanip>
+
 #ifdef Q_JSON_SUPPORT
 #include <QFile>
 #include <QTextStream>
