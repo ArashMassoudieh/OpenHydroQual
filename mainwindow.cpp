@@ -14,8 +14,8 @@
  */
 
 
-#define openhydroqual_version "1.2.6"
-#define last_modified "June, 23, 2025"
+#define openhydroqual_version "1.2.7"
+#define last_modified "August, 7, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -1915,12 +1915,14 @@ void MainWindow::onrunmodel()
     rtw = new RunTimeWindow(this,config::forward);
     rtw->show();
     copiedsystem.SetRunTimeWindow(rtw);
+    copiedsystem.WriteOutPuts(); 
     copiedsystem.Solve(true);
     rtw->AppendText(string("Saving outputs in '" + workingfolder.toStdString() + "'"));
     qDebug()<<"Working folder" << workingfolder;
     QCoreApplication::processEvents();
     if (copiedsystem.OutputFileName() != "")
     {
+        rtw->AppendText(string("Writing all outputs ... "));
         if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
             if (copiedsystem.WriteIntermittently())
                 copiedsystem.GetOutputs().appendtofile(copiedsystem.OutputFileName(),true);
@@ -1934,6 +1936,7 @@ void MainWindow::onrunmodel()
     }
     if (copiedsystem.ObservedOutputFileName() != "")
     {
+        rtw->AppendText(string("Writing observations ... "));
         if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
             if (copiedsystem.WriteIntermittently())
                 copiedsystem.GetObservedOutputs().appendtofile(copiedsystem.ObservedOutputFileName(),true);
@@ -1950,6 +1953,7 @@ void MainWindow::onrunmodel()
     copiedsystem.ObjectiveFunctionSet()->GetTimeSeriesSet().write(workingfolder.toStdString() + "/Objective_Function_TimeSeries.txt");
     if (copiedsystem.WriteIntermittently())
     {
+        rtw->AppendText(string("Writing objective functions ... "));
         if (copiedsystem.OutputFileName() != "")
         {   if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
                 copiedsystem.GetOutputs().read(copiedsystem.OutputFileName(),true);

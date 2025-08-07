@@ -1,4 +1,4 @@
-/*
+﻿/*
  * OpenHydroQual - Environmental Modeling Platform
  * Copyright (C) 2025 Arash Massoudieh
  * 
@@ -98,32 +98,59 @@ bool TimeSeriesSet<T>::read(const std::string& filename, bool has_header) {
     if (!file.is_open()) return false;
 
     std::string line;
+    std::vector<TimeSeries<T>> temp_series;
 
-    // Header line with names
+    // Step 1: Count rows for preallocation
+    size_t row_count = countRows(file, has_header);
+
+    // Step 2: Process header
     if (has_header && std::getline(file, line)) {
+        this->clear();
+        std::vector<std::string> headers = aquiutils::split(line, ',');
 
-        this->clear();  // Clear any existing series
-        vector<string> header_time_and_label = aquiutils::split(line,',');
-        for (int i=1; i<header_time_and_label.size(); i+=2) {
+        for (size_t i = 1; i < headers.size(); i += 2) {
             TimeSeries<T> ts;
-            ts.setName(header_time_and_label[i]);
-            this->emplace_back(std::move(ts));
+            ts.setName(headers[i]);
+            ts.reserve(row_count);  // ✅ Preallocate
+            temp_series.emplace_back(std::move(ts));
         }
     }
 
-    // Read values row by row
+    // Step 3: Read data lines
     while (std::getline(file, line)) {
-        std::istringstream ss(line);
-        std::string cell;
-
-        vector<string> all_values_and_time = aquiutils::split(line,',');
-        for (int i=0; i<all_values_and_time.size(); i+=2) {
-            operator[](i/2).append(atof(all_values_and_time[i].c_str()), atof(all_values_and_time[i+1].c_str()));
+        std::vector<std::string> tokens = aquiutils::split(line, ',');
+        for (size_t i = 0; i + 1 < tokens.size(); i += 2) {
+            double t = std::stod(tokens[i]);
+            double v = std::stod(tokens[i + 1]);
+            temp_series[i / 2].append(t, static_cast<T>(v));
         }
-
     }
 
+    this->clear();
+    for (auto& ts : temp_series)
+        this->emplace_back(std::move(ts));
     return true;
+}
+
+template<typename T>
+size_t TimeSeriesSet<T>::countRows(std::ifstream& file, bool has_header) {
+    size_t count = 0;
+    std::string line;
+
+    // Optionally skip the header
+    if (has_header && std::getline(file, line)) {
+        // Skip header
+    }
+
+    while (std::getline(file, line)) {
+        ++count;
+    }
+
+    // Rewind the file to the beginning for second pass
+    file.clear();
+    file.seekg(0, std::ios::beg);
+
+    return count;
 }
 
 template<typename T>

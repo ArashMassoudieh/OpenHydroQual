@@ -172,6 +172,8 @@ public:
 
 private:
 
+    static size_t countRows(std::ifstream& file, bool has_header); // estimate the number of rows in a csv file
+
 };
 
 // Helper functions
