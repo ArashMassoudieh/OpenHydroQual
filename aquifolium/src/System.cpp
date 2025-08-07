@@ -1656,7 +1656,11 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                                 GetSolutionLogger()->WriteString("Blocks corresponding to the zero diagonal element:");
                                 for (unsigned int j=0; j<J.diagvector().lookup(0).size(); j++)
                                 {
-                                    GetSolutionLogger()->WriteString(blocks[J.diagvector().lookup(0)[j]].GetName());
+                                    if (transport)
+                                        GetSolutionLogger()->WriteString(GetBlockConstituentSring(J.diagvector().lookup(0)[j]));
+                                    else
+                                        GetSolutionLogger()->WriteString(blocks[J.diagvector().lookup(0)[j]].GetName());
+                                    
                                 }
                             }
 
@@ -2019,12 +2023,29 @@ CVector_arma System::GetStateVariables(const string &variable, const Expression:
     }
 }
 
+pair<int, int> System::GetBlockConstituentValue(unsigned int i)
+{
+    pair<int, int>  out; 
+    out.first = i / this->constituents.size();
+    out.second = i % this->constituents.size();
+    return out; 
+}
+
+std::string  System::GetBlockConstituentSring(unsigned int i) // return block and constituent name for a state variable number i
+{
+    string out;
+    out += block(i / this->constituents.size())->GetName();
+    if (i % this->constituents.size() < constituents.size() > 0)
+        out += ":" + constituent(i % this->constituents.size())->GetName();
+    return out;
+}
+
 string System::GetBlockConstituent(unsigned int i)
 {
     int BlockNo = i / this->constituents.size();
     int ConstituentNo = i % this->constituents.size();
-    qDebug() << BlockNo; 
-    qDebug() << ConstituentNo; 
+    //qDebug() << BlockNo; 
+    //qDebug() << ConstituentNo; 
     string out = blocks[BlockNo].GetName() + ":" + constituents[ConstituentNo].GetName();
     return out;
 }

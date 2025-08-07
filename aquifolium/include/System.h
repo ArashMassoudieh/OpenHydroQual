@@ -479,6 +479,8 @@ class System: public Object
 
         bool CalculateFlows(const string &var, const Expression::timing &tmg = Expression::timing::present);
         void SetStateVariables(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present, bool transport=false);
+        pair<int, int> GetBlockConstituentValue(unsigned int i); // return block number and constituent number for a state variable number i
+        std::string GetBlockConstituentSring(unsigned int i); // return block and constituent name for a state variable number i
         string GetBlockConstituent(unsigned int i);
         void SetStateVariables_for_direct_Jacobian(const string &variable, CVector_arma &X, const Expression::timing &tmg, bool transport);
         void SetStateVariables_TR(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present);

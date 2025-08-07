@@ -148,10 +148,15 @@ void TimeSeriesSet<T>::write(const std::string& filename, const std::string& del
     for (size_t j = 0; j < rows; ++j) {
         for (size_t i = 0; i < this->size(); ++i) {
             const auto& ts = (*this)[i];
-            if (j < ts.size())
-                file << ts.getTime(j) << "," << ts.getValue(j);
-            else
-                file << ","; // Empty if that TimeSeries is shorter
+            if (j < ts.size()) {
+                // Format only the time with 3 decimal digits
+                std::ostringstream time_str;
+                time_str << std::fixed << std::setprecision(3) << ts.getTime(j);
+                file << time_str.str() << "," << ts.getValue(j);
+            }
+            else {
+                file << ",";
+            }
             if (i < this->size() - 1) file << delimiter;
         }
         file << "\n";
@@ -159,7 +164,6 @@ void TimeSeriesSet<T>::write(const std::string& filename, const std::string& del
 
     file.close();
 }
-
 
 // --- Manipulation ---
 
