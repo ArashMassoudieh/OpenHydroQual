@@ -196,7 +196,7 @@
       "includeinoutput": "true",
       "delegate": "ValueBox",
       "default": "0.2",
-      "criteria": "theta_res<theta<theta_sat",
+      "criteria": "theta_res<theta<theta_sat+0.000001",
       "warningmessage": "Initial Moisture Content must be between residual and saturated moisture contents"
     },
     "Se": {

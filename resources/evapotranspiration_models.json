@@ -1,5 +1,6 @@
 {
   "Evapotranspiration_Aerodynamic (S)": {
+    "description": "Evapotranspiration Aerodynamic model (Surface water)",
     "type": "source",
     "typecategory": "Sources",
     "icon": {
@@ -95,6 +96,7 @@
     }
   },
   "Evapotranspiration_Time_Series (S)": {
+    "description": "Evapotranspiration Time Series (Surface water)",
     "type": "source",
     "typecategory": "Sources",
     "icon": {
@@ -136,6 +138,7 @@
     }
   },
   "Evapotranspiration_Energy_Balance (S)": {
+    "description": "Evapotranspiration Energy Balance (Surface water)",
     "type": "source",
     "typecategory": "Sources",
     "icon": {
@@ -189,7 +192,8 @@
       "expression": "-corr_fact*solar_radiation/(l_v*1000)*86400"
     }
   },
-  "Evapotranspiration_Penmam (S)": {
+  "Evapotranspiration_Penman (S)": {
+    "description": "Evapotranspiration Penman (Surface water)",
     "type": "source",
     "typecategory": "Sources",
     "icon": {
