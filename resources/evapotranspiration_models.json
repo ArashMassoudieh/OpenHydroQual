@@ -192,7 +192,7 @@
       "expression": "-corr_fact*solar_radiation/(l_v*1000)*86400"
     }
   },
-  "Evapotranspiration_Penman (S)": {
+  "Evapotranspiration_Penmam (S)": {
     "description": "Evapotranspiration Penman (Surface water)",
     "type": "source",
     "typecategory": "Sources",

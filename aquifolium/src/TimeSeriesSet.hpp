@@ -384,25 +384,22 @@ void TimeSeriesSet<T>::appendtofile(const std::string& filename, bool include_ti
 
     size_t max_rows = maxnumpoints();
 
-    for (size_t i = 0; i < max_rows; ++i) {
-        if (include_time && !this->empty()) {
-            const auto& ts0 = this->at(0);
-            if (i < ts0.size())
-                file << ts0[i].t;
-            else
-                file << "";
+    // Write row-wise values
+    for (size_t j = 0; j < max_rows; ++j) {
+        for (size_t i = 0; i < this->size(); ++i) {
+            const auto& ts = (*this)[i];
+            if (j < ts.size()) {
+                // Format only the time with 3 decimal digits
+                std::ostringstream time_str;
+                time_str << std::fixed << std::setprecision(3) << ts.getTime(j);
+                file << time_str.str() << "," << ts.getValue(j);
+            }
+            else {
+                file << ",";
+            }
+            if (i < this->size() - 1) file << ",";
         }
-
-        for (size_t j = 0; j < this->size(); ++j) {
-            const auto& ts = this->at(j);
-            if (j > 0 || include_time) file << ",";
-            if (i < ts.size())
-                file << ts[i].c;
-            else
-                file << "";
-        }
-
-        file << '\n';
+        file << "\n";
     }
 
     file.close();
