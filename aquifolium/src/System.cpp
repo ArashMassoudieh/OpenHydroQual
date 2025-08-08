@@ -646,6 +646,7 @@ bool System::Solve(bool applyparameters)
 #ifdef Terminal_version
     cout<<"Running from time " << SolverTempVars.t << " to " << SimulationParameters.tend << endl;
 #endif
+   
     while (SolverTempVars.t<SimulationParameters.tend+SolverTempVars.dt && !stop_triggered)
     {
         //qDebug()<<SolverTempVars.t;

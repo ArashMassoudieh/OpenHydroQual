@@ -110,7 +110,10 @@ bool TimeSeriesSet<T>::read(const std::string& filename, bool has_header) {
 
         for (size_t i = 1; i < headers.size(); i += 2) {
             TimeSeries<T> ts;
-            ts.setName(headers[i]);
+            if (!headers[i].empty())
+                ts.setName(headers[i]);
+            else
+                ts.setName("series_" + aquiutils::numbertostring(int(i)));
             ts.reserve(row_count);  // ✅ Preallocate
             temp_series.emplace_back(std::move(ts));
         }
@@ -120,8 +123,12 @@ bool TimeSeriesSet<T>::read(const std::string& filename, bool has_header) {
     while (std::getline(file, line)) {
         std::vector<std::string> tokens = aquiutils::split(line, ',');
         for (size_t i = 0; i + 1 < tokens.size(); i += 2) {
-            double t = std::stod(tokens[i]);
-            double v = std::stod(tokens[i + 1]);
+            double t = 0; 
+            double v = 0; 
+            if (!aquiutils::trim(tokens[i]).empty())
+                t = std::stod(tokens[i]);
+            if (!aquiutils::trim(tokens[i+1]).empty())
+                v = std::stod(tokens[i + 1]);
             temp_series[i / 2].append(t, static_cast<T>(v));
         }
     }
@@ -161,7 +168,10 @@ void TimeSeriesSet<T>::write(const std::string& filename, const std::string& del
     // Write header using TimeSeries names
     if (!this->empty()) {
         for (size_t i = 0; i < this->size(); ++i) {
-            file << "t, " << (*this)[i].name();
+            if (!(*this)[i].name().empty())
+                file << "t, " << (*this)[i].name();
+            else
+                file << "t, " << "series_" + aquiutils::numbertostring(int(i));
             if (i < this->size() - 1) file << delimiter;
         }
         file << "\n";

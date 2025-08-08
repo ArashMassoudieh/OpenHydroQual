@@ -87,7 +87,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\..\include;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\..\jsoncpp\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\..\jsoncpp\include;./include;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GSL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -101,7 +101,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\..\include;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\..\jsoncpp\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\..\jsoncpp\include;./include;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GSL;_CONSOLE;Q_JSON_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -113,8 +113,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\aquifolium\src\ExpressionNode.cpp" />
-    <ClCompile Include="..\..\aquifolium\src\ExpressionParser.cpp" />
     <ClCompile Include="..\..\aquifolium\src\GA\Binary.cpp" />
     <ClCompile Include="..\..\aquifolium\src\Block.cpp" />
     <ClCompile Include="..\..\aquifolium\src\Command.cpp" />

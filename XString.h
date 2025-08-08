@@ -287,10 +287,10 @@ public:
 static	QString reform(const QString &X)
 	{
 		if (!X.contains("~")) return X;
-		ushort alpha = 945;	ushort beta = 946;	ushort gamma = 947;	ushort delta = 948;	ushort epsilon = 949;	ushort zeta = 950;	ushort eta = 951;	ushort theta = 952;	ushort iota = 953;	ushort kappa = 954;	ushort lambda = 955;
-		ushort mu = 956;	ushort nu = 957;	ushort xi = 958;	ushort omicron = 959;	ushort pi = 960;	ushort rho = 961;	ushort sigmaf = 962;	ushort sigma = 963;	ushort tau = 964;	ushort upsilon = 965;	ushort phi = 966;
-		ushort chi = 967;	ushort psi = 968;	ushort omega = 969;	ushort thetasym = 977;	ushort upsih = 978;	ushort piv = 982;	ushort sup2 = 178;	ushort sup3 = 179;	ushort frac14 = 188;	ushort frac12 = 189;	ushort frac34 = 190;
-		ushort radic = 8730;	ushort degree = 176;	QString R = X;	R.replace("~alpha", QString::fromUtf16(&alpha, 1));	R.replace("~beta", QString::fromUtf16(&beta, 1));	R.replace("~gamma", QString::fromUtf16(&gamma, 1));
+		char16_t alpha = 945;	char16_t beta = 946;	char16_t gamma = 947;	char16_t delta = 948;	char16_t epsilon = 949;	char16_t zeta = 950;	char16_t eta = 951;	char16_t theta = 952;	char16_t iota = 953;	char16_t kappa = 954;	char16_t lambda = 955;
+		char16_t mu = 956;	char16_t nu = 957;	char16_t xi = 958;	char16_t omicron = 959;	char16_t pi = 960;	char16_t rho = 961;	char16_t sigmaf = 962;	char16_t sigma = 963;	char16_t tau = 964;	char16_t upsilon = 965;	char16_t phi = 966;
+		char16_t chi = 967;	char16_t psi = 968;	char16_t omega = 969;	char16_t thetasym = 977;	char16_t upsih = 978;	char16_t piv = 982;	char16_t sup2 = 178;	char16_t sup3 = 179;	char16_t frac14 = 188;	char16_t frac12 = 189;	char16_t frac34 = 190;
+		char16_t radic = 8730;	char16_t degree = 176;	QString R = X;	 R.replace("~alpha", QString::fromUtf16(&alpha, 1));	R.replace("~beta", QString::fromUtf16(&beta, 1));	R.replace("~gamma", QString::fromUtf16(&gamma, 1));
 		R.replace("~delta", QString::fromUtf16(&delta, 1));	R.replace("~epsilon", QString::fromUtf16(&epsilon, 1));	R.replace("~zeta", QString::fromUtf16(&zeta, 1));	R.replace("~eta", QString::fromUtf16(&eta, 1));
 		R.replace("~theta", QString::fromUtf16(&theta, 1));	R.replace("~iota", QString::fromUtf16(&iota, 1));	R.replace("~kappa", QString::fromUtf16(&kappa, 1));	R.replace("~lambda", QString::fromUtf16(&lambda, 1));
 		R.replace("~mu", QString::fromUtf16(&mu, 1));	R.replace("~nu", QString::fromUtf16(&nu, 1));	R.replace("~xi", QString::fromUtf16(&xi, 1));	R.replace("~omicron", QString::fromUtf16(&omicron, 1));
@@ -303,10 +303,10 @@ static	QString reform(const QString &X)
 	}
 static	QString reformBack(QString R)
 	{
-		ushort alpha = 945;	ushort beta = 946;	ushort gamma = 947;	ushort delta = 948;	ushort epsilon = 949;	ushort zeta = 950;	ushort eta = 951;	ushort theta = 952;	ushort iota = 953;	ushort kappa = 954;	ushort lambda = 955;
-		ushort mu = 956;	ushort nu = 957;	ushort xi = 958;	ushort omicron = 959;	ushort pi = 960;	ushort rho = 961;	ushort sigmaf = 962;	ushort sigma = 963;	ushort tau = 964;	ushort upsilon = 965;	ushort phi = 966;
-		ushort chi = 967;	ushort psi = 968;	ushort omega = 969;	ushort thetasym = 977;	ushort upsih = 978;	ushort piv = 982;	ushort sup2 = 178;	ushort sup3 = 179;	ushort frac14 = 188;	ushort frac12 = 189;	ushort frac34 = 190;
-		ushort radic = 8730;	ushort degree = 176;	R.replace(QString::fromUtf16(&alpha, 1), "~alpha");	R.replace(QString::fromUtf16(&beta, 1), "~beta");	R.replace(QString::fromUtf16(&gamma, 1), "~gamma");
+		char16_t alpha = 945;	char16_t beta = 946;	char16_t gamma = 947;	char16_t delta = 948;	char16_t epsilon = 949;	char16_t zeta = 950;	char16_t eta = 951;	char16_t theta = 952;	char16_t iota = 953;	char16_t kappa = 954;	char16_t lambda = 955;
+		char16_t mu = 956;	char16_t nu = 957;	char16_t xi = 958;	char16_t omicron = 959;	char16_t pi = 960;	char16_t rho = 961;	char16_t sigmaf = 962;	char16_t sigma = 963;	char16_t tau = 964;	char16_t upsilon = 965;	char16_t phi = 966;
+		char16_t chi = 967;	char16_t psi = 968;	char16_t omega = 969;	char16_t thetasym = 977;	char16_t upsih = 978;	char16_t piv = 982;	char16_t sup2 = 178;	char16_t sup3 = 179;	char16_t frac14 = 188;	char16_t frac12 = 189;	char16_t frac34 = 190;
+		char16_t radic = 8730;	char16_t degree = 176;	R.replace(QString::fromUtf16(&alpha, 1), "~alpha");	R.replace(QString::fromUtf16(&beta, 1), "~beta");	R.replace(QString::fromUtf16(&gamma, 1), "~gamma");
 		R.replace(QString::fromUtf16(&delta, 1), "~delta");	R.replace(QString::fromUtf16(&epsilon, 1), "~epsilon");	R.replace(QString::fromUtf16(&zeta, 1), "~zeta");	R.replace(QString::fromUtf16(&eta, 1), "~eta");
 		R.replace(QString::fromUtf16(&theta, 1), "~theta");	R.replace(QString::fromUtf16(&iota, 1), "~iota");	R.replace(QString::fromUtf16(&kappa, 1), "~kappa");	R.replace(QString::fromUtf16(&lambda, 1), "~lambda");
 		R.replace(QString::fromUtf16(&mu, 1), "~mu");	R.replace(QString::fromUtf16(&nu, 1), "~nu");	R.replace(QString::fromUtf16(&xi, 1), "~xi");	R.replace(QString::fromUtf16(&omicron, 1), "~omicron");
@@ -319,10 +319,10 @@ static	QString reformBack(QString R)
 	}
     QString reformBack() const
 	{
-		ushort alpha = 945;	ushort beta = 946;	ushort gamma = 947;	ushort delta = 948;	ushort epsilon = 949;	ushort zeta = 950;	ushort eta = 951;	ushort theta = 952;	ushort iota = 953;	ushort kappa = 954;	ushort lambda = 955;
-		ushort mu = 956;	ushort nu = 957;	ushort xi = 958;	ushort omicron = 959;	ushort pi = 960;	ushort rho = 961;	ushort sigmaf = 962;	ushort sigma = 963;	ushort tau = 964;	ushort upsilon = 965;	ushort phi = 966;
-		ushort chi = 967;	ushort psi = 968;	ushort omega = 969;	ushort thetasym = 977;	ushort upsih = 978;	ushort piv = 982;	ushort sup2 = 178;	ushort sup3 = 179;	ushort frac14 = 188;	ushort frac12 = 189;	ushort frac34 = 190;
-		ushort radic = 8730;	ushort degree = 176;	QString R = *this;	R.replace(QString::fromUtf16(&alpha, 1), "~alpha");	R.replace(QString::fromUtf16(&beta, 1), "~beta");	R.replace(QString::fromUtf16(&gamma, 1), "~gamma");
+		char16_t alpha = 945;	char16_t beta = 946;	char16_t gamma = 947;	char16_t delta = 948;	char16_t epsilon = 949;	char16_t zeta = 950;	char16_t eta = 951;	char16_t theta = 952;	char16_t iota = 953;	char16_t kappa = 954;	char16_t lambda = 955;
+		char16_t mu = 956;	char16_t nu = 957;	char16_t xi = 958;	char16_t omicron = 959;	char16_t pi = 960;	char16_t rho = 961;	char16_t sigmaf = 962;	char16_t sigma = 963;	char16_t tau = 964;	char16_t upsilon = 965;	char16_t phi = 966;
+		char16_t chi = 967;	char16_t psi = 968;	char16_t omega = 969;	char16_t thetasym = 977;	char16_t upsih = 978;	char16_t piv = 982;	char16_t sup2 = 178;	char16_t sup3 = 179;	char16_t frac14 = 188;	char16_t frac12 = 189;	char16_t frac34 = 190;
+		char16_t radic = 8730;	char16_t degree = 176;	QString R = *this;	R.replace(QString::fromUtf16(&alpha, 1), "~alpha");	R.replace(QString::fromUtf16(&beta, 1), "~beta");	R.replace(QString::fromUtf16(&gamma, 1), "~gamma");
 		R.replace(QString::fromUtf16(&delta, 1), "~delta");	R.replace(QString::fromUtf16(&epsilon, 1), "~epsilon");	R.replace(QString::fromUtf16(&zeta, 1), "~zeta");	R.replace(QString::fromUtf16(&eta, 1), "~eta");
 		R.replace(QString::fromUtf16(&theta, 1), "~theta");	R.replace(QString::fromUtf16(&iota, 1), "~iota");	R.replace(QString::fromUtf16(&kappa, 1), "~kappa");	R.replace(QString::fromUtf16(&lambda, 1), "~lambda");
 		R.replace(QString::fromUtf16(&mu, 1), "~mu");	R.replace(QString::fromUtf16(&nu, 1), "~nu");	R.replace(QString::fromUtf16(&xi, 1), "~xi");	R.replace(QString::fromUtf16(&omicron, 1), "~omicron");

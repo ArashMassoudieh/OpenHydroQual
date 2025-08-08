@@ -27,10 +27,10 @@
     <ROW Property="ARPURLUPDATEINFO" Value="www.OpenHydroQual.com"/>
     <ROW Property="AppLogoIcon" Value="applogoicon" MultiBuildValue="DefaultBuild:Aquifolium.jpg_1" Type="1" MsiKey="AppLogoIcon"/>
     <ROW Property="Manufacturer" Value="EnviroInformatics, LLC"/>
-    <ROW Property="ProductCode" Value="1033:{C7935DB6-13EB-4E89-A2DC-27CC2E0AAA23} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{74C75283-5FAE-4817-9A50-099089775E6E} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="OpenHydroQual"/>
-    <ROW Property="ProductVersion" Value="1.2.5" Type="32"/>
+    <ROW Property="ProductVersion" Value="1.2.7" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{22A5F0D0-785C-400D-99C4-4FBF0A322AB6}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -61,7 +61,7 @@
     <ROW Directory="resources_Dir" Directory_Parent="APPDIR" DefaultDir="RESOUR~1|resources"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
-    <ROW Component="AI_CustomARPName" ComponentId="{FE7A5BA0-CBBF-4FEE-BEC6-F631E34D3C93}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
+    <ROW Component="AI_CustomARPName" ComponentId="{5E8642DE-D27C-4A57-AA6D-4BBE75933ACD}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
     <ROW Component="AI_ExePath" ComponentId="{E9233AF7-0339-4898-BA7A-0EA6DCB0522F}" Directory_="APPDIR" Attributes="4" KeyPath="AI_ExePath"/>
     <ROW Component="AI_IA_ENABLE" ComponentId="{9961D3AC-A7F7-45C8-9F93-9695250B97F1}" Directory_="APPDIR" Attributes="4" KeyPath="AI_IA_ENABLE" Options="1"/>
     <ROW Component="Bioretention.png" ComponentId="{F01F4FC1-0721-4F89-8CAF-F9B6A4F658CD}" Directory_="Wizard_Icons_Dir" Attributes="0" KeyPath="Bioretention.png_1" Type="0"/>
@@ -138,12 +138,6 @@
     <ROW File="Flitration.png" Component_="Bioretention.png" FileName="FLITRA~1.PNG|Flitration.png" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Wizard_Icons\Flitration.png" SelfReg="false" NextFile="Infiltration_Basin.png"/>
     <ROW File="Flowofrecycledwater.png" Component_="pd.nfo" FileName="FLOWOF~1.PNG|Flow of recycled water.png" Attributes="0" SourcePath="..\resources\Icons\Flow of recycled water.png" SelfReg="false" NextFile="flow_arrow.png"/>
     <ROW File="Full_screen_view.png" Component_="pd.nfo" FileName="FULL_S~1.PNG|Full_screen_view.png" Attributes="0" SourcePath="..\resources\Icons\Full_screen_view.png" SelfReg="false" NextFile="full_screen_zoomicon.gif"/>
-    <ROW File="GIFMod.ico" Component_="pd.nfo" FileName="GIFMod.ico" Attributes="0" SourcePath="..\resources\Icons\GIFMod.ico" SelfReg="false" NextFile="GIFMod.png"/>
-    <ROW File="GIFMod.png" Component_="pd.nfo" FileName="GIFMod.png" Attributes="0" SourcePath="..\resources\Icons\GIFMod.png" SelfReg="false" NextFile="GIFModonBlack.pdn"/>
-    <ROW File="GIFModonBlack.pdn" Component_="pd.nfo" FileName="GIFMOD~1.PDN|GIFModonBlack.pdn" Attributes="0" SourcePath="..\resources\Icons\GIFModonBlack.pdn" SelfReg="false" NextFile="GIFModonBlack.png"/>
-    <ROW File="GIFModonBlack.png" Component_="pd.nfo" FileName="GIFMOD~1.PNG|GIFModonBlack.png" Attributes="0" SourcePath="..\resources\Icons\GIFModonBlack.png" SelfReg="false" NextFile="GIM.ico"/>
-    <ROW File="GIM.ico" Component_="pd.nfo" FileName="GIM.ico" Attributes="0" SourcePath="..\resources\Icons\GIM.ico" SelfReg="false" NextFile="GIM.png"/>
-    <ROW File="GIM.png" Component_="pd.nfo" FileName="GIM.png" Attributes="0" SourcePath="..\resources\Icons\GIM.png" SelfReg="false" NextFile="GoogleNotoEmojiSymbols73016potablewater.ico"/>
     <ROW File="GWA.ico" Component_="pd.nfo" FileName="GWA.ico" Attributes="0" SourcePath="..\resources\Icons\GWA.ico" SelfReg="false" NextFile="GWA.png"/>
     <ROW File="GWA.png" Component_="pd.nfo" FileName="GWA.png" Attributes="0" SourcePath="..\resources\Icons\GWA.png" SelfReg="false" NextFile="iconoutlinehandpalmcartoontoolpanfree.png"/>
     <ROW File="GW_to_Stream.png" Component_="pd.nfo" FileName="GW_TO_~2.PNG|GW_to_Stream.png" Attributes="0" SourcePath="..\resources\Icons\GW_to_Stream.png" SelfReg="false" NextFile="GWA.ico"/>
@@ -307,7 +301,7 @@
     <ROW File="full_screen_zoomicon.gif" Component_="pd.nfo" FileName="FULL_S~1.GIF|full_screen_zoom-icon.gif" Attributes="0" SourcePath="..\resources\Icons\full_screen_zoom-icon.gif" SelfReg="false" NextFile="gear_run.png"/>
     <ROW File="gear_run.png" Component_="pd.nfo" FileName="gear_run.png" Attributes="0" SourcePath="..\resources\Icons\gear_run.png" SelfReg="false" NextFile="generatescript.jpg"/>
     <ROW File="generatescript.jpg" Component_="pd.nfo" FileName="GENERA~1.JPG|generate script.jpg" Attributes="0" SourcePath="..\resources\Icons\generate script.jpg" SelfReg="false" NextFile="generatescript.png"/>
-    <ROW File="generatescript.png" Component_="pd.nfo" FileName="GENERA~1.PNG|generate script.png" Attributes="0" SourcePath="..\resources\Icons\generate script.png" SelfReg="false" NextFile="GIFMod.ico"/>
+    <ROW File="generatescript.png" Component_="pd.nfo" FileName="GENERA~1.PNG|generate script.png" Attributes="0" SourcePath="..\resources\Icons\generate script.png" SelfReg="false" NextFile="GoogleNotoEmojiSymbols73016potablewater.ico"/>
     <ROW File="groundwater.json" Component_="mass_transfer.json" FileName="GROUND~1.JSO|groundwater.json" Attributes="0" SourcePath="..\resources\groundwater.json" SelfReg="false" NextFile="main_components.json"/>
     <ROW File="groundwater_template.png" Component_="pd.nfo" FileName="GROUND~4.PNG|groundwater_template.png" Attributes="0" SourcePath="..\resources\Icons\groundwater_template.png" SelfReg="false" NextFile="gw_2_fixed_head.png"/>
     <ROW File="gsl.dll" Component_="gsl.dll" FileName="gsl.dll" Attributes="0" SourcePath="..\libs\gsl\gsl.dll" SelfReg="false" NextFile="gslcblas.dll"/>
@@ -834,7 +828,7 @@
     <ROW XmlAttribute="xsischemaLocation" XmlElement="swidsoftware_identification_tag" Name="xsi:schemaLocation" Flags="14" Order="3" Value="http://standards.iso.org/iso/19770/-2/2008/schema.xsd software_identification_tag.xsd"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
-    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="5"/>
+    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="7"/>
     <ROW XmlElement="swidentitlement_required_indicator" ParentElement="swidsoftware_identification_tag" Name="swid:entitlement_required_indicator" Condition="1" Order="0" Flags="14" Text="false"/>
     <ROW XmlElement="swidmajor" ParentElement="swidnumeric" Name="swid:major" Condition="1" Order="0" Flags="14" Text="1"/>
     <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="2"/>

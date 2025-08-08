@@ -107,7 +107,7 @@
       "type": "string",
       "default": "No",
       "description": "Write the outputs intermittently",
-      "ask_user": "true",
+      "ask_user": "false",
       "delegate": "ComboBox, items: Yes, No",
       "code": "write_intermittently"
     },
