@@ -553,6 +553,7 @@ bool TimeSeries<T>::readfile(const std::string& filename) {
 
     file.close();
     filename_ = filename;
+	detectStructure();
     return !this->empty();
 }
 
@@ -626,13 +627,17 @@ T TimeSeries<T>::stddev(int start_item) const {
 
 template<typename T>
 T TimeSeries<T>::interpol(const T& x) const {
+    
+    double dt = dt_; 
+    if (structured_ && this->size() > 1)
+        dt = (this->getTime(1) - this->getTime(0));
     if (this->empty()) return T{};
     if (x <= this->front().t) return this->front().c;
     if (x >= this->back().t) return this->back().c;
 
     if (structured_ && this->size() > 1) {
         T t0 = this->front().t;
-        int i = static_cast<int>((x - t0) / dt_);
+        int i = static_cast<int>((x - t0) / dt);
 
         if (i < 0) return this->front().c;
         if (i >= static_cast<int>(this->size()) - 1)
