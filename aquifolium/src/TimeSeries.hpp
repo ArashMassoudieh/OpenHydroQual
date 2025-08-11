@@ -1383,33 +1383,8 @@ bool TimeSeries<T>::append(T value) {
 
 template<typename T>
 bool TimeSeries<T>::append(T t_val, T c_val) {
-    bool increased_capacity = false;
-
-    if (this->capacity() == this->size()) {
-        this->reserve(this->size() + 1);
-        increased_capacity = true;
-    }
-
-    this->emplace_back(DataPoint<T>{t_val, c_val, std::nullopt});
-
-    // Check structure (dt consistency)
-    size_t n = this->size();
-    if (n >= 3) {
-        T dt1 = (*this)[n - 1].t - (*this)[n - 2].t;
-        T dt2 = (*this)[n - 2].t - (*this)[n - 3].t;
-        if (std::abs(dt1 - dt2) > T(1e-8) * std::abs(dt2)) {
-            structured_ = false;
-        }
-    }
-
-    // Update max absolute value
-    T abs_val = std::fabs(c_val);
-    if (!max_fabs_valid_ || abs_val > max_fabs_) {
-        max_fabs_ = abs_val;
-        max_fabs_valid_ = true;
-    }
-
-    return increased_capacity;
+    addPoint(t_val, c_val);
+	return true; // Always true since we add a point
 }
 
 template<typename T>
