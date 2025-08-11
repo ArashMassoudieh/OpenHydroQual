@@ -142,6 +142,7 @@ public:
 
     T interpol(const T& x) const;                          ///< Interpolate at x
     T interpol_D(const T& x) const;                        ///< Interpolate duration at x
+    T interpol(const T& x, const TimeSeries<T> &CumulativeDistribution, const double &correlationlength ) const;  ///<Interpolation with Gaussian sequential noise with exponential correlation function
     TimeSeries<T> interpol(const std::vector<T>& x) const; ///< Interpolate over vector
     TimeSeries<T> interpol(const TimeSeries<T>& x) const;  ///< Interpolate over TimeSeries
     TimeSeries<T> interpol(const TimeSeries<T>* x) const;  ///< Interpolate over pointer

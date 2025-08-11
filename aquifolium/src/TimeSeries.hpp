@@ -657,6 +657,59 @@ T TimeSeries<T>::interpol(const T& x) const {
     return this->back().c;
 }
 
+template<typename T>
+T TimeSeries<T>::interpol(const T& x,
+                          const TimeSeries<T> &CumulativeDistribution,
+                          const double &correlationlength) const
+{
+    // Convert to normal scores
+    TimeSeries<T> NormalScores = ConvertToNormalScore();
+
+    // Case 1: x is before the first point
+    if (x <= NormalScores.front().t) {
+        // Extrapolate from first point toward prior mean (0 for normal scores)
+        double rho = std::exp(-(NormalScores.front().t - x) / correlationlength);
+        double mean = rho * NormalScores.front().c;  // shrinks toward 0
+        double stdev = std::sqrt(1.0 - rho * rho);
+        return mean + gsl_ran_ugaussian(r_) * stdev;
+    }
+
+    // Case 2: x is after the last point
+    if (x >= NormalScores.back().t) {
+        double rho = std::exp(-(x - NormalScores.back().t) / correlationlength);
+        double mean = rho * NormalScores.back().c;
+        double stdev = std::sqrt(1.0 - rho * rho);
+        return mean + gsl_ran_ugaussian(r_) * stdev;
+    }
+
+    // Case 3: x is between two points
+    for (size_t i = 0; i < NormalScores.size() - 1; ++i) {
+        const auto& p1 = NormalScores[i];
+        const auto& p2 = NormalScores[i + 1];
+        if (p1.t <= x && x <= p2.t) {
+            double rho1  = std::exp(-(x - p1.t) / correlationlength);
+            double rho2  = std::exp(-(p2.t - x) / correlationlength);
+            double rho12 = std::exp(-(p2.t - p1.t) / correlationlength);
+
+            double mean =
+                (rho1 - rho2 * rho12) / (1 - rho12 * rho12) * p1.c +
+                (rho2 - rho1 * rho12) / (1 - rho12 * rho12) * p2.c;
+
+            double var =
+                1.0 - (rho1 * rho1 + rho2 * rho2 - 2.0 * rho1 * rho2 * rho12) /
+                          (1.0 - rho12 * rho12);
+
+            double stdev = std::sqrt(var);
+
+            return mean + gsl_ran_ugaussian(r_) * stdev;
+        }
+    }
+
+    // Should never get here
+    throw std::runtime_error("Interpolation failed: x is out of range.");
+}
+
+
 
 template<typename T>
 void TimeSeries<T>::detectStructure() {

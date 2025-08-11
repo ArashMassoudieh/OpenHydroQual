@@ -96,18 +96,29 @@ CPrecipitation::CPrecipitation(string _filename)
 	vector<string> ss;
 	s.clear(); e.clear(); i.clear();
 
-	while (fil.eof()==false)
-	{	ss = aquiutils::getline(fil);
+    while (!fil.eof())
+    {
+        ss = aquiutils::getline(fil);
 
-		if (ss.size()>=3)
-            if (ss[0].substr(0, 2) != "//" && aquiutils::trim(ss[0])!="")
-			{
-				s.push_back(atof(ss[0].c_str()));
-				e.push_back(atof(ss[1].c_str()));
-				i.push_back(atof(ss[2].c_str()));
-				n++;
-			}
-	}
+        if (ss.size() >= 3)
+        {
+            string s0 = aquiutils::trim(ss[0]);
+            string s1 = aquiutils::trim(ss[1]);
+            string s2 = aquiutils::trim(ss[2]);
+
+            if (s0.substr(0, 2) != "//" && !s0.empty())
+            {
+                // Check if each value is numeric before conversion
+                if (aquiutils::isnumber(s0) && aquiutils::isnumber(s1) && aquiutils::isnumber(s2))
+                {
+                    s.push_back(atof(s0.c_str()));
+                    e.push_back(atof(s1.c_str()));
+                    i.push_back(atof(s2.c_str()));
+                    n++;
+                }
+            }
+        }
+    }
 	dt = e[1] - s[1];
 
 }
@@ -157,7 +168,7 @@ void CPrecipitation::getfromfile(string _filename)
 	while (fil.eof()==false)
 	{	ss = aquiutils::getline(fil);
 		if (ss.size()>=3)
-		{	s.push_back(atof(ss[0].c_str()));
+        {   s.push_back(atof(ss[0].c_str()));
 			e.push_back(atof(ss[1].c_str()));
 			i.push_back(atof(ss[2].c_str()));
 			n++;
