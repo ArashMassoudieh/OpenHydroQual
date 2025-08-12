@@ -18,6 +18,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+#include "TimeSeries.h"
 #include "math.h"
 #include "string.h"
 #include <iostream>
@@ -662,11 +663,36 @@ T TimeSeries<T>::interpol(const T& x) const {
     return this->back().c;
 }
 
+
+template<typename T>
+TimeSeries<T> TimeSeries<T>::inverse() const {
+    TimeSeries<T> result;
+    result.reserve(this->size());
+    for (const auto &dp : *this) {
+        DataPoint<T> swapped;
+        swapped.t = dp.c;   // New time is old value
+        swapped.c = dp.t;   // New value is old time
+        if (dp.d.has_value()) {
+            swapped.d = dp.d; // Keep duration/distance as-is
+        }
+        result.push_back(swapped);
+    }
+    return result;
+}
+
+template<typename T>
+T TimeSeries<T>::inverse_CDF(T x) const
+{
+    TimeSeries<T> invts = inverse().make_uniform(0.01);
+    return invts.interpol(x);
+}
+
 template<typename T>
 T TimeSeries<T>::interpol(const T& x,
                           const TimeSeries<T> &CumulativeDistribution,
-                          const double &correlationlength) const
+                          const double &correlationlength)
 {
+    ensureGSLInitialized();
     // Convert to normal scores
     TimeSeries<T> NormalScores = ConvertToNormalScore();
 
@@ -708,7 +734,7 @@ T TimeSeries<T>::interpol(const T& x,
 
             double normal_score =  mean + gsl_ran_ugaussian(r_) * stdev;
             double Phi = gsl_cdf_ugaussian_P(normal_score);
-            return Phi;
+            return CumulativeDistribution.inverse_CDF(Phi);
         }
     }
 
@@ -1940,12 +1966,18 @@ TimeSeries<T> TimeSeries<T>::GetCummulativeDistribution() const {
     TimeSeries<T> result;
     result.reserve(values.size());
 
+
+    result.addPoint(1.5*values[0]-0.5*values[1], 0);
+
     for (size_t i = 0; i < values.size(); ++i) {
         T y = static_cast<T>(i + 0.5) / static_cast<T>(values.size());
         result.addPoint(values[i], y);
     }
 
+    result.addPoint(1.5*values[this->size()-1]-0.5*values[this->size()-2], 1);
+
     result.structured_ = false;
+    result.name_ = name_;
     return result;
 }
 

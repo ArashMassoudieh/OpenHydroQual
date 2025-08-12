@@ -150,7 +150,8 @@ public:
     TimeSeriesSet<T> sort(int column_index = 0) const; ///< Sort based on a column
     TimeSeriesSet<T> ConverttoNormalScore() const; ///< Convert each to normal score
     TimeSeriesSet<T> AutoCorrelation(const double& span, const double& increment) const; ///< Autocorrelation function
-    TimeSeriesSet<T> GetCummulativeDistribution() const; ///< CDF for each series
+    TimeSeriesSet<T> cummulative() const; ///< convert to cummulative distribution
+    TimeSeriesSet<T> GetCummulativeDistribution() const; ///< Extract CDF for each series
     TimeSeriesSet<T> Log() const; ///< Log-transform values
 
     // Wiggle Analysis

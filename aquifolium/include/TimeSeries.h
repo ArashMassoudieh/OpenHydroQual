@@ -142,7 +142,7 @@ public:
 
     T interpol(const T& x) const;                          ///< Interpolate at x
     T interpol_D(const T& x) const;                        ///< Interpolate duration at x
-    T interpol(const T& x, const TimeSeries<T> &CumulativeDistribution, const double &correlationlength ) const;  ///<Interpolation with Gaussian sequential noise with exponential correlation function
+    T interpol(const T& x, const TimeSeries<T> &CumulativeDistribution, const double &correlationlength );  ///<Interpolation with Gaussian sequential noise with exponential correlation function
     TimeSeries<T> interpol(const std::vector<T>& x) const; ///< Interpolate over vector
     TimeSeries<T> interpol(const TimeSeries<T>& x) const;  ///< Interpolate over TimeSeries
     TimeSeries<T> interpol(const TimeSeries<T>* x) const;  ///< Interpolate over pointer
@@ -189,8 +189,10 @@ public:
     TimeSeries<T> movingAverageSmooth(int span) const;     ///< Moving average smoothing
     TimeSeries<T> ConvertToRanks() const;                  ///< Map values to empirical ranks
     T Score(const T& val) const;                           ///< Rank score for value
-
+    TimeSeries<T> inverse() const;                         ///< Swaps t and val
+    T inverse_CDF(T x) const;                              ///< Extract the value corresponding to the CDF
 #ifdef GSL
+
     TimeSeries<T> ConvertToNormalScore() const;            ///< Gaussianize using inverse CDF
 #endif
 

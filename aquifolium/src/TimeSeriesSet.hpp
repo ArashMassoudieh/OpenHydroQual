@@ -929,6 +929,15 @@ TimeSeriesSet<T> TimeSeriesSet<T>::AutoCorrelation(const double& span, const dou
 }
 
 template<typename T>
+TimeSeriesSet<T> TimeSeriesSet<T>::cummulative() const {
+    TimeSeriesSet<T> result;
+    for (const TimeSeries<T>& ts : *this) {
+        result.push_back(ts.getcummulative());
+    }
+    return result;
+}
+
+template<typename T>
 TimeSeriesSet<T> TimeSeriesSet<T>::GetCummulativeDistribution() const {
     TimeSeriesSet<T> result;
     for (const TimeSeries<T>& ts : *this) {
