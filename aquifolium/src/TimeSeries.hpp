@@ -691,7 +691,7 @@ template<typename T>
 T TimeSeries<T>::interpol(const T& x,
                           const TimeSeries<T> &CumulativeDistribution,
                           const double &correlationlength,
-                          bool addpoint);
+                          bool addpoint)
 {
     ensureGSLInitialized();
     // Convert to normal scores
