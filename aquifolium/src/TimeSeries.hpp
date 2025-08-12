@@ -690,7 +690,8 @@ T TimeSeries<T>::inverse_CDF(T x) const
 template<typename T>
 T TimeSeries<T>::interpol(const T& x,
                           const TimeSeries<T> &CumulativeDistribution,
-                          const double &correlationlength)
+                          const double &correlationlength,
+                          bool addpoint);
 {
     ensureGSLInitialized();
     // Convert to normal scores
@@ -734,6 +735,9 @@ T TimeSeries<T>::interpol(const T& x,
 
             double normal_score =  mean + gsl_ran_ugaussian(r_) * stdev;
             double Phi = gsl_cdf_ugaussian_P(normal_score);
+            double out = CumulativeDistribution.inverse_CDF(Phi);
+            if (addpoint)
+                addPoint(x,out); // Accounts for autocorrelation between the generated points.
             return CumulativeDistribution.inverse_CDF(Phi);
         }
     }
