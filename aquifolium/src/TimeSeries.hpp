@@ -701,7 +701,9 @@ T TimeSeries<T>::interpol(const T& x,
 
             double stdev = std::sqrt(var);
 
-            return mean + gsl_ran_ugaussian(r_) * stdev;
+            double normal_score =  mean + gsl_ran_ugaussian(r_) * stdev;
+            double Phi = gsl_cdf_ugaussian_P(normal_score);
+            return Phi;
         }
     }
 
@@ -1916,6 +1918,7 @@ TimeSeries<T> TimeSeries<T>::getcummulative() const {
 
     result.structured_ = this->structured_;
     result.dt_ = this->dt_;
+    result.name_ = this->name_;
     return result;
 }
 
@@ -2359,6 +2362,7 @@ namespace TimeSeriesMetrics {
 
     
 }
+
 
     /**
  * @brief Computes the Kolmogorov–Smirnov (KS) statistic between two time series.
