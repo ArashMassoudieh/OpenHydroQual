@@ -696,14 +696,14 @@ T TimeSeries<T>::interpol(const T& x,
     ensureGSLInitialized();
     // Convert to normal scores
     TimeSeries<T> NormalScores = ConvertToNormalScore();
-
+    double normalscore;
     // Case 1: x is before the first point
     if (x <= NormalScores.front().t) {
         // Extrapolate from first point toward prior mean (0 for normal scores)
         double rho = std::exp(-(NormalScores.front().t - x) / correlationlength);
         double mean = rho * NormalScores.front().c;  // shrinks toward 0
         double stdev = std::sqrt(1.0 - rho * rho);
-        return mean + gsl_ran_ugaussian(r_) * stdev;
+        normalscore = mean + gsl_ran_ugaussian(r_) * stdev;
     }
 
     // Case 2: x is after the last point
@@ -711,7 +711,7 @@ T TimeSeries<T>::interpol(const T& x,
         double rho = std::exp(-(x - NormalScores.back().t) / correlationlength);
         double mean = rho * NormalScores.back().c;
         double stdev = std::sqrt(1.0 - rho * rho);
-        return mean + gsl_ran_ugaussian(r_) * stdev;
+        normalscore = mean + gsl_ran_ugaussian(r_) * stdev;
     }
 
     // Case 3: x is between two points
@@ -732,18 +732,17 @@ T TimeSeries<T>::interpol(const T& x,
                           (1.0 - rho12 * rho12);
 
             double stdev = std::sqrt(var);
+            normalscore = mean + gsl_ran_ugaussian(r_) * stdev;
 
-            double normal_score =  mean + gsl_ran_ugaussian(r_) * stdev;
-            double Phi = gsl_cdf_ugaussian_P(normal_score);
-            double out = CumulativeDistribution.inverse_CDF(Phi);
-            if (addpoint)
-                addPoint(x,out); // Accounts for autocorrelation between the generated points.
-            return CumulativeDistribution.inverse_CDF(Phi);
         }
     }
+    double Phi = gsl_cdf_ugaussian_P(normalscore);
+    double out = CumulativeDistribution.inverse_CDF(Phi);
+    if (addpoint)
+        addPoint(x,out); // Accounts for autocorrelation between the generated points.
+    return CumulativeDistribution.inverse_CDF(Phi);
 
-    // Should never get here
-    throw std::runtime_error("Interpolation failed: x is out of range.");
+
 }
 
 
