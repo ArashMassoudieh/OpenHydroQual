@@ -110,7 +110,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow rate (m~^3/day)",
-      "expression": "24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-hydraulic_gradient;0.00001)*_abs(-hydraulic_gradient)^0.54",
+      "expression": "(_hsd(head.s-head.e)*_mbs(Storage.s;0.0001)+_hsd(head.e-head.s)*_mbs(Storage.e;0.0001))*24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-hydraulic_gradient;0.00001)*_abs(-hydraulic_gradient)^0.54",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
