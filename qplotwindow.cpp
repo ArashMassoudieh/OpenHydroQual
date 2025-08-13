@@ -328,7 +328,7 @@ bool QPlotWindow::AddData(const TimeSeries<outputtimeseriesprecision>& timeserie
         points.append(QPointF(x, y));
     }
 
-    lineseries->append(points);
+    lineseries->append(points.toList());
 
     QPen pen = lineseries->pen();
     pen.setWidth(2);
