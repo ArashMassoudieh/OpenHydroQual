@@ -15,6 +15,7 @@
     "Storage": {
       "type": "balance",
       "massbalance": "true",
+      "inflow": "inflow",
       "flow": "flow",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
@@ -23,6 +24,13 @@
       "unit": "m~^3;ft~^3",
       "estimate": "true",
       "helptext": "Initial volume of water stored in the tank at the beginning of the simulation."
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time Variable Inflow",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
     "area": {
       "type": "value",
@@ -110,7 +118,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow rate (m~^3/day)",
-      "expression": "(_hsd(head.s-head.e)*_mbs(Storage.s;0.0001)+_hsd(head.e-head.s)*_mbs(Storage.e;0.0001))*24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-hydraulic_gradient;0.00001)*_abs(-hydraulic_gradient)^0.54",
+      "expression": "24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-hydraulic_gradient;0.00001)*_abs(-hydraulic_gradient)^0.54",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
