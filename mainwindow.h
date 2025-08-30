@@ -163,6 +163,8 @@ private slots:
     void onsave();
     void onnormalmode();
     void onsaveas();
+    void onsaveasJson();
+    void onloadJson();
     void onexporttosvg();
     void onopen();
     void onnewproject();

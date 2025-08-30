@@ -119,6 +119,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
     connect(ui->actionSave_as,SIGNAL(triggered()),this,SLOT(onsaveas()));
+    connect(ui->actionSave_State_to_Json,SIGNAL(triggered()),this,SLOT(onsaveasJson()));
+    connect(ui->actionLoad_Json,SIGNAL(triggered()),this,SLOT(onloadJson()));
     connect(ui->actionExport_to_SVG,SIGNAL(triggered()),this,SLOT(onexporttosvg()));
     connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(onabout()));
     connect(ui->actionUndo,SIGNAL(triggered()),this,SLOT(on_Undo()));
@@ -1698,6 +1700,78 @@ void MainWindow::onsaveas()
 
 }
 
+void MainWindow::onsaveasJson()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Save As"), workingfolder,
+                                                    tr("Json files (*.json)"),nullptr,QFileDialog::DontUseNativeDialog);
+    qDebug() << workingfolder;
+    if (fileName!="")
+    {
+        //qDebug() << fileName.split('.');
+
+        if (!fileName.contains("."))
+            fileName = fileName + ".json";
+        else if (fileName.split('.')[fileName.split('.').size()-1]!="json" )
+        {
+            fileName = fileName + ".json";
+        }
+        system.SavetoJson(fileName.toStdString(), addedtemplatefilenames);
+
+    }
+}
+void MainWindow::onloadJson()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open"), workingfolder,
+                                                    tr("Json files (*.json);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
+
+
+    if (fileName!="")
+    {
+        system.clear();
+        system.SetWorkingFolder(QFileInfo(fileName).canonicalPath().toStdString()+"/");
+        //qDebug() <<"Working Folder: " << QString::fromStdString(system.GetWorkingFolder());
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QMessageBox::critical(nullptr,
+                                  "Error opening file",
+                                  "Could not open JSON file:\n" + fileName);
+            return;
+        }
+
+        QByteArray jsonData = file.readAll();
+        file.close();
+
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
+
+        if (parseError.error != QJsonParseError::NoError) {
+            QMessageBox::critical(nullptr,
+                                  "JSON Parse Error",
+                                  "Failed to parse JSON file:\n" + fileName +
+                                      "\nError: " + parseError.errorString());
+            return; // return empty
+        }
+        system.LoadfromJson(doc);
+        workingfolder = QFileInfo(fileName).canonicalPath();
+        SetFileName(fileName);
+
+    }
+    addedtemplatefilenames = system.addedtemplates;
+    PopulatePropertyTable(nullptr);
+    dView->DeleteAllItems();
+    RecreateGraphicItemsFromSystem();
+    RefreshTreeView();
+    BuildObjectsToolBar();
+    ReCreateObjectsMenu();
+    LogAllSystemErrors();
+    undoData = UndoData(this);
+    undoData.AppendtoLast(&system);
+    if (undoData.active==0) InactivateUndo();
+    if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
+}
+
 void MainWindow::onexporttosvg()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
@@ -1969,7 +2043,12 @@ void MainWindow::onrunmodel()
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();
-    copiedsystem.SavetoJson(workingfolder.toStdString() + "/model.json", addedtemplatefilenames,true, true);
+    rtw->AppendText("Saving model json file in '" + workingfolder + "/state.json'" );
+    qDebug()<<"Start time was set to "<<copiedsystem.GetTime();
+    copiedsystem.SetVal("tstart",copiedsystem.GetTime());
+    copiedsystem.SetProp("tstart",copiedsystem.GetTime());
+    copiedsystem.SetSystemSettingsObjectProperties("simulation_start_time",QString::number(copiedsystem.GetTime()).toStdString());
+    copiedsystem.SavetoJson(workingfolder.toStdString() + "/state.json", addedtemplatefilenames,true, true);
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
     CVector FitMeasures(3*copiedsystem.ObservationsCount());

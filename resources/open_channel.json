@@ -170,7 +170,97 @@
       "default": "0"
     }
   },
-  "Trapezoidal_Channel_link": {
+  "Leaky Dam": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Leaky Dam",
+    "icon": {
+      "filename": "LeakyDam.png"
+    },
+    "Width": {
+      "type": "value",
+      "description": "Width",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true"
+    },
+    "Hydraulic_Conductivity": {
+      "type": "value",
+      "description": "Hydraulic Conductivity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day",
+      "estimate": "true"
+    },
+    "Length": {
+      "type": "value",
+      "description": "Dam Length in the flow direction",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "default": "1"
+    },
+    "Weir_coefficient": {
+      "type": "value",
+      "description": "Weir Coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.85"
+      },
+      "Dam_Height": 
+      {
+      	"type": "value",
+      	"description": "Dam Height",
+      	"ask_user": "true",
+      	"delegate": "UnitBox",
+      	"unit": "m",
+      	"estimate": "true"
+      },
+      "Hydraulic_Gradient": 
+      {
+      	"type": "expression",
+      	"description": "Hydraulic Gradient",
+      	"expression": "(head.s-head.e)/Length",
+      	"includeinoutput": "true",
+      	"ask_user": "false"
+      },
+      "under_flow":
+      {
+      	"type": "expression",
+      	"description": "Under flow",
+      	"expression": "Weir_coefficient*Width*Hydraulic_Conductivity*Hydraulic_Gradient",
+      	"includeinoutput": "true",
+      	"ask_user": "false"
+      },
+      "over_flow": 
+      {
+      	"type": "expression",
+      	"description": "Over flow",
+      	"expression": "86400*_sqt(9.81*(head.s-bottom_elevation.s-Dam_Height)^3)*Width*Weir_coefficient",
+      	"includeinoutput": "true",
+      	"ask_user": "false"
+      },
+      "over_flow_depth": 
+      {
+      	"type": "expression",
+      	"description": "Over flow Depth",
+      	"expression": "head.s-bottom_elevation.s-Dam_Height",
+      	"includeinoutput": "true",
+      	"ask_user": "false"
+      },
+      "flow": 
+      {
+      	"type": "expression",
+      	"description": "Flow",
+      	"expression": "under_flow + over_flow",
+      	"includeinoutput": "true",
+      	"ask_user": "false"
+      }
+    },
+    "Trapezoidal_Channel_link": {
     "type": "link",
     "typecategory": "Connectors",
     "description": "Link from a channel segment to another",
