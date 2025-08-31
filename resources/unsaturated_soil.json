@@ -537,7 +537,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "(head.s-head.e)*K_eff/length*area*_mbs(depth.s;1e-4)",
+      "expression": "(head.s-head.e)*K_eff/length*area*_mon(depth.s;0.0001)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
