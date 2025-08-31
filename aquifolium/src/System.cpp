@@ -4462,6 +4462,39 @@ bool System::LoadfromJson(const QJsonObject &root)
         }
     }
 
+    QJsonObject RxnParametersJson = root["Reaction Parameters"].toObject();
+    for (const QString& rxnparametername: RxnParametersJson.keys())
+    {
+        QJsonObject RxnParameterJson = RxnParametersJson[rxnparametername].toObject();
+        RxnParameter current_rxnparameter;
+        current_rxnparameter.SetName(RxnParameterJson["name"].toString().toStdString());
+        current_rxnparameter.SetType(RxnParameterJson["type"].toString().toStdString());
+        AddReactionParameter(current_rxnparameter);
+        for (const QString &property: RxnParameterJson.keys())
+        {
+            if (!reactionparameter(rxnparametername.toStdString())->SetProperty(property.toStdString(),RxnParameterJson[property].toString().toStdString()))
+                errorhandler.Append("System", "Reaction Parameter","ReadFromJson","Reaction parameter '" + rxnparametername.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+
+        }
+    }
+
+    QJsonObject RxnsJson = root["Reactions"].toObject();
+    for (const QString& rxnname: RxnsJson.keys())
+    {
+        QJsonObject RxnJson = RxnsJson[rxnname].toObject();
+        Reaction current_rxn;
+
+        current_rxn.SetName(RxnJson["name"].toString().toStdString());
+        current_rxn.SetType(RxnJson["type"].toString().toStdString());
+        AddReaction(current_rxn);
+        for (const QString &property: RxnJson.keys())
+        {
+            if (!reaction(rxnname.toStdString())->SetProperty(property.toStdString(),RxnJson[property].toString().toStdString()))
+                errorhandler.Append("System", "Reaction ","ReadFromJson","Reaction  '" + rxnname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+
+        }
+    }
+
     QJsonObject SourcesJson = root["Sources"].toObject();
     for (const QString& sourcename: SourcesJson.keys())
     {
@@ -4549,38 +4582,7 @@ bool System::LoadfromJson(const QJsonObject &root)
         }
     }
 
-    QJsonObject RxnParametersJson = root["Reaction Parameters"].toObject();
-    for (const QString& rxnparametername: RxnParametersJson.keys())
-    {
-        QJsonObject RxnParameterJson = RxnParametersJson[rxnparametername].toObject();
-        RxnParameter current_rxnparameter;
-        current_rxnparameter.SetName(RxnParameterJson["name"].toString().toStdString());
-        current_rxnparameter.SetType(RxnParameterJson["type"].toString().toStdString());
-        AddReactionParameter(current_rxnparameter);
-        for (const QString &property: RxnParameterJson.keys())
-        {
-            if (!reactionparameter(rxnparametername.toStdString())->SetProperty(property.toStdString(),RxnParameterJson[property].toString().toStdString()))
-                errorhandler.Append("System", "Reaction Parameter","ReadFromJson","Reaction parameter '" + rxnparametername.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
 
-        }
-    }
-
-    QJsonObject RxnsJson = root["Reactions"].toObject();
-    for (const QString& rxnname: RxnsJson.keys())
-    {
-        QJsonObject RxnJson = RxnsJson[rxnname].toObject();
-        Reaction current_rxn;
-
-        current_rxn.SetName(RxnJson["name"].toString().toStdString());
-        current_rxn.SetType(RxnJson["type"].toString().toStdString());
-        AddReaction(current_rxn);
-                for (const QString &property: RxnJson.keys())
-        {
-            if (!reaction(rxnname.toStdString())->SetProperty(property.toStdString(),RxnJson[property].toString().toStdString()))
-                errorhandler.Append("System", "Reaction ","ReadFromJson","Reaction  '" + rxnname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
-
-        }
-    }
 
     QJsonArray SetAsParameterJsonArray = root["Set As Parameters"].toArray();
     for (const QJsonValue& SetAsParam : SetAsParameterJsonArray)
