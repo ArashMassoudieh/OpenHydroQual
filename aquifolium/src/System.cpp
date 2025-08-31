@@ -178,6 +178,7 @@ bool System::AddBlock(Block &blk, bool SetQuantities)
     block(blk.GetName())->SetParent(this);
 
     AddAllConstituentRelateProperties(block(blk.GetName()));
+
 	return true;
 }
 
@@ -1643,35 +1644,79 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 #else
 
                 if (!SolverSettings.direct_jacobian)
-                {   if (!Invert(J,SolverTempVars.Inverse_Jacobian[statevarno]))
+                {   if (!Invert(J, SolverTempVars.Inverse_Jacobian[statevarno]))
                     {
-
                         if (GetSolutionLogger())
                         {
-                            GetSolutionLogger()->WriteString("Jacobian Matrix is not full-ranked!");
-                            //if (transport) GetSolutionLogger()->WriteString("In transport!");
-                            GetSolutionLogger()->WriteString("Diagonal vector!");
-                            GetSolutionLogger()->WriteVector(J.diagvector());
-                            if (J.diagvector().lookup(0).size()>0)
+                            auto logger = GetSolutionLogger();
+
+                            logger->WriteString("==============================================");
+                            logger->WriteString("Jacobian inversion failed");
+                            logger->WriteString("Time: " + aquiutils::numbertostring(SolverTempVars.t));
+                            if (transport) logger->WriteString("Context: Transport");
+                            logger->WriteString("----------------------------------------------");
+
+                            // Log diagonal vector
+                            logger->WriteString("Jacobian diagonal vector:");
+                            logger->WriteVector(J.diagvector());
+
+                            // Report zero diagonal entries
+                            auto zeros = J.diagvector().lookup(0);
+                            if (!zeros.empty())
                             {
-                                GetSolutionLogger()->WriteString("Blocks corresponding to the zero diagonal element:");
-                                for (unsigned int j=0; j<J.diagvector().lookup(0).size(); j++)
+                                logger->WriteString("Blocks/Constituents with ZERO diagonal:");
+                                for (unsigned int j = 0; j < zeros.size(); j++)
                                 {
                                     if (transport)
-                                        GetSolutionLogger()->WriteString(GetBlockConstituentSring(J.diagvector().lookup(0)[j]));
+                                        logger->WriteString("  - " + GetBlockConstituentSring(zeros[j]));
                                     else
-                                        GetSolutionLogger()->WriteString(blocks[J.diagvector().lookup(0)[j]].GetName());
-                                    
+                                        logger->WriteString("  - " + blocks[zeros[j]].GetName());
                                 }
                             }
 
-                            GetSolutionLogger()->Flush();
+                            // Report negative diagonal entries
+                            std::vector<unsigned int> negatives;
+                            for (unsigned int i = 0; i < J.diagvector().size(); i++)
+                            {
+                                if (J.diagvector()[i] < 0)
+                                    negatives.push_back(i);
+                            }
+
+                            if (!negatives.empty())
+                            {
+                                logger->WriteString("Blocks/Constituents with NEGATIVE diagonal:");
+                                for (unsigned int j = 0; j < negatives.size(); j++)
+                                {
+                                    if (transport)
+                                        logger->WriteString("  - " + GetBlockConstituentSring(negatives[j]) +
+                                                            " (diag = " + aquiutils::numbertostring(J.diagvector()[negatives[j]]) + ")");
+                                    else
+                                        logger->WriteString("  - " + blocks[negatives[j]].GetName() +
+                                                            " (diag = " + aquiutils::numbertostring(J.diagvector()[negatives[j]]) + ")");
+                                }
+                            }
+
+                            // Report block/constituent with maximum absolute diagonal value using maxabs()
+                            if (J.diagvector().size() > 0)
+                            {
+                                unsigned int max_idx = J.diagvector().abs_max_elems();
+                                logger->WriteString("Block/Constituent with MAX ABSOLUTE diagonal:");
+                                if (transport)
+                                    logger->WriteString("  - " + GetBlockConstituentSring(max_idx) +
+                                                        " (diag = " + aquiutils::numbertostring(J.diagvector()[max_idx]) + ")");
+                                else
+                                    logger->WriteString("  - " + blocks[max_idx].GetName() +
+                                                        " (diag = " + aquiutils::numbertostring(J.diagvector()[max_idx]) + ")");
+                            }
+
+                            logger->WriteString("==============================================");
+                            logger->Flush();
                         }
 
-                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": The Jacobian Matrix is not full-ranked");
+                        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) +
+                                                             ": The Jacobian Matrix is not full-ranked");
                         if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
                         return false;
-
                     }
                 }
                 else
@@ -1777,6 +1822,58 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 if (min(err2, err) > err_p)
                 {
                     error_increase_counter++;
+                    if (GetSolutionLogger())
+                    {
+                        auto logger = GetSolutionLogger();
+
+                        logger->WriteString("==============================================");
+                        logger->WriteString("Optimize Lambda: " + aquiutils::numbertostring(SolverSettings.optimize_lambda));
+                        logger->WriteString("Error increased at time: " + aquiutils::numbertostring(SolverTempVars.t));
+                        logger->WriteString("Previous error: " + aquiutils::numbertostring(err_p) +
+                                            ", Current error: " + aquiutils::numbertostring(err));
+                        logger->WriteString("----------------------------------------------");
+
+                        if (transport)
+                        {
+                            logger->WriteString("Block/Constituent with initial MAX error:");
+                            logger->WriteString("  - " + GetBlockConstituentSring(ini_max_error_block));
+                        }
+                        else
+                        {
+                            logger->WriteString("Block with initial MAX error:");
+                            logger->WriteString("  - " + blocks[ini_max_error_block].GetName());
+                        }
+
+                        // Outflow limit vector diagnostics
+                        CVector outflow_vec = GetOutflowLimitFactorVector(Expression::timing::present);
+                        logger->WriteString("Outflow limit factor vector: " + outflow_vec.toString());
+
+                        std::vector<unsigned int> invalid_idx;
+                        for (unsigned int i = 0; i < outflow_vec.size(); i++)
+                        {
+                            if (outflow_vec[i] < 0.0 || outflow_vec[i] > 1.0)
+                                invalid_idx.push_back(i);
+                        }
+
+                        if (!invalid_idx.empty())
+                        {
+                            logger->WriteString("Invalid outflow limit factors (outside [0,1]):");
+                            for (unsigned int idx : invalid_idx)
+                            {
+                                std::string name;
+                                if (transport)
+                                    name = GetBlockConstituentSring(idx);
+                                else
+                                    name = blocks[idx].GetName();
+
+                                logger->WriteString("  - " + name +
+                                                    " (value = " + aquiutils::numbertostring(outflow_vec[idx]) + ")");
+                            }
+                        }
+
+                        logger->WriteString("==============================================");
+                        logger->Flush();
+                    }
                 }
             }
             #ifdef Debug_mode
@@ -1789,7 +1886,61 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 X = X_past;
 			}
             if (err>err_p && !SolverSettings.optimize_lambda)
-                error_increase_counter++;
+            {   error_increase_counter++;
+
+                if (GetSolutionLogger())
+                {
+                    auto logger = GetSolutionLogger();
+
+                    logger->WriteString("==============================================");
+                    logger->WriteString("Optimize Lambda: " + aquiutils::numbertostring(SolverSettings.optimize_lambda));
+                    logger->WriteString("Error increased at time: " + aquiutils::numbertostring(SolverTempVars.t));
+                    logger->WriteString("Previous error: " + aquiutils::numbertostring(err_p) +
+                                        ", Current error: " + aquiutils::numbertostring(err));
+                    logger->WriteString("----------------------------------------------");
+
+                    if (transport)
+                    {
+                        logger->WriteString("Block/Constituent with initial MAX error:");
+                        logger->WriteString("  - " + GetBlockConstituentSring(ini_max_error_block));
+                    }
+                    else
+                    {
+                        logger->WriteString("Block with initial MAX error:");
+                        logger->WriteString("  - " + blocks[ini_max_error_block].GetName());
+                    }
+
+                    // Outflow limit vector diagnostics
+                    CVector outflow_vec = GetOutflowLimitFactorVector(Expression::timing::present);
+                    logger->WriteString("Outflow limit factor vector: " + outflow_vec.toString());
+
+                    std::vector<unsigned int> invalid_idx;
+                    for (unsigned int i = 0; i < outflow_vec.size(); i++)
+                    {
+                        if (outflow_vec[i] < 0.0 || outflow_vec[i] > 1.0)
+                            invalid_idx.push_back(i);
+                    }
+
+                    if (!invalid_idx.empty())
+                    {
+                        logger->WriteString("Invalid outflow limit factors (outside [0,1]):");
+                        for (unsigned int idx : invalid_idx)
+                        {
+                            std::string name;
+                            if (transport)
+                                name = GetBlockConstituentSring(idx);
+                            else
+                                name = blocks[idx].GetName();
+
+                            logger->WriteString("  - " + name +
+                                                " (value = " + aquiutils::numbertostring(outflow_vec[idx]) + ")");
+                        }
+                    }
+
+                    logger->WriteString("==============================================");
+                    logger->Flush();
+                }
+            }
             else if (err<err_p/2.0 && !SolverSettings.optimize_lambda)
             {
                 if (SolverTempVars.NR_coefficient[statevarno] < 0.99)
@@ -1798,35 +1949,104 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
              }
             if (error_increase_counter > 10)
             {
-                SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": Error kept increasing, state_variable:" + aquiutils::numbertostring(statevarno));
+                SolverTempVars.fail_reason.push_back(
+                    "at " + aquiutils::numbertostring(SolverTempVars.t) +
+                    ": Error kept increasing, state_variable: " +
+                    aquiutils::numbertostring(statevarno));
+
                 if (GetSolutionLogger())
-                    GetSolutionLogger()->WriteString("Outflow limit vector " + CVector(GetOutflowLimitFactorVector(Expression::timing::present)).toString());
+                {
+                    auto logger = GetSolutionLogger();
+
+                    logger->WriteString("==============================================");
+                    logger->WriteString("Solver failure: Error kept increasing");
+                    logger->WriteString("Time: " + aquiutils::numbertostring(SolverTempVars.t));
+                    logger->WriteString("State variable: " + aquiutils::numbertostring(statevarno));
+                    logger->WriteString("----------------------------------------------");
+
+                    // Outflow limit vector
+                    logger->WriteString("Outflow limit vector: " +
+                                        CVector(GetOutflowLimitFactorVector(Expression::timing::present)).toString());
+
+                    // Max error block/constituent
+                    logger->WriteString("Maximum error location:");
+                    if (transport)
+                        logger->WriteString("  - " + GetBlockConstituentSring(F.abs_max_elems()));
+                    else
+                        logger->WriteString("  - " + blocks[F.abs_max_elems()].GetName());
+
+                    // dt information
+                    logger->WriteString("Time step (dt): " + aquiutils::numbertostring(dt()));
+
+                    logger->WriteString("==============================================");
+                    logger->Flush();
+                }
+
                 if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
                 return false;
             }
 
             if (SolverTempVars.numiterations[statevarno] > SolverSettings.NR_niteration_max)
             {
-                SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) + ": number of iterations exceeded the maximum threshold, state_variable:" + aquiutils::numbertostring(statevarno));
+                SolverTempVars.fail_reason.push_back(
+                    "at " + aquiutils::numbertostring(SolverTempVars.t) +
+                    ": Number of iterations exceeded the maximum threshold, state_variable: " +
+                    aquiutils::numbertostring(statevarno));
+
                 if (GetSolutionLogger())
-                {   if (!transport)
-                    {   GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at block '" + blocks[F.abs_max_elems()].GetName()+"', dt = "  + aquiutils::numbertostring(dt()));
-                        GetSolutionLogger()->WriteString("The block with the initial max error: '" + blocks[ini_max_error_block].GetName() + "'");
-                    }
-                else
                 {
-                    string BlockConst = GetBlockConstituent(F.abs_max_elems());
-                    GetSolutionLogger()->WriteString("Number of iterations exceeded the maximum threshold, max error at state variable '" + GetBlockConstituent(F.abs_max_elems()) + "', dt = " + aquiutils::numbertostring(dt()));
+                    auto logger = GetSolutionLogger();
+
+                    logger->WriteString("==============================================");
+                    logger->WriteString("Solver failure: Iteration limit exceeded");
+                    logger->WriteString("Time: " + aquiutils::numbertostring(SolverTempVars.t));
+                    logger->WriteString("State variable: " + aquiutils::numbertostring(statevarno));
+                    logger->WriteString("Iteration count: " +
+                                        aquiutils::numbertostring(SolverTempVars.numiterations[statevarno]));
+                    logger->WriteString("----------------------------------------------");
+
+                    // Max error location
+                    logger->WriteString("Maximum error location:");
+                    if (transport)
+                        logger->WriteString("  - " + GetBlockConstituentSring(F.abs_max_elems()));
+                    else
+                        logger->WriteString("  - " + blocks[F.abs_max_elems()].GetName());
+
+                    // Initial max error block (non-transport only)
+                    if (!transport)
+                    {
+                        logger->WriteString("Block with initial MAX error:");
+                        logger->WriteString("  - " + blocks[ini_max_error_block].GetName());
+                    }
+
+                    // dt information
+                    logger->WriteString("Time step (dt): " + aquiutils::numbertostring(dt()));
+
+                    // Error criteria
+                    logger->WriteString("Error criteria number: " +
+                                        aquiutils::numbertostring(err / (err_ini + 1e-10 * X_norm)));
+                    logger->WriteString("X_norm: " + aquiutils::numbertostring(X_norm));
+
+                    // Outflow factors
+                    logger->WriteString("Block outflow factors: " +
+                                        GetBlocksOutflowFactors(Expression::timing::present).toString());
+                    logger->WriteString("Link outflow factors: " +
+                                        GetLinkssOutflowFactors(Expression::timing::present).toString());
+
+                    // Error vector + norms
+                    logger->WriteString("Error vector (F):");
+                    logger->WriteVector(F);
+                    logger->WriteString("Error norm = " + aquiutils::numbertostring(err) +
+                                        ", Initial error norm = " + aquiutils::numbertostring(err_ini));
+
+                    // Inverse Jacobian
+                    logger->WriteString("Inverse Jacobian:");
+                    logger->WriteMatrix(SolverTempVars.Inverse_Jacobian[statevarno]);
+
+                    logger->WriteString("==============================================");
+                    logger->Flush();
                 }
-                    GetSolutionLogger()->WriteString("Error criteria number: " + aquiutils::numbertostring(err/(err_ini+1e-10*X_norm)));
-                    GetSolutionLogger()->WriteString("X_norm: " + aquiutils::numbertostring(X_norm));
-                    GetSolutionLogger()->WriteString("Block outflow factors: " + GetBlocksOutflowFactors(Expression::timing::present).toString());
-                    GetSolutionLogger()->WriteString("Link outflow factors: " + GetLinkssOutflowFactors(Expression::timing::present).toString());
-                    GetSolutionLogger()->WriteVector(F);
-                    GetSolutionLogger()->WriteString("Error norm = " + aquiutils::numbertostring(err) + ",Initial Error norm = " + aquiutils::numbertostring(err_ini));
-                    GetSolutionLogger()->WriteMatrix(SolverTempVars.Inverse_Jacobian[statevarno]);
-                    GetSolutionLogger()->Flush();
-                }
+
                 if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
                 return false;
             }
@@ -4442,8 +4662,9 @@ bool System::LoadfromJson(const QJsonObject &root)
         AddConstituent(current_constituent);
         for (const QString &property: ConstituentJson.keys())
         {
-            if (!constituent(constituentname.toStdString())->SetProperty(property.toStdString(),ConstituentJson[property].toString().toStdString()))
-                errorhandler.Append("System", "Constituent","ReadFromJson","Constituent '" + constituentname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+            if (property != "type")
+                if (!constituent(constituentname.toStdString())->SetProperty(property.toStdString(),ConstituentJson[property].toString().toStdString()))
+                    errorhandler.Append("System", "Constituent","ReadFromJson","Constituent '" + constituentname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
 
         }
     }
@@ -4457,8 +4678,9 @@ bool System::LoadfromJson(const QJsonObject &root)
 
         for (const QString &property: ParameterJson.keys())
         {
-            if (!parameter(parametername.toStdString())->SetProperty(property.toStdString(),ParameterJson[property].toString().toStdString(),false))
-                errorhandler.Append("System", "Parameter","ReadFromJson","Parameter '" + parametername.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10011 );
+            if (property != "type")
+                if (!parameter(parametername.toStdString())->SetProperty(property.toStdString(),ParameterJson[property].toString().toStdString(),false))
+                    errorhandler.Append("System", "Parameter","ReadFromJson","Parameter '" + parametername.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10011 );
         }
     }
 
@@ -4504,15 +4726,49 @@ bool System::LoadfromJson(const QJsonObject &root)
         current_source.SetType(SourceJson["type"].toString().toStdString());
         AddSource(current_source);
 
-        for (const QString &property: SourcesJson.keys())
+        for (const QString &property: SourceJson.keys())
         {
-            if (!source(sourcename.toStdString())->SetProperty(property.toStdString(),SourceJson[property].toString().toStdString(),true, false))
-                    errorhandler.Append("System", "Source","ReadFromJson","Source '" + sourcename.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10012 );
+            if (property != "type")
+                if (!source(sourcename.toStdString())->SetProperty(property.toStdString(),SourceJson[property].toString().toStdString(),true, false))
+                        errorhandler.Append("System", "Source","ReadFromJson","Source '" + sourcename.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10012 );
 
         }
     }
 
+    QJsonObject RxnParametersJson = root["Reaction Parameters"].toObject();
+    for (const QString& rxnparametername: RxnParametersJson.keys())
+    {
+        QJsonObject RxnParameterJson = RxnParametersJson[rxnparametername].toObject();
+        RxnParameter current_rxnparameter;
+        current_rxnparameter.SetName(RxnParameterJson["name"].toString().toStdString());
+        current_rxnparameter.SetType(RxnParameterJson["type"].toString().toStdString());
+        AddReactionParameter(current_rxnparameter);
+        for (const QString &property: RxnParameterJson.keys())
+        {
+            if (property != "type")
+                if (!reactionparameter(rxnparametername.toStdString())->SetProperty(property.toStdString(),RxnParameterJson[property].toString().toStdString()))
+                    errorhandler.Append("System", "Reaction Parameter","ReadFromJson","Reaction parameter '" + rxnparametername.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
 
+        }
+    }
+
+    QJsonObject RxnsJson = root["Reactions"].toObject();
+    for (const QString& rxnname: RxnsJson.keys())
+    {
+        QJsonObject RxnJson = RxnsJson[rxnname].toObject();
+        Reaction current_rxn;
+
+        current_rxn.SetName(RxnJson["name"].toString().toStdString());
+        current_rxn.SetType(RxnJson["type"].toString().toStdString());
+        AddReaction(current_rxn);
+        for (const QString &property: RxnJson.keys())
+        {
+            if (property != "type")
+                if (!reaction(rxnname.toStdString())->SetProperty(property.toStdString(),RxnJson[property].toString().toStdString()))
+                    errorhandler.Append("System", "Reaction ","ReadFromJson","Reaction  '" + rxnname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+
+        }
+    }
 
     QJsonObject BlocksJson = root["Blocks"].toObject();
     for (const QString& blockname: BlocksJson.keys())
@@ -4528,7 +4784,11 @@ bool System::LoadfromJson(const QJsonObject &root)
             if (property!="type" && property!="to" && property!="from")
             {
                 if (!block(blockname.toStdString())->SetProperty(property.toStdString(),BlockJson[property].toString().toStdString(),true, false))
+                {
+                    qDebug()<<blockname<<":"<<property<<":"<<BlockJson[property].toString().toStdString();
                     errorhandler.Append("System", "Block","ReadFromJson","Block '" + blockname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10012 );
+
+                }
             }
         }
     }
@@ -4560,8 +4820,9 @@ bool System::LoadfromJson(const QJsonObject &root)
         AppendObjectiveFunction( objectivefunctionname.toStdString(),ObjectiveJson["object"].toString().toStdString(),Expression(ObjectiveJson["expression"].toString().toStdString()), ObjectiveJson["weight"].toString().toDouble());
         for (const QString &property: ObjectiveJson.keys())
         {
-            if (!objectivefunction(objectivefunctionname.toStdString())->SetProperty(property.toStdString(),ObjectiveJson[property].toString().toStdString()))
-                errorhandler.Append("System", "Objective function","ReadFromJson","Objective Function '" + objectivefunctionname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10014 );
+            if (property != "type")
+                if (!objectivefunction(objectivefunctionname.toStdString())->SetProperty(property.toStdString(),ObjectiveJson[property].toString().toStdString()))
+                    errorhandler.Append("System", "Objective function","ReadFromJson","Objective Function '" + objectivefunctionname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10014 );
 
         }
     }
@@ -4576,8 +4837,9 @@ bool System::LoadfromJson(const QJsonObject &root)
         AddObservation(current_observation);
         for (const QString &property: ObservationJson.keys())
         {
-            if (!observation(observationname.toStdString())->SetProperty(property.toStdString(),ObservationJson[property].toString().toStdString()))
-                errorhandler.Append("System", "Observation","ReadFromJson","Observation '" + observationname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+            if (property != "type")
+                if (!observation(observationname.toStdString())->SetProperty(property.toStdString(),ObservationJson[property].toString().toStdString()))
+                    errorhandler.Append("System", "Observation","ReadFromJson","Observation '" + observationname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
 
         }
     }
