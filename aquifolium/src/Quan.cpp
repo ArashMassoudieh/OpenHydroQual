@@ -1043,7 +1043,7 @@ bool Quan::SetProperty(const string& val, bool force_value, bool check_criteria)
         if (val.empty())
         {
             SetTimeSeries("");
-            return false;
+            return true;
         }
         if (!parent->Parent())
             return SetTimeSeries(val);

@@ -1754,8 +1754,7 @@ void MainWindow::onloadJson()
             return; // return empty
         }
         system.LoadfromJson(doc);
-        workingfolder = QFileInfo(fileName).canonicalPath();
-        SetFileName(fileName);
+
 
     }
     addedtemplatefilenames = system.addedtemplates;
