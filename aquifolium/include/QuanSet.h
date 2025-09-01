@@ -33,7 +33,7 @@ class Object;
 
 enum class blocklink {block, link, source, reaction, entity};
 
-class QuanSet
+class QuanSet: public unordered_map<string, Quan> 
 {
     public:
         QuanSet();
@@ -43,18 +43,15 @@ class QuanSet
         QuanSet& operator=(const QuanSet& other);
         bool Append(const string &s, const Quan &q);
         void Append(QuanSet &qset);
-        size_t Count(const string &s) const {return quans.count(s);}
+        size_t Count(const string &s) const {return count(s);}
         Quan& operator[] (const string &s);
         Quan& GetVar(const string &s);
         Quan* GetVar(int i);
         Quan* GetVarAskable(int i);
         void UnUpdateAllValues();
-        std::unordered_map<string,Quan>::iterator find(const string &name) {return quans.find(name);}
-        std::unordered_map<string,Quan>::iterator end() {return quans.end();}
-        std::unordered_map<string,Quan>::iterator begin() {return quans.begin();}
-        std::unordered_map<string,Quan>::const_iterator const_end() const {return quans.cend();}
-        std::unordered_map<string,Quan>::const_iterator const_begin() const {return quans.cbegin();}
-        unsigned long size() {return quans.size();}
+        std::unordered_map<string,Quan>::const_iterator const_end() const {return cend();}
+        std::unordered_map<string,Quan>::const_iterator const_begin() const {return cbegin();}
+        unsigned long size() {return size();}
         unsigned long AskableSize();
         string &Description() 
         {
@@ -83,14 +80,14 @@ class QuanSet
         bool DeleteConstituentRelatedProperties(const string &constituent_name);
         bool Find(const string &s)
         {
-            if (quans.find(s)!=quans.end())
+            if (find(s)!=end())
                 return true;
             else
                 return false;
         }
         void SetQuanPointers();
 
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
         QStringList QQuanNames();
 		QuanSet(QJsonObject& object_types);
 #endif
@@ -114,7 +111,6 @@ class QuanSet
     private:
         Object* parent = nullptr;
         string name = "";
-        unordered_map<string, Quan> quans;
         string last_error = "";
         string description = "";
         string iconfilename = "";

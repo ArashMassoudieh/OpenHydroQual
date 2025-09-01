@@ -14,11 +14,12 @@
  */
 
 
-#define openhydroqual_version "1.2.7"
-#define last_modified "August, 7, 2025"
+#define openhydroqual_version "1.2.8"
+#define last_modified "August, 31, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
+#undef SetProp
 #include <shlobj.h>
 #pragma comment(lib, "shell32.lib")
 #endif
@@ -1716,7 +1717,7 @@ void MainWindow::onsaveasJson()
         {
             fileName = fileName + ".json";
         }
-        system.SavetoJson(fileName.toStdString(), addedtemplatefilenames);
+        system.SavetoJson(fileName.toStdString(), addedtemplatefilenames, false);
 
     }
 }
@@ -1754,6 +1755,7 @@ void MainWindow::onloadJson()
             return; // return empty
         }
         system.LoadfromJson(doc);
+        SetFileName("");
 
 
     }
@@ -2047,7 +2049,7 @@ void MainWindow::onrunmodel()
     copiedsystem.SetVal("tstart",copiedsystem.GetTime());
     copiedsystem.SetProp("tstart",copiedsystem.GetTime());
     copiedsystem.SetSystemSettingsObjectProperties("simulation_start_time",QString::number(copiedsystem.GetTime()).toStdString());
-    copiedsystem.SavetoJson(workingfolder.toStdString() + "/state.json", addedtemplatefilenames,true, true);
+    copiedsystem.SavetoJson(workingfolder.toStdString() + "/state.json", addedtemplatefilenames,false, false);
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
     CVector FitMeasures(3*copiedsystem.ObservationsCount());
