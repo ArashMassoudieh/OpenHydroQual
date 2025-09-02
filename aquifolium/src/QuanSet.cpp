@@ -31,14 +31,14 @@
 #endif // Qt_version
 
 
-QuanSet::QuanSet()
+QuanSet::QuanSet() : unordered_map<string, Quan>()
 {
     parent = nullptr;
 }
 
-QuanSet::~QuanSet()
+QuanSet::~QuanSet() 
 {
-    quans.clear(); 
+    unordered_map<string, Quan>::clear();
     quantity_order.clear(); 
 }
 
@@ -109,7 +109,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             }
         }
     }
-    if (this->quans.count("name")==0)
+    if (this->count("name")==0)
     {
         Quan Q;
         Q.SetName("name");
@@ -121,7 +121,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
     }
     if (ObjectType == "Block")
     {
-        if (this->quans.count("x")==0)
+        if (this->count("x")==0)
         {
             Quan Q;
             Q.SetName("x");
@@ -132,7 +132,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             Q.Delegate() = "ValueBox";
             Append("x",Q);
         }
-        if (this->quans.count("y")==0)
+        if (this->count("y")==0)
         {
             Quan Q;
             Q.SetName("y");
@@ -143,7 +143,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             Q.Delegate() = "ValueBox";
             Append("y",Q);
         }
-        if (this->quans.count("_width")==0)
+        if (this->count("_width")==0)
         {
             Quan Q;
             Q.SetName("_width");
@@ -154,7 +154,7 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
             Q.Delegate() = "ValueBox";
             Append("_width",Q);
         }
-        if (this->quans.count("_height")==0)
+        if (this->count("_height")==0)
         {
             Quan Q;
             Q.SetName("_height");
@@ -170,10 +170,9 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
     //qDebug()<<QString::fromStdString(Name())<< " Done!";
 }
 
-QuanSet::QuanSet(const QuanSet& other)
+QuanSet::QuanSet(const QuanSet& other) : unordered_map<string, Quan>(other)
 {
-    quans = other.quans;
-    iconfilename = other.iconfilename;
+	iconfilename = other.iconfilename;
     description = other.description;
     BlockLink = other.BlockLink;
 	ObjectType = other.ObjectType;
@@ -190,7 +189,7 @@ QuanSet& QuanSet::operator=(const QuanSet& rhs)
 {
     if (this == &rhs) return *this; // handle self assignment
     name = rhs.name;
-    quans = rhs.quans;
+    unordered_map<string, Quan>::operator=(rhs);
     iconfilename = rhs.iconfilename;
     description = rhs.description;
     BlockLink = rhs.BlockLink;
@@ -212,8 +211,9 @@ bool QuanSet::Append(const string &s, const Quan &q)
     else
     {
         //qDebug()<<QString::fromStdString(q.ToString());
-        quans[s] = q;
-        quans[s].SetParent(this->parent);
+        unordered_map<string,Quan>::operator[](s) = q;
+        if (parent)
+            at(s).SetParent(this->parent);
         //qDebug()<<"Done!";
         quantity_order.push_back(s);
         //qDebug()<<"Done!";
@@ -242,7 +242,7 @@ Quan& QuanSet::operator[] (const string &s)
         last_error = "Variable " + s + " does not exist!";
     }
     else
-        return quans.at(s);
+        return at(s);
 }
 
 Quan& QuanSet::GetVar(const string &s)
@@ -252,12 +252,12 @@ Quan& QuanSet::GetVar(const string &s)
         AppendError(Name(),"QuanSet","GetVar","Variable " + s + " does not exist!",2001);
     }
     else
-        return quans.at(s);
+        return at(s);
 }
 
 Quan* QuanSet::GetVar(int i)
 {
-    if (int(quans.size())<=i)
+    if (int(size())<=i)
     {
         AppendError(Name(),"QuanSet","GetVar","Variable " + aquiutils::numbertostring(i) + " does not exist!",2001);
         return nullptr;
@@ -265,7 +265,7 @@ Quan* QuanSet::GetVar(int i)
     else
     {
         int j=0;
-        for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+        for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
         {
             if (j==i)
                 return &it->second;
@@ -277,14 +277,14 @@ Quan* QuanSet::GetVar(int i)
 
 void QuanSet::UnUpdateAllValues()
 {
-    for (unordered_map<string, Quan>::iterator it = quans.begin(); it != quans.end(); it++)
+    for (unordered_map<string, Quan>::iterator it = begin(); it != end(); it++)
         it->second.Set_Value_Update(false);
 }
 
 Quan* QuanSet::GetVarAskable(int i)
 {
     int j=0;
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
         if (j==i && it->second.AskFromUser() && !it->second.WhenCopied())
            return &it->second;
@@ -302,7 +302,7 @@ Quan* QuanSet::GetVarAskable(int i)
 unsigned long QuanSet::AskableSize()
 {
     unsigned int j=0;
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
         if (it->second.AskFromUser() && !it->second.WhenCopied() ) j++;
     }
@@ -326,9 +326,9 @@ string QuanSet::ToString(int _tabs)
     }
 
 
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
-        out += quans[it->first].ToString(_tabs+1) + "\n";
+        out += operator[](it->first).ToString(_tabs+1) + "\n";
     }
 
     out += aquiutils::tabs(_tabs) + "}\n";
@@ -345,8 +345,8 @@ void QuanSet::ShowMessage(const string &msg)
 
 void QuanSet::SetAllParents()
 {
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
-        quans[it->first].SetParent(parent);
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
+        at(it->first).SetParent(parent);
 }
 
 bool QuanSet::AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code)
@@ -364,15 +364,15 @@ SafeVector<TimeSeries<timeseriesprecision>*> QuanSet::GetTimeSeries(bool onlypre
 {
 
     SafeVector<TimeSeries<timeseriesprecision>*> out;
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
-        if (quans[it->first].GetType() == Quan::_type::timeseries && quans[it->first].GetTimeSeries()!=nullptr && !onlyprecip)
-            out.push_back(quans[it->first].GetTimeSeries());
+        if (at(it->first).GetType() == Quan::_type::timeseries && at(it->first).GetTimeSeries()!=nullptr && !onlyprecip)
+            out.push_back(at(it->first).GetTimeSeries());
     }
-    for (unordered_map<string, Quan>::iterator it = quans.begin(); it != quans.end(); it++)
+    for (unordered_map<string, Quan>::iterator it = begin(); it != end(); it++)
     {
-        if (quans[it->first].GetType() == Quan::_type::prec_timeseries && quans[it->first].GetTimeSeries() != nullptr)
-            out.push_back(quans[it->first].GetTimeSeries());
+        if (at(it->first).GetType() == Quan::_type::prec_timeseries && at(it->first).GetTimeSeries() != nullptr)
+            out.push_back(at(it->first).GetTimeSeries());
     }
     return out;
 }
@@ -380,7 +380,7 @@ SafeVector<TimeSeries<timeseriesprecision>*> QuanSet::GetTimeSeries(bool onlypre
 SafeVector<string> QuanSet::QuanNames()
 {
     SafeVector<string> out;
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
         out.push_back(it->first);
     return out;
 }
@@ -389,12 +389,12 @@ bool QuanSet::DeleteConstituentRelatedProperties(const string &constituent_name)
 {
     bool out = false;
 
-    unordered_map<string,Quan>::iterator it=quans.begin();
-    while (it != quans.end() ) {
+    unordered_map<string,Quan>::iterator it=begin();
+    while (it != end() ) {
         if (aquiutils::contains(it->first,":"))
         {
             if (aquiutils::split(it->first,':')[0] == constituent_name)
-            {   it = quans.erase(it);
+            {   it = erase(it);
                 out = true;
             }
             else
@@ -407,11 +407,11 @@ bool QuanSet::DeleteConstituentRelatedProperties(const string &constituent_name)
     return out;
 }
 
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
 QStringList QuanSet::QQuanNames()
 {
     QStringList out;
-    for (map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (map<string,Quan>::iterator it=begin(); it!=end(); it++)
         out<< QString::fromStdString(it->first);
     return out;
 }
@@ -475,7 +475,7 @@ string QuanSet::toCommand()
 {
     string s;
     int i=0;
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
         if (it->second.AskFromUser())
         {
@@ -491,14 +491,14 @@ string QuanSet::toCommandSetAsParam()
 {
     string s;
     int i=0;
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
         if (it->second.AskFromUser())
         {
             if (it->second.GetParameterAssignedTo()!="")
             {
                 if (i>0) s+= "\n";
-                s+="setasparameter; object= " + quans["name"].GetProperty() + ", parametername= "  + it->second.GetParameterAssignedTo() + ", quantity= " + it->second.GetName();
+                s+="setasparameter; object= " + at("name").GetProperty() + ", parametername= "  + it->second.GetParameterAssignedTo() + ", quantity= " + it->second.GetName();
                 i++;
             }
 
@@ -511,7 +511,7 @@ string QuanSet::toCommandSetAsParam()
 vector<string> QuanSet::quantitative_variable_list()
 {
     vector<string> s;
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
         if (it->second.GetType() == Quan::_type::value || it->second.GetType() == Quan::_type::balance || it->second.GetType() == Quan::_type::constant || it->second.GetType() == Quan::_type::timeseries || it->second.GetType() == Quan::_type::expression || it->second.GetType() == Quan::_type::source)
         {
@@ -525,13 +525,13 @@ vector<string> QuanSet::quantitative_variable_list()
 bool QuanSet::RenameProperty(const string &oldname, const string &newname)
 {
     RenameQuantity(oldname, newname);
-    unordered_map<string,Quan>::iterator i = quans.find(oldname);
+    unordered_map<string,Quan>::iterator i = find(oldname);
 
-    if (i != quans.end())
+    if (i != end())
     {
       Quan value = i->second;
       value.SetName(newname);
-      quans.erase(i);
+      erase(i);
       DeleteInQuantityOrder(oldname);
       value.RenameQuantity(oldname,newname);
       return Append(newname, value);
@@ -603,7 +603,7 @@ vector<string> QuanSet::ReviseQuanityOrder(const vector<string> &quantity, const
 bool QuanSet::RenameQuantity(const string &oldname, const string &newname)
 {
     bool out = false;
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
         out = out || it->second.RenameQuantity(oldname, newname);
     return true;
 }
@@ -612,7 +612,7 @@ void QuanSet::SetQuanPointers()
 {
     if (parent!=nullptr)
     {
-        for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+        for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
             it->second.SetQuanPointers(parent);
     }
 }
@@ -620,7 +620,7 @@ bool QuanSet::InitializePrecalcFunctions()
 {
     bool out = true;
 
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
         if (it->second.PreCalcFunction()->IndependentVariable()!="")
         {
             //qDebug()<<QString::fromStdString(it->first);
@@ -635,7 +635,7 @@ bool QuanSet::RenameConstituents(const string &oldname, const string &newname)
 {
     vector<string> oldfullname;
     vector<string> newfullname;
-    for (unordered_map<string, Quan>::iterator it = quans.begin(); it != quans.end(); it++)
+    for (unordered_map<string, Quan>::iterator it = begin(); it != end(); it++)
     {
         if (aquiutils::split(it->first,':').size()==2)
         {   if (aquiutils::split(it->first,':')[0]==oldname)
@@ -649,9 +649,9 @@ bool QuanSet::RenameConstituents(const string &oldname, const string &newname)
     for (unsigned int i=0; i<oldfullname.size(); i++)
     {
         succeed &= RenameProperty(oldfullname[i],newfullname[i]);
-        if (quans.count(newfullname[i])>0)
-        {   quans[newfullname[i]].Description() = newname + ":" + aquiutils::split(newfullname[i],':')[1];
-            quans[newfullname[i]].Description(true) = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+        if (count(newfullname[i])>0)
+        {   at(newfullname[i]).Description() = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+            at(newfullname[i]).Description(true) = newname + ":" + aquiutils::split(newfullname[i],':')[1];
         }
     }
 
@@ -700,9 +700,9 @@ QJsonObject QuanSet::toJson(bool allvariables, bool calculatevalue)
 
         if (it->second.AskFromUser() || allvariables)
         {    if (it->second.Delegate()=="UnitBox" || it->second.Delegate() == "ValueBox" )
-                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(true || calculatevalue));
+                out[QString::fromStdString(it->first)] = QString::fromStdString(at(it->first).GetProperty(true || calculatevalue));
             else
-                out[QString::fromStdString(it->first)] = QString::fromStdString(quans[it->first].GetProperty(false || calculatevalue));
+                out[QString::fromStdString(it->first)] = QString::fromStdString(at(it->first).GetProperty(false || calculatevalue));
         }
 
     }
@@ -714,14 +714,14 @@ QJsonObject QuanSet::toJson(bool allvariables, bool calculatevalue)
 QJsonArray QuanSet::toJsonSetAsParameter()
 {
     QJsonArray array;
-    for (unordered_map<string,Quan>::iterator it=quans.begin(); it!=quans.end(); it++)
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
     {
         if (it->second.AskFromUser())
         {
             if (it->second.GetParameterAssignedTo()!="")
             {
                 QJsonObject item;
-                item["Object"] = QString::fromStdString(quans["name"].GetProperty());
+                item["Object"] = QString::fromStdString(at("name").GetProperty());
                 item["Parameter"] = QString::fromStdString(it->second.GetParameterAssignedTo());
                 item["Quantity"] = QString::fromStdString(it->second.GetName());
                 array.append(item);
