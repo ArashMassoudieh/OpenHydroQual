@@ -557,6 +557,10 @@ bool TimeSeries<T>::readfile(const std::string& filename) {
     file.close();
     filename_ = filename;
 	detectStructure();
+    if (structured_ && dt_ == 0)
+    {
+		cout << "Warning: TimeSeries is structured but dt_ is zero. This may indicate an issue with the data." << std::endl;
+    }
     return !this->empty();
 }
 
@@ -631,16 +635,13 @@ T TimeSeries<T>::stddev(int start_item) const {
 template<typename T>
 T TimeSeries<T>::interpol(const T& x) const {
     
-    double dt = dt_; 
-    if (structured_ && this->size() > 1)
-        dt = (this->getTime(1) - this->getTime(0));
     if (this->empty()) return T{};
     if (x <= this->front().t) return this->front().c;
     if (x >= this->back().t) return this->back().c;
 
-    if (structured_ && this->size() > 1) {
+    if (structured_ && this->size() > 1 && dt_!=0) {
         T t0 = this->front().t;
-        int i = static_cast<int>((x - t0) / dt);
+        int i = static_cast<int>((x - t0) / dt_);
 
         if (i < 0) return this->front().c;
         if (i >= static_cast<int>(this->size()) - 1)
@@ -754,6 +755,7 @@ void TimeSeries<T>::detectStructure() {
     if (this->size() < 3) {
         structured_ = true;
         dt_ = (this->size() >= 2) ? ((*this)[1].t - (*this)[0].t) : T{};
+        if (dt_ == 0) structured_ = false; 
         return;
     }
 
@@ -761,7 +763,7 @@ void TimeSeries<T>::detectStructure() {
     structured_ = true;
     for (size_t i = 2; i < this->size(); ++i) {
         T dt_i = (*this)[i].t - (*this)[i - 1].t;
-        if (std::abs(dt_i - dt0) > 1e-10 * std::abs(dt0)) {
+        if (std::abs(dt_i - dt0) > 1e-10 * std::abs(dt0) || dt0 ==0) {
             structured_ = false;
             dt_ = 0;
             return;
@@ -797,6 +799,10 @@ void TimeSeries<T>::addPoint(T t, T c, std::optional<T> d) {
         max_fabs_ = abs_c;
 
     max_fabs_valid_ = true; // always true after append
+    if (structured_ && dt_ == 0)
+    {
+        cout << "dt_ cannot be zero for a structured time-series" << endl;
+    }
 }
 
 template<typename T>
