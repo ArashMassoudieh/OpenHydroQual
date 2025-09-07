@@ -586,4 +586,7 @@ CMatrix_arma operator*(double x, const CMatrix_arma& A) {
     return CMatrix_arma(static_cast<arma::mat>(A) * x);
 }
 
+CVector_arma operator*(const CMatrix_arma& A, const CVector_arma& x) {
+    return CVector_arma( static_cast<const arma::mat&>(A) * static_cast<const arma::vec&>(x) );
+}
 

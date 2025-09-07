@@ -49,6 +49,8 @@ public:
     CMatrix_arma(const mat&);
     CMatrix_arma(const CMatrix&);
     CMatrix_arma(const CVector&);
+    template<typename T1, typename op_type>
+    CMatrix_arma(const arma::Op<T1, op_type>& X) : arma::mat(X) {};
 
     /// Accessors
     int numrows() const;
@@ -63,6 +65,12 @@ public:
     /// Assignment
     CMatrix_arma& operator=(const CMatrix_arma&);
     CMatrix_arma& operator=(const mat&);
+    template<typename T1, typename op_type>
+    CMatrix_arma& operator=(const arma::Op<T1, op_type>& X) {
+        arma::mat::operator=(X);  // call base assignment
+        return *this;
+    }
+
 
     /// Arithmetic operators
     CMatrix_arma& operator+=(const CMatrix_arma&);
@@ -121,6 +129,7 @@ CMatrix_arma operator-(const CMatrix_arma&, const CMatrix_arma&);
 CMatrix_arma operator*(const CMatrix_arma&, const CMatrix_arma&);
 CMatrix_arma operator*(const CMatrix_arma&, double);
 CMatrix_arma operator*(double, const CMatrix_arma&);
+CVector_arma operator*(const CMatrix_arma& A, const CVector_arma& x);
 CMatrix_arma operator/(const CMatrix_arma&, double);
 
 CMatrix_arma Log(const CMatrix_arma&);
