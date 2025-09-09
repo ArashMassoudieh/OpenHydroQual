@@ -291,6 +291,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 
+
 win32 {
 
     LAPACK_INCLUDE = $$PWD/include
