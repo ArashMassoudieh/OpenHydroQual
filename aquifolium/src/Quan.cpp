@@ -20,7 +20,7 @@
 #include "System.h"
 #include "Precipitation.h"
 #include "Expression.h"
-#ifdef Q_JSON_SUPPORT
+#ifdef Q_GUI_SUPPORT
 #include "XString.h"
 #endif
 #ifndef mac_version
@@ -1131,7 +1131,7 @@ string Quan::toCommand()
 {
     string s;
     if (delegate == "UnitBox")
-#ifdef Q_JSON_SUPPORT
+#ifdef Q_GUI_SUPPORT
         if (unit != default_unit)
         {
             const double coefficient = XString::coefficient(QString::fromStdString(unit));
