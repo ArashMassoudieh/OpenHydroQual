@@ -4752,7 +4752,8 @@ bool System::LoadfromJson(const QJsonObject &root)
             {
                 if (!block(blockname.toStdString())->SetProperty(property.toStdString(),BlockJson[property].toString().toStdString(),true, false))
                 {
-                    qDebug()<<blockname<<":"<<property<<":"<<BlockJson[property].toString().toStdString();
+                    qDebug() << blockname << ":" << property << ":"
+                             << BlockJson[property].toString();
                     errorhandler.Append("System", "Block","ReadFromJson","Block '" + blockname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10012 );
 
                 }
