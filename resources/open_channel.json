@@ -231,7 +231,7 @@
       {
       	"type": "expression",
       	"description": "Under flow",
-      	"expression": "Weir_coefficient*Width*Hydraulic_Conductivity*Hydraulic_Gradient",
+      	"expression": "Width*Hydraulic_Conductivity*Hydraulic_Gradient*_max(depth.s;Dam_Height)",
       	"includeinoutput": "true",
       	"ask_user": "false"
       },
@@ -239,7 +239,7 @@
       {
       	"type": "expression",
       	"description": "Over flow",
-      	"expression": "86400*_sqt(9.81*(head.s-bottom_elevation.s-Dam_Height)^3)*Width*Weir_coefficient",
+      	"expression": "86400*_sqt(9.81*over_flow_depth^3)*Width*Weir_coefficient",
       	"includeinoutput": "true",
       	"ask_user": "false"
       },
@@ -247,7 +247,7 @@
       {
       	"type": "expression",
       	"description": "Over flow Depth",
-      	"expression": "head.s-bottom_elevation.s-Dam_Height",
+      	"expression": "_pos(head.s-bottom_elevation.s-Dam_Height)",
       	"includeinoutput": "true",
       	"ask_user": "false"
       },
@@ -256,6 +256,152 @@
       	"type": "expression",
       	"description": "Flow",
       	"expression": "under_flow + over_flow",
+      	"includeinoutput": "true",
+      	"ask_user": "false"
+      }
+    },
+    "Leaky Dam with pipes": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Leaky dam with pipe",
+    "icon": {
+      "filename": "LeakyDamwPipe.png"
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Pipe Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "criteria": "diameter>0",
+      "warningmessage": "diameter must be positive",
+      "helptext": "Internal diameter of the pipe, used to calculate flow based on the Hazen-Williams equation."
+    },
+    "hz_coeff": {
+      "type": "value",
+      "description": "Hazen-Williams Coefficient (SI)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "unit": "m",
+      "estimate": "true",
+      "default": "100",
+      "criteria": "hz_coeff>0",
+      "warningmessage": "diameter must be positive"
+    },
+    "pipe_length": {
+      "type": "value",
+      "description": "Pipe length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "criteria": "pipe_length>0",
+      "warningmessage": "lenght must be positive"
+    },
+    "pipe_hydraulic_gradient": {
+      "type": "expression",
+      "description": "Pipe Hydraulic Gradient",
+      "expression": "(head.e-head.s)/pipe_length",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "pipe_flow": {
+      "type": "expression",
+      "description": "Pipe flow rate (m~^3/day)",
+      "expression": "Number_of_pipes*24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-pipe_hydraulic_gradient;0.00001)*_abs(-pipe_hydraulic_gradient)^0.54",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "Number_of_pipes": {
+      "type": "value",
+      "description": "Number of pipes",
+      "ask_user": "true",
+      "includeinoutput": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0"
+    },
+    "Width": {
+      "type": "value",
+      "description": "Width",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true"
+    },
+    "Hydraulic_Conductivity": {
+      "type": "value",
+      "description": "Hydraulic Conductivity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day",
+      "estimate": "true"
+    },
+    "Length": {
+      "type": "value",
+      "description": "Dam Length in the flow direction",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m",
+      "estimate": "true",
+      "default": "1"
+    },
+    "Weir_coefficient": {
+      "type": "value",
+      "description": "Weir Coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.85"
+      },
+      "Dam_Height": 
+      {
+      	"type": "value",
+      	"description": "Dam Height",
+      	"ask_user": "true",
+      	"delegate": "UnitBox",
+      	"unit": "m",
+      	"estimate": "true"
+      },
+      "Hydraulic_Gradient": 
+      {
+      	"type": "expression",
+      	"description": "Hydraulic Gradient",
+      	"expression": "(head.e-head.s)/Length",
+      	"includeinoutput": "true",
+      	"ask_user": "false"
+      },
+      "under_flow":
+      {
+      	"type": "expression",
+      	"description": "Under flow  (m~^3/day)",
+      	"expression": "-Width*Hydraulic_Conductivity*Hydraulic_Gradient*_max(depth.s;Dam_Height)",
+      	"includeinoutput": "true",
+      	"ask_user": "false"
+      },
+      "over_flow": 
+      {
+      	"type": "expression",
+      	"description": "Over flow (m~^3/day)",
+      	"expression": "86400*_sqt(9.81*over_flow_depth^3)*Width*Weir_coefficient",
+      	"includeinoutput": "true",
+      	"ask_user": "false"
+      },
+      "over_flow_depth": 
+      {
+      	"type": "expression",
+      	"description": "Over flow Depth",
+      	"expression": "_pos(head.s-bottom_elevation.s-Dam_Height)",
+      	"includeinoutput": "true",
+      	"ask_user": "false"
+      },
+      "flow": 
+      {
+      	"type": "expression",
+      	"description": "Flow (m~^3/day)",
+      	"expression": "under_flow + over_flow+pipe_flow",
       	"includeinoutput": "true",
       	"ask_user": "false"
       }
