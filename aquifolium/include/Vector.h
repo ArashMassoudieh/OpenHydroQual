@@ -84,6 +84,7 @@ public:
      * @param x Value to fill.
      * @param n Size of the vector.
      */
+
     CVector(double x, int n);
 
     /**
