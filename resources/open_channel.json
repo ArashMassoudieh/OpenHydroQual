@@ -309,7 +309,7 @@
     "pipe_flow": {
       "type": "expression",
       "description": "Pipe flow rate (m~^3/day)",
-      "expression": "Number_of_pipes*24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-pipe_hydraulic_gradient;0.00001)*_abs(-pipe_hydraulic_gradient)^0.54",
+      "expression": "Number_of_pipes*24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-pipe_hydraulic_gradient;0.00001)*_abs(-pipe_hydraulic_gradient)^0.54*_mon(depth.s;diameter)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
