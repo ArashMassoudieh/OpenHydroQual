@@ -567,7 +567,7 @@ void System::MakeTimeSeriesUniform(const double &increment)
 
 }
 
-bool System::Solve(bool applyparameters)
+bool System::Solve(bool applyparameters, bool uniformizeoutput)
 {
 #ifndef NO_OPENMP
     omp_init_lock(&lock);
@@ -661,7 +661,7 @@ bool System::Solve(bool applyparameters)
         SolverTempVars.dt = min(SolverTempVars.dt_base,GetMinimumNextTimeStepSize());
         if (SolverTempVars.dt<SimulationParameters.dt0/ timestepminfactor) SolverTempVars.dt=SimulationParameters.dt0/ timestepminfactor;
         #ifdef Terminal_version
-        ShowMessage(string("t = ") + aquiutils::numbertostring(SolverTempVars.t) + ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt) + ", SolverTempVars.numiterations =" + aquiutils::numbertostring(SolverTempVars.numiterations));
+        ShowMessage(string("t = ") + aquiutils::numbertostring(SolverTempVars.t) + ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt) + ", SolverTempVars.numiterations =" + aquiutils::numbertostring(SolverTempVars.numiterations) + "," + aquiutils::numbertostring(progress*100) + "% complete");
         #endif // Debug_mode
 
         //qDebug()<<"Trying to solve...";
@@ -877,18 +877,22 @@ bool System::Solve(bool applyparameters)
 #else
     ShowMessage("Uniformizing outputs ...");
 #endif
-    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
+    if (uniformizeoutput)
+        Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
 
+    ShowMessage("Uniformizing observations ....");
 #ifdef Q_GUI_SUPPORT
-    qDebug() << "Uniformizing observations ....";
+
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing observations ..."));
         QCoreApplication::processEvents();
     }
 #endif
-    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
+    if (uniformizeoutput)
+        Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
 
+    ShowMessage("Uniformizing objective functions .....");
 #ifdef Q_GUI_SUPPORT
     qDebug() << "Uniformizing objective functions ....";
     if (rtw)
@@ -899,7 +903,8 @@ bool System::Solve(bool applyparameters)
     qDebug() << "Making objective function expressions uniform ....";
 #endif
 
-    MakeObjectiveFunctionExpressionUniform();
+    if (uniformizeoutput)
+        MakeObjectiveFunctionExpressionUniform();
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {

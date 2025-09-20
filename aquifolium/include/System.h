@@ -34,6 +34,7 @@
 #include "ErrorHandler.h"
 #include "safevector.h"
 #include <string>
+#include <omp.h>
 #define outputtimeseriesprecision double
 #if Q_GUI_SUPPORT
 #include <QStringList>
@@ -277,7 +278,7 @@ class System: public Object
 		bool Update(const string &variable="");
         void UnUpdateAllVariables();
 		//bool Solve(const string &variable, bool ApplyParams = false);
-		bool Solve(bool ApplyParams = false);
+        bool Solve(bool ApplyParams = false, bool uniformize_outputs = true);
         void MakeTimeSeriesUniform(const double &increment);
 		bool SetProp(const string &s, const double &val);
 		bool SetProperty(const string &s, const string &val);

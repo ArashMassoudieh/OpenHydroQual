@@ -17,7 +17,7 @@
 #ifndef QUANSET_H
 #define QUANSET_H
 
-#ifdef QT_version
+#ifdef Q_JSON_SUPPORT
     #include <QStringList>
 	#include <QJsonObject>
 #endif
