@@ -4625,6 +4625,31 @@ bool System::LoadfromJson(const QJsonDocument &jsondoc)
 
 }
 
+bool System::LoadfromJson(const QString &jsonfilename)
+{
+    QFile file(jsonfilename);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning() << "Couldn't open file:" << jsonfilename;
+            return false;
+        }
+
+        QByteArray data = file.readAll();
+        file.close();
+
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+
+        if (parseError.error != QJsonParseError::NoError) {
+            qWarning() << "JSON parse error at offset" << parseError.offset
+                       << ":" << parseError.errorString();
+            return false;
+        }
+
+        LoadfromJson(doc);
+        return true;
+
+}
+
 bool System::LoadfromJson(const QJsonObject &root)
 {
     bool outcome = true;
