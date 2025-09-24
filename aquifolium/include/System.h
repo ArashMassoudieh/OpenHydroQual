@@ -444,6 +444,7 @@ class System: public Object
         bool LoadfromJson(const QString &jsonfilename);
         bool LoadfromJson(const QJsonDocument &jsondoc);
         bool LoadfromJson(const QJsonObject &jsondoc);
+        void AddSolveVariableOrder(const std::string &variable) {solvevariableorder.push_back(variable);}
     protected:
 
     private:
