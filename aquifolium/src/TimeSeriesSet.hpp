@@ -114,7 +114,7 @@ bool TimeSeriesSet<T>::read(const std::string& filename, bool has_header) {
                 ts.setName(headers[i]);
             else
                 ts.setName("series_" + aquiutils::numbertostring(int(i)));
-            ts.reserve(row_count);  // ✅ Preallocate
+            ts.reserve(row_count);  //
             temp_series.emplace_back(std::move(ts));
         }
     }
@@ -914,7 +914,9 @@ template<typename T>
 TimeSeriesSet<T> TimeSeriesSet<T>::ConverttoNormalScore() const {
     TimeSeriesSet<T> result;
     for (const TimeSeries<T>& ts : *this) {
-        result.push_back(ts.ConvertToNormalScore());
+        TimeSeries<T> normal_scores = ts.ConvertToNormalScore();
+        normal_scores.setName(ts.name());
+        result.push_back(normal_scores);
     }
     return result;
 }

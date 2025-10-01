@@ -48,6 +48,11 @@ public:
     CVector_arma(double x_min, double x_max, int n);
     CVector_arma(const CVector_arma&);
 
+    template<typename T1, typename op_type>
+    CVector_arma(const arma::Op<T1, op_type>& X) : arma::vec(X) {}
+
+    template<typename T1>
+    CVector_arma(const arma::Base<double, T1>& X) : arma::vec(X) {}
     /// Element access
     double& operator[](int i);
     const double& operator[](int i) const;

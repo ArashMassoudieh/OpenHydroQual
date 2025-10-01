@@ -20,6 +20,7 @@
 #include <QFile>
 #include <QIODevice>
 #include <QJsonDocument>
+#include <QJsonObject>
 #pragma warning(pop)
 #pragma warning(disable : 4996)
 #include <json/json.h>
@@ -566,7 +567,7 @@ void System::MakeTimeSeriesUniform(const double &increment)
 
 }
 
-bool System::Solve(bool applyparameters)
+bool System::Solve(bool applyparameters, bool uniformizeoutput)
 {
 #ifndef NO_OPENMP
     omp_init_lock(&lock);
@@ -660,7 +661,7 @@ bool System::Solve(bool applyparameters)
         SolverTempVars.dt = min(SolverTempVars.dt_base,GetMinimumNextTimeStepSize());
         if (SolverTempVars.dt<SimulationParameters.dt0/ timestepminfactor) SolverTempVars.dt=SimulationParameters.dt0/ timestepminfactor;
         #ifdef Terminal_version
-        ShowMessage(string("t = ") + aquiutils::numbertostring(SolverTempVars.t) + ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt) + ", SolverTempVars.numiterations =" + aquiutils::numbertostring(SolverTempVars.numiterations));
+        ShowMessage(string("t = ") + aquiutils::numbertostring(SolverTempVars.t) + ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt) + ", SolverTempVars.numiterations =" + aquiutils::numbertostring(SolverTempVars.numiterations) + "," + aquiutils::numbertostring(progress*100) + "% complete");
         #endif // Debug_mode
 
         //qDebug()<<"Trying to solve...";
@@ -876,18 +877,22 @@ bool System::Solve(bool applyparameters)
 #else
     ShowMessage("Uniformizing outputs ...");
 #endif
-    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
+    if (uniformizeoutput)
+        Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
 
+    ShowMessage("Uniformizing observations ....");
 #ifdef Q_GUI_SUPPORT
-    qDebug() << "Uniformizing observations ....";
+
     if (rtw)
     {
         rtw->AppendText(QString("Uniformizing observations ..."));
         QCoreApplication::processEvents();
     }
 #endif
-    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
+    if (uniformizeoutput)
+        Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
 
+    ShowMessage("Uniformizing objective functions .....");
 #ifdef Q_GUI_SUPPORT
     qDebug() << "Uniformizing objective functions ....";
     if (rtw)
@@ -898,7 +903,8 @@ bool System::Solve(bool applyparameters)
     qDebug() << "Making objective function expressions uniform ....";
 #endif
 
-    MakeObjectiveFunctionExpressionUniform();
+    if (uniformizeoutput)
+        MakeObjectiveFunctionExpressionUniform();
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {
@@ -4620,6 +4626,31 @@ bool System::LoadfromJson(const QJsonDocument &jsondoc)
 
 }
 
+bool System::LoadfromJson(const QString &jsonfilename)
+{
+    QFile file(jsonfilename);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning() << "Couldn't open file:" << jsonfilename;
+            return false;
+        }
+
+        QByteArray data = file.readAll();
+        file.close();
+
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+
+        if (parseError.error != QJsonParseError::NoError) {
+            qWarning() << "JSON parse error at offset" << parseError.offset
+                       << ":" << parseError.errorString();
+            return false;
+        }
+
+        LoadfromJson(doc);
+        return true;
+
+}
+
 bool System::LoadfromJson(const QJsonObject &root)
 {
     bool outcome = true;
@@ -4685,6 +4716,39 @@ bool System::LoadfromJson(const QJsonObject &root)
         }
     }
 
+    QJsonObject RxnParametersJson = root["Reaction Parameters"].toObject();
+    for (const QString& rxnparametername: RxnParametersJson.keys())
+    {
+        QJsonObject RxnParameterJson = RxnParametersJson[rxnparametername].toObject();
+        RxnParameter current_rxnparameter;
+        current_rxnparameter.SetName(RxnParameterJson["name"].toString().toStdString());
+        current_rxnparameter.SetType(RxnParameterJson["type"].toString().toStdString());
+        AddReactionParameter(current_rxnparameter);
+        for (const QString &property: RxnParameterJson.keys())
+        {
+            if (!reactionparameter(rxnparametername.toStdString())->SetProperty(property.toStdString(),RxnParameterJson[property].toString().toStdString()))
+                errorhandler.Append("System", "Reaction Parameter","ReadFromJson","Reaction parameter '" + rxnparametername.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+
+        }
+    }
+
+    QJsonObject RxnsJson = root["Reactions"].toObject();
+    for (const QString& rxnname: RxnsJson.keys())
+    {
+        QJsonObject RxnJson = RxnsJson[rxnname].toObject();
+        Reaction current_rxn;
+
+        current_rxn.SetName(RxnJson["name"].toString().toStdString());
+        current_rxn.SetType(RxnJson["type"].toString().toStdString());
+        AddReaction(current_rxn);
+        for (const QString &property: RxnJson.keys())
+        {
+            if (!reaction(rxnname.toStdString())->SetProperty(property.toStdString(),RxnJson[property].toString().toStdString()))
+                errorhandler.Append("System", "Reaction ","ReadFromJson","Reaction  '" + rxnname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
+
+        }
+    }
+
     QJsonObject SourcesJson = root["Sources"].toObject();
     for (const QString& sourcename: SourcesJson.keys())
     {
@@ -4703,40 +4767,6 @@ bool System::LoadfromJson(const QJsonObject &root)
         }
     }
 
-    QJsonObject RxnParametersJson = root["Reaction Parameters"].toObject();
-    for (const QString& rxnparametername: RxnParametersJson.keys())
-    {
-        QJsonObject RxnParameterJson = RxnParametersJson[rxnparametername].toObject();
-        RxnParameter current_rxnparameter;
-        current_rxnparameter.SetName(RxnParameterJson["name"].toString().toStdString());
-        current_rxnparameter.SetType(RxnParameterJson["type"].toString().toStdString());
-        AddReactionParameter(current_rxnparameter);
-        for (const QString &property: RxnParameterJson.keys())
-        {
-            if (property != "type")
-                if (!reactionparameter(rxnparametername.toStdString())->SetProperty(property.toStdString(),RxnParameterJson[property].toString().toStdString()))
-                    errorhandler.Append("System", "Reaction Parameter","ReadFromJson","Reaction parameter '" + rxnparametername.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
-
-        }
-    }
-
-    QJsonObject RxnsJson = root["Reactions"].toObject();
-    for (const QString& rxnname: RxnsJson.keys())
-    {
-        QJsonObject RxnJson = RxnsJson[rxnname].toObject();
-        Reaction current_rxn;
-
-        current_rxn.SetName(RxnJson["name"].toString().toStdString());
-        current_rxn.SetType(RxnJson["type"].toString().toStdString());
-        AddReaction(current_rxn);
-        for (const QString &property: RxnJson.keys())
-        {
-            if (property != "type")
-                if (!reaction(rxnname.toStdString())->SetProperty(property.toStdString(),RxnJson[property].toString().toStdString()))
-                    errorhandler.Append("System", "Reaction ","ReadFromJson","Reaction  '" + rxnname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10015 );
-
-        }
-    }
 
     QJsonObject BlocksJson = root["Blocks"].toObject();
     for (const QString& blockname: BlocksJson.keys())
@@ -4753,7 +4783,8 @@ bool System::LoadfromJson(const QJsonObject &root)
             {
                 if (!block(blockname.toStdString())->SetProperty(property.toStdString(),BlockJson[property].toString().toStdString(),true, false))
                 {
-                    qDebug()<<blockname<<":"<<property<<":"<<BlockJson[property].toString().toStdString();
+                    qDebug() << blockname << ":" << property << ":"
+                             << BlockJson[property].toString();
                     errorhandler.Append("System", "Block","ReadFromJson","Block '" + blockname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10012 );
 
                 }

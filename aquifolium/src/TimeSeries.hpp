@@ -39,8 +39,10 @@
 #ifdef GSL
 #include <gsl/gsl_cdf.h>
 #endif
+#ifdef SUPPORT_QJSON
 #include <QJsonArray>
 #include <QJsonObject>
+#endif
 #include <mutex>
 
 
@@ -571,7 +573,7 @@ void TimeSeries<T>::writefile(const std::string& filename) const {
     for (const auto& dp : *this) {
         std::ostringstream time_str;
         time_str << std::fixed << std::setprecision(3) << dp.t;
-        file << time_str.str() << "," << dp.c;
+        file << time_str.str() << "," << dp.c <<std::endl;
     }
 
     file.close();
