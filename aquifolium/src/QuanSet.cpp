@@ -645,6 +645,10 @@ bool QuanSet::RenameConstituents(const string &oldname, const string &newname)
             }
         }
     }
+
+    qDebug() << "Old full name: " << oldfullname;
+    qDebug() << "New full name: " << newfullname;
+
     bool succeed = true;
     for (unsigned int i=0; i<oldfullname.size(); i++)
     {
