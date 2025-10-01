@@ -34,6 +34,7 @@
 #include "ErrorHandler.h"
 #include "safevector.h"
 #include <string>
+#include <omp.h>
 #define outputtimeseriesprecision double
 #if Q_GUI_SUPPORT
 #include <QStringList>
@@ -277,7 +278,7 @@ class System: public Object
 		bool Update(const string &variable="");
         void UnUpdateAllVariables();
 		//bool Solve(const string &variable, bool ApplyParams = false);
-		bool Solve(bool ApplyParams = false);
+        bool Solve(bool ApplyParams = false, bool uniformize_outputs = true);
         void MakeTimeSeriesUniform(const double &increment);
 		bool SetProp(const string &s, const double &val);
 		bool SetProperty(const string &s, const string &val);
@@ -440,8 +441,10 @@ class System: public Object
         Objective_Function_Set *ObjectiveFunctionSet() {return &objective_function_set;}
         bool WriteOutPuts();
         bool SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariable = false, bool calculatevalue = false);
+        bool LoadfromJson(const QString &jsonfilename);
         bool LoadfromJson(const QJsonDocument &jsondoc);
         bool LoadfromJson(const QJsonObject &jsondoc);
+        void AddSolveVariableOrder(const std::string &variable) {solvevariableorder.push_back(variable);}
     protected:
 
     private:
