@@ -51,16 +51,21 @@ class QuanSet: public unordered_map<string, Quan>
         void UnUpdateAllValues();
         std::unordered_map<string,Quan>::const_iterator const_end() const {return cend();}
         std::unordered_map<string,Quan>::const_iterator const_begin() const {return cbegin();}
-        unsigned long size() {return size();}
+        unsigned long size() const {return unordered_map<string, Quan>::size();}
         unsigned long AskableSize();
         string &Description() 
+        {
+            return description;
+        }
+
+        string Description() const
         {
             return description;
         }
         string &IconFileName() {return iconfilename;}
         string &Name() {return name;}
         void ShowMessage(const string &msg);
-        string ToString(int tabs=0);
+        string ToString(int tabs=0) const;
         blocklink BlockLink;
         void SetParent(Object *p) {parent = p; SetAllParents();}
         void SetAllParents();

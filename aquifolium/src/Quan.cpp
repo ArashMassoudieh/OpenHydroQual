@@ -813,6 +813,11 @@ Expression* Quan::GetExpression()
     return &_expression;
 }
 
+Expression Quan::GetExpression() const
+{
+    return _expression;
+}
+
 
 Rule* Quan::GetRule()
 {

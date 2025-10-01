@@ -61,6 +61,7 @@
 #include "options.h"
 #include <QFileInfo>
 #include "gridgenerator.h"
+#include "metamodelhelpdialog.h"
 
 using namespace std;
 
@@ -134,6 +135,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOptions,SIGNAL(triggered()),this,SLOT(optionsdialog()));
     connect(ui->actionOpen_Results,SIGNAL(triggered()),this,SLOT(loadresults()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
+    connect(ui->actionComponent_description, &QAction::triggered,this, &MainWindow::oncomponentdescriptions);
     PropertiesWidget = new ItemPropertiesWidget(ui->dockWidgetContents_3);
     PropertiesWidget->tableView()->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->verticalLayout->addWidget(PropertiesWidget);
@@ -1855,6 +1857,14 @@ void MainWindow::onopen()
 
 }
 
+
+void MainWindow::oncomponentdescriptions()
+{
+    MetaModel* metamodel = system.GetMetaModel();
+    MetaModelHelpDialog *componentdescriptiondialog = new MetaModelHelpDialog(metamodel, resource_directory, this);
+    componentdescriptiondialog->setAttribute(Qt::WA_DeleteOnClose);
+    componentdescriptiondialog->show();
+}
 
 void MainWindow::onnewproject()
 {
