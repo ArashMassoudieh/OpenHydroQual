@@ -42,6 +42,7 @@ class MetaModel
         string ToString(int _tabs=0);
         vector<string> solvevariableorder;
         string GetLastError() {return last_error; }
+        void RenameConstituent(const string &oldname, const string &newname);
     protected:
 
     private:

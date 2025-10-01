@@ -181,3 +181,39 @@ string MetaModel::ToString(int _tabs)
     out += "}\n";
     return out;
 }
+
+void MetaModel::RenameConstituent(const string &oldname, const string &newname)
+{
+    vector<string> oldfullname;
+    vector<string> newfullname;
+    for (map<string,QuanSet>::iterator model = begin(); model!=end(); model++ )
+    {   for (unordered_map<string, Quan>::iterator it = model->second.begin(); it != model->second.end(); it++)
+        {
+            if (aquiutils::split(it->first,':').size()==2)
+            {   if (aquiutils::split(it->first,':')[0]==oldname)
+                {
+                    if (aquiutils::lookup(oldfullname,it->first)==-1)
+                    {   oldfullname.push_back(it->first);
+                        newfullname.push_back(newname + ":" + aquiutils::split(it->first,':')[1]);
+                    }
+                }
+            }
+        }
+    }
+
+    qDebug()<<oldfullname;
+    qDebug()<<newfullname;
+
+    for (map<string,QuanSet>::iterator model = begin(); model!=end(); model++ )
+    {   for (unsigned int i=0; i<oldfullname.size(); i++)
+        {
+            model->second.RenameProperty(oldfullname[i],newfullname[i]);
+            if (model->second.count(newfullname[i])>0)
+            {   model->second.at(newfullname[i]).Description() = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+                model->second.at(newfullname[i]).Description(true) = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+            }
+        }
+    }
+
+
+}
