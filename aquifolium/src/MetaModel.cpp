@@ -19,7 +19,7 @@
 #include <QDebug>
 
 
-MetaModel::MetaModel()
+MetaModel::MetaModel():map<string, QuanSet>()
 {
     //ctor
 }
@@ -29,51 +29,75 @@ MetaModel::~MetaModel()
     //dtor
 }
 
-MetaModel::MetaModel(const MetaModel& other)
+MetaModel::MetaModel(const MetaModel& other):map<string, QuanSet>(other)
 {
-    metamodel = other.metamodel;
+
 }
 
 MetaModel& MetaModel::operator=(const MetaModel& rhs)
 {
     if (this == &rhs) return *this; // handle self assignment
-    metamodel = rhs.metamodel;
+    map<string, QuanSet>::operator=(rhs);
     return *this;
 }
 
 bool MetaModel::Append(const string &s, const QuanSet &q)
 {
-    if (metamodel.count(s)>0)
+    if (count(s)>0)
     {
         last_error = "Object type " + s + " Already exist";
         errors.push_back(last_error);
         return false;
     }
     else
-        metamodel[s] = q;
+        map<string, QuanSet>::operator[](s) = q;
     return true;
+}
+
+QuanSet& MetaModel::at(const string &typ)
+{
+    if (count(typ)==0)
+    {
+        last_error = "Type " + typ + " was not found!";
+        static QuanSet empty;
+        return empty;
+    }
+    else
+        return map<string, QuanSet>::at(typ);
+}
+
+const QuanSet& MetaModel::at(const string &typ) const
+{
+    if (count(typ)==0)
+    {
+        cout << "Type " + typ + " was not found!";
+        static QuanSet empty;
+        return empty;
+    }
+    else
+        return map<string, QuanSet>::at(typ);
 }
 
 QuanSet* MetaModel::operator[] (const string &typ)
 {
-    if (metamodel.count(typ)==0)
+    if (count(typ)==0)
     {
         last_error = "Type " + typ + " was not found!";
         return nullptr;
     }
     else
-        return &(metamodel[typ]);
+        return &(this->at(typ));
 }
 
 QuanSet* MetaModel::GetItem(const string &typ)
 {
-    if (metamodel.count(typ)==0)
+    if (count(typ)==0)
     {
         last_error = "Type " + typ + " was not found!";
         return nullptr;
     }
     else
-        return &(metamodel[typ]);
+        return &(this->at(typ));
 }
 
 #pragma warning(disable : 4996)
@@ -83,24 +107,24 @@ bool MetaModel::GetFromJsonFile(const string &filename)
     Clear();
     //qDebug()<<"Cleared!";
     Json::Value root;
-    Json::Reader reader;
+    Json::CharReaderBuilder builder;
+    JSONCPP_STRING errs;
 
     std::ifstream file(filename);
-	if (!file.good())
-	{
-		//cout << "File " + filename + " was not found!";
-		return false;
-	}
+    if (!file.good())
+    {
+        //cout << "File " + filename + " was not found!";
+        return false;
+    }
     //else
     //    qDebug()<<"File is good!";
 
-    file >> root;
     //qDebug()<<"File loaded!";
-    if(!reader.parse(file, root, true)){
-            //for some reason it always fails to parse
+    if(!Json::parseFromStream(builder, file, &root, &errs)){
         std::cout  << "Failed to parse configuration\n"
-                   << reader.getFormattedErrorMessages();
+                  << errs;
         last_error = "Failed to parse configuration\n";
+        return false;
     }
 
     //qDebug()<<"Parsed!";
@@ -121,45 +145,31 @@ bool MetaModel::GetFromJsonFile(const string &filename)
         //qDebug()<<QString::fromStdString(object_types.key().asString());
         Append(object_types.key().asString(),quanset);
     }
-	return true;
+    return true;
 }
 
 bool MetaModel::AppendFromJsonFile(const string &filename)
 {
     Json::Value root;
-    Json::Reader reader;
+    Json::CharReaderBuilder builder;
+    JSONCPP_STRING errs;
 
     std::ifstream file(filename);
     if (!file.good())
     {
-        cout << "File " + filename + " was not found!";
-        return false;
-    }
-    if (file.good())
-    {   Json::CharReaderBuilder b;
-        JSONCPP_STRING errs;
-        bool ok = Json::parseFromStream(b, file, &root, &errs);
-        if (!ok) {
-            last_error = errs;
-            return false;
-        }
-    }
-    else {
+        std::cout << "File " + filename + " was not found!";
         return false;
     }
 
-    if(!reader.parse(file, root, true)){
-            //for some reason it always fails to parse
-        std::cout  << "Failed to parse configuration\n"
-                   << reader.getFormattedErrorMessages();
-        last_error = "Failed to parse configuration\n";
+    if (!Json::parseFromStream(builder, file, &root, &errs)) {
+        last_error = errs;
+        return false;
     }
-
 
     for (Json::ValueIterator object_types=root.begin(); object_types!=root.end(); ++object_types)
     {
-       QuanSet quanset(object_types);
-       Append(object_types.key().asString(),quanset);
+        QuanSet quanset(object_types);
+        Append(object_types.key().asString(),quanset);
     }
     return true;
 }
@@ -168,16 +178,49 @@ bool MetaModel::AppendFromJsonFile(const string &filename)
 void MetaModel::Clear()
 {
     solvevariableorder.clear();
-    metamodel.clear();
+    clear();
     errors.clear();
 }
 
-string MetaModel::ToString(int _tabs)
+string MetaModel::ToString(int _tabs) const
 {
     string out = aquiutils::tabs(_tabs) + "root:\n";
     out += aquiutils::tabs(_tabs) + "{\n";
-    for (map<string, QuanSet>::iterator it = metamodel.begin(); it!=metamodel.end(); it++)
-        out += metamodel[it->first].ToString(_tabs+1) + "\n";
+    for (map<string, QuanSet>::const_iterator it = cbegin(); it!=cend(); it++)
+        out += map<string, QuanSet>::at(it->first).ToString(_tabs+1) + "\n";
     out += "}\n";
     return out;
+}
+
+void MetaModel::RenameConstituent(const string &oldname, const string &newname)
+{
+    vector<string> oldfullname;
+    vector<string> newfullname;
+    for (map<string,QuanSet>::iterator model = begin(); model!=end(); model++ )
+    {   for (unordered_map<string, Quan>::iterator it = model->second.begin(); it != model->second.end(); it++)
+        {
+            if (aquiutils::split(it->first,':').size()==2)
+            {   if (aquiutils::split(it->first,':')[0]==oldname)
+                {
+                    if (aquiutils::lookup(oldfullname,it->first)==-1)
+                    {   oldfullname.push_back(it->first);
+                        newfullname.push_back(newname + ":" + aquiutils::split(it->first,':')[1]);
+                    }
+                }
+            }
+        }
+    }
+
+    for (map<string,QuanSet>::iterator model = begin(); model!=end(); model++ )
+    {   for (unsigned int i=0; i<oldfullname.size(); i++)
+        {
+            model->second.RenameProperty(oldfullname[i],newfullname[i]);
+            if (model->second.count(newfullname[i])>0)
+            {   model->second.at(newfullname[i]).Description() = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+                model->second.at(newfullname[i]).Description(true) = newname + ":" + aquiutils::split(newfullname[i],':')[1];
+            }
+        }
+    }
+
+
 }

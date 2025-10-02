@@ -27,7 +27,7 @@ INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
 INCLUDEPATH += ./aquifolium/include/MCMC
-INCLUDEPATH += ../jsoncpp/include/
+INCLUDEPATH += jsoncpp/include/
 INCLUDEPATH += include/
 INCLUDEPATH += ../qcustomplot6/
 
@@ -114,15 +114,16 @@ CONFIG(debug, debug|release) {
 
 SOURCES += \
     chartview.cpp \
+    metamodelhelpdialog.cpp \
     qplotter.cpp \
     ./aquifolium/src/RxnParameter.cpp \
     ./aquifolium/src/constituent.cpp \
     ./aquifolium/src/observation.cpp \
     ./aquifolium/src/precalculatedfunction.cpp \
     ./aquifolium/src/solutionlogger.cpp \
-    ../jsoncpp/src/lib_json/json_reader.cpp \
-    ../jsoncpp/src/lib_json/json_value.cpp \
-    ../jsoncpp/src/lib_json/json_writer.cpp \
+    jsoncpp/src/lib_json/json_reader.cpp \
+    jsoncpp/src/lib_json/json_value.cpp \
+    jsoncpp/src/lib_json/json_writer.cpp \
     CustomPlotZoom.cpp \
     ItemNavigator.cpp \
     ItemPropertiesWidget.cpp \
@@ -188,6 +189,7 @@ HEADERS += \
     aquifolium/src/TimeSeries.hpp \
     aquifolium/src/TimeSeriesSet.hpp \
     chartview.h \
+    metamodelhelpdialog.h \
     qplotter.h \
     qplotwindow.h \
     ./aquifolium/include/Objective_Function.h \
@@ -231,19 +233,19 @@ HEADERS += \
     ./aquifolium/include/System.h \
     ./aquifolium/include/Vector.h \
     ./aquifolium/include/Vector_arma.h \
-    ../jsoncpp/include/json/allocator.h \
-    ../jsoncpp/include/json/assertions.h \
-    ../jsoncpp/include/json/autolink.h \
-    ../jsoncpp/include/json/config.h \
-    ../jsoncpp/include/json/features.h \
-    ../jsoncpp/include/json/forwards.h \
-    ../jsoncpp/include/json/json.h \
-    ../jsoncpp/include/json/reader.h \
-    ../jsoncpp/include/json/value.h \
-    ../jsoncpp/include/json/version.h \
-    ../jsoncpp/include/json/writer.h \
-    ../jsoncpp/src/lib_json/json_tool.h \
-    ../jsoncpp/src/lib_json/version.h.in \
+    jsoncpp/include/json/allocator.h \
+    jsoncpp/include/json/assertions.h \
+    jsoncpp/include/json/autolink.h \
+    jsoncpp/include/json/config.h \
+    jsoncpp/include/json/features.h \
+    jsoncpp/include/json/forwards.h \
+    jsoncpp/include/json/json.h \
+    jsoncpp/include/json/reader.h \
+    jsoncpp/include/json/value.h \
+    jsoncpp/include/json/version.h \
+    jsoncpp/include/json/writer.h \
+    jsoncpp/src/lib_json/json_tool.h \
+    jsoncpp/src/lib_json/version.h.in \
     enums.h \
     node.h \
     options.h \

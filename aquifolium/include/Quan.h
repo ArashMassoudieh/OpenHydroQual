@@ -64,8 +64,9 @@ public:
     TimeSeries<timeseriesprecision>* GetTimeSeries();
     string last_error;
     void SetType(const _type& t) { type = t; }
-    _type GetType() { return type; }
+    _type GetType() const { return type; }
     Expression* GetExpression();
+    Expression GetExpression() const;
     Rule* GetRule();
     Source* GetSource();
     bool SetExpression(const string& E);
@@ -101,7 +102,15 @@ public:
         else
             return description_graph;
     }
+    string Description(bool graph = false) const
+    {
+        if (!graph)
+            return description;
+        else
+            return description_graph;
+    }
     string& HelpText() { return helptext; }
+    string HelpText() const { return helptext; }
     string& Unit() { return unit; }
     string& Units() { return units; }
     string& DefaultUnit() { return default_unit; }
@@ -139,7 +148,7 @@ public:
     bool AppendError(const string& objectname, const string& cls, const string& funct, const string& description, const int& code) const;
     bool SetProperty(const string& val, bool force_value = false, bool check_criteria = true);
     string GetProperty(bool force_value = false);
-    string SourceName() { return sourcename; }
+    string SourceName() const { return sourcename; }
     bool SetSourceName(const string& s) { sourcename = s; return true; }
     string toCommand();
     void SetOutputItem(const string& s)

@@ -813,6 +813,11 @@ Expression* Quan::GetExpression()
     return &_expression;
 }
 
+Expression Quan::GetExpression() const
+{
+    return _expression;
+}
+
 
 Rule* Quan::GetRule()
 {
@@ -1218,7 +1223,6 @@ vector<string> Quan::AllReactionParameters() const
 
 bool Quan::RenameQuantity(const string& oldname, const string& newname)
 {
-    qDebug() << "Variable: " << _var_name << "old name: " << oldname << ", new name: " << newname; 
     _expression.RenameQuantity(oldname, newname);
     initial_value_expression.RenameQuantity(oldname, newname);
     return false;

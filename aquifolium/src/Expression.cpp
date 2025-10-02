@@ -934,16 +934,10 @@ Expression Expression::RenameConstituent(const string &old_constituent_name, con
 bool Expression::RenameQuantity(const string &oldname, const string &newname)
 {
     bool out=false;
-    if (param_constant_expression == "")
-    {
-        qDebug() << "Term has no type!";
-    }
-    
-    qDebug() << "Begining: " << text << ":" << parameter << ":" << param_constant_expression;
+
 
     if (param_constant_expression=="parameter")
     {
-        qDebug() << "Parameter :" << text << ":" << parameter << ":" << param_constant_expression;
         if (parameter==oldname)
         {   parameter = newname;
             return true;
@@ -951,20 +945,18 @@ bool Expression::RenameQuantity(const string &oldname, const string &newname)
     }
     for (unsigned int i=0; i<terms.size(); i++)
     {
-        qDebug() << "Term " << i << ":" << terms[i].text << ":" << terms[i].parameter << ":" << terms[i].param_constant_expression;
+
         if (terms[i].param_constant_expression == "parameter")
         {
             if (terms[i].parameter == oldname)
             {
                 terms[i].parameter = newname;
                 out = true;
-                qDebug() << oldname << " was changed to " << newname; 
             }
 
         }
         else if (terms[i].param_constant_expression == "expression")
         {
-            qDebug() << terms[i].text <<":"<< terms[i].param_constant_expression;
             out = out || terms[i].RenameQuantity(oldname,newname);
         }
     }

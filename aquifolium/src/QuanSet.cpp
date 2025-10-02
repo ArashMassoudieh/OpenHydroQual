@@ -309,7 +309,7 @@ unsigned long QuanSet::AskableSize()
     return j;
 }
 
-string QuanSet::ToString(int _tabs)
+string QuanSet::ToString(int _tabs) const
 {
     string out = aquiutils::tabs(_tabs) + name + ":\n";
     out += aquiutils::tabs(_tabs) + "{\n";
@@ -326,9 +326,9 @@ string QuanSet::ToString(int _tabs)
     }
 
 
-    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
+    for (unordered_map<string,Quan>::const_iterator it=begin(); it!=end(); it++)
     {
-        out += operator[](it->first).ToString(_tabs+1) + "\n";
+        out += at(it->first).ToString(_tabs+1) + "\n";
     }
 
     out += aquiutils::tabs(_tabs) + "}\n";
@@ -645,9 +645,6 @@ bool QuanSet::RenameConstituents(const string &oldname, const string &newname)
             }
         }
     }
-
-    qDebug() << "Old full name: " << oldfullname;
-    qDebug() << "New full name: " << newfullname;
 
     bool succeed = true;
     for (unsigned int i=0; i<oldfullname.size(); i++)

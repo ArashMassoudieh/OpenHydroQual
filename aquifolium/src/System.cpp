@@ -1222,6 +1222,8 @@ bool System::SetLoadedOutputItems()
             }
     }
 
+    qDebug()<<"Blocks variables: " << varcount;
+
     for (unsigned int i = 0; i < reaction_parameters.size(); i++)
     {
         for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
@@ -1234,6 +1236,7 @@ bool System::SetLoadedOutputItems()
             }
     }
 
+    qDebug()<<"Reaction parameters variables: " << varcount;
     for (unsigned int i=0; i<links.size(); i++)
     {
         for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
@@ -1245,6 +1248,8 @@ bool System::SetLoadedOutputItems()
                 varcount++;
             }
     }
+
+    qDebug()<<"Link variables: " << varcount;
 
     for (unsigned int i=0; i<sources.size(); i++)
     {
@@ -1258,31 +1263,41 @@ bool System::SetLoadedOutputItems()
             }
     }
 
+    qDebug()<<"Source variables: " << varcount;
+
     for (unsigned int i=0; i<objective_function_set.size(); i++)
     {
         objective_function_set[i]->SetOutputItem("Obj_" + objective_function_set[i]->GetName());
         for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(),objective_function_set[i]->GetName() + "_" + it->first)==-1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(), "Obj_" + objective_function_set[i]->GetName() + "_" + it->first) == -1)
+                {
+                    qDebug() << objective_function_set[i]->GetName() + "_" + it->first;
                     res = false;
+                }
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
-                varcount++;
+                varcount+=2;
             }
     }
 
+    qDebug()<<"Objective function variables: " << varcount;
     for (unsigned int i=0; i<observations.size(); i++)
     {
         observations[i].SetOutputItem("Obs_" + observations[i].GetName());
         for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(),observations[i].GetName() + "_" + it->first)==-1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),"Obs_" + observations[i].GetName() + "_" + it->first) == -1)
                     res = false;
                 it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
-                varcount++;
+                varcount+=1;
             }
+        varcount++;
     }
+
+    qDebug()<<"All variables: " << varcount;
+    qDebug()<<"Output size: " << GetOutputs().size();
     if (GetOutputs().size()!=varcount) res=false;
     return res;
 }
@@ -4074,11 +4089,9 @@ void System::RenameConstituents(const string &oldname, const string &newname)
     {
         reactions[i].RenameConstituents(oldname, newname);
     }
-    for (map<string, QuanSet>::iterator it = metamodel.begin(); it!=metamodel.end(); it++)
-    {
-        qDebug() << " ------- Model: " << it->first; 
-        metamodel.GetItem(it->first)->RenameConstituents(oldname,newname);
-    }
+
+    metamodel.RenameConstituent(oldname,newname);
+
 
 
 }

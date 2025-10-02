@@ -89,6 +89,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionComponent_description"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -365,6 +366,11 @@
   <action name="actionLoad_Json">
    <property name="text">
     <string>Load Json</string>
+   </property>
+  </action>
+  <action name="actionComponent_description">
+   <property name="text">
+    <string>Component description</string>
    </property>
   </action>
  </widget>

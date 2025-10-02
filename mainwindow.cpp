@@ -14,8 +14,8 @@
  */
 
 
-#define openhydroqual_version "1.2.8"
-#define last_modified "August, 31, 2025"
+#define openhydroqual_version "1.2.10"
+#define last_modified "October, 2, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -61,6 +61,7 @@
 #include "options.h"
 #include <QFileInfo>
 #include "gridgenerator.h"
+#include "metamodelhelpdialog.h"
 
 using namespace std;
 
@@ -134,6 +135,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOptions,SIGNAL(triggered()),this,SLOT(optionsdialog()));
     connect(ui->actionOpen_Results,SIGNAL(triggered()),this,SLOT(loadresults()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
+    connect(ui->actionComponent_description, &QAction::triggered,this, &MainWindow::oncomponentdescriptions);
     PropertiesWidget = new ItemPropertiesWidget(ui->dockWidgetContents_3);
     PropertiesWidget->tableView()->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->verticalLayout->addWidget(PropertiesWidget);
@@ -1856,6 +1858,14 @@ void MainWindow::onopen()
 }
 
 
+void MainWindow::oncomponentdescriptions()
+{
+    MetaModel* metamodel = system.GetMetaModel();
+    MetaModelHelpDialog *componentdescriptiondialog = new MetaModelHelpDialog(metamodel, resource_directory, this);
+    componentdescriptiondialog->setAttribute(Qt::WA_DeleteOnClose);
+    componentdescriptiondialog->show();
+}
+
 void MainWindow::onnewproject()
 {
     QMessageBox::StandardButton resBtn = QMessageBox::question( this, "OpenHydroQual",
@@ -2375,8 +2385,12 @@ void MainWindow::loadresults()
     system.GetOutputs() = outputs;
     if (!system.SetLoadedOutputItems())
     {   system.GetOutputs()=past_output;
-        QMessageBox::critical(this, "Outputfile not correct!", "The file does not contains the results of the model",QMessageBox::Ok);
+        QMessageBox::critical(this, "Output file not correct!", "The file does not contains the results of the model",QMessageBox::Ok);
     }
+	else
+		QMessageBox::information(this, "Output file loaded!", "Output file loaded successfully!", QMessageBox::Ok);
+    
+
 
 
 }
