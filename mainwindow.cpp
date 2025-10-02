@@ -2385,8 +2385,12 @@ void MainWindow::loadresults()
     system.GetOutputs() = outputs;
     if (!system.SetLoadedOutputItems())
     {   system.GetOutputs()=past_output;
-        QMessageBox::critical(this, "Outputfile not correct!", "The file does not contains the results of the model",QMessageBox::Ok);
+        QMessageBox::critical(this, "Output file not correct!", "The file does not contains the results of the model",QMessageBox::Ok);
     }
+	else
+		QMessageBox::information(this, "Output file loaded!", "Output file loaded successfully!", QMessageBox::Ok);
+    
+
 
 
 }

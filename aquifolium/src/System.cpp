@@ -1271,8 +1271,11 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(),objective_function_set[i]->GetName() + "_" + it->first)==-1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(), "Obj_" + objective_function_set[i]->GetName() + "_" + it->first) == -1)
+                {
+                    qDebug() << objective_function_set[i]->GetName() + "_" + it->first;
                     res = false;
+                }
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
                 varcount+=2;
             }
@@ -1285,11 +1288,12 @@ bool System::SetLoadedOutputItems()
         for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(),observations[i].GetName() + "_" + it->first)==-1)
+                if (aquiutils::lookup(GetOutputs().getSeriesNames(),"Obs_" + observations[i].GetName() + "_" + it->first) == -1)
                     res = false;
                 it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
                 varcount+=1;
             }
+        varcount++;
     }
 
     qDebug()<<"All variables: " << varcount;
