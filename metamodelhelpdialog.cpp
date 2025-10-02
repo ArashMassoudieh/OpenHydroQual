@@ -116,15 +116,19 @@ void MetaModelHelpDialog::populateList()
             continue;
         }
 
-        const QuanSet& quanset = it->second;
+        QuanSet& quanset = it->second;
 
-
+        // Get description for display
+        QString displayName = QString::fromStdString(quanset.Description());
+        if (displayName.isEmpty()) {
+            displayName = typeName;  // Fallback to type name if no description
+        }
 
         // Create list item
         QListWidgetItem* item = new QListWidgetItem(m_listWidget);
-        item->setText(typeName);
+        item->setText(displayName);  // Use description for display
         item->setIcon(getIconForType(typeName));
-        item->setData(Qt::UserRole, typeName); // Store type name for filtering
+        item->setData(Qt::UserRole, typeName); // Still store type name for internal use
 
         // Generate and cache description
         QString description = generateDescription(quanset, typeName);
