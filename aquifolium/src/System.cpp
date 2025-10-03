@@ -4525,6 +4525,7 @@ bool System::WriteOutPuts()
     return true;
 }
 
+#ifdef Q_JSON_SUPPORT
 bool System::SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariables, bool calculatevalue)
 {
     SetVariableParents();
@@ -4879,3 +4880,61 @@ bool System::LoadfromJson(const QJsonObject &root)
     return outcome;
 }
 
+bool System::SaveStateVariableToJson(const string &variable, const string &filename)
+{
+    QJsonObject out;
+
+    for (unsigned int i=0; i<blocks.size(); i++)
+    {
+        if (blocks[i].HasQuantity(variable))
+        {
+            out[QString::fromStdString(blocks[i].GetName())] = blocks[i].Variable(variable)->GetVal();
+        }
+    }
+
+    QFile file(QString::fromStdString(filename));
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning() << "Could not open file for writing:" << file.errorString();
+        return false;
+    }
+    QJsonDocument jsonDoc(out);
+    file.write(jsonDoc.toJson(QJsonDocument::Indented));  // Use Indented or Compact
+    file.close();
+    return true;
+}
+
+bool System::LoadStateVariableFromJson(const string &variable, const string &filename)
+{
+    QFile file(QString::fromStdString(filename));
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Couldn't open file:" << filename;
+        return false;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parse error at offset" << parseError.offset
+                   << ":" << parseError.errorString();
+        return false;
+    }
+
+    QJsonObject root = doc.object();
+
+    for (const QString& key: root.keys())
+    {
+        if (block(key.toStdString()))
+        {
+            if (block(key.toStdString())->HasQuantity(variable))
+                block(key.toStdString())->SetVal(variable,root[key].toDouble());
+        }
+    }
+    return true;
+}
+
+
+#endif

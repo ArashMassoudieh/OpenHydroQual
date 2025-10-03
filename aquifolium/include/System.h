@@ -373,6 +373,12 @@ class System: public Object
         QStringList QGetAllCategoryTypes();
 		QStringList QGetAllObjectsofTypes(QString _type);
 		QStringList QGetAllObjectsofTypeCategory(QString _type);
+        bool SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariable = false, bool calculatevalue = false);
+        bool LoadfromJson(const QString &jsonfilename);
+        bool LoadfromJson(const QJsonDocument &jsondoc);
+        bool LoadfromJson(const QJsonObject &jsondoc);
+        bool SaveStateVariableToJson(const string &variable, const string &filename);
+        bool LoadStateVariableFromJson(const string &variable, const string &filename);
 #endif
 
 #ifdef Q_GUI_SUPPORT
@@ -440,10 +446,6 @@ class System: public Object
         double dt0() {return SimulationParameters.dt0;}
         Objective_Function_Set *ObjectiveFunctionSet() {return &objective_function_set;}
         bool WriteOutPuts();
-        bool SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariable = false, bool calculatevalue = false);
-        bool LoadfromJson(const QString &jsonfilename);
-        bool LoadfromJson(const QJsonDocument &jsondoc);
-        bool LoadfromJson(const QJsonObject &jsondoc);
         void AddSolveVariableOrder(const std::string &variable) {solvevariableorder.push_back(variable);}
     protected:
 
