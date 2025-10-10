@@ -119,6 +119,22 @@
       "delegate": "UnitBox",
       "unit": "day",
       "code": "write_interval"
+    },
+    "max_timestep_increase_factor": {
+      "type": "value",
+      "default": "50",
+      "description": "Maximum allowable time-step increase factor with respect to the initial time-step",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "code": "max_timestep_increase_factor"
+    },
+    "max_timestep_decrease_factor": {
+      "type": "value",
+      "default": "100000",
+      "description": "Maximum allowable time-step decrease factor with respect to the initial time-step",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "code": "max_timestep_decrease_factor"
     }
   },
   "general_parameters": {

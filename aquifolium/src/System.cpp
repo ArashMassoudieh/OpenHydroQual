@@ -572,8 +572,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 #ifndef NO_OPENMP
     omp_init_lock(&lock);
 #endif
-    double timestepminfactor = 100000;
-    double timestepmaxfactor = 50;
+
     fit_measures.resize(ObservationsCount()*3);
     SolverTempVars.time_start = time(nullptr);
     SetAllParents();
@@ -629,7 +628,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     {
         rtw->AppendText("Simulation Started at " + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
         rtw->SetXRange(SimulationParameters.tstart,SimulationParameters.tend);
-        rtw->SetYRange(0,SimulationParameters.dt0*timestepmaxfactor);
+        rtw->SetYRange(0,SimulationParameters.dt0*SolverSettings.timestepmaxfactor);
         QCoreApplication::processEvents();
     }
 #endif
@@ -659,7 +658,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
             SolverTempVars.SetUpdateJacobian(true);
         //qDebug()<<"First Jacobian update...";
         SolverTempVars.dt = min(SolverTempVars.dt_base,GetMinimumNextTimeStepSize());
-        if (SolverTempVars.dt<SimulationParameters.dt0/ timestepminfactor) SolverTempVars.dt=SimulationParameters.dt0/ timestepminfactor;
+        if (SolverTempVars.dt<SimulationParameters.dt0/ SolverSettings.timestepminfactor) SolverTempVars.dt=SimulationParameters.dt0/ SolverSettings.timestepminfactor;
         #ifdef Terminal_version
         ShowMessage(string("t = ") + aquiutils::numbertostring(SolverTempVars.t) + ", dt_base = " + aquiutils::numbertostring(SolverTempVars.dt_base) + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt) + ", SolverTempVars.numiterations =" + aquiutils::numbertostring(SolverTempVars.numiterations) + "," + aquiutils::numbertostring(progress*100) + "% complete");
         #endif // Debug_mode
@@ -693,7 +692,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
                 GetSolutionLogger()->WriteString(SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1] + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt));
 
             SolverTempVars.dt_base *= SolverSettings.NR_timestep_reduction_factor_fail;
-            SolverTempVars.dt_base = max(SolverTempVars.dt_base,SimulationParameters.dt0/(2*timestepminfactor));
+            SolverTempVars.dt_base = max(SolverTempVars.dt_base,SimulationParameters.dt0/(2*SolverSettings.timestepminfactor));
             SolverTempVars.SetUpdateJacobian(true);
 
             if (fail_counter > 20)
@@ -776,7 +775,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
             }
             if (SolverTempVars.MaxNumberOfIterations() < SolverSettings.NR_niteration_lower)
             {
-                SolverTempVars.dt_base = min(SolverTempVars.dt_base / SolverSettings.NR_timestep_reduction_factor, SimulationParameters.dt0 * timestepmaxfactor);
+                SolverTempVars.dt_base = min(SolverTempVars.dt_base / SolverSettings.NR_timestep_reduction_factor, SimulationParameters.dt0 * SolverSettings.timestepmaxfactor);
                 SolverTempVars.NR_coefficient = (CVector(SolverTempVars.NR_coefficient.size()) + 1);
             }
 
@@ -994,6 +993,17 @@ bool System::SetProp(const string &s, const double &val)
         SimulationParameters.dt0 = val;
         return true;
     }
+
+    if (s=="max_timestep_increase_factor" )
+    {
+        SolverSettings.timestepmaxfactor = val;
+        return true;
+    }
+    if (s=="max_timestep_decrease_factor" )
+    {
+        SolverSettings.timestepminfactor = val;
+        return true;
+    }
     errorhandler.Append("","System","SetProp","Property '" + s + "' was not found!", 621);
     return false;
 }
@@ -1112,7 +1122,16 @@ bool System::SetProperty(const string &s, const string &val)
         SimulationParameters.write_interval = aquiutils::atof(val);
         return true;
     }
-
+    if (s=="max_timestep_increase_factor" )
+    {
+        SolverSettings.timestepmaxfactor = aquiutils::atof(val);
+        return true;
+    }
+    if (s=="max_timestep_decrease_factor" )
+    {
+        SolverSettings.timestepminfactor = aquiutils::atof(val);
+        return true;
+    }
 
     //errorhandler.Append("","System","SetProperty","Property '" + s + "' was not found!", 622);
 

@@ -83,6 +83,8 @@ struct solversettings
     double maximum_simulation_time = 86400; //maximum simulation time allows in seconds
     int maximum_number_of_matrix_inversions = 200000; //maximum number of matrix inversions allowed
     bool RecordAllOutputs = true; //whether the results will be all recorded on not
+    double timestepminfactor = 100000; // the maximum the timestep can decrease by
+    double timestepmaxfactor = 50; // the maximum the timestep can increase by
 
 };
 
