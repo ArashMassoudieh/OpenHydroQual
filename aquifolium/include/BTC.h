@@ -93,6 +93,8 @@ public:
     bool append(T x); //appends a data point with value x
     bool append(T tt, T xx); //appends a datapoint with value xx at time tt
     void CreateConstant(const T &t_start, const T &t_end, const T &magnitude); //creates a constant timeseries
+    static CTimeSeries<T> CreateSinusoidal(const T &t_start, const T &t_end, const T &increment, const T& T0, const T &a, const T &b); //creates a sinusoidal timeseries a+b*SIN((A2-$I$4)/365*2*PI()-PI()/2)
+    CTimeSeries<T> CreateSinusoidal(const T &T0, const T &a, const T &b);//creates a sinusoidal timeseries a+b*SIN((A2-$I$4)/365*2*PI()-PI()/2)
 	void append(CTimeSeries &CC);// appends a time-series to the time-series
     void ResizeIfNeeded(int _increment); //increases the size of the vectors more capacity is needed
 	CTimeSeries& operator+=(CTimeSeries &v); //adds another time-series to the existing one

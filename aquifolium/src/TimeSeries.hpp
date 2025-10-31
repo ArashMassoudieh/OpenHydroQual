@@ -869,7 +869,7 @@ TimeSeries<T> TimeSeries<T>::log() const {
     TimeSeries<T> out;
     out.reserve(this->size());
     for (const auto& pt : *this) {
-        out.emplace_back(DataPoint{pt.t, std::log(pt.c), pt.d});
+        out.emplace_back(DataPoint<T>{pt.t, std::log(pt.c), pt.d});
     }
     out.structured_ = this->structured_;
     out.dt_ = this->dt_;
