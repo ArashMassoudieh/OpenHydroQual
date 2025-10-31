@@ -677,6 +677,14 @@
       "estimate": "true",
       "unit": "g/m~^3"
     },
+	"turbidity": {
+      "description": "Turbidity",
+      "type": "expression",
+      "expression": "turbidity_coefficient*concentration^turbidity_exponent",
+      "ask_user": "falso",
+      "role": "copytoblocks",
+      "includeinoutput": "true"
+    },
     "settling_velocity": {
       "description": "Settling velocity",
       "type": "value",
@@ -684,6 +692,20 @@
       "delegate": "UnitBox",
       "estimate": "true",
       "unit": "m/s;m/day;ft/s;ft/day"
+    },
+	"turbidity_coefficient": {
+      "description": "Turbidity Coefficient",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+	"turbidity_exponent": {
+      "description": "Turbidity Exponent",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
