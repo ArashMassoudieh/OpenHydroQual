@@ -2179,8 +2179,8 @@ void MainWindow::oninverserun()
     system.SetAllParents();
     rtw = new ProgressWindow(this);
 	rtw->SetPrimaryChartXAxisTitle("Generation");
-	rtw->SetPrimaryChartYAxisTitle("MSE");
-	rtw->SetPrimaryChartTitle("MSE vs Generation");
+    rtw->SetPrimaryChartYAxisTitle("-Log Likelihood");
+    rtw->SetPrimaryChartTitle("-LL vs Generation");
 	rtw->SetStatus("Parameter Estimation");
     rtw->SetPrimaryChartXRange(0, optimizer->GA_params.nGen);
 	rtw->SetSecondaryProgressVisible(true);
