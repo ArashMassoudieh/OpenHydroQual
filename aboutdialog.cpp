@@ -86,7 +86,7 @@ void AboutDialog::setupUI()
     headerLayout->setSpacing(10);
 
     logoLabel = new QLabel(this);
-    logoLabel->setFixedSize(64, 64);  // Smaller icon: 48x48 instead of 64x64
+    logoLabel->setFixedSize(64, 64);  
     // Set application icon if available
     QIcon appIcon = windowIcon();
     if (!appIcon.isNull()) {
@@ -177,7 +177,7 @@ void AboutDialog::setupUI()
         "background-color: white; "
         "}"
     );
-    tabWidget->addTab(generalTextBrowser, "Information");
+    tabWidget->addTab(generalTextBrowser, "Plugins");
 
     // Add tab widget with stretch factor so it takes all remaining space
     mainLayout->addWidget(tabWidget, 1);  // The "1" is the stretch factor
@@ -212,6 +212,34 @@ void AboutDialog::setupUI()
 
     setLayout(mainLayout);
 }
+
+void AboutDialog::SetVersion(const QString& version)
+{
+    currentVersion_ = version;
+    versionLabel->setText("Version " + version);
+    updateAboutText();
+}
+
+void AboutDialog::SetLastModified(const QString& date)
+{
+    lastModified_ = date;
+    updateAboutText();
+}
+
+void AboutDialog::updateAboutText()
+{
+    SetAboutText(
+        "<h2>OpenHydroQual</h2>"
+        "<p><b>Version:</b> " + currentVersion_ + "</p>"
+        "<p><b>Last Modified:</b> " + lastModified_ + "</p>"
+        "<p>Environmental Modeling Platform</p>"
+        "<p>Copyright &copy; 2025 EnviroInformatics, LLC</p>"
+        "<br>"
+        "<p><b>OpenHydroQual</b> is a comprehensive platform for environmental modeling "
+        "and simulation, providing tools for water quality analysis, hydrological modeling, "
+        "and environmental system assessment.</p>"
+    );
+}
 void AboutDialog::AppendText(const QString& text)
 {
     generalTextBrowser->append(text);
@@ -220,11 +248,6 @@ void AboutDialog::AppendText(const QString& text)
 void AboutDialog::ClearText()
 {
     generalTextBrowser->clear();
-}
-
-void AboutDialog::SetVersion(const QString& version)
-{
-    versionLabel->setText("Version " + version);
 }
 
 void AboutDialog::SetAboutText(const QString& text)

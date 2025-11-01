@@ -1641,10 +1641,10 @@ void MainWindow::onzoomall(bool openornew)
 void MainWindow::onabout()
 {
     AboutDialog* abtdlg = new AboutDialog(this);
-    abtdlg->AppendText(QString("OpenHydroQual - version: ") + QString(openhydroqual_version));
+    
 	abtdlg->SetVersion(QString(openhydroqual_version));
-    abtdlg->AppendText(QString("Last modified: ") + QString(last_modified));
-    abtdlg->AppendText("EnviroInformatics, LLC");
+    abtdlg->SetLastModified(QString("Last modified: ") + QString(last_modified));
+    
     abtdlg->AppendText("Plugins added:");
     for (unsigned int i=0; i<addedtemplatefilenames.size(); i++)
         abtdlg->AppendText(QString::fromStdString("    ") + QString::fromStdString(addedtemplatefilenames[i]));

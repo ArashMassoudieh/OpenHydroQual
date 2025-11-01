@@ -34,6 +34,7 @@ public:
     void AppendText(const QString& text);
     void ClearText();
     void SetVersion(const QString& version);
+    void SetLastModified(const QString& date);
     void SetAboutText(const QString& text);
     void SetLicenseText(const QString& text);
     void SetCreditsText(const QString& text);
@@ -49,6 +50,11 @@ private:
     QPushButton* closeButton;
     QLabel* logoLabel;
     QLabel* versionLabel;
+    QString currentVersion_; 
+	QString lastModified_;
+
+    void updateAboutText();
+
 };
 
 #endif // ABOUTDIALOG_H
