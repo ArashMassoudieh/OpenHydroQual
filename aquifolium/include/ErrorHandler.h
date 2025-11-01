@@ -23,7 +23,7 @@
 #include <iostream>
 
 #ifdef Q_GUI_SUPPORT
-    #include "runtimewindow.h"
+    #include "ProgressWindow.h"
     #include "QString"
 #endif
 
@@ -73,16 +73,16 @@ class ErrorHandler
             return false;
         }
 #ifdef Q_GUI_SUPPORT
-        void Flush(RunTimeWindow *_rtw=nullptr)
+        void Flush(ProgressWindow *_rtw=nullptr)
         {
             if (flushed_counter<errors.size())
             {
                 for (int j=flushed_counter; j<errors.size(); j++)
                 {
                     if (_rtw)
-                        _rtw->AppendErrorMessage(QString::fromStdString(errors[j].description));
+                        _rtw->AppendLog(QString::fromStdString(errors[j].description));
                     else if (rtw)
-                        rtw->AppendErrorMessage(QString::fromStdString(errors[j].description));
+                        rtw->AppendLog(QString::fromStdString(errors[j].description));
                 }
             }
             flushed_counter=errors.size();
@@ -115,7 +115,7 @@ class ErrorHandler
             else return false;
         }
 #ifdef Q_GUI_SUPPORT
-        void SetRunTimeWindow(RunTimeWindow *_rtw) {rtw = _rtw;}
+        void SetProgressWindow(ProgressWindow *_rtw) {rtw = _rtw;}
 #endif
 
     protected:
@@ -124,7 +124,7 @@ class ErrorHandler
         int flushed_counter=0;
         vector<_error> errors;
         #ifdef Q_GUI_SUPPORT
-        RunTimeWindow *rtw = nullptr;
+        ProgressWindow *rtw = nullptr;
         #endif // Q_version
 
 };

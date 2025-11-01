@@ -91,7 +91,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="QtSettings">
-    <QtInstall>6.7</QtInstall>
+    <QtInstall>Qt 6.8</QtInstall>
     <QtModules>core;opengl;gui;svg;widgets;printsupport;charts;svgwidgets</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -99,7 +99,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="QtSettings">
-    <QtInstall>6.7</QtInstall>
+    <QtInstall>Qt 6.8</QtInstall>
     <QtModules>core;gui;widgets;opengl;printsupport;svg;svgwidgets;charts</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
@@ -421,12 +421,12 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClCompile Include="metamodelhelpdialog.cpp" />
     <ClCompile Include="node.cpp" />
     <ClCompile Include="options.cpp" />
+    <ClCompile Include="ProgressWindow.cpp" />
     <ClCompile Include="propmodel.cpp" />
     <ClCompile Include="..\qcustomplot\qcustomplot.cpp" />
     <ClCompile Include="qplotter.cpp" />
     <ClCompile Include="qplotwindow.cpp" />
     <ClCompile Include="ray.cpp" />
-    <ClCompile Include="runtimewindow.cpp" />
     <ClCompile Include="undodata.cpp" />
     <ClCompile Include="UnitTextBox3.cpp" />
     <ClCompile Include="utilityfuncs.cpp" />
@@ -510,12 +510,11 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <QtMoc Include="..\qcustomplot\qcustomplot.h">
     </QtMoc>
     <QtMoc Include="options.h" />
+    <QtMoc Include="ProgressWindow.h" />
     <ClInclude Include="qplotter.h" />
     <QtMoc Include="qplotwindow.h" />
     <ClInclude Include="ray.h" />
     <ClInclude Include="..\jsoncpp\include\json\reader.h" />
-    <QtMoc Include="runtimewindow.h">
-    </QtMoc>
     <ClInclude Include="undodata.h" />
     <QtMoc Include="UnitTextBox3.h" />
     <ClInclude Include="utilityfuncs.h" />
@@ -535,8 +534,6 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     </QtUic>
     <QtUic Include="Options.ui" />
     <QtUic Include="qplotwindow.ui" />
-    <QtUic Include="runtimewindow.ui">
-    </QtUic>
     <QtUic Include="wizard_select_dialog.ui" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

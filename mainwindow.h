@@ -22,7 +22,7 @@
 #include <QTreeWidget>
 #include "propmodel.h"
 #include "diagramview.h"
-#include "runtimewindow.h"
+#include "ProgressWindow.h"
 #ifndef QCharts
 #include "plotter.h"
 #else
@@ -117,7 +117,7 @@ private:
     string maintemplatefilename;
     vector<string> addedtemplatefilenames;
     string entitiesfilename;
-    RunTimeWindow *rtw = nullptr;
+    ProgressWindow *rtw = nullptr;
     void closeEvent (QCloseEvent *event) override;
     QString workingfolder = ".";
     QModelIndex addParameterIndex(const QModelIndex &index = QModelIndex());

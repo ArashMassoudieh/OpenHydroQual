@@ -24,7 +24,7 @@
 #include <omp.h>
 #endif
 #ifdef Q_GUI_SUPPORT
-#include "runtimewindow.h"
+#include "ProgressWindow.h"
 #endif
 #include "Utilities.h"
 #include "Parameter_Set.h"
@@ -462,7 +462,7 @@ vector<double> CMCMC<T>::purturb(int k)
 }
 
 template<class T>
-bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
+bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 {
 	FILE *file;
     if (MCMC_Settings.continue_mcmc == false)
@@ -490,7 +490,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
     for (unsigned int kk=k; kk<k+nsamps+MCMC_Settings.number_of_chains; kk+=MCMC_Settings.number_of_chains)
 	{
         QCoreApplication::processEvents(QEventLoop::AllEvents,10*1000);
-        if (rtw->stoptriggered)
+        if (rtw->Cancelled())
 			break;
 
 #ifndef NO_OPENMP
@@ -528,7 +528,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 
 
 #pragma omp critical
-            {   if (rtw->detailson)
+            {   if (rtw->DetailsOn())
                 {   QString s;
                     s = s+"Sample no: "+QString::number(jj) + " Parameters: ";
                     for (unsigned int i = 0; i < MCMC_Settings.number_of_parameters; i++)
@@ -537,8 +537,8 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
                     s+= " Stuck counter: " + QString::number(stuckcounter[jj-kk]);
                     s+= " Log Likelihood: " + QString::number(logp[jj],'e',2);
 
-                    rtw->AppendtoDetails(s);
-                    rtw->AppendtoDetails(" ");
+                    rtw->AppendDetails(s);
+                    rtw->AppendDetails(" ");
                 }
             }
         }
@@ -596,12 +596,10 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 		{
             double progress = double(kk) / double(nsamps);
             rtw->SetProgress(progress);
-            rtw->AddDataPoint(kk,double(accepted_count) / double(total_count));
-            if (rtw->plot2)
-            {
-                rtw->AddDataPoint(kk,double(pertcoeff[0] / MCMC_Settings.ini_purt_fact),1);
-            }
-            rtw->Replot();
+            rtw->AddPrimaryChartPoint(kk,double(accepted_count) / double(total_count));
+            rtw->AddSecondaryChartPoint(kk,double(pertcoeff[0] / MCMC_Settings.ini_purt_fact));
+            rtw->ReplotPrimaryChart();
+            rtw->ReplotSecondaryChart();
 		}
 	}
 
@@ -609,7 +607,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, RunTimeWindow *rtw)
 }
 
 template<class T>
-void CMCMC<T>::SetRunTimeWindow(RunTimeWindow *_rtw)
+void CMCMC<T>::SetProgressWindow(ProgressWindow *_rtw)
 {
     rtw = _rtw;
 }
@@ -876,12 +874,12 @@ void CMCMC<T>::Perform()
     int mcmcstart = MCMC_Settings.number_of_chains;
     if (MCMC_Settings.continue_mcmc)
     {
-        if (rtw) rtw->AppendText("Reading samples from ... " + MCMC_Settings.continue_filename);
+        if (rtw) rtw->AppendLog("Reading samples from ... " + MCMC_Settings.continue_filename);
         mcmcstart = readfromfile(MCMC_Settings.continue_filename);
     }
-    if (rtw) rtw->AppendText(string("Generating samples ... "));
+    if (rtw) rtw->AppendLog(string("Generating samples ... "));
     step(mcmcstart, int((MCMC_Settings.total_number_of_samples - mcmcstart) / MCMC_Settings.number_of_chains)*MCMC_Settings.number_of_chains, FileInformation.outputfilename , rtw);
-    if (rtw) rtw->AppendText(string("Creating posterior distribution ..."));
+    if (rtw) rtw->AppendLog(string("Creating posterior distribution ..."));
     TimeSeriesSet<double> all_posterior_distributions;
     TimeSeriesSet<double> parameter_samples;
     vector<CVector> posterior_percentiles;
@@ -924,6 +922,6 @@ void CMCMC<T>::Perform()
 
     all_posterior_distributions.write(FileInformation.outputpath + "Posterior_distributions.txt");
 
-    if (rtw) rtw->AppendText(string("Generating Realizations ..."));
+    if (rtw) rtw->AppendLog(std::string("Generating Realizations ..."));
     ProduceRealizations(parameter_samples);
 }

@@ -550,7 +550,7 @@ void System::MakeTimeSeriesUniform(const double &increment)
 
 #ifdef Q_GUI_SUPPORT
     if (rtw!=nullptr)
-        rtw->AppendText(string("Uniformizing of time-series..."));
+        rtw->AppendInfo("Uniformizing of time-series...");
 #endif
     for (unsigned int i=0; i<sources.size(); i++)
         sources[i].MakeTimeSeriesUniform(increment);
@@ -562,7 +562,7 @@ void System::MakeTimeSeriesUniform(const double &increment)
         blocks[i].MakeTimeSeriesUniform(increment);
 #ifdef Q_GUI_SUPPORT
     if (rtw!=nullptr)
-        rtw->AppendText(string("Uniformizing of time-series (done!)"));
+        rtw->AppendInfo("Uniformizing of time-series (done!)");
 #endif
 
 }
@@ -586,7 +586,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 
 	bool success = true;
 #ifdef Q_GUI_SUPPORT
-    errorhandler.SetRunTimeWindow(rtw);
+    errorhandler.SetProgressWindow(rtw);
 #endif // Q_GUI_SUPPORT
 	if (applyparameters) ApplyParameters();
     //qDebug()<<"Initiating outputs";
@@ -626,9 +626,10 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {
-        rtw->AppendText("Simulation Started at " + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
-        rtw->SetXRange(SimulationParameters.tstart,SimulationParameters.tend);
-        rtw->SetYRange(0,SimulationParameters.dt0*SolverSettings.timestepmaxfactor);
+        rtw->AppendLog("Simulation Started at " + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
+        rtw->SetPrimaryChartXRange(SimulationParameters.tstart,SimulationParameters.tend);
+        rtw->SetPrimaryChartYRange(0,SimulationParameters.dt0*SolverSettings.timestepmaxfactor);
+        rtw->ReplotPrimaryChart(); 
         QCoreApplication::processEvents();
     }
 #endif
@@ -676,10 +677,10 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 #ifdef Q_GUI_SUPPORT
             if (rtw)
             {
-                if (rtw->detailson)
+                if (rtw->DetailsOn())
                 {
-                    rtw->AppendtoDetails(QString::fromStdString(SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1]) + ", dt = " + QString::number(SolverTempVars.dt,'e'));
-                    if (rtw->stoptriggered) stop_triggered = true;
+                    rtw->AppendDetails(QString::fromStdString(SolverTempVars.fail_reason[SolverTempVars.fail_reason.size() - 1]) + ", dt = " + QString::number(SolverTempVars.dt,'e'));
+                    if (rtw->Cancelled()) stop_triggered = true;
 
                 }
                 QCoreApplication::processEvents();
@@ -702,10 +703,9 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 #ifdef Q_GUI_SUPPORT
                     if (rtw)
                     {
-                        if (rtw->detailson)
-                            rtw->AppendtoDetails("The attempt to solve the problem failed");
+                        rtw->AppendInfo("The attempt to solve the problem failed");
 
-                        rtw->AppendErrorMessage("The attempt to solve the problem failed!");
+                        rtw->AppendInfo("The attempt to solve the problem failed!");
                         QCoreApplication::processEvents();
                     }
     #endif
@@ -721,8 +721,8 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
                         GetSolutionLogger()->WriteString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t) );
 #ifdef Q_GUI_SUPPORT
                     if (rtw)
-                        if (rtw->detailson)
-                            rtw->AppendtoDetails(QString::fromStdString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t)));
+                        if (rtw->DetailsOn())
+                            rtw->AppendDetails(QString::fromStdString("Reseting to the restore point saved @ t = " + aquiutils::numbertostring(restorepoint.t)));
 #endif
 
                 }
@@ -734,11 +734,11 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
             if (rtw)
             {
                 rtw->SetProgress(progress);
-                rtw->AddDataPoint(SolverTempVars.t, SolverTempVars.dt);
-                if (int(progress/0.01)>int(progress_p/0.01) || rtw->detailson)
-                    rtw->Replot();
-                if (rtw->detailson) rtw->AppendtoDetails("Number of iterations:" + QString::number(SolverTempVars.MaxNumberOfIterations()) + ",dt = " + QString::number(SolverTempVars.dt) + ",t = " + QString::number(SolverTempVars.t, 'f', 6) + ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
-                if (rtw->stoptriggered) stop_triggered = true;
+                rtw->AddPrimaryChartPoint(SolverTempVars.t, SolverTempVars.dt);
+                if (int(progress/0.01)>int(progress_p/0.01) || rtw->DetailsOn())
+                    rtw->ReplotPrimaryChart();
+                if (rtw->DetailsOn()) rtw->AppendDetails("Number of iterations:" + QString::number(SolverTempVars.MaxNumberOfIterations()) + ",dt = " + QString::number(SolverTempVars.dt) + ",t = " + QString::number(SolverTempVars.t, 'f', 6) + ", NR_factor = " + QString::fromStdString(CVector(SolverTempVars.NR_coefficient).toString()));
+                if (rtw->Cancelled()) stop_triggered = true;
 
             if ((counter-1)%restore_interval==0)
             {
@@ -746,9 +746,9 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
                 restorepoint.t = SolverTempVars.t;
                 restorepoint.dt = SolverTempVars.dt;
                 if (rtw!=nullptr)
-                    if (rtw->detailson)
+                    if (rtw->DetailsOn())
                     {
-                        rtw->AppendtoDetails("Restore point saved!");
+                        rtw->AppendDetails("Restore point saved!");
                     }
                 restorepoint.used_counter = 0;
                 if (GetSolutionLogger())
@@ -788,10 +788,10 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 #ifdef Q_GUI_SUPPORT
                 if (rtw)
                 {
-                    if (rtw->detailson)
-                        rtw->AppendtoDetails("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+                    if (rtw->DetailsOn())
+                        rtw->AppendDetails("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
 
-                    rtw->AppendErrorMessage("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+                    rtw->AppendInfo("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
                     QCoreApplication::processEvents();
                 }
 #endif
@@ -811,10 +811,10 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 #ifdef Q_GUI_SUPPORT
                 if (rtw)
                 {
-                    if (rtw->detailson)
-                        rtw->AppendtoDetails("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+                    if (rtw->DetailsOn())
+                        rtw->AppendDetails("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
 
-                    rtw->AppendErrorMessage("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+                    rtw->AppendInfo("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
                     QCoreApplication::processEvents();
                 }
 #endif
@@ -850,7 +850,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     qDebug() << "Adjusting outputs ....";
     if (rtw)
     {
-        rtw->AppendText(QString("Adjusting outputs ..."));
+        rtw->AppendLog(QString("Adjusting outputs ..."));
         QCoreApplication::processEvents();
     }
 #else
@@ -860,7 +860,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {
-        rtw->AppendText(QString("Adjusting outputs, Done!"));
+        rtw->AppendLog(QString("Adjusting outputs, Done!"));
         QCoreApplication::processEvents();
     }
 #endif
@@ -870,7 +870,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     qDebug() << "Uniformizing outputs ....";
 	if (rtw)
     {
-        rtw->AppendText(QString("Uniformizing outputs ..."));
+        rtw->AppendLog(QString("Uniformizing outputs ..."));
         QCoreApplication::processEvents();
     }
 #else
@@ -884,7 +884,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 
     if (rtw)
     {
-        rtw->AppendText(QString("Uniformizing observations ..."));
+        rtw->AppendLog(QString("Uniformizing observations ..."));
         QCoreApplication::processEvents();
     }
 #endif
@@ -896,7 +896,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     qDebug() << "Uniformizing objective functions ....";
     if (rtw)
     {
-        rtw->AppendText(QString("Uniformizing objective functions ...."));
+        rtw->AppendLog(QString("Uniformizing objective functions ...."));
         QCoreApplication::processEvents();
     }
     qDebug() << "Making objective function expressions uniform ....";
@@ -907,7 +907,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 #ifdef Q_GUI_SUPPORT
     if (rtw)
     {
-        rtw->AppendText(QString("Uniformizing observation expressions ..."));
+        rtw->AppendLog(QString("Uniformizing observation expressions ..."));
         QCoreApplication::processEvents();
     }
     qDebug() << "Making observation expressions uniform ....";
@@ -919,8 +919,8 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     {
         if (!stop_triggered)
             rtw->SetProgress(1);
-        rtw->AddDataPoint(SolverTempVars.t,SolverTempVars.dt);
-        rtw->AppendText("Simulation finished!" + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
+        rtw->AddPrimaryChartPoint(SolverTempVars.t,SolverTempVars.dt);
+        rtw->AppendLog("Simulation finished!" + QTime::currentTime().toString(Qt::RFC2822Date) + "!");
         QCoreApplication::processEvents();
     }
 #endif

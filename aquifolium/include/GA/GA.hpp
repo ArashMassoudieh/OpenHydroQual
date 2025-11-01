@@ -30,7 +30,7 @@
 
 
 #ifdef Q_GUI_SUPPORT
-    #include "runtimewindow.h"
+    #include "ProgressWindow.h"
 #endif
 
 template<class T>
@@ -412,7 +412,7 @@ int counter=0;
                 if (omp_get_thread_num() == 0)
 #endif
                 {
-                    rtw->SetProgress2(double(counter + 1) / GA_params.maxpop);
+                    rtw->SetSecondaryProgress(double(counter + 1) / GA_params.maxpop);
                     QCoreApplication::processEvents();
                 }
 			}
@@ -430,7 +430,7 @@ int counter=0;
 #ifdef Q_GUI_SUPPORT
     if (rtw != nullptr)
     {
-        rtw->SetProgress2(1);
+        rtw->SetSecondaryProgress(1);
         QCoreApplication::processEvents();
     }
 #endif
@@ -631,10 +631,10 @@ int CGA<T>::optimize()
 
 #ifdef Q_GUI_SUPPORT
     if (rtw)
-    {   if (current_generation==0) rtw->SetYRange(0,Ind[j].actual_fitness*1.1);
+    {   if (current_generation==0) rtw->SetPrimaryChartYRange(0,Ind[j].actual_fitness*1.1);
         rtw->SetProgress(double(current_generation)/double(GA_params.nGen));
-        rtw->AddDataPoint(current_generation+1,Ind[j].actual_fitness);
-        rtw->Replot();
+        rtw->AddPrimaryChartPoint(double(current_generation+1),Ind[j].actual_fitness);
+        rtw->ReplotPrimaryChart();
         QCoreApplication::processEvents();
     }
 #endif

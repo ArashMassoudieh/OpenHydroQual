@@ -41,7 +41,7 @@
 #include "edge.h"
 #include "Script.h"
 #include "QFileDialog"
-#include "runtimewindow.h"
+#include "ProgressWindow.h"
 #ifndef QCharts
 #include "plotter.h"
 #else
@@ -1997,17 +1997,22 @@ void MainWindow::onrunmodel()
     qDebug()<<"Working folder: " << workingfolder;
     if (copiedsystem.GetSolverSettings().write_solution_details)
         copiedsystem.SetSolutionLogger(workingfolder.toStdString() + "/solution_details.txt");
-    rtw = new RunTimeWindow(this,config::forward);
+    rtw = new ProgressWindow(this);
+	rtw->setWindowTitle("Running Model");
+    rtw->SetStatus("Running Model");
+    rtw->SetPrimaryChartXAxisTitle("Time");
+    rtw->SetPrimaryChartYAxisTitle("Time-step size");
+	rtw->SetPrimaryChartTitle("Time-step size vs Time");
     rtw->show();
-    copiedsystem.SetRunTimeWindow(rtw);
+    copiedsystem.SetProgressWindow(rtw);
     copiedsystem.WriteOutPuts(); 
     copiedsystem.Solve(true);
-    rtw->AppendText(string("Saving outputs in '" + workingfolder.toStdString() + "'"));
+    rtw->AppendLog("Saving outputs in '" + workingfolder + "'");
     qDebug()<<"Working folder" << workingfolder;
     QCoreApplication::processEvents();
     if (copiedsystem.OutputFileName() != "")
     {
-        rtw->AppendText(string("Writing all outputs ... "));
+        rtw->AppendLog(std::string("Writing all outputs ... "));
         if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
             if (copiedsystem.WriteIntermittently())
                 copiedsystem.GetOutputs().appendtofile(copiedsystem.OutputFileName(),true);
@@ -2021,7 +2026,7 @@ void MainWindow::onrunmodel()
     }
     if (copiedsystem.ObservedOutputFileName() != "")
     {
-        rtw->AppendText(string("Writing observations ... "));
+        rtw->AppendLog(std::string("Writing observations ... "));
         if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
             if (copiedsystem.WriteIntermittently())
                 copiedsystem.GetObservedOutputs().appendtofile(copiedsystem.ObservedOutputFileName(),true);
@@ -2038,7 +2043,7 @@ void MainWindow::onrunmodel()
     copiedsystem.ObjectiveFunctionSet()->GetTimeSeriesSet().write(workingfolder.toStdString() + "/Objective_Function_TimeSeries.txt");
     if (copiedsystem.WriteIntermittently())
     {
-        rtw->AppendText(string("Writing objective functions ... "));
+        rtw->AppendLog(std::string("Writing objective functions ... "));
         if (copiedsystem.OutputFileName() != "")
         {   if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
                 copiedsystem.GetOutputs().read(copiedsystem.OutputFileName(),true);
@@ -2054,7 +2059,7 @@ void MainWindow::onrunmodel()
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();
-    rtw->AppendText("Saving model json file in '" + workingfolder + "/state.json'" );
+    rtw->AppendLog("Saving model json file in '" + workingfolder + "/state.json'" );
     qDebug()<<"Start time was set to "<<copiedsystem.GetTime();
     copiedsystem.SetVal("tstart",copiedsystem.GetTime());
     copiedsystem.SetProp("tstart",copiedsystem.GetTime());
@@ -2082,7 +2087,8 @@ void MainWindow::onrunmodel()
     FitMeasures.writetofile(workingfolder.toStdString() + "/" + "fit_measures.txt");
     mapped_modeled_results.write(workingfolder.toStdString() + "/" + "mapped_modeled_results.txt");
     actionrun->setEnabled(true);
-    rtw->AppendText(string("All tasks finished!"));
+    rtw->AppendLog(std::string("All tasks finished!"));
+    rtw->SetStatus("Finished!");
 }
 
 void MainWindow::closeEvent (QCloseEvent *event)
@@ -2122,12 +2128,19 @@ void MainWindow::onoptimize()
     optimizer->SetParameters(system.object("Optimizer"));
     optimizer->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
-    rtw = new RunTimeWindow(this,config::optimize);
+    rtw = new ProgressWindow(this);
+    rtw->SetSecondaryProgressVisible(true);
+    rtw->SetPrimaryChartXAxisTitle("Generation");
+    rtw->SetPrimaryChartYAxisTitle("Objective Function Value");
+    rtw->SetPrimaryChartTitle("OFV vs Generation");
+    rtw->SetStatus("Optimization");
+    rtw->SetPrimaryChartXRange(0, optimizer->GA_params.nGen);
+    rtw->SetSecondaryProgressVisible(true);
     rtw->show();
-    rtw->AppendText(string("Optimization Started ..."));
-    rtw->SetXRange(0,optimizer->GA_params.nGen);
-    system.SetRunTimeWindow(nullptr);
-    optimizer->SetRunTimeWindow(rtw);
+    rtw->AppendLog(std::string("Optimization Started ..."));
+    rtw->SetPrimaryChartXRange(0,optimizer->GA_params.nGen);
+    system.SetProgressWindow(nullptr);
+    optimizer->SetProgressWindow(rtw);
     system.SetParameterEstimationMode(parameter_estimation_options::optimize);
     optimizer->optimize();
     optimizer->Model_out.GetOutputs().write(workingfolder.toStdString() + "/outputs.txt");
@@ -2138,7 +2151,8 @@ void MainWindow::onoptimize()
     system.Parameters() = optimizer->Model_out.Parameters();
     system.SetOutputItems();
     system.SetParameterEstimationMode();
-    rtw->AppendText(string("Optimization Finished!"));
+    rtw->AppendLog(std::string("Optimization Finished!"));
+    rtw->SetStatus("Finished!");
 }
 
 void MainWindow::oninverserun()
@@ -2161,19 +2175,26 @@ void MainWindow::oninverserun()
     optimizer->SetParameters(system.object("Optimizer"));
     optimizer->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
-    rtw = new RunTimeWindow(this, config::inverse);
+    rtw = new ProgressWindow(this);
+	rtw->SetPrimaryChartXAxisTitle("Generation");
+	rtw->SetPrimaryChartYAxisTitle("MSE");
+	rtw->SetPrimaryChartTitle("MSE vs Generation");
+	rtw->SetStatus("Parameter Estimation");
+    rtw->SetPrimaryChartXRange(0, optimizer->GA_params.nGen);
+	rtw->SetSecondaryProgressVisible(true);
     rtw->show();
-    rtw->AppendText(string("Parameter Estimation Started ..."));
-    rtw->SetXRange(0,optimizer->GA_params.nGen);
-    system.SetRunTimeWindow(nullptr);
+    rtw->AppendLog(std::string("Parameter Estimation Started ..."));
+    rtw->SetPrimaryChartXRange(0,optimizer->GA_params.nGen);
+    system.SetProgressWindow(nullptr);
     system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
-    optimizer->SetRunTimeWindow(rtw);
+    optimizer->SetProgressWindow(rtw);
     optimizer->optimize();
     system.TransferResultsFrom(&optimizer->Model_out);
     system.Parameters() = optimizer->Model_out.Parameters();
     system.SetParameterEstimationMode();
     system.SetOutputItems();
-    rtw->AppendText(string("Parameter Estimation Finished!"));
+    rtw->AppendLog(std::string("Parameter Estimation Finished!"));
+    rtw->SetStatus("Finished!");
 }
 
 void MainWindow::onmcmc()
@@ -2196,17 +2217,33 @@ void MainWindow::onmcmc()
     mcmc->FileInformation.outputpath = workingfolder.toStdString() + "/";
     mcmc->SetParameters(system.object("MCMC"));
     system.SetAllParents();
-    rtw = new RunTimeWindow(this,config::mcmc);
+    rtw = new ProgressWindow(this);
+    rtw->SetSecondaryChartVisible(true);
     rtw->show();
-    rtw->AppendText(string("Parameter Estimation Started ..."));
-    rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples);
-    rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples,1);
-    system.SetRunTimeWindow(nullptr);
+	rtw->SetStatus("Bayesian Parameter Estimation");
+    rtw->AppendLog(std::string("Parameter Estimation Started ..."));
+    rtw->SetPrimaryChartXRange(0,mcmc->MCMC_Settings.total_number_of_samples);
+	rtw->SetPrimaryChartXAxisTitle("Sample Number");
+	rtw->SetPrimaryChartYAxisTitle("Acceptance Rate");
+	rtw->SetPrimaryChartTitle("Acceptance Rate vs Sample Number");
+    rtw->SetPrimaryChartKeepMinYAtZero(true);  // Keep minimum Y at zero
+    rtw->SetPrimaryChartAutoScale(true);        // Enable auto-scaling for max
+    rtw->SetPrimaryChartYRange(0, 1);
+    rtw->SetSecondaryChartXRange(0,mcmc->MCMC_Settings.total_number_of_samples);
+    rtw->SetSecondaryChartYRange(0, 1);
+    rtw->SetSecondaryChartAutoScale(true);
+	rtw->SetSecondaryChartXAxisTitle("Sample Number");
+	rtw->SetSecondaryChartYAxisTitle("Perturbation coefficient");
+	rtw->SetSecondaryChartTitle("Perturbation Coefficient vs Sample Number");
+    rtw->SetSecondaryChartKeepMinYAtZero(true);  // Keep minimum Y at zero
+    rtw->SetSecondaryChartAutoScale(true);        // Enable auto-scaling for max
+    system.SetProgressWindow(nullptr);
     system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
-    mcmc->SetRunTimeWindow(rtw);
+    mcmc->SetProgressWindow(rtw);
     mcmc->Perform();
 
-    rtw->AppendText(string("Parameter Estimation Finished!"));
+    rtw->AppendLog(std::string("Parameter Estimation Finished!"));
+    rtw->SetStatus("Finished");
 }
 
 #ifndef QCharts

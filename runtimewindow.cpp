@@ -14,8 +14,7 @@
  */
 
 
-#include "runtimewindow.h"
-#include "ui_runtimewindow.h"
+#include "ProgressWindow.h"
 #include "mainwindow.h"
 
 RunTimeWindow::RunTimeWindow(QWidget *parent, config cfg) :

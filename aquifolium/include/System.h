@@ -38,7 +38,7 @@
 #define outputtimeseriesprecision double
 #if Q_GUI_SUPPORT
 #include <QStringList>
-#include "runtimewindow.h"
+#include "ProgressWindow.h"
 #include "QTime"
 #include "logwindow.h"
 #endif
@@ -384,8 +384,8 @@ class System: public Object
 #endif
 
 #ifdef Q_GUI_SUPPORT
-        RunTimeWindow *RunTimewindow() {return rtw;}
-        void SetRunTimeWindow(RunTimeWindow* _rtw) {rtw = _rtw;}
+        ProgressWindow *RunTimewindow() {return rtw;}
+        void SetProgressWindow(ProgressWindow* _rtw) {rtw = _rtw;}
 #endif
 
         unique_ptr<vector<string>> operators;
@@ -529,7 +529,7 @@ class System: public Object
         omp_lock_t lock;
 #endif
 #ifdef Q_GUI_SUPPORT
-    RunTimeWindow *rtw = nullptr;
+    ProgressWindow *rtw = nullptr;
     logwindow *_logWindow = nullptr;
 #endif
 
