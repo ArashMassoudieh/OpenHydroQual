@@ -111,6 +111,7 @@ private:
     QAction* actionzoomwindow = nullptr;
     bool Populate_TreeWidget();
     bool BuildObjectsToolBar();
+    void addToolbarLabel(QToolBar* toolbar, const QString& text);
     bool ReCreateObjectsMenu();
     PropModel *propmodel = nullptr;
     void Populate_General_ToolBar();
@@ -138,6 +139,7 @@ private:
     bool CreateFileIfDoesNotExist(QString fileName);
     QAction* actionrun = nullptr;
     ItemPropertiesWidget *PropertiesWidget = nullptr;
+    QMap<QString, QToolBar*> categoryToolbars_;
 private slots:
     void on_check_object_browser();
     void on_check_showlogwindow();
