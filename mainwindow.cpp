@@ -623,6 +623,7 @@ void MainWindow::onaddblock()
     system.object(name)->SetName(name);
     Node *node = new Node(dView,&system);
     //qDebug() << "Node Created!";
+    dView->UpdateSceneRect();
     dView->repaint();
     //qDebug() << "DiagramView Repainted!";
     system.object(name)->AssignRandomPrimaryKey();
@@ -1641,6 +1642,7 @@ void MainWindow::onabout()
 {
     AboutDialog* abtdlg = new AboutDialog(this);
     abtdlg->AppendText(QString("OpenHydroQual - version: ") + QString(openhydroqual_version));
+	abtdlg->SetVersion(QString(openhydroqual_version));
     abtdlg->AppendText(QString("Last modified: ") + QString(last_modified));
     abtdlg->AppendText("EnviroInformatics, LLC");
     abtdlg->AppendText("Plugins added:");

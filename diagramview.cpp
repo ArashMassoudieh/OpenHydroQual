@@ -360,6 +360,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
             item->setFlag(QGraphicsItem::ItemIsSelectable, true);
         for (Edge* item : Edges())
             item->setFlag(QGraphicsItem::ItemIsSelectable, true);
+		UpdateSceneRect(); 
     }
     if (event->button() == Qt::MiddleButton && Operation_Mode == Operation_Modes::Pan)
     {
@@ -988,4 +989,15 @@ void DiagramView::DeleteAllItems()
     scene()->clear();
 }
 
+void DiagramView::UpdateSceneRect()
+{
+    // Get the bounding rectangle of all items
+    QRectF itemsRect = MainGraphicsScene->itemsBoundingRect();
 
+    // Add some margin around the items (e.g., 500 pixels on each side)
+    qreal margin = 500.0;
+    itemsRect.adjust(-margin, -margin, margin, margin);
+
+    // Update the scene rect to include all items plus margin
+    MainGraphicsScene->setSceneRect(itemsRect);
+}

@@ -58,6 +58,7 @@ public:
     QList<Node*> Nodes() const;
     QList<Edge *> Edges() const;
     void UnSelectAll();
+    void UpdateSceneRect();
 private:
     MainWindow *mainwindow;
     QList<Node*> nodes();
