@@ -258,6 +258,7 @@
   "Catch basin": {
     "type": "block",
     "typecategory": "Blocks",
+	"description": "Catch Basin", 
     "icon": {
       "filename": "Catch_basin.png"
     },

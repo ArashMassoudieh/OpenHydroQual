@@ -14,8 +14,8 @@
  */
 
 
-#define openhydroqual_version "1.2.10"
-#define last_modified "October, 2, 2025"
+#define openhydroqual_version "2.0.1"
+#define last_modified "November, 1, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -69,7 +69,62 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    setStyleSheet(
+        "QToolBar {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+        "                                 stop:0 #f8f9fa, stop:1 #e9ecef);"
+        "    border: none;"
+        "    border-bottom: 1px solid #dee2e6;"
+        "    spacing: 3px;"
+        "    padding: 4px;"
+        "}"
+        "QToolBar::separator {"
+        "    background: #dee2e6;"
+        "    width: 1px;"
+        "    margin: 4px 8px;"
+        "}"
+        "QToolButton {"
+        "    background: transparent;"
+        "    border: 1px solid transparent;"
+        "    border-radius: 4px;"
+        "    padding: 6px;"
+        "    margin: 2px;"
+        "}"
+        "QToolButton:hover {"
+        "    background: #e3f2fd;"
+        "    border: 1px solid #90caf9;"
+        "}"
+        "QToolButton:pressed {"
+        "    background: #bbdefb;"
+        "}"
+        "QToolButton:checked {"
+        "    background: #2196F3;"
+        "    color: white;"
+        "}"
+    );
+    
     ui->setupUi(this);
+
+    removeToolBar(ui->BlocksToolBar);
+    removeToolBar(ui->LinksToolBar);
+    removeToolBar(ui->SourcesToolBar);
+    removeToolBar(ui->mainToolBar);
+
+    // Row 1: Blocks
+    addToolBar(Qt::TopToolBarArea, ui->BlocksToolBar);
+
+    // Row 2: Links  
+    addToolBarBreak(Qt::TopToolBarArea);
+    addToolBar(Qt::TopToolBarArea, ui->LinksToolBar);
+
+    // Row 3: Sources and other categories (all on same row initially)
+    addToolBarBreak(Qt::TopToolBarArea);
+    addToolBar(Qt::TopToolBarArea, ui->SourcesToolBar);
+    // Other toolbars will be added dynamically in BuildObjectsToolBar()
+
+    // Hide mainToolBar
+    ui->mainToolBar->setVisible(false);
+
     resource_directory = QString::fromStdString(RESOURCE_DIRECTORY);
     qDebug()<<"Resource Directory: " << resource_directory;
     QIcon mainicon(QString::fromStdString(RESOURCE_DIRECTORY) + "/Icons/Aquifolium.png");
@@ -353,124 +408,233 @@ bool MainWindow::BuildObjectsToolBar()
     ui->BlocksToolBar->clear();
     ui->LinksToolBar->clear();
     ui->SourcesToolBar->clear();
+
+    // Clear any existing category toolbars
+    for (QToolBar* toolbar : categoryToolbars_.values())
+    {
+        removeToolBar(toolbar);
+        delete toolbar;
+    }
+    categoryToolbars_.clear();
+
+    // Set smaller icon size and text style for standard toolbars
+    for (QToolBar* toolbar : { ui->BlocksToolBar, ui->LinksToolBar, ui->SourcesToolBar }) {
+        toolbar->setIconSize(QSize(20, 20));
+        toolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        toolbar->setVisible(true);
+        toolbar->setStyleSheet(
+            "QToolBar {"
+            "    spacing: 2px;"
+            "}"
+            "QToolButton {"
+            "    padding: 2px;"
+            "    margin: 1px;"
+            "    border-radius: 3px;"
+            "}"
+            "QToolButton:hover {"
+            "    background: #e3f2fd;"
+            "    border: 1px solid #90caf9;"
+            "}"
+            "QToolButton:pressed {"
+            "    background: #bbdefb;"
+            "}"
+            "QToolButton:checked {"
+            "    background: #2196F3;"
+            "    color: white;"
+            "}"
+        );
+    }
+
+    // Add compact labels to toolbars
+    addToolbarLabel(ui->BlocksToolBar, "Blocks:");
+    addToolbarLabel(ui->LinksToolBar, "Links:");
+    addToolbarLabel(ui->SourcesToolBar, "Sources:");
+
+    // Build Blocks toolbar
     for (unsigned int i = 0; i < system.GetAllBlockTypes().size(); i++)
     {
-        //qDebug() << QString::fromStdString(system.GetAllBlockTypes()[i]);
         QAction* action = new QAction(this);
         action->setObjectName(QString::fromStdString(system.GetAllBlockTypes()[i]));
         QIcon icon;
-        if (QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()).contains("/"))
-        {
-            if (!QFile::exists(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-        }
+
+        QString iconFileName = QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName());
+        QString iconPath;
+
+        if (iconFileName.contains("/"))
+            iconPath = iconFileName;
         else
-        {
+            iconPath = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/") + iconFileName;
 
-            if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-        }
+        if (!QFile::exists(iconPath))
+            LogError("Icon file '" + iconPath + "' was not found!");
+        else
+            icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
+
         action->setIcon(icon);
-        action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
-        ui->BlocksToolBar->addAction(action);
+        action->setToolTip(QString::fromStdString(system.GetAllBlockTypes()[i]) + "\n" +
+            QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
         action->setText(QString::fromStdString(system.GetAllBlockTypes()[i]));
+        ui->BlocksToolBar->addAction(action);
         connect(action, SIGNAL(triggered()), this, SLOT(onaddblock()));
-
     }
 
+    // Build Links toolbar
     for (unsigned int i = 0; i < system.GetAllLinkTypes().size(); i++)
     {
-        //qDebug() << QString::fromStdString(system.GetAllLinkTypes()[i]);
         QAction* action = new QAction(this);
         action->setCheckable(true);
         action->setObjectName(QString::fromStdString(system.GetAllLinkTypes()[i]));
         QIcon icon;
-        if (QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()).contains("/"))
-        {
-            if (!QFile::exists(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-        }
-        else
-        {
 
-            if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-        }
+        QString iconFileName = QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName());
+        QString iconPath;
+
+        if (iconFileName.contains("/"))
+            iconPath = iconFileName;
+        else
+            iconPath = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/") + iconFileName;
+
+        if (!QFile::exists(iconPath))
+            LogError("Icon file '" + iconPath + "' was not found!");
+        else
+            icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
+
         action->setIcon(icon);
-        action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
-        ui->LinksToolBar->addAction(action);
+        action->setToolTip(QString::fromStdString(system.GetAllLinkTypes()[i]) + "\n" +
+            QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
         action->setText(QString::fromStdString(system.GetAllLinkTypes()[i]));
+        ui->LinksToolBar->addAction(action);
         connect(action, SIGNAL(triggered()), this, SLOT(onaddlink()));
     }
 
+    // Build other category toolbars - each category gets its own toolbar
     for (unsigned int j = 0; j < system.QGetAllCategoryTypes().size(); j++)
     {
         string typecategory = system.QGetAllCategoryTypes()[j].toStdString();
 
-        if (typecategory!="Blocks" && typecategory !="Connectors" && typecategory!="Settings" && !typecategory.empty())
-            for (unsigned int i = 0; i < system.GetAllTypesOf(typecategory).size(); i++)
+        if (typecategory != "Blocks" && typecategory != "Connectors" && typecategory != "Settings" && !typecategory.empty())
+        {
+            if (system.GetAllTypesOf(typecategory).size() > 0)
             {
-                string type = system.GetAllTypesOf(typecategory)[i];
-                QAction* action = new QAction(this);
-                action->setCheckable(false);
-                action->setObjectName(QString::fromStdString(type));
-                QIcon icon;
+                QToolBar* categoryToolbar = nullptr;
+                QString categoryName = QString::fromStdString(typecategory);
 
-                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-
-                if (QString::fromStdString(system.GetModel(type)->IconFileName()).contains("/"))
+                // Use SourcesToolBar for Sources, create new toolbars for others
+                if (typecategory == "Sources")
                 {
-                    if (!QFile::exists(QString::fromStdString(system.GetModel(type)->IconFileName())))
-                        LogError("Icon file '" + QString::fromStdString(system.GetModel(type)->IconFileName()) + "' was not found!");
-                    else
-                        icon.addFile(QString::fromStdString(system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                    categoryToolbar = ui->SourcesToolBar;
                 }
                 else
                 {
+                    // Create new toolbar for this category
+                    categoryToolbar = new QToolBar(categoryName, this);
+                    categoryToolbar->setObjectName(categoryName + "ToolBar");
+                    categoryToolbar->setIconSize(QSize(20, 20));
+                    categoryToolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+                    categoryToolbar->setMovable(true);
+                    categoryToolbar->setFloatable(true);
+                    categoryToolbar->setStyleSheet(
+                        "QToolBar {"
+                        "    spacing: 2px;"
+                        "}"
+                        "QToolButton {"
+                        "    padding: 2px;"
+                        "    margin: 1px;"
+                        "    border-radius: 3px;"
+                        "}"
+                        "QToolButton:hover {"
+                        "    background: #e3f2fd;"
+                        "    border: 1px solid #90caf9;"
+                        "}"
+                        "QToolButton:pressed {"
+                        "    background: #bbdefb;"
+                        "}"
+                        "QToolButton:checked {"
+                        "    background: #2196F3;"
+                        "    color: white;"
+                        "}"
+                    );
 
-                    if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName())))
-                        LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName()) + "' was not found!");
-                    else
-                        icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                    // Add to main window on the same row as Sources (no break)
+                    addToolBar(Qt::TopToolBarArea, categoryToolbar);
+
+                    // Store in map for cleanup later
+                    categoryToolbars_[categoryName] = categoryToolbar;
+
+                    // Add label to this toolbar
+                    addToolbarLabel(categoryToolbar, categoryName + ":");
                 }
 
+                // Add items to the category toolbar
+                for (unsigned int i = 0; i < system.GetAllTypesOf(typecategory).size(); i++)
+                {
+                    string type = system.GetAllTypesOf(typecategory)[i];
+                    QAction* action = new QAction(this);
+                    action->setCheckable(false);
+                    action->setObjectName(QString::fromStdString(type));
+                    QIcon icon;
 
-                action->setIcon(icon);
-                action->setToolTip(QString::fromStdString(system.GetModel(type)->Description()));
-                if (typecategory=="Sources")
-                    ui->SourcesToolBar->addAction(action);
-                else
-                    ui->mainToolBar->addAction(action);
-                action->setText(QString::fromStdString(type));
-                if (typecategory=="Sources")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddsource()));
-                else if (typecategory == "Parameters")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddparameter()));
-                else if (typecategory == "Objective Functions")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddobjectivefunction()));
-                else if (typecategory == "Observations")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddobservation()));
-                else if (typecategory == "Constituents")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddconstituent()));
-                else if (typecategory == "Reactions")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddreaction()));
-                else if (typecategory == "Reaction Parameters")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddreactionparameter()));
-                else
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
+                    QString iconFileName = QString::fromStdString(system.GetModel(type)->IconFileName());
+                    QString iconPath;
+
+                    if (iconFileName.contains("/"))
+                        iconPath = iconFileName;
+                    else
+                        iconPath = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/") + iconFileName;
+
+                    if (!QFile::exists(iconPath))
+                        LogError("Icon file '" + iconPath + "' was not found!");
+                    else
+                        icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
+
+                    action->setIcon(icon);
+                    action->setToolTip(QString::fromStdString(type) + "\n" +
+                        QString::fromStdString(system.GetModel(type)->Description()));
+                    action->setText(QString::fromStdString(type));
+
+                    categoryToolbar->addAction(action);
+
+                    if (typecategory == "Sources")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddsource()));
+                    else if (typecategory == "Parameters")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddparameter()));
+                    else if (typecategory == "Objective Functions")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddobjectivefunction()));
+                    else if (typecategory == "Observations")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddobservation()));
+                    else if (typecategory == "Constituents")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddconstituent()));
+                    else if (typecategory == "Reactions")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddreaction()));
+                    else if (typecategory == "Reaction Parameters")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddreactionparameter()));
+                    else
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
+                }
             }
-
+        }
     }
 
+    // Hide mainToolBar as it's not needed
+    ui->mainToolBar->setVisible(false);
+
     return true;
+}
+
+// Compact helper method:
+void MainWindow::addToolbarLabel(QToolBar* toolbar, const QString& text)
+{
+    QLabel* label = new QLabel(text, this);
+    label->setStyleSheet(
+        "QLabel {"
+        "    font-weight: bold;"
+        "    color: #2196F3;"
+        "    padding: 0 5px;"
+        "    font-size: 9pt;"
+        "}"
+    );
+    toolbar->addWidget(label);
+    toolbar->addSeparator();
 }
 
 bool MainWindow::ReCreateObjectsMenu()
