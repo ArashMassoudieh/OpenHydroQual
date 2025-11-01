@@ -46,9 +46,15 @@ AboutDialog::AboutDialog(QWidget* parent) :
         "but WITHOUT ANY WARRANTY; without even the implied warranty of "
         "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the "
         "GNU Affero General Public License for more details.</p>"
-        "<p><b>Commercial Use:</b> If you use this software in a commercial product, "
-        "you must purchase a commercial license. Contact arash.massoudieh@enviroinformatics.co "
-        "for details.</p>"
+        "<br>"
+        "<h3>Commercial Use</h3>"
+        "<p><b>Free for Commercial Use:</b> You may use this software for commercial purposes "
+        "at no cost under the terms of the AGPL v3.0 license.</p>"
+        "<p><b>Commercial License Required:</b> If you wish to incorporate this software into "
+        "a commercial product or distribute it as part of a proprietary software solution, "
+        "you must purchase a commercial license.</p>"
+        "<p><b>Contact:</b> For commercial licensing inquiries, please contact "
+        "arash.massoudieh@enviroinformatics.co</p>"
     );
 
     SetCreditsText(
@@ -72,16 +78,19 @@ AboutDialog::~AboutDialog()
 void AboutDialog::setupUI()
 {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setSpacing(10);
+    mainLayout->setContentsMargins(15, 15, 15, 15);
 
-    // Header section with logo and version
+    // Header section with logo and version - COMPACT
     QHBoxLayout* headerLayout = new QHBoxLayout();
+    headerLayout->setSpacing(10);
 
     logoLabel = new QLabel(this);
-    logoLabel->setFixedSize(64, 64);
+    logoLabel->setFixedSize(64, 64);  // Smaller icon: 48x48 instead of 64x64
     // Set application icon if available
     QIcon appIcon = windowIcon();
     if (!appIcon.isNull()) {
-        logoLabel->setPixmap(appIcon.pixmap(64, 64));
+        logoLabel->setPixmap(appIcon.pixmap(48, 48));
     }
     else {
         logoLabel->setText("OHQ");
@@ -90,32 +99,31 @@ void AboutDialog::setupUI()
             "QLabel { "
             "background-color: #2196F3; "
             "color: white; "
-            "font-size: 20pt; "
+            "font-size: 16pt; "  // Smaller font
             "font-weight: bold; "
-            "border-radius: 8px; "
+            "border-radius: 6px; "
             "}"
         );
     }
 
     versionLabel = new QLabel("Version 1.0.0", this);
-    versionLabel->setStyleSheet("font-size: 10pt; color: #666;");
+    versionLabel->setStyleSheet("font-size: 9pt; color: #666;");
 
     headerLayout->addWidget(logoLabel);
-    headerLayout->addSpacing(10);
 
     QVBoxLayout* titleLayout = new QVBoxLayout();
-    QLabel* titleLabel = new QLabel("<h1>OpenHydroQual</h1>", this);
+    titleLayout->setSpacing(2);  // Minimal spacing
+    QLabel* titleLabel = new QLabel("<h2 style='margin:0; padding:0;'>OpenHydroQual</h2>", this);  // Use h2 instead of h1
     titleLayout->addWidget(titleLabel);
     titleLayout->addWidget(versionLabel);
-    titleLayout->addStretch();
 
     headerLayout->addLayout(titleLayout);
     headerLayout->addStretch();
 
     mainLayout->addLayout(headerLayout);
-    mainLayout->addSpacing(10);
+    // Don't add extra spacing here - remove the addSpacing(10) line
 
-    // Tab widget
+    // Tab widget - THIS SHOULD EXPAND TO FILL SPACE
     tabWidget = new QTabWidget(this);
 
     // About tab
@@ -171,17 +179,19 @@ void AboutDialog::setupUI()
     );
     tabWidget->addTab(generalTextBrowser, "Information");
 
-    mainLayout->addWidget(tabWidget);
+    // Add tab widget with stretch factor so it takes all remaining space
+    mainLayout->addWidget(tabWidget, 1);  // The "1" is the stretch factor
 
-    // Close button
+    // Close button - COMPACT
     QHBoxLayout* buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch();
 
     closeButton = new QPushButton("Close", this);
     closeButton->setMinimumWidth(100);
+    closeButton->setFixedHeight(32);  // Fixed height for button
     closeButton->setStyleSheet(
         "QPushButton { "
-        "padding: 8px 20px; "
+        "padding: 6px 20px; "  // Reduced padding
         "background-color: #2196F3; "
         "color: white; "
         "border: none; "
@@ -202,7 +212,6 @@ void AboutDialog::setupUI()
 
     setLayout(mainLayout);
 }
-
 void AboutDialog::AppendText(const QString& text)
 {
     generalTextBrowser->append(text);
