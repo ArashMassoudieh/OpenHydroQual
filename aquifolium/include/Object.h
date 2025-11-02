@@ -150,6 +150,7 @@ class Object
         void SetQuanPointers();
         bool CopyStateVariablesFrom(Object* obj);
         unordered_map<string, Quan*> AllSourceParameters();
+        bool CopyQuantitiesFrom(Object* source);
         void SetCurrentCorrespondingSource(const string s) {current_corresponding_source = s; }
         void SetCurrentCorrespondingConstituent(const string s) {current_corresponding_constituent = s; }
         string GetCurrentCorrespondingSource() {return current_corresponding_source; }

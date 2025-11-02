@@ -174,6 +174,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
 
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
+    connect(ui->actionImport, SIGNAL(triggered()), this, SLOT(onimport()));
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
     connect(ui->actionSave_as,SIGNAL(triggered()),this,SLOT(onsaveas()));
     connect(ui->actionSave_State_to_Json,SIGNAL(triggered()),this,SLOT(onsaveasJson()));
@@ -2798,4 +2799,537 @@ void MainWindow::onCreate2dArray()
     GridGenerator *gridgenerator = new GridGenerator(this);
     gridgenerator->show();
 
+}
+
+// Add this to your MainWindow class header (.h file):
+// 
+// In the public slots section:
+//     void onimport();
+// 
+// In the private section:
+//     struct NameConflict {
+//         QString objectType;
+//         QString objectName;
+//         QString suggestedNewName;
+//     };
+//     QList<NameConflict> checkForNameConflicts(System* importSystem);
+//     bool resolveNameConflicts(Script& importScript, const QList<NameConflict>& conflicts);
+
+// ========================================================================
+// Implementation code for MainWindow.cpp:
+// ========================================================================
+
+void MainWindow::onimport()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Import Model"), workingfolder,
+        tr("OpenHydroQual files (*.ohq);; All files (*.*)"),
+        nullptr, QFileDialog::DontUseNativeDialog);
+
+    if (fileName.isEmpty())
+        return;
+
+    // Create a temporary system to load the import file
+    System importSystem;
+    Script importScript(fileName.toStdString(), &importSystem);
+    importSystem.SetWorkingFolder(QFileInfo(fileName).canonicalPath().toStdString() + "/");
+
+    // Execute the script to populate the import system
+    bool scriptSuccess = importSystem.CreateFromScript(importScript, "");
+    if (!scriptSuccess)
+    {
+        // Check if at least one object was created
+        bool hasObjects = (importSystem.BlockCount() > 0 ||
+            importSystem.LinksCount() > 0 ||
+            importSystem.SourcesCount() > 0 ||
+            importSystem.ObservationsCount() > 0 ||
+            importSystem.ConstituentsCount() > 0 ||
+            importSystem.ReactionsCount() > 0 ||
+            importSystem.ReactionParametersCount() > 0 ||
+            importSystem.ParametersCount() > 0 ||
+            importSystem.ObjectiveFunctions().size() > 0);
+
+        if (!hasObjects)
+        {
+            QMessageBox::critical(this, tr("Import Error"),
+                tr("Failed to load the import file. No objects were created."));
+            LogAllSystemErrors();
+            return;
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Import Warning"),
+                tr("The import file had errors, but some objects were created successfully. "
+                    "Import will continue with the objects that loaded correctly."));
+        }
+    }
+
+    // Check for name conflicts
+    QList<NameConflict> conflicts = checkForNameConflicts(&importSystem);
+
+    if (!conflicts.isEmpty())
+    {
+        // Show conflict resolution dialog
+        if (!resolveNameConflicts(importScript, conflicts))
+        {
+            // User cancelled the import
+            return;
+        }
+
+        // Recreate the import system with renamed objects
+        importSystem.clear();
+        if (!importSystem.CreateFromScript(importScript, ""))
+        {
+            QMessageBox::critical(this, tr("Import Error"),
+                tr("Failed to apply name changes. Import cancelled."));
+            return;
+        }
+    }
+
+    // Add templates from import file if they don't exist
+    for (const string& templateName : importSystem.addedtemplates)
+    {
+        if (aquiutils::lookup(system.addedtemplates, templateName) == -1)
+        {
+            // Try to add the template
+            if (!system.AppendQuanTemplate(templateName))
+            {
+                // Try with just the filename in the default template path
+                if (!system.AppendQuanTemplate(system.DefaultTemplatePath() +
+                    aquiutils::GetOnlyFileName(templateName)))
+                {
+                    QMessageBox::warning(this, tr("Template Warning"),
+                        tr("Template '%1' could not be loaded. Some objects may not function correctly.")
+                        .arg(QString::fromStdString(templateName)));
+                }
+            }
+        }
+    }
+
+    // Now merge the objects from importSystem into the main system
+    // Blocks
+    for (unsigned int i = 0; i < importSystem.BlockCount(); i++)
+    {
+        Block* importBlock = importSystem.block(i);
+        Block newBlock = *importBlock;  // Copy the block
+        system.AddBlock(newBlock);
+
+        // Copy all properties
+        Block* addedBlock = system.block(newBlock.GetName());
+        if (addedBlock)
+        {
+            *addedBlock = *importBlock;
+        }
+    }
+
+    // Links
+    for (unsigned int i = 0; i < importSystem.LinksCount(); i++)
+    {
+        Link* importLink = importSystem.link(i);
+
+        // Get source and target block names
+        Object* sourceBlock = importLink->GetConnectedBlock(Expression::loc::source);
+        Object* targetBlock = importLink->GetConnectedBlock(Expression::loc::destination);
+
+        if (!sourceBlock || !targetBlock)
+        {
+            QMessageBox::warning(this, tr("Import Warning"),
+                tr("Link '%1' has invalid connections and will be skipped.")
+                .arg(QString::fromStdString(importLink->GetName())));
+            continue;
+        }
+
+        string fromBlock = sourceBlock->GetName();
+        string toBlock = targetBlock->GetName();
+
+        // Create a new link with proper connections in the target system
+        Link newLink;
+        newLink.SetName(importLink->GetName());
+        newLink.SetType(importLink->GetType());
+
+        if (system.AddLink(newLink, fromBlock, toBlock))
+        {
+            // Now copy the quantities/properties without copying pointers
+            Link* addedLink = system.link(newLink.GetName());
+            if (addedLink)
+            {
+                addedLink->CopyQuantitiesFrom(importLink);
+            }
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Import Warning"),
+                tr("Link '%1' could not be added. Check that source and target blocks exist.")
+                .arg(QString::fromStdString(newLink.GetName())));
+        }
+    }
+
+    // Sources
+    for (unsigned int i = 0; i < importSystem.SourcesCount(); i++)
+    {
+        Source* importSource = importSystem.source(i);
+        Source newSource = *importSource;
+        system.AddSource(newSource);
+
+        Source* addedSource = system.source(newSource.GetName());
+        if (addedSource)
+        {
+            *addedSource = *importSource;
+        }
+    }
+
+    // Observations
+    for (unsigned int i = 0; i < importSystem.ObservationsCount(); i++)
+    {
+        Observation* importObs = importSystem.observation(i);
+        Observation newObs = *importObs;
+        system.AddObservation(newObs);
+
+        Observation* addedObs = system.observation(newObs.GetName());
+        if (addedObs)
+        {
+            *addedObs = *importObs;
+        }
+    }
+
+    // Constituents
+    for (unsigned int i = 0; i < importSystem.ConstituentsCount(); i++)
+    {
+        Constituent* importConst = importSystem.constituent(i);
+        Constituent newConst = *importConst;
+        system.AddConstituent(newConst);
+
+        Constituent* addedConst = system.constituent(newConst.GetName());
+        if (addedConst)
+        {
+            *addedConst = *importConst;
+        }
+    }
+
+    // Reactions
+    for (unsigned int i = 0; i < importSystem.ReactionsCount(); i++)
+    {
+        Reaction* importRxn = importSystem.reaction(i);
+        Reaction newRxn = *importRxn;
+        system.AddReaction(newRxn);
+
+        Reaction* addedRxn = system.reaction(newRxn.GetName());
+        if (addedRxn)
+        {
+            *addedRxn = *importRxn;
+        }
+    }
+
+    // Reaction Parameters
+    for (unsigned int i = 0; i < importSystem.ReactionParametersCount(); i++)
+    {
+        RxnParameter* importRxnParam = importSystem.reactionparameter(i);
+        RxnParameter newRxnParam = *importRxnParam;
+        system.AddReactionParameter(newRxnParam);
+
+        RxnParameter* addedRxnParam = system.reactionparameter(newRxnParam.GetName());
+        if (addedRxnParam)
+        {
+            *addedRxnParam = *importRxnParam;
+        }
+    }
+
+    // Parameters
+    for (unsigned int i = 0; i < importSystem.ParametersCount(); i++)
+    {
+        Parameter* importParam = importSystem.GetParameter(i);
+        if (importParam && system.parameter(importParam->GetName()) == nullptr)
+        {
+            system.AppendParameter(importParam->GetName(), *importParam);
+        }
+    }
+
+    // Objective Functions
+    for (unsigned int i = 0; i < importSystem.ObjectiveFunctions().size(); i++)
+    {
+        Objective_Function* importObjFunc = importSystem.objectivefunction(i);
+        if (importObjFunc && system.objectivefunction(importObjFunc->GetName()) == nullptr)
+        {
+            system.AppendObjectiveFunction(importObjFunc->GetName(), *importObjFunc);
+        }
+    }
+
+    // Update the system
+    system.SetAllParents();
+    system.SetVariableParents();
+
+    // Update the added templates list
+    addedtemplatefilenames = system.addedtemplates;
+
+    // Refresh the UI
+    PopulatePropertyTable(nullptr);
+    dView->DeleteAllItems();
+    RecreateGraphicItemsFromSystem();
+    RefreshTreeView();
+    BuildObjectsToolBar();
+    ReCreateObjectsMenu();
+    LogAllSystemErrors();
+
+    // Update undo system
+    undoData.AppendtoLast(&system);
+    if (undoData.active == 0) InactivateUndo();
+    if (undoData.active == undoData.Systems.size() - 1) InactivateRedo();
+
+    QMessageBox::information(this, tr("Import Complete"),
+        tr("Model imported successfully."));
+}
+
+QList<MainWindow::NameConflict> MainWindow::checkForNameConflicts(System* importSystem)
+{
+    QList<NameConflict> conflicts;
+
+    // Check blocks
+    for (unsigned int i = 0; i < importSystem->BlockCount(); i++)
+    {
+        Block* importBlock = importSystem->block(i);
+        if (system.block(importBlock->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Block";
+            conflict.objectName = QString::fromStdString(importBlock->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check links
+    for (unsigned int i = 0; i < importSystem->LinksCount(); i++)
+    {
+        Link* importLink = importSystem->link(i);
+        if (system.link(importLink->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Link";
+            conflict.objectName = QString::fromStdString(importLink->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check sources
+    for (unsigned int i = 0; i < importSystem->SourcesCount(); i++)
+    {
+        Source* importSource = importSystem->source(i);
+        if (system.source(importSource->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Source";
+            conflict.objectName = QString::fromStdString(importSource->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check observations
+    for (unsigned int i = 0; i < importSystem->ObservationsCount(); i++)
+    {
+        Observation* importObs = importSystem->observation(i);
+        if (system.observation(importObs->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Observation";
+            conflict.objectName = QString::fromStdString(importObs->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check constituents
+    for (unsigned int i = 0; i < importSystem->ConstituentsCount(); i++)
+    {
+        Constituent* importConst = importSystem->constituent(i);
+        if (system.constituent(importConst->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Constituent";
+            conflict.objectName = QString::fromStdString(importConst->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check reactions
+    for (unsigned int i = 0; i < importSystem->ReactionsCount(); i++)
+    {
+        Reaction* importRxn = importSystem->reaction(i);
+        if (system.reaction(importRxn->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Reaction";
+            conflict.objectName = QString::fromStdString(importRxn->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check reaction parameters
+    for (unsigned int i = 0; i < importSystem->ReactionParametersCount(); i++)
+    {
+        RxnParameter* importRxnParam = importSystem->reactionparameter(i);
+        if (system.reactionparameter(importRxnParam->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Reaction Parameter";
+            conflict.objectName = QString::fromStdString(importRxnParam->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check parameters
+    for (unsigned int i = 0; i < importSystem->ParametersCount(); i++)
+    {
+        Parameter* importParam = importSystem->GetParameter(i);
+        if (importParam && system.parameter(importParam->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Parameter";
+            conflict.objectName = QString::fromStdString(importParam->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check objective functions
+    for (unsigned int i = 0; i < importSystem->ObjectiveFunctions().size(); i++)
+    {
+        Objective_Function* importObjFunc = importSystem->objectivefunction(i);
+        if (importObjFunc && system.objectivefunction(importObjFunc->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Objective Function";
+            conflict.objectName = QString::fromStdString(importObjFunc->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    return conflicts;
+}
+
+bool MainWindow::resolveNameConflicts(Script& importScript, const QList<NameConflict>& conflicts)
+{
+    // Create a dialog to show conflicts and get new names
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Resolve Name Conflicts"));
+    dialog.setMinimumWidth(600);
+
+    QVBoxLayout* mainLayout = new QVBoxLayout(&dialog);
+
+    QLabel* headerLabel = new QLabel(tr("The following objects have name conflicts with existing objects.\n"
+        "Please provide new names for the imported objects:"));
+    mainLayout->addWidget(headerLabel);
+
+    // Create a table to show conflicts
+    QTableWidget* table = new QTableWidget(conflicts.size(), 3, &dialog);
+    table->setHorizontalHeaderLabels(QStringList() << tr("Type") << tr("Original Name") << tr("New Name"));
+    table->horizontalHeader()->setStretchLastSection(true);
+    table->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+
+    QMap<QString, QString> nameMapping;  // Original name -> New name
+
+    for (int i = 0; i < conflicts.size(); i++)
+    {
+        QTableWidgetItem* typeItem = new QTableWidgetItem(conflicts[i].objectType);
+        typeItem->setFlags(typeItem->flags() & ~Qt::ItemIsEditable);
+        table->setItem(i, 0, typeItem);
+
+        QTableWidgetItem* originalItem = new QTableWidgetItem(conflicts[i].objectName);
+        originalItem->setFlags(originalItem->flags() & ~Qt::ItemIsEditable);
+        table->setItem(i, 1, originalItem);
+
+        QTableWidgetItem* newNameItem = new QTableWidgetItem(conflicts[i].suggestedNewName);
+        table->setItem(i, 2, newNameItem);
+    }
+
+    mainLayout->addWidget(table);
+
+    // Add buttons
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    mainLayout->addWidget(buttonBox);
+
+    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() != QDialog::Accepted)
+    {
+        return false;  // User cancelled
+    }
+
+    // Collect the new names
+    for (int i = 0; i < conflicts.size(); i++)
+    {
+        QString newName = table->item(i, 2)->text().trimmed();
+        if (newName.isEmpty())
+        {
+            QMessageBox::warning(this, tr("Invalid Name"),
+                tr("New name for %1 '%2' cannot be empty.")
+                .arg(conflicts[i].objectType)
+                .arg(conflicts[i].objectName));
+            return false;
+        }
+        nameMapping[conflicts[i].objectName] = newName;
+    }
+
+    // Now modify the script commands to use the new names
+    for (int i = 0; i < importScript.CommandsCount(); i++)
+    {
+        Command* cmd = importScript[i];
+
+        // Get reference to assignments map using the accessor method
+        // NOTE: You must add GetAssignments() method to Command.h:
+        //       map<string, string>& GetAssignments() { return assignments; }
+        map<string, string>& assignments = cmd->GetAssignments();
+
+        // Check if this command creates an object with a conflicting name
+        if (aquiutils::tolower(cmd->Keyword()) == "create")
+        {
+            if (assignments.count("name") > 0)
+            {
+                QString originalName = QString::fromStdString(assignments["name"]);
+                if (nameMapping.contains(originalName))
+                {
+                    // Update the name in the command
+                    assignments["name"] = nameMapping[originalName].toStdString();
+                }
+            }
+        }
+
+        // Also need to update references in other commands (like setvalue, setasparameter, etc.)
+        if (assignments.count("object") > 0)
+        {
+            QString objectName = QString::fromStdString(assignments["object"]);
+            if (nameMapping.contains(objectName))
+            {
+                assignments["object"] = nameMapping[objectName].toStdString();
+            }
+        }
+
+        // Update link from/to references
+        if (assignments.count("from") > 0)
+        {
+            QString fromName = QString::fromStdString(assignments["from"]);
+            if (nameMapping.contains(fromName))
+            {
+                assignments["from"] = nameMapping[fromName].toStdString();
+            }
+        }
+
+        if (assignments.count("to") > 0)
+        {
+            QString toName = QString::fromStdString(assignments["to"]);
+            if (nameMapping.contains(toName))
+            {
+                assignments["to"] = nameMapping[toName].toStdString();
+            }
+        }
+    }
+
+    return true;
 }

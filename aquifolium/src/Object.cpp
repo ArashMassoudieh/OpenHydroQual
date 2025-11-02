@@ -865,3 +865,34 @@ unordered_map<string, Quan*> Object::AllSourceParameters()
     }
     return out;
 }
+
+bool Object::CopyQuantitiesFrom(Object* source)
+{
+    if (!source)
+        return false;
+
+    // Get the source object's variables
+    const QuanSet* sourceVars = source->GetVars();
+    if (!sourceVars)
+        return false;
+
+    // Copy all quantities except name, type, and connection indices
+    for (unordered_map<string, Quan>::const_iterator it = sourceVars->begin();
+        it != sourceVars->end(); ++it)
+    {
+        const string& quantityName = it->first;
+
+        // Skip these special fields that are set elsewhere
+        if (quantityName == "name" || quantityName == "type")
+            continue;
+
+        // If this quantity exists in our object, copy it
+        if (var.Find(quantityName))
+        {
+            var[quantityName] = it->second;
+            var[quantityName].SetParent(this); // Re-set parent to this object
+        }
+    }
+
+    return true;
+}
