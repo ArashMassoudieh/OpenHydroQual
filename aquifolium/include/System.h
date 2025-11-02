@@ -381,6 +381,7 @@ class System: public Object
         bool LoadfromJson(const QJsonObject &jsondoc);
         bool SaveStateVariableToJson(const string &variable, const string &filename);
         bool LoadStateVariableFromJson(const string &variable, const string &filename);
+        void Translate(double dx, double dy);
 #endif
 
 #ifdef Q_GUI_SUPPORT

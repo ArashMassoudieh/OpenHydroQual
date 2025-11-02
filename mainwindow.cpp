@@ -2864,7 +2864,6 @@ void MainWindow::onimport()
         }
     }
 
-    // Check for name conflicts
     QList<NameConflict> conflicts = checkForNameConflicts(&importSystem);
 
     if (!conflicts.isEmpty())
@@ -2878,12 +2877,87 @@ void MainWindow::onimport()
 
         // Recreate the import system with renamed objects
         importSystem.clear();
-        if (!importSystem.CreateFromScript(importScript, ""))
+        importSystem.addedtemplates.clear();
+
+        // Re-execute the modified script
+        bool scriptSuccess = importSystem.CreateFromScript(importScript, "");
+
+        // Check if at least one object was created
+        bool hasObjects = (importSystem.BlockCount() > 0 ||
+            importSystem.LinksCount() > 0 ||
+            importSystem.SourcesCount() > 0 ||
+            importSystem.ObservationsCount() > 0 ||
+            importSystem.ConstituentsCount() > 0 ||
+            importSystem.ReactionsCount() > 0 ||
+            importSystem.ReactionParametersCount() > 0 ||
+            importSystem.ParametersCount() > 0 ||
+            importSystem.ObjectiveFunctions().size() > 0);
+
+        if (!hasObjects)
         {
             QMessageBox::critical(this, tr("Import Error"),
                 tr("Failed to apply name changes. Import cancelled."));
             return;
         }
+        else if (!scriptSuccess)
+        {
+            QMessageBox::warning(this, tr("Import Warning"),
+                tr("Some errors occurred while applying changes, but objects were created. Import will continue."));
+        }
+    }
+
+    bool hasPositionConflict = false;
+    double maxShift = 0.0;
+
+    for (unsigned int i = 0; i < importSystem.BlockCount(); i++)
+    {
+        Block* importBlock = importSystem.block(i);
+        if (!importBlock || !importBlock->HasQuantity("x") || !importBlock->HasQuantity("y"))
+            continue;
+
+        double importX = importBlock->GetVal("x");
+        double importY = importBlock->GetVal("y");
+        double importWidth = importBlock->HasQuantity("_width") ? importBlock->GetVal("_width") : 0.0;
+        double importHeight = importBlock->HasQuantity("_height") ? importBlock->GetVal("_height") : 0.0;
+        double importThreshold = sqrt(importWidth * importWidth + importHeight * importHeight);
+
+        // Check against all blocks in the host system
+        for (unsigned int j = 0; j < system.BlockCount(); j++)
+        {
+            Block* hostBlock = system.block(j);
+            if (!hostBlock || !hostBlock->HasQuantity("x") || !hostBlock->HasQuantity("y"))
+                continue;
+
+            double hostX = hostBlock->GetVal("x");
+            double hostY = hostBlock->GetVal("y");
+            double hostWidth = hostBlock->HasQuantity("_width") ? hostBlock->GetVal("_width") : 0.0;
+            double hostHeight = hostBlock->HasQuantity("_height") ? hostBlock->GetVal("_height") : 0.0;
+            double hostThreshold = sqrt(hostWidth * hostWidth + hostHeight * hostHeight);
+
+            // Calculate distance between blocks
+            double dx = importX - hostX;
+            double dy = importY - hostY;
+            double distance = sqrt(dx * dx + dy * dy);
+
+            // Use the maximum threshold of the two blocks
+            double threshold = std::max(importThreshold, hostThreshold);
+
+            // If blocks are too close, we have a conflict
+            if (distance < threshold)
+            {
+                hasPositionConflict = true;
+                // Calculate how far right we need to shift to clear this block
+                double requiredShift = hostX + hostWidth + importWidth - importX + 50.0; // Add 50 unit padding
+                maxShift = std::max(maxShift, requiredShift);
+            }
+        }
+    }
+
+    // If there's a position conflict, translate the import system
+    if (hasPositionConflict)
+    {
+        importSystem.Translate(maxShift, 0.0);
+        qDebug() << "Translated import model by" << maxShift << "units to avoid position conflicts";
     }
 
     // Add templates from import file if they don't exist

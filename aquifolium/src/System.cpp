@@ -4957,3 +4957,28 @@ bool System::LoadStateVariableFromJson(const string &variable, const string &fil
 
 
 #endif
+
+
+void System::Translate(double dx, double dy)
+{
+    // Translate all blocks
+    for (unsigned int i = 0; i < BlockCount(); i++)
+    {
+        Block* blk = block(i);
+        if (blk)
+        {
+            // Check if the block has x and y properties
+            if (blk->HasQuantity("x"))
+            {
+                double currentX = blk->GetVal("x");
+                blk->Variable("x")->SetVal(currentX + dx);
+            }
+
+            if (blk->HasQuantity("y"))
+            {
+                double currentY = blk->GetVal("y");
+                blk->Variable("y")->SetVal(currentY + dy);
+            }
+        }
+    }
+}
