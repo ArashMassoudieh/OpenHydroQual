@@ -170,243 +170,173 @@
       "default": "0"
     }
   },
-  "Leaky Dam": {
-    "type": "link",
-    "typecategory": "Connectors",
-    "description": "Leaky Dam",
+  "Trapezoidal Channel Segment (Imposed depth)": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Trapezoidal Channel Segment (Imposed Depth)",
     "icon": {
-      "filename": "LeakyDam.png"
+      "filename": "Trapezoidal_Channel.png"
     },
-    "Width": {
-      "type": "value",
-      "description": "Width",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m",
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow,ag_withdrawal,non_ag_withdrawal",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "initial_value_expression": "100000000000",
+      "ask_user": "false",
       "estimate": "true"
     },
-    "Hydraulic_Conductivity": {
+    "base_width": {
       "type": "value",
-      "description": "Hydraulic Conductivity",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m/day",
-      "estimate": "true"
-    },
-    "Length": {
-      "type": "value",
-      "description": "Dam Length in the flow direction",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m",
-      "estimate": "true",
-      "default": "1"
-    },
-    "Weir_coefficient": {
-      "type": "value",
-      "description": "Weir Coefficient",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "estimate": "true",
-      "default": "0.85"
-      },
-      "Dam_Height": 
-      {
-      	"type": "value",
-      	"description": "Dam Height",
-      	"ask_user": "true",
-      	"delegate": "UnitBox",
-      	"unit": "m",
-      	"estimate": "true"
-      },
-      "Hydraulic_Gradient": 
-      {
-      	"type": "expression",
-      	"description": "Hydraulic Gradient",
-      	"expression": "(head.s-head.e)/Length",
-      	"includeinoutput": "true",
-      	"ask_user": "false"
-      },
-      "under_flow":
-      {
-      	"type": "expression",
-      	"description": "Under flow",
-      	"expression": "Width*Hydraulic_Conductivity*Hydraulic_Gradient*_max(depth.s;Dam_Height)",
-      	"includeinoutput": "true",
-      	"ask_user": "false"
-      },
-      "over_flow": 
-      {
-      	"type": "expression",
-      	"description": "Over flow",
-      	"expression": "86400*_sqt(9.81*over_flow_depth^3)*Width*Weir_coefficient",
-      	"includeinoutput": "true",
-      	"ask_user": "false"
-      },
-      "over_flow_depth": 
-      {
-      	"type": "expression",
-      	"description": "Over flow Depth",
-      	"expression": "_pos(head.s-bottom_elevation.s-Dam_Height)",
-      	"includeinoutput": "true",
-      	"ask_user": "false"
-      },
-      "flow": 
-      {
-      	"type": "expression",
-      	"description": "Flow",
-      	"expression": "under_flow + over_flow",
-      	"includeinoutput": "true",
-      	"ask_user": "false"
-      }
-    },
-    "Leaky Dam with pipes": {
-    "type": "link",
-    "typecategory": "Connectors",
-    "description": "Leaky dam with pipe",
-    "icon": {
-      "filename": "LeakyDamwPipe.png"
-    },
-    "diameter": {
-      "type": "value",
-      "description": "Pipe Diameter",
+      "description": "Base Width",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm",
       "estimate": "true",
-      "criteria": "diameter>0",
-      "warningmessage": "diameter must be positive",
-      "helptext": "Internal diameter of the pipe, used to calculate flow based on the Hazen-Williams equation."
+      "helptext": "The width of the bottom (flat) portion of the trapezoidal channel cross-section."
     },
-    "hz_coeff": {
+    "side_slope": {
       "type": "value",
-      "description": "Hazen-Williams Coefficient (SI)",
+      "description": "Side Slope",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "unit": "m",
       "estimate": "true",
-      "default": "100",
-      "criteria": "hz_coeff>0",
-      "warningmessage": "diameter must be positive"
+      "criteria": "side_slope>0",
+      "warningmessage": "Side slope must be greater than zero",
+      "helptext": "The horizontal to vertical ratio of the sloped sides (e.g., 2 means 2 horizontal to 1 vertical)."
     },
-    "pipe_length": {
+    "ManningCoeff": {
       "type": "value",
-      "description": "Pipe length",
+      "description": "Manning's Roughness Coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness must be greater than zero",
+      "estimate": "true",
+      "helptext": "Roughness coefficient used in Manning's equation to estimate flow resistance."
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft",
+      "unit": "m;ft;cm",
       "estimate": "true",
-      "criteria": "pipe_length>0",
-      "warningmessage": "lenght must be positive"
+      "helptext": "Elevation of the channel bottom relative to the model\u2019s vertical datum."
     },
-    "pipe_hydraulic_gradient": {
-      "type": "expression",
-      "description": "Pipe Hydraulic Gradient",
-      "expression": "(head.e-head.s)/pipe_length",
-      "includeinoutput": "true",
-      "ask_user": "false"
+    "depth": {
+      "type": "timeseries",
+      "description": "Water Depth",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "includeinoutput": "true"
     },
-    "pipe_flow": {
+    "head": {
       "type": "expression",
-      "description": "Pipe flow rate (m~^3/day)",
-      "expression": "Number_of_pipes*24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-pipe_hydraulic_gradient;0.00001)*_abs(-pipe_hydraulic_gradient)^0.54*_mon(depth.s;diameter)",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic Head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Segment length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "_pos((base_width+side_slope*depth)*depth-dam_area)",
+      "description": "Cross-sectional area",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "dam_area": {
+      "type": "expression",
+      "expression": "(base_width+side_slope*dam_height)*_pos(dam_height)",
+      "description": "Obstacle cross-sectional area",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "perimeter": {
+      "type": "expression",
+      "expression": "base_width+2*_sqt(1+side_slope^2)*depth",
+      "description": "Wetted Perimeter",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
-    },
-    "Number_of_pipes": {
-      "type": "value",
-      "description": "Number of pipes",
+      "description": "Inflow time series",
       "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "ag_area": {
+      "type": "value",
+      "description": "Area of agriculural land",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2",
+      "estimate": "true"
+    },
+    "non_ag_area": {
+      "type": "value",
+      "description": "Area of non-agriculural activity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2",
+      "estimate": "true"
+    },
+    "ag_withdrawal": {
+      "type": "expression",
+      "expression": "-ag_area*ag_withdrawal_per_unit_area*depth/(depth+0.05)",
+      "description": "Agricultural Withdrawal",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "non_ag_withdrawal": {
+      "type": "expression",
+      "expression": "-non_ag_area*non_ag_withdrawal_per_unit_area*depth/(depth+0.05)",
+      "description": "Non-Agricultural Withdrawal",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "ag_withdrawal_per_unit_area": {
+      "type": "timeseries",
       "includeinoutput": "true",
-      "delegate": "ValueBox",
+      "applylimit": "true",
+      "description": "Agricultural Withdrawal per unit area",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "non_ag_withdrawal_per_unit_area": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Non-Agricultural Withdrawal per unit area",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "dam_height": {
+      "type": "value",
+      "description": "Obstacle height",
+      "ask_user": "true",
+      "helptext": "The water depth below which the flow ceases",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
       "estimate": "true",
       "default": "0"
-    },
-    "Width": {
-      "type": "value",
-      "description": "Width",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m",
-      "estimate": "true"
-    },
-    "Hydraulic_Conductivity": {
-      "type": "value",
-      "description": "Hydraulic Conductivity",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m/day",
-      "estimate": "true"
-    },
-    "Length": {
-      "type": "value",
-      "description": "Dam Length in the flow direction",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m",
-      "estimate": "true",
-      "default": "1"
-    },
-    "Weir_coefficient": {
-      "type": "value",
-      "description": "Weir Coefficient",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "estimate": "true",
-      "default": "0.85"
-      },
-      "Dam_Height": 
-      {
-      	"type": "value",
-      	"description": "Dam Height",
-      	"ask_user": "true",
-      	"delegate": "UnitBox",
-      	"unit": "m",
-      	"estimate": "true"
-      },
-      "Hydraulic_Gradient": 
-      {
-      	"type": "expression",
-      	"description": "Hydraulic Gradient",
-      	"expression": "(head.e-head.s)/Length",
-      	"includeinoutput": "true",
-      	"ask_user": "false"
-      },
-      "under_flow":
-      {
-      	"type": "expression",
-      	"description": "Under flow  (m~^3/day)",
-      	"expression": "-Width*Hydraulic_Conductivity*Hydraulic_Gradient*_max(depth.s;Dam_Height)",
-      	"includeinoutput": "true",
-      	"ask_user": "false"
-      },
-      "over_flow": 
-      {
-      	"type": "expression",
-      	"description": "Over flow (m~^3/day)",
-      	"expression": "86400*_sqt(9.81*over_flow_depth^3)*Width*Weir_coefficient",
-      	"includeinoutput": "true",
-      	"ask_user": "false"
-      },
-      "over_flow_depth": 
-      {
-      	"type": "expression",
-      	"description": "Over flow Depth",
-      	"expression": "_pos(head.s-bottom_elevation.s-Dam_Height)",
-      	"includeinoutput": "true",
-      	"ask_user": "false"
-      },
-      "flow": 
-      {
-      	"type": "expression",
-      	"description": "Flow (m~^3/day)",
-      	"expression": "under_flow + over_flow+pipe_flow",
-      	"includeinoutput": "true",
-      	"ask_user": "false"
-      }
-    },
-    "Trapezoidal_Channel_link": {
+    }
+  },
+  "Trapezoidal_Channel_link": {
     "type": "link",
     "typecategory": "Connectors",
     "description": "Link from a channel segment to another",

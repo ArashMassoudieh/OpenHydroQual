@@ -40,7 +40,8 @@
   "delegate": "UnitBox",
   "unit": "m",
   "ask_user": "true",
-  "estimate": "true"
+  "estimate": "true",
+  "includeinoutput": "true"
 },
 
 "external_source": {
@@ -84,7 +85,7 @@
       "default": "10",
       "description": "Decrease Rate",
       "delegate": "UnitBox",
-      "unit": "1/day",
+      "unit": "1/day;1/min",
       "ask_user": "true",
       "estimate": "true"
     },
@@ -93,14 +94,14 @@
       "default": "10",
       "description": "Increase Rate",
       "delegate": "UnitBox",
-      "unit": "1/day",
+      "unit": "1/day;1/min",
       "ask_user": "true",
       "estimate": "true"
     },
     "low_depth_criteria": {
       "type": "value",
       "default": "10",
-      "description": "Minimum depth at which gate starts opening",
+      "description": "Minimum depth at which gate starts closing",
       "delegate": "UnitBox",
       "unit": "m;ft",
       "ask_user": "true",
@@ -109,7 +110,7 @@
     "max_depth_criteria": {
       "type": "value",
       "default": "10",
-      "description": "Maximum depth at which gate starts closing",
+      "description": "Maximum depth at which gate starts Opening",
       "delegate": "UnitBox",
       "unit": "m;ft",
       "ask_user": "true",
@@ -158,7 +159,7 @@
    		},
            		"width": {
 		      "type": "value",
-		      "description": "width",
+		      "description": "gate width",
 		      "ask_user": "true",
 		      "delegate": "UnitBox",
           "unit": "m",
@@ -166,10 +167,10 @@
 		      "default": "1"
    		},
           "flow": {
-         "type": "expression",
+          "type": "expression",
            "description": "Submerged Weir Flow",
-            "expression": "gate_coeff*_pos(gate_opening)*width*(2*9.81*_pos(head.s-sill_elevation))^0.5",
-            "includeinoutput": "true",
+           "expression": "gate_coeff*_pos(gate_opening)*width*(2*9.81*_pos(head.s-head.e))",
+             "includeinoutput": "true",
             "applylimit": "true"
 },
 
@@ -182,7 +183,13 @@
     	        "gate_opening" : {
 		      	"type": "expression",
 			"description": "Gate Opening",
-                       "expression" : "_max(_min(Gate_Opening_1:mass.s;Gate_Opening_1:max_gate_opening);0)",
+                       "expression" : "_hsd(Gate_Opening_1:mass.s-0.00001)*_max(_min(Gate_Opening_1:mass.s;Gate_Opening_1:max_gate_opening);Gate_Opening_1:min_safe_opening)",
+			"includeinoutput" : "true"
+		},
+		"min_gate_opening" : {
+		      	"type": "expression",
+			"description": "Min Gate Opening",
+                        "expression" : "Gate_Opening_1:min_safe_opening",
 			"includeinoutput" : "true"
 		},
 		"length" : {
