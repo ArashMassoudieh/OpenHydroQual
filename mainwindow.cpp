@@ -472,8 +472,7 @@ bool MainWindow::BuildObjectsToolBar()
             icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
 
         action->setIcon(icon);
-        action->setToolTip(QString::fromStdString(system.GetAllBlockTypes()[i]) + "\n" +
-            QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
+        action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
         action->setText(QString::fromStdString(system.GetAllBlockTypes()[i]));
         ui->BlocksToolBar->addAction(action);
         connect(action, SIGNAL(triggered()), this, SLOT(onaddblock()));
@@ -501,8 +500,7 @@ bool MainWindow::BuildObjectsToolBar()
             icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
 
         action->setIcon(icon);
-        action->setToolTip(QString::fromStdString(system.GetAllLinkTypes()[i]) + "\n" +
-            QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
+        action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
         action->setText(QString::fromStdString(system.GetAllLinkTypes()[i]));
         ui->LinksToolBar->addAction(action);
         connect(action, SIGNAL(triggered()), this, SLOT(onaddlink()));
@@ -589,8 +587,7 @@ bool MainWindow::BuildObjectsToolBar()
                         icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
 
                     action->setIcon(icon);
-                    action->setToolTip(QString::fromStdString(type) + "\n" +
-                        QString::fromStdString(system.GetModel(type)->Description()));
+                    action->setToolTip(QString::fromStdString(system.GetModel(type)->Description()));
                     action->setText(QString::fromStdString(type));
 
                     categoryToolbar->addAction(action);
