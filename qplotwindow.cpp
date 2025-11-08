@@ -25,6 +25,25 @@ QPlotWindow::QPlotWindow(MainWindow *parent) :
     ui(new Ui::QPlotWindow)
 {
     ui->setupUi(this);
+    // Add after ui->setupUi(this); in the constructor:
+    datasetSelector = new QComboBox(this);
+    displayModeSelector = new QComboBox(this);
+    displayModeSelector->addItem("Lines");
+    displayModeSelector->addItem("Symbols");
+
+    QLabel* datasetLabel = new QLabel("Dataset:", this);
+    QLabel* modeLabel = new QLabel("Display:", this);
+
+    // Add these to your layout - you'll need to modify the layout structure
+    QHBoxLayout* controlLayout = new QHBoxLayout();
+    controlLayout->addWidget(datasetLabel);
+    controlLayout->addWidget(datasetSelector);
+    controlLayout->addWidget(modeLabel);
+    controlLayout->addWidget(displayModeSelector);
+    ui->verticalLayout->insertLayout(0, controlLayout);
+
+    connect(datasetSelector, SIGNAL(currentIndexChanged(int)), this, SLOT(onDatasetSelected(int)));
+    connect(displayModeSelector, SIGNAL(currentIndexChanged(int)), this, SLOT(onDisplayModeChanged(int)));
     chart = new QPlotter();
     chartview = new ChartView(chart, this, parent);
     ui->verticalLayout->addWidget(chartview);
@@ -142,6 +161,11 @@ bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseri
     pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
     lineseries->setPen(pen);
     lineseries->setName(QString::fromStdString(timeseries.name()));
+    QString seriesName = QString::fromStdString(timeseries.name());
+    if (seriesName.isEmpty()) {
+        seriesName = QString("Series %1").arg(unnamed_series_counter++);
+    }
+    lineseries->setName(seriesName);
     timeSeries.insert(lineseries->name(),timeseries);
 
 
@@ -157,6 +181,11 @@ bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseri
     }
     else
         axisX_normal->setLabelsAngle(-90);
+
+    seriesDisplayMode.insert(lineseries->name(), "line");
+    if (datasetSelector->findText(lineseries->name()) == -1) {
+        datasetSelector->addItem(lineseries->name());
+    }
     return true;
 }
 bool QPlotWindow::PlotData(const TimeSeriesSet<outputtimeseriesprecision>& timeseriesset, bool allowtime, string style)
@@ -251,6 +280,13 @@ bool QPlotWindow::PlotData(const TimeSeriesSet<outputtimeseriesprecision>& times
         pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
         lineseries->setPen(pen);
         lineseries->setName(QString::fromStdString(timeseriesset.getSeriesName(i)));
+                timeSeries.insert(lineseries->name(),timeseriesset[i]);
+
+                // Add these lines:
+                seriesDisplayMode.insert(lineseries->name(), "line");
+                if (datasetSelector->findText(lineseries->name()) == -1) {
+                    datasetSelector->addItem(lineseries->name());
+                }
         timeSeries.insert(lineseries->name(),timeseriesset[i]);
 
     }
@@ -296,6 +332,8 @@ bool QPlotWindow::AddData(const TimeSeries<outputtimeseriesprecision>& timeserie
 
     QLineSeries *lineseries = new QLineSeries();
     lineseries->setName(QString::fromStdString(timeseries.name()));
+    seriesDisplayMode.insert(lineseries->name(), "line");
+    datasetSelector->addItem(lineseries->name());
     chart->addSeries(lineseries);
     if (allowtime)
     {   lineseries->attachAxis(axisX_date);
@@ -423,4 +461,118 @@ void QPlotWindow::ExportToCSV()
         towrite.append(it.value(),it.key().toStdString());
 
     towrite.write(fileName.toStdString());
+}
+
+void QPlotWindow::onDatasetSelected(int index)
+{
+    if (index < 0) return;
+    QString selectedName = datasetSelector->currentText();
+    QString currentMode = seriesDisplayMode.value(selectedName, "line");
+    displayModeSelector->blockSignals(true);
+    displayModeSelector->setCurrentText(currentMode == "line" ? "Lines" : "Symbols");
+    displayModeSelector->blockSignals(false);
+}
+
+void QPlotWindow::onDisplayModeChanged(int index)
+{
+    QString selectedName = datasetSelector->currentText();
+    if (selectedName.isEmpty()) return;
+
+    QString mode = (displayModeSelector->currentIndex() == 0) ? "line" : "symbols";
+    updateSeriesDisplay(selectedName, mode);
+}
+
+void QPlotWindow::updateSeriesDisplay(const QString& seriesName, const QString& mode)
+{
+    // Find the series
+    QAbstractSeries* oldSeries = nullptr;
+    foreach (QAbstractSeries* series, chart->series()) {
+        if (series->name() == seriesName) {
+            oldSeries = series;
+            break;
+        }
+    }
+    if (!oldSeries) return;
+
+    // Get the timeseries data
+    TimeSeries<double> ts = timeSeries[seriesName];
+
+    // Save the pen/color and get attached axes BEFORE removing
+    QPen oldPen;
+    QList<QAbstractAxis*> attachedAxes;
+
+    if (QLineSeries* lineSeries = qobject_cast<QLineSeries*>(oldSeries)) {
+        oldPen = lineSeries->pen();
+        attachedAxes = lineSeries->attachedAxes();
+    } else if (QScatterSeries* scatterSeries = qobject_cast<QScatterSeries*>(oldSeries)) {
+        oldPen = scatterSeries->pen();
+        oldPen.setWidth(2); // Reset width for line series
+        attachedAxes = scatterSeries->attachedAxes();
+    }
+
+    // Determine if time axis is being used
+    bool allowtime = false;
+    QAbstractAxis* xAxisToUse = nullptr;
+    QAbstractAxis* yAxisToUse = nullptr;
+
+    foreach (QAbstractAxis* axis, attachedAxes) {
+        if (axis->alignment() == Qt::AlignBottom) {
+            xAxisToUse = axis;
+            if (qobject_cast<QDateTimeAxis*>(axis)) {
+                allowtime = true;
+            }
+        } else if (axis->alignment() == Qt::AlignLeft) {
+            yAxisToUse = axis;
+        }
+    }
+
+    // Remove old series
+    chart->removeSeries(oldSeries);
+    oldSeries->deleteLater();
+
+    // Create new series based on mode
+    QAbstractSeries* newSeries = nullptr;
+
+    if (mode == "symbols") {
+        QScatterSeries* scatterSeries = new QScatterSeries();
+        scatterSeries->setName(seriesName);
+        scatterSeries->setMarkerSize(10.0);
+
+        for (int j = 0; j < ts.size(); ++j) {
+            double x = allowtime ? xToDateTime(ts.getTime(j)).toMSecsSinceEpoch() : ts.getTime(j);
+            scatterSeries->append(x, ts.getValue(j));
+        }
+
+        scatterSeries->setPen(oldPen);
+        scatterSeries->setBrush(oldPen.brush());
+        scatterSeries->setColor(oldPen.color());
+
+        newSeries = scatterSeries;
+
+    } else {
+        QLineSeries* lineSeries = new QLineSeries();
+        lineSeries->setName(seriesName);
+
+        for (int j = 0; j < ts.size(); ++j) {
+            double x = allowtime ? xToDateTime(ts.getTime(j)).toMSecsSinceEpoch() : ts.getTime(j);
+            lineSeries->append(x, ts.getValue(j));
+        }
+
+        lineSeries->setPen(oldPen);
+
+        newSeries = lineSeries;
+    }
+
+    // Add series to chart
+    chart->addSeries(newSeries);
+
+    // Attach the same axes that were attached to the old series
+    if (xAxisToUse) {
+        newSeries->attachAxis(xAxisToUse);
+    }
+    if (yAxisToUse) {
+        newSeries->attachAxis(yAxisToUse);
+    }
+
+    seriesDisplayMode[seriesName] = mode;
 }

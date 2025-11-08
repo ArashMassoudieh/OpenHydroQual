@@ -29,8 +29,10 @@
 #include "QDebug"
 
 
+
 #ifdef Q_GUI_SUPPORT
     #include "ProgressWindow.h"
+    #include <QCoreApplication>
 #endif
 
 template<class T>

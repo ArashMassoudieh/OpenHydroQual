@@ -127,11 +127,18 @@ private:
     QString x_Axis_Title;
     QString y_Axis_Title;
 
+    QComboBox* datasetSelector = nullptr;
+    QComboBox* displayModeSelector = nullptr;
+    QMap<QString, QString> seriesDisplayMode; // "line" or "symbols"
+    int unnamed_series_counter = 1;
 
 private slots:
      void contextMenuRequest(QPoint pos);
      void ExportToPNG();
      void ExportToCSV();
+     void onDatasetSelected(int index);
+     void onDisplayModeChanged(int index);
+     void updateSeriesDisplay(const QString& seriesName, const QString& mode);
 
 };
 

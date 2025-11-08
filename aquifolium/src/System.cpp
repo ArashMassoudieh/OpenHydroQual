@@ -1292,7 +1292,7 @@ bool System::SetLoadedOutputItems()
             {
                 if (aquiutils::lookup(GetOutputs().getSeriesNames(), "Obj_" + objective_function_set[i]->GetName() + "_" + it->first) == -1)
                 {
-                    qDebug() << objective_function_set[i]->GetName() + "_" + it->first;
+                    qDebug() << QString::fromStdString(objective_function_set[i]->GetName() + "_" + it->first);
                     res = false;
                 }
                 it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
@@ -4926,7 +4926,7 @@ bool System::LoadStateVariableFromJson(const string &variable, const string &fil
 {
     QFile file(QString::fromStdString(filename));
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "Couldn't open file:" << filename;
+        qWarning() << "Couldn't open file:" << QString::fromStdString(filename);
         return false;
     }
 
