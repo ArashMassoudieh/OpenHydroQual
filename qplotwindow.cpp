@@ -160,7 +160,6 @@ bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseri
     pen.setWidth(2);
     pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
     lineseries->setPen(pen);
-    lineseries->setName(QString::fromStdString(timeseries.name()));
     QString seriesName = QString::fromStdString(timeseries.name());
     if (seriesName.isEmpty()) {
         seriesName = QString("Series %1").arg(unnamed_series_counter++);
@@ -331,7 +330,11 @@ bool QPlotWindow::AddData(const TimeSeries<outputtimeseriesprecision>& timeserie
 #endif
 
     QLineSeries *lineseries = new QLineSeries();
-    lineseries->setName(QString::fromStdString(timeseries.name()));
+    QString seriesName = QString::fromStdString(timeseries.name());
+    if (seriesName.isEmpty()) {
+        seriesName = QString("Series %1").arg(unnamed_series_counter++);
+    }
+    lineseries->setName(seriesName);
     seriesDisplayMode.insert(lineseries->name(), "line");
     datasetSelector->addItem(lineseries->name());
     chart->addSeries(lineseries);
