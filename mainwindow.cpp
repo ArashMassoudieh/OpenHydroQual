@@ -193,6 +193,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen_Results,SIGNAL(triggered()),this,SLOT(loadresults()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
     connect(ui->actionVisualize, &QAction::triggered, this, &MainWindow::onVisualize);
+    ui->actionVisualize->setEnabled(false);
     connect(ui->actionComponent_description, &QAction::triggered,this, &MainWindow::oncomponentdescriptions);
     PropertiesWidget = new ItemPropertiesWidget(ui->dockWidgetContents_3);
     PropertiesWidget->tableView()->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -1764,8 +1765,8 @@ void MainWindow::Populate_General_ToolBar()
     actioninverse->setToolTip("Inverse Run");
     connect(actioninverse, SIGNAL(triggered()), this, SLOT(oninverserun()));
     //mcmc
-    QIcon iconmcmc;
 
+    QIcon iconmcmc;
     iconmcmc.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/MCMC.png"), QSize(), QIcon::Normal, QIcon::Off);
 
     QAction* actionmcmc = new QAction(this);
@@ -1775,6 +1776,16 @@ void MainWindow::Populate_General_ToolBar()
     actionmcmc->setToolTip("MCMC parameter estimation");
     connect(actionmcmc, SIGNAL(triggered()), this, SLOT(onmcmc()));
 
+    QIcon iconviz;
+    iconviz.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/Visualize.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    actionviz = new QAction(this);
+    actionviz->setIcon(iconviz);
+    ui->GeneraltoolBar->addAction(actionviz);
+    actionviz->setText("Visualize");
+    actionviz->setToolTip("Visualize results");
+    connect(actionviz, SIGNAL(triggered()), this, SLOT(onVisualize()));
+    actionviz->setEnabled(false);
 }
 
 void MainWindow::onzoomin()
@@ -2255,6 +2266,8 @@ void MainWindow::onrunmodel()
     mapped_modeled_results.write(workingfolder.toStdString() + "/" + "mapped_modeled_results.txt");
     actionrun->setEnabled(true);
     rtw->AppendLog(std::string("All tasks finished!"));
+    ui->actionVisualize->setEnabled(true);
+    actionviz->setEnabled(true);
     rtw->SetStatus("Finished!");
 }
 
@@ -2592,7 +2605,10 @@ void MainWindow::loadresults()
         QMessageBox::critical(this, "Output file not correct!", "The file does not contains the results of the model",QMessageBox::Ok);
     }
 	else
-		QMessageBox::information(this, "Output file loaded!", "Output file loaded successfully!", QMessageBox::Ok);
+    {	QMessageBox::information(this, "Output file loaded!", "Output file loaded successfully!", QMessageBox::Ok);
+        ui->actionVisualize->setEnabled(true);
+        actionviz->setEnabled(true);
+    }
     
 
 

@@ -138,6 +138,7 @@ private:
     void saveSceneToSvg(const QString &filename);
     bool CreateFileIfDoesNotExist(QString fileName);
     QAction* actionrun = nullptr;
+    QAction* actionviz = nullptr;
     ItemPropertiesWidget *PropertiesWidget = nullptr;
     QMap<QString, QToolBar*> categoryToolbars_;
 
