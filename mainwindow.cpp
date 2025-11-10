@@ -62,6 +62,7 @@
 #include <QFileInfo>
 #include "gridgenerator.h"
 #include "metamodelhelpdialog.h"
+#include "VisualizationDialog.h"
 
 using namespace std;
 
@@ -191,6 +192,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOptions,SIGNAL(triggered()),this,SLOT(optionsdialog()));
     connect(ui->actionOpen_Results,SIGNAL(triggered()),this,SLOT(loadresults()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
+    connect(ui->actionVisualize, &QAction::triggered, this, &MainWindow::onVisualize);
     connect(ui->actionComponent_description, &QAction::triggered,this, &MainWindow::oncomponentdescriptions);
     PropertiesWidget = new ItemPropertiesWidget(ui->dockWidgetContents_3);
     PropertiesWidget->tableView()->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -206,6 +208,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
     qDebug()<<graphsClipboard.size();
     graphsClipboard.clear();
+
 
 }
 
@@ -3403,4 +3406,18 @@ bool MainWindow::resolveNameConflicts(Script& importScript, const QList<NameConf
     }
 
     return true;
+}
+
+void MainWindow::onVisualize()
+{
+
+    if (GetSystem()->GetOutputs().size()>0)
+    {
+        // Create and show the visualization dialog
+        VisualizationDialog* vizDialog = new VisualizationDialog(GetSystem(), this);
+        vizDialog->setAttribute(Qt::WA_DeleteOnClose);
+        vizDialog->setModal(false);  // Allow interaction with main window
+        vizDialog->setAttribute(Qt::WA_DeleteOnClose);  // Auto-delete when closed
+        vizDialog->show();
+    }
 }

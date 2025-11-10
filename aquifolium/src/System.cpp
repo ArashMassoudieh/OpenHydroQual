@@ -4982,3 +4982,62 @@ void System::Translate(double dx, double dy)
         }
     }
 }
+
+vector<pair<string, string>> System::GetOutputProperties()
+{
+    // Use a map to store unique properties with their descriptions
+    // The key is the quan name, value is the description
+    map<string, string> uniqueProperties;
+
+    // Iterate through all blocks
+    for (unsigned int i = 0; i < blocks.size(); i++)
+    {
+        // Get the variables for this block
+        QuanSet* vars = blocks[i].GetVars();
+        if (vars)
+        {
+            // Iterate through all quantities in this block
+            for (unordered_map<string, Quan>::iterator it = vars->begin();
+                 it != vars->end(); ++it)
+            {
+                // Check if this quantity should be included in output
+                if (it->second.IncludeInOutput())
+                {
+                    // Add to map (automatically handles uniqueness)
+                    uniqueProperties[it->first] = it->second.Description(true);
+                }
+            }
+        }
+    }
+
+    // Iterate through all links
+    for (unsigned int i = 0; i < links.size(); i++)
+    {
+        // Get the variables for this link
+        QuanSet* vars = links[i].GetVars();
+        if (vars)
+        {
+            // Iterate through all quantities in this link
+            for (unordered_map<string, Quan>::iterator it = vars->begin();
+                 it != vars->end(); ++it)
+            {
+                // Check if this quantity should be included in output
+                if (it->second.IncludeInOutput())
+                {
+                    // Add to map (automatically handles uniqueness)
+                    uniqueProperties[it->first] = it->second.Description();
+                }
+            }
+        }
+    }
+
+    // Convert map to vector of pairs
+    vector<pair<string, string>> result;
+    for (map<string, string>::iterator it = uniqueProperties.begin();
+         it != uniqueProperties.end(); ++it)
+    {
+        result.push_back(make_pair(it->first, it->second));
+    }
+
+    return result;
+}

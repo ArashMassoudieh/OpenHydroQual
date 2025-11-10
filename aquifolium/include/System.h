@@ -382,6 +382,14 @@ class System: public Object
         bool SaveStateVariableToJson(const string &variable, const string &filename);
         bool LoadStateVariableFromJson(const string &variable, const string &filename);
         void Translate(double dx, double dy);
+
+        /**
+         * @brief Extracts all unique properties from blocks and links that have include_in_output set to true
+         * @return Vector of pairs where first element is the quan name and second is the description
+         * @note This function iterates through all blocks and links in the system to collect properties
+         *       that should be included in output visualization
+         */
+        vector<pair<string, string>> GetOutputProperties();
 #endif
 
 #ifdef Q_GUI_SUPPORT

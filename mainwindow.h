@@ -203,7 +203,8 @@ private slots:
     void on_Redo();
     void onCreate2dArray();// Is called when 2D Array action is triggered
     void oncomponentdescriptions();
-    void onimport(); 
+    void onimport();
+    void onVisualize();
 };
 
 QString localAppFolderAddress();

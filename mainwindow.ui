@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>775</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFilw">
@@ -84,6 +84,7 @@
     <addaction name="actionValidate"/>
     <addaction name="actionRun"/>
     <addaction name="actionOpen_Results"/>
+    <addaction name="actionVisualize"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -222,7 +223,7 @@
     <string>File/View</string>
    </property>
    <property name="orientation">
-    <enum>Qt::Orientation::Vertical</enum>
+    <enum>Qt::Vertical</enum>
    </property>
    <property name="iconSize">
     <size>
@@ -377,6 +378,11 @@
   <action name="actionImport">
    <property name="text">
     <string>Import ...</string>
+   </property>
+  </action>
+  <action name="actionVisualize">
+   <property name="text">
+    <string>Visualize</string>
    </property>
   </action>
  </widget>

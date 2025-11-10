@@ -114,6 +114,8 @@ CONFIG(debug, debug|release) {
 
 SOURCES += \
     ProgressWindow.cpp \
+    VisualizationDialog.cpp \
+    VisualizationGraphicsView.cpp \
     chartview.cpp \
     metamodelhelpdialog.cpp \
     qplotter.cpp \
@@ -185,6 +187,8 @@ SOURCES += \
 
 HEADERS += \
     ProgressWindow.h \
+    VisualizationDialog.h \
+    VisualizationGraphicsView.h \
     aquifolium/include/TimeSeries.h \
     aquifolium/include/TimeSeriesSet.h \
     aquifolium/src/TimeSeries.hpp \
