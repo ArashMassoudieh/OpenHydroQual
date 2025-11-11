@@ -14,8 +14,8 @@
  */
 
 
-#define openhydroqual_version "2.0.1"
-#define last_modified "November, 5, 2025"
+#define openhydroqual_version "2.0.2"
+#define last_modified "November, 11, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -1819,7 +1819,7 @@ void MainWindow::onabout()
     AboutDialog* abtdlg = new AboutDialog(this);
     
 	abtdlg->SetVersion(QString(openhydroqual_version));
-    abtdlg->SetLastModified(QString("Last modified: ") + QString(last_modified));
+    abtdlg->SetLastModified(QString(last_modified));
     
     abtdlg->AppendText("Plugins added:");
     for (unsigned int i=0; i<addedtemplatefilenames.size(); i++)
@@ -1951,6 +1951,8 @@ void MainWindow::onloadJson()
     undoData.AppendtoLast(&system);
     if (undoData.active==0) InactivateUndo();
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
+    ui->actionVisualize->setEnabled(false);
+    actionviz->setEnabled(false);
 }
 
 void MainWindow::onexporttosvg()
@@ -2032,6 +2034,8 @@ void MainWindow::onopen()
     undoData.AppendtoLast(&system);
     if (undoData.active==0) InactivateUndo();
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
+    ui->actionVisualize->setEnabled(false);
+    actionviz->setEnabled(false);
 
 }
 
@@ -2067,6 +2071,8 @@ void MainWindow::onnewproject()
     undoData.AppendtoLast(&system);
     if (undoData.active==0) InactivateUndo();
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
+    ui->actionVisualize->setEnabled(false);
+    actionviz->setEnabled(false);
 }
 
 bool MainWindow::LoadModel(QString fileName)

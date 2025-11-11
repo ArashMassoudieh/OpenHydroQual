@@ -180,6 +180,9 @@ private:
     double currentTime; // Current selected time
     double minTime;     // Minimum time in simulation
     double maxTime;     // Maximum time in simulation
+    double minValue;     // Minimum time in simulation
+    double maxValue;     // Maximum time in simulation
+
 
     // Visualization parameters
     static constexpr double DEFAULT_BLOCK_WIDTH = 60.0;

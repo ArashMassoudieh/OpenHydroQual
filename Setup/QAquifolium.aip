@@ -27,10 +27,10 @@
     <ROW Property="ARPURLUPDATEINFO" Value="www.OpenHydroQual.com"/>
     <ROW Property="AppLogoIcon" Value="applogoicon" MultiBuildValue="DefaultBuild:Aquifolium.jpg_1" Type="1" MsiKey="AppLogoIcon"/>
     <ROW Property="Manufacturer" Value="EnviroInformatics, LLC"/>
-    <ROW Property="ProductCode" Value="1033:{70E34E96-4552-44E2-8ACC-2041EA3C963A} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{3DE53F38-84DF-4E5C-A2E7-1825F94C55B3} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="OpenHydroQual"/>
-    <ROW Property="ProductVersion" Value="1.2.10" Type="32"/>
+    <ROW Property="ProductVersion" Value="2.0.2" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{22A5F0D0-785C-400D-99C4-4FBF0A322AB6}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -61,7 +61,7 @@
     <ROW Directory="resources_Dir" Directory_Parent="APPDIR" DefaultDir="RESOUR~1|resources"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
-    <ROW Component="AI_CustomARPName" ComponentId="{CF098D16-E8E4-486D-B819-7C96783AA3AC}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
+    <ROW Component="AI_CustomARPName" ComponentId="{E7CD371D-A623-4E62-931E-96D418748BE7}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
     <ROW Component="AI_ExePath" ComponentId="{E9233AF7-0339-4898-BA7A-0EA6DCB0522F}" Directory_="APPDIR" Attributes="4" KeyPath="AI_ExePath"/>
     <ROW Component="AI_IA_ENABLE" ComponentId="{9961D3AC-A7F7-45C8-9F93-9695250B97F1}" Directory_="APPDIR" Attributes="4" KeyPath="AI_IA_ENABLE" Options="1"/>
     <ROW Component="Bioretention.png" ComponentId="{F01F4FC1-0721-4F89-8CAF-F9B6A4F658CD}" Directory_="Wizard_Icons_Dir" Attributes="0" KeyPath="Bioretention.png_1" Type="0"/>
@@ -158,7 +158,7 @@
     <ROW File="InfiltrationandInflow.png" Component_="pd.nfo" FileName="INFILT~1.PNG|Infiltration and Inflow.png" Attributes="0" SourcePath="..\resources\Icons\Infiltration and Inflow.png" SelfReg="false" NextFile="inverserun.png"/>
     <ROW File="Lake2GWlink.png" Component_="pd.nfo" FileName="LAKE2G~1.PNG|Lake2GWlink.png" Attributes="0" SourcePath="..\resources\Icons\Lake2GWlink.png" SelfReg="false" NextFile="log_icon.jpg"/>
     <ROW File="LeakyDam.png" Component_="pd.nfo" FileName="LeakyDam.png" Attributes="0" SourcePath="..\resources\Icons\LeakyDam.png" SelfReg="false" NextFile="unconfined_aquifer2well_pumped.png"/>
-    <ROW File="LeakyDamwPipe.png" Component_="pd.nfo" FileName="LEAKYD~1.PNG|LeakyDamwPipe.png" Attributes="0" SourcePath="..\resources\Icons\LeakyDamwPipe.png" SelfReg="false"/>
+    <ROW File="LeakyDamwPipe.png" Component_="pd.nfo" FileName="LEAKYD~1.PNG|LeakyDamwPipe.png" Attributes="0" SourcePath="..\resources\Icons\LeakyDamwPipe.png" SelfReg="false" NextFile="unsaturated_soil_revised_model.json"/>
     <ROW File="MCMC.png" Component_="pd.nfo" FileName="MCMC.png" Attributes="0" SourcePath="..\resources\Icons\MCMC.png" SelfReg="false" NextFile="NHAI_Logo_Water_Graphic.jpg"/>
     <ROW File="ModelWizard.exe" Component_="ModelWizard.exe" FileName="MODELW~1.EXE|ModelWizard.exe" Attributes="0" SourcePath="..\x64\Release\ModelWizard.exe" SelfReg="false" NextFile="OHQTerminal.exe" DigSign="true"/>
     <ROW File="NHAI_Logo_Water_Graphic.jpg" Component_="pd.nfo" FileName="NHAI_L~1.JPG|NHAI_Logo_Water_Graphic.jpg" Attributes="0" SourcePath="..\resources\Icons\NHAI_Logo_Water_Graphic.jpg" SelfReg="false" NextFile="objective.png"/>
@@ -223,6 +223,7 @@
     <ROW File="Trapezoidal_Channel.png" Component_="pd.nfo" FileName="TRAPEZ~1.PNG|Trapezoidal_Channel.png" Attributes="0" SourcePath="..\resources\Icons\Trapezoidal_Channel.png" SelfReg="false" NextFile="Trapezoidal_Channel_Link.png"/>
     <ROW File="Trapezoidal_Channel_Link.png" Component_="pd.nfo" FileName="TRAPEZ~2.PNG|Trapezoidal_Channel_Link.png" Attributes="0" SourcePath="..\resources\Icons\Trapezoidal_Channel_Link.png" SelfReg="false" NextFile="Twitter_Icon.png"/>
     <ROW File="Twitter_Icon.png" Component_="pd.nfo" FileName="TWITTE~1.PNG|Twitter_Icon.png" Attributes="0" SourcePath="..\resources\Icons\Twitter_Icon.png" SelfReg="false" NextFile="unconfined_aquifer.png"/>
+    <ROW File="Visualize.png" Component_="pd.nfo" FileName="VISUAL~1.PNG|Visualize.png" Attributes="0" SourcePath="..\resources\Icons\Visualize.png" SelfReg="false"/>
     <ROW File="Wastewater_Treatment_plant.png" Component_="pd.nfo" FileName="WASTEW~3.PNG|Wastewater_Treatment_plant.png" Attributes="0" SourcePath="..\resources\Icons\Wastewater_Treatment_plant.png" SelfReg="false" NextFile="water_supply_well.png"/>
     <ROW File="Wastewater_flow.png" Component_="pd.nfo" FileName="WASTEW~1.PNG|Wastewater_flow.png" Attributes="0" SourcePath="..\resources\Icons\Wastewater_flow.png" SelfReg="false" NextFile="wastewater_template.png"/>
     <ROW File="Water_Transfer.png" Component_="pd.nfo" FileName="WATER_~2.PNG|Water_Transfer.png" Attributes="0" SourcePath="..\resources\Icons\Water_Transfer.png" SelfReg="false" NextFile="Water_Transfer_to_Groundwater.png"/>
@@ -430,6 +431,7 @@
     <ROW File="unsaturated_soil_bkup.json" Component_="mass_transfer.json" FileName="UNSATU~2.JSO|unsaturated_soil_bkup.json" Attributes="0" SourcePath="..\resources\unsaturated_soil_bkup.json" SelfReg="false" NextFile="unsaturated_soil_EC_logistic.json"/>
     <ROW File="unsaturated_soil_links_w_Ks.json" Component_="mass_transfer.json" FileName="UNSATU~4.JSO|unsaturated_soil_links_w_Ks.json" Attributes="0" SourcePath="..\resources\unsaturated_soil_links_w_Ks.json" SelfReg="false" NextFile="unsaturated_soil_old.json"/>
     <ROW File="unsaturated_soil_old.json" Component_="mass_transfer.json" FileName="UNSATU~5.JSO|unsaturated_soil_old.json" Attributes="0" SourcePath="..\resources\unsaturated_soil_old.json" SelfReg="false" NextFile="urban_water_management.json"/>
+    <ROW File="unsaturated_soil_revised_model.json" Component_="mass_transfer.json" FileName="UNSATU~6.JSO|unsaturated_soil_revised_model.json" Attributes="0" SourcePath="..\resources\unsaturated_soil_revised_model.json" SelfReg="false" NextFile="Visualize.png"/>
     <ROW File="updater.exe" Component_="updater.exe" FileName="updater.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="&lt;AI_STUBS&gt;updater.exe" SelfReg="false" NextFile="Bioswale.png" DigSign="true"/>
     <ROW File="urban_water_management.json" Component_="mass_transfer.json" FileName="URBAN_~1.JSO|urban_water_management.json" Attributes="0" SourcePath="..\resources\urban_water_management.json" SelfReg="false" NextFile="urban_water_management_old.json"/>
     <ROW File="urban_water_management_old.json" Component_="mass_transfer.json" FileName="URBAN_~2.JSO|urban_water_management_old.json" Attributes="0" SourcePath="..\resources\urban_water_management_old.json" SelfReg="false" NextFile="wastewater.json"/>
@@ -831,10 +833,10 @@
     <ROW XmlAttribute="xsischemaLocation" XmlElement="swidsoftware_identification_tag" Name="xsi:schemaLocation" Flags="14" Order="3" Value="http://standards.iso.org/iso/19770/-2/2008/schema.xsd software_identification_tag.xsd"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
-    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="10"/>
+    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="2"/>
     <ROW XmlElement="swidentitlement_required_indicator" ParentElement="swidsoftware_identification_tag" Name="swid:entitlement_required_indicator" Condition="1" Order="0" Flags="14" Text="false"/>
-    <ROW XmlElement="swidmajor" ParentElement="swidnumeric" Name="swid:major" Condition="1" Order="0" Flags="14" Text="1"/>
-    <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="2"/>
+    <ROW XmlElement="swidmajor" ParentElement="swidnumeric" Name="swid:major" Condition="1" Order="0" Flags="14" Text="2"/>
+    <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="0"/>
     <ROW XmlElement="swidname" ParentElement="swidproduct_version" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[ProductVersion]"/>
     <ROW XmlElement="swidname_1" ParentElement="swidsoftware_creator" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[Manufacturer]"/>
     <ROW XmlElement="swidname_2" ParentElement="swidsoftware_licensor" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[Manufacturer]"/>
