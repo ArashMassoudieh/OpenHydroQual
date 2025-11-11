@@ -297,8 +297,8 @@ void VisualizationDialog::onPropertyChanged(int index)
         currentProperty = properties[index].first;
 
         // Get GLOBAL min/max across all time series
-        double minValue = std::numeric_limits<double>::max();
-        double maxValue = std::numeric_limits<double>::lowest();
+        minValue = std::numeric_limits<double>::max();
+        maxValue = std::numeric_limits<double>::lowest();
         bool foundAny = false;
 
         if (hasSimulationData())
@@ -431,11 +431,6 @@ void VisualizationDialog::drawVisualization()
 
     // Clear the scene
     scene->clear();
-
-    // Get property range for color mapping
-    double minValue = 0.0;
-    double maxValue = 1.0;
-    getPropertyRange(currentProperty, minValue, maxValue);
 
     // Update legend
     minValueLabel->setText(QString("Min: %1").arg(minValue, 0, 'g', 4));
