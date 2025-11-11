@@ -58,6 +58,7 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Q_JSON_SUPPORT Aquifolium
 
 macx: {
     QMAKE_LFLAGS += -lomp
+    DEFINES += _MacOS
 }
 
 
