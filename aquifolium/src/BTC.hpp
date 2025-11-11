@@ -1316,6 +1316,32 @@ void CTimeSeries<T>::CreateConstant(const T &t_start, const T &t_end, const T &m
 }
 
 template<class T>
+CTimeSeries<T> CTimeSeries<T>::CreateSinusoidal(const T &t_start, const T &t_end, const T &increment, const T &T0, const T &a, const T &b) //creates a sinusoidal timeseries a+b*SIN((A2-$I$4)/365*2*PI()-PI()/2)
+{
+
+    CTimeSeries<T> out;
+    for (double t = t_start; t<t_end; t+=increment)
+    {
+        out.append(t, a+b*sin((t-T0)/365*2*PI-PI/2));
+    }
+
+    return out;
+}
+
+template<class T>
+CTimeSeries<T> CTimeSeries<T>::CreateSinusoidal(const T &T0, const T &a, const T &b) //creates a sinusoidal timeseries a+b*SIN((A2-$I$4)/365*2*PI()-PI()/2)
+{
+
+    CTimeSeries<T> out;
+    for (int i=0; i<n; i++)
+    {
+        out.append(GetT(i), a+b*sin((GetT(i)-T0)/365*2*PI-PI/2));
+    }
+
+    return out;
+}
+
+template<class T>
 void CTimeSeries<T>::ResizeIfNeeded(int _increment)
 {
     if (C.size()==n)

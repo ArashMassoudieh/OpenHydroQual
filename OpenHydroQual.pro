@@ -113,6 +113,9 @@ CONFIG(debug, debug|release) {
 
 
 SOURCES += \
+    ProgressWindow.cpp \
+    VisualizationDialog.cpp \
+    VisualizationGraphicsView.cpp \
     chartview.cpp \
     metamodelhelpdialog.cpp \
     qplotter.cpp \
@@ -173,7 +176,6 @@ SOURCES += \
     ./aquifolium/src/GA/Individual.cpp \
     ./aquifolium/src/GA/DistributionNUnif.cpp \
     ./aquifolium/src/GA/Distribution.cpp \
-    runtimewindow.cpp \
     ../qcustomplot6/qcustomplot.cpp \
     expEditor.cpp \
     statusviewer.cpp \
@@ -184,6 +186,9 @@ SOURCES += \
     wizard_select_dialog.cpp
 
 HEADERS += \
+    ProgressWindow.h \
+    VisualizationDialog.h \
+    VisualizationGraphicsView.h \
     aquifolium/include/TimeSeries.h \
     aquifolium/include/TimeSeriesSet.h \
     aquifolium/src/TimeSeries.hpp \
@@ -264,7 +269,6 @@ HEADERS += \
     ./aquifolium/include/GA/Distribution.h \
     ./aquifolium/include/GA/DistributionNUnif.h \
     ./aquifolium/include/GA/Individual.h \
-    runtimewindow.h \
     ../qcustomplot6/qcustomplot.h \
     ./aquifolium/include/Objective_Function.h \
     ./aquifolium/include/Objective_Function_Set.h \
@@ -283,7 +287,6 @@ FORMS += \
     gridgenerator.ui \
     itempropertieswidget.ui \
     mainwindow.ui \
-    runtimewindow.ui \
     logwindow.ui \
     wizard_select_dialog.ui
 

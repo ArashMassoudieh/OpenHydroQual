@@ -563,13 +563,13 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
     }
     else if (ObjectType == objectType::link_x)
     {
-        verticalSpacer_links_x = new QSpacerItem(20, 40, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding);
-        layout->addItem(verticalSpacer_links_x, qs.AskableSize(), 1, 1, 1);
+        verticalSpacer_links_x = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        layout->addItem(verticalSpacer_links_x, qs.AskableSize() + 1, 0, 1, 4);
     }
     else if (ObjectType == objectType::link_y)
     {
-        verticalSpacer_links_y = new QSpacerItem(20, 40, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding);
-        layout->addItem(verticalSpacer_links_y, qs.AskableSize(), 1, 1, 1);
+        verticalSpacer_links_y = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        layout->addItem(verticalSpacer_links_y, qs.AskableSize() + 1, 0, 1, 4);
     }
 
 }

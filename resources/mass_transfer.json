@@ -291,7 +291,7 @@
       "type": "expression",
       "expression": "0.000000001",
       "includeinoutput": "true",
-      "description": "1",
+      "description": "Area",
       "ask_user": "false"
     },
     "color": {
@@ -334,7 +334,7 @@
       "type": "expression",
       "expression": "1",
       "includeinoutput": "false",
-      "description": "1",
+      "description": "Area",
       "ask_user": "false"
     },
     "color": {

@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>775</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFilw">
@@ -64,6 +64,7 @@
     <addaction name="actionSave_as"/>
     <addaction name="actionSave_State_to_Json"/>
     <addaction name="actionLoad_Json"/>
+    <addaction name="actionImport"/>
     <addaction name="separator"/>
     <addaction name="menuPreferences"/>
     <addaction name="actionExport_to_SVG"/>
@@ -83,6 +84,7 @@
     <addaction name="actionValidate"/>
     <addaction name="actionRun"/>
     <addaction name="actionOpen_Results"/>
+    <addaction name="actionVisualize"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -221,7 +223,7 @@
     <string>File/View</string>
    </property>
    <property name="orientation">
-    <enum>Qt::Orientation::Horizontal</enum>
+    <enum>Qt::Vertical</enum>
    </property>
    <property name="iconSize">
     <size>
@@ -230,7 +232,7 @@
     </size>
    </property>
    <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
+    <enum>RightToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
@@ -371,6 +373,16 @@
   <action name="actionComponent_description">
    <property name="text">
     <string>Component description</string>
+   </property>
+  </action>
+  <action name="actionImport">
+   <property name="text">
+    <string>Import ...</string>
+   </property>
+  </action>
+  <action name="actionVisualize">
+   <property name="text">
+    <string>Visualize</string>
    </property>
   </action>
  </widget>

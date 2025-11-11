@@ -22,7 +22,7 @@
 #include <QTreeWidget>
 #include "propmodel.h"
 #include "diagramview.h"
-#include "runtimewindow.h"
+#include "ProgressWindow.h"
 #ifndef QCharts
 #include "plotter.h"
 #else
@@ -111,13 +111,14 @@ private:
     QAction* actionzoomwindow = nullptr;
     bool Populate_TreeWidget();
     bool BuildObjectsToolBar();
+    void addToolbarLabel(QToolBar* toolbar, const QString& text);
     bool ReCreateObjectsMenu();
     PropModel *propmodel = nullptr;
     void Populate_General_ToolBar();
     string maintemplatefilename;
     vector<string> addedtemplatefilenames;
     string entitiesfilename;
-    RunTimeWindow *rtw = nullptr;
+    ProgressWindow *rtw = nullptr;
     void closeEvent (QCloseEvent *event) override;
     QString workingfolder = ".";
     QModelIndex addParameterIndex(const QModelIndex &index = QModelIndex());
@@ -137,7 +138,20 @@ private:
     void saveSceneToSvg(const QString &filename);
     bool CreateFileIfDoesNotExist(QString fileName);
     QAction* actionrun = nullptr;
+    QAction* actionviz = nullptr;
     ItemPropertiesWidget *PropertiesWidget = nullptr;
+    QMap<QString, QToolBar*> categoryToolbars_;
+
+    struct NameConflict {
+        QString objectType;      // e.g., "Block", "Link", "Parameter"
+        QString objectName;      // Original conflicting name
+        QString suggestedNewName; // Suggested replacement name
+    };
+
+    // Helper methods for import functionality
+    QList<NameConflict> checkForNameConflicts(System* importSystem);
+    bool resolveNameConflicts(Script& importScript, const QList<NameConflict>& conflicts);
+
 private slots:
     void on_check_object_browser();
     void on_check_showlogwindow();
@@ -190,6 +204,8 @@ private slots:
     void on_Redo();
     void onCreate2dArray();// Is called when 2D Array action is triggered
     void oncomponentdescriptions();
+    void onimport();
+    void onVisualize();
 };
 
 QString localAppFolderAddress();

@@ -32,7 +32,7 @@
 #include "Object.h"
 
 //GUI
-class RunTimeWindow;
+class ProgressWindow;
 
 struct GA_Twiking_parameters
 {
@@ -133,7 +133,7 @@ public:
     string last_error;
     void SetParameters(Object *obj);
 #ifdef Q_GUI_SUPPORT
-    void SetRunTimeWindow(RunTimeWindow *_rtw) {rtw=_rtw;}
+    void SetProgressWindow(ProgressWindow *_rtw) {rtw=_rtw;}
 #endif
 private:
     void Setminmax(int a, double minrange, double maxrange, int prec);
@@ -170,7 +170,7 @@ private:
 	// GUI
 	int numberOfThreads;
         #ifdef Q_GUI_SUPPORT
-            RunTimeWindow *rtw=nullptr;
+            ProgressWindow *rtw=nullptr;
         #endif // QT_version
 
 

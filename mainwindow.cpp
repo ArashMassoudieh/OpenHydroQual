@@ -14,8 +14,8 @@
  */
 
 
-#define openhydroqual_version "1.2.10"
-#define last_modified "October, 2, 2025"
+#define openhydroqual_version "2.0.1"
+#define last_modified "November, 5, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -41,7 +41,7 @@
 #include "edge.h"
 #include "Script.h"
 #include "QFileDialog"
-#include "runtimewindow.h"
+#include "ProgressWindow.h"
 #ifndef QCharts
 #include "plotter.h"
 #else
@@ -62,6 +62,7 @@
 #include <QFileInfo>
 #include "gridgenerator.h"
 #include "metamodelhelpdialog.h"
+#include "VisualizationDialog.h"
 
 using namespace std;
 
@@ -69,7 +70,62 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    setStyleSheet(
+        "QToolBar {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+        "                                 stop:0 #f8f9fa, stop:1 #e9ecef);"
+        "    border: none;"
+        "    border-bottom: 1px solid #dee2e6;"
+        "    spacing: 3px;"
+        "    padding: 4px;"
+        "}"
+        "QToolBar::separator {"
+        "    background: #dee2e6;"
+        "    width: 1px;"
+        "    margin: 4px 8px;"
+        "}"
+        "QToolButton {"
+        "    background: transparent;"
+        "    border: 1px solid transparent;"
+        "    border-radius: 4px;"
+        "    padding: 6px;"
+        "    margin: 2px;"
+        "}"
+        "QToolButton:hover {"
+        "    background: #e3f2fd;"
+        "    border: 1px solid #90caf9;"
+        "}"
+        "QToolButton:pressed {"
+        "    background: #bbdefb;"
+        "}"
+        "QToolButton:checked {"
+        "    background: #2196F3;"
+        "    color: white;"
+        "}"
+    );
+    
     ui->setupUi(this);
+
+    removeToolBar(ui->BlocksToolBar);
+    removeToolBar(ui->LinksToolBar);
+    removeToolBar(ui->SourcesToolBar);
+    removeToolBar(ui->mainToolBar);
+
+    // Row 1: Blocks
+    addToolBar(Qt::TopToolBarArea, ui->BlocksToolBar);
+
+    // Row 2: Links  
+    addToolBarBreak(Qt::TopToolBarArea);
+    addToolBar(Qt::TopToolBarArea, ui->LinksToolBar);
+
+    // Row 3: Sources and other categories (all on same row initially)
+    addToolBarBreak(Qt::TopToolBarArea);
+    addToolBar(Qt::TopToolBarArea, ui->SourcesToolBar);
+    // Other toolbars will be added dynamically in BuildObjectsToolBar()
+
+    // Hide mainToolBar
+    ui->mainToolBar->setVisible(false);
+
     resource_directory = QString::fromStdString(RESOURCE_DIRECTORY);
     qDebug()<<"Resource Directory: " << resource_directory;
     QIcon mainicon(QString::fromStdString(RESOURCE_DIRECTORY) + "/Icons/Aquifolium.png");
@@ -119,6 +175,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
 
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
+    connect(ui->actionImport, SIGNAL(triggered()), this, SLOT(onimport()));
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
     connect(ui->actionSave_as,SIGNAL(triggered()),this,SLOT(onsaveas()));
     connect(ui->actionSave_State_to_Json,SIGNAL(triggered()),this,SLOT(onsaveasJson()));
@@ -135,6 +192,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOptions,SIGNAL(triggered()),this,SLOT(optionsdialog()));
     connect(ui->actionOpen_Results,SIGNAL(triggered()),this,SLOT(loadresults()));
     connect(ui->actionNew_Project,SIGNAL(triggered()),this,SLOT(onnewproject()));
+    connect(ui->actionVisualize, &QAction::triggered, this, &MainWindow::onVisualize);
+    ui->actionVisualize->setEnabled(false);
     connect(ui->actionComponent_description, &QAction::triggered,this, &MainWindow::oncomponentdescriptions);
     PropertiesWidget = new ItemPropertiesWidget(ui->dockWidgetContents_3);
     PropertiesWidget->tableView()->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -150,6 +209,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
     qDebug()<<graphsClipboard.size();
     graphsClipboard.clear();
+
 
 }
 
@@ -353,124 +413,230 @@ bool MainWindow::BuildObjectsToolBar()
     ui->BlocksToolBar->clear();
     ui->LinksToolBar->clear();
     ui->SourcesToolBar->clear();
+
+    // Clear any existing category toolbars
+    for (QToolBar* toolbar : categoryToolbars_.values())
+    {
+        removeToolBar(toolbar);
+        delete toolbar;
+    }
+    categoryToolbars_.clear();
+
+    // Set smaller icon size and text style for standard toolbars
+    for (QToolBar* toolbar : { ui->BlocksToolBar, ui->LinksToolBar, ui->SourcesToolBar }) {
+        toolbar->setIconSize(QSize(20, 20));
+        toolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        toolbar->setVisible(true);
+        toolbar->setStyleSheet(
+            "QToolBar {"
+            "    spacing: 2px;"
+            "}"
+            "QToolButton {"
+            "    padding: 2px;"
+            "    margin: 1px;"
+            "    border-radius: 3px;"
+            "}"
+            "QToolButton:hover {"
+            "    background: #e3f2fd;"
+            "    border: 1px solid #90caf9;"
+            "}"
+            "QToolButton:pressed {"
+            "    background: #bbdefb;"
+            "}"
+            "QToolButton:checked {"
+            "    background: #2196F3;"
+            "    color: white;"
+            "}"
+        );
+    }
+
+    // Add compact labels to toolbars
+    addToolbarLabel(ui->BlocksToolBar, "Blocks:");
+    addToolbarLabel(ui->LinksToolBar, "Links:");
+    addToolbarLabel(ui->SourcesToolBar, "Sources:");
+
+    // Build Blocks toolbar
     for (unsigned int i = 0; i < system.GetAllBlockTypes().size(); i++)
     {
-        //qDebug() << QString::fromStdString(system.GetAllBlockTypes()[i]);
         QAction* action = new QAction(this);
         action->setObjectName(QString::fromStdString(system.GetAllBlockTypes()[i]));
         QIcon icon;
-        if (QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()).contains("/"))
-        {
-            if (!QFile::exists(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-        }
-        else
-        {
 
-            if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllBlockTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-        }
+        QString iconFileName = QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->IconFileName());
+        QString iconPath;
+
+        if (iconFileName.contains("/"))
+            iconPath = iconFileName;
+        else
+            iconPath = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/") + iconFileName;
+
+        if (!QFile::exists(iconPath))
+            LogError("Icon file '" + iconPath + "' was not found!");
+        else
+            icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
+
         action->setIcon(icon);
         action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
-        ui->BlocksToolBar->addAction(action);
         action->setText(QString::fromStdString(system.GetAllBlockTypes()[i]));
+        ui->BlocksToolBar->addAction(action);
         connect(action, SIGNAL(triggered()), this, SLOT(onaddblock()));
-
     }
 
+    // Build Links toolbar
     for (unsigned int i = 0; i < system.GetAllLinkTypes().size(); i++)
     {
-        //qDebug() << QString::fromStdString(system.GetAllLinkTypes()[i]);
         QAction* action = new QAction(this);
         action->setCheckable(true);
         action->setObjectName(QString::fromStdString(system.GetAllLinkTypes()[i]));
         QIcon icon;
-        if (QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()).contains("/"))
-        {
-            if (!QFile::exists(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-        }
-        else
-        {
 
-            if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName())))
-                LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()) + "' was not found!");
-            else
-                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(system.GetAllLinkTypes()[i])->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-        }
+        QString iconFileName = QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->IconFileName());
+        QString iconPath;
+
+        if (iconFileName.contains("/"))
+            iconPath = iconFileName;
+        else
+            iconPath = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/") + iconFileName;
+
+        if (!QFile::exists(iconPath))
+            LogError("Icon file '" + iconPath + "' was not found!");
+        else
+            icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
+
         action->setIcon(icon);
         action->setToolTip(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
-        ui->LinksToolBar->addAction(action);
         action->setText(QString::fromStdString(system.GetAllLinkTypes()[i]));
+        ui->LinksToolBar->addAction(action);
         connect(action, SIGNAL(triggered()), this, SLOT(onaddlink()));
     }
 
+    // Build other category toolbars - each category gets its own toolbar
     for (unsigned int j = 0; j < system.QGetAllCategoryTypes().size(); j++)
     {
         string typecategory = system.QGetAllCategoryTypes()[j].toStdString();
 
-        if (typecategory!="Blocks" && typecategory !="Connectors" && typecategory!="Settings" && !typecategory.empty())
-            for (unsigned int i = 0; i < system.GetAllTypesOf(typecategory).size(); i++)
+        if (typecategory != "Blocks" && typecategory != "Connectors" && typecategory != "Settings" && !typecategory.empty())
+        {
+            if (system.GetAllTypesOf(typecategory).size() > 0)
             {
-                string type = system.GetAllTypesOf(typecategory)[i];
-                QAction* action = new QAction(this);
-                action->setCheckable(false);
-                action->setObjectName(QString::fromStdString(type));
-                QIcon icon;
+                QToolBar* categoryToolbar = nullptr;
+                QString categoryName = QString::fromStdString(typecategory);
 
-                icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
-
-                if (QString::fromStdString(system.GetModel(type)->IconFileName()).contains("/"))
+                // Use SourcesToolBar for Sources, create new toolbars for others
+                if (typecategory == "Sources")
                 {
-                    if (!QFile::exists(QString::fromStdString(system.GetModel(type)->IconFileName())))
-                        LogError("Icon file '" + QString::fromStdString(system.GetModel(type)->IconFileName()) + "' was not found!");
-                    else
-                        icon.addFile(QString::fromStdString(system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                    categoryToolbar = ui->SourcesToolBar;
                 }
                 else
                 {
+                    // Create new toolbar for this category
+                    categoryToolbar = new QToolBar(categoryName, this);
+                    categoryToolbar->setObjectName(categoryName + "ToolBar");
+                    categoryToolbar->setIconSize(QSize(20, 20));
+                    categoryToolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+                    categoryToolbar->setMovable(true);
+                    categoryToolbar->setFloatable(true);
+                    categoryToolbar->setStyleSheet(
+                        "QToolBar {"
+                        "    spacing: 2px;"
+                        "}"
+                        "QToolButton {"
+                        "    padding: 2px;"
+                        "    margin: 1px;"
+                        "    border-radius: 3px;"
+                        "}"
+                        "QToolButton:hover {"
+                        "    background: #e3f2fd;"
+                        "    border: 1px solid #90caf9;"
+                        "}"
+                        "QToolButton:pressed {"
+                        "    background: #bbdefb;"
+                        "}"
+                        "QToolButton:checked {"
+                        "    background: #2196F3;"
+                        "    color: white;"
+                        "}"
+                    );
 
-                    if (!QFile::exists(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName())))
-                        LogError("Icon file '" + QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName()) + "' was not found!");
-                    else
-                        icon.addFile(QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/" + system.GetModel(type)->IconFileName()), QSize(), QIcon::Normal, QIcon::Off);
+                    // Add to main window on the same row as Sources (no break)
+                    addToolBar(Qt::TopToolBarArea, categoryToolbar);
+
+                    // Store in map for cleanup later
+                    categoryToolbars_[categoryName] = categoryToolbar;
+
+                    // Add label to this toolbar
+                    addToolbarLabel(categoryToolbar, categoryName + ":");
                 }
 
+                // Add items to the category toolbar
+                for (unsigned int i = 0; i < system.GetAllTypesOf(typecategory).size(); i++)
+                {
+                    string type = system.GetAllTypesOf(typecategory)[i];
+                    QAction* action = new QAction(this);
+                    action->setCheckable(false);
+                    action->setObjectName(QString::fromStdString(type));
+                    QIcon icon;
 
-                action->setIcon(icon);
-                action->setToolTip(QString::fromStdString(system.GetModel(type)->Description()));
-                if (typecategory=="Sources")
-                    ui->SourcesToolBar->addAction(action);
-                else
-                    ui->mainToolBar->addAction(action);
-                action->setText(QString::fromStdString(type));
-                if (typecategory=="Sources")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddsource()));
-                else if (typecategory == "Parameters")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddparameter()));
-                else if (typecategory == "Objective Functions")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddobjectivefunction()));
-                else if (typecategory == "Observations")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddobservation()));
-                else if (typecategory == "Constituents")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddconstituent()));
-                else if (typecategory == "Reactions")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddreaction()));
-                else if (typecategory == "Reaction Parameters")
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddreactionparameter()));
-                else
-                    connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
+                    QString iconFileName = QString::fromStdString(system.GetModel(type)->IconFileName());
+                    QString iconPath;
+
+                    if (iconFileName.contains("/"))
+                        iconPath = iconFileName;
+                    else
+                        iconPath = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/") + iconFileName;
+
+                    if (!QFile::exists(iconPath))
+                        LogError("Icon file '" + iconPath + "' was not found!");
+                    else
+                        icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
+
+                    action->setIcon(icon);
+                    action->setToolTip(QString::fromStdString(system.GetModel(type)->Description()));
+                    action->setText(QString::fromStdString(type));
+
+                    categoryToolbar->addAction(action);
+
+                    if (typecategory == "Sources")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddsource()));
+                    else if (typecategory == "Parameters")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddparameter()));
+                    else if (typecategory == "Objective Functions")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddobjectivefunction()));
+                    else if (typecategory == "Observations")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddobservation()));
+                    else if (typecategory == "Constituents")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddconstituent()));
+                    else if (typecategory == "Reactions")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddreaction()));
+                    else if (typecategory == "Reaction Parameters")
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddreactionparameter()));
+                    else
+                        connect(action, SIGNAL(triggered()), this, SLOT(onaddentity()));
+                }
             }
-
+        }
     }
 
+    // Hide mainToolBar as it's not needed
+    ui->mainToolBar->setVisible(false);
+
     return true;
+}
+
+// Compact helper method:
+void MainWindow::addToolbarLabel(QToolBar* toolbar, const QString& text)
+{
+    QLabel* label = new QLabel(text, this);
+    label->setStyleSheet(
+        "QLabel {"
+        "    font-weight: bold;"
+        "    color: #2196F3;"
+        "    padding: 0 5px;"
+        "    font-size: 9pt;"
+        "}"
+    );
+    toolbar->addWidget(label);
+    toolbar->addSeparator();
 }
 
 bool MainWindow::ReCreateObjectsMenu()
@@ -623,6 +789,7 @@ void MainWindow::onaddblock()
     system.object(name)->SetName(name);
     Node *node = new Node(dView,&system);
     //qDebug() << "Node Created!";
+    dView->UpdateSceneRect();
     dView->repaint();
     //qDebug() << "DiagramView Repainted!";
     system.object(name)->AssignRandomPrimaryKey();
@@ -1598,8 +1765,8 @@ void MainWindow::Populate_General_ToolBar()
     actioninverse->setToolTip("Inverse Run");
     connect(actioninverse, SIGNAL(triggered()), this, SLOT(oninverserun()));
     //mcmc
-    QIcon iconmcmc;
 
+    QIcon iconmcmc;
     iconmcmc.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/MCMC.png"), QSize(), QIcon::Normal, QIcon::Off);
 
     QAction* actionmcmc = new QAction(this);
@@ -1609,6 +1776,16 @@ void MainWindow::Populate_General_ToolBar()
     actionmcmc->setToolTip("MCMC parameter estimation");
     connect(actionmcmc, SIGNAL(triggered()), this, SLOT(onmcmc()));
 
+    QIcon iconviz;
+    iconviz.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/Visualize.png"), QSize(), QIcon::Normal, QIcon::Off);
+
+    actionviz = new QAction(this);
+    actionviz->setIcon(iconviz);
+    ui->GeneraltoolBar->addAction(actionviz);
+    actionviz->setText("Visualize");
+    actionviz->setToolTip("Visualize results");
+    connect(actionviz, SIGNAL(triggered()), this, SLOT(onVisualize()));
+    actionviz->setEnabled(false);
 }
 
 void MainWindow::onzoomin()
@@ -1640,9 +1817,10 @@ void MainWindow::onzoomall(bool openornew)
 void MainWindow::onabout()
 {
     AboutDialog* abtdlg = new AboutDialog(this);
-    abtdlg->AppendText(QString("OpenHydroQual - version: ") + QString(openhydroqual_version));
-    abtdlg->AppendText(QString("Last modified: ") + QString(last_modified));
-    abtdlg->AppendText("EnviroInformatics, LLC");
+    
+	abtdlg->SetVersion(QString(openhydroqual_version));
+    abtdlg->SetLastModified(QString("Last modified: ") + QString(last_modified));
+    
     abtdlg->AppendText("Plugins added:");
     for (unsigned int i=0; i<addedtemplatefilenames.size(); i++)
         abtdlg->AppendText(QString::fromStdString("    ") + QString::fromStdString(addedtemplatefilenames[i]));
@@ -1997,17 +2175,22 @@ void MainWindow::onrunmodel()
     qDebug()<<"Working folder: " << workingfolder;
     if (copiedsystem.GetSolverSettings().write_solution_details)
         copiedsystem.SetSolutionLogger(workingfolder.toStdString() + "/solution_details.txt");
-    rtw = new RunTimeWindow(this,config::forward);
+    rtw = new ProgressWindow(this);
+	rtw->setWindowTitle("Running Model");
+    rtw->SetStatus("Running Model");
+    rtw->SetPrimaryChartXAxisTitle("Time");
+    rtw->SetPrimaryChartYAxisTitle("Time-step size");
+	rtw->SetPrimaryChartTitle("Time-step size vs Time");
     rtw->show();
-    copiedsystem.SetRunTimeWindow(rtw);
+    copiedsystem.SetProgressWindow(rtw);
     copiedsystem.WriteOutPuts(); 
     copiedsystem.Solve(true);
-    rtw->AppendText(string("Saving outputs in '" + workingfolder.toStdString() + "'"));
+    rtw->AppendLog("Saving outputs in '" + workingfolder + "'");
     qDebug()<<"Working folder" << workingfolder;
     QCoreApplication::processEvents();
     if (copiedsystem.OutputFileName() != "")
     {
-        rtw->AppendText(string("Writing all outputs ... "));
+        rtw->AppendLog(std::string("Writing all outputs ... "));
         if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
             if (copiedsystem.WriteIntermittently())
                 copiedsystem.GetOutputs().appendtofile(copiedsystem.OutputFileName(),true);
@@ -2021,7 +2204,7 @@ void MainWindow::onrunmodel()
     }
     if (copiedsystem.ObservedOutputFileName() != "")
     {
-        rtw->AppendText(string("Writing observations ... "));
+        rtw->AppendLog(std::string("Writing observations ... "));
         if (QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("/") || QString::fromStdString(copiedsystem.ObservedOutputFileName()).contains("\\"))
             if (copiedsystem.WriteIntermittently())
                 copiedsystem.GetObservedOutputs().appendtofile(copiedsystem.ObservedOutputFileName(),true);
@@ -2038,7 +2221,7 @@ void MainWindow::onrunmodel()
     copiedsystem.ObjectiveFunctionSet()->GetTimeSeriesSet().write(workingfolder.toStdString() + "/Objective_Function_TimeSeries.txt");
     if (copiedsystem.WriteIntermittently())
     {
-        rtw->AppendText(string("Writing objective functions ... "));
+        rtw->AppendLog(std::string("Writing objective functions ... "));
         if (copiedsystem.OutputFileName() != "")
         {   if (QString::fromStdString(copiedsystem.OutputFileName()).contains("/") || QString::fromStdString(copiedsystem.OutputFileName()).contains("\\"))
                 copiedsystem.GetOutputs().read(copiedsystem.OutputFileName(),true);
@@ -2054,7 +2237,7 @@ void MainWindow::onrunmodel()
     copiedsystem.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
     if (copiedsystem.GetSolutionLogger())
         copiedsystem.GetSolutionLogger()->Close();
-    rtw->AppendText("Saving model json file in '" + workingfolder + "/state.json'" );
+    rtw->AppendLog("Saving model json file in '" + workingfolder + "/state.json'" );
     qDebug()<<"Start time was set to "<<copiedsystem.GetTime();
     copiedsystem.SetVal("tstart",copiedsystem.GetTime());
     copiedsystem.SetProp("tstart",copiedsystem.GetTime());
@@ -2082,7 +2265,10 @@ void MainWindow::onrunmodel()
     FitMeasures.writetofile(workingfolder.toStdString() + "/" + "fit_measures.txt");
     mapped_modeled_results.write(workingfolder.toStdString() + "/" + "mapped_modeled_results.txt");
     actionrun->setEnabled(true);
-    rtw->AppendText(string("All tasks finished!"));
+    rtw->AppendLog(std::string("All tasks finished!"));
+    ui->actionVisualize->setEnabled(true);
+    actionviz->setEnabled(true);
+    rtw->SetStatus("Finished!");
 }
 
 void MainWindow::closeEvent (QCloseEvent *event)
@@ -2122,12 +2308,19 @@ void MainWindow::onoptimize()
     optimizer->SetParameters(system.object("Optimizer"));
     optimizer->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
-    rtw = new RunTimeWindow(this,config::optimize);
+    rtw = new ProgressWindow(this);
+    rtw->SetSecondaryProgressVisible(true);
+    rtw->SetPrimaryChartXAxisTitle("Generation");
+    rtw->SetPrimaryChartYAxisTitle("Objective Function Value");
+    rtw->SetPrimaryChartTitle("OFV vs Generation");
+    rtw->SetStatus("Optimization");
+    rtw->SetPrimaryChartXRange(0, optimizer->GA_params.nGen);
+    rtw->SetSecondaryProgressVisible(true);
     rtw->show();
-    rtw->AppendText(string("Optimization Started ..."));
-    rtw->SetXRange(0,optimizer->GA_params.nGen);
-    system.SetRunTimeWindow(nullptr);
-    optimizer->SetRunTimeWindow(rtw);
+    rtw->AppendLog(std::string("Optimization Started ..."));
+    rtw->SetPrimaryChartXRange(0,optimizer->GA_params.nGen);
+    system.SetProgressWindow(nullptr);
+    optimizer->SetProgressWindow(rtw);
     system.SetParameterEstimationMode(parameter_estimation_options::optimize);
     optimizer->optimize();
     optimizer->Model_out.GetOutputs().write(workingfolder.toStdString() + "/outputs.txt");
@@ -2138,7 +2331,8 @@ void MainWindow::onoptimize()
     system.Parameters() = optimizer->Model_out.Parameters();
     system.SetOutputItems();
     system.SetParameterEstimationMode();
-    rtw->AppendText(string("Optimization Finished!"));
+    rtw->AppendLog(std::string("Optimization Finished!"));
+    rtw->SetStatus("Finished!");
 }
 
 void MainWindow::oninverserun()
@@ -2161,19 +2355,26 @@ void MainWindow::oninverserun()
     optimizer->SetParameters(system.object("Optimizer"));
     optimizer->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
-    rtw = new RunTimeWindow(this, config::inverse);
+    rtw = new ProgressWindow(this);
+	rtw->SetPrimaryChartXAxisTitle("Generation");
+    rtw->SetPrimaryChartYAxisTitle("-Log Likelihood");
+    rtw->SetPrimaryChartTitle("-LL vs Generation");
+	rtw->SetStatus("Parameter Estimation");
+    rtw->SetPrimaryChartXRange(0, optimizer->GA_params.nGen);
+	rtw->SetSecondaryProgressVisible(true);
     rtw->show();
-    rtw->AppendText(string("Parameter Estimation Started ..."));
-    rtw->SetXRange(0,optimizer->GA_params.nGen);
-    system.SetRunTimeWindow(nullptr);
+    rtw->AppendLog(std::string("Parameter Estimation Started ..."));
+    rtw->SetPrimaryChartXRange(0,optimizer->GA_params.nGen);
+    system.SetProgressWindow(nullptr);
     system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
-    optimizer->SetRunTimeWindow(rtw);
+    optimizer->SetProgressWindow(rtw);
     optimizer->optimize();
     system.TransferResultsFrom(&optimizer->Model_out);
     system.Parameters() = optimizer->Model_out.Parameters();
     system.SetParameterEstimationMode();
     system.SetOutputItems();
-    rtw->AppendText(string("Parameter Estimation Finished!"));
+    rtw->AppendLog(std::string("Parameter Estimation Finished!"));
+    rtw->SetStatus("Finished!");
 }
 
 void MainWindow::onmcmc()
@@ -2196,17 +2397,33 @@ void MainWindow::onmcmc()
     mcmc->FileInformation.outputpath = workingfolder.toStdString() + "/";
     mcmc->SetParameters(system.object("MCMC"));
     system.SetAllParents();
-    rtw = new RunTimeWindow(this,config::mcmc);
+    rtw = new ProgressWindow(this);
+    rtw->SetSecondaryChartVisible(true);
     rtw->show();
-    rtw->AppendText(string("Parameter Estimation Started ..."));
-    rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples);
-    rtw->SetXRange(0,mcmc->MCMC_Settings.total_number_of_samples,1);
-    system.SetRunTimeWindow(nullptr);
+	rtw->SetStatus("Bayesian Parameter Estimation");
+    rtw->AppendLog(std::string("Parameter Estimation Started ..."));
+    rtw->SetPrimaryChartXRange(0,mcmc->MCMC_Settings.total_number_of_samples);
+	rtw->SetPrimaryChartXAxisTitle("Sample Number");
+	rtw->SetPrimaryChartYAxisTitle("Acceptance Rate");
+	rtw->SetPrimaryChartTitle("Acceptance Rate vs Sample Number");
+    rtw->SetPrimaryChartKeepMinYAtZero(true);  // Keep minimum Y at zero
+    rtw->SetPrimaryChartAutoScale(true);        // Enable auto-scaling for max
+    rtw->SetPrimaryChartYRange(0, 1);
+    rtw->SetSecondaryChartXRange(0,mcmc->MCMC_Settings.total_number_of_samples);
+    rtw->SetSecondaryChartYRange(0, 1);
+    rtw->SetSecondaryChartAutoScale(true);
+	rtw->SetSecondaryChartXAxisTitle("Sample Number");
+	rtw->SetSecondaryChartYAxisTitle("Perturbation coefficient");
+	rtw->SetSecondaryChartTitle("Perturbation Coefficient vs Sample Number");
+    rtw->SetSecondaryChartKeepMinYAtZero(true);  // Keep minimum Y at zero
+    rtw->SetSecondaryChartAutoScale(true);        // Enable auto-scaling for max
+    system.SetProgressWindow(nullptr);
     system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
-    mcmc->SetRunTimeWindow(rtw);
+    mcmc->SetProgressWindow(rtw);
     mcmc->Perform();
 
-    rtw->AppendText(string("Parameter Estimation Finished!"));
+    rtw->AppendLog(std::string("Parameter Estimation Finished!"));
+    rtw->SetStatus("Finished");
 }
 
 #ifndef QCharts
@@ -2388,7 +2605,10 @@ void MainWindow::loadresults()
         QMessageBox::critical(this, "Output file not correct!", "The file does not contains the results of the model",QMessageBox::Ok);
     }
 	else
-		QMessageBox::information(this, "Output file loaded!", "Output file loaded successfully!", QMessageBox::Ok);
+    {	QMessageBox::information(this, "Output file loaded!", "Output file loaded successfully!", QMessageBox::Ok);
+        ui->actionVisualize->setEnabled(true);
+        actionviz->setEnabled(true);
+    }
     
 
 
@@ -2595,4 +2815,625 @@ void MainWindow::onCreate2dArray()
     GridGenerator *gridgenerator = new GridGenerator(this);
     gridgenerator->show();
 
+}
+
+// Add this to your MainWindow class header (.h file):
+// 
+// In the public slots section:
+//     void onimport();
+// 
+// In the private section:
+//     struct NameConflict {
+//         QString objectType;
+//         QString objectName;
+//         QString suggestedNewName;
+//     };
+//     QList<NameConflict> checkForNameConflicts(System* importSystem);
+//     bool resolveNameConflicts(Script& importScript, const QList<NameConflict>& conflicts);
+
+// ========================================================================
+// Implementation code for MainWindow.cpp:
+// ========================================================================
+
+void MainWindow::onimport()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Import Model"), workingfolder,
+        tr("OpenHydroQual files (*.ohq);; All files (*.*)"),
+        nullptr, QFileDialog::DontUseNativeDialog);
+
+    if (fileName.isEmpty())
+        return;
+
+    // Create a temporary system to load the import file
+    System importSystem;
+    Script importScript(fileName.toStdString(), &importSystem);
+    importSystem.SetWorkingFolder(QFileInfo(fileName).canonicalPath().toStdString() + "/");
+
+    // Execute the script to populate the import system
+    bool scriptSuccess = importSystem.CreateFromScript(importScript, "");
+    if (!scriptSuccess)
+    {
+        // Check if at least one object was created
+        bool hasObjects = (importSystem.BlockCount() > 0 ||
+            importSystem.LinksCount() > 0 ||
+            importSystem.SourcesCount() > 0 ||
+            importSystem.ObservationsCount() > 0 ||
+            importSystem.ConstituentsCount() > 0 ||
+            importSystem.ReactionsCount() > 0 ||
+            importSystem.ReactionParametersCount() > 0 ||
+            importSystem.ParametersCount() > 0 ||
+            importSystem.ObjectiveFunctions().size() > 0);
+
+        if (!hasObjects)
+        {
+            QMessageBox::critical(this, tr("Import Error"),
+                tr("Failed to load the import file. No objects were created."));
+            LogAllSystemErrors();
+            return;
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Import Warning"),
+                tr("The import file had errors, but some objects were created successfully. "
+                    "Import will continue with the objects that loaded correctly."));
+        }
+    }
+
+    QList<NameConflict> conflicts = checkForNameConflicts(&importSystem);
+
+    if (!conflicts.isEmpty())
+    {
+        // Show conflict resolution dialog
+        if (!resolveNameConflicts(importScript, conflicts))
+        {
+            // User cancelled the import
+            return;
+        }
+
+        // Recreate the import system with renamed objects
+        importSystem.clear();
+        importSystem.addedtemplates.clear();
+
+        // Re-execute the modified script
+        bool scriptSuccess = importSystem.CreateFromScript(importScript, "");
+
+        // Check if at least one object was created
+        bool hasObjects = (importSystem.BlockCount() > 0 ||
+            importSystem.LinksCount() > 0 ||
+            importSystem.SourcesCount() > 0 ||
+            importSystem.ObservationsCount() > 0 ||
+            importSystem.ConstituentsCount() > 0 ||
+            importSystem.ReactionsCount() > 0 ||
+            importSystem.ReactionParametersCount() > 0 ||
+            importSystem.ParametersCount() > 0 ||
+            importSystem.ObjectiveFunctions().size() > 0);
+
+        if (!hasObjects)
+        {
+            QMessageBox::critical(this, tr("Import Error"),
+                tr("Failed to apply name changes. Import cancelled."));
+            return;
+        }
+        else if (!scriptSuccess)
+        {
+            QMessageBox::warning(this, tr("Import Warning"),
+                tr("Some errors occurred while applying changes, but objects were created. Import will continue."));
+        }
+    }
+
+    bool hasPositionConflict = false;
+    double maxShift = 0.0;
+
+    for (unsigned int i = 0; i < importSystem.BlockCount(); i++)
+    {
+        Block* importBlock = importSystem.block(i);
+        if (!importBlock || !importBlock->HasQuantity("x") || !importBlock->HasQuantity("y"))
+            continue;
+
+        double importX = importBlock->GetVal("x");
+        double importY = importBlock->GetVal("y");
+        double importWidth = importBlock->HasQuantity("_width") ? importBlock->GetVal("_width") : 0.0;
+        double importHeight = importBlock->HasQuantity("_height") ? importBlock->GetVal("_height") : 0.0;
+        double importThreshold = sqrt(importWidth * importWidth + importHeight * importHeight);
+
+        // Check against all blocks in the host system
+        for (unsigned int j = 0; j < system.BlockCount(); j++)
+        {
+            Block* hostBlock = system.block(j);
+            if (!hostBlock || !hostBlock->HasQuantity("x") || !hostBlock->HasQuantity("y"))
+                continue;
+
+            double hostX = hostBlock->GetVal("x");
+            double hostY = hostBlock->GetVal("y");
+            double hostWidth = hostBlock->HasQuantity("_width") ? hostBlock->GetVal("_width") : 0.0;
+            double hostHeight = hostBlock->HasQuantity("_height") ? hostBlock->GetVal("_height") : 0.0;
+            double hostThreshold = sqrt(hostWidth * hostWidth + hostHeight * hostHeight);
+
+            // Calculate distance between blocks
+            double dx = importX - hostX;
+            double dy = importY - hostY;
+            double distance = sqrt(dx * dx + dy * dy);
+
+            // Use the maximum threshold of the two blocks
+            double threshold = std::max(importThreshold, hostThreshold);
+
+            // If blocks are too close, we have a conflict
+            if (distance < threshold)
+            {
+                hasPositionConflict = true;
+                // Calculate how far right we need to shift to clear this block
+                double requiredShift = hostX + hostWidth + importWidth - importX + 50.0; // Add 50 unit padding
+                maxShift = std::max(maxShift, requiredShift);
+            }
+        }
+    }
+
+    // If there's a position conflict, translate the import system
+    if (hasPositionConflict)
+    {
+        importSystem.Translate(maxShift, 0.0);
+        qDebug() << "Translated import model by" << maxShift << "units to avoid position conflicts";
+    }
+
+    // Add templates from import file if they don't exist
+    for (const string& templateName : importSystem.addedtemplates)
+    {
+        if (aquiutils::lookup(system.addedtemplates, templateName) == -1)
+        {
+            // Try to add the template
+            if (!system.AppendQuanTemplate(templateName))
+            {
+                // Try with just the filename in the default template path
+                if (!system.AppendQuanTemplate(system.DefaultTemplatePath() +
+                    aquiutils::GetOnlyFileName(templateName)))
+                {
+                    QMessageBox::warning(this, tr("Template Warning"),
+                        tr("Template '%1' could not be loaded. Some objects may not function correctly.")
+                        .arg(QString::fromStdString(templateName)));
+                }
+            }
+        }
+    }
+
+    // Now merge the objects from importSystem into the main system
+    // Blocks
+    for (unsigned int i = 0; i < importSystem.BlockCount(); i++)
+    {
+        Block* importBlock = importSystem.block(i);
+        Block newBlock = *importBlock;  // Copy the block
+        system.AddBlock(newBlock);
+
+        // Copy all properties
+        Block* addedBlock = system.block(newBlock.GetName());
+        if (addedBlock)
+        {
+            *addedBlock = *importBlock;
+        }
+    }
+
+    // Links
+    for (unsigned int i = 0; i < importSystem.LinksCount(); i++)
+    {
+        Link* importLink = importSystem.link(i);
+
+        // Get source and target block names
+        Object* sourceBlock = importLink->GetConnectedBlock(Expression::loc::source);
+        Object* targetBlock = importLink->GetConnectedBlock(Expression::loc::destination);
+
+        if (!sourceBlock || !targetBlock)
+        {
+            QMessageBox::warning(this, tr("Import Warning"),
+                tr("Link '%1' has invalid connections and will be skipped.")
+                .arg(QString::fromStdString(importLink->GetName())));
+            continue;
+        }
+
+        string fromBlock = sourceBlock->GetName();
+        string toBlock = targetBlock->GetName();
+
+        // Create a new link with proper connections in the target system
+        Link newLink;
+        newLink.SetName(importLink->GetName());
+        newLink.SetType(importLink->GetType());
+
+        if (system.AddLink(newLink, fromBlock, toBlock))
+        {
+            // Now copy the quantities/properties without copying pointers
+            Link* addedLink = system.link(newLink.GetName());
+            if (addedLink)
+            {
+                addedLink->CopyQuantitiesFrom(importLink);
+            }
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Import Warning"),
+                tr("Link '%1' could not be added. Check that source and target blocks exist.")
+                .arg(QString::fromStdString(newLink.GetName())));
+        }
+    }
+
+    // Sources
+    for (unsigned int i = 0; i < importSystem.SourcesCount(); i++)
+    {
+        Source* importSource = importSystem.source(i);
+        Source newSource = *importSource;
+        system.AddSource(newSource);
+
+        Source* addedSource = system.source(newSource.GetName());
+        if (addedSource)
+        {
+            *addedSource = *importSource;
+        }
+    }
+
+    // Observations
+    for (unsigned int i = 0; i < importSystem.ObservationsCount(); i++)
+    {
+        Observation* importObs = importSystem.observation(i);
+        Observation newObs = *importObs;
+        system.AddObservation(newObs);
+
+        Observation* addedObs = system.observation(newObs.GetName());
+        if (addedObs)
+        {
+            *addedObs = *importObs;
+        }
+    }
+
+    // Constituents
+    for (unsigned int i = 0; i < importSystem.ConstituentsCount(); i++)
+    {
+        Constituent* importConst = importSystem.constituent(i);
+        Constituent newConst = *importConst;
+        system.AddConstituent(newConst);
+
+        Constituent* addedConst = system.constituent(newConst.GetName());
+        if (addedConst)
+        {
+            *addedConst = *importConst;
+        }
+    }
+
+    // Reactions
+    for (unsigned int i = 0; i < importSystem.ReactionsCount(); i++)
+    {
+        Reaction* importRxn = importSystem.reaction(i);
+        Reaction newRxn = *importRxn;
+        system.AddReaction(newRxn);
+
+        Reaction* addedRxn = system.reaction(newRxn.GetName());
+        if (addedRxn)
+        {
+            *addedRxn = *importRxn;
+        }
+    }
+
+    // Reaction Parameters
+    for (unsigned int i = 0; i < importSystem.ReactionParametersCount(); i++)
+    {
+        RxnParameter* importRxnParam = importSystem.reactionparameter(i);
+        RxnParameter newRxnParam = *importRxnParam;
+        system.AddReactionParameter(newRxnParam);
+
+        RxnParameter* addedRxnParam = system.reactionparameter(newRxnParam.GetName());
+        if (addedRxnParam)
+        {
+            *addedRxnParam = *importRxnParam;
+        }
+    }
+
+    // Parameters
+    for (unsigned int i = 0; i < importSystem.ParametersCount(); i++)
+    {
+        Parameter* importParam = importSystem.GetParameter(i);
+        if (importParam && system.parameter(importParam->GetName()) == nullptr)
+        {
+            system.AppendParameter(importParam->GetName(), *importParam);
+        }
+    }
+
+    // Objective Functions
+    for (unsigned int i = 0; i < importSystem.ObjectiveFunctions().size(); i++)
+    {
+        Objective_Function* importObjFunc = importSystem.objectivefunction(i);
+        if (importObjFunc && system.objectivefunction(importObjFunc->GetName()) == nullptr)
+        {
+            system.AppendObjectiveFunction(importObjFunc->GetName(), *importObjFunc);
+        }
+    }
+
+    // Update the system
+    system.SetAllParents();
+    system.SetVariableParents();
+
+    // Update the added templates list
+    addedtemplatefilenames = system.addedtemplates;
+
+    // Refresh the UI
+    PopulatePropertyTable(nullptr);
+    dView->DeleteAllItems();
+    RecreateGraphicItemsFromSystem();
+    RefreshTreeView();
+    BuildObjectsToolBar();
+    ReCreateObjectsMenu();
+    LogAllSystemErrors();
+
+    // Update undo system
+    undoData.AppendtoLast(&system);
+    if (undoData.active == 0) InactivateUndo();
+    if (undoData.active == undoData.Systems.size() - 1) InactivateRedo();
+
+    QMessageBox::information(this, tr("Import Complete"),
+        tr("Model imported successfully."));
+}
+
+QList<MainWindow::NameConflict> MainWindow::checkForNameConflicts(System* importSystem)
+{
+    QList<NameConflict> conflicts;
+
+    // Check blocks
+    for (unsigned int i = 0; i < importSystem->BlockCount(); i++)
+    {
+        Block* importBlock = importSystem->block(i);
+        if (system.block(importBlock->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Block";
+            conflict.objectName = QString::fromStdString(importBlock->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check links
+    for (unsigned int i = 0; i < importSystem->LinksCount(); i++)
+    {
+        Link* importLink = importSystem->link(i);
+        if (system.link(importLink->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Link";
+            conflict.objectName = QString::fromStdString(importLink->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check sources
+    for (unsigned int i = 0; i < importSystem->SourcesCount(); i++)
+    {
+        Source* importSource = importSystem->source(i);
+        if (system.source(importSource->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Source";
+            conflict.objectName = QString::fromStdString(importSource->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check observations
+    for (unsigned int i = 0; i < importSystem->ObservationsCount(); i++)
+    {
+        Observation* importObs = importSystem->observation(i);
+        if (system.observation(importObs->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Observation";
+            conflict.objectName = QString::fromStdString(importObs->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check constituents
+    for (unsigned int i = 0; i < importSystem->ConstituentsCount(); i++)
+    {
+        Constituent* importConst = importSystem->constituent(i);
+        if (system.constituent(importConst->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Constituent";
+            conflict.objectName = QString::fromStdString(importConst->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check reactions
+    for (unsigned int i = 0; i < importSystem->ReactionsCount(); i++)
+    {
+        Reaction* importRxn = importSystem->reaction(i);
+        if (system.reaction(importRxn->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Reaction";
+            conflict.objectName = QString::fromStdString(importRxn->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check reaction parameters
+    for (unsigned int i = 0; i < importSystem->ReactionParametersCount(); i++)
+    {
+        RxnParameter* importRxnParam = importSystem->reactionparameter(i);
+        if (system.reactionparameter(importRxnParam->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Reaction Parameter";
+            conflict.objectName = QString::fromStdString(importRxnParam->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check parameters
+    for (unsigned int i = 0; i < importSystem->ParametersCount(); i++)
+    {
+        Parameter* importParam = importSystem->GetParameter(i);
+        if (importParam && system.parameter(importParam->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Parameter";
+            conflict.objectName = QString::fromStdString(importParam->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    // Check objective functions
+    for (unsigned int i = 0; i < importSystem->ObjectiveFunctions().size(); i++)
+    {
+        Objective_Function* importObjFunc = importSystem->objectivefunction(i);
+        if (importObjFunc && system.objectivefunction(importObjFunc->GetName()) != nullptr)
+        {
+            NameConflict conflict;
+            conflict.objectType = "Objective Function";
+            conflict.objectName = QString::fromStdString(importObjFunc->GetName());
+            conflict.suggestedNewName = conflict.objectName + "_imported";
+            conflicts.append(conflict);
+        }
+    }
+
+    return conflicts;
+}
+
+bool MainWindow::resolveNameConflicts(Script& importScript, const QList<NameConflict>& conflicts)
+{
+    // Create a dialog to show conflicts and get new names
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Resolve Name Conflicts"));
+    dialog.setMinimumWidth(600);
+
+    QVBoxLayout* mainLayout = new QVBoxLayout(&dialog);
+
+    QLabel* headerLabel = new QLabel(tr("The following objects have name conflicts with existing objects.\n"
+        "Please provide new names for the imported objects:"));
+    mainLayout->addWidget(headerLabel);
+
+    // Create a table to show conflicts
+    QTableWidget* table = new QTableWidget(conflicts.size(), 3, &dialog);
+    table->setHorizontalHeaderLabels(QStringList() << tr("Type") << tr("Original Name") << tr("New Name"));
+    table->horizontalHeader()->setStretchLastSection(true);
+    table->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+
+    QMap<QString, QString> nameMapping;  // Original name -> New name
+
+    for (int i = 0; i < conflicts.size(); i++)
+    {
+        QTableWidgetItem* typeItem = new QTableWidgetItem(conflicts[i].objectType);
+        typeItem->setFlags(typeItem->flags() & ~Qt::ItemIsEditable);
+        table->setItem(i, 0, typeItem);
+
+        QTableWidgetItem* originalItem = new QTableWidgetItem(conflicts[i].objectName);
+        originalItem->setFlags(originalItem->flags() & ~Qt::ItemIsEditable);
+        table->setItem(i, 1, originalItem);
+
+        QTableWidgetItem* newNameItem = new QTableWidgetItem(conflicts[i].suggestedNewName);
+        table->setItem(i, 2, newNameItem);
+    }
+
+    mainLayout->addWidget(table);
+
+    // Add buttons
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    mainLayout->addWidget(buttonBox);
+
+    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() != QDialog::Accepted)
+    {
+        return false;  // User cancelled
+    }
+
+    // Collect the new names
+    for (int i = 0; i < conflicts.size(); i++)
+    {
+        QString newName = table->item(i, 2)->text().trimmed();
+        if (newName.isEmpty())
+        {
+            QMessageBox::warning(this, tr("Invalid Name"),
+                tr("New name for %1 '%2' cannot be empty.")
+                .arg(conflicts[i].objectType)
+                .arg(conflicts[i].objectName));
+            return false;
+        }
+        nameMapping[conflicts[i].objectName] = newName;
+    }
+
+    // Now modify the script commands to use the new names
+    for (int i = 0; i < importScript.CommandsCount(); i++)
+    {
+        Command* cmd = importScript[i];
+
+        // Get reference to assignments map using the accessor method
+        // NOTE: You must add GetAssignments() method to Command.h:
+        //       map<string, string>& GetAssignments() { return assignments; }
+        map<string, string>& assignments = cmd->GetAssignments();
+
+        // Check if this command creates an object with a conflicting name
+        if (aquiutils::tolower(cmd->Keyword()) == "create")
+        {
+            if (assignments.count("name") > 0)
+            {
+                QString originalName = QString::fromStdString(assignments["name"]);
+                if (nameMapping.contains(originalName))
+                {
+                    // Update the name in the command
+                    assignments["name"] = nameMapping[originalName].toStdString();
+                }
+            }
+        }
+
+        // Also need to update references in other commands (like setvalue, setasparameter, etc.)
+        if (assignments.count("object") > 0)
+        {
+            QString objectName = QString::fromStdString(assignments["object"]);
+            if (nameMapping.contains(objectName))
+            {
+                assignments["object"] = nameMapping[objectName].toStdString();
+            }
+        }
+
+        // Update link from/to references
+        if (assignments.count("from") > 0)
+        {
+            QString fromName = QString::fromStdString(assignments["from"]);
+            if (nameMapping.contains(fromName))
+            {
+                assignments["from"] = nameMapping[fromName].toStdString();
+            }
+        }
+
+        if (assignments.count("to") > 0)
+        {
+            QString toName = QString::fromStdString(assignments["to"]);
+            if (nameMapping.contains(toName))
+            {
+                assignments["to"] = nameMapping[toName].toStdString();
+            }
+        }
+    }
+
+    return true;
+}
+
+void MainWindow::onVisualize()
+{
+
+    if (GetSystem()->GetOutputs().size()>0)
+    {
+        // Create and show the visualization dialog
+        VisualizationDialog* vizDialog = new VisualizationDialog(GetSystem(), this);
+        vizDialog->setAttribute(Qt::WA_DeleteOnClose);
+        vizDialog->setModal(false);  // Allow interaction with main window
+        vizDialog->setAttribute(Qt::WA_DeleteOnClose);  // Auto-delete when closed
+        vizDialog->show();
+    }
 }

@@ -71,7 +71,7 @@ struct _MCMC_settings
 
 };
 
-class RunTimeWindow;
+class ProgressWindow;
 class Parameter_Set;
 class Parameter;
 
@@ -99,7 +99,7 @@ public:
     void initialize(bool random=false);
     void initialize(vector<double> par);
     bool step(int k);
-    bool step(int k, int nsamps, string filename, RunTimeWindow* _rtw = 0);
+    bool step(int k, int nsamps, string filename, ProgressWindow* _rtw = 0);
 	vector<double> purturb(int k);
 	CNormalDist ND;
     void writeoutput(string filename);
@@ -108,7 +108,7 @@ public:
     _MCMC_file_names FileInformation;
     double posterior(vector<double> par, int sample_number, bool out=false);
     void model(T *Model1 , vector<double> par);
-    RunTimeWindow *rtw;
+    ProgressWindow *rtw;
     int getparamno(int i,int ts)const;
     int get_act_paramno(int i);
     int get_time_series(int i);
@@ -136,7 +136,7 @@ public:
     void get_outputpercentiles(TimeSeriesSet<double> &MCMCout);
 
 	vector<double> calc_output_percentiles;
-    void SetRunTimeWindow(RunTimeWindow *_rtw);
+    void SetProgressWindow(ProgressWindow *_rtw);
 	double accepted_count=0, total_count=0;
     string last_error;
     void Perform();

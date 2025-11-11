@@ -38,7 +38,7 @@
 #define outputtimeseriesprecision double
 #if Q_GUI_SUPPORT
 #include <QStringList>
-#include "runtimewindow.h"
+#include "ProgressWindow.h"
 #include "QTime"
 #include "logwindow.h"
 #endif
@@ -83,6 +83,8 @@ struct solversettings
     double maximum_simulation_time = 86400; //maximum simulation time allows in seconds
     int maximum_number_of_matrix_inversions = 200000; //maximum number of matrix inversions allowed
     bool RecordAllOutputs = true; //whether the results will be all recorded on not
+    double timestepminfactor = 100000; // the maximum the timestep can decrease by
+    double timestepmaxfactor = 50; // the maximum the timestep can increase by
 
 };
 
@@ -373,11 +375,26 @@ class System: public Object
         QStringList QGetAllCategoryTypes();
 		QStringList QGetAllObjectsofTypes(QString _type);
 		QStringList QGetAllObjectsofTypeCategory(QString _type);
+        bool SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariable = false, bool calculatevalue = false);
+        bool LoadfromJson(const QString &jsonfilename);
+        bool LoadfromJson(const QJsonDocument &jsondoc);
+        bool LoadfromJson(const QJsonObject &jsondoc);
+        bool SaveStateVariableToJson(const string &variable, const string &filename);
+        bool LoadStateVariableFromJson(const string &variable, const string &filename);
+        void Translate(double dx, double dy);
+
+        /**
+         * @brief Extracts all unique properties from blocks and links that have include_in_output set to true
+         * @return Vector of pairs where first element is the quan name and second is the description
+         * @note This function iterates through all blocks and links in the system to collect properties
+         *       that should be included in output visualization
+         */
+        vector<pair<string, string>> GetOutputProperties();
 #endif
 
 #ifdef Q_GUI_SUPPORT
-        RunTimeWindow *RunTimewindow() {return rtw;}
-        void SetRunTimeWindow(RunTimeWindow* _rtw) {rtw = _rtw;}
+        ProgressWindow *RunTimewindow() {return rtw;}
+        void SetProgressWindow(ProgressWindow* _rtw) {rtw = _rtw;}
 #endif
 
         unique_ptr<vector<string>> operators;
@@ -440,10 +457,6 @@ class System: public Object
         double dt0() {return SimulationParameters.dt0;}
         Objective_Function_Set *ObjectiveFunctionSet() {return &objective_function_set;}
         bool WriteOutPuts();
-        bool SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariable = false, bool calculatevalue = false);
-        bool LoadfromJson(const QString &jsonfilename);
-        bool LoadfromJson(const QJsonDocument &jsondoc);
-        bool LoadfromJson(const QJsonObject &jsondoc);
         void AddSolveVariableOrder(const std::string &variable) {solvevariableorder.push_back(variable);}
     protected:
 
@@ -525,7 +538,7 @@ class System: public Object
         omp_lock_t lock;
 #endif
 #ifdef Q_GUI_SUPPORT
-    RunTimeWindow *rtw = nullptr;
+    ProgressWindow *rtw = nullptr;
     logwindow *_logWindow = nullptr;
 #endif
 
