@@ -13,7 +13,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation,Evapotranspiration,loss,inflow",
+      "inflow": "Precipitation,Precipitation_loss,Evapotranspiration,loss,inflow",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "false",
@@ -35,6 +35,22 @@
       "helptext": "A precipitation source object must be selected.",
       "ask_user": "true",
       "delegate": "ComboBox;Sources"
+    },
+    "Precipitation_runoff": {
+      "type": "expression",
+      "expression": "Precipitation*Runoff_coeff",
+      "includeinoutput": "true",
+      "description": "Effective precipitation",
+      "helptext": "Precipitation multiplied by runoff coefficient",
+      "ask_user": "false"
+    },
+    "Precipitation_loss": {
+      "type": "expression",
+      "expression": "-Precipitation*(1-Runoff_coeff)",
+      "includeinoutput": "true",
+      "description": "Precipitation loss",
+      "helptext": "Precipitation loss",
+      "ask_user": "false"
     },
     "Evapotranspiration": {
       "type": "source",
