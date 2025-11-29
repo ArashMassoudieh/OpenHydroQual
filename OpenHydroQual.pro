@@ -58,6 +58,7 @@ DEFINES += QT_DEPRECATED_WARNINGS Q_GUI_SUPPORT Q_JSON_SUPPORT Aquifolium
 
 macx: {
     QMAKE_LFLAGS += -lomp
+    DEFINES += _MacOS
 }
 
 
@@ -294,6 +295,7 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
 
 
 win32 {

@@ -91,7 +91,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="QtSettings">
-    <QtInstall>Qt 6.8</QtInstall>
+    <QtInstall>6.7</QtInstall>
     <QtModules>core;opengl;gui;svg;widgets;printsupport;charts;svgwidgets</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -99,7 +99,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="QtSettings">
-    <QtInstall>Qt 6.8</QtInstall>
+    <QtInstall>6.7</QtInstall>
     <QtModules>core;gui;widgets;opengl;printsupport;svg;svgwidgets;charts</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
@@ -430,6 +430,8 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClCompile Include="undodata.cpp" />
     <ClCompile Include="UnitTextBox3.cpp" />
     <ClCompile Include="utilityfuncs.cpp" />
+    <ClCompile Include="VisualizationDialog.cpp" />
+    <ClCompile Include="VisualizationGraphicsView.cpp" />
     <ClCompile Include="wizard_select_dialog.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -479,6 +481,8 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClInclude Include="..\jsoncpp\include\json\assertions.h" />
     <ClInclude Include="..\jsoncpp\include\json\autolink.h" />
     <ClInclude Include="..\jsoncpp\include\json\config.h" />
+    <QtMoc Include="VisualizationGraphicsView.h" />
+    <QtMoc Include="VisualizationDialog.h" />
     <QtMoc Include="wizard_select_dialog.h" />
     <QtMoc Include="delegate.h">
     </QtMoc>
