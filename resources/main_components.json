@@ -70,6 +70,15 @@
       "delegate": "ValueBox",
       "estimate": "true"
     },
+    "Runoff_coeff": {
+      "type": "value",
+      "description": "Runoff coefficient",
+      "helptext": "This is the fraction of rain that converts to runoff in case infiltration is not explicitly modeled",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1"
+    },
     "ManningCoeff": {
       "type": "value",
       "description": "Manning's Roughness Coefficient",
