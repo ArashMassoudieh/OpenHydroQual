@@ -556,5 +556,202 @@
       "applylimit": "true",
       "ask_user": "false"
     }
-  }
+  },
+"Catchment_MRM": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Catchment (MRM)",
+    "icon": {
+      "filename": "Catchment_MRM.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation,Precipitation_loss,Evapotranspiration,loss,inflow",
+      "includeinoutput": "true",
+      "description": "Initial Storage;Storage",
+      "ask_user": "false",
+      "initial_value_expression": "area*depth",
+      "estimate": "true"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Inflow",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "helptext": "User-supplied inflow time series to the catchment. This could represent runoff, pipe inflow, or any other external water source."
+    },
+    "Precipitation": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Precipitation",
+      "helptext": "A precipitation source object must be selected.",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources"
+    },
+    "Precipitation_runoff": {
+      "type": "expression",
+      "expression": "Precipitation*Runoff_coeff",
+      "includeinoutput": "true",
+      "description": "Effective precipitation",
+      "helptext": "Precipitation multiplied by runoff coefficient",
+      "ask_user": "false"
+    },
+    "Precipitation_loss": {
+      "type": "expression",
+      "expression": "-Precipitation*(1-Runoff_coeff)",
+      "includeinoutput": "true",
+      "description": "Precipitation loss",
+      "helptext": "Precipitation loss",
+      "ask_user": "false"
+    },
+    "Evapotranspiration": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration",
+      "helptext": "A evapotranspiration 'source' object must be selected. In order to add an evapotransporation model a plug-in containing evapotranspiration models first needed to be added to the model",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources"
+    },
+    "loss": {
+      "type": "expression",
+      "expression": "-loss_coefficient*Storage",
+      "includeinoutput": "true",
+      "description": "Loss rate",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "value",
+      "description": "Catchment area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "Area must be greater than zero",
+      "helptext": "Total horizontal surface area of the catchment. Used to compute initial storage and flow-related parameters."
+    },
+    "Slope": {
+      "type": "value",
+      "description": "Catchment slope in the direction of flow",
+      "helptext": "The average slope of the catchment along the dominant flow direction",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "Runoff_coeff": {
+      "type": "value",
+      "description": "Runoff coefficient",
+      "helptext": "This is the fraction of rain that converts to runoff in case infiltration is not explicitly modeled",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1"
+    },
+    "length": {
+      "type": "value",
+      "description": "Flow path length",
+      "helptext": "Maximum flow path length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true"
+    },
+    "depth": {
+      "type": "expression",
+      "description": "Average water depth",
+      "expression": "Storage/area",
+      "helptext": "The initial depth of the standing water before the simulation start time. Most of the times, this value is zero",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "ask_user": "true",
+      "includeinoutput": "true"
+    },
+    "elevation": {
+      "type": "value",
+      "description": "Mean elevation of the catchment",
+      "helptext": "The elevation of the centroid of the catchment based on the model datum.",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "elevation+depth",
+      "description": "Average water head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "depression_storage": {
+      "type": "value",
+      "description": "Depression storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "helptext": "The depth of water that is retained in surface depressions and does not contribute to surface runoff."
+    },
+    "loss_coefficient": {
+      "type": "value",
+      "default": "0",
+      "description": "Loss coefficient",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day;1/hr",
+      "helptext": "A coefficient representing losses (e.g., infiltration or leakage) as a first-order rate constant. Used in loss expression."
+    },
+    "nonlinearity_exponent": {
+      "type": "value",
+      "default": "1.07",
+      "description": "Nonlinearity Exponent of the Outflow Response",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "helptext": "Power-law dependence of discharge on depth"
+    },
+    "slope_sensitivity_exponent": {
+      "type": "value",
+      "default": "0.28",
+      "description": "Slope Sensitivity Exponent",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "helptext": "Power-law dependence of discharge on slope"
+    }
+  },
+  "Catchment_link_MRM": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Catchment outlet (MRM)",
+    "icon": {
+      "filename": "Catchment_link_MRM.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "gamma": {
+      "type": "expression",
+      "description": "Flow coefficient",
+      "expression": "(1440*Runoff_coeff.s^0.519/0.31)^(1+nonlinearity_exponent.s)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "area.s/length.s*gamma*(Slope.s^slope_sensitivity_exponent)*(_pos(depth.s-depression_storage.s)^(1+nonlinearity_exponent.s))",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "250,0,50",
+      "ask_user": "false"
+    }
+  },
 }

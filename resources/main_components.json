@@ -31,7 +31,7 @@
     "Precipitation": {
       "type": "source",
       "includeinoutput": "true",
-      "description": "Precipitation time series",
+      "description": "Precipitation",
       "helptext": "A precipitation source object must be selected.",
       "ask_user": "true",
       "delegate": "ComboBox;Sources"
