@@ -742,7 +742,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "area.s/length.s*gamma*(Slope.s^slope_sensitivity_exponent)*(_pos(depth.s-depression_storage.s)^(1+nonlinearity_exponent.s))",
+      "expression": "area.s/length.s*gamma*(Slope.s^slope_sensitivity_exponent.s)*(_pos(depth.s-depression_storage.s)^(1+nonlinearity_exponent.s))",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
