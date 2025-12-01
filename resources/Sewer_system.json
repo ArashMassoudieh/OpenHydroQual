@@ -734,7 +734,7 @@
     "gamma": {
       "type": "expression",
       "description": "Flow coefficient",
-      "expression": "(1440*Runoff_coeff.s^0.519/0.31)^(1+nonlinearity_exponent.s)",
+      "expression": "(1440/0.31)^(1+nonlinearity_exponent.s)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
