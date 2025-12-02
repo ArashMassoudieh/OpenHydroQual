@@ -276,6 +276,17 @@ std::string TimeSeriesSet<T>::getSeriesName(int index) const {
     return "";
 }
 
+// -----------------------------------------------------------------------------
+// Set Series Names from Vector
+// -----------------------------------------------------------------------------
+template<typename T>
+void TimeSeriesSet<T>::setSeriesNames(const std::vector<std::string>& names) {
+    size_t count = std::min(names.size(), this->size());
+    for (size_t i = 0; i < count; ++i) {
+        (*this)[i].setName(names[i]);
+    }
+}
+
 // --- Series Access ---
 
 template<typename T>
@@ -1156,4 +1167,112 @@ T TimeSeriesSet<T>::maxtime() const {
     for (size_t i = 0; i < this->size(); ++i)
         max_time = std::max((*this)[i].maxt(), max_time);
     return max_time;
+}
+
+// -----------------------------------------------------------------------------
+// Normal PDF - Multiple Distributions
+// -----------------------------------------------------------------------------
+template<typename T>
+TimeSeriesSet<T> TimeSeriesSet<T>::NormalPDF(const std::vector<T>& means, const std::vector<T>& stds, int n_intervals) {
+    TimeSeriesSet<T> result;
+
+    if (means.size() != stds.size()) {
+        throw std::invalid_argument("NormalPDF: means and stds vectors must have the same size");
+    }
+
+    if (means.empty() || n_intervals <= 0) {
+        return result;  // Return empty set
+    }
+
+    result.reserve(means.size());
+
+    for (size_t i = 0; i < means.size(); ++i) {
+        TimeSeries<T> ts = TimeSeries<T>::NormalPDF(means[i], stds[i], n_intervals);
+        ts.setName("Normal_PDF_" + std::to_string(i));
+        result.push_back(std::move(ts));
+    }
+
+    result.name = "NormalPDF_Set";
+    return result;
+}
+
+// -----------------------------------------------------------------------------
+// Normal CDF - Multiple Distributions
+// -----------------------------------------------------------------------------
+template<typename T>
+TimeSeriesSet<T> TimeSeriesSet<T>::NormalCDF(const std::vector<T>& means, const std::vector<T>& stds, int n_intervals) {
+    TimeSeriesSet<T> result;
+
+    if (means.size() != stds.size()) {
+        throw std::invalid_argument("NormalCDF: means and stds vectors must have the same size");
+    }
+
+    if (means.empty() || n_intervals <= 0) {
+        return result;  // Return empty set
+    }
+
+    result.reserve(means.size());
+
+    for (size_t i = 0; i < means.size(); ++i) {
+        TimeSeries<T> ts = TimeSeries<T>::NormalCDF(means[i], stds[i], n_intervals);
+        ts.setName("Normal_CDF_" + std::to_string(i));
+        result.push_back(std::move(ts));
+    }
+
+    result.name = "NormalCDF_Set";
+    return result;
+}
+
+// -----------------------------------------------------------------------------
+// Log-Normal PDF - Multiple Distributions
+// -----------------------------------------------------------------------------
+template<typename T>
+TimeSeriesSet<T> TimeSeriesSet<T>::LogNormalPDF(const std::vector<T>& means_log, const std::vector<T>& stds_log, int n_intervals) {
+    TimeSeriesSet<T> result;
+
+    if (means_log.size() != stds_log.size()) {
+        throw std::invalid_argument("LogNormalPDF: means_log and stds_log vectors must have the same size");
+    }
+
+    if (means_log.empty() || n_intervals <= 0) {
+        return result;  // Return empty set
+    }
+
+    result.reserve(means_log.size());
+
+    for (size_t i = 0; i < means_log.size(); ++i) {
+        TimeSeries<T> ts = TimeSeries<T>::LogNormalPDF(means_log[i], stds_log[i], n_intervals);
+        ts.setName("LogNormal_PDF_" + std::to_string(i));
+        result.push_back(std::move(ts));
+    }
+
+    result.name = "LogNormalPDF_Set";
+    return result;
+}
+
+// -----------------------------------------------------------------------------
+// Log-Normal CDF - Multiple Distributions
+// -----------------------------------------------------------------------------
+template<typename T>
+TimeSeriesSet<T> TimeSeriesSet<T>::LogNormalCDF(const std::vector<T>& means_log, const std::vector<T>& stds_log, int n_intervals) {
+    TimeSeriesSet<T> result;
+
+    if (means_log.size() != stds_log.size()) {
+        throw std::invalid_argument("LogNormalCDF: means_log and stds_log vectors must have the same size");
+    }
+
+    if (means_log.empty() || n_intervals <= 0) {
+        return result;  // Return empty set
+    }
+
+    result.reserve(means_log.size());
+
+    for (size_t i = 0; i < means_log.size(); ++i) {
+        TimeSeries<T> ts = TimeSeries<T>::LogNormalCDF(means_log[i], stds_log[i], n_intervals);
+        ts.setName("LogNormal_CDF_" + std::to_string(i));
+        result.push_back(std::move(ts));
+    }
+
+    result.name = "LogNormalCDF_Set";
+    return result;
 }
