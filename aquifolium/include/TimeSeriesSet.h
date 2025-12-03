@@ -54,6 +54,18 @@ public:
     // Metadata
     void setSeriesName(int index, const std::string& name); ///< Set series name by index
     std::string getSeriesName(int index) const; ///< Get series name by index
+
+    /**
+     * @brief Sets the names of all series from a vector of strings.
+     *
+     * If the vector has fewer elements than the number of series, only the
+     * first names.size() series will be renamed. If the vector has more
+     * elements than series, the extra names are ignored.
+     *
+     * @param names Vector of names to assign to the series.
+     */
+    void setSeriesNames(const std::vector<std::string>& names);
+
     std::vector<std::string> getSeriesNames() const; ///< Get all series names
     void setname(int index, const std::string& name); ///< Set name on internal series object
 
@@ -170,6 +182,68 @@ public:
     std::string name; ///< Name of the set
     bool file_not_found = false; ///< Flag for file read failure
     bool unif = false; ///< Whether time steps are uniform
+
+    // -------------------------------------------------------------------------
+    // Statistical Distribution Functions (PDF and CDF)
+    // -------------------------------------------------------------------------
+
+    /**
+     * @brief Creates a TimeSeriesSet containing Normal PDFs for multiple distributions.
+     *
+     * Each TimeSeries in the set represents a Normal PDF with parameters from the
+     * corresponding elements of the means and stds vectors. All distributions use
+     * the same number of intervals and range [mean - 3*std, mean + 3*std].
+     *
+     * @param means Vector of means for each distribution.
+     * @param stds Vector of standard deviations for each distribution.
+     * @param n_intervals Number of intervals for each PDF (n_intervals + 1 points).
+     * @return TimeSeriesSet<T> containing one TimeSeries per distribution.
+     * @throws std::invalid_argument if means and stds have different sizes.
+     */
+    static TimeSeriesSet<T> NormalPDF(const std::vector<T>& means, const std::vector<T>& stds, int n_intervals);
+
+    /**
+     * @brief Creates a TimeSeriesSet containing Normal CDFs for multiple distributions.
+     *
+     * Each TimeSeries in the set represents a Normal CDF with parameters from the
+     * corresponding elements of the means and stds vectors. All distributions use
+     * the same number of intervals and range [mean - 3*std, mean + 3*std].
+     *
+     * @param means Vector of means for each distribution.
+     * @param stds Vector of standard deviations for each distribution.
+     * @param n_intervals Number of intervals for each CDF (n_intervals + 1 points).
+     * @return TimeSeriesSet<T> containing one TimeSeries per distribution.
+     * @throws std::invalid_argument if means and stds have different sizes.
+     */
+    static TimeSeriesSet<T> NormalCDF(const std::vector<T>& means, const std::vector<T>& stds, int n_intervals);
+
+    /**
+     * @brief Creates a TimeSeriesSet containing Log-Normal PDFs for multiple distributions.
+     *
+     * Each TimeSeries in the set represents a Log-Normal PDF with parameters from the
+     * corresponding elements of the means_log and stds_log vectors.
+     *
+     * @param means_log Vector of mean-log (mu) parameters for each distribution.
+     * @param stds_log Vector of std-log (sigma) parameters for each distribution.
+     * @param n_intervals Number of intervals for each PDF (n_intervals + 1 points).
+     * @return TimeSeriesSet<T> containing one TimeSeries per distribution.
+     * @throws std::invalid_argument if means_log and stds_log have different sizes.
+     */
+    static TimeSeriesSet<T> LogNormalPDF(const std::vector<T>& means_log, const std::vector<T>& stds_log, int n_intervals);
+
+    /**
+     * @brief Creates a TimeSeriesSet containing Log-Normal CDFs for multiple distributions.
+     *
+     * Each TimeSeries in the set represents a Log-Normal CDF with parameters from the
+     * corresponding elements of the means_log and stds_log vectors.
+     *
+     * @param means_log Vector of mean-log (mu) parameters for each distribution.
+     * @param stds_log Vector of std-log (sigma) parameters for each distribution.
+     * @param n_intervals Number of intervals for each CDF (n_intervals + 1 points).
+     * @return TimeSeriesSet<T> containing one TimeSeries per distribution.
+     * @throws std::invalid_argument if means_log and stds_log have different sizes.
+     */
+    static TimeSeriesSet<T> LogNormalCDF(const std::vector<T>& means_log, const std::vector<T>& stds_log, int n_intervals);
 
 private:
 

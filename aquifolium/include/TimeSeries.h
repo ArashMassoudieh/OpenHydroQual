@@ -283,6 +283,75 @@ public:
     bool fileNotFound = false;
     bool fileNotCorrect = false;
     void setdt(double dt) {dt_=dt;}
+
+    // -------------------------------------------------------------------------
+    // Statistical Distribution Functions (PDF and CDF)
+    // -------------------------------------------------------------------------
+
+    /**
+     * @brief Creates a TimeSeries representing the Normal (Gaussian) PDF.
+     *
+     * Generates a probability density function for a normal distribution
+     * with the specified mean and standard deviation over the range
+     * [mean - 3*std, mean + 3*std].
+     *
+     * @param mean Mean of the normal distribution.
+     * @param std Standard deviation of the normal distribution.
+     * @param n_intervals Number of intervals (n_intervals + 1 points will be generated).
+     * @return TimeSeries<T> where t represents x values and c represents PDF values.
+     */
+    static TimeSeries<T> NormalPDF(T mean, T std, int n_intervals);
+
+    /**
+     * @brief Creates a TimeSeries representing the Normal (Gaussian) CDF.
+     *
+     * Generates a cumulative distribution function for a normal distribution
+     * with the specified mean and standard deviation over the range
+     * [mean - 3*std, mean + 3*std].
+     *
+     * @param mean Mean of the normal distribution.
+     * @param std Standard deviation of the normal distribution.
+     * @param n_intervals Number of intervals (n_intervals + 1 points will be generated).
+     * @return TimeSeries<T> where t represents x values and c represents CDF values.
+     */
+    static TimeSeries<T> NormalCDF(T mean, T std, int n_intervals);
+
+    /**
+     * @brief Creates a TimeSeries representing the Log-Normal PDF.
+     *
+     * Generates a probability density function for a log-normal distribution
+     * with the specified mean-log (mu) and std-log (sigma) parameters.
+     * The range is computed based on the log-normal distribution's
+     * equivalent mean and standard deviation: [mean - 3*std, mean + 3*std]
+     * where mean = exp(mu + sigma²/2) and std = mean * sqrt(exp(sigma²) - 1).
+     * The lower bound is clamped to a small positive value since log-normal
+     * is only defined for x > 0.
+     *
+     * @param mean_log Mean of the underlying normal distribution (mu = E[ln(X)]).
+     * @param std_log Standard deviation of the underlying normal distribution (sigma = sqrt(Var[ln(X)])).
+     * @param n_intervals Number of intervals (n_intervals + 1 points will be generated).
+     * @return TimeSeries<T> where t represents x values and c represents PDF values.
+     */
+    static TimeSeries<T> LogNormalPDF(T mean_log, T std_log, int n_intervals);
+
+    /**
+     * @brief Creates a TimeSeries representing the Log-Normal CDF.
+     *
+     * Generates a cumulative distribution function for a log-normal distribution
+     * with the specified mean-log (mu) and std-log (sigma) parameters.
+     * The range is computed based on the log-normal distribution's
+     * equivalent mean and standard deviation: [mean - 3*std, mean + 3*std]
+     * where mean = exp(mu + sigma²/2) and std = mean * sqrt(exp(sigma²) - 1).
+     * The lower bound is clamped to a small positive value since log-normal
+     * is only defined for x > 0.
+     *
+     * @param mean_log Mean of the underlying normal distribution (mu = E[ln(X)]).
+     * @param std_log Standard deviation of the underlying normal distribution (sigma = sqrt(Var[ln(X)])).
+     * @param n_intervals Number of intervals (n_intervals + 1 points will be generated).
+     * @return TimeSeries<T> where t represents x values and c represents CDF values.
+     */
+    static TimeSeries<T> LogNormalCDF(T mean_log, T std_log, int n_intervals);
+
 private:
     bool structured_ = false;
     T dt_ = 0;

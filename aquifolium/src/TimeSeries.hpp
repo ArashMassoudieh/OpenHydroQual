@@ -2451,6 +2451,183 @@ namespace TimeSeriesMetrics {
 
 // namespace TimeSeriesMetrics
 
+// -----------------------------------------------------------------------------
+// Normal PDF
+// -----------------------------------------------------------------------------
+
+template<typename T>
+TimeSeries<T> TimeSeries<T>::NormalPDF(T mean, T std, int n_intervals) {
+    TimeSeries<T> result;
+
+    if (std <= 0 || n_intervals <= 0) {
+        return result;  // Return empty series for invalid input
+    }
+
+    result.reserve(n_intervals + 1);
+
+    T x_min = mean - 3 * std;
+    T x_max = mean + 3 * std;
+    T dx = (x_max - x_min) / static_cast<T>(n_intervals);
+
+    // Precompute constants for efficiency
+    T inv_sqrt_2pi = static_cast<T>(1.0 / std::sqrt(2.0 * M_PI));
+    T inv_std = static_cast<T>(1.0) / std;
+    T inv_2_var = static_cast<T>(1.0) / (static_cast<T>(2.0) * std * std);
+
+    for (int i = 0; i <= n_intervals; ++i) {
+        T x = x_min + static_cast<T>(i) * dx;
+        T z = (x - mean);
+        T pdf_value = inv_sqrt_2pi * inv_std * std::exp(-z * z * inv_2_var);
+        result.emplace_back(DataPoint<T>{x, pdf_value, std::nullopt});
+    }
+
+    result.setName("Normal_PDF");
+    return result;
+}
+
+// -----------------------------------------------------------------------------
+// Normal CDF
+// -----------------------------------------------------------------------------
+template<typename T>
+TimeSeries<T> TimeSeries<T>::NormalCDF(T mean, T std, int n_intervals) {
+    TimeSeries<T> result;
+
+    if (std <= 0 || n_intervals <= 0) {
+        return result;  // Return empty series for invalid input
+    }
+
+    result.reserve(n_intervals + 1);
+
+    T x_min = mean - 3 * std;
+    T x_max = mean + 3 * std;
+    T dx = (x_max - x_min) / static_cast<T>(n_intervals);
+
+    for (int i = 0; i <= n_intervals; ++i) {
+        T x = x_min + static_cast<T>(i) * dx;
+
+#ifdef GSL
+        // Use GSL for more accurate CDF computation
+        T cdf_value = static_cast<T>(gsl_cdf_gaussian_P(static_cast<double>(x - mean), static_cast<double>(std)));
+#else
+        // Fallback using standard error function (erf)
+        T z = (x - mean) / (std * static_cast<T>(std::sqrt(2.0)));
+        T cdf_value = static_cast<T>(0.5) * (static_cast<T>(1.0) + static_cast<T>(std::erf(static_cast<double>(z))));
+#endif
+
+        result.emplace_back(DataPoint<T>{x, cdf_value, std::nullopt});
+    }
+
+    result.setName("Normal_CDF");
+    return result;
+}
+
+// -----------------------------------------------------------------------------
+// Log-Normal PDF
+// -----------------------------------------------------------------------------
+template<typename T>
+TimeSeries<T> TimeSeries<T>::LogNormalPDF(T mean_log, T std_log, int n_intervals) {
+    TimeSeries<T> result;
+
+    if (std_log <= 0 || n_intervals <= 0) {
+        return result;  // Return empty series for invalid input
+    }
+
+    result.reserve(n_intervals + 1);
+
+    // Parameters of the underlying normal distribution
+    T mu = mean_log;
+    T sigma = std_log;
+    T sigma_sq = sigma * sigma;
+
+    // Compute the mean and standard deviation of the log-normal distribution itself
+    // mean_X = exp(mu + sigma^2/2)
+    // var_X = (exp(sigma^2) - 1) * exp(2*mu + sigma^2)
+    // std_X = mean_X * sqrt(exp(sigma^2) - 1)
+    T lognormal_mean = std::exp(mu + sigma_sq / static_cast<T>(2.0));
+    T lognormal_std = lognormal_mean * std::sqrt(std::exp(sigma_sq) - static_cast<T>(1.0));
+
+    // Range: [mean - 3*std, mean + 3*std], but x must be positive for log-normal
+    T x_min = std::max(lognormal_mean - 3 * lognormal_std, static_cast<T>(1e-10));
+    T x_max = lognormal_mean + 3 * lognormal_std;
+    T dx = (x_max - x_min) / static_cast<T>(n_intervals);
+
+    // Precompute constants for efficiency
+    T inv_sqrt_2pi = static_cast<T>(1.0 / std::sqrt(2.0 * M_PI));
+    T inv_sigma = static_cast<T>(1.0) / sigma;
+    T inv_2_sigma_sq = static_cast<T>(1.0) / (static_cast<T>(2.0) * sigma_sq);
+
+    for (int i = 0; i <= n_intervals; ++i) {
+        T x = x_min + static_cast<T>(i) * dx;
+
+        if (x <= 0) {
+            result.emplace_back(DataPoint<T>{x, static_cast<T>(0.0), std::nullopt});
+            continue;
+        }
+
+        // Log-normal PDF: f(x) = (1/(x*sigma*sqrt(2*pi))) * exp(-(ln(x)-mu)^2 / (2*sigma^2))
+        T ln_x = std::log(x);
+        T z = ln_x - mu;
+        T pdf_value = inv_sqrt_2pi * inv_sigma / x * std::exp(-z * z * inv_2_sigma_sq);
+
+        result.emplace_back(DataPoint<T>{x, pdf_value, std::nullopt});
+    }
+
+    result.setName("LogNormal_PDF");
+    return result;
+}
+
+// -----------------------------------------------------------------------------
+// Log-Normal CDF
+// -----------------------------------------------------------------------------
+template<typename T>
+TimeSeries<T> TimeSeries<T>::LogNormalCDF(T mean_log, T std_log, int n_intervals) {
+    TimeSeries<T> result;
+
+    if (std_log <= 0 || n_intervals <= 0) {
+        return result;  // Return empty series for invalid input
+    }
+
+    result.reserve(n_intervals + 1);
+
+    // Parameters of the underlying normal distribution
+    T mu = mean_log;
+    T sigma = std_log;
+    T sigma_sq = sigma * sigma;
+
+    // Compute the mean and standard deviation of the log-normal distribution
+    T lognormal_mean = std::exp(mu + sigma_sq / static_cast<T>(2.0));
+    T lognormal_std = lognormal_mean * std::sqrt(std::exp(sigma_sq) - static_cast<T>(1.0));
+
+    // Range: [mean - 3*std, mean + 3*std], but x must be positive for log-normal
+    T x_min = std::max(lognormal_mean - 3 * lognormal_std, static_cast<T>(1e-10));
+    T x_max = lognormal_mean + 3 * lognormal_std;
+    T dx = (x_max - x_min) / static_cast<T>(n_intervals);
+
+    for (int i = 0; i <= n_intervals; ++i) {
+        T x = x_min + static_cast<T>(i) * dx;
+
+        if (x <= 0) {
+            result.emplace_back(DataPoint<T>{x, static_cast<T>(0.0), std::nullopt});
+            continue;
+        }
+
+#ifdef GSL
+        // Use GSL for log-normal CDF computation
+        // gsl_cdf_lognormal_P(x, zeta, sigma) where zeta = mu, sigma = sigma
+        T cdf_value = static_cast<T>(gsl_cdf_lognormal_P(static_cast<double>(x), static_cast<double>(mu), static_cast<double>(sigma)));
+#else
+        // Fallback: CDF of log-normal is the CDF of standard normal applied to (ln(x) - mu) / sigma
+        T z = (std::log(x) - mu) / (sigma * static_cast<T>(std::sqrt(2.0)));
+        T cdf_value = static_cast<T>(0.5) * (static_cast<T>(1.0) + static_cast<T>(std::erf(static_cast<double>(z))));
+#endif
+
+        result.emplace_back(DataPoint<T>{x, cdf_value, std::nullopt});
+    }
+
+    result.setName("LogNormal_CDF");
+    return result;
+}
+
 
 
 
