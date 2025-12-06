@@ -128,7 +128,6 @@ SOURCES += \
     jsoncpp/src/lib_json/json_reader.cpp \
     jsoncpp/src/lib_json/json_value.cpp \
     jsoncpp/src/lib_json/json_writer.cpp \
-    CustomPlotZoom.cpp \
     ItemNavigator.cpp \
     ItemPropertiesWidget.cpp \
     UnitTextBox3.cpp \
@@ -177,7 +176,6 @@ SOURCES += \
     ./aquifolium/src/GA/Individual.cpp \
     ./aquifolium/src/GA/DistributionNUnif.cpp \
     ./aquifolium/src/GA/Distribution.cpp \
-    ../qcustomplot6/qcustomplot.cpp \
     expEditor.cpp \
     statusviewer.cpp \
     expressioneditor.cpp \
@@ -206,7 +204,6 @@ HEADERS += \
     ./aquifolium/include/observation.h \
     ./aquifolium/include/precalculatedfunction.h \
     ./aquifolium/include/solutionlogger.h \
-    CustomPlotZoom.h \
     ItemNavigator.h \
     ItemPropertiesWidget.h \
     UnitTextBox.h \
@@ -270,7 +267,6 @@ HEADERS += \
     ./aquifolium/include/GA/Distribution.h \
     ./aquifolium/include/GA/DistributionNUnif.h \
     ./aquifolium/include/GA/Individual.h \
-    ../qcustomplot6/qcustomplot.h \
     ./aquifolium/include/Objective_Function.h \
     ./aquifolium/include/Objective_Function_Set.h \
     expEditor.h \
