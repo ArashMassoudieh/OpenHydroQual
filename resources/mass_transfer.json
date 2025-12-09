@@ -586,7 +586,7 @@
   "AgeTracker": {
     "type": "constituent",
     "typecategory": "Constituents",
-    "description": "Age Tracker",
+    "description": "Mean Age Tracker",
     "icon": {
       "filename": "Age_tracer.png"
     },
@@ -688,16 +688,146 @@
       "delegate": "Browser"
     },
     "inflow_concentration": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Inflow concentration",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "ValueBox",
+      "default": "0"
+    },
+    "inflow_loading": {
+      "type": "expression",
+      "expression": "inflow_concentration*(inflow+Precipitation-Evapotranspiration)",
+      "includeinoutput": "true",
+      "description": "Inflow loading",
+      "role": "copytoblocks"
+    },
+    "external_source": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "External source",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "ComboBox;Sources"
+    }
+  },
+  "AgeTracker_laplace": {
+    "type": "constituent",
+    "typecategory": "Constituents",
+    "description": "Age Tracker (Laplace transformed)",
+    "icon": {
+      "filename": "Age_Tracer_Laplace.png"
+    },
+    "concentration": {
+      "description": "Concentration",
+      "type": "expression",
+      "expression": "mass/(Storage+0.00001)",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "includeinoutput": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "g/m~^3"
+    },
+    "stoichiometric_constant": {
+      "description": "Stoichiometric Constant",
+      "type": "expression",
+      "ask_user": "true",
+      "role": "copytoreactions",
+      "includeinoutput": "false",
+      "delegate": "expressionEditor"
+    },
+    "mass": {
+      "description": "Mass",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "masstransfer",
+      "inflow": "external_mass_flow_timeseries,external_source,inflow_loading",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytoblocks",
+      "initial_value_expression": "concentration*Storage"
+    },
+    "diffusion_coefficient": {
+      "description": "Diffusion Coefficient",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m~^2/s;m~^2/day;ft~^2/s;ft~^2/day"
+    },
+    "advective_masstransfer": {
+      "description": "Advective mass transfer rate",
+      "type": "expression",
+      "expression": "_ups(flow;concentration)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "upstrm_concentration": {
+      "description": "Upstream Concentration",
+      "type": "expression",
+      "expression": "_ups(flow;concentration)/_abs(flow)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "Load": {
+      "description": "Decayed Load",
+      "type": "expression",
+      "expression": "flow*upstrm_concentration",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "decay_parameter": {
+      "description": "Decay parameter",
+      "type": "value",
+      "includeinoutput": "false",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "1/day",
+      "default": "0",
+      "ask_user": "true",
+      "role": "copytolinks"
+    },
+    "diffusive_masstransfer": {
+      "description": "Diffusive mass transfer rate",
+      "type": "expression",
+      "expression": "diffusion_coefficient*area/length*(concentration.s-concentration.e)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "masstransfer": {
+      "description": "Total mass transfer rate",
+      "type": "expression",
+      "expression": "advective_masstransfer+diffusive_masstransfer",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks"
+    },
+    "external_mass_flow_timeseries": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Inflow concentration",
+      "description": "External mass flow time-series",
       "ask_user": "true",
       "role": "copytoblocks",
       "delegate": "Browser"
     },
+    "inflow_concentration": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Inflow concentration",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "ValueBox",
+      "default": "1"
+    },
     "inflow_loading": {
       "type": "expression",
-      "expression": "inflow_concentration*inflow",
+      "expression": "inflow_concentration*(inflow+Precipitation-Evapotranspiration)",
       "includeinoutput": "true",
       "description": "Inflow loading",
       "role": "copytoblocks"
