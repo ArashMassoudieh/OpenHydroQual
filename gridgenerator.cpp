@@ -28,6 +28,17 @@ GridGenerator::GridGenerator(MainWindow *parent) :
     ui(new Ui::GridGenerator)
 {
     ui->setupUi(this);
+
+    ui->pushButtonCancel->setAutoDefault(false);
+    ui->pushButtonCancel->setDefault(false);
+    ui->pushButtonNext->setAutoDefault(false);
+    ui->pushButtonNext->setDefault(false);
+    ui->pushButtonPrevious->setAutoDefault(false);
+    ui->pushButtonPrevious->setDefault(false);
+    ui->pushButtonGenerate->setAutoDefault(false);
+    ui->pushButtonGenerate->setDefault(false);
+
+
     mainwindow = parent;
     PopulateBlocks();
     PopulateLinks(); 
@@ -44,7 +55,9 @@ GridGenerator::GridGenerator(MainWindow *parent) :
 
 GridGenerator::~GridGenerator()
 {
+    qDebug() << "GridGenerator DESTRUCTOR called!";
     delete ui;
+
 }
 
 void GridGenerator::PopulateBlocks()
@@ -118,6 +131,7 @@ System * GridGenerator::system()
 
 void GridGenerator::on_Selected_block_changed()
 {
+    qDebug() << "on_Selected_block_changed() called";
     ClearPropertiesWindow(objectType::block);
     if (ui->listWidgetBlocks->selectedItems().count()>0)
         Block_type_selected = ui->listWidgetBlocks->selectedItems()[0]->data(1000).toString();
@@ -934,4 +948,34 @@ void GridGenerator::connectLinkTextBoxes()
         if (i->increment_V)
             connect(i->increment_V,SIGNAL(textEdited(const QString&)),quan_info_Link_y[i.key()].increment_V,SLOT(setText(const QString&)));
     }
+}
+
+void GridGenerator::closeEvent(QCloseEvent *event)
+{
+    qDebug() << "closeEvent triggered!";
+    qDebug() << "Stack trace would help here";
+    QDialog::closeEvent(event);
+}
+
+void GridGenerator::reject()
+{
+    qDebug() << "reject() called!";
+    QDialog::reject();
+}
+
+void GridGenerator::hideEvent(QHideEvent *event)
+{
+    qDebug() << "hideEvent triggered!";
+    QDialog::hideEvent(event);
+}
+
+bool GridGenerator::event(QEvent *event)
+{
+    if (event->type() == QEvent::Hide) {
+        qDebug() << "Hide event received!";
+    }
+    if (event->type() == QEvent::Close) {
+        qDebug() << "Close event received!";
+    }
+    return QDialog::event(event);
 }

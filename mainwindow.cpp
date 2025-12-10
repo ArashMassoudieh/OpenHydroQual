@@ -14,8 +14,8 @@
  */
 
 
-#define openhydroqual_version "2.0.2"
-#define last_modified "November, 11, 2025"
+#define openhydroqual_version "2.0.3"
+#define last_modified "December, 9, 2025"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -2819,7 +2819,7 @@ void MainWindow::SetActiveUndo()
 void MainWindow::onCreate2dArray()
 {
     GridGenerator *gridgenerator = new GridGenerator(this);
-    gridgenerator->show();
+    gridgenerator->exec();
 
 }
 
