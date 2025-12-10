@@ -2820,6 +2820,7 @@ void MainWindow::onCreate2dArray()
 {
     GridGenerator *gridgenerator = new GridGenerator(this);
     gridgenerator->exec();
+    delete gridgenerator;
 
 }
 
