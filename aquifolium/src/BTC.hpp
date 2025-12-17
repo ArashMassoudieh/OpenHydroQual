@@ -2184,3 +2184,65 @@ QJsonObject CTimeSeries<T>::toJson() const {
     return obj;
 }
 
+// sort By Time (with duplicate-time control)
+template <class T>
+CTimeSeries<T> CTimeSeries<T>::sortByTime(int burnOut)
+{
+    if (burnOut < 0)
+        burnOut = 0;
+
+    // Work on a copy (functional-style)
+    CTimeSeries<T> r = *this;
+    int n0 = r.n;
+
+    if (n0 <= burnOut + 1)
+        return r;
+
+    /*--------------------------------------------------
+     * 1) Sort by time (selection sort, safe with swap_raw)
+     *--------------------------------------------------*/
+    for (int i = burnOut; i < n0 - 1; ++i)
+    {
+        int minIdx = i;
+        for (int j = i + 1; j < n0; ++j)
+        {
+            if (r.GetT(j) < r.GetT(minIdx))
+                minIdx = j;
+        }
+
+        if (minIdx != i)
+            r.swap_raw(i, minIdx);   // swaps both T and C
+    }
+
+    /*--------------------------------------------------
+     * 2) Enforce strictly increasing time
+     *    (handle equal / backward times)
+     *--------------------------------------------------*/
+    for (int i = burnOut + 1; i < n0; ++i)
+    {
+        if (r.GetT(i) <= r.GetT(i - 1))
+        {
+            T dt;
+            if (i > burnOut + 1)
+                dt = r.GetT(i - 1) - r.GetT(i - 2);
+            else
+                dt = static_cast<T>(1.0);
+
+            T eps = std::max(static_cast<T>(1e-6),
+                             static_cast<T>(0.001) * std::abs(dt));
+
+            r.setT_raw(i, r.GetT(i - 1) + eps);
+        }
+    }
+
+    r.structured = false;
+    return r;
+}
+
+
+
+
+
+
+
+

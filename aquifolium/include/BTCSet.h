@@ -123,6 +123,8 @@ public:
 	static CTimeSeriesSet unCompact(QDataStream &data);
 #endif // QT_version
 	~CTimeSeriesSet(void);
+
+    CTimeSeriesSet<T> sortByTime(int burnOut = 0);
 };
 
 template <class T> T diff(CTimeSeriesSet<T> B1, CTimeSeriesSet<T> B2);
