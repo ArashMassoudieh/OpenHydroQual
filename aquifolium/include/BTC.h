@@ -161,6 +161,9 @@ public:
     CTimeSeries<T> ConverttoNormalScore();
     QJsonObject toJson() const;
 
+    CTimeSeries<T> sortByTime(int burnOut = 0);
+
+
 #endif
     double AutoCorrelationCoeff();
 private:
@@ -176,6 +179,18 @@ private:
 	void compact(QDataStream &data) const;
 	static CTimeSeries unCompact(QDataStream &data);
 #endif // QT_version
+
+protected:
+    void swap_raw(int i, int j)
+    {
+        std::swap(t[i], t[j]);
+        std::swap(C[i], C[j]);
+    }
+
+    void setT_raw(int i, const T& tval)
+    {
+        t[i] = tval;
+    }
 
 };
 

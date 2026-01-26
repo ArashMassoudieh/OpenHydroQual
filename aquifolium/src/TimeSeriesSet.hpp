@@ -188,9 +188,9 @@ void TimeSeriesSet<T>::write(const std::string& filename, const std::string& del
         for (size_t i = 0; i < this->size(); ++i) {
             const auto& ts = (*this)[i];
             if (j < ts.size()) {
-                // Format only the time with 3 decimal digits
+                // Format only the time with 5 decimal digits
                 std::ostringstream time_str;
-                time_str << std::fixed << std::setprecision(3) << ts.getTime(j);
+                time_str << std::fixed << std::setprecision(5) << ts.getTime(j); // Will be updated later
                 file << time_str.str() << "," << ts.getValue(j);
             }
             else {

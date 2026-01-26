@@ -813,7 +813,7 @@ Expression* Quan::GetExpression()
     return &_expression;
 }
 
-Expression Quan::GetExpression() const
+const Expression& Quan::GetExpression() const
 {
     return _expression;
 }

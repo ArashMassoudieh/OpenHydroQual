@@ -1615,3 +1615,36 @@ QJsonObject CTimeSeriesSet<T>::toJson() const
     }
     return out;
 }
+
+// sort By Time
+template <class T>
+CTimeSeriesSet<T> CTimeSeriesSet<T>::sortByTime(int burnOut)
+{
+    if (burnOut < 0) burnOut = 0;
+
+    CTimeSeriesSet<T> r(nvars);
+
+#pragma omp parallel for
+    for (int i = 0; i < nvars; ++i)
+    {
+        const auto& src = BTC[i];
+        auto& dst = r.BTC[i];
+
+        int n = src.n - burnOut;
+        if (n <= 0) continue;
+
+        std::vector<int> idx(n);
+        std::iota(idx.begin(), idx.end(), burnOut);
+
+        std::sort(idx.begin(), idx.end(),
+                  [&](int a, int b)
+                  {
+                      return src.GetT(a) < src.GetT(b);
+                  });
+
+        for (int k = 0; k < n; ++k)
+            dst.append(src.GetT(idx[k]), src.GetC(idx[k]));
+    }
+
+    return r;
+}

@@ -51,7 +51,9 @@ public:
     Quan(QJsonObject& qjobject);
 #endif // QT_version
 
-    string GetStringValue() { return _string_value; }
+    const string& GetStringValue() const { return _string_value; }
+    const string& GetName() const { return _var_name; }
+    const string& SourceName() const { return sourcename; }
     Quan& operator=(const Quan& other);
     bool operator==(const Quan& other);
     enum class _type { constant, value, balance, expression, timeseries, prec_timeseries, global_quan, rule, source, string, not_assigned, boolean };
@@ -66,7 +68,7 @@ public:
     void SetType(const _type& t) { type = t; }
     _type GetType() const { return type; }
     Expression* GetExpression();
-    Expression GetExpression() const;
+    const Expression& GetExpression() const;
     Rule* GetRule();
     Source* GetSource();
     bool SetExpression(const string& E);
@@ -90,7 +92,6 @@ public:
     void Update();
     void SetIncludeInOutput(bool x) { includeinoutput = x; }
     void SetEstimable(bool x) { estimable = x; }
-    string GetName() { return _var_name; }
     bool IncludeInOutput() { return includeinoutput; }
     bool SetTimeSeries(const string& filename, bool prec = false);
     bool SetTimeSeries(const TimeSeries<double>& timeseries);
@@ -148,7 +149,6 @@ public:
     bool AppendError(const string& objectname, const string& cls, const string& funct, const string& description, const int& code) const;
     bool SetProperty(const string& val, bool force_value = false, bool check_criteria = true);
     string GetProperty(bool force_value = false);
-    string SourceName() const { return sourcename; }
     bool SetSourceName(const string& s) { sourcename = s; return true; }
     string toCommand();
     void SetOutputItem(const string& s)

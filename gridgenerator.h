@@ -73,6 +73,11 @@ private:
     bool GenerateLinks();
     void connectLinkTextBoxes();
     bool AssignProperty(const string &name, QuanSet &quanset, QMap<string,quan_info>::iterator it, int i, int j);
+protected:
+    void closeEvent(QCloseEvent *event) override;
+    void reject() override;
+    void hideEvent(QHideEvent *event) override;
+    bool event(QEvent *event) override;
 private slots:
     void on_Selected_block_changed();
     void on_Selected_link_changed();

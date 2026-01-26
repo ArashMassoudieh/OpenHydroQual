@@ -84,6 +84,11 @@ private slots:
      */
     void onExport();
 
+    /**
+     * @brief Slot called when user manually edits the min/max range
+     */
+    void onRangeManuallyChanged();
+
 private:
     /**
      * @brief Initialize the user interface
@@ -156,16 +161,16 @@ private:
     QGraphicsView* graphicsView;
     QWidget* legendWidget;
     QLabel* legendTitleLabel;
-    QLabel* legendMaxLabel;
+    QLineEdit* legendMaxLineEdit;
     QLabel* legendMidLabel;
-    QLabel* legendMinLabel;
+    QLineEdit* legendMinLineEdit;
     QGraphicsScene* scene;
     QPushButton* resetViewButton;
     QPushButton* exportButton;
     QLabel* legendLabel;
     QGraphicsRectItem* legendGradient;
-    QLabel* minValueLabel;
-    QLabel* maxValueLabel;
+    QLineEdit* minValueLineEdit;
+    QLineEdit* maxValueLineEdit;
 
     // Time control components
     QSlider* timeSlider;
@@ -182,6 +187,8 @@ private:
     double maxTime;     // Maximum time in simulation
     double minValue;     // Minimum time in simulation
     double maxValue;     // Maximum time in simulation
+    bool manualMinSet;  // tracks if user manually set min
+    bool manualMaxSet;  // tracks if user manually set max
 
 
     // Visualization parameters

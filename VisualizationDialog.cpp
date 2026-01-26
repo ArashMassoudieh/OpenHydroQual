@@ -27,10 +27,12 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
+#include <QLineEdit>
 
 VisualizationDialog::VisualizationDialog(System* sys, QWidget *parent)
     : QDialog(parent), system(sys), scene(nullptr),
-      currentTime(0.0), minTime(0.0), maxTime(1.0)
+      currentTime(0.0), minTime(0.0), maxTime(1.0),
+    manualMinSet(false), manualMaxSet(false)
 {
     setWindowTitle("Model Visualization");
     resize(1200, 800);
@@ -130,21 +132,21 @@ void VisualizationDialog::setupUI()
     legendTitleLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
     legendTitleLabel->setAlignment(Qt::AlignCenter);
 
-    legendMaxLabel = new QLabel("Max: 1.0", legendWidget);
-    legendMaxLabel->setStyleSheet("font-size: 12px;");
-    legendMaxLabel->setAlignment(Qt::AlignCenter);
+    legendMaxLineEdit = new QLineEdit("Max: 1.0", legendWidget);
+    legendMaxLineEdit->setStyleSheet("font-size: 12px;");
+    legendMaxLineEdit->setAlignment(Qt::AlignCenter);
 
     legendMidLabel = new QLabel("Mid: 0.5", legendWidget);
     legendMidLabel->setStyleSheet("font-size: 12px;");
     legendMidLabel->setAlignment(Qt::AlignCenter);
 
-    legendMinLabel = new QLabel("Min: 0.0", legendWidget);
-    legendMinLabel->setStyleSheet("font-size: 12px;");
-    legendMinLabel->setAlignment(Qt::AlignCenter);
+    legendMinLineEdit = new QLineEdit("Min: 0.0", legendWidget);
+    legendMinLineEdit->setStyleSheet("font-size: 12px;");
+    legendMinLineEdit->setAlignment(Qt::AlignCenter);
 
     legendLayout->addWidget(legendTitleLabel);
     legendLayout->addSpacing(20);
-    legendLayout->addWidget(legendMaxLabel);
+    legendLayout->addWidget(legendMaxLineEdit);
     legendLayout->addStretch();
 
     // Add color gradient visualization
@@ -168,7 +170,7 @@ void VisualizationDialog::setupUI()
     legendLayout->addStretch();
     legendLayout->addWidget(legendMidLabel);
     legendLayout->addStretch();
-    legendLayout->addWidget(legendMinLabel);
+    legendLayout->addWidget(legendMinLineEdit);
     legendLayout->addSpacing(10);
 
     viewLayout->addWidget(legendWidget);
@@ -176,10 +178,14 @@ void VisualizationDialog::setupUI()
 
     // Bottom legend panel - simplified now
     QHBoxLayout* bottomLayout = new QHBoxLayout();
-    minValueLabel = new QLabel("", this); // Keep for compatibility but hide
-    maxValueLabel = new QLabel("", this); // Keep for compatibility but hide
-    minValueLabel->setVisible(false);
-    maxValueLabel->setVisible(false);
+
+    minValueLineEdit = new QLineEdit("", this); // Keep for compatibility but hide
+    maxValueLineEdit = new QLineEdit("", this); // Keep for compatibility but hide
+    minValueLineEdit->setVisible(false);
+    maxValueLineEdit->setVisible(false);
+    // After the existing connect statements, add:
+    connect(legendMinLineEdit, &QLineEdit::editingFinished, this, &VisualizationDialog::onRangeManuallyChanged);
+    connect(legendMaxLineEdit, &QLineEdit::editingFinished, this, &VisualizationDialog::onRangeManuallyChanged);
     bottomLayout->addStretch();
     mainLayout->addLayout(bottomLayout);
 
@@ -295,6 +301,10 @@ void VisualizationDialog::onPropertyChanged(int index)
     if (index >= 0 && index < static_cast<int>(properties.size()))
     {
         currentProperty = properties[index].first;
+
+        // Reset manual flags when property changes
+        manualMinSet = false;
+        manualMaxSet = false;
 
         // Get GLOBAL min/max across all time series
         minValue = std::numeric_limits<double>::max();
@@ -432,11 +442,38 @@ void VisualizationDialog::drawVisualization()
     // Clear the scene
     scene->clear();
 
-    // Update legend
-    minValueLabel->setText(QString("Min: %1").arg(minValue, 0, 'g', 4));
-    maxValueLabel->setText(QString("Max: %1").arg(maxValue, 0, 'g', 4));
+    // Use the member variables minValue/maxValue which contain the GLOBAL range
+    // (set in onPropertyChanged() from the entire time series)
+    // Only update these if user has manually set them
+    if (manualMinSet)
+    {
+        bool valid = false;
+        double userMinValue = legendMinLineEdit->text().toDouble(&valid);
+        if (valid)
+            minValue = userMinValue;
+        // If invalid, keep the existing minValue (don't change it)
+    }
+    else
+    {
+        // Auto mode - update the line edit to show current global min
+        legendMinLineEdit->setText(QString::number(minValue, 'g', 4));
+    }
 
+    if (manualMaxSet)
+    {
+        bool valid = false;
+        double userMaxValue = legendMaxLineEdit->text().toDouble(&valid);
+        if (valid)
+            maxValue = userMaxValue;
+        // If invalid, keep the existing maxValue (don't change it)
+    }
+    else
+    {
+        // Auto mode - update the line edit to show current global max
+        legendMaxLineEdit->setText(QString::number(maxValue, 'g', 4));
+    }
     bool useSimulationData = hasSimulationData();
+
 
     // Draw all blocks
     for (unsigned int i = 0; i < system->BlockCount(); ++i)
@@ -471,7 +508,7 @@ void VisualizationDialog::drawVisualization()
         {
             // Get value from simulation outputs at current time
             value = getValueAtTime(block->GetName(), currentProperty,
-                                  std::numeric_limits<double>::quiet_NaN());
+                                   std::numeric_limits<double>::quiet_NaN());
             if (!std::isnan(value))
             {
                 fillColor = getColorForValue(value, minValue, maxValue);
@@ -490,7 +527,7 @@ void VisualizationDialog::drawVisualization()
 
         // Draw the block rectangle
         QGraphicsRectItem* rectItem = scene->addRect(x, y, width, height,
-            QPen(Qt::black, 2), QBrush(fillColor));
+                                                     QPen(Qt::black, 2), QBrush(fillColor));
         rectItem->setToolTip(QString::fromStdString(
             block->GetName() + "\n" + currentProperty + ": " +
             std::to_string(value)));
@@ -503,7 +540,7 @@ void VisualizationDialog::drawVisualization()
         // Center the text in the block
         QRectF textRect = textItem->boundingRect();
         textItem->setPos(x + (width - textRect.width()) / 2.0,
-                        y + (height - textRect.height()) / 2.0);
+                         y + (height - textRect.height()) / 2.0);
     }
 
     // Draw all links
@@ -618,7 +655,7 @@ void VisualizationDialog::drawVisualization()
 
         // Draw the line
         QGraphicsLineItem* lineItem = scene->addLine(startX, startY, endX, endY,
-            QPen(linkColor, LINK_WIDTH));
+                                                     QPen(linkColor, LINK_WIDTH));
         lineItem->setToolTip(QString::fromStdString(
             link->GetName() + "\n" + currentProperty + ": " +
             std::to_string(linkValue)));
@@ -633,7 +670,7 @@ void VisualizationDialog::drawVisualization()
         QPolygonF arrowHead;
         arrowHead << QPointF(endX, endY) << arrowP1 << arrowP2;
         QGraphicsPolygonItem* arrow = scene->addPolygon(arrowHead,
-            QPen(linkColor, 1), QBrush(linkColor));
+                                                        QPen(linkColor, 1), QBrush(linkColor));
         arrow->setToolTip(lineItem->toolTip());
     }
 
@@ -644,17 +681,30 @@ void VisualizationDialog::drawVisualization()
     // Add some padding
     double padding = 50.0;
     scene->setSceneRect(minX - padding, minY - padding,
-                       maxX - minX + 2 * padding,
-                       maxY - minY + 2 * padding);
+                        maxX - minX + 2 * padding,
+                        maxY - minY + 2 * padding);
 
     // Fit the view
     graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
-
 }
+
+void VisualizationDialog::onRangeManuallyChanged()
+{
+    // Mark that user has manually set these values
+    manualMinSet = true;
+    manualMaxSet = true;
+
+    // Redraw visualization with the manually specified range
+    drawVisualization();
+}
+
 
 QColor VisualizationDialog::getColorForValue(double value, double minValue, double maxValue)
 {
     // Handle edge cases
+    if (value < minValue || value > maxValue) {
+        return Qt::black;  // Values outside range are black
+    }
     if (maxValue <= minValue)
         return QColor(128, 128, 255); // Medium blue
 
@@ -706,6 +756,7 @@ void VisualizationDialog::getPropertyRange(const string& propertyName, double& m
 {
     minValue = std::numeric_limits<double>::max();
     maxValue = std::numeric_limits<double>::lowest();
+
 
     bool foundAny = false;
     bool useSimulationData = hasSimulationData();
@@ -790,6 +841,7 @@ void VisualizationDialog::getPropertyRange(const string& propertyName, double& m
         minValue -= 0.5;
         maxValue += 0.5;
     }
+
 }
 
 void VisualizationDialog::calculateBounds(double& minX, double& minY, double& maxX, double& maxY)
@@ -838,8 +890,8 @@ void VisualizationDialog::calculateBounds(double& minX, double& minY, double& ma
 void VisualizationDialog::createLegend(double minValue, double maxValue)
 {
     // Update legend labels
-    legendMinLabel->setText(QString("Min:\n%1").arg(minValue, 0, 'g', 4));
-    legendMaxLabel->setText(QString("Max:\n%1").arg(maxValue, 0, 'g', 4));
+    legendMinLineEdit->setText(QString::number(minValue, 'g', 4));
+    legendMaxLineEdit->setText(QString::number(maxValue, 'g', 4));
     legendMidLabel->setText(QString("Mid:\n%1").arg((minValue + maxValue) / 2.0, 0, 'g', 4));
 
     // Update gradient pixmap
