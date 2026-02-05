@@ -30,6 +30,7 @@
 #include "expEditor.h"
 #include "UnitTextBox.h"
 #include "XString.h"
+#include "TimeSeriesTextBox.h"
 
 Delegate::Delegate(QObject *parent, MainWindow *_mainwindow) : QStyledItemDelegate(parent)
 {
@@ -127,9 +128,26 @@ QWidget *Delegate::createEditor(QWidget *parent,
     }
     if (delegateType.contains("Browser"))
     {
-        QPushButton *editor = new QPushButton(parent);
-        editor->setText(index.data().toString());
-        return editor;
+        // Check if this browser has units (indicates timeseries data)
+        QStringList unitsList = index.data(CustomRoleCodes::Role::UnitsListRole).toStringList();
+
+        if (!unitsList.isEmpty())
+        {
+            // Create TimeSeriesTextBox for timeseries with units
+            TimeSeriesTextBox *editor = new TimeSeriesTextBox(option, parent);
+            editor->setUnitsList(unitsList);
+            editor->setText(index.data().toString());
+            if (mainwindow && mainwindow->GetWorkingFolder())
+                editor->setWorkingFolder(*mainwindow->GetWorkingFolder());
+            return editor;
+        }
+        else
+        {
+            // Regular file browser without units
+            QPushButton *editor = new QPushButton(parent);
+            editor->setText(index.data().toString());
+            return editor;
+        }
     }
     if (delegateType.contains("Browser_Save"))
     {
@@ -253,14 +271,44 @@ void Delegate::setEditorData(QWidget *editor,
     }
     if (delegateType.contains("Browser"))
     {
-        QPushButton *pushButton = static_cast<QPushButton*>(editor);
-        pushButton->setText(index.data().toString());
-        index.model()->data(index, CustomRoleCodes::Role::saveIndex);
-        if (delegateType.contains("Browser_Save"))
-            QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(browserSaveClicked()));
+        // Check if this is a TimeSeriesTextBox or regular button
+        TimeSeriesTextBox *tsTextBox = qobject_cast<TimeSeriesTextBox*>(editor);
+        if (tsTextBox)
+        {
+            // Handle TimeSeriesTextBox
+            QString displayText = index.model()->data(index, Qt::DisplayRole).toString();
+
+            // Split filename and unit if they're combined (format: "filename [unit]")
+            QString filename = displayText.split('[')[0].trimmed();
+
+            tsTextBox->setText(filename);
+            tsTextBox->setUnitsList(index.model()->data(index, CustomRoleCodes::Role::UnitsListRole).toStringList());
+
+            // Set current unit if available
+            QString currentUnit = index.model()->data(index, CustomRoleCodes::Role::UnitRole).toString();
+            if (!currentUnit.isEmpty())
+                tsTextBox->setUnit(currentUnit);
+
+            // Set default unit
+            QString defaultUnit = index.model()->data(index, CustomRoleCodes::Role::defaultUnitRole).toString();
+            if (!defaultUnit.isEmpty())
+                tsTextBox->setDefaultUnit(defaultUnit);
+
+            tsTextBox->show();
+            return;
+        }
         else
-            QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(browserClicked()));
-        return;
+        {
+            // Handle regular QPushButton
+            QPushButton *pushButton = static_cast<QPushButton*>(editor);
+            pushButton->setText(index.data().toString());
+            index.model()->data(index, CustomRoleCodes::Role::saveIndex);
+            if (delegateType.contains("Browser_Save"))
+                QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(browserSaveClicked()));
+            else
+                QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(browserClicked()));
+            return;
+        }
     }
     if (delegateType.contains("ListBox"))
     {
@@ -368,8 +416,45 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     }
     if (delegateType.contains("Browser"))
     {
-        return;
+        // Check if this is a TimeSeriesTextBox or regular button
+        TimeSeriesTextBox *tsTextBox = qobject_cast<TimeSeriesTextBox*>(editor);
+        if (tsTextBox)
+        {
+            bool dataChanged = false;
 
+            // Check if unit changed - set BEFORE filename so unit is ready
+            QString oldUnit = model->data(index, CustomRoleCodes::Role::UnitRole).toString();
+            QString newUnit = tsTextBox->unit();
+            if (oldUnit != newUnit)
+            {
+                if (model->setData(index, newUnit, CustomRoleCodes::Role::UnitRole))
+                {
+                    dataChanged = true;
+                }
+            }
+
+            // Check if filename changed - use loadIndex to trigger Quan::SetTimeSeries
+            QString oldFilename = model->data(index, Qt::DisplayRole).toString().split('[')[0].trimmed();
+            QString newFilename = tsTextBox->text();
+            if (oldFilename != newFilename)
+            {
+                // Use loadIndex role to trigger the actual file loading in Quan
+                if (model->setData(index, newFilename, CustomRoleCodes::Role::loadIndex))
+                {
+                    dataChanged = true;
+                }
+            }
+
+            if (dataChanged)
+                mainwindow->AddStatetoUndoData();
+
+            return;
+        }
+        else
+        {
+            // Regular browser - no data to set here (handled by slot)
+            return;
+        }
     }
     if (delegateType.contains("Browser_Save"))
     {
@@ -455,6 +540,16 @@ void Delegate::updateEditorGeometry(QWidget *editor,
 
         editor->setGeometry(bigerRect);
         return;
+    }
+    if (delegateType.contains("Browser"))
+    {
+        TimeSeriesTextBox *tsTextBox = qobject_cast<TimeSeriesTextBox*>(editor);
+        if (tsTextBox)
+        {
+            QRect widerRect = option.rect;
+            editor->setGeometry(widerRect);
+            return;
+        }
     }
 
     editor->setGeometry(option.rect);

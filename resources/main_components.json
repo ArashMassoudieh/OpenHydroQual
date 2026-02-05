@@ -26,6 +26,7 @@
       "description": "Inflow",
       "ask_user": "true",
       "delegate": "Browser",
+      "unit": "m~^3/day;m~^3/s;ft~^3/s",
       "helptext": "User-supplied inflow time series to the catchment. This could represent runoff, pipe inflow, or any other external water source."
     },
     "Precipitation": {
@@ -181,6 +182,7 @@
       "includeinoutput": "true",
       "description": "Precipitation intensity",
       "ask_user": "true",
+      "unit": "m;mm;in;ft",
       "delegate": "Browser;time series"
     }
   },

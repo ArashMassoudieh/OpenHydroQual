@@ -230,14 +230,16 @@ public:
         //float b = coefficient(unit_to.reformBack());
 		return coefficient(unit_from.reformBack()) / coefficient(unit_to.reformBack()); };
 	static double coefficient(const QString expression) 	{
-		QString leftOperand = expression, rightOperand, Operator;
-		QStringList Operators = QStringList() << "." << "/" << "~^" << "~radic" << "~^3radic" << "^" << "~radical" << "~^3radical";
+        QStringList Operators;
+        QString leftOperand = expression, rightOperand, Operator;
+        Operators << "/" << "." << "~^" << "^" << "~radic" << "~radical" << "~^3radic" << "~^3radical";
 		if (containsOperator(leftOperand, rightOperand, Operator, Operators)){
-			if (Operator == "^" || Operator == "~^") return qPow(coefficient(leftOperand), coefficient(rightOperand));
-			if (Operator == ".") return (coefficient(leftOperand) * coefficient(rightOperand));
-			if (Operator == "/") return (coefficient(leftOperand) / coefficient(rightOperand));
-			if (Operator == "~radic" || Operator == "~radical") return (coefficient(leftOperand) * sqrt(coefficient(rightOperand)));
-			if (Operator == "~^3radic" || Operator == "~^3radical") return (coefficient(leftOperand) * qPow(coefficient(rightOperand), 1.0 / 3.0));
+            if (Operator == ".") return (coefficient(leftOperand) * coefficient(rightOperand));
+            if (Operator == "/") return (coefficient(leftOperand) / coefficient(rightOperand));
+            if (Operator == "^" || Operator == "~^") return qPow(coefficient(leftOperand), coefficient(rightOperand));
+            if (Operator == "~radic" || Operator == "~radical") return (coefficient(leftOperand) * sqrt(coefficient(rightOperand)));
+            if (Operator == "~^3radic" || Operator == "~^3radical") return (coefficient(leftOperand) * qPow(coefficient(rightOperand), 1.0 / 3.0));
+
 		}
 		else{
             if (leftOperand.toDouble()) return leftOperand.toDouble();

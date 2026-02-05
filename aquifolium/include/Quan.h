@@ -187,6 +187,20 @@ public:
 
         return false;
     }
+    /**
+     * @brief Convert timeseries data from one unit to another
+     * @param from_unit Source unit
+     * @param to_unit Target unit
+     * @return true if conversion successful, false otherwise
+     */
+    bool ConvertTimeSeriesUnit(const std::string& from_unit, const std::string& to_unit);
+
+    /**
+     * @brief Set the unit for this quantity and convert timeseries data if applicable
+     * @param new_unit The new unit to set
+     * @return true if successful, false otherwise
+     */
+    bool SetUnit(const std::string& new_unit);
 
 protected:
 
@@ -235,6 +249,7 @@ private:
     bool calculate_initial_value_from_expression = false;
     Expression initial_value_expression;
     PreCalculatedFunction precalcfunction;
+    string _timeseries_unit;  // Current unit of the timeseries data (stored in SI units internally)
 };
 
 string tostring(const Quan::_type& typ);

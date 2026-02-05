@@ -115,6 +115,7 @@ CONFIG(debug, debug|release) {
 
 SOURCES += \
     ProgressWindow.cpp \
+    TimeSeriesTextBox.cpp \
     VisualizationDialog.cpp \
     VisualizationGraphicsView.cpp \
     chartview.cpp \
@@ -186,6 +187,7 @@ SOURCES += \
 
 HEADERS += \
     ProgressWindow.h \
+    TimeSeriesTextBox.h \
     VisualizationDialog.h \
     VisualizationGraphicsView.h \
     aquifolium/include/TimeSeries.h \
