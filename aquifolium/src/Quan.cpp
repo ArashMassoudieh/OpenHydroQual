@@ -1001,7 +1001,7 @@ bool Quan::ConvertTimeSeriesUnit(const string& from_unit, const string& to_unit)
     // We're changing the DECLARATION of what unit the file is in
     // stored_value = raw_file_value * declared_unit_coefficient
     // If we change declaration, we need: new_stored = old_stored * (to_coeff / from_coeff)
-    double conversion_factor = to_coeff / from_coeff;  // FLIPPED!
+    double conversion_factor = from_coeff / to_coeff;
 
     qDebug() << "Conversion factor=" << conversion_factor;
 

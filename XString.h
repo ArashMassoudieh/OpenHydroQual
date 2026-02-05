@@ -276,16 +276,25 @@ public:
 	}
 
 
-	static bool containsOperator(QString &leftOperand, QString &rightOperand, QString &Operator, QStringList &Operators) 	{
-		int pos = leftOperand.size();
-		for (int i = 0; i < Operators.size(); i++)
-			if (leftOperand.contains(Operators[i]))
-				if (leftOperand.indexOf(Operators[i]) < pos)	pos = (Operator = Operators[i], leftOperand.indexOf(Operator));
-		if (Operator == "")	return false; // { Operator = "."; rightOperand = "1"; return false; }
-		rightOperand = leftOperand.right(leftOperand.size() - pos - Operator.size());
-		leftOperand = (pos) ? leftOperand.left(pos) : "1";
-		return true;
-	};
+    static bool containsOperator(QString &leftOperand, QString &rightOperand, QString &Operator, QStringList &Operators) 	{
+        // For proper precedence, search for division/multiplication first (rightmost occurrence)
+        // Then search for exponentiation (rightmost occurrence)
+        for (int i = 0; i < Operators.size(); i++)
+        {
+            if (leftOperand.contains(Operators[i]))
+            {
+                int pos = leftOperand.lastIndexOf(Operators[i]);  // Changed to lastIndexOf for right-to-left
+                if (pos >= 0)
+                {
+                    Operator = Operators[i];
+                    rightOperand = leftOperand.right(leftOperand.size() - pos - Operator.size());
+                    leftOperand = (pos) ? leftOperand.left(pos) : "1";
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 static	QString reform(const QString &X)
 	{
 		if (!X.contains("~")) return X;
