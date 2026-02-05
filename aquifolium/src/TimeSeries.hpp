@@ -544,6 +544,7 @@ bool TimeSeries<T>::readfile(const std::string& filename) {
 
                 if (!first_valid && t_val < last_t) {
                     fileNotCorrect = true;
+                    filename_ = filename;
                     return false;
                 }
 
