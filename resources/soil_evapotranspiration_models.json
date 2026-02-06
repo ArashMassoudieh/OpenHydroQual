@@ -21,10 +21,11 @@
     "wind_speed": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Wind time series",
+      "description": "wind time series",
       "ask_user": "true",
       "delegate": "Browser",
-      "helptext": "Time series of wind speed measured at reference height z2. Drives aerodynamic evaporation."
+      "helptext": "Time series of wind speed values measured at height z2, used to compute aerodynamic evapotranspiration.",
+      "unit": "m/s"
     },
     "Temperature": {
       "type": "timeseries",
@@ -32,7 +33,7 @@
       "description": "Temperature time series",
       "ask_user": "true",
       "delegate": "Browser",
-      "helptext": "Time series of air temperature used to compute saturation vapor pressure."
+      "helptext": "Time series of ambient air temperature (\u00b0C) used to estimate saturation vapor pressure."
     },
     "corr_fact": {
       "type": "value",
@@ -48,22 +49,24 @@
       "type": "value",
       "ask_user": "true",
       "includeinoutput": "false",
-      "description": "Wind measurement elevation",
+      "description": "Wind measurement elevation (m)",
       "default": "2",
       "criteria": "z2>0",
       "warningmessage": "Wind reference height must be greater than zero",
-      "delegate": "ValueBox",
-      "helptext": "Height above ground where wind speed measurements are taken, typically 2 meters."
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "helptext": "Elevation (height) at which wind speed measurements are taken, typically 2 meters above ground surface."
     },
     "z0": {
       "type": "value",
       "ask_user": "true",
       "includeinoutput": "false",
-      "description": "Roughness height",
+      "description": "Roughness height (m)",
       "default": "0.0003",
       "criteria": "z0>0",
       "warningmessage": "Roughness height must be greater than zero",
-      "delegate": "ValueBox"
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in"
     },
     "B": {
       "type": "expression",
@@ -81,7 +84,7 @@
     "R_h": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Relative humidity time series",
+      "description": "Relative humidity time series (fraction, 0-1)",
       "ask_user": "true",
       "delegate": "Browser"
     },
@@ -90,9 +93,9 @@
       "includeinoutput": "true",
       "description": "Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "B*e_as*(R_h-1)"
-    },
-    "helptext": "Aerodynamic Evapotranspiration model for soil"
+      "expression": "corr_fact*B*e_as*(R_h-1)",
+      "unit": "m/day;mm/day;inch/day"
+    }
   },
   "Evapotranspiration_Time_Series (Soil)": {
     "type": "source",
@@ -126,14 +129,16 @@
       "includeinoutput": "true",
       "description": "Evaporation time series",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m/day;mm/day;inch/day"
     },
     "rate": {
       "type": "expression",
       "includeinoutput": "true",
       "description": "Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "corr_fact*timeseries"
+      "expression": "corr_fact*timeseries",
+      "unit": "m/day;mm/day;inch/day"
     },
     "helptext": "Evapotranspiration time-series for soil"
   },
@@ -174,7 +179,7 @@
     "Temperature": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Temperature time series",
+      "description": "Temperature time series (\u00b0C)",
       "ask_user": "true",
       "delegate": "Browser"
     },
@@ -189,7 +194,8 @@
       "includeinoutput": "true",
       "description": "Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "-corr_fact*solar_radiation/(l_v*1000)*86400"
+      "expression": "-corr_fact*solar_radiation/(l_v*1000)*86400",
+      "unit": "m/day;mm/day;inch/day"
     },
     "helptext": "Energy Evapotranspiration model for soil"
   },
@@ -221,16 +227,17 @@
     "Temperature": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Temperature time series",
+      "description": "Temperature time series (\u00b0C)",
       "ask_user": "true",
       "delegate": "Browser"
     },
     "wind_speed": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Wind time series",
+      "description": "wind time series",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m/s"
     },
     "wind_scale_fact": {
       "type": "value",
@@ -253,7 +260,7 @@
     "R_h": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Relative humidity time series",
+      "description": "Relative humidity time series (fraction, 0-1)",
       "ask_user": "true",
       "delegate": "Browser"
     },
@@ -266,7 +273,7 @@
       "criteria": "z2>0",
       "warningmessage": "Wind reference height must be greater than zero",
       "delegate": "UnitBox",
-      "unit": "m;ft"
+      "unit": "m;ft;cm;in"
     },
     "z0": {
       "type": "value",
@@ -277,7 +284,7 @@
       "criteria": "z0>0",
       "warningmessage": "Roughness height must be greater than zero",
       "delegate": "UnitBox",
-      "unit": "m;ft"
+      "unit": "m;ft;cm;in"
     },
     "gamma": {
       "type": "value",
@@ -300,14 +307,15 @@
       "type": "expression",
       "expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
       "includeinoutput": "true",
-      "description": "Saturated humidity"
+      "description": "Saturated humidity (Pa)"
     },
     "Ea": {
       "type": "expression",
       "includeinoutput": "true",
       "description": "Aerodynamic Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "B*e_as*(R_h-1)"
+      "expression": "B*e_as*(R_h-1)",
+      "unit": "m/day;mm/day;inch/day"
     },
     "l_v": {
       "type": "expression",
@@ -320,7 +328,8 @@
       "includeinoutput": "true",
       "description": "Radiation-based Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "-solar_scale_fact*solar_radiation/(l_v*1000)*86400"
+      "expression": "-solar_scale_fact*solar_radiation/(l_v*1000)*86400",
+      "unit": "m/day;mm/day;inch/day"
     },
     "Delta": {
       "type": "expression",
@@ -334,7 +343,8 @@
       "includeinoutput": "true",
       "description": "Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "(Delta*Er/(Delta+gamma))+(gamma*Ea/(Delta+gamma))"
+      "expression": "(Delta*Er/(Delta+gamma))+(gamma*Ea/(Delta+gamma))",
+      "unit": "m/day;mm/day;inch/day"
     },
     "helptext": "Penman Evapotranspiration model for soil"
   }

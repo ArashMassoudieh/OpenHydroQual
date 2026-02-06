@@ -97,11 +97,34 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                         double value = atof(quanset->GetVarAskable(index.row())->GetProperty(true).c_str())/coefficient;
                         return QString::number(value) + "["+XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()))+"]";
                     }
+                    else if (quanset->GetVarAskable(index.row())->Delegate().find("Browser") != std::string::npos
+                             && quanset->GetVarAskable(index.row())->Units()!="")
+                    {
+                        // Get the property (filename [unit])
+                        QString displayText = QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
+
+                        // Reform unit in brackets if present
+                        int bracketStart = displayText.indexOf('[');
+                        if (bracketStart != -1)
+                        {
+                            int bracketEnd = displayText.indexOf(']', bracketStart);
+                            if (bracketEnd != -1)
+                            {
+                                QString filename = displayText.left(bracketStart).trimmed();
+                                QString unit = displayText.mid(bracketStart + 1, bracketEnd - bracketStart - 1);
+
+                                // Reform the unit (m^3 → m³)
+                                QString reformedUnit = XString::reform(unit);
+
+                                return filename + " [" + reformedUnit + "]";
+                            }
+                        }
+                        return displayText;
+                    }
                     else
                     {
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
                     }
-
                 }
                 else
                     return float2date(quanset->GetVarAskable(index.row())->GetVal());

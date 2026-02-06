@@ -12,7 +12,8 @@
       "description": "Loading rate (mass/time)",
       "ask_user": "true",
       "delegate": "Browser;time series",
-      "helptext": "Time series representing the chemical mass loading rate into the system (e.g., from external sources or emissions)."
+      "helptext": "Time series representing the chemical mass loading rate into the system (e.g., from external sources or emissions).",
+      "unit": "g/day/m~^3"
     }
   },
   "constant_source": {
@@ -146,7 +147,8 @@
       "includeinoutput": "true",
       "description": "Time variable inflow",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m^3/day;ft^3/s;m^3/s"
     },
     "constant_inflow": {
       "type": "value",
@@ -161,7 +163,8 @@
       "expression": "time_variable_inflow+constant_inflow",
       "includeinoutput": "true",
       "description": "Inflow",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
     "bottom_elevation": {
       "type": "value",
@@ -204,7 +207,8 @@
       "includeinoutput": "true",
       "description": "Time variable inflow",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
     "constant_inflow": {
       "type": "value",
@@ -219,7 +223,8 @@
       "expression": "time_variable_inflow+constant_inflow",
       "includeinoutput": "true",
       "description": "Inflow",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
     "bottom_elevation": {
       "type": "value",
@@ -290,7 +295,7 @@
     "area": {
       "type": "expression",
       "expression": "0.000000001",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Area",
       "ask_user": "false"
     },
@@ -312,7 +317,8 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",
-      "expression": "(Storage.s/Volume.s-1)*flow_factor"
+      "expression": "(Storage.s/Volume.s-1)*flow_factor",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
     "flow_factor": {
       "type": "value",
@@ -355,7 +361,8 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
     "length": {
       "type": "expression",
@@ -388,7 +395,8 @@
       "includeinoutput": "true",
       "description": "Time variable flow",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
     "constant_flow": {
       "type": "value",
@@ -403,7 +411,8 @@
       "expression": "time_variable_flow+constant_flow",
       "includeinoutput": "true",
       "description": "Flow rate",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
     "area": {
       "type": "value",
@@ -430,7 +439,8 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
     },
     "area": {
       "type": "value",
@@ -479,7 +489,8 @@
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytoblocks",
-      "initial_value_expression": "concentration*depth*area"
+      "initial_value_expression": "concentration*depth*area",
+      "unit": "g;kg"
     },
     "masstransfer": {
       "description": "Mass transfer rate",
@@ -495,7 +506,8 @@
       "description": "External mass flow time-series",
       "ask_user": "true",
       "role": "copytoblocks",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "g/day"
     },
     "external_source": {
       "type": "source",
@@ -557,7 +569,8 @@
       "description": "External mass flow time-series",
       "ask_user": "true",
       "role": "copytoblocks",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "g/day"
     },
     "external_source": {
       "type": "source",
@@ -565,7 +578,8 @@
       "description": "External source",
       "ask_user": "true",
       "role": "copytoblocks",
-      "delegate": "ComboBox;Sources"
+      "delegate": "ComboBox;Sources",
+      "unit": "g/day"
     }
   },
   "Desorption": {
@@ -642,7 +656,8 @@
       "expression": "_ups(flow;concentration)/_abs(flow)",
       "includeinoutput": "true",
       "ask_user": "false",
-      "role": "copytolinks"
+      "role": "copytolinks",
+      "unit": "g/m^3"
     },
     "Load": {
       "description": "Decayed Load",
@@ -669,7 +684,8 @@
       "expression": "diffusion_coefficient*area/length*(concentration.s-concentration.e)",
       "includeinoutput": "true",
       "ask_user": "false",
-      "role": "copytolinks"
+      "role": "copytolinks",
+      "unit": "g/m^3/day"
     },
     "masstransfer": {
       "description": "Total mass transfer rate",
@@ -677,7 +693,8 @@
       "expression": "advective_masstransfer+diffusive_masstransfer",
       "includeinoutput": "true",
       "ask_user": "false",
-      "role": "copytolinks"
+      "role": "copytolinks",
+      "unit": "g/m^3/day"
     },
     "external_mass_flow_timeseries": {
       "type": "timeseries",
@@ -685,7 +702,8 @@
       "description": "External mass flow time-series",
       "ask_user": "true",
       "role": "copytoblocks",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "g/m^3"
     },
     "inflow_concentration": {
       "type": "value",
@@ -694,14 +712,16 @@
       "ask_user": "true",
       "role": "copytoblocks",
       "delegate": "ValueBox",
-      "default": "0"
+      "default": "0",
+      "unit": "g/m^3"
     },
     "inflow_loading": {
       "type": "expression",
       "expression": "inflow_concentration*(inflow+Precipitation-Evapotranspiration)",
       "includeinoutput": "true",
       "description": "Inflow loading",
-      "role": "copytoblocks"
+      "role": "copytoblocks",
+      "unit": "g/m^3/day"
     },
     "external_source": {
       "type": "source",
@@ -709,7 +729,8 @@
       "description": "External source",
       "ask_user": "true",
       "role": "copytoblocks",
-      "delegate": "ComboBox;Sources"
+      "delegate": "ComboBox;Sources",
+      "unit": "g/m^3/day"
     }
   },
   "AgeTracker_laplace": {
@@ -747,7 +768,8 @@
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytoblocks",
-      "initial_value_expression": "concentration*Storage"
+      "initial_value_expression": "concentration*Storage",
+      "unit": "g"
     },
     "diffusion_coefficient": {
       "description": "Diffusion Coefficient",
@@ -763,7 +785,8 @@
       "expression": "_ups(flow;concentration)",
       "includeinoutput": "true",
       "ask_user": "false",
-      "role": "copytolinks"
+      "role": "copytolinks",
+      "unit": "g/day"
     },
     "upstrm_concentration": {
       "description": "Upstream Concentration",
@@ -771,7 +794,8 @@
       "expression": "_ups(flow;concentration)/_abs(flow)",
       "includeinoutput": "true",
       "ask_user": "false",
-      "role": "copytolinks"
+      "role": "copytolinks",
+      "unit": "g/m^3"
     },
     "Load": {
       "description": "Decayed Load",
@@ -779,7 +803,8 @@
       "expression": "flow*upstrm_concentration",
       "includeinoutput": "true",
       "ask_user": "false",
-      "role": "copytolinks"
+      "role": "copytolinks",
+      "unit": "g/day"
     },
     "decay_parameter": {
       "description": "Decay parameter",
@@ -798,7 +823,8 @@
       "expression": "diffusion_coefficient*area/length*(concentration.s-concentration.e)",
       "includeinoutput": "true",
       "ask_user": "false",
-      "role": "copytolinks"
+      "role": "copytolinks",
+      "unit": "g/day"
     },
     "masstransfer": {
       "description": "Total mass transfer rate",
@@ -806,7 +832,8 @@
       "expression": "advective_masstransfer+diffusive_masstransfer",
       "includeinoutput": "true",
       "ask_user": "false",
-      "role": "copytolinks"
+      "role": "copytolinks",
+      "unit": "g/day"
     },
     "external_mass_flow_timeseries": {
       "type": "timeseries",
@@ -814,7 +841,8 @@
       "description": "External mass flow time-series",
       "ask_user": "true",
       "role": "copytoblocks",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "g/day"
     },
     "inflow_concentration": {
       "type": "value",
@@ -823,14 +851,16 @@
       "ask_user": "true",
       "role": "copytoblocks",
       "delegate": "ValueBox",
-      "default": "1"
+      "default": "1",
+      "unit": "g/m^3"
     },
     "inflow_loading": {
       "type": "expression",
       "expression": "inflow_concentration*(inflow+Precipitation-Evapotranspiration)",
       "includeinoutput": "true",
       "description": "Inflow loading",
-      "role": "copytoblocks"
+      "role": "copytoblocks",
+      "unit": "g/day"
     },
     "external_source": {
       "type": "source",
@@ -838,7 +868,8 @@
       "description": "External source",
       "ask_user": "true",
       "role": "copytoblocks",
-      "delegate": "ComboBox;Sources"
+      "delegate": "ComboBox;Sources",
+      "unit": "g/day"
     }
   }
 }

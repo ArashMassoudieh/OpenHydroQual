@@ -30,7 +30,8 @@
       "includeinoutput": "true",
       "description": "Time Variable Inflow",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m^3/day;ft^3/s;m^3/s"
     },
     "area": {
       "type": "value",
@@ -66,7 +67,8 @@
       "expression": "depth+bottom_elevation",
       "description": "Hydraulic Head",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     }
   },
   "pipe_2w": {
@@ -117,11 +119,12 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m~^3/day)",
+      "description": "Flow rate",
       "expression": "24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-hydraulic_gradient;0.00001)*_abs(-hydraulic_gradient)^0.54",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s"
     },
     "color": {
       "type": "string",
@@ -170,18 +173,20 @@
     },
     "head_loss": {
       "type": "expression",
-      "description": "Hydraulic Gradient",
+      "description": "Head loss",
       "expression": "head.e-head.s",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m~^3/day)",
+      "description": "Flow rate",
       "expression": "300575*_sqt(-head_loss/K_factor)*diameter^2*(1-closed)",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s"
     },
     "color": {
       "type": "string",
@@ -241,11 +246,12 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m~^3/day)",
+      "description": "Flow rate",
       "expression": "24055.44*hz_coeff*diameter^2.63*_pos(-hydraulic_gradient)^0.54",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s"
     },
     "color": {
       "type": "string",
@@ -271,7 +277,8 @@
       "flow": "flow",
       "includeinoutput": "true",
       "description": "Storage",
-      "default": "0.01"
+      "default": "0.01",
+      "unit": "m^3;ft^3"
     },
     "elevation": {
       "type": "value",
@@ -292,14 +299,16 @@
       "default": "1",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "estimate": "true"
+      "estimate": "true",
+      "unit": "1/m^2;1/ft^2"
     },
     "head": {
       "type": "expression",
       "expression": "elevation+elasticity*(Storage-0.01)",
       "description": "Hydraulic Head",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     }
   },
   "junction": {
@@ -322,7 +331,8 @@
       "includeinoutput": "true",
       "description": "Storage",
       "default": "1000",
-      "rigid": "true"
+      "rigid": "true",
+      "unit": "m^3;ft^3"
     },
     "elevation": {
       "type": "value",
@@ -338,7 +348,8 @@
       "expression": "elevation+1*(Storage-1000)",
       "description": "Hydraulic Head",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     }
   },
   "pump": {
@@ -387,11 +398,12 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m~^3/day)",
+      "description": "Flow rate",
       "expression": "(_pos(head.s-head.e+head_0)/alpha)^(1/beta)",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s"
     },
     "power": {
       "type": "expression",
@@ -453,11 +465,12 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m~^3/day)",
+      "description": "Flow rate",
       "expression": "coefficient_time_series*((_pos(head.s-head.e+head_0)/alpha)^(1/beta))",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s"
     },
     "power": {
       "type": "expression",
@@ -493,7 +506,8 @@
       "includeinoutput": "true",
       "description": "Use rate time series",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m^3/day;ft^3/s"
     },
     "constant_use_rate": {
       "type": "value",
@@ -508,7 +522,8 @@
       "expression": "-(use_rate+constant_use_rate)",
       "includeinoutput": "false",
       "description": "Net production",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s"
     }
   },
   "Flow_to_user": {
@@ -529,7 +544,8 @@
       "expression": "use_rate.e+constant_use_rate.e",
       "includeinoutput": "true",
       "description": "Flow rate",
-      "applylimit": "true"
+      "applylimit": "true",
+      "unit": "m^3/day;ft^3/s"
     }
   }
 }

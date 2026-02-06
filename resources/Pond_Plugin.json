@@ -35,7 +35,8 @@
       "helptext": "The time series containing the inflow rate into the pond",
       "description": "Inflow rate time series",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m^3/day;f^3/s;m^3/s"
     },
     "alpha": {
       "type": "value",
@@ -63,7 +64,8 @@
       "expression": "_pos(Storage^2/(alpha*(Storage+0.1)))^(1/beta)",
       "description": "Water depth",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "Precipitation": {
       "type": "source",
@@ -71,14 +73,16 @@
       "description": "precipitation time series",
       "ask_user": "true",
       "delegate": "ComboBox;Sources",
-      "helptext": "Select a precipitation source object that provides rainfall input to the pond."
+      "helptext": "Select a precipitation source object that provides rainfall input to the pond.",
+      "unit": "m^3/day;ft^3/day"
     },
     "Evapotranspiration": {
       "type": "source",
       "includeinoutput": "true",
       "description": "Evapotranspiration",
       "ask_user": "true",
-      "delegate": "ComboBox;Sources"
+      "delegate": "ComboBox;Sources",
+      "unit": "m^3/day;ft^3/day"
     },
     "bottom_elevation": {
       "type": "value",
@@ -93,14 +97,16 @@
       "expression": "depth+bottom_elevation",
       "description": "Hydraulic head",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "area": {
       "type": "expression",
       "expression": "alpha*beta*(depth^(beta-1))",
       "description": "Surface area",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2"
     }
   },
   "wier": {
@@ -124,7 +130,7 @@
     },
     "alpha": {
       "type": "value",
-      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta",
+      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta (SI-day units)",
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
@@ -144,10 +150,11 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m~^3/day)",
+      "description": "Flow rate",
       "expression": "alpha*_pos(head.s-crest_elevation)^beta",
       "includeinoutput": "true",
-      "applylimit": "true"
+      "applylimit": "true",
+      "unit": "m^3/day;ft^3/day"
     },
     "area": {
       "type": "value",
@@ -155,7 +162,8 @@
       "default": "0",
       "expression": "alpha*_pos(head.s-crest_elevation)^beta",
       "includeinoutput": "false",
-      "applylimit": "false"
+      "applylimit": "false",
+      "unit": "m^2;ft^2"
     },
     "length": {
       "type": "value",
@@ -211,10 +219,11 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow rate (m~^3/day)",
+      "description": "Flow rate",
       "expression": "86400*3.47*_pos(head.s-crest_elevation)^(0.5)/((head_loss_coefficient+1)^0.5)*(pipe_diameter^2)",
       "includeinoutput": "true",
-      "applylimit": "true"
+      "applylimit": "true",
+      "unit": "m^3/day;ft^3/s"
     }
   },
   "orifice": {
@@ -252,14 +261,16 @@
       "unit": "m2;ft2;cm2",
       "estimate": "true",
       "criteria": "orifice_area>0",
-      "warningmessage": "orifice_area must be positive"
+      "warningmessage": "orifice_area must be positive",
+      "unit": "m^2;ft^2"
     },
     "flow": {
       "type": "expression",
       "description": "Flow rate (m~^3/day)",
       "expression": "86400*head_loss_coefficient*orifice_area*_pos(19.6*(head.s-head.e))^0.5",
       "includeinoutput": "true",
-      "applylimit": "true"
+      "applylimit": "true",
+      "unit": "m^3/day;ft^3/s"
     }
   },
   "darcy_connector": {
@@ -295,7 +306,8 @@
       "description": "Flow rate (m~^3/day)",
       "expression": "Transmissivity*(head.s-_max(bottom_elevation.s;head.e))",
       "includeinoutput": "true",
-      "applylimit": "true"
+      "applylimit": "true",
+      "unit": "m^3/day;ft^3/s"
     }
   },
   "wide_channel": {
@@ -328,14 +340,16 @@
       "description": "Water depth",
       "expression": "_max((depth.s+depth.e)/2;0)",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
       "expression": "_max(depth*width;0)",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
     },
     "ManningCoeff": {
       "type": "value",
@@ -359,7 +373,8 @@
       "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*width*depth^1.6667",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s"
     }
   },
   "Aggregate_storage_layer": {
@@ -388,7 +403,8 @@
       "applylimit": "true",
       "description": "Inflow time series",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m^3/day;ft^3/s"
     },
     "K_sat": {
       "type": "value",
@@ -443,7 +459,8 @@
       "expression": "depth+bottom_elevation",
       "description": "Hydraulic Head",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     }
   },
   "soil_to_aggregate_link": {
@@ -486,14 +503,16 @@
       "description": "Saturated Hydraulic Conductivity",
       "expression": "K_sat.s",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;m/s;ft/s"
     },
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;m/s;ft/s"
     },
     "flow": {
       "type": "expression",
@@ -501,7 +520,8 @@
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     },
     "color": {
       "type": "string",
@@ -534,7 +554,8 @@
       "description": "Saturated Hydraulic Conductivity",
       "expression": "K_sat.e",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;m/s;ft/s"
     },
     "flow": {
       "type": "expression",
@@ -542,7 +563,8 @@
       "expression": "(head.s-head.e)*K_sat/length*area*depth.s/(depth.s+0.01)",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     },
     "color": {
       "type": "string",
@@ -578,7 +600,8 @@
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat.e",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;m/s;ft/s"
     },
     "flow": {
       "type": "expression",
@@ -586,7 +609,8 @@
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     },
     "color": {
       "type": "string",
@@ -622,7 +646,8 @@
       "expression": "(head.s-head.e)*(K_sat.s+K_sat.e)/(4*length)*(depth.s+depth.e)*width",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     },
     "color": {
       "type": "string",

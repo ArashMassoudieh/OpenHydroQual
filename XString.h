@@ -245,12 +245,12 @@ public:
             if (leftOperand.toDouble()) return leftOperand.toDouble();
             QList <QString> UL;
 			QList <float> CL;
-			UL << "m" << "cm" << "mm" << "~microm" << "km" << "in" << "ft" << "yd" <<
+            UL << "m" << "cm" << "mm" << "~microm" << "km" << "in" << "inch" << "ft" << "yd" <<
 				"kg" << "g" << "ton" << "lb" << "kip" <<
 				"day" << "hr" << "min" << "s" << "wk" <<
 				"L" << "N" << 
                 "~degreeC" << "Pa" << "J" << "W" << "si" << "SI" << "" << "" << "" << "" << "" << "" << "" << "" << "";
-			CL << 1.0 << 0.01 << 0.001 << 0.000001 << 1000 << 2.54 / 100 << 12 * 2.54 / 100 << 3 * 12 * 2.54 / 100 <<
+            CL << 1.0 << 0.01 << 0.001 << 0.000001 << 1000 << 2.54 / 100 << 2.54 / 100 << 12 * 2.54 / 100 << 3 * 12 * 2.54 / 100 <<
                 1000 << 1 << 1000000 << 451000.0 / 1000 << 451000.0 <<
                 1.0 << 1.0 / 24.0 << 1.0 / 24 / 60 << 1.0 / 24 / 60 / 60 << 7.0 <<
                 .001 << 9.81
@@ -295,23 +295,37 @@ public:
         }
         return false;
     }
-static	QString reform(const QString &X)
-	{
-		if (!X.contains("~")) return X;
-		char16_t alpha = 945;	char16_t beta = 946;	char16_t gamma = 947;	char16_t delta = 948;	char16_t epsilon = 949;	char16_t zeta = 950;	char16_t eta = 951;	char16_t theta = 952;	char16_t iota = 953;	char16_t kappa = 954;	char16_t lambda = 955;
-		char16_t mu = 956;	char16_t nu = 957;	char16_t xi = 958;	char16_t omicron = 959;	char16_t pi = 960;	char16_t rho = 961;	char16_t sigmaf = 962;	char16_t sigma = 963;	char16_t tau = 964;	char16_t upsilon = 965;	char16_t phi = 966;
-		char16_t chi = 967;	char16_t psi = 968;	char16_t omega = 969;	char16_t thetasym = 977;	char16_t upsih = 978;	char16_t piv = 982;	char16_t sup2 = 178;	char16_t sup3 = 179;	char16_t frac14 = 188;	char16_t frac12 = 189;	char16_t frac34 = 190;
-		char16_t radic = 8730;	char16_t degree = 176;	QString R = X;	 R.replace("~alpha", QString::fromUtf16(&alpha, 1));	R.replace("~beta", QString::fromUtf16(&beta, 1));	R.replace("~gamma", QString::fromUtf16(&gamma, 1));
-		R.replace("~delta", QString::fromUtf16(&delta, 1));	R.replace("~epsilon", QString::fromUtf16(&epsilon, 1));	R.replace("~zeta", QString::fromUtf16(&zeta, 1));	R.replace("~eta", QString::fromUtf16(&eta, 1));
-		R.replace("~theta", QString::fromUtf16(&theta, 1));	R.replace("~iota", QString::fromUtf16(&iota, 1));	R.replace("~kappa", QString::fromUtf16(&kappa, 1));	R.replace("~lambda", QString::fromUtf16(&lambda, 1));
-		R.replace("~mu", QString::fromUtf16(&mu, 1));	R.replace("~nu", QString::fromUtf16(&nu, 1));	R.replace("~xi", QString::fromUtf16(&xi, 1));	R.replace("~omicron", QString::fromUtf16(&omicron, 1));
-		R.replace("~pi", QString::fromUtf16(&pi, 1));	R.replace("~rho", QString::fromUtf16(&rho, 1));	R.replace("~sigmaf", QString::fromUtf16(&sigmaf, 1));	R.replace("~sigma", QString::fromUtf16(&sigma, 1));
-		R.replace("~tau", QString::fromUtf16(&tau, 1));	R.replace("~upsilon", QString::fromUtf16(&upsilon, 1));	R.replace("~phi", QString::fromUtf16(&phi, 1));	R.replace("~chi", QString::fromUtf16(&chi, 1));
-		R.replace("~psi", QString::fromUtf16(&psi, 1));	R.replace("~omega", QString::fromUtf16(&omega, 1));	R.replace("~thetasym", QString::fromUtf16(&thetasym, 1));	R.replace("~upsih", QString::fromUtf16(&upsih, 1));
-		R.replace("~piv", QString::fromUtf16(&piv, 1));	R.replace("~^2", QString::fromUtf16(&sup2, 1));	R.replace("~^3", QString::fromUtf16(&sup3, 1));	R.replace("~1/4", QString::fromUtf16(&frac14, 1));
-		R.replace("~1/2", QString::fromUtf16(&frac12, 1));	R.replace("~3/4", QString::fromUtf16(&frac34, 1));	R.replace("~radic", QString::fromUtf16(&radic, 1));	R.replace("~degree", QString::fromUtf16(&degree, 1));	return R;
-		/*	https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references	*/
-	}
+    static QString reform(const QString &X)
+    {
+        QString R = X;
+
+        // PREPROCESSING: Convert bare ^ to ~^ for backward compatibility
+        // Only replace ^ that are NOT already preceded by ~
+        if (R.contains("^") && !R.contains("~^"))
+        {
+            R.replace("^", "~^");
+        }
+
+        // Now process all the tildes
+        if (!R.contains("~")) return R;  // Early exit if nothing to reform
+
+        char16_t alpha = 945;	char16_t beta = 946;	char16_t gamma = 947;	char16_t delta = 948;	char16_t epsilon = 949;	char16_t zeta = 950;	char16_t eta = 951;	char16_t theta = 952;	char16_t iota = 953;	char16_t kappa = 954;	char16_t lambda = 955;
+        char16_t mu = 956;	char16_t nu = 957;	char16_t xi = 958;	char16_t omicron = 959;	char16_t pi = 960;	char16_t rho = 961;	char16_t sigmaf = 962;	char16_t sigma = 963;	char16_t tau = 964;	char16_t upsilon = 965;	char16_t phi = 966;
+        char16_t chi = 967;	char16_t psi = 968;	char16_t omega = 969;	char16_t thetasym = 977;	char16_t upsih = 978;	char16_t piv = 982;	char16_t sup2 = 178;	char16_t sup3 = 179;	char16_t frac14 = 188;	char16_t frac12 = 189;	char16_t frac34 = 190;
+        char16_t radic = 8730;	char16_t degree = 176;
+
+        R.replace("~alpha", QString::fromUtf16(&alpha, 1));	R.replace("~beta", QString::fromUtf16(&beta, 1));	R.replace("~gamma", QString::fromUtf16(&gamma, 1));
+        R.replace("~delta", QString::fromUtf16(&delta, 1));	R.replace("~epsilon", QString::fromUtf16(&epsilon, 1));	R.replace("~zeta", QString::fromUtf16(&zeta, 1));	R.replace("~eta", QString::fromUtf16(&eta, 1));
+        R.replace("~theta", QString::fromUtf16(&theta, 1));	R.replace("~iota", QString::fromUtf16(&iota, 1));	R.replace("~kappa", QString::fromUtf16(&kappa, 1));	R.replace("~lambda", QString::fromUtf16(&lambda, 1));
+        R.replace("~mu", QString::fromUtf16(&mu, 1));	R.replace("~nu", QString::fromUtf16(&nu, 1));	R.replace("~xi", QString::fromUtf16(&xi, 1));	R.replace("~omicron", QString::fromUtf16(&omicron, 1));
+        R.replace("~pi", QString::fromUtf16(&pi, 1));	R.replace("~rho", QString::fromUtf16(&rho, 1));	R.replace("~sigmaf", QString::fromUtf16(&sigmaf, 1));	R.replace("~sigma", QString::fromUtf16(&sigma, 1));
+        R.replace("~tau", QString::fromUtf16(&tau, 1));	R.replace("~upsilon", QString::fromUtf16(&upsilon, 1));	R.replace("~phi", QString::fromUtf16(&phi, 1));	R.replace("~chi", QString::fromUtf16(&chi, 1));
+        R.replace("~psi", QString::fromUtf16(&psi, 1));	R.replace("~omega", QString::fromUtf16(&omega, 1));	R.replace("~thetasym", QString::fromUtf16(&thetasym, 1));	R.replace("~upsih", QString::fromUtf16(&upsih, 1));
+        R.replace("~piv", QString::fromUtf16(&piv, 1));	R.replace("~^2", QString::fromUtf16(&sup2, 1));	R.replace("~^3", QString::fromUtf16(&sup3, 1));	R.replace("~1/4", QString::fromUtf16(&frac14, 1));
+        R.replace("~1/2", QString::fromUtf16(&frac12, 1));	R.replace("~3/4", QString::fromUtf16(&frac34, 1));	R.replace("~radic", QString::fromUtf16(&radic, 1));	R.replace("~degree", QString::fromUtf16(&degree, 1));
+
+        return R;
+    }
 static	QString reformBack(QString R)
 	{
 		char16_t alpha = 945;	char16_t beta = 946;	char16_t gamma = 947;	char16_t delta = 948;	char16_t epsilon = 949;	char16_t zeta = 950;	char16_t eta = 951;	char16_t theta = 952;	char16_t iota = 953;	char16_t kappa = 954;	char16_t lambda = 955;
@@ -324,7 +338,7 @@ static	QString reformBack(QString R)
 		R.replace(QString::fromUtf16(&pi, 1), "~pi");	R.replace(QString::fromUtf16(&rho, 1), "~rho");	R.replace(QString::fromUtf16(&sigmaf, 1), "~sigmaf");	R.replace(QString::fromUtf16(&sigma, 1), "~sigma");
 		R.replace(QString::fromUtf16(&tau, 1), "~tau");	R.replace(QString::fromUtf16(&upsilon, 1), "~upsilon");	R.replace(QString::fromUtf16(&phi, 1), "~phi");	R.replace(QString::fromUtf16(&chi, 1), "~chi");
 		R.replace(QString::fromUtf16(&psi, 1), "~psi");	R.replace(QString::fromUtf16(&omega, 1), "~omega");	R.replace(QString::fromUtf16(&thetasym, 1), "~thetasym");	R.replace(QString::fromUtf16(&upsih, 1), "~upsih");
-		R.replace(QString::fromUtf16(&piv, 1), "~piv");	R.replace(QString::fromUtf16(&sup2, 1), "~^2");	R.replace(QString::fromUtf16(&sup3, 1), "~^3");	R.replace(QString::fromUtf16(&frac14, 1), "~1/4");
+        R.replace(QString::fromUtf16(&piv, 1), "~piv");	R.replace(QString::fromUtf16(&sup2, 1), "~^2");	R.replace(QString::fromUtf16(&sup3, 1), "~^3");	R.replace(QString::fromUtf16(&frac14, 1), "~1/4");
 		R.replace(QString::fromUtf16(&frac12, 1), "~1/2");	R.replace(QString::fromUtf16(&frac34, 1), "~3/4");	R.replace(QString::fromUtf16(&radic, 1), "~radic");	R.replace(QString::fromUtf16(&degree, 1), "~degree");	return R;
 		/*	https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references	*/
 	}
@@ -340,7 +354,7 @@ static	QString reformBack(QString R)
 		R.replace(QString::fromUtf16(&pi, 1), "~pi");	R.replace(QString::fromUtf16(&rho, 1), "~rho");	R.replace(QString::fromUtf16(&sigmaf, 1), "~sigmaf");	R.replace(QString::fromUtf16(&sigma, 1), "~sigma");
 		R.replace(QString::fromUtf16(&tau, 1), "~tau");	R.replace(QString::fromUtf16(&upsilon, 1), "~upsilon");	R.replace(QString::fromUtf16(&phi, 1), "~phi");	R.replace(QString::fromUtf16(&chi, 1), "~chi");
 		R.replace(QString::fromUtf16(&psi, 1), "~psi");	R.replace(QString::fromUtf16(&omega, 1), "~omega");	R.replace(QString::fromUtf16(&thetasym, 1), "~thetasym");	R.replace(QString::fromUtf16(&upsih, 1), "~upsih");
-		R.replace(QString::fromUtf16(&piv, 1), "~piv");	R.replace(QString::fromUtf16(&sup2, 1), "~^2");	R.replace(QString::fromUtf16(&sup3, 1), "~^3");	R.replace(QString::fromUtf16(&frac14, 1), "~1/4");
+        R.replace(QString::fromUtf16(&piv, 1), "~piv");	R.replace(QString::fromUtf16(&sup2, 1), "~^2");	R.replace(QString::fromUtf16(&sup3, 1), "~^3");	R.replace(QString::fromUtf16(&frac14, 1), "~1/4");
 		R.replace(QString::fromUtf16(&frac12, 1), "~1/2");	R.replace(QString::fromUtf16(&frac34, 1), "~3/4");	R.replace(QString::fromUtf16(&radic, 1), "~radic");	R.replace(QString::fromUtf16(&degree, 1), "~degree");	return R;
 		/*	https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references	*/
 	}

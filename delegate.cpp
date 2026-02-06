@@ -130,12 +130,29 @@ QWidget *Delegate::createEditor(QWidget *parent,
     {
         // Check if this browser has units (indicates timeseries data)
         QStringList unitsList = index.data(CustomRoleCodes::Role::UnitsListRole).toStringList();
-
         if (!unitsList.isEmpty())
         {
             // Create TimeSeriesTextBox for timeseries with units
             TimeSeriesTextBox *editor = new TimeSeriesTextBox(option, parent);
-            editor->setUnitsList(unitsList);
+
+            // Reform units to display with superscripts (m^3 → m³)
+            QStringList reformedUnits;
+            for (QString unit : unitsList)
+            {
+                qDebug() << "Original unit:" << unit;
+
+                // Replace ^ with ~^ so XString::reform() can convert to superscript
+                unit.replace("^", "~^");
+                qDebug() << "After replace:" << unit;
+
+                QString reformed = XString::reform(unit);
+                qDebug() << "After reform:" << reformed;
+
+                reformedUnits << reformed;
+            }
+            qDebug() << "Reformed units list:" << reformedUnits;
+
+            editor->setUnitsList(reformedUnits);
             editor->setText(index.data().toString());
             if (mainwindow && mainwindow->GetWorkingFolder())
                 editor->setWorkingFolder(*mainwindow->GetWorkingFolder());
@@ -143,10 +160,8 @@ QWidget *Delegate::createEditor(QWidget *parent,
             // IMPORTANT: Connect the fileSelected signal to immediately update the model
             connect(editor, &TimeSeriesTextBox::fileSelected, this, [this, editor, index](const QString &filename) {
                 qDebug() << "fileSelected signal received:" << filename;
-
                 // Get the model from the index
                 QAbstractItemModel *model = const_cast<QAbstractItemModel*>(index.model());
-
                 if (filename.isEmpty())
                 {
                     // Clear the file
@@ -159,11 +174,9 @@ QWidget *Delegate::createEditor(QWidget *parent,
                     qDebug() << "Loading file...";
                     model->setData(index, filename, CustomRoleCodes::Role::loadIndex);
                 }
-
                 mainwindow->SetActiveUndo();
                 mainwindow->AddStatetoUndoData();
             });
-
             return editor;
         }
         else
@@ -302,7 +315,6 @@ void Delegate::setEditorData(QWidget *editor,
         {
             // Handle TimeSeriesTextBox
             QString displayText = index.model()->data(index, Qt::DisplayRole).toString();
-
             qDebug() << "setEditorData - displayText:" << displayText;
 
             // Split filename and unit if they're combined (format: "filename [unit]")
@@ -318,21 +330,37 @@ void Delegate::setEditorData(QWidget *editor,
             }
 
             qDebug() << "setEditorData - extracted filename:" << filename;
-
             tsTextBox->setText(filename);  // Set ONLY the filename, not the unit
-            tsTextBox->setUnitsList(index.model()->data(index, CustomRoleCodes::Role::UnitsListRole).toStringList());
 
-            // Set current unit if available
+            // Get units list from model and REFORM them
+            QStringList unitsList = index.model()->data(index, CustomRoleCodes::Role::UnitsListRole).toStringList();
+            QStringList reformedUnits;
+            for (QString unit : unitsList)
+            {
+                unit.replace("^", "~^");
+                reformedUnits << XString::reform(unit);
+            }
+            tsTextBox->setUnitsList(reformedUnits);
+
+            // Set current unit if available - REFORM IT
             QString currentUnit = index.model()->data(index, CustomRoleCodes::Role::UnitRole).toString();
             qDebug() << "setEditorData - currentUnit:" << currentUnit;
-
             if (!currentUnit.isEmpty())
+            {
+                currentUnit.replace("^", "~^");
+                currentUnit = XString::reform(currentUnit);
+                qDebug() << "setEditorData - reformed currentUnit:" << currentUnit;
                 tsTextBox->setUnit(currentUnit);
+            }
 
-            // Set default unit
+            // Set default unit - REFORM IT
             QString defaultUnit = index.model()->data(index, CustomRoleCodes::Role::defaultUnitRole).toString();
             if (!defaultUnit.isEmpty())
+            {
+                defaultUnit.replace("^", "~^");
+                defaultUnit = XString::reform(defaultUnit);
                 tsTextBox->setDefaultUnit(defaultUnit);
+            }
 
             tsTextBox->show();
             return;
@@ -341,7 +369,38 @@ void Delegate::setEditorData(QWidget *editor,
         {
             // Handle regular QPushButton
             QPushButton *pushButton = static_cast<QPushButton*>(editor);
-            pushButton->setText(index.data().toString());
+
+            // Get display text and reform any units in it
+            QString displayText = index.data().toString();
+            qDebug() << "QPushButton displayText:" << displayText;
+
+            // Check if there's a unit in brackets
+            int bracketStart = displayText.indexOf('[');
+            if (bracketStart != -1)
+            {
+                int bracketEnd = displayText.indexOf(']', bracketStart);
+                if (bracketEnd != -1)
+                {
+                    // Extract and reform the unit
+                    QString filename = displayText.left(bracketStart).trimmed();
+                    QString unit = displayText.mid(bracketStart + 1, bracketEnd - bracketStart - 1);
+
+                    qDebug() << "Extracted unit:" << unit;
+
+                    // Reform the unit (m^3 → m³)
+                    unit.replace("^", "~^");
+                    qDebug() << "After replace:" << unit;
+
+                    unit = XString::reform(unit);
+                    qDebug() << "After reform:" << unit;
+
+                    // Reconstruct the display text
+                    displayText = filename + " [" + unit + "]";
+                    qDebug() << "Final displayText:" << displayText;
+                }
+            }
+
+            pushButton->setText(displayText);
             index.model()->data(index, CustomRoleCodes::Role::saveIndex);
             if (delegateType.contains("Browser_Save"))
                 QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(browserSaveClicked()));
@@ -460,21 +519,23 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
         if (tsTextBox)
         {
             qDebug() << "=== setModelData for TimeSeriesTextBox ===";
-
             QString newFilename = tsTextBox->text();
             QString newUnit = tsTextBox->unit();
-
             qDebug() << "New filename from widget:" << newFilename;
-            qDebug() << "New unit from widget:" << newUnit;
+            qDebug() << "New unit from widget (reformed):" << newUnit;
+
+            // UNREFORM the unit before saving to model (m³ → m^3)
+            QString unreformedUnit = XString::reformBack(newUnit);
+            qDebug() << "Unreformed unit to save:" << unreformedUnit;
 
             bool dataChanged = false;
 
             // Set unit FIRST, before loading/clearing the file
             QString oldUnit = model->data(index, CustomRoleCodes::Role::UnitRole).toString();
-            if (oldUnit != newUnit && !newUnit.isEmpty())
+            if (oldUnit != unreformedUnit && !unreformedUnit.isEmpty())
             {
-                qDebug() << "Setting unit from" << oldUnit << "to" << newUnit;
-                if (model->setData(index, newUnit, CustomRoleCodes::Role::UnitRole))
+                qDebug() << "Setting unit from" << oldUnit << "to" << unreformedUnit;
+                if (model->setData(index, unreformedUnit, CustomRoleCodes::Role::UnitRole))  // Save UNREFORMED
                 {
                     dataChanged = true;
                 }
@@ -482,10 +543,9 @@ void Delegate::setModelData(QWidget *editor, QAbstractItemModel *model,
 
             // Handle filename change (including clearing to empty)
             QString oldFilename = model->data(index, Qt::DisplayRole).toString().split('[')[0].trimmed();
-            if (oldFilename != newFilename)  // REMOVED the !newFilename.isEmpty() check
+            if (oldFilename != newFilename)
             {
                 qDebug() << "Setting filename from" << oldFilename << "to" << newFilename;
-
                 if (newFilename.isEmpty())
                 {
                     // Clear the timeseries

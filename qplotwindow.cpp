@@ -753,7 +753,8 @@ void QPlotWindow::SetQuantity(Quan* quan)
     for (QString unit : unitsList)
     {
         // Replace ^ with ~^ so XString::reform() can convert to superscript
-        unit.replace("^", "~^");
+        if (!unit.contains("~^"))
+            unit.replace("^", "~^");
         reformedUnits << XString::reform(unit);
     }
     unitSelector->addItems(reformedUnits);
@@ -796,6 +797,9 @@ void QPlotWindow::SetQuantity(Quan* quan)
 void QPlotWindow::convertAndUpdatePlot(const QString& new_unit)
 {
     qDebug() << "=== convertAndUpdatePlot called ===";
+    qDebug() << "=== convertAndUpdatePlot called ===";
+    qDebug() << "  new_unit parameter:" << new_unit;
+    qDebug() << "  new_unit contains ~:" << new_unit.contains("~");
 
     if (!quantity || original_timeseriesset_SI.size() == 0)
         return;

@@ -15,7 +15,8 @@
       "description": "Storage",
       "initial_value_expression": "area*(piezometric_head-base_elevation)*specific_yield",
       "ask_user": "false",
-      "estimate": "true"
+      "estimate": "true",
+      "unit": "m^3;ft^3"
     },
     "Precipitation": {
       "type": "source",
@@ -23,22 +24,25 @@
       "description": "precipitation time series",
       "ask_user": "true",
       "delegate": "ComboBox;Sources",
-      "helptext": "precipitation time series"
+      "helptext": "precipitation time series",
+      "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "recharge": {
       "type": "expression",
       "expression": "recharge_per_area*area",
       "description": "Total recharge",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "recharge_per_area": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Recharge per unit area [m/day]",
+      "description": "Recharge per unit area",
       "ask_user": "true",
       "delegate": "Browser",
-      "helptext": "Recharge per unit area [m/day]"
+      "helptext": "Recharge per unit area",
+      "unit": "m/day;ft/day;ft/s"
     },
     "hydraulic_conductivity": {
       "type": "value",
@@ -57,7 +61,8 @@
       "expression": "hydraulic_conductivity",
       "description": "Hydraulic conductivity",
       "ask_user": "false",
-      "includeinoutput": "false"
+      "includeinoutput": "false",
+      "unit": "m/day;ft/day;ft/s;cm/day"
     },
     "porosity": {
       "type": "value",
@@ -103,7 +108,8 @@
       "expression": "piezometric_head-base_elevation",
       "description": "Water depth",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "area": {
       "type": "value",
@@ -160,7 +166,8 @@
       "expression": "0.25*(hydraulic_conductivity.s+hydraulic_conductivity.e)*(piezometric_head.s-piezometric_head.e)*width*(depth.s+depth.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "Darcy flux": {
       "type": "expression",
@@ -168,7 +175,8 @@
       "expression": "0.5*(hydraulic_conductivity.s+hydraulic_conductivity.e)*(piezometric_head.s-piezometric_head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s"
     },
     "helptext": "Unconfined Aquifer link"
   },
@@ -214,7 +222,8 @@
       "expression": "hydraulic_conductivity.s*(piezometric_head.s-head.e)*width*depth.s/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "Darcy flux": {
       "type": "expression",
@@ -222,7 +231,8 @@
       "expression": "hydraulic_conductivity.s*(piezometric_head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s"
     },
     "helptext": "Unconfined Groundwater to fixed head"
   },
@@ -279,7 +289,8 @@
       "expression": "area*hydraulic_conductivity*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "helptext": "Surface water to unconfined groundwater link"
   },
@@ -299,27 +310,31 @@
       "description": "Storage",
       "initial_value_expression": "0.25*3.141521*diameter*diameter*depth",
       "ask_user": "false",
-      "estimate": "true"
+      "estimate": "true",
+      "unit": "m^3;ft^3"
     },
     "pumping_rate": {
       "type": "timeseries",
       "includeinoutput": "true",
-      "description": "Pumping rate time series [m~^3/d]",
+      "description": "Pumping rate time series",
       "ask_user": "true",
       "delegate": "Browser",
-      "helptext": "Pumping rate time series [m~^3/d]"
+      "helptext": "Pumping rate time series",
+      "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "pumping_rate_exp": {
       "type": "expression",
       "expression": "-pumping_rate*_pos(depth)/(_pos(depth)+0.1)",
       "includeinoutput": "true",
-      "description": "- Actual pumping rate [m~^3/d]"
+      "description": "- Actual pumping rate",
+      "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "head": {
       "type": "expression",
       "includeinoutput": "true",
       "description": "Hydraulic head in the well",
-      "expression": "bottom_elevation+depth"
+      "expression": "bottom_elevation+depth",
+      "unit": "m;ft"
     },
     "depth": {
       "type": "expression",
@@ -365,7 +380,8 @@
       "expression": "pumping_rate.e*_pos(piezometric_head.s-bottom_elevation.e)/(0.1+_pos(piezometric_head.s-bottom_elevation.e))",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     },
     "helptext": "Unconfined Aquifer to Well connector for (fixed withdrawal)"
   },
@@ -382,7 +398,8 @@
       "expression": "3.141521*(depth.s+depth.e)*(piezometric_head.s-head.e)/(_log(_sqr(area.s)/diameter.e))",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "helptext": "Unconfined Aquifer to Well connector (pumped withdrawal)"
   }
