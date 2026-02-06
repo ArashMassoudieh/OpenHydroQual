@@ -2651,21 +2651,35 @@ void MainWindow::loadresults()
             tr("Open"), "",
             tr("Output files (*.txt);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
-    TimeSeriesSet<double> outputs(fileName.toStdString(),true);
-    TimeSeriesSet<double> past_output = system.GetOutputs();
-    system.GetOutputs() = outputs;
-    if (!system.SetLoadedOutputItems())
-    {   system.GetOutputs()=past_output;
-        QMessageBox::critical(this, "Output file not correct!", "The file does not contains the results of the model",QMessageBox::Ok);
-    }
-	else
-    {	QMessageBox::information(this, "Output file loaded!", "Output file loaded successfully!", QMessageBox::Ok);
-        ui->actionVisualize->setEnabled(true);
-        actionviz->setEnabled(true);
-    }
-    
+    QApplication::setOverrideCursor(Qt::WaitCursor);
 
+    try {
+        TimeSeriesSet<double> outputs(fileName.toStdString(), true);
+        TimeSeriesSet<double> past_output = system.GetOutputs();
+        system.GetOutputs() = outputs;
 
+        if (!system.SetLoadedOutputItems())
+        {
+            system.GetOutputs() = past_output;
+            QApplication::restoreOverrideCursor();  // Restore before dialog
+            QMessageBox::critical(this, "Output file not correct!",
+                                  "The file does not contains the results of the model",
+                                  QMessageBox::Ok);
+        }
+        else
+        {
+            QApplication::restoreOverrideCursor();  // Restore before dialog
+            QMessageBox::information(this, "Output file loaded!",
+                                     "Output file loaded successfully!",
+                                     QMessageBox::Ok);
+            ui->actionVisualize->setEnabled(true);
+            actionviz->setEnabled(true);
+        }
+    }
+    catch (...) {
+        QApplication::restoreOverrideCursor();  // Restore on exception
+        throw;  // Re-throw
+    }
 
 }
 
