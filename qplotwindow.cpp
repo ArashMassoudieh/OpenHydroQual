@@ -797,110 +797,98 @@ void QPlotWindow::convertAndUpdatePlot(const QString& new_unit)
 {
     qDebug() << "=== convertAndUpdatePlot called ===";
 
-    if (!quantity)
-    {
-        qDebug() << "  ERROR: No quantity set";
+    if (!quantity || original_timeseriesset_SI.size() == 0)
         return;
-    }
-
-    if (original_timeseriesset_SI.size() == 0)
-    {
-        qDebug() << "  ERROR: No original data stored";
-        return;
-    }
-
-    if (original_timeseriesset_SI.size() > 1)
-    {
-        qDebug() << "  ERROR: Multiple series, unit conversion not supported";
-        return;
-    }
 
     QString default_unit = XString::reform(QString::fromStdString(quantity->DefaultUnit()));
-
-    qDebug() << "  Default unit (SI):" << default_unit;
-    qDebug() << "  New display unit:" << new_unit;
-
-    // Get conversion coefficients
     double si_coeff = XString::coefficient(XString::reformBack(default_unit));
     double display_coeff = XString::coefficient(XString::reformBack(new_unit));
 
-    qDebug() << "  SI coeff:" << si_coeff;
-    qDebug() << "  Display coeff:" << display_coeff;
-
     if (si_coeff == 0 || display_coeff == 0)
-    {
-        qDebug() << "  ERROR: Invalid coefficients!";
         return;
-    }
 
-    // Conversion factor: from SI to display unit
     double conversion_factor = si_coeff / display_coeff;
-    qDebug() << "  Conversion factor:" << conversion_factor;
 
-    // Convert the data
-    TimeSeriesSet<double> converted_data = original_timeseriesset_SI * conversion_factor;
+    // === PERFORMANCE OPTIMIZATIONS ===
 
-    qDebug() << "  AFTER CONVERSION:";
-    qDebug() << "    original_timeseriesset_SI[0].maxC():" << original_timeseriesset_SI[0].maxC();
-    qDebug() << "    converted_data[0].maxC():" << converted_data[0].maxC();
+    // 1. Disable animations
+    QChart::AnimationOptions oldAnimations = chart->animationOptions();
+    chart->setAnimationOptions(QChart::NoAnimation);
 
-    qDebug() << "  Converted data, first series max:"
-             << (converted_data.size() > 0 ? converted_data[0].maxC() : 0);
+    // 2. Block chart updates
+    chart->blockSignals(true);
 
-    // === PROPERLY CLEAR THE CHART ===
-    if (chart)
+    // 3. Hide chart view during update (prevents redraws)
+    if (chartview)
+        chartview->setUpdatesEnabled(false);
+
+    QList<QAbstractSeries*> seriesList = chart->series();
+    if (!seriesList.isEmpty())
     {
-        qDebug() << "  Clearing chart";
-
-        // Remove all series
-        chart->removeAllSeries();
-
-        // Remove and delete all axes
-        QList<QAbstractAxis*> axes = chart->axes();
-        for (QAbstractAxis* axis : axes)
+        QLineSeries* lineSeries = qobject_cast<QLineSeries*>(seriesList.first());
+        if (lineSeries)
         {
-            chart->removeAxis(axis);
-            delete axis;
-        }
+            // Block series signals too
+            lineSeries->blockSignals(true);
 
-        // Reset axis pointers
-        axisX_date = nullptr;
-        axisX_normal = nullptr;
-        axisY = nullptr;
-        axisY_log = nullptr;
+            // Build converted data
+            QVector<QPointF> convertedPoints;
+            convertedPoints.reserve(original_timeseriesset_SI[0].size());
+
+            bool allowtime = (original_timeseriesset_SI[0].maxt() > 20000);
+            double new_y_min = 1e7;
+            double new_y_max = -1e7;
+
+            for (int i = 0; i < original_timeseriesset_SI[0].size(); i++)
+            {
+                double t = original_timeseriesset_SI[0].getTime(i);
+                double convertedValue = original_timeseriesset_SI[0].getValue(i) * conversion_factor;
+                double x = allowtime ? xToDateTime(t).toMSecsSinceEpoch() : t;
+
+                convertedPoints.append(QPointF(x, convertedValue));
+
+                if (convertedValue < new_y_min) new_y_min = convertedValue;
+                if (convertedValue > new_y_max) new_y_max = convertedValue;
+            }
+
+            // Update data
+            lineSeries->replace(convertedPoints);
+            lineSeries->blockSignals(false);
+
+            // Update Y-axis
+            if (new_y_min == new_y_max)
+            {
+                new_y_min *= 0.8;
+                new_y_max *= 1.2;
+                if (new_y_max == 0) new_y_max = 1.0;
+            }
+
+            if (axisY)
+                axisY->setRange(new_y_min, new_y_max);
+            else if (axisY_log)
+                axisY_log->setRange(qMax(new_y_min, 1e-6), qMax(new_y_max, 1e-6));
+        }
     }
 
-    // Clear the timeSeries map
-    timeSeries.clear();
-
-    // Reset min/max values
-    x_min_val = 1e7;
-    x_max_val = -1e7;
-    y_min_val = 1e7;
-    y_max_val = -1e7;
-
-    // Update y-axis title
+    // Update title
     QString base_title = y_Axis_Title;
     if (base_title.contains('['))
-    {
         base_title = base_title.left(base_title.indexOf('[')).trimmed();
-    }
-    y_Axis_Title = base_title + " [" + new_unit + "]";
+    QString new_title = base_title + " [" + new_unit + "]";
 
-    qDebug() << "  New Y-axis title:" << y_Axis_Title;
+    if (axisY)
+        axisY->setTitleText(new_title);
+    else if (axisY_log)
+        axisY_log->setTitleText(new_title);
 
-    // Temporarily set current_display_unit to default so PlotData won't convert
-    QString temp_unit = current_display_unit;
-    current_display_unit = XString::reform(QString::fromStdString(quantity->DefaultUnit()));
-
-    qDebug() << "  Temporarily setting current_display_unit to:" << current_display_unit;
-    qDebug() << "  So PlotData won't convert the already-converted data";
-
-    // Re-plot with converted data (PlotData will think it's SI and won't convert)
-    PlotData(converted_data, true, "line");
-
-    // NOW set it to the actual new unit
+    y_Axis_Title = new_title;
     current_display_unit = new_unit;
+
+    // === RE-ENABLE UPDATES ===
+    chart->blockSignals(false);
+    if (chartview)
+        chartview->setUpdatesEnabled(true);
+    chart->setAnimationOptions(oldAnimations);
 
     qDebug() << "=== convertAndUpdatePlot complete ===";
 }
