@@ -791,7 +791,7 @@
     },
     "pipe_flow": {
       "type": "expression",
-      "description": "Pipe flow rate (m~^3/day)",
+      "description": "Pipe flow rate",
       "expression": "Number_of_pipes*24055.44*hz_coeff*diameter^2.63*_sgn(head.s-head.e)*_mbs(-pipe_hydraulic_gradient;0.00001)*_abs(-pipe_hydraulic_gradient)^0.54*_mon(depth.s;diameter)",
       "includeinoutput": "true",
       "applylimit": "true",
@@ -860,7 +860,7 @@
       "under_flow":
       {
       	"type": "expression",
-      	"description": "Under flow  (m~^3/day)",
+      	"description": "Under flow",
       	"expression": "-Width*Hydraulic_Conductivity*Hydraulic_Gradient*_max(depth.s;Dam_Height)",
       	"includeinoutput": "true",
       	"ask_user": "false",
@@ -869,7 +869,7 @@
       "over_flow": 
       {
       	"type": "expression",
-      	"description": "Over flow (m~^3/day)",
+      	"description": "Over flow",
       	"expression": "86400*_sqt(9.81*over_flow_depth^3)*Width*Weir_coefficient",
       	"includeinoutput": "true",
       	"ask_user": "false",
@@ -887,7 +887,7 @@
       "flow": 
       {
       	"type": "expression",
-      	"description": "Flow (m~^3/day)",
+      	"description": "Flow",
       	"expression": "under_flow + over_flow+pipe_flow",
       	"includeinoutput": "true",
       	"ask_user": "false",
