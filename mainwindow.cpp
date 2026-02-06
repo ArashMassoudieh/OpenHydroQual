@@ -335,12 +335,14 @@ void MainWindow::PlotTimeSeries()
     QString objectname = PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::ObjectName).toString();
     QString varname = PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::VariableName).toString();
 
-    if (GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries() != nullptr)
+    Quan* quan = GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString());
+
+    if (quan->GetTimeSeries() != nullptr)
     {
 #ifndef QCharts
-        Plotter* plot = Plot(*GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries());
+        Plotter* plot = Plot(*quan->GetTimeSeries());
 #else
-        QPlotWindow* plot = Plot(*GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries());
+        QPlotWindow* plot = Plot(*quan->GetTimeSeries(), quan);  // Pass the Quan object
 #endif
         plot->SetYAxisTitle(varname);
     }
@@ -1532,10 +1534,47 @@ void MainWindow::showgraph()
             QMessageBox::question(this, "Time Series is empty!", "The result for this quantity is empty!", QMessageBox::Ok);
             return;
         }
+
+        // Parse the output name: ObjectName_PropertyName
+        Quan* quan = nullptr;
+
+        QStringList parts = item.split('_');
+
+        // Try each possible split point (at least 1 part for object, 1 for property)
+        for (int i = 1; i < parts.size(); i++)
+        {
+            QString objectName = parts.mid(0, i).join('_');
+            QString quanName = parts.mid(i).join('_');
+
+            qDebug() << "Trying split:";
+            qDebug() << "  Object:" << objectName;
+            qDebug() << "  Quantity:" << quanName;
+
+            // Check if this object exists AND has this quantity
+            if (GetSystem()->object(objectName.toStdString()))
+            {
+                if (GetSystem()->object(objectName.toStdString())->HasQuantity(quanName.toStdString()))
+                {
+                    quan = GetSystem()->object(objectName.toStdString())->Variable(quanName.toStdString());
+                    qDebug() << "  ✓ Found valid object and property!";
+                    break;  // Stop at first valid match
+                }
+            }
+        }
+
+        if (!quan)
+        {
+            qDebug() << "  No valid object/property combination found";
+        }
+
 #ifndef QCharts
         Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
 #else
-        QPlotWindow* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
+        QPlotWindow* plot;
+        if (quan)
+            plot = Plot(GetSystem()->GetOutputs()[item.toStdString()], quan);
+        else
+            plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
 #endif
         plot->SetYAxisTitle(act->text());
     }
@@ -2466,6 +2505,15 @@ QPlotWindow* MainWindow::Plot(TimeSeries<timeseriesprecision>& plotitem, bool al
 {
     QPlotWindow* plotter = new QPlotWindow(this);
     plotter->PlotData(plotitem,allowtime);
+    plotter->show();
+    return plotter;
+}
+
+QPlotWindow* MainWindow::Plot(TimeSeries<timeseriesprecision>& plotitem, Quan* quan, bool allowtime)
+{
+    QPlotWindow* plotter = new QPlotWindow(this);
+    plotter->SetQuantity(quan);  // Set the Quan before plotting
+    plotter->PlotData(plotitem, allowtime);
     plotter->show();
     return plotter;
 }

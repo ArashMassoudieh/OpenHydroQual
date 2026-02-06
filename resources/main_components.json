@@ -18,7 +18,8 @@
       "description": "Initial Storage;Storage",
       "ask_user": "false",
       "initial_value_expression": "area*depth",
-      "estimate": "true"
+      "estimate": "true",
+      "unit" : "m^3;ft^3"
     },
     "inflow": {
       "type": "timeseries",
@@ -26,7 +27,7 @@
       "description": "Inflow",
       "ask_user": "true",
       "delegate": "Browser",
-      "unit": "m~^3/day;m~^3/s;ft~^3/s",
+      "unit": "m^3/day;m^3/s;ft^3/s",
       "helptext": "User-supplied inflow time series to the catchment. This could represent runoff, pipe inflow, or any other external water source."
     },
     "Precipitation": {
@@ -35,7 +36,8 @@
       "description": "Precipitation",
       "helptext": "A precipitation source object must be selected.",
       "ask_user": "true",
-      "delegate": "ComboBox;Sources"
+      "delegate": "ComboBox;Sources",
+      "unit": "m^3/day;ft^3/s"
     },
     "Precipitation_runoff": {
       "type": "expression",
@@ -43,7 +45,8 @@
       "includeinoutput": "true",
       "description": "Effective precipitation",
       "helptext": "Precipitation multiplied by runoff coefficient",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s"
     },
     "Precipitation_loss": {
       "type": "expression",
@@ -51,7 +54,8 @@
       "includeinoutput": "true",
       "description": "Precipitation loss",
       "helptext": "Precipitation loss",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s"
     },
     "Evapotranspiration": {
       "type": "source",
@@ -59,14 +63,16 @@
       "description": "Evapotranspiration",
       "helptext": "A evapotranspiration 'source' object must be selected. In order to add an evapotransporation model a plug-in containing evapotranspiration models first needed to be added to the model",
       "ask_user": "true",
-      "delegate": "ComboBox;Sources"
+      "delegate": "ComboBox;Sources",
+      "unit": "m^3/day;ft^3/s"
     },
     "loss": {
       "type": "expression",
       "expression": "-loss_coefficient*Storage",
       "includeinoutput": "true",
       "description": "Loss rate",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s"
     },
     "area": {
       "type": "value",
@@ -138,7 +144,8 @@
       "expression": "elevation+depth",
       "description": "Average water head",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "depression_storage": {
       "type": "value",
@@ -205,7 +212,8 @@
       "expression": "86400*(Width.s/ManningCoeff.s)*(Slope.s^0.5)*(_pos(depth.s-depression_storage.s)^1.666667)",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit":"m^3/day;ft^3/s"
     },
     "color": {
       "type": "string",
@@ -233,7 +241,8 @@
       "rule": {
         "Storage.s<S_min": "Q_min",
         "S_min<Storage.s<S_max": "Q_min+((Storage.s-S_min)/(S_max-S_min))*(Q_max-Q_min)",
-        "Storage.s>S_max": "Q_max"
+        "Storage.s>S_max": "Q_max",
+        "unit":"m^3/day;ft^3/s"
       },
       "includeinoutput": "true",
       "applylimit": "true",
@@ -244,7 +253,7 @@
       "default": "10",
       "description": "Minimum flow",
       "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day",
+      "unit": "m~^3/day;ft^3/day;ft^3/s",
       "ask_user": "true",
       "estimate": "true"
     },
@@ -253,7 +262,7 @@
       "default": "100",
       "description": "Maximum flow",
       "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day",
+      "unit": "m~^3/day;ft^3/day",
       "ask_user": "true",
       "estimate": "true"
     },
@@ -262,7 +271,7 @@
       "default": "10",
       "description": "Minimum storage",
       "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3",
+      "unit": "m^3;ft^3",
       "ask_user": "true",
       "estimate": "true"
     },
@@ -320,7 +329,8 @@
       "description": "Flow rate time series",
       "applylimit": "true",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit":"m^3/day;ft^3/s"
     }
   },
   "Parameter": {

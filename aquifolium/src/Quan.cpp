@@ -921,15 +921,25 @@ void Quan::Update()
 
 bool Quan::SetTimeSeries(const string& filename, bool prec)
 {
+    qDebug() << ">>> SetTimeSeries called";
+    qDebug() << "    filename:" << QString::fromStdString(filename);
+    qDebug() << "    default_unit:" << QString::fromStdString(default_unit);
+    qDebug() << "    current unit:" << QString::fromStdString(unit);
+
     if (filename.empty())
     {
         _timeseries = TimeSeries<double>();
-        _timeseries_unit = "";
+        _timeseries.setFilename("");
+        _timeseries.setUnit("");
+        _timeseries.setName("");
+        qDebug() << "    Cleared timeseries AND filename";
         return true;
     }
+
     if (!prec)
     {
         _timeseries.readfile(filename);
+
         if (_timeseries.fileNotFound)
         {
             AppendError(GetName(), "Quan", "SetTimeSeries", filename + " was not found!", 3001);
@@ -937,15 +947,57 @@ bool Quan::SetTimeSeries(const string& filename, bool prec)
         }
         else
         {
-            // After loading, timeseries is in the file's original units
-            // Convert to SI units (default_unit) for internal storage
-            ConvertTimeSeriesUnit(unit, default_unit);
-            _timeseries_unit = default_unit; // Mark as stored in SI units
+            // File data is in whatever unit is currently set
+            string file_unit = unit.empty() ? default_unit : unit;
+
+            qDebug() << "    File loaded, size:" << _timeseries.size();
+            qDebug() << "    File interpreted as:" << QString::fromStdString(file_unit);
+            if (_timeseries.size() > 0) {
+                qDebug() << "    Raw max value:" << _timeseries.maxC();
+            }
+
+            // CRITICAL: Convert from declared unit to SI (default_unit) for storage
+            if (file_unit != default_unit)
+            {
+                qDebug() << "    Converting from" << QString::fromStdString(file_unit)
+                << "to SI:" << QString::fromStdString(default_unit);
+
+                double from_coeff = XString::coefficient(QString::fromStdString(file_unit));
+                double to_coeff = XString::coefficient(QString::fromStdString(default_unit));
+                double conversion_factor = from_coeff / to_coeff;
+
+                qDebug() << "    Conversion factor:" << conversion_factor;
+
+                TimeSeries<double> converted_ts;
+                converted_ts.reserve(_timeseries.size());
+                for (const auto& pt : _timeseries)
+                {
+                    converted_ts.addPoint(pt.t, pt.c * conversion_factor, pt.d);
+                }
+                converted_ts.setStructured(_timeseries.isStructured());
+                converted_ts.setName(_timeseries.name());
+                converted_ts.setFilename(_timeseries.getFilename());
+                _timeseries = converted_ts;
+
+                if (_timeseries.size() > 0) {
+                    qDebug() << "    Converted max value:" << _timeseries.maxC();
+                }
+            }
+
+            // Data is now in SI (default_unit), but remember what unit was declared
+            _timeseries_unit = file_unit;  // Remember declared unit
+            _timeseries.setUnit(file_unit); // Store for persistence
+
+            qDebug() << "    Data stored in SI units (default_unit)";
+            qDebug() << "    Declared unit (_timeseries_unit):" << QString::fromStdString(_timeseries_unit);
+            qDebug() << "<<< SetTimeSeries done";
+
             return true;
         }
     }
     else
     {
+        // Similar for precipitation...
         CPrecipitation Prec;
         if (!CPrecipitation::isFileValid(filename))
         {
@@ -957,9 +1009,31 @@ bool Quan::SetTimeSeries(const string& filename, bool prec)
             Prec.getfromfile(filename);
             _timeseries = Prec.getflow(1)[0];
             _timeseries.setFilename(Prec.filename);
-            // Precipitation files: convert to SI units
-            ConvertTimeSeriesUnit(unit, default_unit);
-            _timeseries_unit = default_unit;
+
+            string file_unit = unit.empty() ? default_unit : unit;
+
+            // Convert to SI if needed
+            if (file_unit != default_unit)
+            {
+                double from_coeff = XString::coefficient(QString::fromStdString(file_unit));
+                double to_coeff = XString::coefficient(QString::fromStdString(default_unit));
+                double conversion_factor = from_coeff / to_coeff;
+
+                TimeSeries<double> converted_ts;
+                converted_ts.reserve(_timeseries.size());
+                for (const auto& pt : _timeseries)
+                {
+                    converted_ts.addPoint(pt.t, pt.c * conversion_factor, pt.d);
+                }
+                converted_ts.setStructured(_timeseries.isStructured());
+                converted_ts.setName(_timeseries.name());
+                converted_ts.setFilename(_timeseries.getFilename());
+                _timeseries = converted_ts;
+            }
+
+            _timeseries_unit = file_unit;
+            _timeseries.setUnit(file_unit);
+
             return true;
         }
     }
@@ -968,18 +1042,24 @@ bool Quan::SetTimeSeries(const string& filename, bool prec)
 bool Quan::ConvertTimeSeriesUnit(const string& from_unit, const string& to_unit)
 {
 #ifdef Q_GUI_SUPPORT
-    qDebug() << "ConvertTimeSeriesUnit called: from=" << QString::fromStdString(from_unit)
-             << "to=" << QString::fromStdString(to_unit);
+    qDebug() << "============================================";
+    qDebug() << "ConvertTimeSeriesUnit called";
+    qDebug() << "  Quantity name:" << QString::fromStdString(GetName());
+    qDebug() << "  from_unit:" << QString::fromStdString(from_unit);
+    qDebug() << "  to_unit:" << QString::fromStdString(to_unit);
+    qDebug() << "  Current _timeseries_unit:" << QString::fromStdString(_timeseries_unit);
+    qDebug() << "  Current unit:" << QString::fromStdString(unit);
+    qDebug() << "  default_unit:" << QString::fromStdString(default_unit);
 
     if (from_unit.empty() || to_unit.empty())
     {
-        qDebug() << "One of the units is empty, skipping conversion";
+        qDebug() << "  ERROR: One of the units is empty, skipping conversion";
         return true;
     }
 
     if (from_unit == to_unit)
     {
-        qDebug() << "Units are the same, skipping conversion";
+        qDebug() << "  Units are the same, skipping conversion";
         return true;
     }
 
@@ -987,27 +1067,27 @@ bool Quan::ConvertTimeSeriesUnit(const string& from_unit, const string& to_unit)
     double from_coeff = XString::coefficient(QString::fromStdString(from_unit));
     double to_coeff = XString::coefficient(QString::fromStdString(to_unit));
 
-    qDebug() << "from_coeff=" << from_coeff << "to_coeff=" << to_coeff;
+    qDebug() << "  from_coeff=" << from_coeff;
+    qDebug() << "  to_coeff=" << to_coeff;
 
     if (from_coeff == 0 || to_coeff == 0)
     {
-        qDebug() << "Invalid coefficient!";
+        qDebug() << "  ERROR: Invalid coefficient!";
         AppendError(GetName(), "Quan", "ConvertTimeSeriesUnit",
                     "Invalid unit conversion: " + from_unit + " to " + to_unit, 3024);
         return false;
     }
 
-    // The conversion logic:
-    // We're changing the DECLARATION of what unit the file is in
-    // stored_value = raw_file_value * declared_unit_coefficient
-    // If we change declaration, we need: new_stored = old_stored * (to_coeff / from_coeff)
-    double conversion_factor = from_coeff / to_coeff;
-
-    qDebug() << "Conversion factor=" << conversion_factor;
+    double conversion_factor = to_coeff / from_coeff;
+    qDebug() << "  Conversion factor (to_coeff/from_coeff):" << conversion_factor;
 
     if (conversion_factor != 1.0 && _timeseries.size() > 0)
     {
-        qDebug() << "Before conversion, first value=" << _timeseries.getValue(0);
+        qDebug() << "  TimeSeries size:" << _timeseries.size();
+        qDebug() << "  Before conversion:";
+        qDebug() << "    First value:" << _timeseries.getValue(0);
+        if (_timeseries.size() > 1)
+            qDebug() << "    Max value:" << _timeseries.maxC();
 
         // Manual conversion
         TimeSeries<double> converted_ts;
@@ -1022,19 +1102,19 @@ bool Quan::ConvertTimeSeriesUnit(const string& from_unit, const string& to_unit)
         converted_ts.setFilename(_timeseries.getFilename());
         _timeseries = converted_ts;
 
-        qDebug() << "After conversion, first value=" << _timeseries.getValue(0);
+        qDebug() << "  After conversion:";
+        qDebug() << "    First value:" << _timeseries.getValue(0);
+        if (_timeseries.size() > 1)
+            qDebug() << "    Max value:" << _timeseries.maxC();
     }
 
     _timeseries_unit = to_unit;
+    qDebug() << "  Updated _timeseries_unit to:" << QString::fromStdString(_timeseries_unit);
+    qDebug() << "============================================";
     return true;
 #else
     return true;
 #endif
-}
-bool Quan::SetTimeSeries(const TimeSeries<double>& timeseries)
-{
-    _timeseries = timeseries;
-    return true;
 }
 
 
@@ -1144,13 +1224,53 @@ bool Quan::SetProperty(const string& val, bool force_value, bool check_criteria)
             SetTimeSeries("");
             return true;
         }
+
+        // Parse unit from format: "filename [unit]"
+        string filename = val;
+        string file_unit = "";
+
+        size_t bracket_start = val.find('[');
+        size_t bracket_end = val.find(']');
+
+        if (bracket_start != string::npos && bracket_end != string::npos && bracket_end > bracket_start)
+        {
+            // Extract filename (everything before '[')
+            filename = val.substr(0, bracket_start);
+            filename = aquiutils::trim(filename);
+
+            // Extract unit (everything between '[' and ']')
+            file_unit = val.substr(bracket_start + 1, bracket_end - bracket_start - 1);
+
+#ifdef Q_GUI_SUPPORT
+            qDebug() << "Parsed from saved file:";
+            qDebug() << "  Full value:" << QString::fromStdString(val);
+            qDebug() << "  Extracted filename:" << QString::fromStdString(filename);
+            qDebug() << "  Extracted unit:" << QString::fromStdString(file_unit);
+#endif
+        }
+
+        // Set the unit FIRST (before loading file)
+        if (!file_unit.empty())
+        {
+            unit = file_unit;
+#ifdef Q_GUI_SUPPORT
+            qDebug() << "Set unit to:" << QString::fromStdString(unit);
+#endif
+        }
+        else if (unit.empty())
+        {
+            // No unit specified in file, and unit not already set, use default
+            unit = default_unit;
+        }
+
+        // Then load the file with the correct unit
         if (!parent->Parent())
-            return SetTimeSeries(val);
+            return SetTimeSeries(filename);
         else if (!parent->Parent()->InputPath().empty() &&
-                 aquiutils::FileExists(parent->Parent()->InputPath() + val))
-            return SetTimeSeries(parent->Parent()->InputPath() + val);
+                 aquiutils::FileExists(parent->Parent()->InputPath() + filename))
+            return SetTimeSeries(parent->Parent()->InputPath() + filename);
         else
-            return SetTimeSeries(val);
+            return SetTimeSeries(filename);
     }
 
     if (type == _type::prec_timeseries)
@@ -1160,16 +1280,55 @@ bool Quan::SetProperty(const string& val, bool force_value, bool check_criteria)
             SetTimeSeries("");
             return false;
         }
+
+        // Parse unit from format: "filename [unit]"
+        string filename = val;
+        string file_unit = "";
+
+        size_t bracket_start = val.find('[');
+        size_t bracket_end = val.find(']');
+
+        if (bracket_start != string::npos && bracket_end != string::npos && bracket_end > bracket_start)
+        {
+            // Extract filename (everything before '[')
+            filename = val.substr(0, bracket_start);
+            filename = aquiutils::trim(filename);
+
+            // Extract unit (everything between '[' and ']')
+            file_unit = val.substr(bracket_start + 1, bracket_end - bracket_start - 1);
+
+#ifdef Q_GUI_SUPPORT
+            qDebug() << "Parsed precipitation file:";
+            qDebug() << "  Full value:" << QString::fromStdString(val);
+            qDebug() << "  Extracted filename:" << QString::fromStdString(filename);
+            qDebug() << "  Extracted unit:" << QString::fromStdString(file_unit);
+#endif
+        }
+
+        // Set the unit FIRST (before loading file)
+        if (!file_unit.empty())
+        {
+            unit = file_unit;
+#ifdef Q_GUI_SUPPORT
+            qDebug() << "Set unit to:" << QString::fromStdString(unit);
+#endif
+        }
+        else if (unit.empty())
+        {
+            unit = default_unit;
+        }
+
+        // Then load the file with the correct unit
         if (parent->Parent() != nullptr)
         {
             if (!parent->Parent()->InputPath().empty() &&
-                aquiutils::FileExists(parent->Parent()->InputPath() + val))
-                return SetTimeSeries(parent->Parent()->InputPath() + val, true);
+                aquiutils::FileExists(parent->Parent()->InputPath() + filename))
+                return SetTimeSeries(parent->Parent()->InputPath() + filename, true);
             else
-                return SetTimeSeries(val, true);
+                return SetTimeSeries(filename, true);
         }
         else
-            return SetTimeSeries(val, true);
+            return SetTimeSeries(filename, true);
     }
 
     if (type == _type::source)
@@ -1177,19 +1336,16 @@ bool Quan::SetProperty(const string& val, bool force_value, bool check_criteria)
         sourcename = val;
         return SetSource(val);
     }
-
     if (type == _type::expression)
     {
         _expression = val;
         return SetExpression(val);
     }
-
     if (type == _type::rule)
     {
         AppendError(GetName(), "Quan", "SetProperty", "Rule cannot be set during runtime", 3011);
         return false;
     }
-
     if (type == _type::string)
     {
         bool outcome = true;
@@ -1206,7 +1362,6 @@ bool Quan::SetProperty(const string& val, bool force_value, bool check_criteria)
         else
             return false;
     }
-
     if (type == _type::boolean)
     {
         if (val == "1")
@@ -1214,7 +1369,6 @@ bool Quan::SetProperty(const string& val, bool force_value, bool check_criteria)
         else
             SetVal(0, Expression::timing::both, check_criteria);
     }
-
     _string_value = val;
     return SetVal(aquiutils::atof(val), Expression::timing::both, check_criteria);
 }

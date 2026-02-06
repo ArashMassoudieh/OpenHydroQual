@@ -17,6 +17,7 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QMessageBox>
+#include <QFileInfo>
 
 TimeSeriesTextBox::TimeSeriesTextBox(const QStyleOptionViewItem &option, QWidget *parent)
     : QWidget(parent), Rect(option.rect)
@@ -32,32 +33,32 @@ TimeSeriesTextBox::TimeSeriesTextBox(const QStyleOptionViewItem &option, QWidget
     layout->setSpacing(2);
     layout->setSizeConstraint(QLayout::SetMaximumSize);
 
-    // File path display
-    filePathEdit = new QLineEdit(this);
-    filePathEdit->setReadOnly(true);
-    filePathEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // Browse button (also displays filename)
+    browseButton = new QPushButton("Browse...", this);
+    browseButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    // Browse button
-    browseButton = new QPushButton("...", this);
-    browseButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-    browseButton->setMaximumWidth(30);
+    // Clear button (small X)
+    clearButton = new QPushButton("×", this);
+    clearButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+    clearButton->setMaximumWidth(25);
+    clearButton->setVisible(false);  // Hidden initially
 
     // Unit dropdown
     unitBox = new QComboBox(this);
     unitBox->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
     unitBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
-    layout->addWidget(filePathEdit, 3);  // Give more space to file path
-    layout->addWidget(browseButton, 0);
+    layout->addWidget(browseButton, 3);
+    layout->addWidget(clearButton, 0);
     layout->addWidget(unitBox, 1);
 
     connect(browseButton, &QPushButton::clicked, this, &TimeSeriesTextBox::onBrowseClicked);
+    connect(clearButton, &QPushButton::clicked, this, &TimeSeriesTextBox::onClearClicked);
     connect(unitBox, QOverload<const QString &>::of(&QComboBox::currentTextChanged),
             this, &TimeSeriesTextBox::unitChanged);
 
     show();
 }
-
 TimeSeriesTextBox::~TimeSeriesTextBox()
 {
     // Qt handles cleanup of child widgets
@@ -65,7 +66,26 @@ TimeSeriesTextBox::~TimeSeriesTextBox()
 
 void TimeSeriesTextBox::setText(const QString &filename)
 {
-    filePathEdit->setText(filename);
+    m_filename = filename;
+    if (filename.isEmpty())
+    {
+        browseButton->setText("Browse...");
+        clearButton->setVisible(false);
+    }
+    else
+    {
+        QFileInfo fileInfo(filename);
+        browseButton->setText(fileInfo.fileName());
+        clearButton->setVisible(true);  // Show clear button when file is loaded
+    }
+}
+
+void TimeSeriesTextBox::onClearClicked()
+{
+    m_filename = "";
+    browseButton->setText("Browse...");
+    clearButton->setVisible(false);
+    emit fileSelected("");  // Emit empty filename to trigger clearing
 }
 
 void TimeSeriesTextBox::setUnit(const QString &unit)
@@ -91,7 +111,7 @@ void TimeSeriesTextBox::setWorkingFolder(const QString &folder)
 
 QString TimeSeriesTextBox::text() const
 {
-    return filePathEdit->text();
+    return m_filename;  // Return the full path, not the button text
 }
 
 QString TimeSeriesTextBox::unit() const
@@ -152,7 +172,9 @@ void TimeSeriesTextBox::onBrowseClicked()
     {
         if (QFile::exists(fileName))
         {
-            filePathEdit->setText(fileName);
+            m_filename = fileName;
+            QFileInfo fileInfo(fileName);
+            browseButton->setText(fileInfo.fileName());
             emit fileSelected(fileName);
         }
         else

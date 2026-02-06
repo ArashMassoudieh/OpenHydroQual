@@ -15,7 +15,8 @@
       "description": "Storage",
       "initial_value_expression": "length*(base_width+side_slope*depth)*depth",
       "ask_user": "false",
-      "estimate": "true"
+      "estimate": "true",
+      "unit": "m^3;ft^3"
     },
     "base_width": {
       "type": "value",
@@ -65,14 +66,16 @@
       "includeinoutput": "true",
       "criteria": "depth>-0.0000001",
       "warningmessage": "Depth must be non-negative",
-      "helptext": "Depth of water in the channel segment. If depth is initially unknown, it is estimated based on storage."
+      "helptext": "Depth of water in the channel segment. If depth is initially unknown, it is estimated based on storage.",
+      "unit": "m;ft"
     },
     "head": {
       "type": "expression",
       "expression": "depth+bottom_elevation",
       "description": "Hydraulic Head",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "length": {
       "type": "value",
@@ -89,21 +92,24 @@
       "expression": "_pos((base_width+side_slope*depth)*depth-dam_area)",
       "description": "Cross-sectional area",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2"
     },
     "dam_area": {
       "type": "expression",
       "expression": "(base_width+side_slope*dam_height)*_pos(dam_height)",
       "description": "Obstacle cross-sectional area",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2"
     },
     "perimeter": {
       "type": "expression",
       "expression": "base_width+2*_sqt(1+side_slope^2)*depth",
       "description": "Wetted Perimeter",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "inflow": {
       "type": "timeseries",
@@ -111,7 +117,8 @@
       "applylimit": "true",
       "description": "Inflow time series",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     },
     "ag_area": {
       "type": "value",
@@ -231,14 +238,16 @@
       "description": "Water Depth",
       "ask_user": "true",
       "delegate": "Browser",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "head": {
       "type": "expression",
       "expression": "depth+bottom_elevation",
       "description": "Hydraulic Head",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "length": {
       "type": "value",
@@ -255,21 +264,24 @@
       "expression": "_pos((base_width+side_slope*depth)*depth-dam_area)",
       "description": "Cross-sectional area",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2"
     },
     "dam_area": {
       "type": "expression",
       "expression": "(base_width+side_slope*dam_height)*_pos(dam_height)",
       "description": "Obstacle cross-sectional area",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2"
     },
     "perimeter": {
       "type": "expression",
       "expression": "base_width+2*_sqt(1+side_slope^2)*depth",
       "description": "Wetted Perimeter",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "inflow": {
       "type": "timeseries",
@@ -277,7 +289,8 @@
       "applylimit": "true",
       "description": "Inflow time series",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m^3/day;ft^3/s;m^3/s"
     },
     "ag_area": {
       "type": "value",
@@ -348,21 +361,24 @@
       "description": "Cross-sectional area",
       "expression": "_max(_bkw(head;area);0)",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
     },
     "perimeter": {
       "type": "expression",
       "description": "Wetted Perimeter",
       "expression": "(perimeter.s+perimeter.e)/2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "hydraulic_radious": {
       "type": "expression",
       "description": "Hydraulic Radius",
       "expression": "area/perimeter",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "ManningCoeff": {
       "type": "expression",
@@ -384,15 +400,17 @@
       "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     },
     "velocity": {
       "type": "expression",
-      "description": "Velocity (m/s)",
+      "description": "Velocity",
       "expression": "flow/area/86400",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
     }
   },
   "Fixedhead_to_channel": {
@@ -413,34 +431,37 @@
       "description": "Cross-sectional area",
       "expression": "(base_width.e+side_slope.e*_pos(head.s-bottom_elevation.e))*_pos(head.s-bottom_elevation.e)",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
     },
     "perimeter": {
       "type": "expression",
       "description": "Wetted Perimeter",
       "expression": "base_width.e+2*_sqt(1+side_slope.e^2)*_pos(head.s-bottom_elevation.e)",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "hydraulic_radious": {
       "type": "expression",
       "description": "Hydraulic Radius",
       "expression": "area/perimeter",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "ManningCoeff": {
       "type": "expression",
       "description": "Manning's roughness coefficient",
       "expression": "ManningCoeff.e",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "false"
     },
     "length": {
       "type": "expression",
       "description": "Connector length",
       "expression": "length.e",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "false"
     },
     "flow": {
@@ -449,7 +470,8 @@
       "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s"
     }
   },
   "channel2fixed": {
@@ -470,35 +492,39 @@
       "description": "Cross-sectional area",
       "expression": "_max(area.s;0)",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
     },
     "perimeter": {
       "type": "expression",
       "description": "Wetted Perimeter",
       "expression": "perimeter.s",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "hydraulic_radious": {
       "type": "expression",
       "description": "Hydraulic Radius",
       "expression": "area/perimeter",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "ManningCoeff": {
       "type": "expression",
       "description": "Manning's roughness coefficient",
       "expression": "ManningCoeff.s",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "false"
     },
     "length": {
       "type": "expression",
       "description": "Connector length",
       "expression": "length.s",
-      "includeinoutput": "true",
-      "ask_user": "false"
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "flow": {
       "type": "expression",
@@ -506,7 +532,8 @@
       "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
     }
   },
   "Sewer_channel_segment": {
@@ -525,7 +552,8 @@
       "description": "Storage",
       "initial_value_expression": "length*diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
       "ask_user": "false",
-      "estimate": "true"
+      "estimate": "true",
+      "unit": "m^3;ft^3"
     },
     "ManningCoeff": {
       "type": "value",
@@ -562,7 +590,8 @@
       "unit": "m;ft;cm",
       "includeinoutput": "true",
       "criteria": "depth>-0.0000001",
-      "warningmessage": "Depth must be non-negative"
+      "warningmessage": "Depth must be non-negative",
+      "unit": "m;ft"
     },
     "normalized_area": {
       "type": "expression",
@@ -581,7 +610,8 @@
       "expression": "depth+bottom_elevation+_pos(depth-diameter)*10000",
       "description": "Hydraulic Head",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "length": {
       "type": "value",
@@ -598,14 +628,16 @@
       "expression": "diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
       "description": "Cross-sectional area",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2"
     },
     "perimeter": {
       "type": "expression",
       "expression": "diameter*(5.486583*(depth/diameter)^3-8.60202*(depth/diameter)^2+6.1081605*(depth/diameter))",
       "description": "Wetted Perimeter",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "inflow": {
       "type": "timeseries",
@@ -613,7 +645,8 @@
       "applylimit": "true",
       "description": "Inflow time series",
       "ask_user": "true",
-      "delegate": "Browser"
+      "delegate": "Browser",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     }
   }
 }

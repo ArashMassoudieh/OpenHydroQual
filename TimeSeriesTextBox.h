@@ -16,7 +16,6 @@
 #pragma once
 
 #include <QWidget>
-#include <QLineEdit>
 #include <QPushButton>
 #include <QComboBox>
 #include <QHBoxLayout>
@@ -48,15 +47,17 @@ public:
     QRect rect() const;
 
 private:
-    QLineEdit *filePathEdit = nullptr;
     QPushButton *browseButton = nullptr;
     QComboBox *unitBox = nullptr;
+    QPushButton *clearButton = nullptr;
     QRect Rect;
     QString m_defaultUnit;
     QString m_workingFolder;
+    QString m_filename;  // Store the full filename path
 
 private slots:
     void onBrowseClicked();
+    void onClearClicked();
 
 signals:
     void fileSelected(const QString &filename);

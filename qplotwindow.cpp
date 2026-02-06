@@ -17,6 +17,7 @@
 #include "qplotwindow.h"
 #include "ui_qplotwindow.h"
 #include "chartview.h"
+#include "XString.h"
 
 #include "mainwindow.h"
 
@@ -66,10 +67,74 @@ QPlotWindow::~QPlotWindow()
 
 bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseries, bool allowtime, string style)
 {
-    x_min_val = timeseries.mint();
-    x_max_val = timeseries.maxt();
-    y_min_val = timeseries.minC();
-    y_max_val = timeseries.maxC();
+    qDebug() << "=== PlotData (TimeSeries) called ===";
+    qDebug() << "  TimeSeries size:" << timeseries.size();
+
+    // === STORE ORIGINAL SI DATA ===
+    if (quantity && !original_data_stored)  // CHANGED: use flag instead of size check
+    {
+        qDebug() << "  Storing original SI data (TimeSeries as TimeSeriesSet)";
+        // Convert TimeSeries to TimeSeriesSet for storage
+        original_timeseriesset_SI = TimeSeriesSet<double>();
+        original_timeseriesset_SI.append(timeseries, timeseries.name());
+        original_data_stored = true;  // SET FLAG
+        qDebug() << "  Stored, original_timeseriesset_SI.size():" << original_timeseriesset_SI.size();
+    }
+
+    // === CONVERT DATA IF NEEDED ===
+    TimeSeries<outputtimeseriesprecision> data_to_plot = timeseries;
+
+    if (quantity && !current_display_unit.isEmpty())
+    {
+        QString default_unit = XString::reform(QString::fromStdString(quantity->DefaultUnit()));
+
+        qDebug() << "  Quantity set:";
+        qDebug() << "    Default unit (SI):" << default_unit;
+        qDebug() << "    Display unit:" << current_display_unit;
+
+        if (current_display_unit != default_unit)
+        {
+            qDebug() << "    Converting data";
+
+            double si_coeff = XString::coefficient(XString::reformBack(default_unit));
+            double display_coeff = XString::coefficient(XString::reformBack(current_display_unit));
+
+            qDebug() << "    SI coeff:" << si_coeff;
+            qDebug() << "    Display coeff:" << display_coeff;
+
+            if (si_coeff != 0 && display_coeff != 0)
+            {
+                double conversion_factor = si_coeff / display_coeff;
+                qDebug() << "    Conversion factor:" << conversion_factor;
+
+                // Convert single TimeSeries
+                data_to_plot = TimeSeries<outputtimeseriesprecision>();
+                data_to_plot.reserve(timeseries.size());
+                for (const auto& pt : timeseries)
+                {
+                    data_to_plot.addPoint(pt.t, pt.c * conversion_factor, pt.d);
+                }
+                data_to_plot.setStructured(timeseries.isStructured());
+                data_to_plot.setName(timeseries.name());
+
+                qDebug() << "    Converted, max value:" << data_to_plot.maxC();
+            }
+        }
+
+        // Update y-axis title
+        QString base_title = y_Axis_Title;
+        if (base_title.contains('['))
+        {
+            base_title = base_title.left(base_title.indexOf('[')).trimmed();
+        }
+        y_Axis_Title = base_title + " [" + current_display_unit + "]";
+        qDebug() << "    Y-axis title:" << y_Axis_Title;
+    }
+
+    x_min_val = data_to_plot.mint();
+    x_max_val = data_to_plot.maxt();
+    y_min_val = data_to_plot.minC();
+    y_max_val = data_to_plot.maxC();
     if (y_min_val==y_max_val)
     {
         y_min_val*=0.8;
@@ -79,9 +144,8 @@ bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseri
     }
     if (x_max_val<20000)
         allowtime = false;
+
 #ifndef Qt6
-    //QDateTime _date = QDateTime::fromSecsSinceEpoch(xtoTime(25569),QTimeZone::utc());
-    //QDateTime _date2 = QDateTime::fromSecsSinceEpoch(0);
     start = xToDateTime(x_min_val);
     end = xToDateTime(x_max_val);
 #else
@@ -97,7 +161,8 @@ bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseri
     axisX_normal->setTickCount(10);
     axisX_date->setTickCount(10);
     if (!allowtime)
-    {   axisX_normal->setTitleText("X");
+    {
+        axisX_normal->setTitleText("X");
         chart->addAxis(axisX_normal, Qt::AlignBottom);
         axisX_normal->setObjectName("axisX_normal");
         axisX_normal->setTitleText(xAxisTitle);
@@ -131,19 +196,18 @@ bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseri
         chart->addAxis(axisY_log, Qt::AlignLeft);
     }
 
-
     QLineSeries *lineseries = new QLineSeries();
 
-    for (int j=0; j<timeseries.size(); j++)
+    for (int j=0; j<data_to_plot.size(); j++)  // CHANGED
     {
         if (allowtime)
 #ifndef Qt6
-            lineseries->append(xToDateTime(timeseries.getTime(j)).toMSecsSinceEpoch(),timeseries.getValue(j));
+            lineseries->append(xToDateTime(data_to_plot.getTime(j)).toMSecsSinceEpoch(),data_to_plot.getValue(j));
 #else
-            lineseries->append(xToDateTime(timeseries.getTime(j)).toMSecsSinceEpoch(),timeseries.getValue(j));
+            lineseries->append(xToDateTime(data_to_plot.getTime(j)).toMSecsSinceEpoch(),data_to_plot.getValue(j));
 #endif
         else
-            lineseries->append(timeseries.getTime(j),timeseries.getValue(j));
+            lineseries->append(data_to_plot.getTime(j),data_to_plot.getValue(j));
     }
     chart->addSeries(lineseries);
 
@@ -160,17 +224,16 @@ bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseri
     pen.setWidth(2);
     pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
     lineseries->setPen(pen);
-    QString seriesName = QString::fromStdString(timeseries.name());
+    QString seriesName = QString::fromStdString(data_to_plot.name());  // CHANGED
     if (seriesName.isEmpty()) {
         seriesName = QString("Series %1").arg(unnamed_series_counter++);
     }
     lineseries->setName(seriesName);
-    timeSeries.insert(lineseries->name(),timeseries);
-
-
+    timeSeries.insert(lineseries->name(),data_to_plot);  // CHANGED
 
     if (allowtime)
-    {   if (start.secsTo(end) < 600) {axisX_date->setFormat("mm:ss:zzz"); axisX_date->setTitleText("Time");}
+    {
+        if (start.secsTo(end) < 600) {axisX_date->setFormat("mm:ss:zzz"); axisX_date->setTitleText("Time");}
         if (start.secsTo(end) > 3600) {axisX_date->setFormat("hh:mm:ss"); axisX_date->setTitleText("Time");}
         if (start.daysTo(end) > 1) {axisX_date->setFormat("MMM dd\nhh:mm:ss"); axisX_date->setTitleText("Date");}
         if (start.daysTo(end) > 5) {axisX_date->setFormat("MM.dd.yyyy\nhh:mm");axisX_date->setTitleText("Date");}
@@ -185,14 +248,96 @@ bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseri
     if (datasetSelector->findText(lineseries->name()) == -1) {
         datasetSelector->addItem(lineseries->name());
     }
+
+    qDebug() << "=== PlotData (TimeSeries) complete ===";
     return true;
 }
+
 bool QPlotWindow::PlotData(const TimeSeriesSet<outputtimeseriesprecision>& timeseriesset, bool allowtime, string style)
 {
-    x_min_val = timeseriesset.mintime();
-    x_max_val = timeseriesset.maxtime();
-    y_min_val = timeseriesset.minval();
-    y_max_val = timeseriesset.maxval();
+    qDebug() << "=== PlotData (TimeSeriesSet) called ===";
+    qDebug() << "  TimeSeriesSet size:" << timeseriesset.size();
+
+    // === HIDE UNIT DROPDOWN IF MORE THAN ONE SERIES ===
+    if (timeseriesset.size() > 1 && unitSelector)
+    {
+        qDebug() << "  Multiple series detected, hiding unit dropdown";
+        unitSelector->setVisible(false);
+
+        // Hide the label too
+        QWidget* parentWidget = qobject_cast<QWidget*>(unitSelector->parent());
+        if (parentWidget && parentWidget->layout())
+        {
+            QLayout* layout = parentWidget->layout();
+            for (int i = 0; i < layout->count(); i++)
+            {
+                QWidget* widget = layout->itemAt(i)->widget();
+                if (QLabel* label = qobject_cast<QLabel*>(widget))
+                {
+                    if (label->text() == "Unit:")
+                        label->setVisible(false);
+                }
+            }
+        }
+    }
+
+    // === STORE ORIGINAL SI DATA (only ONCE and only for single series) ===
+    if (quantity && !original_data_stored && timeseriesset.size() == 1)  // CHANGED: use flag
+    {
+        qDebug() << "  Storing original SI data";
+        original_timeseriesset_SI = timeseriesset;
+        original_data_stored = true;  // SET FLAG
+        qDebug() << "  Stored, flag set to true";
+    }
+
+    // === CONVERT DATA IF NEEDED (only for single series) ===
+    TimeSeriesSet<outputtimeseriesprecision> data_to_plot = timeseriesset;
+
+    if (quantity && !current_display_unit.isEmpty() && timeseriesset.size() == 1)
+    {
+        QString default_unit = XString::reform(QString::fromStdString(quantity->DefaultUnit()));
+
+        qDebug() << "  Quantity set:";
+        qDebug() << "    Default unit (SI):" << default_unit;
+        qDebug() << "    Display unit:" << current_display_unit;
+
+        if (current_display_unit != default_unit)
+        {
+            qDebug() << "    Converting data";
+
+            double si_coeff = XString::coefficient(XString::reformBack(default_unit));
+            double display_coeff = XString::coefficient(XString::reformBack(current_display_unit));
+
+            qDebug() << "    SI coeff:" << si_coeff;
+            qDebug() << "    Display coeff:" << display_coeff;
+
+            if (si_coeff != 0 && display_coeff != 0)
+            {
+                double conversion_factor = si_coeff /display_coeff;
+                qDebug() << "    Conversion factor:" << conversion_factor;
+
+                // Convert the TimeSeriesSet
+                data_to_plot = timeseriesset * conversion_factor;
+
+                qDebug() << "    Converted, max value:" << data_to_plot[0].maxC();
+            }
+        }
+
+        // Update y-axis title with unit
+        QString base_title = y_Axis_Title;
+        if (base_title.contains('['))
+        {
+            base_title = base_title.left(base_title.indexOf('[')).trimmed();
+        }
+        y_Axis_Title = base_title + " [" + current_display_unit + "]";
+        qDebug() << "    Y-axis title:" << y_Axis_Title;
+    }
+
+    x_min_val = data_to_plot.mintime();
+    x_max_val = data_to_plot.maxtime();
+    y_min_val = data_to_plot.minval();
+    y_max_val = data_to_plot.maxval();
+
     if (y_min_val==y_max_val)
     {
         y_min_val*=0.8;
@@ -204,8 +349,8 @@ bool QPlotWindow::PlotData(const TimeSeriesSet<outputtimeseriesprecision>& times
         allowtime = false;
 
 #ifndef Qt6
-        start = xToDateTime(x_min_val);
-        end = xToDateTime(x_max_val);
+    start = xToDateTime(x_min_val);
+    end = xToDateTime(x_max_val);
 #else
     start = xToDateTime(x_min_val);
     end = xToDateTime(x_max_val);
@@ -219,7 +364,8 @@ bool QPlotWindow::PlotData(const TimeSeriesSet<outputtimeseriesprecision>& times
     axisX_normal->setTickCount(10);
     axisX_date->setTickCount(10);
     if (!allowtime)
-    {   axisX_normal->setTitleText(x_Axis_Title);
+    {
+        axisX_normal->setTitleText(x_Axis_Title);
         chart->addAxis(axisX_normal, Qt::AlignBottom);
         axisX_normal->setObjectName("axisX");
         axisX_normal->setTitleText(xAxisTitle);
@@ -251,8 +397,10 @@ bool QPlotWindow::PlotData(const TimeSeriesSet<outputtimeseriesprecision>& times
         axisY_log->setMinorTickCount(8);
         chart->addAxis(axisY_log, Qt::AlignLeft);
     }
-    for (int i=0; i<timeseriesset.size(); i++)
-    {   QLineSeries *lineseries = new QLineSeries();
+
+    for (int i=0; i<data_to_plot.size(); i++)  // CHANGED: use data_to_plot
+    {
+        QLineSeries *lineseries = new QLineSeries();
         chart->addSeries(lineseries);
         if (allowtime)
             lineseries->attachAxis(axisX_date);
@@ -263,37 +411,34 @@ bool QPlotWindow::PlotData(const TimeSeriesSet<outputtimeseriesprecision>& times
         else
             lineseries->attachAxis(axisY_log);
 
-        for (int j=0; j<timeseriesset[i].size(); j++)
+        for (int j=0; j<data_to_plot[i].size(); j++)  // CHANGED: use data_to_plot
         {
             if (allowtime)
 #ifndef Qt6
-            lineseries->append(xToDateTime(timeseriesset[i].getTime(j)).toMSecsSinceEpoch(),timeseriesset[i].getValue(j));
+                lineseries->append(xToDateTime(data_to_plot[i].getTime(j)).toMSecsSinceEpoch(),data_to_plot[i].getValue(j));
 #else
-            lineseries->append(xToDateTime(timeseriesset[i].getTime(j)).toMSecsSinceEpoch(),timeseriesset[i].getValue(j));
+                lineseries->append(xToDateTime(data_to_plot[i].getTime(j)).toMSecsSinceEpoch(),data_to_plot[i].getValue(j));
 #endif
             else
-                lineseries->append(timeseriesset[i].getTime(j),timeseriesset[i].getValue(j));
+                lineseries->append(data_to_plot[i].getTime(j),data_to_plot[i].getValue(j));
         }
+
         QPen pen = lineseries->pen();
         pen.setWidth(2);
         pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
         lineseries->setPen(pen);
-        lineseries->setName(QString::fromStdString(timeseriesset.getSeriesName(i)));
-                timeSeries.insert(lineseries->name(),timeseriesset[i]);
+        lineseries->setName(QString::fromStdString(data_to_plot.getSeriesName(i)));  // CHANGED: use data_to_plot
+        timeSeries.insert(lineseries->name(),data_to_plot[i]);  // CHANGED: use data_to_plot
 
-                // Add these lines:
-                seriesDisplayMode.insert(lineseries->name(), "line");
-                if (datasetSelector->findText(lineseries->name()) == -1) {
-                    datasetSelector->addItem(lineseries->name());
-                }
-        timeSeries.insert(lineseries->name(),timeseriesset[i]);
-
+        seriesDisplayMode.insert(lineseries->name(), "line");
+        if (datasetSelector->findText(lineseries->name()) == -1) {
+            datasetSelector->addItem(lineseries->name());
+        }
     }
 
-
-
     if (allowtime)
-    {   if (start.secsTo(end) < 600) {axisX_date->setFormat("mm:ss:zzz"); axisX_date->setTitleText("Time");}
+    {
+        if (start.secsTo(end) < 600) {axisX_date->setFormat("mm:ss:zzz"); axisX_date->setTitleText("Time");}
         if (start.secsTo(end) > 3600) {axisX_date->setFormat("hh:mm:ss"); axisX_date->setTitleText("Time");}
         if (start.daysTo(end) > 1) {axisX_date->setFormat("MMM dd\nhh:mm:ss"); axisX_date->setTitleText("Date");}
         if (start.daysTo(end) > 5) {axisX_date->setFormat("MM.dd.yyyy\nhh:mm");axisX_date->setTitleText("Date");}
@@ -303,6 +448,7 @@ bool QPlotWindow::PlotData(const TimeSeriesSet<outputtimeseriesprecision>& times
     }
     else
         axisX_normal->setLabelsAngle(-90);
+
     return true;
 }
 bool QPlotWindow::AddData(const TimeSeries<outputtimeseriesprecision>& timeseries,bool allowtime, string style)
@@ -578,4 +724,206 @@ void QPlotWindow::updateSeriesDisplay(const QString& seriesName, const QString& 
     }
 
     seriesDisplayMode[seriesName] = mode;
+}
+
+void QPlotWindow::SetQuantity(Quan* quan)
+{
+    quantity = quan;
+
+    if (!quan)
+        return;
+
+    QString units_str = QString::fromStdString(quan->Units());
+
+    if (units_str.isEmpty())
+    {
+        qDebug() << "Quan has no units, skipping unit dropdown";
+        return;
+    }
+
+    QStringList unitsList = units_str.split(';', Qt::SkipEmptyParts);
+
+    if (unitsList.isEmpty())
+        return;
+
+    unitSelector = new QComboBox(this);
+
+    // Reform each unit for display - CONVERT ^ to ~^ first
+    QStringList reformedUnits;
+    for (QString unit : unitsList)
+    {
+        // Replace ^ with ~^ so XString::reform() can convert to superscript
+        unit.replace("^", "~^");
+        reformedUnits << XString::reform(unit);
+    }
+    unitSelector->addItems(reformedUnits);
+
+    // Set current unit to the Quan's current unit (or default unit)
+    QString currentUnit = QString::fromStdString(quan->Unit());
+    if (currentUnit.isEmpty())
+        currentUnit = QString::fromStdString(quan->DefaultUnit());
+
+    // Apply XString::reform to display properly
+    currentUnit = XString::reform(currentUnit);
+
+    int index = unitSelector->findText(currentUnit);
+    if (index >= 0)
+        unitSelector->setCurrentIndex(index);
+    else
+        unitSelector->setCurrentIndex(0);  // Fallback to first unit
+
+    current_display_unit = unitSelector->currentText();
+
+    // Create a horizontal layout for the unit selector
+    QHBoxLayout* unitLayout = new QHBoxLayout();
+    QLabel* unitLabel = new QLabel("Unit:", this);
+    unitLayout->addWidget(unitLabel);
+    unitLayout->addWidget(unitSelector);
+    unitLayout->addStretch();  // Push everything to the left
+
+    // Insert the unit layout into the existing horizontalLayout (with export buttons)
+    // This way it appears on the same row as the export buttons
+    ui->horizontalLayout->insertWidget(0, unitLabel);
+    ui->horizontalLayout->insertWidget(1, unitSelector);
+
+    // Connect the signal
+    connect(unitSelector, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &QPlotWindow::onUnitChanged);
+
+    qDebug() << "SetQuantity: Units available:" << reformedUnits;
+    qDebug() << "SetQuantity: Current unit:" << current_display_unit;
+}
+void QPlotWindow::convertAndUpdatePlot(const QString& new_unit)
+{
+    qDebug() << "=== convertAndUpdatePlot called ===";
+
+    if (!quantity)
+    {
+        qDebug() << "  ERROR: No quantity set";
+        return;
+    }
+
+    if (original_timeseriesset_SI.size() == 0)
+    {
+        qDebug() << "  ERROR: No original data stored";
+        return;
+    }
+
+    if (original_timeseriesset_SI.size() > 1)
+    {
+        qDebug() << "  ERROR: Multiple series, unit conversion not supported";
+        return;
+    }
+
+    QString default_unit = XString::reform(QString::fromStdString(quantity->DefaultUnit()));
+
+    qDebug() << "  Default unit (SI):" << default_unit;
+    qDebug() << "  New display unit:" << new_unit;
+
+    // Get conversion coefficients
+    double si_coeff = XString::coefficient(XString::reformBack(default_unit));
+    double display_coeff = XString::coefficient(XString::reformBack(new_unit));
+
+    qDebug() << "  SI coeff:" << si_coeff;
+    qDebug() << "  Display coeff:" << display_coeff;
+
+    if (si_coeff == 0 || display_coeff == 0)
+    {
+        qDebug() << "  ERROR: Invalid coefficients!";
+        return;
+    }
+
+    // Conversion factor: from SI to display unit
+    double conversion_factor = si_coeff / display_coeff;
+    qDebug() << "  Conversion factor:" << conversion_factor;
+
+    // Convert the data
+    TimeSeriesSet<double> converted_data = original_timeseriesset_SI * conversion_factor;
+
+    qDebug() << "  AFTER CONVERSION:";
+    qDebug() << "    original_timeseriesset_SI[0].maxC():" << original_timeseriesset_SI[0].maxC();
+    qDebug() << "    converted_data[0].maxC():" << converted_data[0].maxC();
+
+    qDebug() << "  Converted data, first series max:"
+             << (converted_data.size() > 0 ? converted_data[0].maxC() : 0);
+
+    // === PROPERLY CLEAR THE CHART ===
+    if (chart)
+    {
+        qDebug() << "  Clearing chart";
+
+        // Remove all series
+        chart->removeAllSeries();
+
+        // Remove and delete all axes
+        QList<QAbstractAxis*> axes = chart->axes();
+        for (QAbstractAxis* axis : axes)
+        {
+            chart->removeAxis(axis);
+            delete axis;
+        }
+
+        // Reset axis pointers
+        axisX_date = nullptr;
+        axisX_normal = nullptr;
+        axisY = nullptr;
+        axisY_log = nullptr;
+    }
+
+    // Clear the timeSeries map
+    timeSeries.clear();
+
+    // Reset min/max values
+    x_min_val = 1e7;
+    x_max_val = -1e7;
+    y_min_val = 1e7;
+    y_max_val = -1e7;
+
+    // Update y-axis title
+    QString base_title = y_Axis_Title;
+    if (base_title.contains('['))
+    {
+        base_title = base_title.left(base_title.indexOf('[')).trimmed();
+    }
+    y_Axis_Title = base_title + " [" + new_unit + "]";
+
+    qDebug() << "  New Y-axis title:" << y_Axis_Title;
+
+    // Temporarily set current_display_unit to default so PlotData won't convert
+    QString temp_unit = current_display_unit;
+    current_display_unit = XString::reform(QString::fromStdString(quantity->DefaultUnit()));
+
+    qDebug() << "  Temporarily setting current_display_unit to:" << current_display_unit;
+    qDebug() << "  So PlotData won't convert the already-converted data";
+
+    // Re-plot with converted data (PlotData will think it's SI and won't convert)
+    PlotData(converted_data, true, "line");
+
+    // NOW set it to the actual new unit
+    current_display_unit = new_unit;
+
+    qDebug() << "=== convertAndUpdatePlot complete ===";
+}
+
+void QPlotWindow::onUnitChanged(int index)
+{
+    if (!unitSelector || !quantity)
+        return;
+
+    QString new_unit = unitSelector->currentText();
+
+    qDebug() << "=== Unit changed ===";
+    qDebug() << "  Old unit:" << current_display_unit;
+    qDebug() << "  New unit:" << new_unit;
+
+    if (new_unit == current_display_unit)
+    {
+        qDebug() << "  Units are the same, skipping conversion";
+        return;
+    }
+
+    // Perform the conversion and update the plot
+    convertAndUpdatePlot(new_unit);
+
+    qDebug() << "=== Unit change complete ===";
 }

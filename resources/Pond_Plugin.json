@@ -106,7 +106,7 @@
   "wier": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "V-notch weir based on a power-law rating curve",
+    "description": "Weir based on a power-law rating curve",
     "icon": {
       "filename": "vnotchweir.png"
     },

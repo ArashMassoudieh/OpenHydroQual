@@ -69,10 +69,11 @@ public:
     void SetPropertyWindowTitle(const QString &title);
     void RefreshTreeView();
     QString resource_directory;
-#ifndef QCharts
-    Plotter* Plot(TimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
-    Plotter* Plot(TimeSeries<timeseriesprecision>& plotmodeled, TimeSeries<timeseriesprecision>& plotobserved);
-    Plotter* Plot(TimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime=true);
+#ifdef QCharts
+    QPlotWindow* Plot(TimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
+    QPlotWindow* Plot(TimeSeries<timeseriesprecision>& plotitem, Quan* quan, bool allowtime = true);
+    QPlotWindow* Plot(TimeSeries<timeseriesprecision>& plotmodeled, TimeSeries<timeseriesprecision>& plotobserved);
+    QPlotWindow* Plot(TimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime=true);
 #else
     QPlotWindow* Plot(TimeSeries<timeseriesprecision>& plotitem, bool allowtime = true);
     QPlotWindow* Plot(TimeSeries<timeseriesprecision>& plotmodeled, TimeSeries<timeseriesprecision>& plotobserved);

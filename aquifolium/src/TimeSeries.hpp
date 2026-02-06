@@ -509,6 +509,7 @@ TimeSeries<T>& TimeSeries<T>::operator=(TimeSeries<T>&& other) noexcept {
         dt_ = other.dt_;
         name_ = std::move(other.name_);
         unit_ = std::move(other.unit_);
+        filename_ = std::move(other.filename_);
     }
     return *this;
 }
