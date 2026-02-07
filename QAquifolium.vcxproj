@@ -36,7 +36,7 @@
     <PrimaryOutput>QAquifolium</PrimaryOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <PlatformToolSet>v145</PlatformToolSet>
+    <PlatformToolSet>v143</PlatformToolSet>
     <OutputDirectory>release\</OutputDirectory>
     <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
     <CharacterSet>NotSet</CharacterSet>
@@ -54,7 +54,7 @@
     <PrimaryOutput>QAquifolium</PrimaryOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <PlatformToolSet>v145</PlatformToolSet>
+    <PlatformToolSet>v143</PlatformToolSet>
     <OutputDirectory>debug\</OutputDirectory>
     <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
     <CharacterSet>NotSet</CharacterSet>
@@ -91,7 +91,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="QtSettings">
-    <QtInstall>6.10</QtInstall>
+    <QtInstall>6.7</QtInstall>
     <QtModules>core;opengl;gui;svg;widgets;printsupport;charts;svgwidgets</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -99,7 +99,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="QtSettings">
-    <QtInstall>6.10</QtInstall>
+    <QtInstall>6.7</QtInstall>
     <QtModules>core;gui;widgets;opengl;printsupport;svg;svgwidgets;charts</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
@@ -425,6 +425,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClCompile Include="qplotter.cpp" />
     <ClCompile Include="qplotwindow.cpp" />
     <ClCompile Include="ray.cpp" />
+    <ClCompile Include="TimeSeriesTextBox.cpp" />
     <ClCompile Include="undodata.cpp" />
     <ClCompile Include="UnitTextBox3.cpp" />
     <ClCompile Include="utilityfuncs.cpp" />
@@ -514,6 +515,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <QtMoc Include="qplotwindow.h" />
     <ClInclude Include="ray.h" />
     <ClInclude Include="..\jsoncpp\include\json\reader.h" />
+    <QtMoc Include="TimeSeriesTextBox.h" />
     <ClInclude Include="undodata.h" />
     <QtMoc Include="UnitTextBox3.h" />
     <ClInclude Include="utilityfuncs.h" />
