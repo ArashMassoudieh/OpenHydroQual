@@ -13,7 +13,7 @@
       "ask_user": "true",
       "delegate": "Browser;time series",
       "helptext": "Time series representing the chemical mass loading rate into the system (e.g., from external sources or emissions).",
-      "unit": "g/day/m~^3"
+      "unit": "g/day/m^3"
     }
   },
   "constant_source": {
@@ -29,7 +29,7 @@
       "description": "Loading rate (mass/time/volume of water)",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "g/day/m~^3",
+      "unit": "g/day/m^3",
       "helptext": "Constant chemical loading rate per unit volume of water. Used for modeling uniformly distributed internal sources."
     },
     "coefficient": {
@@ -68,7 +68,7 @@
       "ask_user": "true",
       "description": "Saturation Concentration Level",
       "delegate": "UnitBox",
-      "unit": "g/m~^3",
+      "unit": "g/m^3",
       "helptext": "Saturation concentration in water under equilibrium with the atmosphere. Determines direction and magnitude of flux."
     },
     "coefficient": {
@@ -106,7 +106,7 @@
       "ask_user": "true",
       "description": "Saturation Concentration Level",
       "delegate": "UnitBox",
-      "unit": "g/m~^3"
+      "unit": "g/m^3"
     },
     "coefficient": {
       "type": "expression",
@@ -139,7 +139,7 @@
       "description": "Initial Storage;Storage",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3",
+      "unit": "m^3;ft^3",
       "estimate": "true"
     },
     "time_variable_inflow": {
@@ -156,7 +156,7 @@
       "description": "Constant Inflow",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s"
     },
     "inflow": {
       "type": "expression",
@@ -164,7 +164,7 @@
       "includeinoutput": "true",
       "description": "Inflow",
       "ask_user": "false",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "bottom_elevation": {
       "type": "value",
@@ -190,7 +190,7 @@
       "description": "Initial Storage;Storage",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3",
+      "unit": "m^3;ft~^3",
       "estimate": "true"
     },
     "Volume": {
@@ -199,7 +199,7 @@
       "description": "Volume",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3",
+      "unit": "m^3;ft~^3",
       "estimate": "true"
     },
     "time_variable_inflow": {
@@ -208,7 +208,7 @@
       "description": "Time variable inflow",
       "ask_user": "true",
       "delegate": "Browser",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "constant_inflow": {
       "type": "value",
@@ -216,7 +216,7 @@
       "description": "Constant Inflow",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "inflow": {
       "type": "expression",
@@ -224,7 +224,7 @@
       "includeinoutput": "true",
       "description": "Inflow",
       "ask_user": "false",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "bottom_elevation": {
       "type": "value",
@@ -249,7 +249,7 @@
       "description": "Initial Storage;Storage",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3",
+      "unit": "m^3;ft~^3",
       "estimate": "true"
     },
     "bottom_elevation": {
@@ -265,7 +265,7 @@
       "description": "Volume",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3",
+      "unit": "m^3;ft^3",
       "estimate": "true"
     }
   },
@@ -283,7 +283,7 @@
       "applylimit": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s"
     },
     "length": {
       "type": "expression",
@@ -318,7 +318,7 @@
       "applylimit": "true",
       "ask_user": "false",
       "expression": "(Storage.s/Volume.s-1)*flow_factor",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "flow_factor": {
       "type": "value",
@@ -326,7 +326,7 @@
       "includeinoutput": "false",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s",
       "default": "1000000"
     },
     "length": {
@@ -362,7 +362,7 @@
       "applylimit": "true",
       "ask_user": "true",
       "delegate": "Browser",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "length": {
       "type": "expression",
@@ -396,7 +396,7 @@
       "description": "Time variable flow",
       "ask_user": "true",
       "delegate": "Browser",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "constant_flow": {
       "type": "value",
@@ -404,7 +404,7 @@
       "description": "Constant flow",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "flow": {
       "type": "expression",
@@ -412,14 +412,14 @@
       "includeinoutput": "true",
       "description": "Flow rate",
       "ask_user": "false",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "area": {
       "type": "value",
       "ask_user": "true",
       "description": "Interface area",
       "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2"
+      "unit": "m^2;ft~^2"
     },
     "color": {
       "type": "string",
@@ -440,14 +440,14 @@
       "applylimit": "true",
       "ask_user": "true",
       "delegate": "Browser",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s"
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "area": {
       "type": "value",
       "ask_user": "true",
       "description": "Interface area",
       "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2"
+      "unit": "m^2;ft~^2"
     },
     "color": {
       "type": "string",
@@ -470,7 +470,7 @@
       "includeinoutput": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit": "g/m~^3"
+      "unit": "g/m^3"
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -534,7 +534,7 @@
       "includeinoutput": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit": "g/m~^3"
+      "unit": "g/m^3"
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -613,7 +613,7 @@
       "includeinoutput": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit": "g/m~^3"
+      "unit": "g/m^3"
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -640,7 +640,7 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit": "m~^2/s;m~^2/day;ft~^2/s;ft~^2/day"
+      "unit": "m^2/s;m^2/day;ft~^2/s;ft~^2/day"
     },
     "advective_masstransfer": {
       "description": "Advective mass transfer rate",
@@ -749,7 +749,7 @@
       "includeinoutput": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit": "g/m~^3"
+      "unit": "g/m^3"
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -777,7 +777,7 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit": "m~^2/s;m~^2/day;ft~^2/s;ft~^2/day"
+      "unit": "m^2/s;m^2/day;ft~^2/s;ft~^2/day"
     },
     "advective_masstransfer": {
       "description": "Advective mass transfer rate",

@@ -297,14 +297,31 @@ public:
     }
     static QString reform(const QString &X)
     {
+        qDebug() << "=== reform() called ===";
+        qDebug() << "  Input:" << X;
+
         QString R = X;
 
         // PREPROCESSING: Convert bare ^ to ~^ for backward compatibility
         // Only replace ^ that are NOT already preceded by ~
         if (R.contains("^") && !R.contains("~^"))
         {
+            qDebug() << "  Adding ~^ (input has ^ but not ~^)";
             R.replace("^", "~^");
+            qDebug() << "  After adding ~^:" << R;
         }
+        else if (R.contains("~^"))
+        {
+            qDebug() << "  Already has ~^, skipping preprocessing";
+        }
+
+        // Now process all the tildes
+        if (!R.contains("~"))
+        {
+            qDebug() << "  No ~ found, returning as-is";
+            return R;
+        }
+
 
         // Now process all the tildes
         if (!R.contains("~")) return R;  // Early exit if nothing to reform
@@ -313,6 +330,9 @@ public:
         char16_t mu = 956;	char16_t nu = 957;	char16_t xi = 958;	char16_t omicron = 959;	char16_t pi = 960;	char16_t rho = 961;	char16_t sigmaf = 962;	char16_t sigma = 963;	char16_t tau = 964;	char16_t upsilon = 965;	char16_t phi = 966;
         char16_t chi = 967;	char16_t psi = 968;	char16_t omega = 969;	char16_t thetasym = 977;	char16_t upsih = 978;	char16_t piv = 982;	char16_t sup2 = 178;	char16_t sup3 = 179;	char16_t frac14 = 188;	char16_t frac12 = 189;	char16_t frac34 = 190;
         char16_t radic = 8730;	char16_t degree = 176;
+
+        R.replace("~^2", QString::fromUtf16(&sup2, 1));
+        R.replace("~^3", QString::fromUtf16(&sup3, 1));
 
         R.replace("~alpha", QString::fromUtf16(&alpha, 1));	R.replace("~beta", QString::fromUtf16(&beta, 1));	R.replace("~gamma", QString::fromUtf16(&gamma, 1));
         R.replace("~delta", QString::fromUtf16(&delta, 1));	R.replace("~epsilon", QString::fromUtf16(&epsilon, 1));	R.replace("~zeta", QString::fromUtf16(&zeta, 1));	R.replace("~eta", QString::fromUtf16(&eta, 1));
@@ -324,6 +344,9 @@ public:
         R.replace("~piv", QString::fromUtf16(&piv, 1));	R.replace("~^2", QString::fromUtf16(&sup2, 1));	R.replace("~^3", QString::fromUtf16(&sup3, 1));	R.replace("~1/4", QString::fromUtf16(&frac14, 1));
         R.replace("~1/2", QString::fromUtf16(&frac12, 1));	R.replace("~3/4", QString::fromUtf16(&frac34, 1));	R.replace("~radic", QString::fromUtf16(&radic, 1));	R.replace("~degree", QString::fromUtf16(&degree, 1));
 
+
+        qDebug() << "  Output:" << R;
+        qDebug() << "===================";
         return R;
     }
 static	QString reformBack(QString R)
