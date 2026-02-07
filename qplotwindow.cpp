@@ -603,14 +603,72 @@ void QPlotWindow::ExportToCSV()
         tr("csv file (*.csv)"));
 
     if (!fileName.contains("."))
-        fileName+=".csv";
+        fileName += ".csv";
 
     TimeSeriesSet<double> towrite;
-    for (QMap<QString, TimeSeries<double>>::iterator it = timeSeries.begin(); it!=timeSeries.end(); it++)
-        towrite.append(it.value(),it.key().toStdString());
+
+    // Check if we need to convert units
+    if (quantity && !current_display_unit.isEmpty())
+    {
+        QString default_unit = XString::reform(QString::fromStdString(quantity->DefaultUnit()));
+
+        // Only convert if display unit is different from default (SI) unit
+        if (current_display_unit != default_unit)
+        {
+            // Calculate conversion factor
+            double si_coeff = XString::coefficient(XString::reformBack(default_unit));
+            double display_coeff = XString::coefficient(XString::reformBack(current_display_unit));
+
+            if (si_coeff != 0 && display_coeff != 0)
+            {
+                double conversion_factor = si_coeff / display_coeff;
+
+                // Convert each time series and add unit to name
+                for (QMap<QString, TimeSeries<double>>::iterator it = timeSeries.begin();
+                     it != timeSeries.end(); it++)
+                {
+                    TimeSeries<double> converted = it.value();
+
+                    QString nameWithUnit = it.key() + " [" + current_display_unit + "]";
+                    towrite.append(it.value()*conversion_factor,nameWithUnit.toStdString());
+
+                }
+            }
+            else
+            {
+                // Conversion failed, export original with unit anyway
+                for (QMap<QString, TimeSeries<double>>::iterator it = timeSeries.begin();
+                     it != timeSeries.end(); it++)
+                {
+                    QString nameWithUnit = it.key() + " [" + default_unit + "]";
+                    towrite.append(it.value(), nameWithUnit.toStdString());
+                }
+            }
+        }
+        else
+        {
+            // Display unit is same as SI unit, just add unit to name
+            for (QMap<QString, TimeSeries<double>>::iterator it = timeSeries.begin();
+                 it != timeSeries.end(); it++)
+            {
+                QString nameWithUnit = it.key() + " [" + current_display_unit + "]";
+                towrite.append(it.value(), nameWithUnit.toStdString());
+            }
+        }
+    }
+    else
+    {
+        // No units defined, export as-is without unit labels
+        for (QMap<QString, TimeSeries<double>>::iterator it = timeSeries.begin();
+             it != timeSeries.end(); it++)
+        {
+            towrite.append(it.value(), it.key().toStdString());
+        }
+    }
 
     towrite.write(fileName.toStdString());
 }
+
 
 void QPlotWindow::onDatasetSelected(int index)
 {
