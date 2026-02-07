@@ -25,14 +25,19 @@ echo "⚙️ Running make..."
 make -C "$BUILD_DIR" -j$(nproc)
 
 # === Step 2: Prepare staging directory ===
+echo "🧹 Cleaning old files from staging directory..."
+rm -rf "${STAGING_DIR}/opt/OpenHydroQual/bin"
+rm -rf "${STAGING_DIR}/opt/OpenHydroQual/resources"
+rm -rf "${STAGING_DIR}/opt/resources"
+rm -rf "${STAGING_DIR}/usr/local/openhydroqual"
+
 echo "📦 Copying binary to package staging directory..."
 mkdir -p "$BIN_PATH"
 cp "$EXECUTABLE" "$BIN_PATH"
 
 echo "📦 Copying resource files..."
 RESOURCES_PATH="${STAGING_DIR}/opt/OpenHydroQual/resources"
-mkdir -p "$RESOURCES_PATH"
-cp "${BUILD_DIR}/resources/"*.json "$RESOURCES_PATH/"
+cp -r "${BUILD_DIR}/resources" "${STAGING_DIR}/opt/OpenHydroQual/"
 
 # === Step 2b: Update version in DEBIAN/control ===
 echo "📝 Updating version in DEBIAN/control..."
