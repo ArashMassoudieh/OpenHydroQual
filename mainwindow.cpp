@@ -1370,7 +1370,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         for (unsigned int i = 0; i < system.object(nd->text(0).toStdString())->ItemswithOutput().size(); i++)
         {
             timeseriestobeshown = QString::fromStdString(system.object(nd->text(0).toStdString())->ItemswithOutput()[i]);
-            QAction* graphaction = results->addAction(timeseriestobeshown);
+            QAction* graphaction = results->addAction(QString::fromStdString(system.object(nd->text(0).toStdString())->Variable(timeseriestobeshown.toStdString())->Description(true)));
             QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->Variable(timeseriestobeshown.toStdString())->GetOutputItem()));
             graphaction->setData(v);
             //called_by_clicking_on_graphical_object = true;
@@ -1429,7 +1429,7 @@ void MainWindow::showgraph()
     QStringList keys = act->data().toString().split(";");
     QString key2 = keys[0];
     QString item = keys[1];
-    if (key2 == "Precipitation")
+    /*if (key2 == "Precipitation")
     {
         if (GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries() != nullptr)
         {
@@ -1441,7 +1441,7 @@ void MainWindow::showgraph()
             plot->SetYAxisTitle(act->text());
         }
     return;
-    }
+    }*/
     if (key2 == "Modeled vs Measured")
     {
         QString object = act->property("object").toString();

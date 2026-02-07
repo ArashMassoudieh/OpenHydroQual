@@ -141,7 +141,7 @@
       "description": "Diameter",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft;cm",
+      "unit": "m;ft;cm;in",
       "estimate": "true",
       "criteria": "diameter>0",
       "warningmessage": "diameter must be positive",
@@ -488,7 +488,7 @@
       "expression": "diameter.s",
       "includeinoutput": "false",
       "ask_user": "false",
-      "unit": "m;ft;in"
+      "unit": "m;ft;cm;in"
     },
     "area_2": {
       "type": "expression",

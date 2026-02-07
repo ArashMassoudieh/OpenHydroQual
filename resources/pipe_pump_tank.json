@@ -83,7 +83,7 @@
       "description": "Diameter",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft;cm",
+      "unit": "m;ft;cm;in",
       "estimate": "true",
       "criteria": "diameter>0",
       "warningmessage": "diameter must be positive",
@@ -98,7 +98,7 @@
       "estimate": "true",
       "default": "100",
       "criteria": "hz_coeff>0",
-      "warningmessage": "diameter must be positive"
+      "warningmessage": "Hazen Williams Coefficient must be positive"
     },
     "length": {
       "type": "value",
@@ -108,7 +108,7 @@
       "unit": "m;ft",
       "estimate": "true",
       "criteria": "length>0",
-      "warningmessage": "lenght must be positive"
+      "warningmessage": "length must be positive"
     },
     "hydraulic_gradient": {
       "type": "expression",
@@ -143,7 +143,7 @@
       "description": "Diameter",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft;cm",
+      "unit": "m;ft;cm;in",
       "estimate": "true",
       "criteria": "diameter>0",
       "warningmessage": "diameter must be positive"
@@ -211,7 +211,7 @@
       "description": "Diameter",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m;ft;cm",
+      "unit": "m;ft;cm;in",
       "estimate": "true",
       "criteria": "diameter>0",
       "warningmessage": "diameter must be positive"
@@ -225,7 +225,7 @@
       "estimate": "true",
       "default": "100",
       "criteria": "hz_coeff>0",
-      "warningmessage": "diameter must be positive"
+      "warningmessage": "Hazen Williams Coefficient must be positive"
     },
     "length": {
       "type": "value",

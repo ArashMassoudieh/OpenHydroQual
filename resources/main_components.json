@@ -186,10 +186,19 @@
     },
     "timeseries": {
       "type": "timeseries_prec",
-      "includeinoutput": "true",
-      "description": "Precipitation intensity",
+      "includeinoutput": "false",
+      "description": "Precipitation Cumulative",
       "ask_user": "true",
       "unit": "m;mm;in;ft",
+      "delegate": "Browser;time series"
+    },
+    "Intensity": {
+      "type": "expression",
+      "expression": "timeseries",
+      "includeinoutput": "true",
+      "description": "Precipitation intensity",
+      "ask_user": "false",
+      "unit": "m/day;mm/day;in/day;ft/day;m/hr;mm/hr;in/hr",
       "delegate": "Browser;time series"
     }
   },
