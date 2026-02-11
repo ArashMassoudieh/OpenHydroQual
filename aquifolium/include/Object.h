@@ -166,7 +166,7 @@ class Object
         QuanSet var;
         vector<string> errors;
         string last_error;
-        bool last_operation_success;
+        bool last_operation_success = true;
         map<string, string> setting;
         System *parent = nullptr;
         string name;
@@ -174,7 +174,7 @@ class Object
         Object *e_Block=nullptr;
         unsigned int s_Block_no, e_Block_no;
         string type;
-        object_type Object_Type;
+        object_type Object_Type = object_type::none;
         double outflowlimitfactor_past = 1;
 		double outflowlimitfactor_current = 1;
         bool limitoutflow = false;

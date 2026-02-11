@@ -703,9 +703,8 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 #ifdef Q_GUI_SUPPORT
                     if (rtw)
                     {
-                        rtw->AppendInfo("The attempt to solve the problem failed");
+                        rtw->AppendWarning(QString("The attempt to solve the problem failed!"));
 
-                        rtw->AppendInfo("The attempt to solve the problem failed!");
                         QCoreApplication::processEvents();
                     }
     #endif
@@ -791,7 +790,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
                     if (rtw->DetailsOn())
                         rtw->AppendDetails("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
 
-                    rtw->AppendInfo("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
+                    rtw->AppendWarning("Simulation time exceeded the limit of " + QString::number(SolverSettings.maximum_simulation_time) +" seconds, The attempt to solve the problem failed!");
                     QCoreApplication::processEvents();
                 }
 #endif
@@ -814,7 +813,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
                     if (rtw->DetailsOn())
                         rtw->AppendDetails("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
 
-                    rtw->AppendInfo("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
+                    rtw->AppendWarning("Maximum number of matrix inverstions exceeded the limit of " + QString::number(SolverSettings.maximum_number_of_matrix_inversions) +". The attempt to solve the problem failed!");
                     QCoreApplication::processEvents();
                 }
 #endif
@@ -2453,9 +2452,12 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     UnUpdateAllVariables();
     //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
     CVector LinkFlow(links.size());
-#ifndef NO_OPENMP
-#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
-#endif
+
+
+
+//#ifndef NO_OPENMP
+//#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
+//#endif
     for (int i=0; i<blocks.size(); i++)
     {
         //qDebug()<<QString::fromStdString(blocks[i].GetName());
@@ -2490,7 +2492,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
 {
 
 #ifndef NO_OPENMP
-#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
+//#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
 #endif
     for (int i=0; i<links.size(); i++)
        LinkFlow[i] = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present)*links[i].GetOutflowLimitFactor(Expression::timing::present);
@@ -2509,21 +2511,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
             F[links[i].e_Block_No()] -= LinkFlow[i];
     }
 }
-    /*for (unsigned int i = 0; i < links.size(); i++)
-        if (links[i].GetOutflowLimitFactor(Expression::timing::present) < 0)
-        {
-            F[links[i].e_Block_No()] += (double(sgn(F[links[i].e_Block_No()])) - 0.5) * pow(links[i].GetOutflowLimitFactor(Expression::timing::present), 2)*fabs(links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present));
-            F[links[i].s_Block_No()] += (double(sgn(F[links[i].s_Block_No()])) - 0.5) * pow(links[i].GetOutflowLimitFactor(Expression::timing::present), 2)*fabs(links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present));
-        }
-    */
-    /*for (unsigned int i = 0; i < blocks.size(); i++)
-    {
-        if (blocks[i].GetOutflowLimitFactor(Expression::timing::present)<0 && blocks[i].GetLimitedOutflow() )
-        {
-            F[i] = -pow(blocks[i].GetOutflowLimitFactor(Expression::timing::present),2);
-        }
-    }*/
-//qDebug()<<"Correction factors!";
+
     for (unsigned int i = 0; i < blocks.size(); i++)
     {
         if (blocks[i].GetLimitedOutflow())
@@ -4319,9 +4307,9 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
             jacobian(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
         }
     }
-#ifndef NO_OPENMP
-#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
-#endif   
+//#ifndef NO_OPENMP
+//#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
+//#endif
     for (int i=0; i<BlockCount(); i++)
     {
         if (!block(i)->GetLimitedOutflow() && !block(i)->isrigid(variable))

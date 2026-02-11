@@ -25,6 +25,10 @@
 #include "Condition.h"
 #include <string>
 
+#ifndef NO_OPENMP
+#include <omp.h>
+#endif
+
 #ifdef Q_JSON_SUPPORT
 #include <qjsonobject.h>
 #endif
@@ -249,6 +253,10 @@ private:
     bool calculate_initial_value_from_expression = false;
     Expression initial_value_expression;
     PreCalculatedFunction precalcfunction;
+#ifndef NO_OPENMP
+    omp_lock_t _val_lock;
+#endif
+
     string _timeseries_unit;  // Current unit of the timeseries data (stored in SI units internally)
 };
 
