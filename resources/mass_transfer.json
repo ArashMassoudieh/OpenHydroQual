@@ -607,7 +607,7 @@
     "concentration": {
       "description": "Concentration",
       "type": "expression",
-      "expression": "mass/(Storage+0.00001)",
+      "expression": "mass/(Storage+0.0001)",
       "ask_user": "true",
       "role": "copytoblocks",
       "includeinoutput": "true",
@@ -717,7 +717,7 @@
     },
     "inflow_loading": {
       "type": "expression",
-      "expression": "inflow_concentration*(inflow+Precipitation+Evapotranspiration)",
+      "expression": "inflow_concentration*(inflow+Precipitation)+Evapotranspiration*concentration",
       "includeinoutput": "true",
       "description": "Inflow loading",
       "role": "copytoblocks",
@@ -743,7 +743,7 @@
     "concentration": {
       "description": "Concentration",
       "type": "expression",
-      "expression": "mass/(Storage+0.00001)",
+      "expression": "mass/(Storage+0.0001)",
       "ask_user": "true",
       "role": "copytoblocks",
       "includeinoutput": "true",
@@ -856,7 +856,7 @@
     },
     "inflow_loading": {
       "type": "expression",
-      "expression": "inflow_concentration*(inflow+Precipitation+Evapotranspiration)",
+      "expression": "inflow_concentration*(inflow+Precipitation)+Evapotranspiration*concentration",
       "includeinoutput": "true",
       "description": "Inflow loading",
       "role": "copytoblocks",
