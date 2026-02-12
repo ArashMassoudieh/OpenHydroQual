@@ -2713,7 +2713,10 @@ CVector_arma System::Jacobian(const string &variable, CVector_arma &V, CVector_a
       }
       if (grad[i]==0)
       {
-//           qDebug()<<"Diagonal of jacobian is zero for block" << QString::fromStdString(blocks[i].GetName());
+          //qDebug()<<"Diagonal of jacobian is zero for block" << QString::fromStdString(blocks[i].GetName());
+          //SavetoJson("state.json",addedtemplates,true,true);
+
+          //cout<<"Diagonal Zero!"<<endl;
       }
       return grad;
 
@@ -2722,7 +2725,7 @@ CVector_arma System::Jacobian(const string &variable, CVector_arma &V, CVector_a
 
 
 void System::SetVariableParents()
-{
+    {
     for (unsigned int i = 0; i < blocks.size(); i++) blocks[i].ClearLinksToFrom();
 
     for (unsigned int i = 0; i < links.size(); i++)
