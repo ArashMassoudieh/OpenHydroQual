@@ -717,7 +717,7 @@
     },
     "inflow_loading": {
       "type": "expression",
-      "expression": "inflow_concentration*(inflow+Precipitation-Evapotranspiration)",
+      "expression": "inflow_concentration*(inflow+Precipitation+Evapotranspiration)",
       "includeinoutput": "true",
       "description": "Inflow loading",
       "role": "copytoblocks",
