@@ -1754,7 +1754,8 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
                         SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) +
                                                              ": The Jacobian Matrix is not full-ranked");
-                        if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+                        if (!transport)
+                            SetOutflowLimitedVector(outflowlimitstatus_old);
                         return false;
                     }
                 }
@@ -2711,9 +2712,13 @@ CVector_arma System::Jacobian(const string &variable, CVector_arma &V, CVector_a
             F1 = GetResiduals(variable,V1,transport);
             grad = (F1 - F0) / epsilon;
       }
-      if (grad[i]==0)
+      if (grad[i]==0 && transport)
       {
-//           qDebug()<<"Diagonal of jacobian is zero for block" << QString::fromStdString(blocks[i].GetName());
+          qDebug() << "Zero transport diagonal at index" << i
+                   << "F0[i]=" << F0[i]
+                   << "F1[i]=" << F1[i]
+                   << "epsilon=" << epsilon
+                   << "V[i]=" << V[i];
       }
       return grad;
 
