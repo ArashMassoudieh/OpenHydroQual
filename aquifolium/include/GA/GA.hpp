@@ -377,7 +377,7 @@ int counter=0;
 #ifdef Debug_GA
             Models[k].SavetoScriptFile(filenames.pathname+"/temp/model_" + aquiutils::numbertostring(k) +"_" +aquiutils::numbertostring(current_generation)+".ohq",string(""), vector<string>());
 #endif
-            Models[k].SaveFullStateTo(QString::fromStdString(filenames.pathname + "/statefull_presolve_" + aquiutils::numbertostring(k)+".json"));
+            //Models[k].SaveFullStateTo(QString::fromStdString(filenames.pathname + "/statefull_presolve_" + aquiutils::numbertostring(k)+".json"));
             Models[k].Solve();
             Ind[k].actual_fitness = Models[k].GetObjectiveFunctionValue();
             if (Models[k].GetSolutionFailed() && false)

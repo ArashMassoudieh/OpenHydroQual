@@ -2229,7 +2229,7 @@ void MainWindow::onrunmodel()
     rtw->show();
     copiedsystem.SetProgressWindow(rtw);
     copiedsystem.WriteOutPuts();
-    copiedsystem.SaveFullStateTo(workingfolder + "/statefull_presolve.json");
+    //copiedsystem.SaveFullStateTo(workingfolder + "/statefull_presolve.json");
     copiedsystem.Solve(true);
     rtw->AppendLog("Saving outputs in '" + workingfolder + "'");
     qDebug()<<"Working folder" << workingfolder;
