@@ -551,12 +551,13 @@ bool Object::Update(const string & variable)
 
 }
 
-bool Object::CalcExpressions(const Expression::timing &tmg)
+bool Object::CalcExpressions(const Expression::timing &tmg, bool force_all)
 {
     for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
-		if (var[s->first].GetType() == Quan::_type::expression)
-			Variable(s->first)->SetVal(Variable(s->first)->CalcVal(tmg),tmg);
-	return true; 
+        if (var[s->first].GetType() == Quan::_type::expression)
+            if (force_all || !var[s->first].Value_Updated())
+                Variable(s->first)->SetVal(Variable(s->first)->CalcVal(tmg), tmg);
+    return true;
 }
 
 bool Object::EstablishExpressionStructure()
@@ -896,3 +897,44 @@ bool Object::CopyQuantitiesFrom(Object* source)
 
     return true;
 }
+
+#ifdef Q_JSON_SUPPORT
+#include <QJsonObject>
+
+QJsonObject Object::toJsonObjectFull() const
+{
+    QJsonObject json;
+
+    // Identity
+    json["name"] = QString::fromStdString(name);
+    json["type"] = QString::fromStdString(type);
+    json["primary_key"] = QString::fromStdString(primary_key);
+    json["object_type"] = static_cast<int>(Object_Type);
+
+    // Block connectivity (for links)
+    json["s_Block_no"] = static_cast<int>(s_Block_no);
+    json["e_Block_no"] = static_cast<int>(e_Block_no);
+    json["s_Block_set"] = (s_Block != nullptr);
+    json["e_Block_set"] = (e_Block != nullptr);
+    if (s_Block) json["s_Block_name"] = QString::fromStdString(s_Block->GetName());
+    if (e_Block) json["e_Block_name"] = QString::fromStdString(e_Block->GetName());
+
+    // Outflow limiting
+    json["outflowlimitfactor_past"] = outflowlimitfactor_past;
+    json["outflowlimitfactor_current"] = outflowlimitfactor_current;
+    json["limitoutflow"] = limitoutflow;
+
+    // Corresponding source/constituent context
+    json["current_corresponding_source"] = QString::fromStdString(current_corresponding_source);
+    json["current_corresponding_constituent"] = QString::fromStdString(current_corresponding_constituent);
+
+    // State flags
+    json["last_operation_success"] = last_operation_success;
+    json["last_error"] = QString::fromStdString(last_error);
+
+    // All variables via QuanSet
+    json["variables"] = var.toJsonObjectFull();
+
+    return json;
+}
+#endif

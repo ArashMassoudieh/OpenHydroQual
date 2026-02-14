@@ -2228,7 +2228,8 @@ void MainWindow::onrunmodel()
 	rtw->SetPrimaryChartTitle("Time-step size vs Time");
     rtw->show();
     copiedsystem.SetProgressWindow(rtw);
-    copiedsystem.WriteOutPuts(); 
+    copiedsystem.WriteOutPuts();
+    copiedsystem.SaveFullStateTo(workingfolder + "/statefull_presolve.json");
     copiedsystem.Solve(true);
     rtw->AppendLog("Saving outputs in '" + workingfolder + "'");
     qDebug()<<"Working folder" << workingfolder;
@@ -2288,6 +2289,7 @@ void MainWindow::onrunmodel()
     copiedsystem.SetProp("tstart",copiedsystem.GetTime());
     copiedsystem.SetSystemSettingsObjectProperties("simulation_start_time",QString::number(copiedsystem.GetTime()).toStdString());
     copiedsystem.SavetoJson(workingfolder.toStdString() + "/state.json", addedtemplatefilenames,false, false);
+
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
     CVector FitMeasures(3*copiedsystem.ObservationsCount());

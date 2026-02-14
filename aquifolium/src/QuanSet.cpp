@@ -731,3 +731,35 @@ QJsonArray QuanSet::toJsonSetAsParameter()
     }
     return array;
 }
+
+#ifdef Q_JSON_SUPPORT
+#include <QJsonObject>
+#include <QJsonArray>
+
+QJsonObject QuanSet::toJsonObjectFull() const
+{
+    QJsonObject json;
+
+    // Identity
+    json["name"] = QString::fromStdString(name);
+    json["ObjectType"] = QString::fromStdString(ObjectType);
+    json["description"] = QString::fromStdString(description);
+    json["iconfilename"] = QString::fromStdString(iconfilename);
+    json["typecategory"] = QString::fromStdString(typecategory);
+    json["normalizing_quantity"] = QString::fromStdString(normalizing_quantity);
+
+    // Quantity order
+    QJsonArray order_arr;
+    for (const auto& s : quantity_order)
+        order_arr.append(QString::fromStdString(s));
+    json["quantity_order"] = order_arr;
+
+    // All Quan variables
+    QJsonObject vars;
+    for (auto it = cbegin(); it != cend(); ++it)
+        vars[QString::fromStdString(it->first)] = it->second.toJsonObject();
+    json["variables"] = vars;
+
+    return json;
+}
+#endif

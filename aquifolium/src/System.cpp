@@ -1394,23 +1394,9 @@ bool System::TransferResultsFrom(System *other)
 void System::PopulateOutputs(bool dolinks)
 {
 
+    CalcAllExpressions(Expression::timing::present, false, dolinks);
     if (RecordResults())
     {
-        //Outputs.AllOutputs.ResizeIfNeeded(1000);
-#ifndef NO_OPENMP
-#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
-#endif
-        for (int i = 0; i < blocks.size(); i++)
-            blocks[i].CalcExpressions(Expression::timing::present);
-
-        if (dolinks)
-        {
-#ifndef NO_OPENMP
-#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
-#endif
-            for (int i = 0; i < links.size(); i++)
-                links[i].CalcExpressions(Expression::timing::present);
-        }
         for (unsigned int i = 0; i < blocks.size(); i++)
         {
             for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
@@ -1487,10 +1473,7 @@ void System::PopulateOutputs(bool dolinks)
     }
     else
     {
-        //for (unsigned int i = 0; i < observations.size(); i++)
-        //{
-        //    Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
-        //}
+
     }
 }
 
@@ -5033,3 +5016,165 @@ vector<pair<string, string>> System::GetOutputProperties()
 
     return result;
 }
+
+#ifdef Q_JSON_SUPPORT
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QFile>
+
+QJsonObject System::toJsonObjectFull() const
+{
+    QJsonObject json;
+
+    // Solver state
+    QJsonObject solver;
+    solver["t"] = SolverTempVars.t;
+    solver["dt"] = SolverTempVars.dt;
+    solver["dt_base"] = SolverTempVars.dt_base;
+    solver["epoch_count"] = SolverTempVars.epoch_count;
+    solver["SolutionFailed"] = SolverTempVars.SolutionFailed;
+    //solver["simulation_duration"] = SolverTempVars.simulation_duration;
+    QJsonArray nr_coeff;
+    for (unsigned int i = 0; i < SolverTempVars.NR_coefficient.size(); i++)
+        nr_coeff.append(SolverTempVars.NR_coefficient[i]);
+    solver["NR_coefficient"] = nr_coeff;
+    QJsonArray update_jac;
+    for (unsigned int i = 0; i < SolverTempVars.updatejacobian.size(); i++)
+        update_jac.append(SolverTempVars.updatejacobian[i]);
+    solver["updatejacobian"] = update_jac;
+    QJsonArray num_iter;
+    for (unsigned int i = 0; i < SolverTempVars.numiterations.size(); i++)
+        num_iter.append(static_cast<int>(SolverTempVars.numiterations[i]));
+    solver["numiterations"] = num_iter;
+    QJsonArray fail_reasons;
+    for (unsigned int i = 0; i < SolverTempVars.fail_reason.size(); i++)
+        fail_reasons.append(QString::fromStdString(SolverTempVars.fail_reason[i]));
+    solver["fail_reasons"] = fail_reasons;
+    json["solver_state"] = solver;
+
+    // Solver settings
+    QJsonObject settings;
+    settings["n_threads"] = SolverSettings.n_threads;
+    settings["NRtolerance"] = SolverSettings.NRtolerance;
+    settings["C_N_weight"] = SolverSettings.C_N_weight;
+    settings["direct_jacobian"] = SolverSettings.direct_jacobian;
+    settings["scalediagonal"] = SolverSettings.scalediagonal;
+    settings["optimize_lambda"] = SolverSettings.optimize_lambda;
+    settings["RecordAllOutputs"] = SolverSettings.RecordAllOutputs;
+    //settings["maxiteration"] = SolverSettings.maxmaxiteration;
+    settings["n_threads"] = SolverSettings.n_threads;
+    settings["landtozero_factor"] = SolverSettings.landtozero_factor;
+    settings["NR_coeff_reduction_factor"] = SolverSettings.NR_coeff_reduction_factor;
+    json["solver_settings"] = settings;
+
+    // Blocks
+    QJsonObject blocksJson;
+    for (unsigned int i = 0; i < blocks.size(); i++)
+        blocksJson[QString::fromStdString(blocks.at(i).GetName())] = blocks.at(i).toJsonObjectFull();
+    json["blocks"] = blocksJson;
+
+    // Links
+    QJsonObject linksJson;
+    for (unsigned int i = 0; i < links.size(); i++)
+        linksJson[QString::fromStdString(links.at(i).GetName())] = links.at(i).toJsonObjectFull();
+    json["links"] = linksJson;
+
+    // Sources
+    QJsonObject sourcesJson;
+    for (unsigned int i = 0; i < sources.size(); i++)
+        sourcesJson[QString::fromStdString(sources.at(i).GetName())] = sources.at(i).toJsonObjectFull();
+    json["sources"] = sourcesJson;
+
+    // Constituents
+    QJsonObject constituentsJson;
+    for (unsigned int i = 0; i < constituents.size(); i++)
+        constituentsJson[QString::fromStdString(constituents.at(i).GetName())] = constituents.at(i).toJsonObjectFull();
+    json["constituents"] = constituentsJson;
+
+    // Reactions
+    QJsonObject reactionsJson;
+    for (unsigned int i = 0; i < reactions.size(); i++)
+        reactionsJson[QString::fromStdString(reactions.at(i).GetName())] = reactions.at(i).toJsonObjectFull();
+    json["reactions"] = reactionsJson;
+
+    // Reaction parameters
+    QJsonObject rxnParamsJson;
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+        rxnParamsJson[QString::fromStdString(reaction_parameters.at(i).GetName())] = reaction_parameters.at(i).toJsonObjectFull();
+    json["reaction_parameters"] = rxnParamsJson;
+
+    // Observations
+    QJsonObject obsJson;
+    for (unsigned int i = 0; i < observations.size(); i++)
+        obsJson[QString::fromStdString(observations.at(i).GetName())] = observations.at(i).toJsonObjectFull();
+    json["observations"] = obsJson;
+
+    // Parameters
+    QJsonObject paramsJson;
+    for (unsigned int i = 0; i < ParametersCount(); i++)
+        paramsJson[QString::fromStdString(parameter_set[i]->GetName())] = parameter_set[i]->toJsonObjectFull();
+    json["parameters"] = paramsJson;
+
+    // Objective functions
+    QJsonObject objFuncJson;
+    for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
+        objFuncJson[QString::fromStdString(objective_function_set[i]->GetName())] = objective_function_set[i]->toJsonObjectFull();
+    json["objective_functions"] = objFuncJson;
+
+    // Settings objects
+    QJsonObject settingsObjJson;
+    for (unsigned int i = 0; i < Settings.size(); i++)
+        settingsObjJson[QString::fromStdString(Settings.at(i).GetName())] = Settings.at(i).toJsonObjectFull();
+    json["settings_objects"] = settingsObjJson;
+
+    // Added properties
+    QJsonObject addedBlockProps;
+    for (auto it = addedpropertiestoallblocks.begin(); it != addedpropertiestoallblocks.end(); ++it)
+        addedBlockProps[QString::fromStdString(it->first)] = it->second.toJsonObject();
+    json["addedpropertiestoallblocks"] = addedBlockProps;
+
+    QJsonObject addedLinkProps;
+    for (auto it = addedpropertiestoalllinks.begin(); it != addedpropertiestoalllinks.end(); ++it)
+        addedLinkProps[QString::fromStdString(it->first)] = it->second.toJsonObject();
+    json["addedpropertiestoalllinks"] = addedLinkProps;
+
+    // Added templates
+    QJsonArray templatesArr;
+    for (const auto& t : addedtemplates)
+        templatesArr.append(QString::fromStdString(t));
+    json["addedtemplates"] = templatesArr;
+
+    return json;
+}
+
+bool System::SaveFullStateTo(const QString &filename) const
+{
+    QJsonDocument doc(toJsonObjectFull());
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly))
+        return false;
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+    return true;
+}
+
+void System::CalcAllExpressions(const Expression::timing &tmg, bool force_all, bool dolinks)
+{
+#ifndef NO_OPENMP
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
+#endif
+    for (int i = 0; i < blocks.size(); i++)
+        blocks[i].CalcExpressions(tmg, force_all);
+
+    if (dolinks)
+    {
+#ifndef NO_OPENMP
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
+#endif
+        for (int i = 0; i < links.size(); i++)
+            links[i].CalcExpressions(tmg, force_all);
+    }
+}
+
+#endif
