@@ -506,7 +506,7 @@ class System: public Object
         void SetStateVariables_TR(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present);
         vector<bool> GetOutflowLimitedVector();
         vector<double> GetOutflowLimitFactorVector(const Expression::timing &tmg);
-        void SetOutflowLimitedVector(vector<bool>& x);
+        void SetOutflowLimitedVector(const vector<bool>& x);
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
         void InitiateOutputs();
@@ -538,6 +538,31 @@ class System: public Object
         void PopulateFunctionOperators();
 
         function_operators func_operators;
+        void LogJacobianFailure(const CMatrix_arma &J, bool transport);
+        void LogErrorIncrease(double err_p, double err, bool transport, int ini_max_error_block);
+        void LogIterationLimitExceeded(const CVector_arma &F, const CVector_arma &X, const CMatrix_arma &InvJ,
+                                       double err, double err_ini, double X_norm, bool transport,
+                                       unsigned int statevarno, int ini_max_error_block);
+        void LogErrorKeptIncreasing(const CVector_arma &F, bool transport, unsigned int statevarno);
+
+        bool ComputeNewtonStep(const string &variable, CVector_arma &X, CVector_arma &X1,
+                               CVector_arma &dx, const CVector_arma &F,
+                               unsigned int statevarno, bool transport,
+                               const vector<bool> &outflowlimitstatus_old);
+
+        enum class NRAdjustResult { ok, failed };
+
+        NRAdjustResult AdjustNRCoefficient(CVector_arma &X, const CVector_arma &X_past,
+                                           const CVector_arma &X1, const CVector_arma &F,
+                                           const CVector_arma &F1,
+                                           double err, double &err_p,
+                                           unsigned int statevarno, bool transport,
+                                           int ini_max_error_block,
+                                           double &error_increase_counter,
+                                           const vector<bool> &outflowlimitstatus_old);
+
+        void InitializeOneStep(const string &variable, unsigned int statevarno, bool transport,
+                               vector<bool> &outflowlimitstatus_old);
 
 #ifndef NO_OPENMP
         omp_lock_t lock;
