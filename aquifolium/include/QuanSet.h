@@ -100,6 +100,7 @@ class QuanSet: public unordered_map<string, Quan>
         bool AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code);
 		string ObjectType; 
 		string& CategoryType() { return typecategory; }
+        const string& CategoryType() const { return typecategory; }
         string& Normalizing_Quantity()
         {
             return normalizing_quantity;

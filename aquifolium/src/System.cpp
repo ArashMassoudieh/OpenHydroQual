@@ -1827,7 +1827,7 @@ CVector_arma System::GetStateVariables(const string &variable, const Expression:
     }
 }
 
-pair<int, int> System::GetBlockConstituentValue(unsigned int i)
+pair<int, int> System::GetBlockConstituentValue(unsigned int i) const
 {
     pair<int, int>  out; 
     out.first = i / this->constituents.size();
@@ -1835,7 +1835,7 @@ pair<int, int> System::GetBlockConstituentValue(unsigned int i)
     return out; 
 }
 
-std::string  System::GetBlockConstituentSring(unsigned int i) // return block and constituent name for a state variable number i
+std::string  System::GetBlockConstituentSring(unsigned int i) const // return block and constituent name for a state variable number i
 {
     string out;
     out += block(i / this->constituents.size())->GetName();
@@ -1844,12 +1844,10 @@ std::string  System::GetBlockConstituentSring(unsigned int i) // return block an
     return out;
 }
 
-string System::GetBlockConstituent(unsigned int i)
+string System::GetBlockConstituent(unsigned int i) const
 {
     int BlockNo = i / this->constituents.size();
     int ConstituentNo = i % this->constituents.size();
-    //qDebug() << BlockNo; 
-    //qDebug() << ConstituentNo; 
     string out = blocks[BlockNo].GetName() + ":" + constituents[ConstituentNo].GetName();
     return out;
 }
@@ -2318,10 +2316,10 @@ void System::SetVariableParents()
     }
 }
 
-vector<string> System::GetAllBlockTypes()
+vector<string> System::GetAllBlockTypes() const 
 {
     vector<string> out;
-    for (map<string, QuanSet>::iterator it = metamodel.GetMetaModel()->begin(); it != metamodel.GetMetaModel()->end(); it++)
+    for (map<string, QuanSet>::const_iterator it = metamodel.GetMetaModel()->cbegin(); it != metamodel.GetMetaModel()->cend(); it++)
         if (it->second.BlockLink == blocklink::block)
         {
             //ShowMessage(it->first);
@@ -2332,10 +2330,10 @@ vector<string> System::GetAllBlockTypes()
 
 }
 
-vector<string> System::GetAllLinkTypes()
+vector<string> System::GetAllLinkTypes() const 
 {
     vector<string> out;
-    for (map<string, QuanSet>::iterator it = metamodel.GetMetaModel()->begin(); it != metamodel.GetMetaModel()->end(); it++)
+    for (map<string, QuanSet>::const_iterator it = metamodel.GetMetaModel()->cbegin(); it != metamodel.GetMetaModel()->cend(); it++)
         if (it->second.BlockLink == blocklink::link)
         {
             //ShowMessage(it->first);
@@ -2345,10 +2343,10 @@ vector<string> System::GetAllLinkTypes()
     return out;
 }
 
-vector<string> System::GetAllSourceTypes()
+vector<string> System::GetAllSourceTypes() const
 {
 	vector<string> out;
-	for (map<string, QuanSet>::iterator it = metamodel.GetMetaModel()->begin(); it != metamodel.GetMetaModel()->end(); it++)
+	for (map<string, QuanSet>::const_iterator it = metamodel.GetMetaModel()->cbegin(); it != metamodel.GetMetaModel()->cend(); it++)
 		if (it->second.BlockLink == blocklink::source)
 		{
             //ShowMessage(it->first);
@@ -2358,7 +2356,7 @@ vector<string> System::GetAllSourceTypes()
 	return out;
 }
 
-vector<string> System::GetAllSourceNames()
+vector<string> System::GetAllSourceNames() const
 {
     vector<string> out;
     for (unsigned int i=0; i<sources.size(); i++)
@@ -2366,15 +2364,15 @@ vector<string> System::GetAllSourceNames()
     return out;
 }
 
-vector<string> System::GetAllBlockNames()
+vector<string> System::GetAllBlockNames() const
 {
     vector<string> out;
     for (unsigned int i=0; i<blocks.size(); i++)
         out.push_back(blocks[i].GetName());
     return out;
 }
-
-vector<string> System::GetAllLinkNames()
+ 
+vector<string> System::GetAllLinkNames() const
 {
     vector<string> out;
     for (unsigned int i=0; i<links.size(); i++)
@@ -2382,7 +2380,7 @@ vector<string> System::GetAllLinkNames()
     return out;
 }
 
-vector<string> System::GetAllReactionNames()
+vector<string> System::GetAllReactionNames() const
 {
     vector<string> out;
     for (unsigned int i=0; i<reactions.size(); i++)
@@ -2391,7 +2389,7 @@ vector<string> System::GetAllReactionNames()
 
 }
 
-vector<string> System::GetAllObservationNames()
+vector<string> System::GetAllObservationNames() const
 {
     vector<string> out;
     for (unsigned int i=0; i<observations.size(); i++)
@@ -2401,10 +2399,10 @@ vector<string> System::GetAllObservationNames()
 }
 
 
-vector<string> System::GetAllTypesOf(const string &type)
+vector<string> System::GetAllTypesOf(const string& type) const
 {
 	vector<string> out;
-	for (map<string, QuanSet>::iterator it = metamodel.GetMetaModel()->begin(); it != metamodel.GetMetaModel()->end(); it++)
+	for (map<string, QuanSet>::const_iterator it = metamodel.GetMetaModel()->cbegin(); it != metamodel.GetMetaModel()->cend(); it++)
 		if (it->second.CategoryType() == type)
 		{
             //ShowMessage(it->first);
