@@ -53,6 +53,7 @@ public:
 
 #ifdef Q_JSON_SUPPORT
     Quan(QJsonObject& qjobject);
+    QJsonObject toJsonObject() const;
 #endif // QT_version
 
     const string& GetStringValue() const { return _string_value; }

@@ -33,7 +33,10 @@ class Objective_Function_Set
         Objective_Function_Set& operator=(const Objective_Function_Set& other);
         void Append(const string &name, const Objective_Function &o_func, double weight = 1);
         Objective_Function* operator[](string name);
-        Objective_Function* operator[](int i) {return &objectivefunctions[i];}
+        Objective_Function* operator[](int i);
+        const Objective_Function* operator[](const string& name) const;
+        const Objective_Function* operator[](int i) const;
+        unsigned int size() const { return objectivefunctions.size(); }
         double Calculate();
         void ClearStoredTimeSeries();
         TimeSeriesSet<double> TimeSeries();

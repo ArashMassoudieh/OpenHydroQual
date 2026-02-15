@@ -132,7 +132,7 @@ double Objective_Function::GetObjective()
     SetProperty("method", Variable("method")->GetProperty());
     stored_time_series = stored_time_series.make_uniform(Parent()->dt0());
     if (type == objfunctype::Integrate)
-    {   objective_value = stored_time_series.integrate();
+    {   objective_value = fabs(stored_time_series.integrate());
         return objective_value;
     }
     else if (type == objfunctype::Value)

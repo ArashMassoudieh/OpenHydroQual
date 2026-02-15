@@ -194,9 +194,10 @@ class System: public Object
         unsigned int LinksCount() {return links.size();}
         unsigned int SourcesCount() {return sources.size();}
         unsigned int ReactionsCount() {return reactions.size();}
-        unsigned int ObservationsCount() {return observations.size();}
-        unsigned int ParametersCount() {return Parameters().size();}
+        unsigned int ObservationsCount() const {return observations.size();}
+        unsigned int ParametersCount() const {return Parameters().size();}
         unsigned int ObjectiveFunctionsCount() {return ObjectiveFunctions().size();}
+        unsigned int ObjectiveFunctionsCount() const {return objective_function_set.size();}
         unsigned int ConstituentsCount() {return constituents.size();}
         unsigned int ReactionParametersCount() {return reaction_parameters.size();}
         vector<string> GetAllSourceNames();
@@ -311,6 +312,7 @@ class System: public Object
         Parameter *GetParameter(const string &name) {return parameter_set[name];}
         Parameter *GetParameter(int i) {return parameter_set[i];}
         Parameter_Set &Parameters() {return parameter_set;}
+        Parameter_Set Parameters() const {return parameter_set;}
         Objective_Function_Set &ObjectiveFunctions() {return objective_function_set;}
         bool AppendParameter(const string &paramname, const double &lower_limit, const double &upper_limit, const string &prior_distribution = "normal");
         bool AppendParameter(const string &paramname, const Parameter& param);
@@ -382,6 +384,8 @@ class System: public Object
         bool SaveStateVariableToJson(const string &variable, const string &filename);
         bool LoadStateVariableFromJson(const string &variable, const string &filename);
         void Translate(double dx, double dy);
+        QJsonObject toJsonObjectFull() const;
+        bool SaveFullStateTo(const QString &filename) const;
 
         /**
          * @brief Extracts all unique properties from blocks and links that have include_in_output set to true
@@ -502,12 +506,13 @@ class System: public Object
         void SetStateVariables_TR(const string &variable, CVector_arma &X, const Expression::timing &tmg = Expression::timing::present);
         vector<bool> GetOutflowLimitedVector();
         vector<double> GetOutflowLimitFactorVector(const Expression::timing &tmg);
-        void SetOutflowLimitedVector(vector<bool>& x);
+        void SetOutflowLimitedVector(const vector<bool>& x);
         solvertemporaryvars SolverTempVars;
         outputs Outputs;
         void InitiateOutputs();
 
         void PopulateOutputs(bool links=true);
+        void CalcAllExpressions(const Expression::timing &tmg, bool force_all = true, bool dolinks = true);
         void TransferQuantitiesFromMetaModel();
         void AppendQuantitiesFromMetaModel();
         Objective_Function_Set objective_function_set;
@@ -533,6 +538,31 @@ class System: public Object
         void PopulateFunctionOperators();
 
         function_operators func_operators;
+        void LogJacobianFailure(const CMatrix_arma &J, bool transport);
+        void LogErrorIncrease(double err_p, double err, bool transport, int ini_max_error_block);
+        void LogIterationLimitExceeded(const CVector_arma &F, const CVector_arma &X, const CMatrix_arma &InvJ,
+                                       double err, double err_ini, double X_norm, bool transport,
+                                       unsigned int statevarno, int ini_max_error_block);
+        void LogErrorKeptIncreasing(const CVector_arma &F, bool transport, unsigned int statevarno);
+
+        bool ComputeNewtonStep(const string &variable, CVector_arma &X, CVector_arma &X1,
+                               CVector_arma &dx, const CVector_arma &F,
+                               unsigned int statevarno, bool transport,
+                               const vector<bool> &outflowlimitstatus_old);
+
+        enum class NRAdjustResult { ok, failed };
+
+        NRAdjustResult AdjustNRCoefficient(CVector_arma &X, const CVector_arma &X_past,
+                                           const CVector_arma &X1, const CVector_arma &F,
+                                           const CVector_arma &F1,
+                                           double err, double &err_p,
+                                           unsigned int statevarno, bool transport,
+                                           int ini_max_error_block,
+                                           double &error_increase_counter,
+                                           const vector<bool> &outflowlimitstatus_old);
+
+        void InitializeOneStep(const string &variable, unsigned int statevarno, bool transport,
+                               vector<bool> &outflowlimitstatus_old);
 
 #ifndef NO_OPENMP
         omp_lock_t lock;

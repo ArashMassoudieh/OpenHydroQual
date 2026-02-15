@@ -62,6 +62,19 @@ Parameter* Parameter_Set::operator[](int i)
     return &parameters[i];
 }
 
+const Parameter* Parameter_Set::operator[](const string& name) const
+{
+    for (int i = 0; i < parameters.size(); i++)
+        if (parameters.at(i).GetName() == name)
+            return &parameters.at(i);
+    return nullptr;
+}
+
+const Parameter* Parameter_Set::operator[](int i) const
+{
+    return &parameters.at(i);
+}
+
 string Parameter_Set::getKeyAtIndex (int index){
     return parameters[index].GetName();
 }
