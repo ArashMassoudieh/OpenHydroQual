@@ -703,7 +703,7 @@ vector<string> Object::ItemswithOutput()
 }
 
 
-unique_ptr<vector<string>> &Object::operators()
+const vector<string> &Object::operators() const
 {
     if (parent)
     {
@@ -712,7 +712,7 @@ unique_ptr<vector<string>> &Object::operators()
 
 
 }
-unique_ptr<vector<string>> &Object::functions()
+const vector<string> &Object::functions() const
 {
     if (parent)
     {

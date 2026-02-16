@@ -57,7 +57,7 @@ class Objective_Function_Set
                     return true;
             return false;
         }
-        int count(const string &s) {
+        int count(const string &s) const {
             int j=0;
             for (unsigned int i=0; i<objectivefunctions.size(); i++)
                 if (objectivefunctions[i].GetName()==s)

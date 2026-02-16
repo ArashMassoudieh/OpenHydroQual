@@ -44,112 +44,69 @@
 
 
 
-System::System():Object::Object()
+const vector<string> System::operators = { "+", "-", "*", "/", "^", "(", ")", ":" };
+const vector<string> System::functions = { "abs", "sgn", "exp", "pos", "min", "max", "mon", "mbs", "lpw" };
+
+System::System() : Object::Object()
 {
-    PopulateOperatorsFunctions();
+    InitOpenMP();
     Object::AssignRandomPrimaryKey();
 }
 
-void System::PopulateOperatorsFunctions()
+void System::InitOpenMP()
 {
 #ifndef NO_OPENMP
     if (!omp_in_parallel())
-    {
-        //qDebug()<<"Number of Threads: "<<SolverSettings.n_threads;
         omp_set_num_threads(SolverSettings.n_threads);
-
-    }
 #endif
-
-    operators.reset(new vector<string>);
-    operators->push_back("+");
-    operators->push_back("-");
-    operators->push_back("*");
-    operators->push_back("/");
-    operators->push_back("^");
-    operators->push_back("(");
-    operators->push_back(")");
-    operators->push_back(":");
-
-    functions.reset(new vector<string>);
-    functions->push_back("abs");
-    functions->push_back("sgn");
-    functions->push_back("exp");
-    functions->push_back("pos");
-    functions->push_back("min");
-    functions->push_back("max");
-    functions->push_back("mon");
-    functions->push_back("mbs");
-    functions->push_back("lpw");
 }
 
 System::~System()
 {
-    if (solutionlogger != nullptr)
-        delete solutionlogger;
     clear();
-    //dtor
+
 }
 
-System::System(const System& other):Object::Object(other)
+void System::CopyFrom(const System& other)
 {
-    PopulateOperatorsFunctions();
-    SolverTempVars.SetUpdateJacobian(true);
-	sources = other.sources;
-	blocks = other.blocks;
+    blocks = other.blocks;
     links = other.links;
+    sources = other.sources;
     constituents = other.constituents;
     reactions = other.reactions;
     reaction_parameters = other.reaction_parameters;
-    objective_function_set = other.objective_function_set;
     observations = other.observations;
+    objective_function_set = other.objective_function_set;
     parameter_set = other.parameter_set;
+    Settings = other.Settings;
+    metamodel = other.metamodel;
     silent = other.silent;
     SimulationParameters = other.SimulationParameters;
-    SolverSettings = other. SolverSettings;
+    SolverSettings = other.SolverSettings;
     solvevariableorder = other.solvevariableorder;
-	SolverTempVars = other.SolverTempVars;
+    SolverTempVars = other.SolverTempVars;
     paths = other.paths;
-    Settings = other.Settings;
-    SolverTempVars.SolutionFailed = false;
     ParameterEstimationMode = other.ParameterEstimationMode;
-    metamodel = other.metamodel;
-    SetAllParents();
-    Object::AssignRandomPrimaryKey();
+
+    SolverTempVars.SolutionFailed = false;
     Outputs.AllOutputs.clear();
     Outputs.ObservedOutputs.clear();
+    SetAllParents();
+    InitOpenMP();
+    Object::AssignRandomPrimaryKey();
+}
+
+System::System(const System& other) : Object::Object(other)
+{
+    CopyFrom(other);
 }
 
 System& System::operator=(const System& rhs)
 {
-    if (this == &rhs) return *this; // handle self assignment
+    if (this == &rhs) return *this;
     Clear();
     Object::operator=(rhs);
-	SolverTempVars.SetUpdateJacobian(true);
-	blocks = rhs.blocks;
-    links = rhs.links;
-    sources = rhs.sources;
-    silent = rhs.silent;
-    constituents = rhs.constituents;
-    reactions = rhs.reactions;
-    reaction_parameters = rhs.reaction_parameters;
-    objective_function_set = rhs.objective_function_set;
-    parameter_set = rhs.parameter_set;
-    SimulationParameters = rhs.SimulationParameters;
-    SolverSettings = rhs. SolverSettings;
-    solvevariableorder = rhs.solvevariableorder;
-	SolverTempVars = rhs.SolverTempVars;
-    paths = rhs.paths;
-    Settings = rhs.Settings;
-    observations = rhs.observations;
-    SolverTempVars.SolutionFailed = false;
-    ParameterEstimationMode = rhs.ParameterEstimationMode;
-    metamodel = rhs.metamodel;
-    SetAllParents();
-    PopulateOperatorsFunctions();
-    Object::AssignRandomPrimaryKey();
-    Outputs.AllOutputs.clear();
-    Outputs.ObservedOutputs.clear();
+    CopyFrom(rhs);
     return *this;
 }
 
@@ -158,14 +115,23 @@ void System::Clear()
     blocks.clear();
     links.clear();
     sources.clear();
-    objective_function_set.clear();
-    parameter_set.clear();
+    constituents.clear();
     reactions.clear();
     reaction_parameters.clear();
-    constituents.clear();
+    Settings.clear();                    
+    observations.clear();               
+    objective_function_set.clear();
+    parameter_set.clear();
     Outputs.AllOutputs.clear();
     Outputs.ObservedOutputs.clear();
     metamodel.Clear();
+    solvevariableorder.clear();         
+    addedpropertiestoallblocks.clear(); 
+    addedpropertiestoalllinks.clear();  
+    addedtemplates.clear();             
+    fit_measures.clear();               
+    alltimeseries.clear();              
+    errorhandler.clear();               
 }
 
 
@@ -277,7 +243,14 @@ Block *System::block(const string &s)
     for (unsigned int i=0; i<blocks.size(); i++)
         if (blocks[i].GetName() == s) return &blocks[i];
 
-    //errorhandler.Append(GetName(),"System","block","Block '" + s + "' was not found",101);
+    return nullptr;
+}
+
+const Block* System::block(const string& s) const
+{
+    for (unsigned int i = 0; i < blocks.size(); i++)
+        if (blocks[i].GetName() == s) return &blocks[i];
+
     return nullptr;
 }
 
@@ -300,19 +273,50 @@ int System::linkid(const string &s)
     return -1;
 }
 
+int System::blockid(const string& s) const
+{
+    for (unsigned int i = 0; i < blocks.size(); i++)
+        if (blocks[i].GetName() == s) return int(i);
+
+    return -1;
+}
+
+int System::linkid(const string& s) const
+{
+    for (unsigned int i = 0; i < links.size(); i++)
+        if (links[i].GetName() == s) return int(i);
+
+    return -1;
+}
+
 Link *System::link(const string &s)
 {
     for (unsigned int i=0; i<links.size(); i++)
         if (links[i].GetName() == s) return &links[i];
 
-    //errorhandler.Append(GetName(),"System","link","Link '" + s + "' was not found",104);
+    return nullptr;
+}
+
+const Link* System::link(const string& s) const
+{
+    for (unsigned int i = 0; i < links.size(); i++)
+        if (links[i].GetName() == s) return &links[i];
 
     return nullptr;
 }
 
+
 Source *System::source(const string &s)
 {
     for (unsigned int i=0; i<sources.size(); i++)
+        if (sources[i].GetName() == s) return &sources[i];
+
+    return nullptr;
+}
+
+const Source* System::source(const string& s) const
+{
+    for (unsigned int i = 0; i < sources.size(); i++)
         if (sources[i].GetName() == s) return &sources[i];
 
     return nullptr;
@@ -326,6 +330,14 @@ Constituent *System::constituent(const string &s)
     return nullptr;
 }
 
+const Constituent* System::constituent(const string& s) const
+{
+    for (unsigned int i = 0; i < constituents.size(); i++)
+        if (constituents[i].GetName() == s) return &constituents[i];
+
+    return nullptr;
+}
+
 Reaction *System::reaction(const string &s)
 {
     for (unsigned int i=0; i<reactions.size(); i++)
@@ -334,9 +346,26 @@ Reaction *System::reaction(const string &s)
     return nullptr;
 }
 
+const Reaction* System::reaction(const string& s) const
+{
+    for (unsigned int i = 0; i < reactions.size(); i++)
+        if (reactions[i].GetName() == s) return &reactions[i];
+
+    return nullptr;
+}
+
 RxnParameter *System::reactionparameter(const string &s)
 {
     for (unsigned int i=0; i<reaction_parameters.size(); i++)
+        if (reaction_parameters[i].GetName() == s) return &reaction_parameters[i];
+
+    return nullptr;
+
+}
+
+const RxnParameter* System::reactionparameter(const string& s) const
+{
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
         if (reaction_parameters[i].GetName() == s) return &reaction_parameters[i];
 
     return nullptr;
@@ -352,9 +381,26 @@ Observation *System::observation(const string &s)
 
 }
 
+const Observation* System::observation(const string& s) const
+{
+    for (unsigned int i = 0; i < observations.size(); i++)
+        if (observations[i].GetName() == s) return &observations[i];
+
+    return nullptr;
+
+}
+
 Object *System::settings(const string &s)
 {
     for (unsigned int i=0; i<Settings.size(); i++)
+        if (Settings[i].GetName() == s) return &Settings[i];
+
+    return nullptr;
+}
+
+const Object* System::settings(const string& s) const
+{
+    for (unsigned int i = 0; i < Settings.size(); i++)
         if (Settings[i].GetName() == s) return &Settings[i];
 
     return nullptr;
@@ -372,11 +418,32 @@ Parameter *System::parameter(const string &s)
         return (Parameters()[s]);
 }
 
+
+const Parameter* System::parameter(const string& s) const
+{
+    if (Parameters().count(s) == 0)
+    {
+        return nullptr;
+    }
+    else
+        return (Parameters()[s]);
+}
+
 Objective_Function *System::objectivefunction(const string &s)
 {
     if (ObjectiveFunctions().count(s) == 0)
     {
         errorhandler.Append(GetName(),"System","objective function","objective function '" + s + "' was not found",111);
+        return nullptr;
+    }
+    else
+        return (ObjectiveFunctions()[s]);
+}
+
+const Objective_Function* System::objectivefunction(const string& s) const
+{
+    if (ObjectiveFunctions().count(s) == 0)
+    {
         return nullptr;
     }
     else
@@ -417,6 +484,42 @@ Object *System::object(const string &s)
             return ObjectiveFunctions()[i];
 
     //errorhandler.Append(GetName(),"System","object","Object '" + s + "' was not found",105);
+
+    return nullptr;
+}
+
+const Object* System::object(const string& s) const
+{
+    for (unsigned int i = 0; i < Settings.size(); i++)
+        if (Settings[i].GetName() == s) return &Settings[i];
+
+    for (unsigned int i = 0; i < links.size(); i++)
+        if (links[i].GetName() == s) return &links[i];
+
+    for (unsigned int i = 0; i < blocks.size(); i++)
+        if (blocks[i].GetName() == s) return &blocks[i];
+
+    for (unsigned int i = 0; i < sources.size(); i++)
+        if (sources[i].GetName() == s) return &sources[i];
+
+    for (unsigned int i = 0; i < constituents.size(); i++)
+        if (constituents[i].GetName() == s) return &constituents[i];
+
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+        if (reaction_parameters[i].GetName() == s) return &reaction_parameters[i];
+
+    for (unsigned int i = 0; i < reactions.size(); i++)
+        if (reactions[i].GetName() == s) return &reactions[i];
+
+    for (unsigned int i = 0; i < observations.size(); i++)
+        if (observations[i].GetName() == s) return &observations[i];
+
+    for (unsigned int i = 0; i < ParametersCount(); i++)
+        if (Parameters()[i]->GetName() == s) return Parameters()[i];
+
+    for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
+        if (ObjectiveFunctions()[i]->GetName() == s)
+            return ObjectiveFunctions()[i];
 
     return nullptr;
 }
@@ -2453,6 +2556,15 @@ void System::AppendQuantitiesFromMetaModel()
 }
 
 
+Objective_Function* System::ObjectiveFunction(const std::string& name)
+{
+	for (int i = 0; i < objective_function_set.size(); i++)
+		if (objective_function_set[i]->GetName() == name)
+			return objective_function_set[i];
+
+    return nullptr;
+}
+
 void System::AppendObjectiveFunction(const string &name, const Objective_Function &obj, double weight)
 {
     objective_function_set.Append(name,obj, weight);
@@ -3016,7 +3128,7 @@ System::System(Script& scr)
             scr.Errors().push_back(scr[i]->LastError());
         }
     }
-    PopulateOperatorsFunctions();
+    InitOpenMP();
     SetVariableParents();
     Object::AssignRandomPrimaryKey();
 
@@ -3040,7 +3152,7 @@ bool System::CreateFromScript(Script& scr, const string& settingsfilename)
                 ReadSystemSettingsTemplate(settingsfilename);
         }
     }
-    PopulateOperatorsFunctions();
+    InitOpenMP();
     SetVariableParents();
     return success;
 

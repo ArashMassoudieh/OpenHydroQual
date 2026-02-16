@@ -160,6 +160,7 @@ public:
     // =====================================================================
     System();
     virtual ~System();
+    void CopyFrom(const System& other);
     System(const System& other);
     System(Script& scr);
     System& operator=(const System& other);
@@ -183,18 +184,31 @@ public:
     // Entity access by name
     // =====================================================================
     Block* block(const std::string& s);
+    const Block* block(const string& s) const;
     Link* link(const std::string& s);
+    const Link* link(const string& s) const;
     Source* source(const std::string& s);
+    const Source* source(const string& s) const;
     Constituent* constituent(const std::string& s);
+    const Constituent* constituent(const string& s) const;
     Reaction* reaction(const std::string& s);
+    const Reaction* reaction(const string& s) const;
     RxnParameter* reactionparameter(const std::string& s);
+    const RxnParameter* reactionparameter(const string& s) const;
     Observation* observation(const std::string& s);
+    const Observation* observation(const string& s) const;
     Parameter* parameter(const std::string& s);
+    const Parameter* parameter(const string& s) const;
     Objective_Function* objectivefunction(const std::string& s);
+    const Objective_Function* objectivefunction(const string& s) const;
     Object* object(const std::string& s);
+    const Object* object(const string& s) const;
     Object* settings(const std::string& s);
+    const Object* settings(const string& s) const;
     int blockid(const std::string& s);
     int linkid(const std::string& s);
+    int blockid(const string& s) const;
+    int linkid(const string& s) const;
 
     // =====================================================================
     // Entity access by index
@@ -420,6 +434,7 @@ public:
     // Objective functions
     // =====================================================================
     Objective_Function_Set& ObjectiveFunctions() { return objective_function_set; }
+    const Objective_Function_Set& ObjectiveFunctions() const { return objective_function_set; }
     Objective_Function_Set* ObjectiveFunctionSet() { return &objective_function_set; }
     Objective_Function* ObjectiveFunction(const std::string& name);
     CVector ObjectiveFunctionValues() { return objective_function_set.Objective_Values(); }
@@ -492,8 +507,8 @@ public:
     // =====================================================================
     std::vector<std::string> exp_functions() const { return func_operators.funcs; }
     std::vector<std::string> exp_operators() const { return func_operators.opts; }
-    std::unique_ptr<std::vector<std::string>> operators;    
-    std::unique_ptr<std::vector<std::string>> functions;    
+    static const vector<string> operators;
+    static const vector<string> functions;
 
     // =====================================================================
     // Messaging, errors, and verification
@@ -512,7 +527,7 @@ public:
     void UnUpdateAllVariables();            
     bool CalcAllInitialValues();            
     bool InitiatePrecalculatedFunctions();  
-    void PopulateOperatorsFunctions();      
+    void InitOpenMP();      
     void MakeTimeSeriesUniform(const double& increment);  
     void ResetAllowLimitedFlows(bool allow);              
     bool VerifyAsSource(Block* blk, Link* lnk);           
