@@ -731,7 +731,15 @@ private:
     void LogIterationLimitExceeded(const CVector_arma& F, const CVector_arma& X, const CMatrix_arma& InvJ,
         double err, double err_ini, double X_norm, bool transport,
         unsigned int statevarno, int ini_max_error_block);
-    void LogErrorKeptIncreasing(const CVector_arma& F, bool transport, unsigned int statevarno);
+    void LogErrorKeptIncreasing(const CVector_arma& F, bool transport, unsigned int statevarno);// In System.h private section:
+    void InitializeSolver(bool applyparameters);
+    void FinalizeOutputs(bool uniformizeoutput);
+    void HandleSolveFailure(int& fail_counter, RestorePoint& restorepoint);
+    void HandleSolveSuccess(int& counter, int& fail_counter, RestorePoint& restorepoint,
+        double progress, double progress_p);
+    bool CheckTerminationConditions();
+    void LogMessage(const string& msg, bool isWarning = false);
+    void LogDetails(const string& msg);
 
     // =====================================================================
     // Other private state
