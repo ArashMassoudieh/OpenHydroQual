@@ -4629,7 +4629,7 @@ QJsonObject System::toJsonObjectFull() const
     solver["NR_coefficient"] = nr_coeff;
     QJsonArray update_jac;
     for (unsigned int i = 0; i < SolverTempVars.updatejacobian.size(); i++)
-        update_jac.append(SolverTempVars.updatejacobian[i]);
+        update_jac.append(static_cast<bool>(SolverTempVars.updatejacobian[i]));
     solver["updatejacobian"] = update_jac;
     QJsonArray num_iter;
     for (unsigned int i = 0; i < SolverTempVars.numiterations.size(); i++)
