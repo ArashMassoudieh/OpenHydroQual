@@ -15,7 +15,7 @@
       "description": "Storage",
       "ask_user": "false",
       "initial_value_expression": "area*depth*theta",
-      "unit": "m~^3",
+      "unit": "m~^3;ft^3",
       "estimate": "true"
     },
     "Evapotranspiration": {
@@ -23,7 +23,8 @@
       "includeinoutput": "true",
       "description": "Evapotranspiration",
       "ask_user": "true",
-      "delegate": "ComboBox;Sources"
+      "delegate": "ComboBox;Sources",
+      "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "depth": {
       "type": "value",
@@ -113,7 +114,8 @@
       "expression": "K_sat_original*K_sat_scale_factor",
       "description": "Scaled Saturated Hydraulic conductivity",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m/day;ft/day;m/s;ft/s"
     },
     "bottom_elevation": {
       "type": "value",
@@ -139,7 +141,8 @@
       "expression": "depth*area",
       "description": "volume",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3;ft^3"
     },
     "alpha": {
       "type": "value",
@@ -226,7 +229,8 @@
       "description": "Pressure Head",
       "precalcbasedon": "theta:0:2",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "head": {
       "type": "expression",
@@ -234,7 +238,8 @@
       "description": "Hydraulic Head",
       "precalcbasedon": "theta:0:2",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "aniso_ratio":{
       "type": "value",
@@ -260,14 +265,16 @@
       "description": "Interface area",
       "expression": "(area.s+area.e)/2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
     },
     "length": {
       "type": "expression",
       "description": "Length",
       "expression": "(depth.s+depth.e)/2",
       "includeinoutput": "false",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "Se": {
       "type": "expression",
@@ -295,14 +302,16 @@
       "description": "Saturated Hydraulic Conductivity",
       "expression": "_min(K_sat.s;K_sat.e)",
       "includeinoutput": "false",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "flux": {
       "type": "expression",
@@ -310,7 +319,8 @@
       "expression": "(head.s-head.e)*K_eff/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "flow": {
       "type": "expression",
@@ -318,7 +328,8 @@
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     },
     "hydraulic_gradient": {
       "type": "expression",
@@ -384,14 +395,16 @@
       "description": "Saturated Hydraulic Conductivity",
       "expression": "0.5*(K_sat.s*aniso_ratio.s+K_sat.e*aniso_ratio.e)",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "flow": {
       "type": "expression",
@@ -399,7 +412,8 @@
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     },
     "color": {
       "type": "string",
@@ -465,7 +479,8 @@
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "flow": {
       "type": "expression",
@@ -473,7 +488,8 @@
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     },
     "color": {
       "type": "string",
@@ -492,21 +508,24 @@
       "description": "Interface area",
       "expression": "_min(area.s;area.e)",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
     },
     "length": {
       "type": "expression",
       "description": "Length",
       "expression": "depth.e/2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat.e",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "flow": {
       "type": "expression",
@@ -514,7 +533,8 @@
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     },
     "color": {
       "type": "string",
@@ -540,7 +560,8 @@
       "description": "Length",
       "expression": "depth.s/2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m;ft"
     },
     "Se": {
       "type": "expression",
@@ -568,14 +589,16 @@
       "description": "Saturated Hydraulic Conductivity",
       "expression": "K_sat.s",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "flow": {
       "type": "expression",
@@ -583,7 +606,8 @@
       "expression": "(head.s-head.e)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     },
     "color": {
       "type": "string",
@@ -642,14 +666,16 @@
       "description": "Saturated Hydraulic Conductivity",
       "expression": "K_sat.s",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "flow": {
       "type": "expression",
@@ -657,7 +683,8 @@
       "expression": "(head.s-_max(outlet_head;head.e))*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     },
     "outlet_head": {
       "type": "value",
@@ -713,14 +740,16 @@
       "description": "Saturated Hydraulic Conductivity",
       "expression": "K_sat.s",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "Hydraulic_Gradient": {
       "type": "value",
@@ -735,7 +764,8 @@
       "expression": "Hydraulic_Gradient*K_eff*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     },
     "color": {
       "type": "string",
@@ -815,14 +845,16 @@
       "type": "expression",
       "expression": "K_sat_original*K_sat_scale_factor",
       "description": "Scaled Saturated Hydraulic conductivity",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
       "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "flow": {
       "type": "expression",
@@ -830,7 +862,8 @@
       "expression": "_pos(pressure_head.s)*K_eff/length*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     },
     "color": {
       "type": "string",
@@ -849,21 +882,24 @@
       "description": "Interface area", 
       "expression": "_min(area.s;area.e)", 
       "includeinoutput": "true", 
-      "ask_user": "false" 
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
     }, 
     "length": { 
       "type": "expression", 
       "description": "Length", 
       "expression": "depth.e/2", 
       "includeinoutput": "true", 
-      "ask_user": "false" 
+      "ask_user": "false",
+      "unit": "m;ft"
     }, 
     "K_eff": { 
       "type": "expression", 
       "description": "Effective Hydraulic Conductivity", 
       "expression": "K_sat.e", 
       "includeinoutput": "true", 
-      "ask_user": "false" 
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s;m/s"
     }, 
     "flow": { 
       "type": "expression", 
@@ -871,7 +907,8 @@
       "expression": "(head.s-head.e)*K_eff/length*area*_pos(depth.s-depression_storage.s)/_pos(depth.s-depression_storage.s+0.000001)", 
       "includeinoutput": "true", 
       "applylimit": "true", 
-      "ask_user": "false" 
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     }, 
     "color": { 
       "type": "string", 

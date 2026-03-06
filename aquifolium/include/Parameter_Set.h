@@ -32,6 +32,8 @@ class Parameter_Set
         void Append(const string &name, const Parameter &param);
         Parameter* operator[](string name);
         Parameter* operator[](int i);
+        const Parameter* operator[](const string& name) const;
+        const Parameter* operator[](int i) const;
         string LastError() {return lasterror;}
         bool Contains(const string &name) {
             for (int i=0; i<parameters.size(); i++)

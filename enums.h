@@ -43,6 +43,7 @@ namespace CustomRoleCodes {
         UnitRole =							2802,
         defaultUnitRole =					2803,
         UnitsListRole =						2804,
+        DefaultUnitRole =                   Qt::UserRole + 12,
         allUnitsRole =						2805,
         TreeItemType =						2901,
         TreeParentItemType =				2902,

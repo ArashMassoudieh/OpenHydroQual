@@ -66,6 +66,24 @@ Objective_Function* Objective_Function_Set::operator[](string name)
      return nullptr;
 }
 
+Objective_Function* Objective_Function_Set::operator[](int i)
+{
+    return &objectivefunctions[i];
+}
+
+const Objective_Function* Objective_Function_Set::operator[](const string& name) const
+{
+    for (unsigned int i = 0; i < objectivefunctions.size(); i++)
+        if (objectivefunctions[i].GetName() == name)
+            return &objectivefunctions[i];
+    return nullptr;
+}
+
+const Objective_Function* Objective_Function_Set::operator[](int i) const
+{
+    return &objectivefunctions[i];
+}
+
 double Objective_Function_Set::Calculate()
 {
     double out = 0;

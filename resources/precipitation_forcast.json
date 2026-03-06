@@ -18,14 +18,16 @@
       "includeinoutput": "true",
       "description": "Precipitation intensity",
       "ask_user": "true",
-      "delegate": "Browser;time series"
+      "delegate": "Browser;time series",
+      "unit": "m;in;ft;cm;mm"
    },
    "kernel_smoothed_forcast": {
 	"type": "expression",
 	"expression": "_ekr(timeseries;0.5)",
 	"description": "Kernel Smoothed Forcast",
 	"includeinoutput": "true",
-        "ask_user": "false"
+        "ask_user": "false",
+        "unit": "m/day;in/day;ft/day;cm/day;mm/day"
    }
   },
   "Flow_control_device": {
@@ -40,7 +42,8 @@
       "includeinoutput": "true",
       "description": "Precipitation intensity",
       "ask_user": "true",
-      "delegate": "Browser;time series"
+      "delegate": "Browser;time series",
+      "unit": "m;in;ft;cm;mm"
    },
    "flow_coefficient": {
       "type": "value",
@@ -77,7 +80,8 @@
 	"expression": "_ekr(timeseries;lambda)",
 	"description": "Kernel Smoothed Forcast",
 	"includeinoutput": "true",
-        "ask_user": "false"
+        "ask_user": "false",
+        "unit": "m/day;in/day;ft/day;cm/day;mm/day"
    },
     "flow": {
       "type": "rule",
@@ -89,7 +93,8 @@
     	},
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
     },
     "Q_min": {
       "type": "value",
@@ -182,7 +187,8 @@
 	"expression": "_gkr(timeseries;kernel_delay_parameter;kernel_spread_parameter)",
 	"description": "Kernel Smoothed Forcast",
 	"includeinoutput": "true",
-        "ask_user": "false"
+        "ask_user": "false",
+        "unit": "m/day"
    },
     "flow": {
       "type": "rule",
@@ -194,7 +200,8 @@
     	},
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day"
     },
     "Q_min": {
       "type": "value",
@@ -274,13 +281,15 @@
     "area": {
       "type": "expression",
       "description": "Area",
-      "expression": "3.1415*(diameter^2)/4"
+      "expression": "3.1415*(diameter^2)/4",
+      "unit": "m^2;ft^2;inch^2"
     },
     "max_flow": {
       "type": "expression",
       "description": "Maximum flow",
       "includeinoutput": "true",
-      "expression": "86400*_sqr(2*9.81*_pos(head.s-head.e)/valve_K)*area"
+      "expression": "86400*_sqr(2*9.81*_pos(head.s-head.e)/valve_K)*area",
+      "unit": "m^3/day;ft^3/s;m^3/s"
     },
     "valve_K": {
       "type": "expression",
@@ -312,7 +321,8 @@
 	"expression": "_ekr(timeseries;lambda)",
 	"description": "Kernel Smoothed Forcast",
 	"includeinoutput": "true",
-        "ask_user": "false"
+        "ask_user": "false",
+        "unit": "m/day"
    },
     "flow": {
       "type": "rule",
@@ -323,7 +333,8 @@
     	},
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s"
     },
     "threshold": {
       "type": "value",
@@ -387,13 +398,15 @@
     "area": {
       "type": "expression",
       "description": "Area",
-      "expression": "3.1415*(diameter^2)/4"
+      "expression": "3.1415*(diameter^2)/4",
+      "unit": "m^2;in^2;ft^2;cm^2"
     },
     "max_flow": {
       "type": "expression",
       "description": "Maximum flow",
       "includeinoutput": "true",
-      "expression": "86400*_sqr(2*9.81*_pos(head.s-head.e)/valve_K)*area"
+      "expression": "86400*_sqr(2*9.81*_pos(head.s-head.e)/valve_K)*area",
+      "unit": "m^3/day;ft^3/s;m^3/s"
     },
     "valve_K": {
       "type": "value",
@@ -418,7 +431,8 @@
 	"expression": "_ekr(timeseries;lambda)",
 	"description": "Kernel Smoothed Forcast",
 	"includeinoutput": "true",
-        "ask_user": "false"
+        "ask_user": "false",
+        "unit": "m/day;ft/day;mm/day;in/day"
    },
     "flow": {
       "type": "rule",
@@ -429,7 +443,8 @@
     	},
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s"
     },
     "threshold": {
       "type": "value",

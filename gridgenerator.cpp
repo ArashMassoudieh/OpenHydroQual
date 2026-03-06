@@ -879,17 +879,32 @@ bool GridGenerator::GenerateLinks()
 
 bool GridGenerator::AssignProperty(const string &name, QuanSet &quanset, QMap<string,quan_info>::iterator it, int i, int j)
 {
-    bool r;
+    bool r = false;
+
     if (QString::fromStdString(it->delegate).contains("UnitBox"))
     {
         double value=0;
         double increment_x=0;
         double increment_y=0;
-        double coefficient = XString::coefficient(QString::fromStdString(quanset.GetVar(it.key()).Unit()));
 
-        value = dynamic_cast<UnitTextBox3*>(it->value)->text().toDouble()*coefficient;
-        increment_x = dynamic_cast<UnitTextBox3*>(it->increment_H)->text().toDouble();
-        increment_y = dynamic_cast<UnitTextBox3*>(it->increment_V)->text().toDouble();
+        UnitTextBox3* valueWidget = dynamic_cast<UnitTextBox3*>(it->value);
+        UnitTextBox3* incrementHWidget = dynamic_cast<UnitTextBox3*>(it->increment_H);
+        UnitTextBox3* incrementVWidget = dynamic_cast<UnitTextBox3*>(it->increment_V);
+
+        if (!valueWidget) {
+            qDebug() << "Error: value widget is null or wrong type for" << QString::fromStdString(it.key());
+            return false;
+        }
+
+        double coefficient = XString::coefficient(QString::fromStdString(quanset.GetVar(it.key()).Unit()));
+        value = valueWidget->text().toDouble() * coefficient;
+
+        if (incrementHWidget)
+            increment_x = incrementHWidget->text().toDouble();
+
+        if (incrementVWidget)
+            increment_y = incrementVWidget->text().toDouble();
+
         r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Expression::timing::both);
     }
     else if (QString::fromStdString(it->delegate).contains("ValueBox"))
@@ -897,44 +912,87 @@ bool GridGenerator::AssignProperty(const string &name, QuanSet &quanset, QMap<st
         double value=0;
         double increment_x=0;
         double increment_y=0;
-        value = dynamic_cast<QLineEdit*>(it->value)->text().toDouble();
-        increment_x = dynamic_cast<QLineEdit*>(it->increment_H)->text().toDouble();
-        increment_y = dynamic_cast<QLineEdit*>(it->increment_V)->text().toDouble();
+
+        QLineEdit* valueWidget = dynamic_cast<QLineEdit*>(it->value);
+        QLineEdit* incrementHWidget = dynamic_cast<QLineEdit*>(it->increment_H);
+        QLineEdit* incrementVWidget = dynamic_cast<QLineEdit*>(it->increment_V);
+
+        if (!valueWidget) {
+            qDebug() << "Error: value widget is null or wrong type for" << QString::fromStdString(it.key());
+            return false;
+        }
+
+        value = valueWidget->text().toDouble();
+
+        if (incrementHWidget)
+            increment_x = incrementHWidget->text().toDouble();
+
+        if (incrementVWidget)
+            increment_y = incrementVWidget->text().toDouble();
+
         r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Expression::timing::both);
     }
     else if (QString::fromStdString(it->delegate).contains("String") && it.key()!="name")
     {
-        string value;
-        value = dynamic_cast<QLineEdit*>(it->value)->text().toStdString();
+        QLineEdit* valueWidget = dynamic_cast<QLineEdit*>(it->value);
+        if (!valueWidget) {
+            qDebug() << "Error: value widget is null or wrong type for" << QString::fromStdString(it.key());
+            return false;
+        }
+
+        string value = valueWidget->text().toStdString();
         r = system()->object(name)->Variable(it.key())->SetProperty(value,true);
     }
     else if (QString::fromStdString(it->delegate).contains("ComboBox"))
     {
-        string value = dynamic_cast<QComboBox*>(it->value)->currentText().toStdString();
+        QComboBox* valueWidget = dynamic_cast<QComboBox*>(it->value);
+        if (!valueWidget) {
+            qDebug() << "Error: value widget is null or wrong type for" << QString::fromStdString(it.key());
+            return false;
+        }
+
+        string value = valueWidget->currentText().toStdString();
         r = system()->object(name)->Variable(it.key())->SetProperty(value,true);
     }
     else if (QString::fromStdString(it->delegate).contains("MultiComboBox"))
     {
-        QListWidget *list = dynamic_cast<QListWidget*>(it->value);
+        QListWidget* list = dynamic_cast<QListWidget*>(it->value);
+        if (!list) {
+            qDebug() << "Error: value widget is null or wrong type for" << QString::fromStdString(it.key());
+            return false;
+        }
+
         QStringList selectedList;
-        //list->selectAll();
         for (int i = 0; i < list->count(); i++)
             if (list->item(i)->isSelected() && list->item(i)->text().size())
                 selectedList.append(list->item(i)->text());
+
         string value = selectedList.join(':').toStdString();
         r = system()->object(name)->Variable(it.key())->SetProperty(value,true);
-
     }
     else if (QString::fromStdString(it->delegate).contains("Browser"))
     {
-        string value = dynamic_cast<QPushButton*>(it->value)->text().toStdString();
+        QPushButton* valueWidget = dynamic_cast<QPushButton*>(it->value);
+        if (!valueWidget) {
+            qDebug() << "Error: value widget is null or wrong type for" << QString::fromStdString(it.key());
+            return false;
+        }
+
+        string value = valueWidget->text().toStdString();
         r = system()->object(name)->Variable(it.key())->SetProperty(value,true);
     }
     else if (QString::fromStdString(it->delegate).contains("expressionEditor"))
     {
-        string value = dynamic_cast<expEditor*>(it->value)->text().toStdString();
+        expEditor* valueWidget = dynamic_cast<expEditor*>(it->value);
+        if (!valueWidget) {
+            qDebug() << "Error: value widget is null or wrong type for" << QString::fromStdString(it.key());
+            return false;
+        }
+
+        string value = valueWidget->text().toStdString();
         r = system()->object(name)->Variable(it.key())->SetProperty(value,false);
     }
+
     return r;
 }
 

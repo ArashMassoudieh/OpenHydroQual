@@ -97,11 +97,34 @@ QVariant PropModel::data(const QModelIndex &index, int role) const
                         double value = atof(quanset->GetVarAskable(index.row())->GetProperty(true).c_str())/coefficient;
                         return QString::number(value) + "["+XString::reform(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()))+"]";
                     }
+                    else if (quanset->GetVarAskable(index.row())->Delegate().find("Browser") != std::string::npos
+                             && quanset->GetVarAskable(index.row())->Units()!="")
+                    {
+                        // Get the property (filename [unit])
+                        QString displayText = QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
+
+                        // Reform unit in brackets if present
+                        int bracketStart = displayText.indexOf('[');
+                        if (bracketStart != -1)
+                        {
+                            int bracketEnd = displayText.indexOf(']', bracketStart);
+                            if (bracketEnd != -1)
+                            {
+                                QString filename = displayText.left(bracketStart).trimmed();
+                                QString unit = displayText.mid(bracketStart + 1, bracketEnd - bracketStart - 1);
+
+                                // Reform the unit (m^3 → m³)
+                                QString reformedUnit = XString::reform(unit);
+
+                                return filename + " [" + reformedUnit + "]";
+                            }
+                        }
+                        return displayText;
+                    }
                     else
                     {
                         return QString::fromStdString(quanset->GetVarAskable(index.row())->GetProperty(true));
                     }
-
                 }
                 else
                     return float2date(quanset->GetVarAskable(index.row())->GetVal());
@@ -255,20 +278,43 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
     if (index.row() >= rows()) return false;
 
     QString VariableName;
-    if (role == CustomRoleCodes::Role::loadIndex) {
-        QModelIndex idx = load();
-        role = Qt::EditRole;
-        //VariableName = idx.sibling(idx.row(), 0).data().toString();
-        VariableName = idx.data(CustomRoleCodes::VariableNameRole).toString();
+
+    // Get variable name from the passed index
+    VariableName = index.data(CustomRoleCodes::VariableNameRole).toString();
+
+    if (VariableName.isEmpty())
+    {
+        qDebug() << "Error: VariableName is empty in setData";
+        return false;
     }
-    else
-        VariableName = index.data(CustomRoleCodes::VariableNameRole).toString();
+
+    // Handle loadIndex specially - it triggers file loading
+    if (role == CustomRoleCodes::Role::loadIndex) {
+        save(index);  // Save the index for use in browserClicked
+        // Now actually load the file by calling SetProperty
+        bool r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(), true);
+
+        if (!r && value.toString() != "")
+        {
+            if (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries ||
+                quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries)
+            {
+                QMessageBox::question(mainwindow, "File does not have the right format!",
+                                      "File does not have the right format!", QMessageBox::Ok);
+            }
+        }
+
+        emit editCompleted(value.toString());
+        return true;
+    }
 
     bool r;
     if (role==CustomRoleCodes::UnitRole)
     {
-        quanset->GetVar(VariableName.toStdString()).Unit() = XString::reformBack(value.toString()).toStdString();
-        r = true;
+        // Call SetUnit to trigger unit conversion
+        r = quanset->GetVar(VariableName.toStdString()).SetUnit(XString::reformBack(value.toString()).toStdString());
+        emit editCompleted(value.toString());
+        return r;
     }
     else if (role!=CustomRoleCodes::setParamRole)
     {
@@ -286,7 +332,6 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
             double coefficient = XString::coefficient(QString::fromStdString(quanset->GetVarAskable(index.row())->Unit()));
             double _value = value.toString().split('[')[0].toDouble()*coefficient;
             r = quanset->GetVar(VariableName.toStdString()).SetProperty(aquiutils::numbertostring(_value),true);
-
         }
         else
         {
@@ -295,8 +340,8 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
                 quanset->GetVar(VariableName.toStdString()).SetParent(quanset->Parent());
             }
             r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),true);
-
         }
+
         if (VariableName == "x")
         {
             mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setX(value.toInt());
@@ -321,7 +366,6 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
         r=true;
     }
 
-
     if ((!r && value!="") && (quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::prec_timeseries || quanset->GetVar(VariableName.toStdString()).GetType() == Quan::_type::timeseries))
     {
         QMessageBox::question(mainwindow, "File does not have the right format!", "File does not have the right format!", QMessageBox::Ok);
@@ -336,7 +380,6 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
     emit editCompleted(result);
     return true;
 }
-
 
 Qt::ItemFlags PropModel::flags(const QModelIndex & /*index*/) const
 {

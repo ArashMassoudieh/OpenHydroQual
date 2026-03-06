@@ -15,14 +15,16 @@
       "description": "Initial Storage; Storage",
       "initial_value_expression": "area*depth*moisture_content",
       "ask_user": "false",
-      "estimate": "true"
+      "estimate": "true",
+      "unit": "m^3;ft^3"
     },
     "volume": {
       "type": "expression",
       "expression": "depth*area",
       "description": "volume",
       "ask_user": "false",
-      "includeinoutput": "false"
+      "includeinoutput": "false",
+      "unit": "m^3;ft^3"
     },
     "inflow": {
       "type": "timeseries",
@@ -31,7 +33,8 @@
       "description": "Inflow time series",
       "ask_user": "true",
       "delegate": "Browser",
-      "helptext": "Time series representing external water input to the groundwater cell, such as recharge from precipitation or surface water."
+      "helptext": "Time series representing external water input to the groundwater cell, such as recharge from precipitation or surface water.",
+      "unit": "m^3/day;ft^3/day;m^3/s"
     },
     "hydraulic_conductivity": {
       "type": "value",
@@ -106,7 +109,8 @@
       "expression": "depth+bottom_elevation+(moisture_content-porosity)/specific_storage",
       "description": "Hydraulc Head",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m;ft"
     },
     "area": {
       "type": "value",
@@ -158,7 +162,8 @@
       "expression": "0.5*area*(hydraulic_conductivity.s+hydraulic_conductivity.e)*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
     }
   },
   "groundwater_to_fixedhead": {
@@ -200,7 +205,8 @@
       "expression": "area*hydraulic_conductivity.s*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
     }
   },
   "groundwater_to_stream": {
@@ -253,7 +259,8 @@
       "expression": "area*hydraulic_conductivity*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
     }
   },
   "soil2groundwater_link": {
@@ -297,7 +304,8 @@
       "expression": "area*hydraulic_conductivity*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
     }
   },
   "surface2groundwater_link": {
@@ -349,7 +357,8 @@
       "expression": "area*hydraulic_conductivity*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
     }
   },
   "lake2groundwater_link": {
@@ -374,14 +383,16 @@
       "description": "Interface Area",
       "includeinoutput": "true",
       "ask_user": "false",
-      "expression": "area.s"
+      "expression": "area.s",
+      "unit": "m^2;ft^2"
     },
     "hydraulic_conductivity": {
       "type": "expression",
       "description": "Hydraulic conductivity",
       "includeinoutput": "false",
       "ask_user": "false",
-      "expression": "hydraulic_conductivity.e"
+      "expression": "hydraulic_conductivity.e",
+      "unit": "m/day;ft/day;ft/s;m/s"
     },
     "flow": {
       "type": "expression",
@@ -389,7 +400,8 @@
       "expression": "area*hydraulic_conductivity*(head.s-head.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
     }
   }
 }

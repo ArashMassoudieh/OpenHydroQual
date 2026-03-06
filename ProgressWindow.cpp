@@ -322,7 +322,8 @@ void ProgressWindow::SetStatus(const QString& status)
 void ProgressWindow::AppendLog(const QString& message)
 {
     QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss");
-    logTextEdit_->append(QString("[%1] %2").arg(timestamp).arg(message));
+    logTextEdit_->append(QString("<span style='color:black'>[%1] %2</span>")
+                             .arg(timestamp).arg(message));
 
     // Auto-scroll to bottom
     QTextCursor cursor = logTextEdit_->textCursor();
@@ -335,7 +336,8 @@ void ProgressWindow::AppendLog(const QString& message)
 void ProgressWindow::AppendLog(const std::string& message)
 {
     QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss");
-    logTextEdit_->append(QString("[%1] %2").arg(timestamp).arg(QString::fromStdString(message)));
+    logTextEdit_->append(QString("<span style='color:black'>[%1] %2</span>")
+                             .arg(timestamp).arg(QString::fromStdString(message)));
 
     // Auto-scroll to bottom
     QTextCursor cursor = logTextEdit_->textCursor();
@@ -364,6 +366,24 @@ void ProgressWindow::AppendInfo(const QString& text)
     infoTextEdit_->setTextCursor(cursor);
 
     QApplication::processEvents();
+}
+
+void ProgressWindow::AppendWarning(const QString& message)
+{
+    QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss");
+    logTextEdit_->append(QString("<span style='color:red'>[%1] %2</span>")
+                             .arg(timestamp).arg(message));
+
+    QTextCursor cursor = logTextEdit_->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    logTextEdit_->setTextCursor(cursor);
+
+    QApplication::processEvents();
+}
+
+void ProgressWindow::AppendWarning(const std::string& message)
+{
+    AppendWarning(QString::fromStdString(message));
 }
 
 void ProgressWindow::SetInfoText(const QString& text)

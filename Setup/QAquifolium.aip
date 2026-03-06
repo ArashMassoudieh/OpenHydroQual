@@ -27,10 +27,10 @@
     <ROW Property="ARPURLUPDATEINFO" Value="www.OpenHydroQual.com"/>
     <ROW Property="AppLogoIcon" Value="applogoicon" MultiBuildValue="DefaultBuild:Aquifolium.jpg_1" Type="1" MsiKey="AppLogoIcon"/>
     <ROW Property="Manufacturer" Value="EnviroInformatics, LLC"/>
-    <ROW Property="ProductCode" Value="1033:{3DE53F38-84DF-4E5C-A2E7-1825F94C55B3} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{1CD4A19B-3515-46F4-B4C7-5E58E0BD9669} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="OpenHydroQual"/>
-    <ROW Property="ProductVersion" Value="2.0.2" Type="32"/>
+    <ROW Property="ProductVersion" Value="2.0.4" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{22A5F0D0-785C-400D-99C4-4FBF0A322AB6}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -61,7 +61,7 @@
     <ROW Directory="resources_Dir" Directory_Parent="APPDIR" DefaultDir="RESOUR~1|resources"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
-    <ROW Component="AI_CustomARPName" ComponentId="{E7CD371D-A623-4E62-931E-96D418748BE7}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
+    <ROW Component="AI_CustomARPName" ComponentId="{8C30E4D0-85CE-49AD-8AF5-CE433D2945A5}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
     <ROW Component="AI_ExePath" ComponentId="{E9233AF7-0339-4898-BA7A-0EA6DCB0522F}" Directory_="APPDIR" Attributes="4" KeyPath="AI_ExePath"/>
     <ROW Component="AI_IA_ENABLE" ComponentId="{9961D3AC-A7F7-45C8-9F93-9695250B97F1}" Directory_="APPDIR" Attributes="4" KeyPath="AI_IA_ENABLE" Options="1"/>
     <ROW Component="Bioretention.png" ComponentId="{F01F4FC1-0721-4F89-8CAF-F9B6A4F658CD}" Directory_="Wizard_Icons_Dir" Attributes="0" KeyPath="Bioretention.png_1" Type="0"/>
@@ -103,6 +103,7 @@
     <ROW File="ASMS.json" Component_="D_Soil.json" FileName="ASMS~1.JSO|ASMS.json" Attributes="0" SourcePath="..\resources\Wizard_Scripts\ASMS.json" SelfReg="false" NextFile="Filtration.json"/>
     <ROW File="ASMS.png" Component_="Bioretention.png" FileName="ASMS.png" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Wizard_Icons\ASMS.png" SelfReg="false" NextFile="Flitration.png"/>
     <ROW File="ASMS.svg" Component_="Bioswale.png" FileName="ASMS.svg" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Diagrams\ASMS.svg" SelfReg="false" NextFile="Filtration.svg"/>
+    <ROW File="Age_Tracer_Laplace.png" Component_="pd.nfo" FileName="AGE_TR~2.PNG|Age_Tracer_Laplace.png" Attributes="0" SourcePath="..\resources\Icons\Age_Tracer_Laplace.png" SelfReg="false"/>
     <ROW File="Age_tracer.png" Component_="pd.nfo" FileName="AGE_TR~1.PNG|Age_tracer.png" Attributes="0" SourcePath="..\resources\Icons\Age_tracer.png" SelfReg="false" NextFile="aggregate2aggregate_H.png"/>
     <ROW File="Amenities.png" Component_="pd.nfo" FileName="AMENIT~1.PNG|Amenities.png" Attributes="0" SourcePath="..\resources\Icons\Amenities.png" SelfReg="false" NextFile="aquifer_recharge.png"/>
     <ROW File="Aquifolium.jpg" Component_="pd.nfo" FileName="AQUIFO~1.JPG|Aquifolium.jpg" Attributes="0" SourcePath="..\resources\Icons\Aquifolium.jpg" SelfReg="false" NextFile="Aquifolium.png"/>
@@ -115,6 +116,8 @@
     <ROW File="Bioretention.svg" Component_="Bioswale.png" FileName="BIORET~1.SVG|Bioretention.svg" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Diagrams\Bioretention.svg" SelfReg="false" NextFile="Permeable_Pavement2.svg"/>
     <ROW File="Bioswale.png" Component_="Bioswale.png" FileName="Bioswale.png" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Diagrams\Bioswale.png" SelfReg="false" NextFile="ModelWizard.exe"/>
     <ROW File="Catch_basin.png" Component_="pd.nfo" FileName="CATCH_~1.PNG|Catch_basin.png" Attributes="0" SourcePath="..\resources\Icons\Catch_basin.png" SelfReg="false" NextFile="catchment.ico"/>
+    <ROW File="Catchment_MRM.png" Component_="pd.nfo" FileName="CATCHM~4.PNG|Catchment_MRM.png" Attributes="0" SourcePath="..\resources\Icons\Catchment_MRM.png" SelfReg="false" NextFile="Age_Tracer_Laplace.png"/>
+    <ROW File="Catchment_link_MRM.png" Component_="pd.nfo" FileName="CATCHM~3.PNG|Catchment_link_MRM.png" Attributes="0" SourcePath="..\resources\Icons\Catchment_link_MRM.png" SelfReg="false" NextFile="Catchment_MRM.png"/>
     <ROW File="Catchment_outlet.png" Component_="pd.nfo" FileName="CATCHM~2.PNG|Catchment_outlet.png" Attributes="0" SourcePath="..\resources\Icons\Catchment_outlet.png" SelfReg="false" NextFile="channel2fixed.png"/>
     <ROW File="Chemical_Source_exchange.png" Component_="pd.nfo" FileName="CHEMIC~2.PNG|Chemical_Source_exchange.png" Attributes="0" SourcePath="..\resources\Icons\Chemical_Source_exchange.png" SelfReg="false" NextFile="Chemical_Source_timeseries.png"/>
     <ROW File="Chemical_Source_timeseries.png" Component_="pd.nfo" FileName="CHEMIC~3.PNG|Chemical_Source_timeseries.png" Attributes="0" SourcePath="..\resources\Icons\Chemical_Source_timeseries.png" SelfReg="false" NextFile="city.png"/>
@@ -223,7 +226,7 @@
     <ROW File="Trapezoidal_Channel.png" Component_="pd.nfo" FileName="TRAPEZ~1.PNG|Trapezoidal_Channel.png" Attributes="0" SourcePath="..\resources\Icons\Trapezoidal_Channel.png" SelfReg="false" NextFile="Trapezoidal_Channel_Link.png"/>
     <ROW File="Trapezoidal_Channel_Link.png" Component_="pd.nfo" FileName="TRAPEZ~2.PNG|Trapezoidal_Channel_Link.png" Attributes="0" SourcePath="..\resources\Icons\Trapezoidal_Channel_Link.png" SelfReg="false" NextFile="Twitter_Icon.png"/>
     <ROW File="Twitter_Icon.png" Component_="pd.nfo" FileName="TWITTE~1.PNG|Twitter_Icon.png" Attributes="0" SourcePath="..\resources\Icons\Twitter_Icon.png" SelfReg="false" NextFile="unconfined_aquifer.png"/>
-    <ROW File="Visualize.png" Component_="pd.nfo" FileName="VISUAL~1.PNG|Visualize.png" Attributes="0" SourcePath="..\resources\Icons\Visualize.png" SelfReg="false"/>
+    <ROW File="Visualize.png" Component_="pd.nfo" FileName="VISUAL~1.PNG|Visualize.png" Attributes="0" SourcePath="..\resources\Icons\Visualize.png" SelfReg="false" NextFile="Catchment_link_MRM.png"/>
     <ROW File="Wastewater_Treatment_plant.png" Component_="pd.nfo" FileName="WASTEW~3.PNG|Wastewater_Treatment_plant.png" Attributes="0" SourcePath="..\resources\Icons\Wastewater_Treatment_plant.png" SelfReg="false" NextFile="water_supply_well.png"/>
     <ROW File="Wastewater_flow.png" Component_="pd.nfo" FileName="WASTEW~1.PNG|Wastewater_flow.png" Attributes="0" SourcePath="..\resources\Icons\Wastewater_flow.png" SelfReg="false" NextFile="wastewater_template.png"/>
     <ROW File="Water_Transfer.png" Component_="pd.nfo" FileName="WATER_~2.PNG|Water_Transfer.png" Attributes="0" SourcePath="..\resources\Icons\Water_Transfer.png" SelfReg="false" NextFile="Water_Transfer_to_Groundwater.png"/>
@@ -833,7 +836,7 @@
     <ROW XmlAttribute="xsischemaLocation" XmlElement="swidsoftware_identification_tag" Name="xsi:schemaLocation" Flags="14" Order="3" Value="http://standards.iso.org/iso/19770/-2/2008/schema.xsd software_identification_tag.xsd"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
-    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="2"/>
+    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="4"/>
     <ROW XmlElement="swidentitlement_required_indicator" ParentElement="swidsoftware_identification_tag" Name="swid:entitlement_required_indicator" Condition="1" Order="0" Flags="14" Text="false"/>
     <ROW XmlElement="swidmajor" ParentElement="swidnumeric" Name="swid:major" Condition="1" Order="0" Flags="14" Text="2"/>
     <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="0"/>

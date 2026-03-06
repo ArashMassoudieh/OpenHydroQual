@@ -627,21 +627,64 @@ void DiagramView::showgraph()
 {
     QAction* act = qobject_cast<QAction*>(sender());
     QString item = act->data().toString().split(";")[1];
+
     if (aquiutils::lookup(mainwindow->GetSystem()->GetOutputs().getSeriesNames(),item.toStdString())!=-1)
     {
+        // Parse the output name: ObjectName_PropertyName
+        Quan* quan = nullptr;
+
+        QStringList parts = item.split('_');
+
+        // Try each possible split point (at least 1 part for object, 1 for property)
+        for (int i = 1; i < parts.size(); i++)
+        {
+            QString objectName = parts.mid(0, i).join('_');
+            QString quanName = parts.mid(i).join('_');
+
+            qDebug() << "Trying split:";
+            qDebug() << "  Object:" << objectName;
+            qDebug() << "  Quantity:" << quanName;
+
+            // Check if this object exists AND has this quantity
+            if (mainwindow->GetSystem()->object(objectName.toStdString()))
+            {
+                if (mainwindow->GetSystem()->object(objectName.toStdString())->HasQuantity(quanName.toStdString()))
+                {
+                    quan = mainwindow->GetSystem()->object(objectName.toStdString())->Variable(quanName.toStdString());
+                    qDebug() << "  ✓ Found valid object and property!";
+                    break;  // Stop at first valid match
+                }
+            }
+        }
+
+        if (!quan)
+        {
+            qDebug() << "  No valid object/property combination found";
+        }
+
 #ifndef QCharts
-    Plotter *plot = mainwindow->Plot(mainwindow->GetSystem()->GetOutputs()[item.toStdString()]);
+        Plotter *plot = mainwindow->Plot(mainwindow->GetSystem()->GetOutputs()[item.toStdString()]);
 #else
-    QPlotWindow *plot = mainwindow->Plot(mainwindow->GetSystem()->GetOutputs()[item.toStdString()]);
+        QPlotWindow *plot;
+        if (quan)
+        {
+            qDebug() << "Plotting with unit conversion support";
+            plot = mainwindow->Plot(mainwindow->GetSystem()->GetOutputs()[item.toStdString()], quan);
+        }
+        else
+        {
+            qDebug() << "Plotting without unit conversion (no Quan found)";
+            plot = mainwindow->Plot(mainwindow->GetSystem()->GetOutputs()[item.toStdString()]);
+        }
 #endif
-    plot->SetYAxisTitle(act->text());
+        plot->SetYAxisTitle(act->text());
     }
     else
     {
         QMessageBox::critical(mainwindow,"There is no results!", "There is no results!", QMessageBox::Ok);
     }
-    
 }
+
 void DiagramView::updateNodeCoordinates()
 {
     for (Node *n : Nodes())

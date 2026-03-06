@@ -21,6 +21,7 @@
 #include <TimeSeries.h>
 #include <TimeSeriesSet.h>
 #include <qplotter.h>
+#include "Quan.h"
 
 #define outputtimeseriesprecision double
 
@@ -72,9 +73,11 @@ class QPlotWindow : public QDialog
 public:
     explicit QPlotWindow(MainWindow *parent = nullptr);
     ~QPlotWindow();
+    void SetQuantity(Quan* quan);
     bool PlotData(const TimeSeries<outputtimeseriesprecision>& BTC, bool allowtime=true, string style="line");
     bool PlotData(const TimeSeriesSet<outputtimeseriesprecision>& BTC, bool allowtime=true, string style="line");
     bool AddData(const TimeSeries<outputtimeseriesprecision>& BTC,bool allowtime=true, string style="line");
+
     void SetYAxisTitle(const QString& s)
     {
         y_Axis_Title = s;
@@ -97,6 +100,14 @@ private:
     Ui::QPlotWindow *ui;
     QPlotter* chart = nullptr;
     ChartView *chartview = nullptr;
+    Quan* quantity = nullptr;  // Store the Quan object
+    QComboBox* unitSelector = nullptr;  // Unit dropdown
+    QString current_display_unit;  // Current unit being displayed
+    TimeSeries<double> original_timeseries_SI;      // For single TimeSeries
+    TimeSeriesSet<double> original_timeseriesset_SI; // For TimeSeriesSet
+    bool original_data_stored = false;
+    bool is_timeseriesset = false;
+    void convertAndUpdatePlot(const QString& new_unit);
     double xtoTime(const double &x) {
         return x * 86400 - 2209161600;
 
@@ -139,6 +150,7 @@ private slots:
      void onDatasetSelected(int index);
      void onDisplayModeChanged(int index);
      void updateSeriesDisplay(const QString& seriesName, const QString& mode);
+     void onUnitChanged(int index);
 
 };
 

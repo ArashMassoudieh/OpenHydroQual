@@ -46,6 +46,28 @@ T& SafeVector<T>::operator[](unsigned int i)
 }
 
 template<class T>
+const T& SafeVector<T>::operator[](int i) const
+{
+    if (i < 0 || i >= static_cast<int>(this->size())) {
+        static const T dummy{};
+        std::cerr << "SafeVector: Index " << i << " out of bounds [0, " << this->size() - 1 << "]\n";
+        return dummy;
+    }
+    return std::vector<T>::operator[](i);
+}
+
+template<class T>
+const T& SafeVector<T>::operator[](unsigned int i) const
+{
+    if (i >= this->size()) {
+        static const T dummy{};
+        std::cerr << "SafeVector: Index " << i << " out of bounds [0, " << this->size() - 1 << "]\n";
+        return dummy;
+    }
+    return std::vector<T>::operator[](i);
+}
+
+template<class T>
 std::vector<T> SafeVector<T>::toStdVector() const
 {
     return *this;

@@ -14,8 +14,8 @@
  */
 
 
-#define openhydroqual_version "2.0.3"
-#define last_modified "December, 9, 2025"
+#define openhydroqual_version "2.0.4"
+#define last_modified "February, 6, 2026"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -335,12 +335,14 @@ void MainWindow::PlotTimeSeries()
     QString objectname = PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::ObjectName).toString();
     QString varname = PropertiesWidget->tableView()->model()->data(tableitemrightckicked,CustomRoleCodes::VariableName).toString();
 
-    if (GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries() != nullptr)
+    Quan* quan = GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString());
+
+    if (quan->GetTimeSeries() != nullptr)
     {
 #ifndef QCharts
-        Plotter* plot = Plot(*GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries());
+        Plotter* plot = Plot(*quan->GetTimeSeries());
 #else
-        QPlotWindow* plot = Plot(*GetSystem()->object(objectname.toStdString())->Variable(varname.toStdString())->GetTimeSeries());
+        QPlotWindow* plot = Plot(*quan->GetTimeSeries(), quan);  // Pass the Quan object
 #endif
         plot->SetYAxisTitle(varname);
     }
@@ -1368,7 +1370,7 @@ void MainWindow::preparetreeviewMenu(const QPoint &pos)
         for (unsigned int i = 0; i < system.object(nd->text(0).toStdString())->ItemswithOutput().size(); i++)
         {
             timeseriestobeshown = QString::fromStdString(system.object(nd->text(0).toStdString())->ItemswithOutput()[i]);
-            QAction* graphaction = results->addAction(timeseriestobeshown);
+            QAction* graphaction = results->addAction(QString::fromStdString(system.object(nd->text(0).toStdString())->Variable(timeseriestobeshown.toStdString())->Description(true)));
             QVariant v = QVariant::fromValue(timeseriestobeshown + ";" + QString::fromStdString(system.object(nd->text(0).toStdString())->Variable(timeseriestobeshown.toStdString())->GetOutputItem()));
             graphaction->setData(v);
             //called_by_clicking_on_graphical_object = true;
@@ -1427,7 +1429,7 @@ void MainWindow::showgraph()
     QStringList keys = act->data().toString().split(";");
     QString key2 = keys[0];
     QString item = keys[1];
-    if (key2 == "Precipitation")
+    /*if (key2 == "Precipitation")
     {
         if (GetSystem()->source(item.toStdString())->Variable("timeseries")->GetTimeSeries() != nullptr)
         {
@@ -1439,7 +1441,7 @@ void MainWindow::showgraph()
             plot->SetYAxisTitle(act->text());
         }
     return;
-    }
+    }*/
     if (key2 == "Modeled vs Measured")
     {
         QString object = act->property("object").toString();
@@ -1532,10 +1534,47 @@ void MainWindow::showgraph()
             QMessageBox::question(this, "Time Series is empty!", "The result for this quantity is empty!", QMessageBox::Ok);
             return;
         }
+
+        // Parse the output name: ObjectName_PropertyName
+        Quan* quan = nullptr;
+
+        QStringList parts = item.split('_');
+
+        // Try each possible split point (at least 1 part for object, 1 for property)
+        for (int i = 1; i < parts.size(); i++)
+        {
+            QString objectName = parts.mid(0, i).join('_');
+            QString quanName = parts.mid(i).join('_');
+
+            qDebug() << "Trying split:";
+            qDebug() << "  Object:" << objectName;
+            qDebug() << "  Quantity:" << quanName;
+
+            // Check if this object exists AND has this quantity
+            if (GetSystem()->object(objectName.toStdString()))
+            {
+                if (GetSystem()->object(objectName.toStdString())->HasQuantity(quanName.toStdString()))
+                {
+                    quan = GetSystem()->object(objectName.toStdString())->Variable(quanName.toStdString());
+                    qDebug() << "  ✓ Found valid object and property!";
+                    break;  // Stop at first valid match
+                }
+            }
+        }
+
+        if (!quan)
+        {
+            qDebug() << "  No valid object/property combination found";
+        }
+
 #ifndef QCharts
         Plotter* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
 #else
-        QPlotWindow* plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
+        QPlotWindow* plot;
+        if (quan)
+            plot = Plot(GetSystem()->GetOutputs()[item.toStdString()], quan);
+        else
+            plot = Plot(GetSystem()->GetOutputs()[item.toStdString()]);
 #endif
         plot->SetYAxisTitle(act->text());
     }
@@ -2189,7 +2228,8 @@ void MainWindow::onrunmodel()
 	rtw->SetPrimaryChartTitle("Time-step size vs Time");
     rtw->show();
     copiedsystem.SetProgressWindow(rtw);
-    copiedsystem.WriteOutPuts(); 
+    copiedsystem.WriteOutPuts();
+    //copiedsystem.SaveFullStateTo(workingfolder + "/statefull_presolve.json");
     copiedsystem.Solve(true);
     rtw->AppendLog("Saving outputs in '" + workingfolder + "'");
     qDebug()<<"Working folder" << workingfolder;
@@ -2249,6 +2289,7 @@ void MainWindow::onrunmodel()
     copiedsystem.SetProp("tstart",copiedsystem.GetTime());
     copiedsystem.SetSystemSettingsObjectProperties("simulation_start_time",QString::number(copiedsystem.GetTime()).toStdString());
     copiedsystem.SavetoJson(workingfolder.toStdString() + "/state.json", addedtemplatefilenames,false, false);
+
     system.TransferResultsFrom(&copiedsystem);
     system.SetOutputItems();
     CVector FitMeasures(3*copiedsystem.ObservationsCount());
@@ -2470,6 +2511,15 @@ QPlotWindow* MainWindow::Plot(TimeSeries<timeseriesprecision>& plotitem, bool al
     return plotter;
 }
 
+QPlotWindow* MainWindow::Plot(TimeSeries<timeseriesprecision>& plotitem, Quan* quan, bool allowtime)
+{
+    QPlotWindow* plotter = new QPlotWindow(this);
+    plotter->SetQuantity(quan);  // Set the Quan before plotting
+    plotter->PlotData(plotitem, allowtime);
+    plotter->show();
+    return plotter;
+}
+
 QPlotWindow* MainWindow::Plot(TimeSeriesSet<timeseriesprecision>& plotitem, bool allowtime)
 {
     QPlotWindow* plotter = new QPlotWindow(this);
@@ -2603,21 +2653,35 @@ void MainWindow::loadresults()
             tr("Open"), "",
             tr("Output files (*.txt);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
-    TimeSeriesSet<double> outputs(fileName.toStdString(),true);
-    TimeSeriesSet<double> past_output = system.GetOutputs();
-    system.GetOutputs() = outputs;
-    if (!system.SetLoadedOutputItems())
-    {   system.GetOutputs()=past_output;
-        QMessageBox::critical(this, "Output file not correct!", "The file does not contains the results of the model",QMessageBox::Ok);
-    }
-	else
-    {	QMessageBox::information(this, "Output file loaded!", "Output file loaded successfully!", QMessageBox::Ok);
-        ui->actionVisualize->setEnabled(true);
-        actionviz->setEnabled(true);
-    }
-    
+    QApplication::setOverrideCursor(Qt::WaitCursor);
 
+    try {
+        TimeSeriesSet<double> outputs(fileName.toStdString(), true);
+        TimeSeriesSet<double> past_output = system.GetOutputs();
+        system.GetOutputs() = outputs;
 
+        if (!system.SetLoadedOutputItems())
+        {
+            system.GetOutputs() = past_output;
+            QApplication::restoreOverrideCursor();  // Restore before dialog
+            QMessageBox::critical(this, "Output file not correct!",
+                                  "The file does not contains the results of the model",
+                                  QMessageBox::Ok);
+        }
+        else
+        {
+            QApplication::restoreOverrideCursor();  // Restore before dialog
+            QMessageBox::information(this, "Output file loaded!",
+                                     "Output file loaded successfully!",
+                                     QMessageBox::Ok);
+            ui->actionVisualize->setEnabled(true);
+            actionviz->setEnabled(true);
+        }
+    }
+    catch (...) {
+        QApplication::restoreOverrideCursor();  // Restore on exception
+        throw;  // Re-throw
+    }
 
 }
 
@@ -2818,10 +2882,9 @@ void MainWindow::SetActiveUndo()
 
 void MainWindow::onCreate2dArray()
 {
-    GridGenerator *gridgenerator = new GridGenerator(this);
-    gridgenerator->exec();
-    delete gridgenerator;
-
+    GridGenerator gridgenerator(this);
+    gridgenerator.exec();
+    // Automatically deleted when going out of scope
 }
 
 // Add this to your MainWindow class header (.h file):

@@ -49,6 +49,9 @@ public:
      */
     T& operator[](unsigned int i);
 
+    const T& operator[](int i) const;
+    const T& operator[](unsigned int i) const;
+
     /**
      * @brief Convert to std::vector<T>.
      * @return A copy of the SafeVector as std::vector<T>

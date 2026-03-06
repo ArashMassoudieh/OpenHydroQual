@@ -95,10 +95,12 @@ class QuanSet: public unordered_map<string, Quan>
 #ifdef Q_JSON_SUPPORT
         QStringList QQuanNames();
 		QuanSet(QJsonObject& object_types);
+        QJsonObject toJsonObjectFull() const;
 #endif
         bool AppendError(const string &objectname, const string &cls, const string &funct, const string &description, const int &code);
 		string ObjectType; 
 		string& CategoryType() { return typecategory; }
+        const string& CategoryType() const { return typecategory; }
         string& Normalizing_Quantity()
         {
             return normalizing_quantity;

@@ -125,6 +125,9 @@ public:
      */
     void AppendInfo(const QString& text);
 
+    void AppendWarning(const QString& message);
+    void AppendWarning(const std::string& message);
+
     /**
      * @brief Set text in information panel (replaces all content)
      * @param text Text to display

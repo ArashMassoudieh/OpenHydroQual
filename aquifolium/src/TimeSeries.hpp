@@ -509,6 +509,7 @@ TimeSeries<T>& TimeSeries<T>::operator=(TimeSeries<T>&& other) noexcept {
         dt_ = other.dt_;
         name_ = std::move(other.name_);
         unit_ = std::move(other.unit_);
+        filename_ = std::move(other.filename_);
     }
     return *this;
 }
@@ -1008,17 +1009,17 @@ TimeSeries<T> operator*(T alpha, const TimeSeries<T>& ts) {
     result.reserve(ts.size());
 
     for (const auto& pt : ts)
-        result.emplace_back(typename TimeSeries<T>::DataPoint{pt.t, alpha * pt.c, pt.d});
+        result.emplace_back(DataPoint<T>{pt.t, alpha * pt.c, pt.d});  // Changed: DataPoint<T> not typename TimeSeries<T>::DataPoint
 
     result.setStructured(ts.isStructured());
-    result.dt_ = ts.dt_;
+    // Remove: result.dt_ = ts.dt_;  // dt_ is private, leave it to be auto-detected
     return result;
 }
 
 // TimeSeries * Scalar
 template<typename T>
 TimeSeries<T> operator*(const TimeSeries<T>& ts, T alpha) {
-    return alpha * ts;  // reuse the first version
+    return alpha * ts;
 }
 
 // TimeSeries / Scalar
@@ -1028,10 +1029,10 @@ TimeSeries<T> operator/(const TimeSeries<T>& ts, T alpha) {
     result.reserve(ts.size());
 
     for (const auto& pt : ts)
-        result.emplace_back(typename TimeSeries<T>::DataPoint{pt.t, pt.c / alpha, pt.d});
+        result.emplace_back(DataPoint<T>{pt.t, pt.c / alpha, pt.d});  // Changed: DataPoint<T>
 
-    result.structured_ = ts.structured_;
-    result.dt_ = ts.dt_;
+    result.setStructured(ts.isStructured());
+    // Remove: result.dt_ = ts.dt_;
     return result;
 }
 

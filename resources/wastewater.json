@@ -14,7 +14,7 @@
       "description": "Initial Storage;Storage",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3",
+      "unit": "m^3;ft^3",
       "estimate": "true",
       "helptext": "Initial Storage;Storage"
     },
@@ -36,7 +36,7 @@
       "description": "Initial Storage;Storage",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3;ft~^3",
+      "unit": "m^3;ft^3",
       "estimate": "true",
       "helptext": "Initial Storage;Storage"
     },
@@ -73,7 +73,7 @@
       "applylimit": "true",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s",
       "helptext": "Flow rate"
     },
     "length": {
@@ -117,7 +117,7 @@
       "description": "Constant flow",
       "ask_user": "true",
       "delegate": "UnitBox",
-      "unit": "m~^3/day;ft~^3/day;m^~3/s;ft^~3/s",
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s",
       "helptext": "Constant flow"
     },
     "flow": {
@@ -139,7 +139,7 @@
       "ask_user": "true",
       "description": "Interface area",
       "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2",
+      "unit": "m^2;ft^2",
       "helptext": "Interface area"
     },
     "color": {

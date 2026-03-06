@@ -140,6 +140,7 @@ public:
          * Provides direct access to the underlying map interface.
          */
     map<string, QuanSet> *GetMetaModel() {return this;}
+    const map<string, QuanSet>* GetMetaModel() const { return this; }
 
     /**
          * @brief Retrieves a pointer to a QuanSet by type name (non-const version)
