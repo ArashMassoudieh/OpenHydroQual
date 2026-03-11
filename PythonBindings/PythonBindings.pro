@@ -8,8 +8,8 @@ TARGET = openhydroqual_py
 VERSION = 2.0.4
 
 # Link against OHQLib
-LIBS += -L$$PWD/../OHQLib/build/Desktop_Qt_6_8_3-Release/ -lOHQLib
-QMAKE_RPATH += $$PWD/../OHQLib/build/Desktop_Qt_6_8_3-Release/
+LIBS += -L$$PWD/../OHQLib/build/Desktop_Qt_6_8_2-Release/ -lOHQLib
+QMAKE_LFLAGS += -Wl,-rpath,$$PWD/../OHQLib/build/Desktop_Qt_6_8_2-Release/
 
 # OHQLib headers
 INCLUDEPATH += $$PWD/../

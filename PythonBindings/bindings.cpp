@@ -74,7 +74,9 @@ PYBIND11_MODULE(openhydroqual_py, m) {
              (&System::AppendObjectiveFunction))
 
         // Solve
-        .def("solve",           &System::Solve)
+        .def("solve", &System::Solve,
+             py::arg("apply_parameters") = true,
+             py::arg("uniformize_output") = true)
 
         // Outputs
         .def("write_outputs",   &System::WriteOutPuts)
