@@ -2882,10 +2882,9 @@ void MainWindow::SetActiveUndo()
 
 void MainWindow::onCreate2dArray()
 {
-    GridGenerator *gridgenerator = new GridGenerator(this);
-    gridgenerator->exec();
-    delete gridgenerator;
-
+    GridGenerator gridgenerator(this);
+    gridgenerator.exec();
+    // Automatically deleted when going out of scope
 }
 
 // Add this to your MainWindow class header (.h file):
