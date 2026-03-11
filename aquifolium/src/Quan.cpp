@@ -20,7 +20,7 @@
 #include "System.h"
 #include "Precipitation.h"
 #include "Expression.h"
-#ifdef Q_GUI_SUPPORT
+#ifdef Q_JSON_SUPPORT
 #include "XString.h"
 #endif
 #ifndef mac_version

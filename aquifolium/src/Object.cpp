@@ -22,6 +22,10 @@
 #include "XString.h"
 #endif
 
+#ifdef Q_JSON_SUPPORT
+#include <QJsonObject>
+#endif
+
 Object::Object()
 {
     //ctor
