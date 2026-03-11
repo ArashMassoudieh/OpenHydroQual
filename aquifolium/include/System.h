@@ -496,7 +496,6 @@ public:
     //   [CHANGE] DefaultTemplatePath has a side effect (cout). Remove the cout
     //   and add const, or split into getter/setter:
     std::string& DefaultTemplatePath() {
-        std::cout << paths.default_template_path;  // TODO: Remove this side effect
         return paths.default_template_path;
     }
     void SetDefaultTemplatePath(const std::string& path) { paths.default_template_path = path; }

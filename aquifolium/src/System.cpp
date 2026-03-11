@@ -629,7 +629,7 @@ void System::CopyQuansToMembers()
         blocks[i].SetQuantities(metamodel,blocks[i].GetType());
     }
     for (unsigned int i=0; i<links.size(); i++)
-        links[i].SetQuantities(metamodel,blocks[i].GetType());
+        links[i].SetQuantities(metamodel,links[i].GetType());
 
     for (unsigned int i=0; i<sources.size(); i++)
         sources[i].SetQuantities(metamodel,sources[i].GetType());
