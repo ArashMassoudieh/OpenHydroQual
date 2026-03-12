@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenHydroQual Python API Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #1c2333;
+    --border: #30363d;
+    --accent: #2f81f7;
+    --accent2: #3fb950;
+    --accent3: #f0883e;
+    --accent4: #bc8cff;
+    --text: #e6edf3;
+    --text-muted: #7d8590;
+    --text-dim: #484f58;
+    --red: #ff7b72;
+    --yellow: #e3b341;
+    --code-bg: #161b22;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* ── Layout ── */
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 0 0 40px;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .sidebar-logo .ohq {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-logo .sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  .sidebar-section {
+    padding: 6px 20px 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 12px;
+  }
+
+  .sidebar a {
+    display: block;
+    padding: 5px 20px 5px 28px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .sidebar a:hover {
+    color: var(--text);
+    border-left-color: var(--accent);
+    background: rgba(47,129,247,0.06);
+  }
+
+  .sidebar a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(47,129,247,0.08);
+  }
+
+  /* ── Main ── */
+  .main {
+    flex: 1;
+    max-width: 900px;
+    padding: 48px 56px 80px;
+    overflow-x: hidden;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(47,129,247,0.1);
+    border: 1px solid rgba(47,129,247,0.3);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .hero h1 {
+    font-size: 36px;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 span { color: var(--accent); font-weight: 600; }
+
+  .hero p {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 600px;
+    line-height: 1.8;
+  }
+
+  .install-box {
+    margin-top: 28px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .install-box .label {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    white-space: nowrap;
+  }
+
+  .install-box code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--accent2);
+  }
+
+  /* ── Sections ── */
+  .section {
+    margin-bottom: 64px;
+    scroll-margin-top: 24px;
+  }
+
+  .section-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .section-desc {
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    font-size: 14px;
+  }
+
+  /* ── Method cards ── */
+  .method {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .method:hover { border-color: var(--accent); }
+
+  .method-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .method-sig {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  .method-sig .fn { color: var(--accent); font-weight: 600; }
+  .method-sig .param { color: var(--accent3); }
+  .method-sig .type { color: var(--text-muted); font-size: 11px; }
+  .method-sig .ret { color: var(--accent2); }
+
+  .method-tag {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .tag-setup { background: rgba(63,185,80,0.1); color: var(--accent2); border: 1px solid rgba(63,185,80,0.3); }
+  .tag-build { background: rgba(47,129,247,0.1); color: var(--accent); border: 1px solid rgba(47,129,247,0.3); }
+  .tag-solve { background: rgba(240,136,62,0.1); color: var(--accent3); border: 1px solid rgba(240,136,62,0.3); }
+  .tag-param { background: rgba(188,140,255,0.1); color: var(--accent4); border: 1px solid rgba(188,140,255,0.3); }
+  .tag-io    { background: rgba(227,179,65,0.1);  color: var(--yellow);  border: 1px solid rgba(227,179,65,0.3); }
+  .tag-debug { background: rgba(255,123,114,0.1); color: var(--red);     border: 1px solid rgba(255,123,114,0.3); }
+
+  .method-body { padding: 16px 20px; }
+
+  .method-desc {
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    font-size: 13.5px;
+  }
+
+  /* ── Params table ── */
+  .params-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+
+  .params-table th {
+    text-align: left;
+    padding: 6px 12px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .params-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+    vertical-align: top;
+  }
+
+  .params-table tr:last-child td { border-bottom: none; }
+
+  .params-table .pname {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent3);
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .params-table .ptype {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent4);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .params-table .pdesc { color: var(--text-muted); }
+
+  .params-table .pdefault {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent2);
+    font-size: 11px;
+  }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow-x: auto;
+    margin-top: 12px;
+  }
+
+  .code-block-header {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .code-block-header::before {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent2);
+    opacity: 0.6;
+  }
+
+  .code-block pre {
+    padding: 14px 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre;
+  }
+
+  /* syntax highlighting via spans */
+  .kw  { color: #ff7b72; }   /* keywords */
+  .fn2 { color: #d2a8ff; }   /* function calls */
+  .str { color: #a5d6ff; }   /* strings */
+  .num { color: #79c0ff; }   /* numbers */
+  .cmt { color: #8b949e; font-style: italic; } /* comments */
+  .var2{ color: #ffa657; }   /* variables */
+  .cls { color: #ffa657; font-weight: 600; } /* class */
+
+  /* ── Notes / warnings ── */
+  .note {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 13px;
+  }
+
+  .note-info  { background: rgba(47,129,247,0.08); border-left: 3px solid var(--accent); color: var(--text-muted); }
+  .note-warn  { background: rgba(227,179,65,0.08); border-left: 3px solid var(--yellow); color: var(--text-muted); }
+  .note-tip   { background: rgba(63,185,80,0.08);  border-left: 3px solid var(--accent2); color: var(--text-muted); }
+
+  .note-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+  /* ── Full example ── */
+  .example-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .example-header {
+    padding: 14px 20px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .example-header .num-badge {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(47,129,247,0.15);
+    border: 1px solid rgba(47,129,247,0.3);
+    color: var(--accent);
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .example-header p {
+    font-weight: 300;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  .example-body { padding: 0; }
+  .example-body pre {
+    padding: 20px 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  /* ── Separator ── */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* ── Return tag ── */
+  .returns {
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .returns span {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent2);
+    font-size: 12px;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="ohq">OpenHydroQual</div>
+    <div class="sub">Python Bindings API Reference</div>
+  </div>
+
+  <div class="sidebar-section">Getting Started</div>
+  <a href="#overview">Overview</a>
+  <a href="#quickstart">Quick Start</a>
+  <a href="#workflow">Workflow</a>
+
+  <div class="sidebar-section">Setup</div>
+  <a href="#initialization">Initialization</a>
+  <a href="#templates">Templates</a>
+  <a href="#settings">Simulation Settings</a>
+
+  <div class="sidebar-section">Model Building</div>
+  <a href="#blocks">Creating Blocks</a>
+  <a href="#links">Creating Links</a>
+  <a href="#properties">Setting Properties</a>
+  <a href="#finalize">Finalize</a>
+
+  <div class="sidebar-section">Parameters</div>
+  <a href="#parameters">Parameters</a>
+
+  <div class="sidebar-section">Simulation</div>
+  <a href="#solve">Solve &amp; Output</a>
+
+  <div class="sidebar-section">Persistence</div>
+  <a href="#save">Save / Load</a>
+
+  <div class="sidebar-section">Debugging</div>
+  <a href="#debug">Debug Utilities</a>
+
+  <div class="sidebar-section">Examples</div>
+  <a href="#ex-1d">1D Groundwater</a>
+  <a href="#ex-reload">Save &amp; Reload</a>
+</nav>
+
+<!-- ── Main ── -->
+<main class="main">
+
+  <!-- Hero -->
+  <div class="hero" id="overview">
+    <div class="hero-badge">v2.0 · openhydroqual_py</div>
+    <h1>OpenHydroQual<br><span>Python API Reference</span></h1>
+    <p>
+      Python bindings for the OpenHydroQual aquifolium simulation engine.
+      Build, configure, solve, and persist environmental models programmatically —
+      enabling calibration workflows, sensitivity analysis, and reinforcement learning.
+    </p>
+    <div class="install-box">
+      <span class="label">import</span>
+      <code>import openhydroqual_py as ohq</code>
+    </div>
+  </div>
+
+  <!-- ── Quick Start ── -->
+  <div class="section" id="quickstart">
+    <div class="section-title"><span class="dot"></span>Quick Start</div>
+    <div class="section-desc">Minimum working example — a 1D unconfined groundwater model.</div>
+    <div class="example-section">
+      <div class="example-header">
+        <div class="num-badge">1</div>
+        <div>
+          Minimal 1D Groundwater Model
+          <p>Load templates → build cells &amp; links → finalize → solve</p>
+        </div>
+      </div>
+      <div class="example-body"><pre><span class="kw">import</span> openhydroqual_py <span class="kw">as</span> ohq
+
+<span class="cmt"># ── 1. Create system and set paths ──────────────────────────────</span>
+system = ohq.<span class="fn2">System</span>()
+system.<span class="fn2">set_default_template_path</span>(<span class="str">'/path/to/resources/'</span>)
+system.<span class="fn2">set_working_folder</span>(<span class="str">'/path/to/project/'</span>)
+system.<span class="fn2">set_silent</span>(<span class="kw">False</span>)
+
+<span class="cmt"># ── 2. Load component templates ─────────────────────────────────</span>
+system.<span class="fn2">load_template</span>(<span class="str">'main_components.json'</span>)
+system.<span class="fn2">add_template</span>(<span class="str">'unconfined_groundwater.json'</span>)
+
+<span class="cmt"># ── 3. Simulation settings ───────────────────────────────────────</span>
+system.<span class="fn2">set_system_value</span>(<span class="str">'simulation_start_time'</span>, <span class="str">'0'</span>)
+system.<span class="fn2">set_system_value</span>(<span class="str">'simulation_end_time'</span>,   <span class="str">'90'</span>)
+system.<span class="fn2">set_system_value</span>(<span class="str">'initial_time_step'</span>,     <span class="str">'0.01'</span>)
+system.<span class="fn2">set_system_value</span>(<span class="str">'write_interval'</span>,        <span class="str">'100'</span>)
+
+<span class="cmt"># ── 4. Build blocks ──────────────────────────────────────────────</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn2">range</span>(<span class="num">1</span>, <span class="num">11</span>):
+    system.<span class="fn2">create_block</span>(
+        name=<span class="fn2">f</span><span class="str">'cell({i}:1)'</span>,
+        type=<span class="str">'Unconfined Groundwater cell'</span>,
+        properties={
+            <span class="str">'area'</span>:                  <span class="str">'5000'</span>,
+            <span class="str">'hydraulic_conductivity'</span>: <span class="str">'5'</span>,
+            <span class="str">'piezometric_head'</span>:      <span class="fn2">str</span>(<span class="num">10.0</span> - (i-<span class="num">1</span>) * <span class="num">0.1</span>),
+            <span class="str">'porosity'</span>:              <span class="str">'0.3'</span>,
+            <span class="str">'specific_yield'</span>:        <span class="str">'0.2'</span>,
+        }
+    )
+
+<span class="cmt"># ── 5. Build links ───────────────────────────────────────────────</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn2">range</span>(<span class="num">1</span>, <span class="num">10</span>):
+    system.<span class="fn2">create_link</span>(
+        name=<span class="fn2">f</span><span class="str">'link({i}:{i+1})'</span>,
+        type=<span class="str">'UC_groundwater_link'</span>,
+        from_block=<span class="fn2">f</span><span class="str">'cell({i}:1)'</span>,
+        to_block=<span class="fn2">f</span><span class="str">'cell({i+1}:1)'</span>,
+        properties={<span class="str">'length'</span>: <span class="str">'50'</span>, <span class="str">'width'</span>: <span class="str">'100'</span>}
+    )
+
+<span class="cmt"># ── 6. Finalize, solve, write ────────────────────────────────────</span>
+system.<span class="fn2">finalize</span>()
+system.<span class="fn2">solve</span>()
+system.<span class="fn2">write_outputs</span>()</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Workflow ── -->
+  <div class="section" id="workflow">
+    <div class="section-title"><span class="dot"></span>Workflow</div>
+    <div class="section-desc">Every model follows the same lifecycle. Steps must be performed in order.</div>
+    <div class="note note-info">
+      <span class="note-icon">ℹ</span>
+      <div>
+        <strong>Order matters.</strong>
+        Templates must be loaded before blocks/links are created (they define what types exist).
+        <code>finalize()</code> must be called before <code>solve()</code>.
+        Properties set after <code>finalize()</code> are not reflected in the solved state.
+      </div>
+    </div>
+    <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--bg2); border:1px solid var(--border); border-radius:6px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent2); min-width:18px; text-align:center; font-weight:600;">1</span>
+        <span style="color:var(--text-muted); font-size:13px;"><code style="color:var(--accent); font-family:'IBM Plex Mono',monospace;">System()</code> — Create instance, set paths &amp; silence flag</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--bg2); border:1px solid var(--border); border-radius:6px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent2); min-width:18px; text-align:center; font-weight:600;">2</span>
+        <span style="color:var(--text-muted); font-size:13px;"><code style="color:var(--accent); font-family:'IBM Plex Mono',monospace;">load_template() / add_template()</code> — Register component types from JSON</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--bg2); border:1px solid var(--border); border-radius:6px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent2); min-width:18px; text-align:center; font-weight:600;">3</span>
+        <span style="color:var(--text-muted); font-size:13px;"><code style="color:var(--accent); font-family:'IBM Plex Mono',monospace;">set_system_value()</code> — Configure time range, timestep, output interval</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--bg2); border:1px solid var(--border); border-radius:6px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent2); min-width:18px; text-align:center; font-weight:600;">4</span>
+        <span style="color:var(--text-muted); font-size:13px;"><code style="color:var(--accent); font-family:'IBM Plex Mono',monospace;">create_block() / create_link()</code> — Populate the model graph</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--bg2); border:1px solid var(--border); border-radius:6px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent2); min-width:18px; text-align:center; font-weight:600;">5</span>
+        <span style="color:var(--text-muted); font-size:13px;"><code style="color:var(--accent); font-family:'IBM Plex Mono',monospace;">finalize()</code> — Wire parents, pointers, expressions, initial values</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--bg2); border:1px solid var(--border); border-radius:6px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent2); min-width:18px; text-align:center; font-weight:600;">6</span>
+        <span style="color:var(--text-muted); font-size:13px;"><code style="color:var(--accent); font-family:'IBM Plex Mono',monospace;">solve()</code> — Run time integration</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--bg2); border:1px solid var(--border); border-radius:6px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent2); min-width:18px; text-align:center; font-weight:600;">7</span>
+        <span style="color:var(--text-muted); font-size:13px;"><code style="color:var(--accent); font-family:'IBM Plex Mono',monospace;">write_outputs() / save_to_script() / save_to_json()</code> — Persist results</span>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ── Initialization ── -->
+  <div class="section" id="initialization">
+    <div class="section-title"><span class="dot"></span>Initialization</div>
+    <div class="section-desc">Create and configure the System object before loading any templates or building any model components.</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">System</span>()</div>
+        <span class="method-tag tag-setup">setup</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Creates a new empty simulation system. Must be the first call.</div>
+        <div class="code-block">
+          <div class="code-block-header">python</div>
+          <pre>system = ohq.<span class="fn2">System</span>()</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">set_default_template_path</span>(<span class="param">path</span>: <span class="type">str</span>)</div>
+        <span class="method-tag tag-setup">setup</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Sets the directory where JSON template files are searched for by filename. Used as fallback when a full path is not provided to <code>load_template</code> or <code>add_template</code>.</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="pname">path</td><td class="ptype">str</td><td class="pdesc">Absolute path to the resources directory (must end with <code>/</code>)</td></tr>
+        </table>
+        <div class="code-block">
+          <div class="code-block-header">python</div>
+          <pre>system.<span class="fn2">set_default_template_path</span>(<span class="str">'/home/user/OpenHydroQual/resources/'</span>)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">set_working_folder</span>(<span class="param">path</span>: <span class="type">str</span>)</div>
+        <span class="method-tag tag-setup">setup</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Sets the working directory used for reading time-series files and writing outputs. Relative file references in properties (e.g. <code>Recharge.csv</code>) are resolved from this folder.</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="pname">path</td><td class="ptype">str</td><td class="pdesc">Absolute path to the working directory</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">set_silent</span>(<span class="param">silent</span>: <span class="type">bool</span>)</div>
+        <span class="method-tag tag-setup">setup</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Controls solver verbosity. Set to <code>False</code> during development to see solver progress and error messages. Set to <code>True</code> for RL training loops.</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th><th>Default</th></tr>
+          <tr><td class="pname">silent</td><td class="ptype">bool</td><td class="pdesc"><code>True</code> suppresses all stdout output</td><td class="pdefault">False</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">working_folder</span>() → <span class="ret">str</span></div>
+        <span class="method-tag tag-setup">setup</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Returns the currently set working folder path.</div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">output_filename</span>() → <span class="ret">str</span></div>
+        <span class="method-tag tag-setup">setup</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Returns the path to the main output file (set via <code>alloutputfile</code> system setting).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Templates ── -->
+  <div class="section" id="templates">
+    <div class="section-title"><span class="dot"></span>Templates</div>
+    <div class="section-desc">Templates are JSON files that define the available block and link types (their properties, units, expressions). They must be loaded before any <code>create_block</code> or <code>create_link</code> calls.</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">load_template</span>(<span class="param">filename</span>: <span class="type">str</span>) → <span class="ret">bool</span></div>
+        <span class="method-tag tag-setup">setup</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Loads the primary component template. Clears any previously loaded templates. Accepts full path or filename (resolved against <code>default_template_path</code>).</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="pname">filename</td><td class="ptype">str</td><td class="pdesc">Path or filename of the JSON template (e.g. <code>'main_components.json'</code>)</td></tr>
+        </table>
+        <div class="code-block">
+          <div class="code-block-header">python</div>
+          <pre>system.<span class="fn2">load_template</span>(<span class="str">'/path/to/resources/main_components.json'</span>)</pre>
+        </div>
+        <div class="note note-warn" style="margin-top:10px;">
+          <span class="note-icon">⚠</span>
+          <div>Always call <code>load_template</code> before <code>add_template</code>. Calling it again clears all existing templates.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">add_template</span>(<span class="param">filename</span>: <span class="type">str</span>) → <span class="ret">bool</span></div>
+        <span class="method-tag tag-setup">setup</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Appends an additional template file to the existing MetaModel. Use to add domain-specific component libraries (groundwater, wastewater, etc.).</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="pname">filename</td><td class="ptype">str</td><td class="pdesc">Path or filename of the JSON template to append</td></tr>
+        </table>
+        <div class="code-block">
+          <div class="code-block-header">python — typical template loading sequence</div>
+          <pre>RESOURCES = <span class="str">'/home/user/OpenHydroQual/resources/'</span>
+system.<span class="fn2">load_template</span>(RESOURCES + <span class="str">'main_components.json'</span>)
+system.<span class="fn2">add_template</span>(RESOURCES + <span class="str">'unconfined_groundwater.json'</span>)
+<span class="cmt"># For wastewater models:</span>
+<span class="cmt"># system.add_template(RESOURCES + 'wastewater.json')</span>
+<span class="cmt"># system.add_template(RESOURCES + 'mass_transfer.json')</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Settings ── -->
+  <div class="section" id="settings">
+    <div class="section-title"><span class="dot"></span>Simulation Settings</div>
+    <div class="section-desc">Global solver and output configuration. All values are passed as strings.</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">set_system_value</span>(<span class="param">quantity</span>: <span class="type">str</span>, <span class="param">value</span>: <span class="type">str</span>) → <span class="ret">bool</span></div>
+        <span class="method-tag tag-setup">setup</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Sets a global simulation setting. Corresponds to the <code>setvalue; object=system</code> script command.</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="pname">quantity</td><td class="ptype">str</td><td class="pdesc">Setting name (see table below)</td></tr>
+          <tr><td class="pname">value</td><td class="ptype">str</td><td class="pdesc">Value as string</td></tr>
+        </table>
+
+        <div style="margin-top:14px;">
+          <table class="params-table">
+            <tr><th>Key</th><th>Default</th><th>Description</th></tr>
+            <tr><td class="pname">simulation_start_time</td><td class="pdefault">"0"</td><td class="pdesc">Start time (days)</td></tr>
+            <tr><td class="pname">simulation_end_time</td><td class="pdefault">"1"</td><td class="pdesc">End time (days)</td></tr>
+            <tr><td class="pname">initial_time_step</td><td class="pdefault">"0.01"</td><td class="pdesc">Initial solver timestep (days)</td></tr>
+            <tr><td class="pname">write_interval</td><td class="pdefault">"100"</td><td class="pdesc">Write output every N timesteps</td></tr>
+            <tr><td class="pname">nr_tolerance</td><td class="pdefault">"0.001"</td><td class="pdesc">Newton-Raphson convergence tolerance</td></tr>
+            <tr><td class="pname">maximum_time_allowed</td><td class="pdefault">"86400"</td><td class="pdesc">Wall-clock time limit (seconds)</td></tr>
+            <tr><td class="pname">maximum_number_of_matrix_inverstions</td><td class="pdefault">"200000"</td><td class="pdesc">Max Jacobian calculations</td></tr>
+            <tr><td class="pname">n_threads</td><td class="pdefault">"8"</td><td class="pdesc">Number of solver threads</td></tr>
+            <tr><td class="pname">alloutputfile</td><td class="pdefault">"output.txt"</td><td class="pdesc">Output filename (all variables)</td></tr>
+          </table>
+        </div>
+
+        <div class="code-block" style="margin-top:14px;">
+          <div class="code-block-header">python</div>
+          <pre>system.<span class="fn2">set_system_value</span>(<span class="str">'simulation_start_time'</span>, <span class="str">'0'</span>)
+system.<span class="fn2">set_system_value</span>(<span class="str">'simulation_end_time'</span>,   <span class="str">'365'</span>)
+system.<span class="fn2">set_system_value</span>(<span class="str">'initial_time_step'</span>,     <span class="str">'0.01'</span>)
+system.<span class="fn2">set_system_value</span>(<span class="str">'write_interval'</span>,        <span class="str">'50'</span>)
+system.<span class="fn2">set_system_value</span>(<span class="str">'nr_tolerance'</span>,          <span class="str">'0.001'</span>)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">create_from_script</span>(<span class="param">scriptfile</span>: <span class="type">str</span>, <span class="param">settingsfile</span>: <span class="type">str</span>) → <span class="ret">bool</span></div>
+        <span class="method-tag tag-setup">setup</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Loads a complete model from an <code>.ohq</code> script file. Alternative to building a model programmatically — useful for loading existing models created in the OpenHydroQual GUI.</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="pname">scriptfile</td><td class="ptype">str</td><td class="pdesc">Path to the <code>.ohq</code> script file</td></tr>
+          <tr><td class="pname">settingsfile</td><td class="ptype">str</td><td class="pdesc">Path to the <code>settings.json</code> file</td></tr>
+        </table>
+        <div class="note note-info" style="margin-top:10px;">
+          <span class="note-icon">ℹ</span>
+          <div>When using <code>create_from_script</code>, do not call <code>load_template</code>, <code>add_template</code>, or <code>finalize()</code> — the script handles all initialization internally.</div>
+        </div>
+        <div class="code-block" style="margin-top:10px;">
+          <div class="code-block-header">python</div>
+          <pre>system.<span class="fn2">create_from_script</span>(
+    <span class="str">'/path/to/model/1DModel.ohq'</span>,
+    <span class="str">'/path/to/resources/settings.json'</span>
+)
+system.<span class="fn2">solve</span>()
+system.<span class="fn2">write_outputs</span>()</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ── Blocks ── -->
+  <div class="section" id="blocks">
+    <div class="section-title"><span class="dot"></span>Creating Blocks</div>
+    <div class="section-desc">Blocks are the computational nodes of the model (aquifer cells, reactors, reservoirs, fixed-head boundaries, etc.). Types must exist in a loaded template.</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig">
+          <span class="fn">create_block</span>(<span class="param">name</span>: <span class="type">str</span>, <span class="param">type</span>: <span class="type">str</span>, <span class="param">properties</span>: <span class="type">dict[str,str]</span> = <span class="type">{}</span>) → <span class="ret">bool</span>
+        </div>
+        <span class="method-tag tag-build">build</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Creates a new block node in the model. The type string must match a block definition in the loaded templates. Properties are key-value pairs where all values are strings (even numeric ones).</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="pname">name</td><td class="ptype">str</td><td class="pdesc">Unique identifier for this block. Names with colons and parentheses are valid, e.g. <code>'cell(1:1)'</code></td></tr>
+          <tr><td class="pname">type</td><td class="ptype">str</td><td class="pdesc">Block type as defined in the template JSON (case-sensitive)</td></tr>
+          <tr><td class="pname">properties</td><td class="ptype">dict</td><td class="pdesc">Optional property overrides. Keys are quantity names from the template; values are strings</td></tr>
+        </table>
+        <div class="note note-warn" style="margin-top:10px;">
+          <span class="note-icon">⚠</span>
+          <div>All property values must be <strong>strings</strong>, even numbers: <code>'5000'</code> not <code>5000</code>. Properties not specified take template defaults.</div>
+        </div>
+        <div class="code-block" style="margin-top:10px;">
+          <div class="code-block-header">python — create an unconfined groundwater cell</div>
+          <pre>system.<span class="fn2">create_block</span>(
+    name=<span class="str">'cell(1:1)'</span>,
+    type=<span class="str">'Unconfined Groundwater cell'</span>,
+    properties={
+        <span class="str">'area'</span>:                  <span class="str">'5000'</span>,   <span class="cmt"># m²</span>
+        <span class="str">'base_elevation'</span>:        <span class="str">'0'</span>,      <span class="cmt"># m</span>
+        <span class="str">'hydraulic_conductivity'</span>: <span class="str">'5'</span>,      <span class="cmt"># m/day</span>
+        <span class="str">'piezometric_head'</span>:      <span class="str">'10.0'</span>,   <span class="cmt"># m (initial)</span>
+        <span class="str">'porosity'</span>:              <span class="str">'0.3'</span>,
+        <span class="str">'specific_yield'</span>:        <span class="str">'0.2'</span>,
+        <span class="str">'recharge_per_area'</span>:     <span class="str">'Recharge.csv'</span>,  <span class="cmt"># resolved from working_folder</span>
+    }
+)
+
+<span class="cmt"># Fixed-head boundary</span>
+system.<span class="fn2">create_block</span>(<span class="str">'fixed_head_left'</span>, <span class="str">'fixed_head'</span>,
+                    {<span class="str">'head'</span>: <span class="str">'10'</span>, <span class="str">'Storage'</span>: <span class="str">'100000'</span>})</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">block_names</span>() → <span class="ret">list[str]</span></div>
+        <span class="method-tag tag-build">build</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Returns a list of all block names currently in the system.</div>
+        <div class="code-block"><div class="code-block-header">python</div><pre><span class="fn2">print</span>(system.<span class="fn2">block_names</span>())
+<span class="cmt"># → ['cell(1:1)', 'cell(2:1)', ..., 'fixed_head_left']</span></pre></div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">block_count</span>() → <span class="ret">int</span></div>
+        <span class="method-tag tag-build">build</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Returns the total number of blocks in the system.</div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">block_types</span>() → <span class="ret">list[str]</span></div>
+        <span class="method-tag tag-build">build</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Returns a list of type strings for all blocks, in order.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Links ── -->
+  <div class="section" id="links">
+    <div class="section-title"><span class="dot"></span>Creating Links</div>
+    <div class="section-desc">Links are directed connectors between two blocks. They define flow, transport, or other exchange processes.</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig">
+          <span class="fn">create_link</span>(<span class="param">name</span>: <span class="type">str</span>, <span class="param">type</span>: <span class="type">str</span>, <span class="param">from_block</span>: <span class="type">str</span>, <span class="param">to_block</span>: <span class="type">str</span>, <span class="param">properties</span>: <span class="type">dict</span> = <span class="type">{}</span>) → <span class="ret">bool</span>
+        </div>
+        <span class="method-tag tag-build">build</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Creates a directed link between two existing blocks. Both <code>from_block</code> and <code>to_block</code> must already exist in the system.</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="pname">name</td><td class="ptype">str</td><td class="pdesc">Unique identifier for this link</td></tr>
+          <tr><td class="pname">type</td><td class="ptype">str</td><td class="pdesc">Link type from template (e.g. <code>'UC_groundwater_link'</code>)</td></tr>
+          <tr><td class="pname">from_block</td><td class="ptype">str</td><td class="pdesc">Name of the source block</td></tr>
+          <tr><td class="pname">to_block</td><td class="ptype">str</td><td class="pdesc">Name of the destination block</td></tr>
+          <tr><td class="pname">properties</td><td class="ptype">dict</td><td class="pdesc">Optional property overrides (all values as strings)</td></tr>
+        </table>
+        <div class="code-block" style="margin-top:10px;">
+          <div class="code-block-header">python — internal and boundary links</div>
+          <pre><span class="cmt"># Internal connector between cells</span>
+system.<span class="fn2">create_link</span>(
+    name=<span class="str">'link(1:2)'</span>,
+    type=<span class="str">'UC_groundwater_link'</span>,
+    from_block=<span class="str">'cell(1:1)'</span>,
+    to_block=<span class="str">'cell(2:1)'</span>,
+    properties={<span class="str">'length'</span>: <span class="str">'50'</span>, <span class="str">'width'</span>: <span class="str">'100'</span>}
+)
+
+<span class="cmt"># Boundary link to fixed head</span>
+system.<span class="fn2">create_link</span>(
+    name=<span class="str">'link_left'</span>,
+    type=<span class="str">'unconfined_groundwater_to_fixedhead'</span>,
+    from_block=<span class="str">'cell(1:1)'</span>,
+    to_block=<span class="str">'fixed_head_left'</span>,
+    properties={<span class="str">'length'</span>: <span class="str">'50'</span>, <span class="str">'width'</span>: <span class="str">'100'</span>}
+)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">link_names</span>() → <span class="ret">list[str]</span></div>
+        <span class="method-tag tag-build">build</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Returns a list of all link names currently in the system.</div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">link_count</span>() → <span class="ret">int</span> &nbsp;|&nbsp; <span class="fn">link_types</span>() → <span class="ret">list[str]</span></div>
+        <span class="method-tag tag-build">build</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Returns the total number of links, or a list of type strings for all links in order.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Properties ── -->
+  <div class="section" id="properties">
+    <div class="section-title"><span class="dot"></span>Setting Properties After Creation</div>
+    <div class="section-desc">Properties can be updated on individual blocks or links after they have been created.</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">set_block_property</span>(<span class="param">name</span>: <span class="type">str</span>, <span class="param">key</span>: <span class="type">str</span>, <span class="param">value</span>: <span class="type">str</span>)</div>
+        <span class="method-tag tag-build">build</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Sets or updates a single property on an existing block. Useful for post-creation updates, e.g. assigning time-series files.</div>
+        <div class="code-block"><div class="code-block-header">python</div><pre>system.<span class="fn2">set_block_property</span>(<span class="str">'cell(1:1)'</span>, <span class="str">'hydraulic_conductivity'</span>, <span class="str">'8.5'</span>)
+system.<span class="fn2">set_block_property</span>(<span class="str">'Reactor_Flex(1)'</span>, <span class="str">'time_variable_inflow'</span>, <span class="str">'/data/Q.txt'</span>)</pre></div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">set_link_property</span>(<span class="param">name</span>: <span class="type">str</span>, <span class="param">key</span>: <span class="type">str</span>, <span class="param">value</span>: <span class="type">str</span>)</div>
+        <span class="method-tag tag-build">build</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Sets or updates a single property on an existing link.</div>
+        <div class="code-block"><div class="code-block-header">python</div><pre>system.<span class="fn2">set_link_property</span>(<span class="str">'link(1:2)'</span>, <span class="str">'length'</span>, <span class="str">'75'</span>)</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Finalize ── -->
+  <div class="section" id="finalize">
+    <div class="section-title"><span class="dot"></span>Finalize</div>
+    <div class="section-desc">Must be called after all blocks and links are created, and before <code>solve()</code>.</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">finalize</span>()</div>
+        <span class="method-tag tag-build">build</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">
+          Wires up the model graph and prepares it for simulation. Internally calls:
+          <ol style="margin: 10px 0 10px 20px; color: var(--text-muted); line-height:2;">
+            <li><code>SetAllParents()</code> — links all objects to their parent system</li>
+            <li><code>SetQuanPointers()</code> — resolves cross-references between quantities</li>
+            <li><code>CalcAllInitialValues()</code> — computes initial state from expressions</li>
+            <li><code>InitiatePrecalculatedFunctions()</code> — prepares time-series lookups</li>
+          </ol>
+        </div>
+        <div class="note note-warn">
+          <span class="note-icon">⚠</span>
+          <div>Do <strong>not</strong> call <code>set_block_property</code> or <code>set_link_property</code> after <code>finalize()</code> — the solver uses internal state that was set during finalization. Property changes after this point are not reflected.</div>
+        </div>
+        <div class="code-block" style="margin-top:10px;"><div class="code-block-header">python</div><pre>system.<span class="fn2">finalize</span>()
+system.<span class="fn2">solve</span>()</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ── Parameters ── -->
+  <div class="section" id="parameters">
+    <div class="section-title"><span class="dot"></span>Parameters</div>
+    <div class="section-desc">Parameters define calibration variables that can be mapped to block/link properties. Used for inverse modeling, sensitivity analysis, and RL action spaces.</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">append_parameter</span>(<span class="param">name</span>: <span class="type">str</span>, <span class="param">low</span>: <span class="type">float</span>, <span class="param">high</span>: <span class="type">float</span>, <span class="param">prior_distribution</span>: <span class="type">str</span> = <span class="type">"normal"</span>) → <span class="ret">bool</span></div>
+        <span class="method-tag tag-param">param</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Registers a calibration parameter with a name, feasible range, and prior distribution type.</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="pname">name</td><td class="ptype">str</td><td class="pdesc">Unique parameter name (referenced in <code>set_as_parameter</code>)</td></tr>
+          <tr><td class="pname">low</td><td class="ptype">float</td><td class="pdesc">Lower bound of feasible range</td></tr>
+          <tr><td class="pname">high</td><td class="ptype">float</td><td class="pdesc">Upper bound of feasible range</td></tr>
+          <tr><td class="pname">prior_distribution</td><td class="ptype">str</td><td class="pdesc"><code>"normal"</code> or <code>"lognormal"</code></td></tr>
+        </table>
+        <div class="code-block"><div class="code-block-header">python</div><pre>system.<span class="fn2">append_parameter</span>(<span class="str">'K'</span>, low=<span class="num">2.0</span>, high=<span class="num">10.0</span>, prior_distribution=<span class="str">'normal'</span>)</pre></div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">set_as_parameter</span>(<span class="param">object_name</span>: <span class="type">str</span>, <span class="param">quantity</span>: <span class="type">str</span>, <span class="param">parameter_name</span>: <span class="type">str</span>)</div>
+        <span class="method-tag tag-param">param</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Links a block or link quantity to a parameter. The parameter value will override the quantity value when <code>apply_parameters()</code> is called.</div>
+        <div class="code-block"><div class="code-block-header">python — assign K to hydraulic_conductivity in all cells</div><pre>system.<span class="fn2">append_parameter</span>(<span class="str">'K'</span>, <span class="num">2.0</span>, <span class="num">10.0</span>)
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn2">range</span>(<span class="num">1</span>, n+<span class="num">1</span>):
+    system.<span class="fn2">set_as_parameter</span>(<span class="fn2">f</span><span class="str">'cell({i}:1)'</span>, <span class="str">'hydraulic_conductivity'</span>, <span class="str">'K'</span>)</pre></div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">set_parameter_value</span>(<span class="param">name</span>: <span class="type">str</span>, <span class="param">value</span>: <span class="type">float</span>)</div>
+        <span class="method-tag tag-param">param</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Sets the current value of a parameter. Combined with <code>apply_parameters()</code>, this is how you update model inputs during calibration or RL episode steps.</div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">apply_parameters</span>()</div>
+        <span class="method-tag tag-param">param</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Propagates current parameter values to all linked quantities. Call before <code>solve()</code> during calibration loops.</div>
+        <div class="code-block"><div class="code-block-header">python — calibration loop pattern</div><pre><span class="kw">for</span> K_val <span class="kw">in</span> candidate_values:
+    system.<span class="fn2">set_parameter_value</span>(<span class="str">'K'</span>, K_val)
+    system.<span class="fn2">apply_parameters</span>()
+    system.<span class="fn2">solve</span>(apply_parameters=<span class="kw">False</span>)  <span class="cmt"># already applied</span>
+    obj = system.<span class="fn2">get_objective_function_value</span>()</pre></div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">get_objective_function_value</span>() → <span class="ret">float</span></div>
+        <span class="method-tag tag-param">param</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Returns the current scalar objective function value (e.g. sum of squared residuals vs observations). Returns 0 if no objective function is defined.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ── Solve ── -->
+  <div class="section" id="solve">
+    <div class="section-title"><span class="dot"></span>Solve &amp; Output</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">solve</span>(<span class="param">apply_parameters</span>: <span class="type">bool</span> = <span class="type">True</span>, <span class="param">uniformize_output</span>: <span class="type">bool</span> = <span class="type">True</span>)</div>
+        <span class="method-tag tag-solve">solve</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Runs the full time integration from <code>simulation_start_time</code> to <code>simulation_end_time</code> using the implicit Newton-Raphson solver.</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr>
+          <tr><td class="pname">apply_parameters</td><td class="ptype">bool</td><td class="pdefault">True</td><td class="pdesc">Apply parameter values before solving</td></tr>
+          <tr><td class="pname">uniformize_output</td><td class="ptype">bool</td><td class="pdefault">True</td><td class="pdesc">Interpolate outputs to uniform time intervals</td></tr>
+        </table>
+        <div class="note note-info" style="margin-top:10px;">
+          <span class="note-icon">ℹ</span>
+          <div>Solver progress and timestep information is printed to stdout unless <code>set_silent(True)</code> was called.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">write_outputs</span>()</div>
+        <span class="method-tag tag-solve">solve</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Writes simulation results to the output file (path set by <code>alloutputfile</code> system setting, relative to <code>working_folder</code>). The output file contains time series for all quantities marked <code>"includeinoutput": true</code> in the template.</div>
+        <div class="code-block"><div class="code-block-header">python</div><pre>system.<span class="fn2">finalize</span>()
+system.<span class="fn2">solve</span>()
+system.<span class="fn2">write_outputs</span>()
+<span class="fn2">print</span>(<span class="str">'Output written to:'</span>, system.<span class="fn2">working_folder</span>() + <span class="str">'output.txt'</span>)</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ── Save ── -->
+  <div class="section" id="save">
+    <div class="section-title"><span class="dot"></span>Save &amp; Load</div>
+    <div class="section-desc">Models can be saved as <code>.ohq</code> script files (human-readable, reloadable) or as <code>.json</code> files (structured, includes post-solve state).</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig">
+          <span class="fn">save_to_script</span>(<span class="param">filename</span>: <span class="type">str</span>, <span class="param">templatefilename</span>: <span class="type">str</span> = <span class="type">""</span>, <span class="param">addedtemplates</span>: <span class="type">list[str]</span> = <span class="type">[]</span>) → <span class="ret">bool</span>
+        </div>
+        <span class="method-tag tag-io">io</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Saves the model as an <code>.ohq</code> script file. The file can be reopened in the OpenHydroQual GUI or loaded via <code>create_from_script</code>. Post-solve state (final piezometric heads, etc.) is included.</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="pname">filename</td><td class="ptype">str</td><td class="pdesc">Output path for the <code>.ohq</code> file</td></tr>
+          <tr><td class="pname">templatefilename</td><td class="ptype">str</td><td class="pdesc">Main template filename (empty = use <code>addtemplate</code> only)</td></tr>
+          <tr><td class="pname">addedtemplates</td><td class="ptype">list[str]</td><td class="pdesc">List of additional template paths to record in the file header</td></tr>
+        </table>
+        <div class="code-block" style="margin-top:10px;">
+          <div class="code-block-header">python</div>
+          <pre>RESOURCES = <span class="str">'/path/to/resources/'</span>
+system.<span class="fn2">save_to_script</span>(
+    WORKDIR + <span class="str">'model_saved.ohq'</span>,
+    <span class="str">''</span>,
+    [RESOURCES + <span class="str">'main_components.json'</span>,
+     RESOURCES + <span class="str">'unconfined_groundwater.json'</span>]
+)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig">
+          <span class="fn">save_to_json</span>(<span class="param">filename</span>: <span class="type">str</span>, <span class="param">addedtemplates</span>: <span class="type">list[str]</span> = <span class="type">[]</span>, <span class="param">allvariables</span>: <span class="type">bool</span> = <span class="type">False</span>, <span class="param">calculatevalue</span>: <span class="type">bool</span> = <span class="type">False</span>) → <span class="ret">bool</span>
+        </div>
+        <span class="method-tag tag-io">io</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Saves the model state as a structured JSON file. Useful for programmatic inspection of model state.</div>
+        <table class="params-table">
+          <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr>
+          <tr><td class="pname">filename</td><td class="ptype">str</td><td class="pdefault">—</td><td class="pdesc">Output path for the JSON file</td></tr>
+          <tr><td class="pname">addedtemplates</td><td class="ptype">list[str]</td><td class="pdefault">[]</td><td class="pdesc">Template names to record</td></tr>
+          <tr><td class="pname">allvariables</td><td class="ptype">bool</td><td class="pdefault">False</td><td class="pdesc">Include all quantities (not just <code>ask_user=true</code>)</td></tr>
+          <tr><td class="pname">calculatevalue</td><td class="ptype">bool</td><td class="pdefault">False</td><td class="pdesc">Evaluate expressions and include computed values</td></tr>
+        </table>
+        <div class="code-block" style="margin-top:10px;">
+          <div class="code-block-header">python — save full post-solve state</div>
+          <pre>system.<span class="fn2">save_to_json</span>(
+    WORKDIR + <span class="str">'model_full.json'</span>,
+    addedtemplates=[<span class="str">'main_components.json'</span>, <span class="str">'unconfined_groundwater.json'</span>],
+    allvariables=<span class="kw">True</span>,
+    calculatevalue=<span class="kw">True</span>
+)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ── Debug ── -->
+  <div class="section" id="debug">
+    <div class="section-title"><span class="dot"></span>Debug Utilities</div>
+    <div class="section-desc">Helpers for inspecting model state during development.</div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">get_block_json</span>(<span class="param">name</span>: <span class="type">str</span>) → <span class="ret">str</span></div>
+        <span class="method-tag tag-debug">debug</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Returns a JSON string of all quantities for a block. Useful for verifying properties before and after <code>finalize()</code>.</div>
+        <div class="code-block"><div class="code-block-header">python</div><pre><span class="kw">import</span> json
+state = json.<span class="fn2">loads</span>(system.<span class="fn2">get_block_json</span>(<span class="str">'cell(1:1)'</span>))
+<span class="fn2">print</span>(state[<span class="str">'hydraulic_conductivity'</span>])  <span class="cmt"># → '5'</span></pre></div>
+      </div>
+    </div>
+
+    <div class="method">
+      <div class="method-header">
+        <div class="method-sig"><span class="fn">get_link_json</span>(<span class="param">name</span>: <span class="type">str</span>) → <span class="ret">str</span></div>
+        <span class="method-tag tag-debug">debug</span>
+      </div>
+      <div class="method-body">
+        <div class="method-desc">Returns a JSON string of all quantities for a link. Includes expression strings for computed quantities like <code>flow</code>.</div>
+        <div class="code-block"><div class="code-block-header">python — check link before/after finalize</div><pre><span class="fn2">print</span>(<span class="str">"BEFORE:"</span>, system.<span class="fn2">get_link_json</span>(<span class="str">'link(1:2)'</span>))
+system.<span class="fn2">finalize</span>()
+<span class="fn2">print</span>(<span class="str">"AFTER:"</span>,  system.<span class="fn2">get_link_json</span>(<span class="str">'link(1:2)'</span>))</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ── Full Example 1 ── -->
+  <div class="section" id="ex-1d">
+    <div class="section-title"><span class="dot"></span>Full Example: 1D Groundwater</div>
+    <div class="section-desc">Complete working example — 10-cell 1D unconfined aquifer with fixed-head boundaries.</div>
+    <div class="example-section">
+      <div class="example-header">
+        <div class="num-badge">A</div>
+        <div>
+          1D Unconfined Groundwater Model
+          <p>10 cells · fixed-head boundaries · hydraulic conductivity calibration parameter</p>
+        </div>
+      </div>
+      <div class="example-body"><pre><span class="kw">import</span> openhydroqual_py <span class="kw">as</span> ohq
+
+RESOURCES = <span class="str">'/home/user/OpenHydroQual/resources/'</span>
+WORKDIR   = <span class="str">'/home/user/projects/groundwater/'</span>
+
+<span class="cmt"># ── Setup ────────────────────────────────────────────────────────</span>
+system = ohq.<span class="fn2">System</span>()
+system.<span class="fn2">set_default_template_path</span>(RESOURCES)
+system.<span class="fn2">set_working_folder</span>(WORKDIR)
+system.<span class="fn2">set_silent</span>(<span class="kw">False</span>)
+
+system.<span class="fn2">load_template</span>(RESOURCES + <span class="str">'main_components.json'</span>)
+system.<span class="fn2">add_template</span>(RESOURCES + <span class="str">'unconfined_groundwater.json'</span>)
+
+<span class="cmt"># ── Simulation settings ──────────────────────────────────────────</span>
+system.<span class="fn2">set_system_value</span>(<span class="str">'simulation_start_time'</span>, <span class="str">'0'</span>)
+system.<span class="fn2">set_system_value</span>(<span class="str">'simulation_end_time'</span>,   <span class="str">'90'</span>)
+system.<span class="fn2">set_system_value</span>(<span class="str">'initial_time_step'</span>,     <span class="str">'0.01'</span>)
+system.<span class="fn2">set_system_value</span>(<span class="str">'write_interval'</span>,        <span class="str">'100'</span>)
+
+<span class="cmt"># ── Aquifer cells ────────────────────────────────────────────────</span>
+n = <span class="num">10</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn2">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+    head = <span class="num">10.0</span> - (i - <span class="num">1</span>) * (<span class="num">10.0</span> - <span class="num">9.0</span>) / n
+    system.<span class="fn2">create_block</span>(
+        name=<span class="fn2">f</span><span class="str">'cell({i}:1)'</span>,
+        type=<span class="str">'Unconfined Groundwater cell'</span>,
+        properties={
+            <span class="str">'area'</span>:                  <span class="str">'5000'</span>,
+            <span class="str">'base_elevation'</span>:        <span class="str">'0'</span>,
+            <span class="str">'hydraulic_conductivity'</span>: <span class="str">'5'</span>,
+            <span class="str">'piezometric_head'</span>:      <span class="fn2">str</span>(<span class="fn2">round</span>(head, <span class="num">5</span>)),
+            <span class="str">'porosity'</span>:              <span class="str">'0.3'</span>,
+            <span class="str">'recharge_per_area'</span>:     WORKDIR + <span class="str">'Recharge.csv'</span>,
+            <span class="str">'specific_yield'</span>:        <span class="str">'0.2'</span>,
+        }
+    )
+
+<span class="cmt"># ── Fixed-head boundaries ────────────────────────────────────────</span>
+system.<span class="fn2">create_block</span>(<span class="str">'fixed_head_left'</span>,  <span class="str">'fixed_head'</span>, {<span class="str">'head'</span>: <span class="str">'10'</span>, <span class="str">'Storage'</span>: <span class="str">'100000'</span>})
+system.<span class="fn2">create_block</span>(<span class="str">'fixed_head_right'</span>, <span class="str">'fixed_head'</span>, {<span class="str">'head'</span>: <span class="str">'9'</span>,  <span class="str">'Storage'</span>: <span class="str">'100000'</span>})
+
+<span class="cmt"># ── Internal links ───────────────────────────────────────────────</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn2">range</span>(<span class="num">1</span>, n):
+    system.<span class="fn2">create_link</span>(
+        name=<span class="fn2">f</span><span class="str">'link({i}:{i+1})'</span>,
+        type=<span class="str">'UC_groundwater_link'</span>,
+        from_block=<span class="fn2">f</span><span class="str">'cell({i}:1)'</span>,
+        to_block=<span class="fn2">f</span><span class="str">'cell({i+1}:1)'</span>,
+        properties={<span class="str">'length'</span>: <span class="str">'50'</span>, <span class="str">'width'</span>: <span class="str">'100'</span>}
+    )
+
+<span class="cmt"># ── Boundary links ───────────────────────────────────────────────</span>
+system.<span class="fn2">create_link</span>(<span class="str">'link_left'</span>,  <span class="str">'unconfined_groundwater_to_fixedhead'</span>,
+                   <span class="str">'cell(1:1)'</span>,    <span class="str">'fixed_head_left'</span>,
+                   {<span class="str">'length'</span>: <span class="str">'50'</span>, <span class="str">'width'</span>: <span class="str">'100'</span>})
+system.<span class="fn2">create_link</span>(<span class="str">'link_right'</span>, <span class="str">'unconfined_groundwater_to_fixedhead'</span>,
+                   <span class="fn2">f</span><span class="str">'cell({n}:1)'</span>, <span class="str">'fixed_head_right'</span>,
+                   {<span class="str">'length'</span>: <span class="str">'50'</span>, <span class="str">'width'</span>: <span class="str">'100'</span>})
+
+<span class="cmt"># ── Finalize and solve ───────────────────────────────────────────</span>
+system.<span class="fn2">finalize</span>()
+system.<span class="fn2">solve</span>()
+system.<span class="fn2">write_outputs</span>()
+
+<span class="cmt"># ── Save ─────────────────────────────────────────────────────────</span>
+system.<span class="fn2">save_to_script</span>(
+    WORKDIR + <span class="str">'model_saved.ohq'</span>, <span class="str">''</span>,
+    [RESOURCES + <span class="str">'main_components.json'</span>,
+     RESOURCES + <span class="str">'unconfined_groundwater.json'</span>]
+)
+system.<span class="fn2">save_to_json</span>(
+    WORKDIR + <span class="str">'model_saved.json'</span>,
+    addedtemplates=[<span class="str">'main_components.json'</span>, <span class="str">'unconfined_groundwater.json'</span>]
+)
+<span class="fn2">print</span>(<span class="str">'Done'</span>)</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Full Example 2 ── -->
+  <div class="section" id="ex-reload">
+    <div class="section-title"><span class="dot"></span>Full Example: Save &amp; Reload</div>
+    <div class="section-desc">Save a programmatically-built model as an <code>.ohq</code> file, then reload and re-solve it.</div>
+    <div class="example-section">
+      <div class="example-header">
+        <div class="num-badge">B</div>
+        <div>
+          Round-trip: Build → Save → Reload → Solve
+          <p>Verify that saved scripts are valid and produce identical results</p>
+        </div>
+      </div>
+      <div class="example-body"><pre><span class="kw">import</span> openhydroqual_py <span class="kw">as</span> ohq
+
+RESOURCES = <span class="str">'/home/user/OpenHydroQual/resources/'</span>
+WORKDIR   = <span class="str">'/home/user/projects/groundwater/'</span>
+
+<span class="cmt"># ── Build and save (as above) ────────────────────────────────────</span>
+system = ohq.<span class="fn2">System</span>()
+<span class="cmt"># ... (build model as in Example A) ...</span>
+system.<span class="fn2">finalize</span>()
+system.<span class="fn2">solve</span>()
+system.<span class="fn2">save_to_script</span>(
+    WORKDIR + <span class="str">'model.ohq'</span>, <span class="str">''</span>,
+    [RESOURCES + <span class="str">'main_components.json'</span>,
+     RESOURCES + <span class="str">'unconfined_groundwater.json'</span>]
+)
+
+<span class="cmt"># ── Reload and re-solve ──────────────────────────────────────────</span>
+system2 = ohq.<span class="fn2">System</span>()
+system2.<span class="fn2">set_default_template_path</span>(RESOURCES)
+system2.<span class="fn2">set_working_folder</span>(WORKDIR)
+system2.<span class="fn2">create_from_script</span>(
+    WORKDIR + <span class="str">'model.ohq'</span>,
+    RESOURCES + <span class="str">'settings.json'</span>
+)
+system2.<span class="fn2">solve</span>()
+system2.<span class="fn2">write_outputs</span>()
+<span class="fn2">print</span>(<span class="str">'Reload complete'</span>)</pre>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+  // Highlight active sidebar link on scroll
+  const sections = document.querySelectorAll('.section, .hero');
+  const links = document.querySelectorAll('.sidebar a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const id = entry.target.id;
+        const active = document.querySelector(`.sidebar a[href="#${id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -75% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
