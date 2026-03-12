@@ -12,14 +12,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ── Qt6 Core only (QT -= gui, QT += core) ───────────────────────────────────
-# Windows/MSVC:  cmake -DQt6_DIR="C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6" ..
+# Windows/MSVC:  set Qt6_DIR in CMake GUI to:
+#                C:/Qt/6.8.x/msvc2022_64/lib/cmake/Qt6
 # Linux:         cmake ..   (Qt6 found via system or module path)
-# macOS:         cmake -DCMAKE_PREFIX_PATH=/usr/local/opt/qt6 ..
+# macOS:         cmake -DCMAKE_PREFIX_PATH=/opt/homebrew/opt/qt@6 ..
 find_package(Qt6 REQUIRED COMPONENTS Core)
 qt_standard_project_setup()
 
 # ── OpenMP ───────────────────────────────────────────────────────────────────
-# Matches: QMAKE_CXXFLAGS += -fopenmp / /openmp, LIBS += -lgomp
 find_package(OpenMP)
 if(NOT OpenMP_CXX_FOUND)
     message(WARNING "OpenMP not found — building without parallel support.")
@@ -27,29 +27,31 @@ endif()
 
 # ── LAPACK / BLAS ────────────────────────────────────────────────────────────
 if(WIN32)
-    # Pre-built LAPACK/BLAS libs shipped with the repo under libs/
-    # Layout matches the .pro:  libs/lapack-blas_lib_win64/release|debug
-    set(LAPACK_LIB_DIR_RELEASE
-        "${CMAKE_CURRENT_SOURCE_DIR}/../libs/lapack-blas_lib_win64/release")
-    set(LAPACK_LIB_DIR_DEBUG
-        "${CMAKE_CURRENT_SOURCE_DIR}/../libs/lapack-blas_lib_win64/debug")
+    # Pre-built LAPACK/BLAS .lib files shipped flat in libs/lapack-blas_lib_win64/
+    # (no release/ or debug/ subdirectories — all configs use the same MT lib)
+    set(LAPACK_LIB_DIR
+        "${CMAKE_CURRENT_SOURCE_DIR}/../libs/lapack-blas_lib_win64")
 
     add_library(lapack_win STATIC IMPORTED)
     set_target_properties(lapack_win PROPERTIES
-        IMPORTED_LOCATION_RELEASE "${LAPACK_LIB_DIR_RELEASE}/lapack_win64_MT.lib"
-        IMPORTED_LOCATION_DEBUG   "${LAPACK_LIB_DIR_DEBUG}/lapack_win64_MTd.lib"
+        IMPORTED_LOCATION_RELEASE        "${LAPACK_LIB_DIR}/lapack_win64_MT.lib"
+        IMPORTED_LOCATION_DEBUG          "${LAPACK_LIB_DIR}/lapack_win64_MT.lib"
+        IMPORTED_LOCATION_MINSIZEREL     "${LAPACK_LIB_DIR}/lapack_win64_MT.lib"
+        IMPORTED_LOCATION_RELWITHDEBINFO "${LAPACK_LIB_DIR}/lapack_win64_MT.lib"
     )
     add_library(blas_win STATIC IMPORTED)
     set_target_properties(blas_win PROPERTIES
-        IMPORTED_LOCATION_RELEASE "${LAPACK_LIB_DIR_RELEASE}/blas_win64_MT.lib"
-        IMPORTED_LOCATION_DEBUG   "${LAPACK_LIB_DIR_DEBUG}/blas_win64_MTd.lib"
+        IMPORTED_LOCATION_RELEASE        "${LAPACK_LIB_DIR}/blas_win64_MT.lib"
+        IMPORTED_LOCATION_DEBUG          "${LAPACK_LIB_DIR}/blas_win64_MT.lib"
+        IMPORTED_LOCATION_MINSIZEREL     "${LAPACK_LIB_DIR}/blas_win64_MT.lib"
+        IMPORTED_LOCATION_RELWITHDEBINFO "${LAPACK_LIB_DIR}/blas_win64_MT.lib"
     )
     set(LAPACK_LIBRARIES lapack_win blas_win)
 
 else()
     # Linux/macOS: use system LAPACK/BLAS
     # Linux:  sudo apt install liblapack-dev libblas-dev
-    # macOS:  brew install openblas  (Accelerate framework also works)
+    # macOS:  brew install openblas  (or use Apple Accelerate framework)
     find_package(LAPACK REQUIRED)
     find_package(BLAS  REQUIRED)
     set(LAPACK_LIBRARIES ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
@@ -58,7 +60,9 @@ endif()
 # ── Armadillo ────────────────────────────────────────────────────────────────
 # Linux:   sudo apt install libarmadillo-dev
 # macOS:   brew install armadillo
-# Windows: header-only mode via ARMA_USE_LAPACK/BLAS + the LAPACK libs above
+# Windows: header-only mode — download from http://arma.sourceforge.net,
+#          extract, and set ARMADILLO_INCLUDE_DIRS in CMake GUI to the
+#          include/ folder inside the extracted archive.
 find_package(Armadillo QUIET)
 if(NOT ARMADILLO_FOUND)
     message(STATUS "Armadillo cmake package not found — using header-only mode")
@@ -74,27 +78,45 @@ if(NOT ARMADILLO_FOUND)
             "Armadillo headers not found.\n"
             "  Linux:   sudo apt install libarmadillo-dev\n"
             "  macOS:   brew install armadillo\n"
-            "  Windows: download from http://arma.sourceforge.net and set "
-            "-DARMADILLO_INCLUDE_DIRS=<path>")
+            "  Windows: download from http://arma.sourceforge.net, extract,\n"
+            "           and set ARMADILLO_INCLUDE_DIRS in CMake GUI to the\n"
+            "           include/ folder, e.g. C:/armadillo-12.x/include")
     endif()
     set(ARMADILLO_LIBRARIES "")
 endif()
 
-# ── GSL (Linux only, matches: linux { LIBS += -lgsl }) ──────────────────────
-if(UNIX AND NOT APPLE)
-    find_package(PkgConfig QUIET)
-    if(PkgConfig_FOUND)
-        pkg_check_modules(GSL gsl)
-    endif()
-    if(NOT GSL_FOUND)
-        find_library(GSL_LIBRARIES NAMES gsl)
-        find_path(GSL_INCLUDE_DIRS gsl/gsl_math.h)
-    endif()
-    if(NOT GSL_LIBRARIES)
-        message(WARNING "GSL not found (sudo apt install libgsl-dev). "
-                        "Building without GSL support.")
+# ── GSL ──────────────────────────────────────────────────────────────────────
+# Required on all platforms.
+# Linux:   sudo apt install libgsl-dev
+# macOS:   brew install gsl
+# Windows: vcpkg install gsl:x64-windows
+#          then set CMAKE_TOOLCHAIN_FILE to C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+#          OR set GSL_ROOT_DIR to your GSL installation prefix in CMake GUI.
+find_package(GSL QUIET)
+if(NOT GSL_FOUND)
+    # Fallback for environments where FindGSL.cmake is not available
+    # (older CMake, manual installs, vcpkg without toolchain file)
+    find_library(GSL_LIB       NAMES gsl       HINTS "${GSL_ROOT_DIR}/lib")
+    find_library(GSL_CBLAS_LIB NAMES gslcblas  HINTS "${GSL_ROOT_DIR}/lib")
+    find_path(GSL_INC          gsl/gsl_math.h  HINTS "${GSL_ROOT_DIR}/include")
+
+    if(GSL_LIB AND GSL_INC)
+        set(GSL_FOUND        TRUE)
+        set(GSL_LIBRARIES    ${GSL_LIB} ${GSL_CBLAS_LIB})
+        set(GSL_INCLUDE_DIRS ${GSL_INC})
     endif()
 endif()
+
+if(NOT GSL_FOUND)
+    message(FATAL_ERROR
+        "GSL not found — it is required on all platforms.\n"
+        "  Linux:   sudo apt install libgsl-dev\n"
+        "  macOS:   brew install gsl\n"
+        "  Windows: vcpkg install gsl:x64-windows\n"
+        "           then set CMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake\n"
+        "           OR set GSL_ROOT_DIR to your GSL installation prefix in CMake GUI.")
+endif()
+message(STATUS "GSL found: ${GSL_LIBRARIES}")
 
 # ── Sources (exact list from OHQLib.pro) ─────────────────────────────────────
 set(AQUIFOLIUM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../aquifolium")
@@ -200,20 +222,17 @@ target_include_directories(OHQLib
         ${AQUIFOLIUM_ROOT}/src
         ${JSONCPP_ROOT}/include
         ${ARMADILLO_INCLUDE_DIRS}
+        ${GSL_INCLUDE_DIRS}
 )
 
 if(WIN32)
+    # LAPACK include (armadillo wrapper headers etc.)
     target_include_directories(OHQLib PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/../include"   # LAPACK_INCLUDE from .pro
+        "${CMAKE_CURRENT_SOURCE_DIR}/../include"
     )
 endif()
 
-if(GSL_INCLUDE_DIRS)
-    target_include_directories(OHQLib PRIVATE ${GSL_INCLUDE_DIRS})
-endif()
-
 if(APPLE)
-    # Homebrew armadillo path (matches .pro: INCLUDEPATH += homebrew path)
     target_include_directories(OHQLib PRIVATE /opt/homebrew/include)
 endif()
 
@@ -221,6 +240,7 @@ endif()
 target_compile_definitions(OHQLib PRIVATE
     Terminal_version
     Q_JSON_SUPPORT
+    GSL                     # required on all platforms
 )
 
 if(WIN32)
@@ -235,15 +255,11 @@ elseif(UNIX AND NOT APPLE)
         ARMA_USE_LAPACK
         ARMA_USE_BLAS
     )
-    if(GSL_LIBRARIES)
-        target_compile_definitions(OHQLib PRIVATE GSL)
-    endif()
 elseif(APPLE)
     target_compile_definitions(OHQLib PRIVATE mac_version)
 endif()
 
 if(NOT OpenMP_CXX_FOUND)
-    # Matches CONFIG(debug): DEFINES += NO_OPENMP
     target_compile_definitions(OHQLib PRIVATE NO_OPENMP)
 endif()
 
@@ -264,9 +280,7 @@ if(ARMADILLO_FOUND AND ARMADILLO_LIBRARIES)
     target_link_libraries(OHQLib PRIVATE ${ARMADILLO_LIBRARIES})
 endif()
 
-if(GSL_LIBRARIES)
-    target_link_libraries(OHQLib PRIVATE ${GSL_LIBRARIES})
-endif()
+target_link_libraries(OHQLib PRIVATE ${GSL_LIBRARIES})
 
 if(UNIX)
     find_package(Threads REQUIRED)
@@ -274,21 +288,20 @@ if(UNIX)
 endif()
 
 if(APPLE)
-    # Homebrew libomp (matches .pro: LIBS += /usr/local/lib/libomp.dylib)
     target_link_libraries(OHQLib PRIVATE /usr/local/lib/libomp.dylib)
 endif()
 
-# ── MSVC flags (matches win32: QMAKE_CXXFLAGS += /MP) ───────────────────────
+# ── MSVC flags ───────────────────────────────────────────────────────────────
 if(MSVC)
     target_compile_options(OHQLib PRIVATE
-        /MP             # parallel compilation
+        /MP             # parallel compilation (matches win32: QMAKE_CXXFLAGS += /MP)
         /W3
         /wd4819         # code page warning
         /wd4251         # dll-interface (Qt internals)
         /wd4275         # non dll-interface base
         /utf-8
     )
-    # Auto-export all symbols — avoids needing __declspec(dllexport) everywhere
+    # Auto-export all symbols — no need for __declspec(dllexport) in source
     set_target_properties(OHQLib PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
@@ -330,7 +343,7 @@ message(STATUS "  Qt6Core      : ${Qt6Core_VERSION} @ ${Qt6Core_DIR}")
 message(STATUS "  OpenMP       : ${OpenMP_CXX_FOUND}")
 message(STATUS "  Armadillo    : ${ARMADILLO_FOUND} (${ARMADILLO_VERSION_STRING})")
 message(STATUS "  LAPACK       : ${LAPACK_FOUND}")
-message(STATUS "  GSL          : ${GSL_FOUND}")
+message(STATUS "  GSL          : ${GSL_FOUND} (${GSL_LIBRARIES})")
 message(STATUS "  Install dir  : ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "────────────────────────────────────────────────────────────")
 message(STATUS "")

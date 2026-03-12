@@ -19,7 +19,8 @@ This guide covers every step to clone, configure, and build OpenHydroQual on Lin
 
 ## 1. Clone the Repository
 
-OpenHydroQual uses **jsoncpp** as a git submodule. You must pass `--recurse-submodules` when cloning, otherwise the `jsoncpp/` directory will be empty and the build will fail.
+OpenHydroQual uses **jsoncpp** as a git submodule. You must pass `--recurse-submodules`
+when cloning, otherwise the `jsoncpp/` directory will be empty and the build will fail.
 
 ```bash
 git clone --recurse-submodules https://github.com/ArashMassoudieh/OpenHydroQual.git
@@ -115,7 +116,8 @@ You should see a summary like:
 cmake --build . --parallel
 ```
 
-This produces `libOHQLib.so.2.0.4` (and symlinks `libOHQLib.so.2`, `libOHQLib.so`) in the build directory.
+This produces `libOHQLib.so.2.0.4` (and symlinks `libOHQLib.so.2`, `libOHQLib.so`) in the
+build directory.
 
 ### 2.5 (Optional) Install System-Wide
 
@@ -237,36 +239,39 @@ This installs MSVC, the Windows SDK, and CMake integration.
 
 If you prefer a standalone CMake rather than the one bundled with Visual Studio:
 
-Download from https://cmake.org/download/ and add it to your PATH during installation.
+Download from https://cmake.org/download/ and select **"Add CMake to system PATH"**
+during installation.
 
 Verify:
 
 ```cmd
-cmake --version
+cmake --version   # must be >= 3.20
 ```
 
 ### 5.4 Verify LAPACK/BLAS Libraries
 
-The repository ships pre-built LAPACK and BLAS `.lib` files for Windows. Confirm they are present:
+The repository ships pre-built LAPACK and BLAS `.lib` and `.dll` files for Windows.
+Confirm they are present **directly** in the `lapack-blas_lib_win64` folder
+(there are no `release/` or `debug/` subdirectories):
 
 ```
 OpenHydroQual\libs\lapack-blas_lib_win64\
-    release\
-        lapack_win64_MT.lib
-        blas_win64_MT.lib
-    debug\
-        lapack_win64_MTd.lib
-        blas_win64_MTd.lib
+    lapack_win64_MT.lib
+    blas_win64_MT.lib
+    lapack_win64_MT.dll
+    blas_win64_MT.dll
 ```
 
 If this directory is missing, download the pre-built libraries from
-https://github.com/Reference-LAPACK/lapack/releases and place the `.lib` files
-in the directory structure above.
+https://github.com/Reference-LAPACK/lapack/releases and place the `.lib` and `.dll`
+files directly in `libs\lapack-blas_lib_win64\`.
 
 ### 5.5 Install Armadillo Headers
 
 Download the latest Armadillo source from http://arma.sourceforge.net/download.html.
-Extract it and copy the `include/` folder into the repository:
+Extract the archive. You only need the `include/` folder inside it.
+
+Copy the contents of that `include/` folder into:
 
 ```
 OpenHydroQual\include\
@@ -275,54 +280,119 @@ OpenHydroQual\include\
         ...
 ```
 
-### 5.6 Open a Developer Command Prompt
+### 5.6 Install GSL
 
-From the Windows Start menu, search for **"Developer Command Prompt for VS 2022"** and open it.
-This sets up the MSVC environment variables (`cl.exe`, `link.exe`, etc.).
+GSL is required on all platforms including Windows.
 
-Alternatively, from a regular `cmd.exe` or PowerShell, run:
+**Option A — vcpkg (recommended):**
 
-```cmd
-"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-```
-
-### 5.7 Configure with CMake
+Install vcpkg if not already present (substitute `C:\Projects` with wherever you
+keep your development tools):
 
 ```cmd
-cd OpenHydroQual\OHQLib
-mkdir build
-cd build
-
-cmake .. ^
-    -G "Visual Studio 17 2022" ^
-    -A x64 ^
-    -DQt6_DIR="C:\Qt\6.8.2\msvc2022_64\lib\cmake\Qt6" ^
-    -DARMADILLO_INCLUDE_DIRS="%CD%\..\..\include" ^
-    -DCMAKE_BUILD_TYPE=Release
+cd C:\Projects
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+bootstrap-vcpkg.bat
 ```
 
-> **Adjust paths** if your Qt installation is in a different location.
-> Use `dir C:\Qt\` to find the exact version folder name.
+Install GSL:
 
-You should see output ending with:
+```cmd
+vcpkg install gsl:x64-windows
+```
+
+This produces the following files that are needed later:
+
+```
+C:\Projects\vcpkg\installed\x64-windows\
+    include\gsl\        ← headers
+    lib\gsl.lib
+    lib\gslcblas.lib
+    bin\gsl.dll
+    bin\gslcblas.dll
+```
+
+**Option B — pre-built binaries:**
+
+Download pre-built GSL for Windows from https://github.com/ampl/gsl/releases.
+Extract it to a folder such as `C:\gsl\`. You will then set `GSL_ROOT_DIR` in
+CMake GUI (see step 5.8).
+
+### 5.7 Open CMake GUI
+
+Launch **CMake (cmake-gui)** from the Start menu.
+
+- **Where is the source code:** browse to `C:\Projects\OpenHydroQual\OHQLib`
+- **Where to build the binaries:** browse to (or type) `C:\Projects\OpenHydroQual\OHQLib\build`
+
+Click **Configure**. When asked, select:
+- Generator: `Visual Studio 17 2022`
+- Platform: `x64`
+
+Click **Finish**. CMake will run and show errors — this is expected. Continue to the next step.
+
+### 5.8 Set CMake Variables
+
+After the first Configure run, set the following variables in the CMake GUI.
+Use **Add Entry** for any that do not already appear in the list.
+
+| Variable | Type | Value |
+|---|---|---|
+| `Qt6_DIR` | PATH | `C:\Qt\6.8.1\msvc2022_64\lib\cmake\Qt6` |
+| `ARMADILLO_INCLUDE_DIRS` | PATH | `C:\Projects\OpenHydroQual\include` |
+
+**If you used vcpkg for GSL**, add:
+
+| Variable | Type | Value |
+|---|---|---|
+| `CMAKE_TOOLCHAIN_FILE` | FILEPATH | `C:\Projects\vcpkg\scripts\buildsystems\vcpkg.cmake` |
+
+**If you used pre-built GSL binaries**, add:
+
+| Variable | Type | Value |
+|---|---|---|
+| `GSL_ROOT_DIR` | PATH | `C:\gsl` (or wherever you extracted it) |
+
+> **Tip:** Qt version numbers matter. Use File Explorer to confirm the exact
+> version folder name under `C:\Qt\` and adjust `Qt6_DIR` accordingly.
+
+### 5.9 Configure Again
+
+Click **Configure** a second time. All errors should clear. You should see the
+build summary at the bottom of the output window:
 
 ```
 ── OHQLib 2.0.4 ──────────────────────────────────
-  Compiler     : MSVC 19.xx
-  Build type   : Release
-  Qt6Core      : 6.8.2 @ C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6Core
+  Compiler     : MSVC 19.42.xxxxx
+  Build type   :
+  Qt6Core      : 6.8.1 @ C:/Qt/6.8.1/msvc2022_64/lib/cmake/Qt6Core
   OpenMP       : TRUE
   Armadillo    : FALSE (header-only mode)
   LAPACK       : TRUE
-  GSL          : FALSE
+  GSL          : TRUE (C:/Projects/vcpkg/installed/x64-windows/lib/gsl.lib;...)
+  Install dir  : C:/Program Files/OHQLib
 ────────────────────────────────────────────────────
 ```
 
-> GSL is Linux-only and will correctly show FALSE on Windows.
+### 5.10 Generate
 
-### 5.8 Build
+Click **Generate**. This creates `OHQLib.sln` and related project files inside
+the `build\` directory.
+
+### 5.11 Build OHQLib
+
+**Option A — from CMake GUI:**
+
+Click **Open Project** to launch Visual Studio, then press **Ctrl+Shift+B** to
+build all, or right-click **OHQLib** in Solution Explorer and select **Build**.
+
+**Option B — from the command line:**
+
+Open a **Developer Command Prompt for VS 2022** and run:
 
 ```cmd
+cd C:\Projects\OpenHydroQual\OHQLib\build
 cmake --build . --config Release --parallel
 ```
 
@@ -332,13 +402,203 @@ build\Release\OHQLib.dll      ← runtime library
 build\Release\OHQLib.lib      ← import library (link against this)
 ```
 
-### 5.9 (Optional) Build from Visual Studio IDE
+---
 
-After running `cmake ..` in step 5.7, a `OHQLib.sln` solution file is generated in the build directory. You can open this in Visual Studio and build from the IDE.
+## 5a. Windows — Building OHQLibTest (Console Test Executable)
 
-1. Open `build\OHQLib.sln` in Visual Studio
+`OHQLibTest` is a standalone console application that loads and runs an `.ohq`
+script file. It is useful for verifying that `OHQLib` is working correctly on
+Windows without needing Python.
+
+**Build `OHQLib` first (steps 5.1–5.11) before proceeding.**
+
+### 5a.1 Create the OHQLibTest Directory
+
+Create a folder `OHQLibTest\` at the same level as `OHQLib\` and place
+`main.cpp` inside it:
+
+```
+OpenHydroQual\
+    OHQLib\
+    OHQLibTest\
+        main.cpp
+        CMakeLists.txt
+```
+
+### 5a.2 Create OHQLibTest\CMakeLists.txt
+
+Create the file with the following contents. Adjust `GSL_DLL_DIR` and
+`QT_DLL_DIR` to match your installation paths:
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(OHQLibTest LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# ── Qt6 ──────────────────────────────────────────────────────────
+find_package(Qt6 REQUIRED COMPONENTS Core)
+
+# ── OHQLib ───────────────────────────────────────────────────────
+set(OHQLIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../OHQLib"
+    CACHE PATH "Root of OHQLib source tree")
+set(OHQLIB_BUILD_DIR "${OHQLIB_DIR}/build"
+    CACHE PATH "OHQLib CMake build directory")
+
+set(AQUIFOLIUM_ROOT "${OHQLIB_DIR}/../aquifolium")
+
+add_library(OHQLib SHARED IMPORTED)
+set_target_properties(OHQLib PROPERTIES
+    IMPORTED_LOCATION_RELEASE        "${OHQLIB_BUILD_DIR}/Release/OHQLib.dll"
+    IMPORTED_LOCATION_DEBUG          "${OHQLIB_BUILD_DIR}/Debug/OHQLib.dll"
+    IMPORTED_LOCATION_MINSIZEREL     "${OHQLIB_BUILD_DIR}/Release/OHQLib.dll"
+    IMPORTED_LOCATION_RELWITHDEBINFO "${OHQLIB_BUILD_DIR}/Release/OHQLib.dll"
+    IMPORTED_IMPLIB_RELEASE          "${OHQLIB_BUILD_DIR}/Release/OHQLib.lib"
+    IMPORTED_IMPLIB_DEBUG            "${OHQLIB_BUILD_DIR}/Debug/OHQLib.lib"
+    IMPORTED_IMPLIB_MINSIZEREL       "${OHQLIB_BUILD_DIR}/Release/OHQLib.lib"
+    IMPORTED_IMPLIB_RELWITHDEBINFO   "${OHQLIB_BUILD_DIR}/Release/OHQLib.lib"
+)
+
+target_link_libraries(OHQLib INTERFACE Qt6::Core)
+
+set(ARMADILLO_INCLUDE_DIRS "${OHQLIB_DIR}/../include"
+    CACHE PATH "Path to Armadillo headers")
+set(GSL_INCLUDE_DIRS ""
+    CACHE PATH "Path to GSL headers (e.g. C:/Projects/vcpkg/installed/x64-windows/include)")
+
+target_include_directories(OHQLib INTERFACE
+    "${AQUIFOLIUM_ROOT}/include"
+    "${AQUIFOLIUM_ROOT}/include/GA"
+    "${AQUIFOLIUM_ROOT}/include/MCMC"
+    "${AQUIFOLIUM_ROOT}/src"
+    "${OHQLIB_DIR}/../"
+    "${OHQLIB_DIR}/../jsoncpp/include"
+    "${ARMADILLO_INCLUDE_DIRS}"
+    "${GSL_INCLUDE_DIRS}"
+)
+
+# ── Executable ───────────────────────────────────────────────────
+add_executable(OHQLibTest main.cpp)
+
+target_compile_definitions(OHQLibTest PRIVATE
+    GSL
+    Terminal_version
+    Q_JSON_SUPPORT
+    windows_version
+    ARMA_USE_LAPACK
+    ARMA_USE_BLAS
+)
+
+target_link_libraries(OHQLibTest PRIVATE
+    OHQLib
+    Qt6::Core
+)
+
+# ── MSVC: copy DLLs and run windeployqt ──────────────────────────
+if(MSVC)
+    target_compile_options(OHQLibTest PRIVATE /W3 /utf-8)
+
+    set(LAPACK_DLL_DIR "${OHQLIB_DIR}/../libs/lapack-blas_lib_win64")
+    set(GSL_DLL_DIR    "C:/Projects/vcpkg/installed/x64-windows/bin"
+        CACHE PATH "Directory containing gsl.dll and gslcblas.dll")
+    set(QT_DLL_DIR     "C:/Qt/6.8.1/msvc2022_64/bin"
+        CACHE PATH "Qt bin directory containing windeployqt.exe")
+    set(OHQLIB_DLL     "${OHQLIB_BUILD_DIR}/Release/OHQLib.dll")
+
+    add_custom_command(TARGET OHQLibTest POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${OHQLIB_DLL}"
+            "$<TARGET_FILE_DIR:OHQLibTest>/OHQLib.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${LAPACK_DLL_DIR}/lapack_win64_MT.dll"
+            "$<TARGET_FILE_DIR:OHQLibTest>/lapack_win64_MT.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${LAPACK_DLL_DIR}/blas_win64_MT.dll"
+            "$<TARGET_FILE_DIR:OHQLibTest>/blas_win64_MT.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${GSL_DLL_DIR}/gsl.dll"
+            "$<TARGET_FILE_DIR:OHQLibTest>/gsl.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${GSL_DLL_DIR}/gslcblas.dll"
+            "$<TARGET_FILE_DIR:OHQLibTest>/gslcblas.dll"
+        COMMAND "${QT_DLL_DIR}/windeployqt.exe"
+            "$<TARGET_FILE:OHQLibTest>"
+        COMMENT "Copying runtime DLLs and running windeployqt"
+    )
+endif()
+```
+
+### 5a.3 Configure in CMake GUI
+
+1. Open CMake GUI
+2. Set **source** to `C:\Projects\OpenHydroQual\OHQLibTest`
+3. Set **build** to `C:\Projects\OpenHydroQual\OHQLibTest\build`
+4. Click **Configure** → `Visual Studio 17 2022` / `x64`
+5. Set these variables:
+
+| Variable | Type | Value |
+|---|---|---|
+| `Qt6_DIR` | PATH | `C:\Qt\6.8.1\msvc2022_64\lib\cmake\Qt6` |
+| `OHQLIB_BUILD_DIR` | PATH | `C:\Projects\OpenHydroQual\OHQLib\build` |
+| `ARMADILLO_INCLUDE_DIRS` | PATH | `C:\Projects\OpenHydroQual\include` |
+| `GSL_INCLUDE_DIRS` | PATH | `C:\Projects\vcpkg\installed\x64-windows\include` |
+| `GSL_DLL_DIR` | PATH | `C:\Projects\vcpkg\installed\x64-windows\bin` |
+| `QT_DLL_DIR` | PATH | `C:\Qt\6.8.1\msvc2022_64\bin` |
+
+6. Click **Configure** again — all errors should clear
+7. Click **Generate**
+
+### 5a.4 Build OHQLibTest
+
+Click **Open Project** in CMake GUI, then in Visual Studio:
+
+1. Right-click **OHQLibTest** in Solution Explorer → **Set as Startup Project**
 2. Set configuration to **Release** and platform to **x64**
-3. Right-click **OHQLib** in Solution Explorer → **Build**
+3. Press **Ctrl+Shift+B** to build
+
+After a successful build, `build\Release\` will contain `OHQLibTest.exe` and all
+required DLLs copied automatically by the post-build step:
+
+```
+OHQLibTest\build\Release\
+    OHQLibTest.exe
+    OHQLib.dll
+    lapack_win64_MT.dll
+    blas_win64_MT.dll
+    gsl.dll
+    gslcblas.dll
+    Qt6Core.dll          ← and other Qt DLLs placed by windeployqt
+    ...
+```
+
+### 5a.5 Run OHQLibTest from Visual Studio
+
+1. Right-click **OHQLibTest** → **Properties**
+2. Go to **Configuration Properties → Debugging**
+3. Set **Command Arguments** to the full path of your `.ohq` script file:
+   ```
+   C:\Projects\OpenHydroQual\resources\your_model.ohq
+   ```
+4. Set **Working Directory** to the folder containing your model's input files:
+   ```
+   C:\path\to\your\model\folder\
+   ```
+5. If you see DLL-not-found errors at startup, add this to **Environment**:
+   ```
+   PATH=C:\Qt\6.8.1\msvc2022_64\bin;C:\Projects\vcpkg\installed\x64-windows\bin;%PATH%
+   ```
+6. Click **OK**, then press **F5** to run
+
+Expected console output:
+
+```
+Input file: C:\...\your_model.ohq
+Default Template path = ...
+Executing script ...
+Solving ...
+Writing outputs in '...'
+```
 
 ---
 
@@ -356,11 +616,11 @@ sudo apt install python3-dev python3-pip python3-venv
 # macOS
 brew install python@3.12
 
-# All platforms — install pybind11
+# All platforms
 pip install pybind11
 ```
 
-### 6.2 Linux / macOS — qmake Build (Current Method)
+### 6.2 Linux / macOS — qmake Build
 
 ```bash
 # Activate your virtual environment
@@ -369,9 +629,7 @@ source /path/to/your/venv/bin/activate
 cd OpenHydroQual/PythonBindings
 mkdir build && cd build
 
-# Configure (adjust Qt version string to match your installation)
 qmake6 ../PythonBindings.pro CONFIG+=release
-
 make -j$(nproc)
 ```
 
@@ -427,18 +685,60 @@ If the simulation completes without errors, the build is successful.
 CMake Error: Could not find a package configuration file provided by "Qt6"
 ```
 
-**Fix:** Pass `-DQt6_DIR` explicitly pointing to the Qt cmake directory:
+**Fix:** In CMake GUI, add an entry:
+- Name: `Qt6_DIR`  Type: `PATH`
+- Value: the `lib\cmake\Qt6` folder inside your Qt installation, e.g.:
+  `C:\Qt\6.8.1\msvc2022_64\lib\cmake\Qt6`
 
-```bash
-# Linux (Qt installed via online installer)
-cmake .. -DQt6_DIR=/opt/Qt/6.8.2/gcc_64/lib/cmake/Qt6
+The folder must contain a file called `Qt6Config.cmake`.
 
-# macOS (Homebrew)
-cmake .. -DQt6_DIR=/opt/homebrew/opt/qt@6/lib/cmake/Qt6
+---
 
-# Windows
-cmake .. -DQt6_DIR="C:\Qt\6.8.2\msvc2022_64\lib\cmake\Qt6"
+### IMPORTED_LOCATION not set for MinSizeRel / RelWithDebInfo
+
 ```
+CMake Error: IMPORTED_LOCATION not set for imported target "lapack_win" configuration "MinSizeRel"
+```
+
+**Fix:** This means the `CMakeLists.txt` still has the old LAPACK block with separate
+`release/` and `debug/` subdirectories. Replace it with the updated flat-path version
+from this repository where all four configurations point to `lapack_win64_MT.lib`.
+
+---
+
+### Cannot open input file 'lapack_win64_MT.lib'
+
+```
+LINK : fatal error LNK1181: cannot open input file '...\lapack_win64_MT.lib'
+```
+
+**Fix:** The `.lib` files are expected directly in `libs\lapack-blas_lib_win64\`
+with no subdirectories. Verify the layout:
+
+```
+OpenHydroQual\libs\lapack-blas_lib_win64\
+    lapack_win64_MT.lib    ← must be here
+    blas_win64_MT.lib      ← must be here
+```
+
+---
+
+### GSL not found / ensureGSLInitialized identifier not found
+
+```
+CMake Error: GSL not found — it is required on all platforms
+```
+or
+```
+error C3861: 'ensureGSLInitialized': identifier not found
+```
+
+**Fix:** GSL must be installed and found by CMake on all platforms including Windows.
+
+- **vcpkg:** `vcpkg install gsl:x64-windows` then set `CMAKE_TOOLCHAIN_FILE` in CMake GUI
+- **Pre-built:** set `GSL_ROOT_DIR` in CMake GUI to the GSL installation folder
+- **Linux:** `sudo apt install libgsl-dev`
+- **macOS:** `brew install gsl`
 
 ---
 
@@ -448,11 +748,9 @@ cmake .. -DQt6_DIR="C:\Qt\6.8.2\msvc2022_64\lib\cmake\Qt6"
 CMake Error: Armadillo headers not found
 ```
 
-**Fix:** Download Armadillo and pass the include path:
-
-```bash
-cmake .. -DARMADILLO_INCLUDE_DIRS=/path/to/armadillo/include
-```
+**Fix:** Download Armadillo from http://arma.sourceforge.net, extract it, and set
+`ARMADILLO_INCLUDE_DIRS` in CMake GUI to the `include/` subfolder of the extracted
+archive, e.g. `C:\armadillo-12.8.0\include`.
 
 ---
 
@@ -462,7 +760,7 @@ cmake .. -DARMADILLO_INCLUDE_DIRS=/path/to/armadillo/include
 Error: cannot open source file "jsoncpp/src/lib_json/json_reader.cpp"
 ```
 
-**Fix:** The submodule was not initialised. Run:
+**Fix:** The git submodule was not initialised. Run:
 
 ```bash
 git submodule update --init --recursive
@@ -476,53 +774,120 @@ git submodule update --init --recursive
 Warning: OpenMP not found — building without parallel support
 ```
 
-**Fix:** Install libomp and help CMake find it:
+**Fix:**
 
 ```bash
 brew install libomp
-cmake .. -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include" \
-         -DOpenMP_CXX_LIB_NAMES="omp" \
-         -DOpenMP_omp_LIBRARY=/opt/homebrew/opt/libomp/lib/libomp.dylib
+cmake .. \
+  -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include" \
+  -DOpenMP_CXX_LIB_NAMES="omp" \
+  -DOpenMP_omp_LIBRARY=/opt/homebrew/opt/libomp/lib/libomp.dylib
 ```
 
 ---
 
-### Windows: `OHQLib.dll` not found at runtime
+### Windows: OHQLib.dll or Qt6Core.dll not found at runtime
 
-Python cannot find `OHQLib.dll` or `Qt6Core.dll` when importing the binding.
+```
+ImportError: DLL load failed while importing openhydroqual_py
+```
 
-**Fix:** Add the directories containing the DLLs to your PATH before running Python:
+**Fix:** Add the directories containing the required DLLs to your PATH before
+running Python:
 
 ```cmd
-set PATH=C:\path\to\OHQLib\build\Release;C:\Qt\6.8.2\msvc2022_64\bin;%PATH%
+set PATH=C:\Projects\OpenHydroQual\OHQLib\build\Release;^
+         C:\Qt\6.8.1\msvc2022_64\bin;^
+         C:\Projects\vcpkg\installed\x64-windows\bin;^
+         %PATH%
 python test_ohq.py
 ```
 
-Or copy the DLLs alongside the `.pyd` binding file.
+Or copy `OHQLib.dll`, `Qt6Core.dll`, and `gsl.dll` alongside the `.pyd` binding file.
 
 ---
 
-### MSVC: LNK2019 unresolved external symbols
+### Windows: MSB3073 post-build copy command exited with code 1
 
-Linker errors about missing symbols when building the Python bindings against OHQLib on Windows.
+```
+Error MSB3073: The command "... cmake.exe -E copy_if_different ..." exited with code 1
+```
 
-**Fix:** Ensure `WINDOWS_EXPORT_ALL_SYMBOLS ON` is set in `CMakeLists.txt` (it is, by default).
-If the issue persists, rebuild OHQLib in the same configuration (Release/Debug) as the bindings.
+This means one of the source DLL files in the post-build step does not exist at
+the specified path. Check each path individually from a command prompt:
+
+```cmd
+dir C:\Projects\OpenHydroQual\OHQLib\build\Release\OHQLib.dll
+dir C:\Projects\OpenHydroQual\libs\lapack-blas_lib_win64\lapack_win64_MT.dll
+dir C:\Projects\OpenHydroQual\libs\lapack-blas_lib_win64\blas_win64_MT.dll
+dir C:\Projects\vcpkg\installed\x64-windows\bin\gsl.dll
+dir C:\Projects\vcpkg\installed\x64-windows\bin\gslcblas.dll
+```
+
+Common causes and fixes:
+
+- **OHQLib.dll missing** — OHQLib has not been built yet, or was built to a different
+  directory. Build OHQLib first and verify `OHQLIB_BUILD_DIR` in CMake GUI points to
+  the correct build folder.
+- **lapack_win64_MT.dll missing** — the repo may only contain `.lib` files. Remove
+  the LAPACK/BLAS copy commands from the post-build step if no `.dll` files are present.
+- **gsl.dll / gslcblas.dll missing** — vcpkg is installed in a non-default location.
+  Set `GSL_DLL_DIR` in CMake GUI to the correct `bin\` folder, e.g.:
+  `C:\Projects\vcpkg\installed\x64-windows\bin`
+- **windeployqt.exe failing** — set `QT_DLL_DIR` in CMake GUI to match your Qt
+  installation, e.g.: `C:\Qt\6.8.1\msvc2022_64\bin`
+
+---
+
+### Windows: Cannot open include file in OHQLibTest
+
+The following headers are all required and come from different locations. If any
+are missing, add the corresponding directory to `target_include_directories` in
+`OHQLibTest\CMakeLists.txt`:
+
+| Header | Source directory |
+|---|---|
+| `armadillo` | `OpenHydroQual\include\` |
+| `TimeSeries.hpp` | `aquifolium\src\` |
+| `json/json.h` | `jsoncpp\include\` |
+| `QJsonArray` | Provided automatically via `Qt6::Core` |
+| `gsl/gsl_math.h` | vcpkg: `C:\Projects\vcpkg\installed\x64-windows\include` |
+
+---
+
+### Windows: OHQLibTest — DLL not found when running from Visual Studio
+
+If the executable launches but immediately crashes with a missing DLL error, add
+the runtime directories to the Visual Studio debugging environment:
+
+1. Right-click **OHQLibTest** → **Properties**
+2. Go to **Configuration Properties → Debugging → Environment**
+3. Add:
+   ```
+   PATH=C:\Qt\6.8.1\msvc2022_64\bin;C:\Projects\vcpkg\installed\x64-windows\bin;%PATH%
+   ```
 
 ---
 
 ### Wrong Python interpreter
 
-The binding is compiled for a specific Python version. If you see:
-
 ```
 ImportError: dynamic module does not define module export function
 ```
 
-**Fix:** Ensure you are using the same Python version the binding was compiled against:
+**Fix:** The binding `.so`/`.pyd` is compiled for a specific Python version.
+Ensure you are using the matching version:
 
 ```bash
 python3 --version
-# Must match the cpython version tag in the .so filename
+# Must match the cpython tag in the filename
 # e.g. openhydroqual_py.cpython-312-... requires Python 3.12
 ```
+
+---
+
+### MSVC: LNK2019 unresolved external symbols
+
+**Fix:** Ensure `WINDOWS_EXPORT_ALL_SYMBOLS ON` is active in `CMakeLists.txt`
+(it is by default). Also ensure OHQLib and the Python bindings are built with
+the same configuration (both Release, or both Debug).
