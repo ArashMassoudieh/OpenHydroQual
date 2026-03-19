@@ -63,6 +63,7 @@ DESTDIR = $${OHQ_LIB_OUTPUT}
 # Include Paths
 # --------------------------------
 INCLUDEPATH += $${OHQPATH}
+INCLUDEPATH += $${OHQPATH}/..
 INCLUDEPATH += $${OHQPATH}/include
 INCLUDEPATH += $${OHQPATH}/include/GA
 INCLUDEPATH += $${OHQPATH}/include/MCMC
