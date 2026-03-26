@@ -155,3 +155,19 @@ Week 4
 - Optional: station metadata and quality flags
 
 All ingested datasets should be stored raw + normalized with source timestamp and retrieval timestamp for auditability.
+
+
+## 14) OHQuery check (what exists now and how to reuse it)
+Yes — this repo already has OHQuery components that can accelerate the new web repo:
+- `terminal/OHQuery/serverops.cpp` exposes an HTTP `POST /calculate` API (Crow) that executes model runs.
+- `terminal/OHQuery/wsserverop.cpp` exposes a WebSocket flow for model template fetch + parameter submission + simulation response.
+- `terminal/OHQuery/main.cpp` chooses runtime mode from `config.json` (`FlaskType` vs `WebSockets`).
+- `OHQuery_Client/` includes a Qt client and wizard scripts that already encode model parameterization patterns.
+
+Recommended reuse strategy:
+1. **Do not rewrite solver-facing logic first.** Wrap the existing OHQuery HTTP/WebSocket capabilities with a thin adapter in the new repo.
+2. Normalize requests/responses into a versioned contract (`simulation_request.v1`, `simulation_result.v1`).
+3. Keep OHQuery as an internal execution service while the new API handles auth, scheduling, persistence, and alerting.
+4. Add conformance tests that replay the same payload through adapter + OHQuery to lock behavior before refactors.
+
+This reduces risk and gets you to production faster than a greenfield engine integration.
