@@ -181,8 +181,9 @@ def import_project(payload: ProjectImportRequest) -> dict:
             job_id = job.get("job_id")
             if not job_id or job_id in JOBS:
                 continue
-            job_payload = job.get("payload", {})
-            job_payload["project_id"] = project_id
+            raw_payload = job.get("payload")
+            safe_payload = raw_payload if isinstance(raw_payload, dict) else {}
+            job_payload = {**safe_payload, "project_id": project_id}
             JOBS[job_id] = {**job, "payload": job_payload}
             imported_jobs += 1
 

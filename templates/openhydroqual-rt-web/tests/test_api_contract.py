@@ -162,6 +162,9 @@ def test_simulation_lifecycle() -> None:
     assert imported.status_code == 200
     assert imported.json()["sites_imported"] >= 1
     assert imported.json()["jobs_imported"] >= 1
+    imported_jobs = client.get("/v1/projects/la-drywell-import/simulations", params={"limit": 10, "offset": 0})
+    assert imported_jobs.status_code == 200
+    assert imported_jobs.json()["count"] >= 1
 
     stats = client.get("/v1/projects/la-drywell-pilot/stats")
     assert stats.status_code == 200
