@@ -138,6 +138,15 @@ def test_simulation_lifecycle() -> None:
     assert sites.json()["count"] >= 1
     assert "returned" in sites.json()
 
+
+
+    clone = client.post(
+        "/v1/projects/la-drywell-pilot/clone",
+        json={"new_project_id": "la-drywell-clone", "new_name": "LA Drywell Clone"},
+    )
+    assert clone.status_code == 200
+    assert clone.json()["sites_copied"] >= 1
+
     stats = client.get("/v1/projects/la-drywell-pilot/stats")
     assert stats.status_code == 200
     assert stats.json()["sites_total"] >= 1
@@ -203,3 +212,6 @@ def test_simulation_lifecycle() -> None:
 
     delete_forced = client.delete("/v1/projects/la-drywell-pilot", params={"force": "true"})
     assert delete_forced.status_code == 200
+
+    delete_clone = client.delete("/v1/projects/la-drywell-clone", params={"force": "true"})
+    assert delete_clone.status_code == 200

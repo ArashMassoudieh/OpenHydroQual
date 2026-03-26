@@ -94,6 +94,11 @@ class ProjectCreate(BaseModel):
     name: str
 
 
+class ProjectCloneRequest(BaseModel):
+    new_project_id: str
+    new_name: str
+
+
 class SiteCreate(BaseModel):
     site_id: str
     facility_type: str
@@ -136,6 +141,28 @@ def create_project(payload: ProjectCreate) -> dict:
 
 
 
+
+
+
+@app.post("/v1/projects/{project_id}/clone")
+def clone_project(project_id: str, payload: ProjectCloneRequest) -> dict:
+    with LOCK:
+        if project_id not in PROJECTS:
+            raise HTTPException(status_code=404, detail="project not found")
+        if payload.new_project_id in PROJECTS:
+            raise HTTPException(status_code=409, detail="new project_id already exists")
+
+        PROJECTS[payload.new_project_id] = {"project_id": payload.new_project_id, "name": payload.new_name}
+        copied_sites = 0
+        for site in [s for s in SITES.values() if s["project_id"] == project_id]:
+            key = f"{payload.new_project_id}:{site['site_id']}"
+            SITES[key] = {**site, "project_id": payload.new_project_id}
+            copied_sites += 1
+
+        METRICS["projects_created_total"] += 1
+        _persist_state()
+
+    return {"project_id": payload.new_project_id, "sites_copied": copied_sites}
 
 @app.delete("/v1/projects/{project_id}")
 def delete_project(project_id: str, force: bool = False) -> dict:
