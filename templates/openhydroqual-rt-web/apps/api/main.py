@@ -6,7 +6,7 @@ from threading import Lock
 from uuid import uuid4
 
 from fastapi import FastAPI, Header, HTTPException, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .queue import enqueue_run
 
@@ -101,7 +101,8 @@ class ProjectCloneRequest(BaseModel):
 
 class ProjectImportRequest(BaseModel):
     project: dict
-    sites: list[dict] = []
+    sites: list[dict] = Field(default_factory=list)
+    jobs: list[dict] = Field(default_factory=list)
 
 
 class SiteCreate(BaseModel):
@@ -109,7 +110,7 @@ class SiteCreate(BaseModel):
     facility_type: str
     latitude: float
     longitude: float
-    metadata: dict = {}
+    metadata: dict = Field(default_factory=dict)
 
 
 class WorkerResultPayload(BaseModel):
@@ -165,6 +166,7 @@ def import_project(payload: ProjectImportRequest) -> dict:
 
         PROJECTS[project_id] = payload.project
         imported_sites = 0
+        imported_jobs = 0
         for site in payload.sites:
             site_id = site.get("site_id")
             if not site_id:
@@ -175,10 +177,23 @@ def import_project(payload: ProjectImportRequest) -> dict:
             SITES[key] = {**site, "project_id": project_id}
             imported_sites += 1
 
+        for job in payload.jobs:
+            job_id = job.get("job_id")
+            if not job_id or job_id in JOBS:
+                continue
+            job_payload = job.get("payload", {})
+            job_payload["project_id"] = project_id
+            JOBS[job_id] = {**job, "payload": job_payload}
+            imported_jobs += 1
+
         METRICS["projects_created_total"] += 1
         _persist_state()
 
-    return {"project_id": project_id, "sites_imported": imported_sites}
+    return {
+        "project_id": project_id,
+        "sites_imported": imported_sites,
+        "jobs_imported": imported_jobs,
+    }
 
 @app.get("/v1/projects/{project_id}/export")
 def export_project(project_id: str, include_jobs: bool = False) -> dict:

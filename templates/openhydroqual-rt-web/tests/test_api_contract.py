@@ -157,9 +157,11 @@ def test_simulation_lifecycle() -> None:
     imported = client.post("/v1/projects/import", json={
         "project": {"project_id": "la-drywell-import", "name": "Imported Drywell"},
         "sites": exported.json()["sites"],
+        "jobs": exported.json()["jobs"],
     })
     assert imported.status_code == 200
     assert imported.json()["sites_imported"] >= 1
+    assert imported.json()["jobs_imported"] >= 1
 
     stats = client.get("/v1/projects/la-drywell-pilot/stats")
     assert stats.status_code == 200

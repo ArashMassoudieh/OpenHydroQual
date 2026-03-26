@@ -7,7 +7,7 @@ Reference scaffold for a real-time orchestration repo around OpenHydroQual/OHQue
   - `POST /v1/projects`
   - `POST /v1/projects/{project_id}/sites`
   - `GET /v1/projects/{project_id}/export` (supports `include_jobs=true`)
-  - `POST /v1/projects/import`
+  - `POST /v1/projects/import` (supports `jobs` in payload)
   - `POST /v1/projects/{project_id}/clone`
   - `DELETE /v1/projects/{project_id}` (supports `force=true`)
   - `DELETE /v1/projects/{project_id}/sites/{site_id}` (supports `force=true`)
