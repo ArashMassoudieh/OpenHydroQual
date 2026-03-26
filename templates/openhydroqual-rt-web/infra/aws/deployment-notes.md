@@ -23,3 +23,7 @@
 - Use dead-letter queue or failure table for exhausted retries.
 - Persist run provenance (`model_version`, forcing version, parameter profile).
 - Add backfill job path for ingestion outages.
+
+
+## Terraform starter
+- See `infra/aws/terraform/` for a minimal ECS/Fargate provisioning baseline for API and worker services.

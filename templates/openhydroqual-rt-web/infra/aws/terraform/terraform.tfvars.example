@@ -1,0 +1,15 @@
+aws_region = "us-west-2"
+name_prefix = "ohq-rt"
+
+vpc_id = "vpc-xxxxxxxx"
+private_subnet_ids = ["subnet-aaaa", "subnet-bbbb"]
+
+api_security_group_ids = ["sg-api"]
+worker_security_group_ids = ["sg-worker"]
+
+api_image = "123456789012.dkr.ecr.us-west-2.amazonaws.com/ohq-rt-api:latest"
+worker_image = "123456789012.dkr.ecr.us-west-2.amazonaws.com/ohq-rt-worker:latest"
+
+broker_url = "redis://elasticache-endpoint:6379/0"
+result_backend = "redis://elasticache-endpoint:6379/1"
+ohquery_base_url = "http://ohquery.internal:8080"
