@@ -171,3 +171,16 @@ Recommended reuse strategy:
 4. Add conformance tests that replay the same payload through adapter + OHQuery to lock behavior before refactors.
 
 This reduces risk and gets you to production faster than a greenfield engine integration.
+
+
+## 15) Repo-wide related files checked (beyond `terminal/OHQuery`)
+To answer “did we check the whole repo for related pieces?” — yes, these additional components are relevant:
+- `terminal/Server/serverops.cpp`: parallel HTTP server implementation (`POST /calculate`) useful for diffing behavior and avoiding regressions during adapter work.
+- `terminal/OHQuery/weatherretriever.cpp`: built-in weather retrieval code already supports NOAA and Open-Meteo patterns.
+- `resources/Wizard_Scripts/` and `resources/Wizard_Scripts_server/`: facility templates already include Bioretention, BioSwale, InfiltrationBasin, InfiltrationTrench, and PermeablePavement models.
+- `terminal/OHQuery/config.json`: runtime mode and model/working-directory wiring for deployment.
+- `Dockerizing_OHQuery_README.txt` and `terminal/OHQuery/Dockerfile`: existing containerization path for OHQuery service deployment.
+
+Implication for the new repo:
+- Prioritize **adapter + orchestration + persistence + dashboard** in the new codebase.
+- Reuse existing templates and weather logic where practical, then gradually extract shared libraries once behavior is locked by conformance tests.
