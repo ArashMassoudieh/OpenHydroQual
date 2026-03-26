@@ -1,0 +1,35 @@
+name: openhydroqual-rt-web scaffold CI
+
+on:
+  push:
+    paths:
+      - 'templates/openhydroqual-rt-web/**'
+      - '.github/workflows/openhydroqual-rt-web-ci.yml'
+  pull_request:
+    paths:
+      - 'templates/openhydroqual-rt-web/**'
+      - '.github/workflows/openhydroqual-rt-web-ci.yml'
+
+jobs:
+  test-scaffold:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: templates/openhydroqual-rt-web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: |
+          pytest -q tests

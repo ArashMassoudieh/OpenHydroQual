@@ -73,3 +73,14 @@ Minimum environment variables in AWS:
 ## OHQuery integration mode
 - Default local mode uses `MOCK_OHQUERY=true` (no external engine call).
 - Set `MOCK_OHQUERY=false` and `OHQUERY_BASE_URL=http://<ohquery-host>:8080` to call real OHQuery `POST /calculate`.
+
+
+## Testing
+```bash
+cd templates/openhydroqual-rt-web
+make venv
+make install
+make test
+```
+
+A GitHub Actions workflow is included at `.github/workflows/openhydroqual-rt-web-ci.yml` to run scaffold tests automatically.
