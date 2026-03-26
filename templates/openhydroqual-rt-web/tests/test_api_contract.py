@@ -188,3 +188,10 @@ def test_simulation_lifecycle() -> None:
     assert "jobs_created_total" in metrics.text
     assert "jobs_failed_total" in metrics.text
     assert "jobs_cancelled_total" in metrics.text
+
+
+    delete_conflict = client.delete("/v1/projects/la-drywell-pilot")
+    assert delete_conflict.status_code == 409
+
+    delete_forced = client.delete("/v1/projects/la-drywell-pilot", params={"force": "true"})
+    assert delete_forced.status_code == 200
