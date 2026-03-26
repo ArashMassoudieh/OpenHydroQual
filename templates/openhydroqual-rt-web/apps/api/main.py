@@ -161,6 +161,28 @@ def list_project_sites(project_id: str, limit: int = 100, offset: int = 0) -> di
 
 
 
+
+
+@app.get("/v1/projects/{project_id}/stats")
+def get_project_stats(project_id: str) -> dict:
+    if project_id not in PROJECTS:
+        raise HTTPException(status_code=404, detail="project not found")
+
+    project_jobs = [j for j in JOBS.values() if j.get("payload", {}).get("project_id") == project_id]
+    by_status: dict[str, int] = {}
+    for j in project_jobs:
+        status = j.get("status", "unknown")
+        by_status[status] = by_status.get(status, 0) + 1
+
+    project_sites = [s for s in SITES.values() if s.get("project_id") == project_id]
+
+    return {
+        "project_id": project_id,
+        "sites_total": len(project_sites),
+        "jobs_total": len(project_jobs),
+        "jobs_by_status": by_status,
+    }
+
 @app.post("/v1/projects/{project_id}/simulate")
 def trigger_project_simulations(project_id: str) -> dict:
     with LOCK:

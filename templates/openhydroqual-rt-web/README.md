@@ -9,6 +9,7 @@ Reference scaffold for a real-time orchestration repo around OpenHydroQual/OHQue
   - `GET /v1/projects/{project_id}/sites` (supports `limit`, `offset`)
   - `POST /v1/simulations`
   - `POST /v1/projects/{project_id}/simulate` (queue all project sites)
+  - `GET /v1/projects/{project_id}/stats`
   - `GET /v1/projects/{project_id}/simulations` (supports `status`, `limit`, `offset`)
   - `POST /v1/simulations/{job_id}/start`
   - `POST /v1/simulations/{job_id}/complete`

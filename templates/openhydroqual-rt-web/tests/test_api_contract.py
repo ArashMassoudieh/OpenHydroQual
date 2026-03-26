@@ -138,6 +138,10 @@ def test_simulation_lifecycle() -> None:
     assert sites.json()["count"] >= 1
     assert "returned" in sites.json()
 
+    stats = client.get("/v1/projects/la-drywell-pilot/stats")
+    assert stats.status_code == 200
+    assert stats.json()["sites_total"] >= 1
+
 
 
 
