@@ -5,7 +5,7 @@ from pathlib import Path
 from threading import Lock
 from uuid import uuid4
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Response
 from pydantic import BaseModel
 
 from .queue import enqueue_run
@@ -20,6 +20,12 @@ PROJECTS: dict[str, dict] = {}
 SITES: dict[str, dict] = {}
 STATE_FILE = Path(os.getenv("STATE_FILE", "./ohq_rt_state.json"))
 ENABLE_FILE_STATE = os.getenv("ENABLE_FILE_STATE", "false").lower() == "true"
+METRICS: dict[str, int] = {
+    "jobs_created_total": 0,
+    "jobs_completed_total": 0,
+    "projects_created_total": 0,
+    "sites_created_total": 0,
+}
 
 
 def _load_state() -> None:
@@ -108,12 +114,21 @@ def health() -> dict:
 
 
 
+
+
+@app.get("/metrics")
+def metrics() -> Response:
+    lines = [f"{k} {v}" for k, v in METRICS.items()]
+    body = "\n".join(lines) + "\n"
+    return Response(content=body, media_type="text/plain; version=0.0.4")
+
 @app.post("/v1/projects")
 def create_project(payload: ProjectCreate) -> dict:
     with LOCK:
         if payload.project_id in PROJECTS:
             raise HTTPException(status_code=409, detail="project already exists")
         PROJECTS[payload.project_id] = payload.model_dump()
+        METRICS["projects_created_total"] += 1
         _persist_state()
     return PROJECTS[payload.project_id]
 
@@ -130,6 +145,7 @@ def create_project_site(project_id: str, payload: SiteCreate) -> dict:
             "project_id": project_id,
             **payload.model_dump(),
         }
+        METRICS["sites_created_total"] += 1
         _persist_state()
     return SITES[key]
 
@@ -168,6 +184,7 @@ def create_simulation(
         }
         if x_idempotency_key:
             IDEMPOTENCY_INDEX[x_idempotency_key] = job_id
+        METRICS["jobs_created_total"] += 1
         _persist_state()
 
     if os.getenv("ASYNC_EXECUTION", "false").lower() == "true":
@@ -207,6 +224,7 @@ def mark_completed(job_id: str, result: CompletionPayload) -> dict:
             "result_contract": "simulation_result.v1",
             "metrics": result.model_dump(),
         }
+        METRICS["jobs_completed_total"] += 1
         _persist_state()
     return {"job_id": job_id, "status": "completed"}
 
@@ -236,6 +254,8 @@ def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_tok
             "metrics": payload.metrics,
             "adapter": payload.adapter or {},
         }
+        if payload.status == "completed":
+            METRICS["jobs_completed_total"] += 1
         _persist_state()
     return {"job_id": job_id, "status": payload.status}
 

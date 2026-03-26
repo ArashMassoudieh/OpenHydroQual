@@ -95,3 +95,8 @@ def test_simulation_lifecycle() -> None:
     sites = client.get("/v1/projects/la-drywell-pilot/sites")
     assert sites.status_code == 200
     assert sites.json()["count"] >= 1
+
+
+    metrics = client.get("/metrics")
+    assert metrics.status_code == 200
+    assert "jobs_created_total" in metrics.text
