@@ -68,3 +68,8 @@ Minimum environment variables in AWS:
 - `RESULT_BACKEND` (ElastiCache endpoint)
 - `OHQUERY_BASE_URL` (internal OHQuery service URL)
 
+
+
+## OHQuery integration mode
+- Default local mode uses `MOCK_OHQUERY=true` (no external engine call).
+- Set `MOCK_OHQUERY=false` and `OHQUERY_BASE_URL=http://<ohquery-host>:8080` to call real OHQuery `POST /calculate`.
