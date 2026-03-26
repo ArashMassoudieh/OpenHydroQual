@@ -170,6 +170,14 @@ def trigger_project_simulations(project_id: str) -> dict:
     created = []
     now = datetime.now(timezone.utc).isoformat()
     for site in project_sites:
+        if payload.project_id not in PROJECTS:
+            raise HTTPException(status_code=404, detail="unknown project_id")
+        site_key = f"{payload.project_id}:{payload.site_id}"
+        if site_key not in SITES:
+            raise HTTPException(status_code=404, detail="unknown site_id for project")
+        if SITES[site_key]["facility_type"] != payload.facility_type:
+            raise HTTPException(status_code=400, detail="facility_type mismatch for site")
+
         job_id = f"sim_{uuid4().hex[:12]}"
         payload = {
             "project_id": project_id,
@@ -217,6 +225,14 @@ def create_simulation(
                 "submitted_at": job["submitted_at"],
                 "idempotent_replay": True,
             }
+
+        if payload.project_id not in PROJECTS:
+            raise HTTPException(status_code=404, detail="unknown project_id")
+        site_key = f"{payload.project_id}:{payload.site_id}"
+        if site_key not in SITES:
+            raise HTTPException(status_code=404, detail="unknown site_id for project")
+        if SITES[site_key]["facility_type"] != payload.facility_type:
+            raise HTTPException(status_code=400, detail="facility_type mismatch for site")
 
         job_id = f"sim_{uuid4().hex[:12]}"
         JOBS[job_id] = {

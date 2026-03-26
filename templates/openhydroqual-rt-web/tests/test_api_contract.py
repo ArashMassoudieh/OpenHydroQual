@@ -30,6 +30,36 @@ def test_simulation_lifecycle() -> None:
     assert trigger.status_code == 200
     assert trigger.json()["queued_jobs"] >= 1
 
+
+
+    bad_project = client.post(
+        "/v1/simulations",
+        json={
+            "project_id": "missing-project",
+            "site_id": "la-00123",
+            "facility_type": "drywell",
+            "time_window": {"start_utc": "2026-03-26T00:00:00Z", "end_utc": "2026-03-27T00:00:00Z"},
+            "forcing_ref": {"dataset_id": "noaa-hourly", "version": "v1"},
+            "parameters_ref": {"profile_id": "drywell-default-v1"},
+            "request_contract": "simulation_request.v1",
+        },
+    )
+    assert bad_project.status_code == 404
+
+    bad_site = client.post(
+        "/v1/simulations",
+        json={
+            "project_id": "la-drywell-pilot",
+            "site_id": "la-missing",
+            "facility_type": "drywell",
+            "time_window": {"start_utc": "2026-03-26T00:00:00Z", "end_utc": "2026-03-27T00:00:00Z"},
+            "forcing_ref": {"dataset_id": "noaa-hourly", "version": "v1"},
+            "parameters_ref": {"profile_id": "drywell-default-v1"},
+            "request_contract": "simulation_request.v1",
+        },
+    )
+    assert bad_site.status_code == 404
+
     create = client.post(
         "/v1/simulations",
         json={

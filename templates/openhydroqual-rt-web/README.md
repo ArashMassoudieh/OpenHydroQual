@@ -18,6 +18,7 @@ Reference scaffold for a real-time orchestration repo around OpenHydroQual/OHQue
   - `POST /v1/internal/simulations/{job_id}/result` (worker callback)
   - `GET /metrics` (Prometheus-style counters)
 - Idempotency support via `X-Idempotency-Key` header on create endpoint
+- `POST /v1/simulations` validates project/site existence and facility type match
 - Celery worker stub for queued simulation runs
 - JSON Schemas for request/result contracts (`simulation_request.v1`, `simulation_result.v1`)
 - SQL migration starter for `site`, `forcing_series`, `simulation_run`
