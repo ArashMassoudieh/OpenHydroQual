@@ -152,10 +152,11 @@ def create_project_site(project_id: str, payload: SiteCreate) -> dict:
 
 
 @app.get("/v1/projects/{project_id}/sites")
-def list_project_sites(project_id: str) -> dict:
+def list_project_sites(project_id: str, limit: int = 100, offset: int = 0) -> dict:
     with LOCK:
         sites = [s for s in SITES.values() if s["project_id"] == project_id]
-    return {"project_id": project_id, "count": len(sites), "sites": sites}
+    sliced = sites[offset: offset + limit]
+    return {"project_id": project_id, "count": len(sites), "returned": len(sliced), "sites": sliced}
 
 
 
@@ -322,7 +323,7 @@ def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_tok
     return {"job_id": job_id, "status": payload.status}
 
 @app.get("/v1/projects/{project_id}/simulations")
-def list_project_simulations(project_id: str) -> dict:
+def list_project_simulations(project_id: str, status: str | None = None, limit: int = 100, offset: int = 0) -> dict:
     jobs = [
         {
             "job_id": job["job_id"],
@@ -334,7 +335,10 @@ def list_project_simulations(project_id: str) -> dict:
         for job in JOBS.values()
         if job["payload"]["project_id"] == project_id
     ]
-    return {"project_id": project_id, "count": len(jobs), "jobs": jobs}
+    if status is not None:
+        jobs = [j for j in jobs if j["status"] == status]
+    sliced = jobs[offset: offset + limit]
+    return {"project_id": project_id, "count": len(jobs), "returned": len(sliced), "jobs": sliced}
 
 @app.get("/v1/simulations/{job_id}")
 def get_simulation(job_id: str) -> dict:

@@ -94,13 +94,15 @@ def test_simulation_lifecycle() -> None:
     assert result.json()["result_contract"] == "simulation_result.v1"
 
 
-    project_jobs = client.get("/v1/projects/la-drywell-pilot/simulations")
+    project_jobs = client.get("/v1/projects/la-drywell-pilot/simulations", params={"status": "completed", "limit": 10, "offset": 0})
     assert project_jobs.status_code == 200
     assert project_jobs.json()["count"] >= 1
+    assert "returned" in project_jobs.json()
 
-    sites = client.get("/v1/projects/la-drywell-pilot/sites")
+    sites = client.get("/v1/projects/la-drywell-pilot/sites", params={"limit": 10, "offset": 0})
     assert sites.status_code == 200
     assert sites.json()["count"] >= 1
+    assert "returned" in sites.json()
 
 
 
