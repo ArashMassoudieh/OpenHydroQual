@@ -12,6 +12,7 @@ Reference scaffold for a real-time orchestration repo around OpenHydroQual/OHQue
   - `GET /v1/projects/{project_id}/simulations`
   - `POST /v1/simulations/{job_id}/start`
   - `POST /v1/simulations/{job_id}/complete`
+  - `POST /v1/simulations/{job_id}/fail`
   - `GET /v1/simulations/{job_id}`
   - `GET /v1/simulations/{job_id}/results`
   - `POST /v1/internal/simulations/{job_id}/result` (worker callback)

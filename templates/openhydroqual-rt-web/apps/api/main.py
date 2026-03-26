@@ -25,6 +25,7 @@ METRICS: dict[str, int] = {
     "jobs_completed_total": 0,
     "projects_created_total": 0,
     "sites_created_total": 0,
+    "jobs_failed_total": 0,
 }
 
 
@@ -275,6 +276,23 @@ def mark_completed(job_id: str, result: CompletionPayload) -> dict:
 
 
 
+
+
+@app.post("/v1/simulations/{job_id}/fail")
+def mark_failed(job_id: str, error_message: str | None = None) -> dict:
+    now = datetime.now(timezone.utc).isoformat()
+    with LOCK:
+        job = JOBS.get(job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="job not found")
+        job["status"] = "failed"
+        job["finished_at"] = now
+        job["error_message"] = error_message or "unknown error"
+        job["events"].append({"at": now, "status": "failed"})
+        METRICS["jobs_failed_total"] += 1
+        _persist_state()
+    return {"job_id": job_id, "status": "failed"}
+
 @app.post("/v1/internal/simulations/{job_id}/result")
 def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_token: str | None = Header(default=None)) -> dict:
     configured = os.getenv("INTERNAL_API_TOKEN")
@@ -298,6 +316,8 @@ def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_tok
         }
         if payload.status == "completed":
             METRICS["jobs_completed_total"] += 1
+        elif payload.status == "failed":
+            METRICS["jobs_failed_total"] += 1
         _persist_state()
     return {"job_id": job_id, "status": payload.status}
 
