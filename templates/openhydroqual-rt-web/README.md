@@ -8,6 +8,7 @@ Reference scaffold for a real-time orchestration repo around OpenHydroQual/OHQue
   - `POST /v1/projects/{project_id}/sites`
   - `GET /v1/projects/{project_id}/sites`
   - `POST /v1/simulations`
+  - `POST /v1/projects/{project_id}/simulate` (queue all project sites)
   - `GET /v1/projects/{project_id}/simulations`
   - `POST /v1/simulations/{job_id}/start`
   - `POST /v1/simulations/{job_id}/complete`
@@ -61,6 +62,9 @@ curl -s -X POST http://localhost:8000/v1/simulations \
     "parameters_ref":{"profile_id":"drywell-default-v1"},
     "request_contract":"simulation_request.v1"
   }'
+
+# trigger queued runs for all sites in a project
+curl -s -X POST http://localhost:8000/v1/projects/la-drywell-pilot/simulate
 
 # mark started + completed
 curl -s -X POST http://localhost:8000/v1/simulations/<JOB_ID>/start

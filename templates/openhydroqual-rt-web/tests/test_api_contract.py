@@ -24,6 +24,12 @@ def test_simulation_lifecycle() -> None:
     )
     assert create_site.status_code == 200
 
+
+
+    trigger = client.post("/v1/projects/la-drywell-pilot/simulate")
+    assert trigger.status_code == 200
+    assert trigger.json()["queued_jobs"] >= 1
+
     create = client.post(
         "/v1/simulations",
         json={

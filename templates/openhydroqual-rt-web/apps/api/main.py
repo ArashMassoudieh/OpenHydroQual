@@ -156,6 +156,48 @@ def list_project_sites(project_id: str) -> dict:
         sites = [s for s in SITES.values() if s["project_id"] == project_id]
     return {"project_id": project_id, "count": len(sites), "sites": sites}
 
+
+
+@app.post("/v1/projects/{project_id}/simulate")
+def trigger_project_simulations(project_id: str) -> dict:
+    with LOCK:
+        if project_id not in PROJECTS:
+            raise HTTPException(status_code=404, detail="project not found")
+        project_sites = [s for s in SITES.values() if s["project_id"] == project_id]
+
+    created = []
+    now = datetime.now(timezone.utc).isoformat()
+    for site in project_sites:
+        job_id = f"sim_{uuid4().hex[:12]}"
+        payload = {
+            "project_id": project_id,
+            "site_id": site["site_id"],
+            "facility_type": site["facility_type"],
+            "time_window": {"start_utc": now, "end_utc": now},
+            "forcing_ref": {"dataset_id": "scheduled", "version": now},
+            "parameters_ref": {"profile_id": "default"},
+            "request_contract": "simulation_request.v1",
+        }
+
+        with LOCK:
+            JOBS[job_id] = {
+                "job_id": job_id,
+                "status": "queued",
+                "submitted_at": now,
+                "payload": payload,
+                "events": [{"at": now, "status": "queued"}],
+            }
+            METRICS["jobs_created_total"] += 1
+            _persist_state()
+
+        if os.getenv("ASYNC_EXECUTION", "false").lower() == "true":
+            task_id = enqueue_run({"job_id": job_id, "payload": payload})
+            JOBS[job_id]["queue_task_id"] = task_id
+
+        created.append(job_id)
+
+    return {"project_id": project_id, "queued_jobs": len(created), "job_ids": created}
+
 @app.post("/v1/simulations")
 def create_simulation(
     payload: SimulationRequest,
