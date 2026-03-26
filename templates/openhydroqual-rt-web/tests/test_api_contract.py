@@ -147,6 +147,10 @@ def test_simulation_lifecycle() -> None:
     assert clone.status_code == 200
     assert clone.json()["sites_copied"] >= 1
 
+    exported = client.get("/v1/projects/la-drywell-pilot/export")
+    assert exported.status_code == 200
+    assert exported.json()["project"]["project_id"] == "la-drywell-pilot"
+
     stats = client.get("/v1/projects/la-drywell-pilot/stats")
     assert stats.status_code == 200
     assert stats.json()["sites_total"] >= 1
