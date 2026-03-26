@@ -28,6 +28,7 @@ class RefPayload(BaseModel):
 
 
 class SimulationRequest(BaseModel):
+    project_id: str
     site_id: str
     facility_type: str
     time_window: TimeWindow
@@ -114,6 +115,23 @@ def mark_completed(job_id: str, result: CompletionPayload) -> dict:
         }
     return {"job_id": job_id, "status": "completed"}
 
+
+
+
+@app.get("/v1/projects/{project_id}/simulations")
+def list_project_simulations(project_id: str) -> dict:
+    jobs = [
+        {
+            "job_id": job["job_id"],
+            "status": job["status"],
+            "project_id": job["payload"]["project_id"],
+            "site_id": job["payload"]["site_id"],
+            "submitted_at": job["submitted_at"],
+        }
+        for job in JOBS.values()
+        if job["payload"]["project_id"] == project_id
+    ]
+    return {"project_id": project_id, "count": len(jobs), "jobs": jobs}
 
 @app.get("/v1/simulations/{job_id}")
 def get_simulation(job_id: str) -> dict:

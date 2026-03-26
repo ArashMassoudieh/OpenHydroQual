@@ -9,6 +9,7 @@ def test_simulation_lifecycle() -> None:
     create = client.post(
         "/v1/simulations",
         json={
+            "project_id": "la-drywell-pilot",
             "site_id": "la-00123",
             "facility_type": "drywell",
             "time_window": {
@@ -27,6 +28,7 @@ def test_simulation_lifecycle() -> None:
     replay = client.post(
         "/v1/simulations",
         json={
+            "project_id": "la-drywell-pilot",
             "site_id": "la-00123",
             "facility_type": "drywell",
             "time_window": {
@@ -54,3 +56,8 @@ def test_simulation_lifecycle() -> None:
     result = client.get(f"/v1/simulations/{job_id}/results")
     assert result.status_code == 200
     assert result.json()["result_contract"] == "simulation_result.v1"
+
+
+    project_jobs = client.get("/v1/projects/la-drywell-pilot/simulations")
+    assert project_jobs.status_code == 200
+    assert project_jobs.json()["count"] >= 1

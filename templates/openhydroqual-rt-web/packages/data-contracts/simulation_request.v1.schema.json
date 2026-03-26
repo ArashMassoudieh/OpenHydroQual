@@ -3,6 +3,7 @@
   "title": "simulation_request.v1",
   "type": "object",
   "required": [
+    "project_id",
     "site_id",
     "facility_type",
     "time_window",
@@ -11,18 +12,40 @@
     "request_contract"
   ],
   "properties": {
-    "site_id": { "type": "string" },
-    "facility_type": { "type": "string" },
+    "site_id": {
+      "type": "string"
+    },
+    "facility_type": {
+      "type": "string"
+    },
     "time_window": {
       "type": "object",
-      "required": ["start_utc", "end_utc"],
+      "required": [
+        "start_utc",
+        "end_utc"
+      ],
       "properties": {
-        "start_utc": { "type": "string", "format": "date-time" },
-        "end_utc": { "type": "string", "format": "date-time" }
+        "start_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end_utc": {
+          "type": "string",
+          "format": "date-time"
+        }
       }
     },
-    "forcing_ref": { "type": "object" },
-    "parameters_ref": { "type": "object" },
-    "request_contract": { "const": "simulation_request.v1" }
+    "forcing_ref": {
+      "type": "object"
+    },
+    "parameters_ref": {
+      "type": "object"
+    },
+    "request_contract": {
+      "const": "simulation_request.v1"
+    },
+    "project_id": {
+      "type": "string"
+    }
   }
 }

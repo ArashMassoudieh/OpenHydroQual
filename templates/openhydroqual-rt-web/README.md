@@ -5,6 +5,7 @@ Reference scaffold for a real-time orchestration repo around OpenHydroQual/OHQue
 ## Included
 - FastAPI app with:
   - `POST /v1/simulations`
+  - `GET /v1/projects/{project_id}/simulations`
   - `POST /v1/simulations/{job_id}/start`
   - `POST /v1/simulations/{job_id}/complete`
   - `GET /v1/simulations/{job_id}`
@@ -38,6 +39,7 @@ curl -s -X POST http://localhost:8000/v1/simulations \
   -H 'Content-Type: application/json' \
   -H 'X-Idempotency-Key: demo-1' \
   -d '{
+    "project_id":"la-drywell-pilot",
     "site_id":"la-00123",
     "facility_type":"drywell",
     "time_window":{"start_utc":"2026-03-26T00:00:00Z","end_utc":"2026-03-27T00:00:00Z"},

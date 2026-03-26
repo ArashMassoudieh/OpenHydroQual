@@ -1,5 +1,12 @@
+create table if not exists project (
+  project_id text primary key,
+  name text not null,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists site (
   site_id text primary key,
+  project_id text not null references project(project_id),
   county text not null,
   facility_type text not null,
   latitude double precision not null,
@@ -20,6 +27,7 @@ create table if not exists forcing_series (
 
 create table if not exists simulation_run (
   job_id text primary key,
+  project_id text not null references project(project_id),
   site_id text not null references site(site_id),
   status text not null,
   request_contract text not null,
