@@ -119,6 +119,10 @@ def test_simulation_lifecycle() -> None:
     )
     assert worker_result.status_code == 200
 
+    events = client.get(f"/v1/simulations/{job_id}/events")
+    assert events.status_code == 200
+    assert events.json()["count"] >= 1
+
     result = client.get(f"/v1/simulations/{job_id}/results")
     assert result.status_code == 200
     assert result.json()["result_contract"] == "simulation_result.v1"

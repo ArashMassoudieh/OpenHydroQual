@@ -15,6 +15,7 @@ Reference scaffold for a real-time orchestration repo around OpenHydroQual/OHQue
   - `POST /v1/simulations/{job_id}/cancel`
   - `POST /v1/simulations/{job_id}/fail`
   - `GET /v1/simulations/{job_id}`
+  - `GET /v1/simulations/{job_id}/events`
   - `GET /v1/simulations/{job_id}/results`
   - `POST /v1/internal/simulations/{job_id}/result` (worker callback)
   - `GET /metrics` (Prometheus-style counters)

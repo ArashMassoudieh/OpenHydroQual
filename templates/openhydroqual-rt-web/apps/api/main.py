@@ -383,6 +383,16 @@ def get_simulation(job_id: str) -> dict:
     }
 
 
+
+
+@app.get("/v1/simulations/{job_id}/events")
+def get_simulation_events(job_id: str) -> dict:
+    job = JOBS.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="job not found")
+    events = job.get("events", [])
+    return {"job_id": job_id, "count": len(events), "events": events}
+
 @app.get("/v1/simulations/{job_id}/results")
 def get_simulation_results(job_id: str) -> dict:
     job = JOBS.get(job_id)
