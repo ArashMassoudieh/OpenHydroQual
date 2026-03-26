@@ -26,6 +26,7 @@ METRICS: dict[str, int] = {
     "projects_created_total": 0,
     "sites_created_total": 0,
     "jobs_failed_total": 0,
+    "jobs_cancelled_total": 0,
 }
 
 
@@ -170,14 +171,6 @@ def trigger_project_simulations(project_id: str) -> dict:
     created = []
     now = datetime.now(timezone.utc).isoformat()
     for site in project_sites:
-        if payload.project_id not in PROJECTS:
-            raise HTTPException(status_code=404, detail="unknown project_id")
-        site_key = f"{payload.project_id}:{payload.site_id}"
-        if site_key not in SITES:
-            raise HTTPException(status_code=404, detail="unknown site_id for project")
-        if SITES[site_key]["facility_type"] != payload.facility_type:
-            raise HTTPException(status_code=400, detail="facility_type mismatch for site")
-
         job_id = f"sim_{uuid4().hex[:12]}"
         payload = {
             "project_id": project_id,
@@ -294,6 +287,25 @@ def mark_completed(job_id: str, result: CompletionPayload) -> dict:
 
 
 
+
+
+
+@app.post("/v1/simulations/{job_id}/cancel")
+def cancel_simulation(job_id: str, reason: str | None = None) -> dict:
+    now = datetime.now(timezone.utc).isoformat()
+    with LOCK:
+        job = JOBS.get(job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="job not found")
+        if job.get("status") in {"completed", "failed"}:
+            raise HTTPException(status_code=409, detail="job already finalized")
+        job["status"] = "cancelled"
+        job["finished_at"] = now
+        job["cancel_reason"] = reason or "cancelled by user"
+        job["events"].append({"at": now, "status": "cancelled"})
+        METRICS["jobs_cancelled_total"] += 1
+        _persist_state()
+    return {"job_id": job_id, "status": "cancelled"}
 
 @app.post("/v1/simulations/{job_id}/fail")
 def mark_failed(job_id: str, error_message: str | None = None) -> dict:

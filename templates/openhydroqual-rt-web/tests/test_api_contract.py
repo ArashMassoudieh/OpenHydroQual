@@ -155,7 +155,28 @@ def test_simulation_lifecycle() -> None:
     failed = client.post(f"/v1/simulations/{failed_id}/fail", params={"error_message": "engine timeout"})
     assert failed.status_code == 200
 
+
+
+    cancel_job = client.post(
+        "/v1/simulations",
+        json={
+            "project_id": "la-drywell-pilot",
+            "site_id": "la-00123",
+            "facility_type": "drywell",
+            "time_window": {"start_utc": "2026-03-26T00:00:00Z", "end_utc": "2026-03-27T00:00:00Z"},
+            "forcing_ref": {"dataset_id": "noaa-hourly", "version": "v1"},
+            "parameters_ref": {"profile_id": "drywell-default-v1"},
+            "request_contract": "simulation_request.v1",
+        },
+    )
+    assert cancel_job.status_code == 200
+    cancel_id = cancel_job.json()["job_id"]
+
+    cancel = client.post(f"/v1/simulations/{cancel_id}/cancel", params={"reason": "user stopped"})
+    assert cancel.status_code == 200
+
     metrics = client.get("/metrics")
     assert metrics.status_code == 200
     assert "jobs_created_total" in metrics.text
     assert "jobs_failed_total" in metrics.text
+    assert "jobs_cancelled_total" in metrics.text
