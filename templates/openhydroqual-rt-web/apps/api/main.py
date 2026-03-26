@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
+import json
 import os
+from pathlib import Path
 from threading import Lock
 from uuid import uuid4
 
@@ -16,6 +18,40 @@ IDEMPOTENCY_INDEX: dict[str, str] = {}
 LOCK = Lock()
 PROJECTS: dict[str, dict] = {}
 SITES: dict[str, dict] = {}
+STATE_FILE = Path(os.getenv("STATE_FILE", "./ohq_rt_state.json"))
+ENABLE_FILE_STATE = os.getenv("ENABLE_FILE_STATE", "false").lower() == "true"
+
+
+def _load_state() -> None:
+    if not ENABLE_FILE_STATE or not STATE_FILE.exists():
+        return
+    try:
+        payload = json.loads(STATE_FILE.read_text())
+        JOBS.update(payload.get("jobs", {}))
+        IDEMPOTENCY_INDEX.update(payload.get("idempotency_index", {}))
+        PROJECTS.update(payload.get("projects", {}))
+        SITES.update(payload.get("sites", {}))
+    except Exception:
+        # Best-effort bootstrap for scaffold; production should log and alert.
+        return
+
+
+def _persist_state() -> None:
+    if not ENABLE_FILE_STATE:
+        return
+    STATE_FILE.write_text(
+        json.dumps(
+            {
+                "jobs": JOBS,
+                "idempotency_index": IDEMPOTENCY_INDEX,
+                "projects": PROJECTS,
+                "sites": SITES,
+            }
+        )
+    )
+
+
+_load_state()
 
 
 class TimeWindow(BaseModel):
@@ -71,6 +107,7 @@ def create_project(payload: ProjectCreate) -> dict:
         if payload.project_id in PROJECTS:
             raise HTTPException(status_code=409, detail="project already exists")
         PROJECTS[payload.project_id] = payload.model_dump()
+        _persist_state()
     return PROJECTS[payload.project_id]
 
 
@@ -86,6 +123,7 @@ def create_project_site(project_id: str, payload: SiteCreate) -> dict:
             "project_id": project_id,
             **payload.model_dump(),
         }
+        _persist_state()
     return SITES[key]
 
 
@@ -123,6 +161,7 @@ def create_simulation(
         }
         if x_idempotency_key:
             IDEMPOTENCY_INDEX[x_idempotency_key] = job_id
+        _persist_state()
 
     if os.getenv("ASYNC_EXECUTION", "false").lower() == "true":
         task_id = enqueue_run({"job_id": job_id, "payload": JOBS[job_id]["payload"]})
@@ -141,6 +180,7 @@ def mark_started(job_id: str) -> dict:
         job["status"] = "running"
         job["started_at"] = now
         job["events"].append({"at": now, "status": "running"})
+        _persist_state()
     return {"job_id": job_id, "status": "running"}
 
 
@@ -160,6 +200,7 @@ def mark_completed(job_id: str, result: CompletionPayload) -> dict:
             "result_contract": "simulation_result.v1",
             "metrics": result.model_dump(),
         }
+        _persist_state()
     return {"job_id": job_id, "status": "completed"}
 
 

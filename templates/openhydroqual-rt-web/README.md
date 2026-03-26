@@ -96,3 +96,8 @@ make test
 ```
 
 A GitHub Actions workflow is included at `.github/workflows/openhydroqual-rt-web-ci.yml` to run scaffold tests automatically.
+
+
+## Optional local state persistence
+- By default API state is in-memory only.
+- Set `ENABLE_FILE_STATE=true` to persist projects/sites/jobs in `STATE_FILE` (JSON file) across restarts.
