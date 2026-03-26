@@ -175,6 +175,29 @@ def create_project_site(project_id: str, payload: SiteCreate) -> dict:
     return SITES[key]
 
 
+
+
+@app.delete("/v1/projects/{project_id}/sites/{site_id}")
+def delete_project_site(project_id: str, site_id: str, force: bool = False) -> dict:
+    key = f"{project_id}:{site_id}"
+    with LOCK:
+        if project_id not in PROJECTS:
+            raise HTTPException(status_code=404, detail="project not found")
+        if key not in SITES:
+            raise HTTPException(status_code=404, detail="site not found")
+
+        related_jobs = [k for k, j in JOBS.items() if j.get("payload", {}).get("project_id") == project_id and j.get("payload", {}).get("site_id") == site_id]
+
+        if related_jobs and not force:
+            raise HTTPException(status_code=409, detail="site has dependent jobs; use force=true")
+
+        for k in related_jobs:
+            del JOBS[k]
+        del SITES[key]
+        _persist_state()
+
+    return {"project_id": project_id, "site_id": site_id, "deleted": True, "jobs_removed": len(related_jobs)}
+
 @app.get("/v1/projects/{project_id}/sites")
 def list_project_sites(project_id: str, limit: int = 100, offset: int = 0) -> dict:
     with LOCK:
