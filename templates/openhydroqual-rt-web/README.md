@@ -13,6 +13,7 @@ Reference scaffold for a real-time orchestration repo around OpenHydroQual/OHQue
   - `POST /v1/simulations/{job_id}/complete`
   - `GET /v1/simulations/{job_id}`
   - `GET /v1/simulations/{job_id}/results`
+  - `POST /v1/internal/simulations/{job_id}/result` (worker callback)
 - Idempotency support via `X-Idempotency-Key` header on create endpoint
 - Celery worker stub for queued simulation runs
 - JSON Schemas for request/result contracts (`simulation_request.v1`, `simulation_result.v1`)
@@ -101,3 +102,8 @@ A GitHub Actions workflow is included at `.github/workflows/openhydroqual-rt-web
 ## Optional local state persistence
 - By default API state is in-memory only.
 - Set `ENABLE_FILE_STATE=true` to persist projects/sites/jobs in `STATE_FILE` (JSON file) across restarts.
+
+
+## Worker callback endpoint
+Workers can push normalized results back to API using `POST /v1/internal/simulations/{job_id}/result`.
+Set `INTERNAL_API_TOKEN` and pass it in `X-Internal-Token` for simple protection.

@@ -71,6 +71,18 @@ def test_simulation_lifecycle() -> None:
     )
     assert completed.status_code == 200
 
+
+    worker_result = client.post(
+        f"/v1/internal/simulations/{job_id}/result",
+        json={
+            "status": "completed",
+            "result_contract": "simulation_result.v1",
+            "metrics": {"peak_depth_m": 0.11, "infiltrated_volume_m3": 7.9, "overflow": False},
+            "adapter": {"engine": "OHQuery", "mock_mode": True},
+        },
+    )
+    assert worker_result.status_code == 200
+
     result = client.get(f"/v1/simulations/{job_id}/results")
     assert result.status_code == 200
     assert result.json()["result_contract"] == "simulation_result.v1"

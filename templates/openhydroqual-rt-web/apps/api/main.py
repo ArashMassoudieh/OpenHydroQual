@@ -94,6 +94,13 @@ class SiteCreate(BaseModel):
     metadata: dict = {}
 
 
+class WorkerResultPayload(BaseModel):
+    status: str = "completed"
+    result_contract: str = "simulation_result.v1"
+    metrics: dict
+    adapter: dict | None = None
+
+
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "service": "api", "version": "0.2.0"}
@@ -205,6 +212,32 @@ def mark_completed(job_id: str, result: CompletionPayload) -> dict:
 
 
 
+
+
+
+@app.post("/v1/internal/simulations/{job_id}/result")
+def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_token: str | None = Header(default=None)) -> dict:
+    configured = os.getenv("INTERNAL_API_TOKEN")
+    if configured and x_internal_token != configured:
+        raise HTTPException(status_code=403, detail="forbidden")
+
+    now = datetime.now(timezone.utc).isoformat()
+    with LOCK:
+        job = JOBS.get(job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="job not found")
+        job["status"] = payload.status
+        job["finished_at"] = now
+        job["events"].append({"at": now, "status": payload.status})
+        job["result"] = {
+            "job_id": job_id,
+            "status": payload.status,
+            "result_contract": payload.result_contract,
+            "metrics": payload.metrics,
+            "adapter": payload.adapter or {},
+        }
+        _persist_state()
+    return {"job_id": job_id, "status": payload.status}
 
 @app.get("/v1/projects/{project_id}/simulations")
 def list_project_simulations(project_id: str) -> dict:
