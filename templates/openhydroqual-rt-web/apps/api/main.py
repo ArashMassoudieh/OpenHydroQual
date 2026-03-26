@@ -99,6 +99,11 @@ class ProjectCloneRequest(BaseModel):
     new_name: str
 
 
+class ProjectImportRequest(BaseModel):
+    project: dict
+    sites: list[dict] = []
+
+
 class SiteCreate(BaseModel):
     site_id: str
     facility_type: str
@@ -145,6 +150,35 @@ def create_project(payload: ProjectCreate) -> dict:
 
 
 
+
+
+
+@app.post("/v1/projects/import")
+def import_project(payload: ProjectImportRequest) -> dict:
+    project_id = payload.project.get("project_id")
+    if not project_id:
+        raise HTTPException(status_code=400, detail="project_id is required in payload.project")
+
+    with LOCK:
+        if project_id in PROJECTS:
+            raise HTTPException(status_code=409, detail="project already exists")
+
+        PROJECTS[project_id] = payload.project
+        imported_sites = 0
+        for site in payload.sites:
+            site_id = site.get("site_id")
+            if not site_id:
+                continue
+            key = f"{project_id}:{site_id}"
+            if key in SITES:
+                continue
+            SITES[key] = {**site, "project_id": project_id}
+            imported_sites += 1
+
+        METRICS["projects_created_total"] += 1
+        _persist_state()
+
+    return {"project_id": project_id, "sites_imported": imported_sites}
 
 @app.get("/v1/projects/{project_id}/export")
 def export_project(project_id: str) -> dict:

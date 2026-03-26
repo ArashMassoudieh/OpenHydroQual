@@ -151,6 +151,15 @@ def test_simulation_lifecycle() -> None:
     assert exported.status_code == 200
     assert exported.json()["project"]["project_id"] == "la-drywell-pilot"
 
+
+
+    imported = client.post("/v1/projects/import", json={
+        "project": {"project_id": "la-drywell-import", "name": "Imported Drywell"},
+        "sites": exported.json()["sites"],
+    })
+    assert imported.status_code == 200
+    assert imported.json()["sites_imported"] >= 1
+
     stats = client.get("/v1/projects/la-drywell-pilot/stats")
     assert stats.status_code == 200
     assert stats.json()["sites_total"] >= 1
@@ -219,3 +228,6 @@ def test_simulation_lifecycle() -> None:
 
     delete_clone = client.delete("/v1/projects/la-drywell-clone", params={"force": "true"})
     assert delete_clone.status_code == 200
+
+    delete_imported = client.delete("/v1/projects/la-drywell-import", params={"force": "true"})
+    assert delete_imported.status_code == 200
