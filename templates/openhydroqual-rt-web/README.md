@@ -6,7 +6,7 @@ Reference scaffold for a real-time orchestration repo around OpenHydroQual/OHQue
 - FastAPI app with:
   - `POST /v1/projects`
   - `POST /v1/projects/{project_id}/sites`
-  - `GET /v1/projects/{project_id}/export`
+  - `GET /v1/projects/{project_id}/export` (supports `include_jobs=true`)
   - `POST /v1/projects/import`
   - `POST /v1/projects/{project_id}/clone`
   - `DELETE /v1/projects/{project_id}` (supports `force=true`)

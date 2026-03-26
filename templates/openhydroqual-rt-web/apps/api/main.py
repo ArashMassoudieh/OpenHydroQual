@@ -181,16 +181,19 @@ def import_project(payload: ProjectImportRequest) -> dict:
     return {"project_id": project_id, "sites_imported": imported_sites}
 
 @app.get("/v1/projects/{project_id}/export")
-def export_project(project_id: str) -> dict:
+def export_project(project_id: str, include_jobs: bool = False) -> dict:
     if project_id not in PROJECTS:
         raise HTTPException(status_code=404, detail="project not found")
     sites = [s for s in SITES.values() if s["project_id"] == project_id]
     jobs = [j for j in JOBS.values() if j.get("payload", {}).get("project_id") == project_id]
-    return {
+    payload = {
         "project": PROJECTS[project_id],
         "sites": sites,
         "job_count": len(jobs),
     }
+    if include_jobs:
+        payload["jobs"] = jobs
+    return payload
 
 @app.post("/v1/projects/{project_id}/clone")
 def clone_project(project_id: str, payload: ProjectCloneRequest) -> dict:
