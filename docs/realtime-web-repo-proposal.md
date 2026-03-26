@@ -1,5 +1,15 @@
 # Proposal: Real-time Web Simulation Repo for OpenHydroQual (LA County GI)
 
+## TL;DR (opinionated recommendation)
+If your goal is production-ready LA County real-time simulation quickly, use this stack:
+- **Backend:** Python/FastAPI + Pydantic
+- **Workers:** Celery + Redis
+- **Storage:** PostgreSQL + TimescaleDB
+- **Frontend:** React (Vite) + MapLibre + ECharts
+- **Runtime:** Docker Compose first, then Kubernetes when >200 active facilities
+
+Build a thin **OHQ Adapter** package and keep model contracts versioned. Ship a 4-week MVP with one weather source (NOAA), one facility type (drywell), and one alert (overflow risk).
+
 ## 1) Recommended repository goal
 Build a **separate web-oriented repo** that runs near-real-time simulations for LA County green-infrastructure (GI) assets (drywell, bioretention, bioswale, etc.) while reusing OpenHydroQual as the computational engine.
 
@@ -116,3 +126,32 @@ Before building full UI, deliver:
 - one alert rule (e.g., overflow risk in next 6 hours).
 
 That gives stakeholders visible value while validating the core pipeline.
+
+
+## 12) 4-week MVP backlog (specific)
+Week 1
+- Create monorepo skeleton and CI (lint + unit tests + docker build).
+- Implement OHQ adapter CLI/API wrapper with contract `v1`.
+- Define DB schema migrations for Site, Facility, ForcingSeries, SimulationRun.
+
+Week 2
+- Build NOAA ingestion job (hourly) with QC (missing values, units, timezone normalization).
+- Build orchestrator job to trigger hourly runs for drywell sites.
+- Persist run outputs and provenance metadata.
+
+Week 3
+- Expose API endpoints: latest run, run history, trigger on-demand run.
+- Build dashboard: map + hydrograph + risk badge.
+- Add one alert rule for next-6h overflow risk.
+
+Week 4
+- Harden reliability: retries, dead-letter queue, backfill command.
+- Add regression benchmark against fixed input snapshots.
+- Deploy staging with runbook and on-call dashboard.
+
+## 13) Recommended first external datasets
+- NOAA/NWS observed precipitation (hourly)
+- NOAA/NWS short-term forecast (next 6–48h)
+- Optional: station metadata and quality flags
+
+All ingested datasets should be stored raw + normalized with source timestamp and retrieval timestamp for auditability.
