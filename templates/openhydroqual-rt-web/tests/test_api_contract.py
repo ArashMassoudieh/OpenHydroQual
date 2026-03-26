@@ -6,6 +6,24 @@ from apps.api.main import app
 def test_simulation_lifecycle() -> None:
     client = TestClient(app)
 
+    create_project = client.post(
+        "/v1/projects",
+        json={"project_id": "la-drywell-pilot", "name": "LA Drywell Pilot"},
+    )
+    assert create_project.status_code == 200
+
+    create_site = client.post(
+        "/v1/projects/la-drywell-pilot/sites",
+        json={
+            "site_id": "la-00123",
+            "facility_type": "drywell",
+            "latitude": 34.05,
+            "longitude": -118.24,
+            "metadata": {"county": "LA"},
+        },
+    )
+    assert create_site.status_code == 200
+
     create = client.post(
         "/v1/simulations",
         json={
@@ -61,3 +79,7 @@ def test_simulation_lifecycle() -> None:
     project_jobs = client.get("/v1/projects/la-drywell-pilot/simulations")
     assert project_jobs.status_code == 200
     assert project_jobs.json()["count"] >= 1
+
+    sites = client.get("/v1/projects/la-drywell-pilot/sites")
+    assert sites.status_code == 200
+    assert sites.json()["count"] >= 1

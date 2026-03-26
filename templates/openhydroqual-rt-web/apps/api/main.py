@@ -14,6 +14,8 @@ app = FastAPI(title="OHQ Real-time API", version="0.2.0")
 JOBS: dict[str, dict] = {}
 IDEMPOTENCY_INDEX: dict[str, str] = {}
 LOCK = Lock()
+PROJECTS: dict[str, dict] = {}
+SITES: dict[str, dict] = {}
 
 
 class TimeWindow(BaseModel):
@@ -43,10 +45,55 @@ class CompletionPayload(BaseModel):
     overflow: bool
 
 
+class ProjectCreate(BaseModel):
+    project_id: str
+    name: str
+
+
+class SiteCreate(BaseModel):
+    site_id: str
+    facility_type: str
+    latitude: float
+    longitude: float
+    metadata: dict = {}
+
+
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "service": "api", "version": "0.2.0"}
 
+
+
+
+@app.post("/v1/projects")
+def create_project(payload: ProjectCreate) -> dict:
+    with LOCK:
+        if payload.project_id in PROJECTS:
+            raise HTTPException(status_code=409, detail="project already exists")
+        PROJECTS[payload.project_id] = payload.model_dump()
+    return PROJECTS[payload.project_id]
+
+
+@app.post("/v1/projects/{project_id}/sites")
+def create_project_site(project_id: str, payload: SiteCreate) -> dict:
+    with LOCK:
+        if project_id not in PROJECTS:
+            raise HTTPException(status_code=404, detail="project not found")
+        key = f"{project_id}:{payload.site_id}"
+        if key in SITES:
+            raise HTTPException(status_code=409, detail="site already exists")
+        SITES[key] = {
+            "project_id": project_id,
+            **payload.model_dump(),
+        }
+    return SITES[key]
+
+
+@app.get("/v1/projects/{project_id}/sites")
+def list_project_sites(project_id: str) -> dict:
+    with LOCK:
+        sites = [s for s in SITES.values() if s["project_id"] == project_id]
+    return {"project_id": project_id, "count": len(sites), "sites": sites}
 
 @app.post("/v1/simulations")
 def create_simulation(

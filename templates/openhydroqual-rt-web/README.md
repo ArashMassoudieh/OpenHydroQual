@@ -4,6 +4,9 @@ Reference scaffold for a real-time orchestration repo around OpenHydroQual/OHQue
 
 ## Included
 - FastAPI app with:
+  - `POST /v1/projects`
+  - `POST /v1/projects/{project_id}/sites`
+  - `GET /v1/projects/{project_id}/sites`
   - `POST /v1/simulations`
   - `GET /v1/projects/{project_id}/simulations`
   - `POST /v1/simulations/{job_id}/start`
@@ -34,6 +37,15 @@ celery -A apps.worker.tasks worker --loglevel=info
 
 ## Local API smoke flow
 ```bash
+# create project + site
+curl -s -X POST http://localhost:8000/v1/projects \
+  -H 'Content-Type: application/json' \
+  -d '{"project_id":"la-drywell-pilot","name":"LA Drywell Pilot"}'
+
+curl -s -X POST http://localhost:8000/v1/projects/la-drywell-pilot/sites \
+  -H 'Content-Type: application/json' \
+  -d '{"site_id":"la-00123","facility_type":"drywell","latitude":34.05,"longitude":-118.24,"metadata":{"county":"LA"}}'
+
 # create
 curl -s -X POST http://localhost:8000/v1/simulations \
   -H 'Content-Type: application/json' \
