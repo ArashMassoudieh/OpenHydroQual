@@ -5,6 +5,11 @@ services:
     working_dir: /app
     volumes:
       - ../../:/app
+    environment:
+      ASYNC_EXECUTION: "true"
+      BROKER_URL: redis://redis:6379/0
+      RESULT_BACKEND: redis://redis:6379/1
+      OHQUERY_BASE_URL: http://ohquery:8080
     command: bash -lc "pip install -r apps/api/requirements.txt && uvicorn apps.api.main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
@@ -17,6 +22,10 @@ services:
     working_dir: /app
     volumes:
       - ../../:/app
+    environment:
+      BROKER_URL: redis://redis:6379/0
+      RESULT_BACKEND: redis://redis:6379/1
+      OHQUERY_BASE_URL: http://ohquery:8080
     command: bash -lc "pip install -r apps/worker/requirements.txt && celery -A apps.worker.tasks worker --loglevel=info"
     depends_on:
       - redis
@@ -34,3 +43,7 @@ services:
       POSTGRES_DB: ohq_rt
     ports:
       - "5432:5432"
+
+  ohquery:
+    image: alpine:3.20
+    command: ["sh", "-c", "echo 'Stub OHQuery container for local wiring'; sleep infinity"]

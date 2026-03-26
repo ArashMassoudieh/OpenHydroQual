@@ -52,3 +52,17 @@ curl -s -X POST http://localhost:8000/v1/simulations/<JOB_ID>/complete \
   -H 'Content-Type: application/json' \
   -d '{"peak_depth_m":0.12,"infiltrated_volume_m3":8.5,"overflow":false}'
 ```
+
+## AWS deployment notes
+- Use **RDS PostgreSQL** for relational storage.
+- Use **ElastiCache Redis** (or Amazon MQ/SQS adapter if preferred) for broker/backend.
+- Run API/worker containers on **ECS Fargate** (or EKS) with private networking.
+- Expose API via **ALB** + HTTPS; keep OHQuery service internal behind private ALB or service discovery.
+- Set environment variables from `.env.example` using AWS Secrets Manager / SSM Parameter Store.
+
+Minimum environment variables in AWS:
+- `ASYNC_EXECUTION=true`
+- `BROKER_URL` (ElastiCache endpoint)
+- `RESULT_BACKEND` (ElastiCache endpoint)
+- `OHQUERY_BASE_URL` (internal OHQuery service URL)
+

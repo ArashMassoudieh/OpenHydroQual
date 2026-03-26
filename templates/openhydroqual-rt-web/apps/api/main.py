@@ -1,9 +1,12 @@
 from datetime import datetime, timezone
+import os
 from threading import Lock
 from uuid import uuid4
 
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
+
+from .queue import enqueue_run
 
 
 app = FastAPI(title="OHQ Real-time API", version="0.2.0")
@@ -73,7 +76,11 @@ def create_simulation(
         if x_idempotency_key:
             IDEMPOTENCY_INDEX[x_idempotency_key] = job_id
 
-    return {"job_id": job_id, "status": "queued", "submitted_at": now}
+    if os.getenv("ASYNC_EXECUTION", "false").lower() == "true":
+        task_id = enqueue_run({"job_id": job_id, "payload": JOBS[job_id]["payload"]})
+        JOBS[job_id]["queue_task_id"] = task_id
+
+    return {"job_id": job_id, "status": "queued", "submitted_at": now, "queue_task_id": JOBS[job_id].get("queue_task_id")}
 
 
 @app.post("/v1/simulations/{job_id}/start")
