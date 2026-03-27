@@ -43,7 +43,7 @@ def _load_state() -> None:
         IDEMPOTENCY_INDEX.update(payload.get("idempotency_index", {}))
         PROJECTS.update(payload.get("projects", {}))
         SITES.update(payload.get("sites", {}))
-    except Exception:
+    except (OSError, json.JSONDecodeError):
         # Best-effort bootstrap for scaffold; production should log and alert.
         return
 
