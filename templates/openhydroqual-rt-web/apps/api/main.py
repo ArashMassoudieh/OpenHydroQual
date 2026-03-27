@@ -113,11 +113,25 @@ class SiteCreate(BaseModel):
     metadata: dict = Field(default_factory=dict)
 
 
+class ResultMetrics(BaseModel):
+    peak_depth_m: float
+    infiltrated_volume_m3: float
+    overflow: bool
+
+
+class AdapterMetadata(BaseModel):
+    engine: str
+    mock: bool
+    mock_mode: bool
+    raw: dict = Field(default_factory=dict)
+    base_url: str | None = None
+
+
 class WorkerResultPayload(BaseModel):
     status: str = "completed"
     result_contract: str = "simulation_result.v1"
-    metrics: dict
-    adapter: dict | None = None
+    metrics: ResultMetrics
+    adapter: AdapterMetadata
     generated_at_utc: str | None = None
 
 
@@ -491,8 +505,8 @@ def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_tok
             "job_id": job_id,
             "status": payload.status,
             "result_contract": payload.result_contract,
-            "metrics": payload.metrics,
-            "adapter": payload.adapter or {},
+            "metrics": payload.metrics.model_dump(),
+            "adapter": payload.adapter.model_dump(),
             "generated_at_utc": payload.generated_at_utc or now,
         }
         if payload.status == "completed":
