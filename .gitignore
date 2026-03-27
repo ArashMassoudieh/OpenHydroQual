@@ -408,3 +408,7 @@ terminal/build-TOpenHydroQual-Qt_6_3_1_for_macOS-Debug/
 terminal/build-TOpenHydroQual-Replacement_for_Desktop_Qt_5_15_2_clang_64bit-Debug/
 
 .dockerignore
+
+jensenrecharge.txt
+
+kozeracki_groundwater_modeling.ohq
