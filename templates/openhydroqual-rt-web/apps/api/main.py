@@ -293,16 +293,17 @@ def list_project_sites(project_id: str, limit: int = 100, offset: int = 0) -> di
 
 @app.get("/v1/projects/{project_id}/stats")
 def get_project_stats(project_id: str) -> dict:
-    if project_id not in PROJECTS:
-        raise HTTPException(status_code=404, detail="project not found")
+    with LOCK:
+        if project_id not in PROJECTS:
+            raise HTTPException(status_code=404, detail="project not found")
 
-    project_jobs = [j for j in JOBS.values() if j.get("payload", {}).get("project_id") == project_id]
-    by_status: dict[str, int] = {}
-    for j in project_jobs:
-        status = j.get("status", "unknown")
-        by_status[status] = by_status.get(status, 0) + 1
+        project_jobs = [j for j in JOBS.values() if j.get("payload", {}).get("project_id") == project_id]
+        by_status: dict[str, int] = {}
+        for j in project_jobs:
+            status = j.get("status", "unknown")
+            by_status[status] = by_status.get(status, 0) + 1
 
-    project_sites = [s for s in SITES.values() if s.get("project_id") == project_id]
+        project_sites = [s for s in SITES.values() if s.get("project_id") == project_id]
 
     return {
         "project_id": project_id,
@@ -496,19 +497,20 @@ def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_tok
 def list_project_simulations(project_id: str, status: str | None = None, limit: int = 100, offset: int = 0) -> dict:
     if limit < 1 or offset < 0:
         raise HTTPException(status_code=400, detail="limit must be >= 1 and offset must be >= 0")
-    if project_id not in PROJECTS:
-        raise HTTPException(status_code=404, detail="project not found")
-    jobs = [
-        {
-            "job_id": job["job_id"],
-            "status": job["status"],
-            "project_id": job["payload"]["project_id"],
-            "site_id": job["payload"]["site_id"],
-            "submitted_at": job["submitted_at"],
-        }
-        for job in JOBS.values()
-        if job["payload"]["project_id"] == project_id
-    ]
+    with LOCK:
+        if project_id not in PROJECTS:
+            raise HTTPException(status_code=404, detail="project not found")
+        jobs = [
+            {
+                "job_id": job["job_id"],
+                "status": job["status"],
+                "project_id": job["payload"]["project_id"],
+                "site_id": job["payload"]["site_id"],
+                "submitted_at": job["submitted_at"],
+            }
+            for job in JOBS.values()
+            if job["payload"]["project_id"] == project_id
+        ]
     if status is not None:
         jobs = [j for j in jobs if j["status"] == status]
     sliced = jobs[offset: offset + limit]
