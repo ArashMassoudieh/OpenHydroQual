@@ -122,3 +122,24 @@ A GitHub Actions workflow is included at `.github/workflows/openhydroqual-rt-web
 ## Worker callback endpoint
 Workers can push normalized results back to API using `POST /v1/internal/simulations/{job_id}/result`.
 Set `INTERNAL_API_TOKEN` and pass it in `X-Internal-Token` for simple protection.
+
+Example callback payload:
+
+```json
+{
+  "status": "completed",
+  "result_contract": "simulation_result.v1",
+  "generated_at_utc": "2026-03-27T00:00:00+00:00",
+  "adapter": {
+    "engine": "OHQuery",
+    "mock": true,
+    "mock_mode": true,
+    "raw": { "mock": true }
+  },
+  "metrics": {
+    "peak_depth_m": 0.11,
+    "infiltrated_volume_m3": 7.9,
+    "overflow": false
+  }
+}
+```
