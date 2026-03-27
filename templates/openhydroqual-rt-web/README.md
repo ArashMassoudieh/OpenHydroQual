@@ -101,6 +101,7 @@ Minimum environment variables in AWS:
 ## OHQuery integration mode
 - Default local mode uses `MOCK_OHQUERY=true` (no external engine call).
 - Set `MOCK_OHQUERY=false` and `OHQUERY_BASE_URL=http://<ohquery-host>:8080` to call real OHQuery `POST /calculate`.
+- For direct engine execution, set `OPENHYDROQUAL_CMD` (e.g., `/opt/openhydroqual/bin/OpenHydroQualCLI`) and pass `script_path` (or `ohq_script_path`) in simulation payload parameters.
 
 
 ## Testing
