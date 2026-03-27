@@ -1,3 +1,4 @@
 -r apps/api/requirements.txt
 -r apps/worker/requirements.txt
+httpx==0.28.1
 pytest==8.4.1
