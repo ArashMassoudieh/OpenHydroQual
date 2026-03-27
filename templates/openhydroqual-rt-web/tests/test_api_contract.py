@@ -172,7 +172,7 @@ def test_simulation_lifecycle() -> None:
         assert authorized_worker_result.status_code == 200
     finally:
         if original_internal_token is None:
-            del os.environ["INTERNAL_API_TOKEN"]
+            os.environ.pop("INTERNAL_API_TOKEN", None)
         else:
             os.environ["INTERNAL_API_TOKEN"] = original_internal_token
 
