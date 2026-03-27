@@ -66,6 +66,7 @@ _load_state()
 
 
 class TimeWindow(BaseModel):
+    """!Time range for a simulation request."""
     start_utc: datetime
     end_utc: datetime
 
@@ -78,12 +79,14 @@ class TimeWindow(BaseModel):
 
 
 class RefPayload(BaseModel):
+    """!Reference object for forcing or parameter dataset/profile pointers."""
     dataset_id: str | None = None
     version: str | None = None
     profile_id: str | None = None
 
 
 class SimulationRequest(BaseModel):
+    """!API payload for creating a simulation job."""
     project_id: str
     site_id: str
     facility_type: str
@@ -94,28 +97,33 @@ class SimulationRequest(BaseModel):
 
 
 class CompletionPayload(BaseModel):
+    """!Manual completion metrics payload for a simulation job."""
     peak_depth_m: float
     infiltrated_volume_m3: float
     overflow: bool
 
 
 class ProjectCreate(BaseModel):
+    """!Payload for creating a project record."""
     project_id: str
     name: str
 
 
 class ProjectCloneRequest(BaseModel):
+    """!Payload for cloning an existing project."""
     new_project_id: str
     new_name: str
 
 
 class ProjectImportRequest(BaseModel):
+    """!Payload for importing project, site, and job records."""
     project: dict
     sites: list[dict] = Field(default_factory=list)
     jobs: list[dict] = Field(default_factory=list)
 
 
 class SiteCreate(BaseModel):
+    """!Payload for creating a site under a project."""
     site_id: str
     facility_type: str
     latitude: float
@@ -124,12 +132,14 @@ class SiteCreate(BaseModel):
 
 
 class ResultMetrics(BaseModel):
+    """!Normalized result metrics for simulation outcomes."""
     peak_depth_m: float
     infiltrated_volume_m3: float
     overflow: bool
 
 
 class AdapterMetadata(BaseModel):
+    """!Metadata emitted by the adapter/worker with simulation results."""
     engine: str
     mock: bool
     mock_mode: bool
@@ -138,6 +148,7 @@ class AdapterMetadata(BaseModel):
 
 
 class WorkerResultPayload(BaseModel):
+    """!Internal callback payload submitted by workers when jobs finish."""
     status: Literal["completed", "failed"] = "completed"
     result_contract: Literal["simulation_result.v1"] = "simulation_result.v1"
     metrics: ResultMetrics
