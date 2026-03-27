@@ -1247,98 +1247,113 @@ double & System::GetSimulationTime()
 
 bool System::SetLoadedOutputItems()
 {
-    bool res = true;
-    int varcount=0;
-    for (unsigned int i=0; i<blocks.size(); i++)
-    {
-        for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
+    int varcount = 0;
+    vector<string> file_series = GetOutputs().getSeriesNames();
+
+    for (unsigned int i = 0; i < blocks.size(); i++)
+        for (auto it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(),blocks[i].GetName() + "_" + it->first)==-1)
-                    res = false;
-                it->second.SetOutputItem(blocks[i].GetName() + "_" + it->first);
+                string seriesname = blocks[i].GetName() + "_" + it->first;
+                if (aquiutils::lookup(file_series, seriesname) != -1)
+                    it->second.SetOutputItem(seriesname);
+                else
+                    qDebug() << "Series not found in file (block): " << QString::fromStdString(seriesname);
                 varcount++;
             }
-    }
 
-    qDebug()<<"Blocks variables: " << varcount;
+    qDebug() << "Blocks variables: " << varcount;
 
     for (unsigned int i = 0; i < reaction_parameters.size(); i++)
-    {
-        for (unordered_map<string, Quan>::iterator it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
+        for (auto it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(),reaction_parameters[i].GetName() + "_" + it->first)==-1)
-                    res = false;
-                it->second.SetOutputItem(reaction_parameters[i].GetName() + "_" + it->first);
+                string seriesname = reaction_parameters[i].GetName() + "_" + it->first;
+                if (aquiutils::lookup(file_series, seriesname) != -1)
+                    it->second.SetOutputItem(seriesname);
+                else
+                    qDebug() << "Series not found in file (reaction param): " << QString::fromStdString(seriesname);
                 varcount++;
             }
-    }
 
-    qDebug()<<"Reaction parameters variables: " << varcount;
-    for (unsigned int i=0; i<links.size(); i++)
-    {
-        for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
+    qDebug() << "Reaction parameters variables: " << varcount;
+
+    for (unsigned int i = 0; i < links.size(); i++)
+        for (auto it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(),links[i].GetName() + "_" + it->first)==-1)
-                    res = false;
-                it->second.SetOutputItem(links[i].GetName() + "_" + it->first);
+                string seriesname = links[i].GetName() + "_" + it->first;
+                if (aquiutils::lookup(file_series, seriesname) != -1)
+                    it->second.SetOutputItem(seriesname);
+                else
+                    qDebug() << "Series not found in file (link): " << QString::fromStdString(seriesname);
                 varcount++;
             }
-    }
 
-    qDebug()<<"Link variables: " << varcount;
+    qDebug() << "Link variables: " << varcount;
 
-    for (unsigned int i=0; i<sources.size(); i++)
-    {
-        for (unordered_map<string, Quan>::iterator it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
+    for (unsigned int i = 0; i < sources.size(); i++)
+        for (auto it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
             if (it->second.IncludeInOutput())
             {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(),sources[i].GetName() + "_" + it->first)==-1)
-                    res = false;
-                it->second.SetOutputItem(sources[i].GetName() + "_" + it->first);
+                string seriesname = sources[i].GetName() + "_" + it->first;
+                if (aquiutils::lookup(file_series, seriesname) != -1)
+                    it->second.SetOutputItem(seriesname);
+                else
+                    qDebug() << "Series not found in file (source): " << QString::fromStdString(seriesname);
                 varcount++;
             }
-    }
 
-    qDebug()<<"Source variables: " << varcount;
+    qDebug() << "Source variables: " << varcount;
 
-    for (unsigned int i=0; i<objective_function_set.size(); i++)
+    for (unsigned int i = 0; i < objective_function_set.size(); i++)
     {
-        objective_function_set[i]->SetOutputItem("Obj_" + objective_function_set[i]->GetName());
-        for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
-            if (it->second.IncludeInOutput())
-            {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(), "Obj_" + objective_function_set[i]->GetName() + "_" + it->first) == -1)
-                {
-                    qDebug() << QString::fromStdString(objective_function_set[i]->GetName() + "_" + it->first);
-                    res = false;
-                }
-                it->second.SetOutputItem("Obj_" + objective_function_set[i]->GetName()+"_"+it->first);
-                varcount+=2;
-            }
-    }
-
-    qDebug()<<"Objective function variables: " << varcount;
-    for (unsigned int i=0; i<observations.size(); i++)
-    {
-        observations[i].SetOutputItem("Obs_" + observations[i].GetName());
-        for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
-            if (it->second.IncludeInOutput())
-            {
-                if (aquiutils::lookup(GetOutputs().getSeriesNames(),"Obs_" + observations[i].GetName() + "_" + it->first) == -1)
-                    res = false;
-                it->second.SetOutputItem("Obs_" + observations[i].GetName()+"_"+it->first);
-                varcount+=1;
-            }
+        string seriesname = "Obj_" + objective_function_set[i]->GetName();
+        if (aquiutils::lookup(file_series, seriesname) != -1)
+            objective_function_set[i]->SetOutputItem(seriesname);
+        else
+            qDebug() << "Series not found in file (obj func): " << QString::fromStdString(seriesname);
         varcount++;
+
+        for (auto it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                string varseriesname = "Obj_" + objective_function_set[i]->GetName() + "_" + it->first;
+                if (aquiutils::lookup(file_series, varseriesname) != -1)
+                    it->second.SetOutputItem(varseriesname);
+                else
+                    qDebug() << "Series not found in file (obj func var): " << QString::fromStdString(varseriesname);
+                varcount++;
+            }
     }
 
-    qDebug()<<"All variables: " << varcount;
-    qDebug()<<"Output size: " << GetOutputs().size();
-    if (GetOutputs().size()!=varcount) res=false;
-    return res;
+    qDebug() << "Objective function variables: " << varcount;
+
+    for (unsigned int i = 0; i < observations.size(); i++)
+    {
+        string seriesname = "Obs_" + observations[i].GetName();
+        if (aquiutils::lookup(file_series, seriesname) != -1)
+            observations[i].SetOutputItem(seriesname);
+        else
+            qDebug() << "Series not found in file (observation): " << QString::fromStdString(seriesname);
+        varcount++;
+
+        for (auto it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+            {
+                string varseriesname = "Obs_" + observations[i].GetName() + "_" + it->first;
+                if (aquiutils::lookup(file_series, varseriesname) != -1)
+                    it->second.SetOutputItem(varseriesname);
+                else
+                    qDebug() << "Series not found in file (obs var): " << QString::fromStdString(varseriesname);
+                varcount++;
+            }
+    }
+
+    qDebug() << "All variables: " << varcount;
+    qDebug() << "Output size: " << GetOutputs().size();
+
+    return true;
 }
 
 void System::SetOutputItems()
