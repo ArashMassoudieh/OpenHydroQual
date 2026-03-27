@@ -142,34 +142,36 @@ def test_simulation_lifecycle() -> None:
     assert "generated_at_utc" in completed_result.json()
 
     original_internal_token = os.environ.get("INTERNAL_API_TOKEN")
-    os.environ["INTERNAL_API_TOKEN"] = "test-token"
-    forbidden_worker_result = client.post(
-        f"/v1/internal/simulations/{job_id}/result",
-        json={
-            "status": "completed",
-            "result_contract": "simulation_result.v1",
-            "metrics": {"peak_depth_m": 0.11, "infiltrated_volume_m3": 7.9, "overflow": False},
-            "adapter": {"engine": "OHQuery", "mock": True, "mock_mode": True, "raw": {"mock": True}},
-            "generated_at_utc": "2026-03-27T00:00:00+00:00",
-        },
-    )
-    assert forbidden_worker_result.status_code == 403
-    authorized_worker_result = client.post(
-        f"/v1/internal/simulations/{job_id}/result",
-        json={
-            "status": "completed",
-            "result_contract": "simulation_result.v1",
-            "metrics": {"peak_depth_m": 0.11, "infiltrated_volume_m3": 7.9, "overflow": False},
-            "adapter": {"engine": "OHQuery", "mock": True, "mock_mode": True, "raw": {"mock": True}},
-            "generated_at_utc": "2026-03-27T00:00:00+00:00",
-        },
-        headers={"X-Internal-Token": "test-token"},
-    )
-    assert authorized_worker_result.status_code == 200
-    if original_internal_token is None:
-        del os.environ["INTERNAL_API_TOKEN"]
-    else:
-        os.environ["INTERNAL_API_TOKEN"] = original_internal_token
+    try:
+        os.environ["INTERNAL_API_TOKEN"] = "test-token"
+        forbidden_worker_result = client.post(
+            f"/v1/internal/simulations/{job_id}/result",
+            json={
+                "status": "completed",
+                "result_contract": "simulation_result.v1",
+                "metrics": {"peak_depth_m": 0.11, "infiltrated_volume_m3": 7.9, "overflow": False},
+                "adapter": {"engine": "OHQuery", "mock": True, "mock_mode": True, "raw": {"mock": True}},
+                "generated_at_utc": "2026-03-27T00:00:00+00:00",
+            },
+        )
+        assert forbidden_worker_result.status_code == 403
+        authorized_worker_result = client.post(
+            f"/v1/internal/simulations/{job_id}/result",
+            json={
+                "status": "completed",
+                "result_contract": "simulation_result.v1",
+                "metrics": {"peak_depth_m": 0.11, "infiltrated_volume_m3": 7.9, "overflow": False},
+                "adapter": {"engine": "OHQuery", "mock": True, "mock_mode": True, "raw": {"mock": True}},
+                "generated_at_utc": "2026-03-27T00:00:00+00:00",
+            },
+            headers={"X-Internal-Token": "test-token"},
+        )
+        assert authorized_worker_result.status_code == 200
+    finally:
+        if original_internal_token is None:
+            del os.environ["INTERNAL_API_TOKEN"]
+        else:
+            os.environ["INTERNAL_API_TOKEN"] = original_internal_token
 
 
     invalid_worker_result = client.post(
