@@ -427,6 +427,13 @@ def mark_completed(job_id: str, result: CompletionPayload) -> dict:
             "job_id": job_id,
             "status": "completed",
             "result_contract": "simulation_result.v1",
+            "generated_at_utc": now,
+            "adapter": {
+                "engine": "manual",
+                "mock": False,
+                "mock_mode": False,
+                "raw": {},
+            },
             "metrics": result.model_dump(),
         }
         METRICS["jobs_completed_total"] += 1

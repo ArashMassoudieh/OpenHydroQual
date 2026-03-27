@@ -106,6 +106,10 @@ def test_simulation_lifecycle() -> None:
         json={"peak_depth_m": 0.1, "infiltrated_volume_m3": 8.0, "overflow": False},
     )
     assert completed.status_code == 200
+    completed_result = client.get(f"/v1/simulations/{job_id}/results")
+    assert completed_result.status_code == 200
+    assert completed_result.json()["adapter"]["engine"] == "manual"
+    assert "generated_at_utc" in completed_result.json()
 
 
     worker_result = client.post(
