@@ -129,7 +129,7 @@ class AdapterMetadata(BaseModel):
 
 
 class WorkerResultPayload(BaseModel):
-    status: str = "completed"
+    status: Literal["completed", "failed", "cancelled"] = "completed"
     result_contract: Literal["simulation_result.v1"] = "simulation_result.v1"
     metrics: ResultMetrics
     adapter: AdapterMetadata
