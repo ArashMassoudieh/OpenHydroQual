@@ -118,6 +118,7 @@ class WorkerResultPayload(BaseModel):
     result_contract: str = "simulation_result.v1"
     metrics: dict
     adapter: dict | None = None
+    generated_at_utc: str | None = None
 
 
 @app.get("/health")

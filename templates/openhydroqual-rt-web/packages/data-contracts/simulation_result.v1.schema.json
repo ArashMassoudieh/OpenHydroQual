@@ -2,11 +2,23 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "simulation_result.v1",
   "type": "object",
-  "required": ["job_id", "status", "result_contract", "metrics"],
+  "required": ["job_id", "status", "result_contract", "metrics", "adapter", "generated_at_utc"],
   "properties": {
     "job_id": { "type": "string" },
     "status": { "type": "string" },
     "result_contract": { "const": "simulation_result.v1" },
+    "generated_at_utc": { "type": "string", "format": "date-time" },
+    "adapter": {
+      "type": "object",
+      "required": ["engine", "mock", "mock_mode", "raw"],
+      "properties": {
+        "engine": { "type": "string" },
+        "base_url": { "type": "string" },
+        "mock": { "type": "boolean" },
+        "mock_mode": { "type": "boolean" },
+        "raw": {}
+      }
+    },
     "metrics": {
       "type": "object",
       "required": ["peak_depth_m", "infiltrated_volume_m3", "overflow"],
