@@ -1,9 +1,12 @@
+"""!Worker contract tests for scaffold simulation task behavior."""
+
 from datetime import datetime
 
 from apps.worker.tasks import run_simulation
 
 
 def test_worker_mock_mode() -> None:
+    """!Validate mock-mode worker payload shape and required result fields."""
     result = run_simulation({"job_id": "sim_1", "payload": {"project_id": "la-drywell-pilot"}})
 
     assert result["job_id"] == "sim_1"

@@ -1,3 +1,5 @@
+"""!Pytest configuration helpers for scaffold test import resolution."""
+
 from pathlib import Path
 import sys
 

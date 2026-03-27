@@ -1,3 +1,5 @@
+"""!API contract tests for the OpenHydroQual real-time scaffold."""
+
 import os
 
 from fastapi.testclient import TestClient
@@ -6,6 +8,7 @@ from apps.api.main import app
 
 
 def test_simulation_lifecycle() -> None:
+    """!Exercise end-to-end API lifecycle, validation, and callback behaviors."""
     client = TestClient(app)
 
     create_project = client.post(
