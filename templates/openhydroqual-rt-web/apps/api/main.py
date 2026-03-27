@@ -32,6 +32,7 @@ METRICS: dict[str, int] = {
 
 
 def _load_state() -> None:
+    """!Load persisted scaffold state from disk when enabled."""
     if not ENABLE_FILE_STATE or not STATE_FILE.exists():
         return
     try:
@@ -46,6 +47,7 @@ def _load_state() -> None:
 
 
 def _persist_state() -> None:
+    """!Persist in-memory scaffold state to disk when enabled."""
     if not ENABLE_FILE_STATE:
         return
     STATE_FILE.write_text(
@@ -69,6 +71,7 @@ class TimeWindow(BaseModel):
 
     @model_validator(mode="after")
     def validate_range(self) -> "TimeWindow":
+        """!Validate that end_utc is strictly later than start_utc."""
         if self.end_utc <= self.start_utc:
             raise ValueError("end_utc must be later than start_utc")
         return self
@@ -144,17 +147,20 @@ class WorkerResultPayload(BaseModel):
 
 @app.get("/health")
 def health() -> dict:
+    """!Return a lightweight health payload."""
     return {"status": "ok", "service": "api", "version": "0.2.0"}
 
 
 @app.get("/metrics")
 def metrics() -> Response:
+    """!Expose Prometheus-style counter metrics."""
     lines = [f"{k} {v}" for k, v in METRICS.items()]
     body = "\n".join(lines) + "\n"
     return Response(content=body, media_type="text/plain; version=0.0.4")
 
 @app.post("/v1/projects")
 def create_project(payload: ProjectCreate) -> dict:
+    """!Create a project resource."""
     with LOCK:
         if payload.project_id in PROJECTS:
             raise HTTPException(status_code=409, detail="project already exists")
@@ -166,6 +172,7 @@ def create_project(payload: ProjectCreate) -> dict:
 
 @app.post("/v1/projects/import")
 def import_project(payload: ProjectImportRequest) -> dict:
+    """!Import project, site, and job records."""
     project_id = payload.project.get("project_id")
     if not project_id:
         raise HTTPException(status_code=400, detail="project_id is required in payload.project")
@@ -208,6 +215,7 @@ def import_project(payload: ProjectImportRequest) -> dict:
 
 @app.get("/v1/projects/{project_id}/export")
 def export_project(project_id: str, include_jobs: bool = False) -> dict:
+    """!Export project state and optional jobs."""
     with LOCK:
         if project_id not in PROJECTS:
             raise HTTPException(status_code=404, detail="project not found")
@@ -224,6 +232,7 @@ def export_project(project_id: str, include_jobs: bool = False) -> dict:
 
 @app.post("/v1/projects/{project_id}/clone")
 def clone_project(project_id: str, payload: ProjectCloneRequest) -> dict:
+    """!Clone project metadata and sites."""
     with LOCK:
         if project_id not in PROJECTS:
             raise HTTPException(status_code=404, detail="project not found")
@@ -244,6 +253,7 @@ def clone_project(project_id: str, payload: ProjectCloneRequest) -> dict:
 
 @app.delete("/v1/projects/{project_id}")
 def delete_project(project_id: str, force: bool = False) -> dict:
+    """!Delete a project and optional dependencies."""
     with LOCK:
         if project_id not in PROJECTS:
             raise HTTPException(status_code=404, detail="project not found")
@@ -265,6 +275,7 @@ def delete_project(project_id: str, force: bool = False) -> dict:
 
 @app.post("/v1/projects/{project_id}/sites")
 def create_project_site(project_id: str, payload: SiteCreate) -> dict:
+    """!Create a site under a project."""
     with LOCK:
         if project_id not in PROJECTS:
             raise HTTPException(status_code=404, detail="project not found")
@@ -282,6 +293,7 @@ def create_project_site(project_id: str, payload: SiteCreate) -> dict:
 
 @app.delete("/v1/projects/{project_id}/sites/{site_id}")
 def delete_project_site(project_id: str, site_id: str, force: bool = False) -> dict:
+    """!Delete a project site and optional dependent jobs."""
     key = f"{project_id}:{site_id}"
     with LOCK:
         if project_id not in PROJECTS:
@@ -303,6 +315,7 @@ def delete_project_site(project_id: str, site_id: str, force: bool = False) -> d
 
 @app.get("/v1/projects/{project_id}/sites")
 def list_project_sites(project_id: str, limit: int = 100, offset: int = 0) -> dict:
+    """!List paginated project sites."""
     if limit < 1 or offset < 0:
         raise HTTPException(status_code=400, detail="limit must be >= 1 and offset must be >= 0")
     with LOCK:
@@ -315,6 +328,7 @@ def list_project_sites(project_id: str, limit: int = 100, offset: int = 0) -> di
 
 @app.get("/v1/projects/{project_id}/stats")
 def get_project_stats(project_id: str) -> dict:
+    """!Return aggregate project job/site stats."""
     with LOCK:
         if project_id not in PROJECTS:
             raise HTTPException(status_code=404, detail="project not found")
@@ -336,6 +350,7 @@ def get_project_stats(project_id: str) -> dict:
 
 @app.post("/v1/projects/{project_id}/simulate")
 def trigger_project_simulations(project_id: str) -> dict:
+    """!Queue simulations for all project sites."""
     with LOCK:
         if project_id not in PROJECTS:
             raise HTTPException(status_code=404, detail="project not found")
@@ -379,6 +394,7 @@ def create_simulation(
     payload: SimulationRequest,
     x_idempotency_key: str | None = Header(default=None),
 ) -> dict:
+    """!Create and enqueue a simulation job."""
     now = datetime.now(timezone.utc).isoformat()
 
     with LOCK:
@@ -422,6 +438,7 @@ def create_simulation(
 
 @app.post("/v1/simulations/{job_id}/start")
 def mark_started(job_id: str) -> dict:
+    """!Mark a job as running."""
     now = datetime.now(timezone.utc).isoformat()
     with LOCK:
         job = JOBS.get(job_id)
@@ -436,6 +453,7 @@ def mark_started(job_id: str) -> dict:
 
 @app.post("/v1/simulations/{job_id}/complete")
 def mark_completed(job_id: str, result: CompletionPayload) -> dict:
+    """!Mark a job as completed with result payload."""
     now = datetime.now(timezone.utc).isoformat()
     with LOCK:
         job = JOBS.get(job_id)
@@ -464,6 +482,7 @@ def mark_completed(job_id: str, result: CompletionPayload) -> dict:
 
 @app.post("/v1/simulations/{job_id}/cancel")
 def cancel_simulation(job_id: str, reason: str | None = None) -> dict:
+    """!Cancel a job and record cancellation reason."""
     now = datetime.now(timezone.utc).isoformat()
     with LOCK:
         job = JOBS.get(job_id)
@@ -481,6 +500,7 @@ def cancel_simulation(job_id: str, reason: str | None = None) -> dict:
 
 @app.post("/v1/simulations/{job_id}/fail")
 def mark_failed(job_id: str, error_message: str | None = None) -> dict:
+    """!Mark a job as failed with error details."""
     now = datetime.now(timezone.utc).isoformat()
     with LOCK:
         job = JOBS.get(job_id)
@@ -496,6 +516,7 @@ def mark_failed(job_id: str, error_message: str | None = None) -> dict:
 
 @app.post("/v1/internal/simulations/{job_id}/result")
 def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_token: str | None = Header(default=None)) -> dict:
+    """!Ingest worker callback result for a job."""
     configured = os.getenv("INTERNAL_API_TOKEN")
     if configured and x_internal_token != configured:
         raise HTTPException(status_code=403, detail="forbidden")
@@ -525,6 +546,7 @@ def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_tok
 
 @app.get("/v1/projects/{project_id}/simulations")
 def list_project_simulations(project_id: str, status: str | None = None, limit: int = 100, offset: int = 0) -> dict:
+    """!List paginated project simulations."""
     if limit < 1 or offset < 0:
         raise HTTPException(status_code=400, detail="limit must be >= 1 and offset must be >= 0")
     with LOCK:
@@ -548,6 +570,7 @@ def list_project_simulations(project_id: str, status: str | None = None, limit: 
 
 @app.get("/v1/simulations/{job_id}")
 def get_simulation(job_id: str) -> dict:
+    """!Get job lifecycle metadata."""
     job = JOBS.get(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="job not found")
@@ -563,6 +586,7 @@ def get_simulation(job_id: str) -> dict:
 
 @app.get("/v1/simulations/{job_id}/events")
 def get_simulation_events(job_id: str) -> dict:
+    """!Get job event history."""
     job = JOBS.get(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="job not found")
@@ -571,6 +595,7 @@ def get_simulation_events(job_id: str) -> dict:
 
 @app.get("/v1/simulations/{job_id}/results")
 def get_simulation_results(job_id: str) -> dict:
+    """!Get job result payload."""
     job = JOBS.get(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="job not found")

@@ -9,7 +9,7 @@ OHQUERY_TIMEOUT_SECONDS = float(os.getenv("OHQUERY_TIMEOUT_SECONDS", "30"))
 
 
 def run_ohquery_calculation(parameters: dict[str, Any]) -> dict[str, Any]:
-    """Call OHQuery /calculate endpoint and return JSON output.
+    """!Call OHQuery /calculate endpoint and return JSON output.
 
     Expected OHQuery service behavior is based on existing terminal/OHQuery server implementation.
     """

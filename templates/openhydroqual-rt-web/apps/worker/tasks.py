@@ -20,7 +20,7 @@ celery_app = Celery(
 
 @celery_app.task(name="run_simulation")
 def run_simulation(job_payload: dict) -> dict:
-    """Run a simulation via OHQuery adapter (or mock mode for local smoke)."""
+    """!Run a simulation via OHQuery adapter (or mock mode for local smoke)."""
     parameters = job_payload.get("payload", {})
 
     if MOCK_OHQUERY:
