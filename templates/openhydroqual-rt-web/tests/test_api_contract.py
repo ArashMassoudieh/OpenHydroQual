@@ -220,6 +220,18 @@ def test_simulation_lifecycle() -> None:
     )
     assert invalid_status.status_code == 422
 
+    cancelled_status = client.post(
+        f"/v1/internal/simulations/{job_id}/result",
+        json={
+            "status": "cancelled",
+            "result_contract": "simulation_result.v1",
+            "generated_at_utc": "2026-03-27T00:00:00+00:00",
+            "metrics": {"peak_depth_m": 0.11, "infiltrated_volume_m3": 7.9, "overflow": False},
+            "adapter": {"engine": "OHQuery", "mock": True, "mock_mode": True, "raw": {"mock": True}},
+        },
+    )
+    assert cancelled_status.status_code == 422
+
     worker_result = client.post(
         f"/v1/internal/simulations/{job_id}/result",
         json={
