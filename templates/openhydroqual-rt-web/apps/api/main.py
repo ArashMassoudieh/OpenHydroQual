@@ -133,7 +133,7 @@ class WorkerResultPayload(BaseModel):
     result_contract: Literal["simulation_result.v1"] = "simulation_result.v1"
     metrics: ResultMetrics
     adapter: AdapterMetadata
-    generated_at_utc: str | None = None
+    generated_at_utc: datetime | None = None
 
 
 @app.get("/health")
@@ -508,7 +508,7 @@ def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_tok
             "result_contract": payload.result_contract,
             "metrics": payload.metrics.model_dump(),
             "adapter": payload.adapter.model_dump(),
-            "generated_at_utc": payload.generated_at_utc or now,
+            "generated_at_utc": payload.generated_at_utc.isoformat() if payload.generated_at_utc else now,
         }
         if payload.status == "completed":
             METRICS["jobs_completed_total"] += 1
