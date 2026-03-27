@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import os
 
 from celery import Celery
@@ -44,8 +45,10 @@ def run_simulation(job_payload: dict) -> dict:
         "adapter": {
             "engine": "OHQuery",
             "base_url": OHQUERY_BASE_URL,
+            "mock": MOCK_OHQUERY,
             "mock_mode": MOCK_OHQUERY,
             "raw": adapter_result,
         },
         "metrics": metrics,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
     }

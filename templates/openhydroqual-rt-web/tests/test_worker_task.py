@@ -12,6 +12,7 @@ def test_worker_mock_mode() -> None:
     assert result["result_contract"] == "simulation_result.v1"
     assert result["adapter"]["engine"] == "OHQuery"
     assert result["adapter"]["mock"] is True
+    assert result["adapter"]["mock_mode"] is True
     assert "generated_at_utc" in result
     assert result["metrics"]["peak_depth_m"] == 0.0
     assert result["metrics"]["infiltrated_volume_m3"] == 0.0
