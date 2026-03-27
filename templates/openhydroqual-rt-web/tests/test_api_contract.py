@@ -38,6 +38,20 @@ def test_simulation_lifecycle() -> None:
     )
     assert bad_request_contract.status_code == 422
 
+    bad_time_window = client.post(
+        "/v1/simulations",
+        json={
+            "project_id": "la-drywell-pilot",
+            "site_id": "la-00123",
+            "facility_type": "drywell",
+            "time_window": {"start_utc": "2026-03-27T00:00:00Z", "end_utc": "2026-03-26T00:00:00Z"},
+            "forcing_ref": {"dataset_id": "noaa-hourly", "version": "v1"},
+            "parameters_ref": {"profile_id": "drywell-default-v1"},
+            "request_contract": "simulation_request.v1",
+        },
+    )
+    assert bad_time_window.status_code == 422
+
 
 
     trigger = client.post("/v1/projects/la-drywell-pilot/simulate")

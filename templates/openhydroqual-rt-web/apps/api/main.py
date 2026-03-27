@@ -7,7 +7,7 @@ from typing import Literal
 from uuid import uuid4
 
 from fastapi import FastAPI, Header, HTTPException, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from .queue import enqueue_run
 
@@ -66,6 +66,12 @@ _load_state()
 class TimeWindow(BaseModel):
     start_utc: datetime
     end_utc: datetime
+
+    @model_validator(mode="after")
+    def validate_range(self) -> "TimeWindow":
+        if self.end_utc <= self.start_utc:
+            raise ValueError("end_utc must be later than start_utc")
+        return self
 
 
 class RefPayload(BaseModel):
