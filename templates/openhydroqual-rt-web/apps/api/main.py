@@ -1,3 +1,5 @@
+"""!Scaffold FastAPI API service for OpenHydroQual real-time orchestration."""
+
 from datetime import datetime, timezone
 import json
 import os

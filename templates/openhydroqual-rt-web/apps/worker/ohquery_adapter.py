@@ -1,3 +1,5 @@
+"""!Adapter helpers for invoking OHQuery calculation endpoints."""
+
 import os
 from typing import Any
 

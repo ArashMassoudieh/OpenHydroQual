@@ -1,3 +1,5 @@
+"""!Celery queue helper functions used by the scaffold API service."""
+
 import os
 
 from celery import Celery
