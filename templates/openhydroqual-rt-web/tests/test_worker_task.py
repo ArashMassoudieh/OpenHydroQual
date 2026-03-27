@@ -1,7 +1,3 @@
-import pytest
-
-pytest.importorskip("celery")
-
 from apps.worker.tasks import run_simulation
 
 
