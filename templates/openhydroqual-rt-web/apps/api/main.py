@@ -281,7 +281,11 @@ def delete_project_site(project_id: str, site_id: str, force: bool = False) -> d
 
 @app.get("/v1/projects/{project_id}/sites")
 def list_project_sites(project_id: str, limit: int = 100, offset: int = 0) -> dict:
+    if limit < 1 or offset < 0:
+        raise HTTPException(status_code=400, detail="limit must be >= 1 and offset must be >= 0")
     with LOCK:
+        if project_id not in PROJECTS:
+            raise HTTPException(status_code=404, detail="project not found")
         sites = [s for s in SITES.values() if s["project_id"] == project_id]
     sliced = sites[offset: offset + limit]
     return {"project_id": project_id, "count": len(sites), "returned": len(sliced), "sites": sliced}
@@ -490,6 +494,10 @@ def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_tok
 
 @app.get("/v1/projects/{project_id}/simulations")
 def list_project_simulations(project_id: str, status: str | None = None, limit: int = 100, offset: int = 0) -> dict:
+    if limit < 1 or offset < 0:
+        raise HTTPException(status_code=400, detail="limit must be >= 1 and offset must be >= 0")
+    if project_id not in PROJECTS:
+        raise HTTPException(status_code=404, detail="project not found")
     jobs = [
         {
             "job_id": job["job_id"],

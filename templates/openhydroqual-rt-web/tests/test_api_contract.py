@@ -136,11 +136,19 @@ def test_simulation_lifecycle() -> None:
     assert project_jobs.status_code == 200
     assert project_jobs.json()["count"] >= 1
     assert "returned" in project_jobs.json()
+    bad_jobs_page = client.get("/v1/projects/la-drywell-pilot/simulations", params={"limit": 0, "offset": 0})
+    assert bad_jobs_page.status_code == 400
+    missing_project_jobs = client.get("/v1/projects/missing-project/simulations", params={"limit": 10, "offset": 0})
+    assert missing_project_jobs.status_code == 404
 
     sites = client.get("/v1/projects/la-drywell-pilot/sites", params={"limit": 10, "offset": 0})
     assert sites.status_code == 200
     assert sites.json()["count"] >= 1
     assert "returned" in sites.json()
+    bad_sites_page = client.get("/v1/projects/la-drywell-pilot/sites", params={"limit": -1, "offset": 0})
+    assert bad_sites_page.status_code == 400
+    missing_project_sites = client.get("/v1/projects/missing-project/sites", params={"limit": 10, "offset": 0})
+    assert missing_project_sites.status_code == 404
 
 
 
