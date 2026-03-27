@@ -486,6 +486,7 @@ def post_worker_result(job_id: str, payload: WorkerResultPayload, x_internal_tok
             "result_contract": payload.result_contract,
             "metrics": payload.metrics,
             "adapter": payload.adapter or {},
+            "generated_at_utc": payload.generated_at_utc or now,
         }
         if payload.status == "completed":
             METRICS["jobs_completed_total"] += 1

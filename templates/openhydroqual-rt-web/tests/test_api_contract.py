@@ -118,7 +118,8 @@ def test_simulation_lifecycle() -> None:
             "status": "completed",
             "result_contract": "simulation_result.v1",
             "metrics": {"peak_depth_m": 0.11, "infiltrated_volume_m3": 7.9, "overflow": False},
-            "adapter": {"engine": "OHQuery", "mock_mode": True},
+            "adapter": {"engine": "OHQuery", "mock": True, "mock_mode": True, "raw": {"mock": True}},
+            "generated_at_utc": "2026-03-27T00:00:00+00:00",
         },
     )
     assert worker_result.status_code == 200
@@ -130,6 +131,7 @@ def test_simulation_lifecycle() -> None:
     result = client.get(f"/v1/simulations/{job_id}/results")
     assert result.status_code == 200
     assert result.json()["result_contract"] == "simulation_result.v1"
+    assert "generated_at_utc" in result.json()
 
 
     project_jobs = client.get("/v1/projects/la-drywell-pilot/simulations", params={"status": "completed", "limit": 10, "offset": 0})
