@@ -123,6 +123,17 @@ def test_simulation_lifecycle() -> None:
     )
     assert invalid_worker_result.status_code == 422
 
+    invalid_contract_result = client.post(
+        f"/v1/internal/simulations/{job_id}/result",
+        json={
+            "status": "completed",
+            "result_contract": "simulation_result.v2",
+            "metrics": {"peak_depth_m": 0.11, "infiltrated_volume_m3": 7.9, "overflow": False},
+            "adapter": {"engine": "OHQuery", "mock": True, "mock_mode": True, "raw": {"mock": True}},
+        },
+    )
+    assert invalid_contract_result.status_code == 422
+
     worker_result = client.post(
         f"/v1/internal/simulations/{job_id}/result",
         json={

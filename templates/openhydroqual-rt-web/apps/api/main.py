@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 from threading import Lock
+from typing import Literal
 from uuid import uuid4
 
 from fastapi import FastAPI, Header, HTTPException, Response
@@ -129,7 +130,7 @@ class AdapterMetadata(BaseModel):
 
 class WorkerResultPayload(BaseModel):
     status: str = "completed"
-    result_contract: str = "simulation_result.v1"
+    result_contract: Literal["simulation_result.v1"] = "simulation_result.v1"
     metrics: ResultMetrics
     adapter: AdapterMetadata
     generated_at_utc: str | None = None
