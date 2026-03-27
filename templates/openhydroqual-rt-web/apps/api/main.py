@@ -125,10 +125,6 @@ def health() -> dict:
     return {"status": "ok", "service": "api", "version": "0.2.0"}
 
 
-
-
-
-
 @app.get("/metrics")
 def metrics() -> Response:
     lines = [f"{k} {v}" for k, v in METRICS.items()]
@@ -144,14 +140,6 @@ def create_project(payload: ProjectCreate) -> dict:
         METRICS["projects_created_total"] += 1
         _persist_state()
     return PROJECTS[payload.project_id]
-
-
-
-
-
-
-
-
 
 
 @app.post("/v1/projects/import")
@@ -270,8 +258,6 @@ def create_project_site(project_id: str, payload: SiteCreate) -> dict:
     return SITES[key]
 
 
-
-
 @app.delete("/v1/projects/{project_id}/sites/{site_id}")
 def delete_project_site(project_id: str, site_id: str, force: bool = False) -> dict:
     key = f"{project_id}:{site_id}"
@@ -299,9 +285,6 @@ def list_project_sites(project_id: str, limit: int = 100, offset: int = 0) -> di
         sites = [s for s in SITES.values() if s["project_id"] == project_id]
     sliced = sites[offset: offset + limit]
     return {"project_id": project_id, "count": len(sites), "returned": len(sliced), "sites": sliced}
-
-
-
 
 
 @app.get("/v1/projects/{project_id}/stats")
@@ -445,14 +428,6 @@ def mark_completed(job_id: str, result: CompletionPayload) -> dict:
     return {"job_id": job_id, "status": "completed"}
 
 
-
-
-
-
-
-
-
-
 @app.post("/v1/simulations/{job_id}/cancel")
 def cancel_simulation(job_id: str, reason: str | None = None) -> dict:
     now = datetime.now(timezone.utc).isoformat()
@@ -544,8 +519,6 @@ def get_simulation(job_id: str) -> dict:
         "finished_at": job.get("finished_at"),
         "events": job.get("events", []),
     }
-
-
 
 
 @app.get("/v1/simulations/{job_id}/events")
