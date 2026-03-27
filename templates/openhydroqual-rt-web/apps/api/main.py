@@ -81,7 +81,7 @@ class SimulationRequest(BaseModel):
     time_window: TimeWindow
     forcing_ref: RefPayload
     parameters_ref: RefPayload
-    request_contract: str = "simulation_request.v1"
+    request_contract: Literal["simulation_request.v1"] = "simulation_request.v1"
 
 
 class CompletionPayload(BaseModel):
