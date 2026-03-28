@@ -50,8 +50,9 @@ celery -A apps.worker.tasks worker --loglevel=info
 
 
 ## Publish as a standalone `openhydroqual-rt-web` repository
-If you want this scaffold in its own repository (outside this monorepo), use the export helper from the OpenHydroQual repo root:
+Use the helper script from the OpenHydroQual repo root.
 
+### Option A: export only (manual git steps)
 ```bash
 ./scripts/export-openhydroqual-rt-web.sh ../openhydroqual-rt-web
 cd ../openhydroqual-rt-web
@@ -60,11 +61,14 @@ git add .
 git commit -m "Initial import of openhydroqual-rt-web scaffold"
 ```
 
-Then connect your remote and push a normal branch name (for example `main` or `codex/create-new-repo-for-real-time-simulations`):
-
+### Option B: export + initialize git + configure remote
 ```bash
-git remote add origin https://github.com/<your-org>/openhydroqual-rt-web.git
-git push -u origin main
+./scripts/export-openhydroqual-rt-web.sh   --init-git   --remote https://github.com/<your-org>/openhydroqual-rt-web.git   ../openhydroqual-rt-web
+```
+
+### Option C: export + initialize git + push
+```bash
+./scripts/export-openhydroqual-rt-web.sh   --init-git   --remote https://github.com/<your-org>/openhydroqual-rt-web.git   --push   ../openhydroqual-rt-web
 ```
 
 Troubleshooting:

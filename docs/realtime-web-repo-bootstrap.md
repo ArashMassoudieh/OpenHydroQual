@@ -7,18 +7,13 @@ This file complements `realtime-web-repo-proposal.md` with concrete implementati
 From the OpenHydroQual repository root:
 
 ```bash
-./scripts/export-openhydroqual-rt-web.sh ../openhydroqual-rt-web
-cd ../openhydroqual-rt-web
-git init -b main
-git add .
-git commit -m "Initial import of openhydroqual-rt-web scaffold"
+./scripts/export-openhydroqual-rt-web.sh   --init-git   --remote https://github.com/<your-org>/openhydroqual-rt-web.git   ../openhydroqual-rt-web
 ```
 
-Push using a local branch name (for example `main`):
+To also push immediately:
 
 ```bash
-git remote add origin https://github.com/<your-org>/openhydroqual-rt-web.git
-git push -u origin main
+./scripts/export-openhydroqual-rt-web.sh   --init-git   --remote https://github.com/<your-org>/openhydroqual-rt-web.git   --push   ../openhydroqual-rt-web
 ```
 
 ## 1) API contract (v1)
