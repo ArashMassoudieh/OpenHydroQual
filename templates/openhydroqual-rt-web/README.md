@@ -71,6 +71,13 @@ git commit -m "Initial import of openhydroqual-rt-web scaffold"
 ./scripts/export-openhydroqual-rt-web.sh   --init-git   --remote https://github.com/<your-org>/openhydroqual-rt-web.git   --push   ../openhydroqual-rt-web
 ```
 
+### Option D: one command from GitKraken Terminal
+```bash
+./scripts/create-openhydroqual-rt-web-repo.sh \
+  ../openhydroqual-rt-web \
+  https://github.com/<your-org>/openhydroqual-rt-web.git
+```
+
 Troubleshooting:
 - If `rsync` says `No such file or directory`, verify you are running from the OpenHydroQual repo root and that `templates/openhydroqual-rt-web/` exists.
 - If `git push` reports `src refspec ... does not match any`, push a local branch name that exists (for example `main`), not `origin/<branch>`.

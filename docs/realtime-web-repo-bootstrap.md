@@ -16,6 +16,14 @@ To also push immediately:
 ./scripts/export-openhydroqual-rt-web.sh   --init-git   --remote https://github.com/<your-org>/openhydroqual-rt-web.git   --push   ../openhydroqual-rt-web
 ```
 
+GitKraken Terminal one-liner:
+
+```bash
+./scripts/create-openhydroqual-rt-web-repo.sh \
+  ../openhydroqual-rt-web \
+  https://github.com/<your-org>/openhydroqual-rt-web.git
+```
+
 ## 1) API contract (v1)
 
 ### POST `/v1/simulations`
