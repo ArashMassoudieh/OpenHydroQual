@@ -2,6 +2,25 @@
 
 This file complements `realtime-web-repo-proposal.md` with concrete implementation artifacts you can copy into a new repository on day 1.
 
+
+## 0) Export this scaffold to a standalone repository
+From the OpenHydroQual repository root:
+
+```bash
+./scripts/export-openhydroqual-rt-web.sh ../openhydroqual-rt-web
+cd ../openhydroqual-rt-web
+git init -b main
+git add .
+git commit -m "Initial import of openhydroqual-rt-web scaffold"
+```
+
+Push using a local branch name (for example `main`):
+
+```bash
+git remote add origin https://github.com/<your-org>/openhydroqual-rt-web.git
+git push -u origin main
+```
+
 ## 1) API contract (v1)
 
 ### POST `/v1/simulations`
