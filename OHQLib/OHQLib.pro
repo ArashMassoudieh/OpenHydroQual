@@ -11,13 +11,17 @@ VERSION = 2.0.4
 
 CONFIG += c++14
 
-INCLUDEPATH += ../
+# =========================
+# INCLUDE PATHS (cleaned)
+# =========================
+INCLUDEPATH += $$PWD/..
 INCLUDEPATH += $$PWD/../aquifolium/include
 INCLUDEPATH += $$PWD/../aquifolium/src
 INCLUDEPATH += $$PWD/../aquifolium/include/GA
 INCLUDEPATH += $$PWD/../aquifolium/include/MCMC
-INCLUDEPATH += $$PWD/../../jsoncpp/include/
-INCLUDEPATH += $$PWD/../
+
+# 🔴 FIXED JsonCpp (same tree as sources)
+INCLUDEPATH += $$PWD/../jsoncpp/include
 
 macx: DEFINES += mac_version
 linux: DEFINES += ubuntu_version
@@ -48,7 +52,9 @@ CONFIG(debug, debug|release) {
     macx: LIBS += -lpthread
 }
 
-# All sources from the existing console .pro EXCEPT main.cpp
+# =========================
+# SOURCES
+# =========================
 SOURCES += \
     ../aquifolium/src/Block.cpp \
     ../aquifolium/src/Command.cpp \
@@ -87,10 +93,15 @@ SOURCES += \
     ../aquifolium/src/GA/Individual.cpp \
     ../aquifolium/src/GA/DistributionNUnif.cpp \
     ../aquifolium/src/GA/Distribution.cpp \
+    \
+    # JsonCpp (same version as headers)
     ../jsoncpp/src/lib_json/json_reader.cpp \
     ../jsoncpp/src/lib_json/json_value.cpp \
     ../jsoncpp/src/lib_json/json_writer.cpp
 
+# =========================
+# HEADERS
+# =========================
 HEADERS += \
     ../XString.h \
     ../aquifolium/include/Objective_Function.h \
@@ -129,7 +140,9 @@ HEADERS += \
     ../aquifolium/src/BTC.hpp \
     ../aquifolium/src/BTCSet.hpp
 
-# LAPACK
+# =========================
+# LAPACK / ARMADILLO / GSL
+# =========================
 win32 {
     LAPACK_INCLUDE = $$PWD/../include
     contains(QMAKE_TARGET.arch, x86_64) {
