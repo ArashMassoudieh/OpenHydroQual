@@ -416,3 +416,7 @@ kozeracki_groundwater_modeling.ohq
 build-OHQLib-Desktop_Qt_6_9_0-Debug/
 
 terminal/build-TOpenHydroQual-Desktop_Qt_6_9_1-Debug/
+
+build-OHQLib-Desktop_Qt_6_9_0-Release/
+
+terminal/build-TOpenHydroQual-Desktop_Qt_6_9_1-Release/
