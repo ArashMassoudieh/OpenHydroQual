@@ -214,7 +214,7 @@ void WSServerOps::onTextMessageReceived(QString message)
 #else
             string defaulttemppath = QCoreApplication::applicationDirPath().toStdString() + "/../../resources/";
             system.ReadSystemSettingsTemplate(qApp->applicationDirPath().toStdString() + "/../../resources/settings.json");
-            qDebug()<<"Reading settings from " << (qApp->applicationDirPath() + "/resources/settings.json";
+            qDebug()<<"Reading settings from " << (qApp->applicationDirPath() + "/resources/settings.json");
 #endif
             cout << "Default Template path = " + defaulttemppath +"\n";
             system.SetDefaultTemplatePath(defaulttemppath);

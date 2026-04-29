@@ -702,6 +702,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     while (SolverTempVars.t < SimulationParameters.tend + SolverTempVars.dt
         && !stop_triggered)
     {
+
         progress_p = progress;
         progress = (SolverTempVars.t - SimulationParameters.tstart)
             / (SimulationParameters.tend - SimulationParameters.tstart);

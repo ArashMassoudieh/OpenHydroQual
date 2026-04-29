@@ -1538,27 +1538,22 @@ bool Quan::InitializePreCalcFunction(int n_inc)
 QJsonObject Quan::toJsonObject() const
 {
     QJsonObject json;
-
     // Identity
     json["name"] = QString::fromStdString(_var_name);
     json["type"] = QString::fromStdString(tostring(type));
     json["string_value"] = QString::fromStdString(_string_value);
-
     // Values
     json["_val"] = _val;
     json["_val_star"] = _val_star;
     json["value_star_updated"] = value_star_updated;
-
     // Expression / Rule
     if (type == _type::expression)
         json["expression"] = QString::fromStdString(_expression.ToString());
     if (type == _type::rule)
         json["rule"] = QString::fromStdString(_rule.ToString());
-
     // Source
     json["sourcename"] = QString::fromStdString(sourcename);
     json["source_set"] = (source != nullptr);
-
     // Flow / mass balance
     json["perform_mass_balance"] = perform_mass_balance;
     json["corresponding_flow_quan"] = QString::fromStdString(corresponding_flow_quan);
@@ -1566,7 +1561,6 @@ QJsonObject Quan::toJsonObject() const
     for (const auto& s : corresponding_inflow_quan)
         inflow_arr.append(QString::fromStdString(s));
     json["corresponding_inflow_quan"] = inflow_arr;
-
     // Flags
     json["includeinoutput"] = includeinoutput;
     json["estimable"] = estimable;
@@ -1575,7 +1569,6 @@ QJsonObject Quan::toJsonObject() const
     json["ask_from_user"] = ask_from_user;
     json["experiment_dependent"] = experiment_dependent;
     json["calculate_initial_value_from_expression"] = calculate_initial_value_from_expression;
-
     // Metadata
     json["description"] = QString::fromStdString(description);
     json["unit"] = QString::fromStdString(unit);
@@ -1588,10 +1581,16 @@ QJsonObject Quan::toJsonObject() const
     json["abbreviation"] = QString::fromStdString(abbreviation);
     json["OutputItem"] = QString::fromStdString(OutputItem);
     json["_parameterassignedto"] = QString::fromStdString(_parameterassignedto);
-
     // Timeseries info
-    json["timeseries_size"] = static_cast<int>(_timeseries.size());
-    json["_timeseries_unit"] = QString::fromStdString(_timeseries_unit);
+    json["timeseries_size"]   = static_cast<int>(_timeseries.size());
+    json["_timeseries_unit"]  = QString::fromStdString(_timeseries_unit);
+
+    // Timeseries content: if the precipitation has a backing file, the
+    // filename is sufficient (and gets emitted as part of its own JSON).
+    // If filename is empty but bins are present (runtime injection), embed
+    // them inline so the snapshot is self-contained.
+    if (_timeseries.size() > 0 || !_timeseries.getFilename().empty())
+        json["timeseries"] = _timeseries.toJson();
 
     return json;
 }

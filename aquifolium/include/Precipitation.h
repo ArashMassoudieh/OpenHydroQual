@@ -18,8 +18,11 @@
 
 #include <vector>
 #include <string>
+#ifdef Q_JSON_SUPPORT
+#include <QJsonObject>
+#include <QJsonArray>
+#endif
 
-//MM
 #include "TimeSeriesSet.h"
 
 
@@ -45,9 +48,20 @@ public:
     void getfromfile(string filename);
     string filename;
 
-	//MM
-    //CBTCSet getflow_Evap(double A);
-	
+#ifdef Q_JSON_SUPPORT
+    // Serialize to JSON.
+    //   - If filename is non-empty: writes only {"filename": "..."} (terse,
+    //     reload re-reads the file from disk).
+    //   - If filename is empty:     embeds bins inline as
+    //     {"bins": [{"s": ..., "e": ..., "i": ...}, ...]}
+    //     Used when the precipitation was injected at runtime and has no
+    //     backing file (Truth-Twin / forecast cycles).
+    QJsonObject toJsonObject() const;
+
+    // Inverse of toJsonObject. Recognizes either form. Returns false on
+    // structural error; missing fields silently leave the object empty.
+    bool fromJsonObject(const QJsonObject &obj);
+#endif
     TimeSeriesSet<double> getflow (double A) const;
     TimeSeriesSet<double> getflow(double A, double dt);
     void writefile(string Filename);
