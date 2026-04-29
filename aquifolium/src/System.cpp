@@ -4437,7 +4437,10 @@ bool System::LoadfromJson(const QJsonObject &root)
         }
     }
 
-    QJsonObject ObservationsJson = root["Observation"].toObject();
+    QJsonObject ObservationsJson = root["Observations"].toObject();
+
+    qDebug() << "Observations JSON:" << root["Observations"];
+    qDebug() << "Root keys:" << root.keys();
     for (const QString& observationname: ObservationsJson.keys())
     {
         QJsonObject ObservationJson = ObservationsJson[observationname].toObject();

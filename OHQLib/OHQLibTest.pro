@@ -8,7 +8,7 @@ TEMPLATE = app
 TARGET = OHQLibTest
 
 # Link against OHQLib shared library
-LIBS += -L$$PWD/../OHQLib/build/Desktop_Qt_6_8_3-Release/ -lOHQLib
+LIBS += -L$$PWD/../OHQLib/build/Desktop_Qt_6_8_2-Release/ -lOHQLib
 INCLUDEPATH += $$PWD/../../build-OHQLib-Desktop-Release/
 
 # Headers
