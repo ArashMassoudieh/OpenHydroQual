@@ -1276,3 +1276,19 @@ TimeSeriesSet<T> TimeSeriesSet<T>::LogNormalCDF(const std::vector<T>& means_log,
     result.name = "LogNormalCDF_Set";
     return result;
 }
+
+#ifdef GSL
+template<typename T>
+TimeSeriesSet<T> TimeSeriesSet<T>::add_OU_noise(T sigma, T tau) const {
+    TimeSeriesSet<T> result;
+    result.reserve(this->size());
+    for (size_t i = 0; i < this->size(); ++i) {
+        result.push_back((*this)[i].add_OU_noise(sigma, tau));
+    }
+    // Preserve set-level metadata
+    result.filename = this->filename;
+    result.name = this->name;
+    result.unif = this->unif;
+    return result;
+}
+#endif
