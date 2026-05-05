@@ -1113,6 +1113,13 @@ bool Quan::SetTimeSeries(const CPrecipitation& timeseries)
 
 }
 
+bool Quan::SetTimeSeries(const TimeSeries<double>& timeseries)
+{
+    _timeseries = timeseries;
+    return true;
+
+}
+
 bool Quan::SetSource(const string& sourcename)
 {
     if (sourcename.empty())

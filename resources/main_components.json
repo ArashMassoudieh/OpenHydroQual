@@ -437,72 +437,109 @@
     }
   },
   "Observation": {
-    "type": "observation",
-    "description": "Observation",
-    "typecategory": "Observations",
-    "icon": {
-      "filename": "observation.png"
-    },
-    "name": {
-      "description": "Name",
-      "type": "string",
-      "ask_user": "true",
-      "delegate": "String"
-    },
-    "object": {
-      "delegate": "ComboBox;BlockLinks",
-      "type": "string",
-      "includeinoutput": "false",
-      "description": "Object",
-      "ask_user": "true"
-    },
-    "expression": {
-      "delegate": "expressionEditor",
-      "type": "expression",
-      "includeinoutput": "true",
-      "description": "Expression",
-      "ask_user": "true"
-    },
-    "observed_data": {
-      "type": "timeseries",
-      "includeinoutput": "true",
-      "description": "Observed data time series",
-      "ask_user": "true",
-      "delegate": "Browser"
-    },
-    "error_structure": {
-      "type": "string",
-      "delegate": "ComboBox;items:normal,log-normal",
-      "description": "Error probability distribution",
-      "default": "normal",
-      "includeinoutput": "false",
-      "ask_user": "true"
-    },
-    "comparison_method": {
-      "type": "string",
-      "delegate": "ComboBox;items:Least Squared,Similarity",
-      "description": "Comparison Method",
-      "default": "Least Squared",
-      "includeinoutput": "false",
-      "ask_user": "true"
-    },
-    "error_standard_deviation": {
-      "type": "value",
-      "description": "Error standard deviation",
-      "default": "1",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "estimate": "true"
-    },
-    "autocorrelation_time-span": {
-      "type": "value",
-      "description": "Auto-correlation time-span",
-      "default": "1",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "estimate": "false"
-    }
-  },
+	  "type": "observation",
+	  "description": "Observation",
+	  "typecategory": "Observations",
+	  "icon": {
+	    "filename": "observation.png"
+	  },
+	  "name": {
+	    "description": "Name",
+	    "type": "string",
+	    "ask_user": "true",
+	    "delegate": "String",
+	    "helptext": "Unique identifier for this observation. Used as the column name in selected_output.csv and as the lookup key when matching incoming observed data from a Truth Twin or sensor stream."
+	  },
+	  "object": {
+	    "delegate": "ComboBox;BlockLinks",
+	    "type": "string",
+	    "includeinoutput": "false",
+	    "description": "Object",
+	    "ask_user": "true",
+	    "helptext": "The block or link in the model whose state is being observed. The expression below is evaluated on this object."
+	  },
+	  "expression": {
+	    "delegate": "expressionEditor",
+	    "type": "expression",
+	    "includeinoutput": "true",
+	    "description": "Expression",
+	    "ask_user": "true",
+	    "helptext": "Expression evaluated on the chosen object at each output time step. Typically a single state variable (e.g. 'Storage') or a derived quantity (e.g. 'Storage/Area'). The result becomes the modeled value compared against observed data."
+	  },
+	  "observed_data": {
+	    "type": "timeseries",
+	    "includeinoutput": "true",
+	    "description": "Observed data time series",
+	    "ask_user": "true",
+	    "delegate": "Browser",
+	    "helptext": "Measured time series to compare the modeled output against. Used by all comparison methods. May be loaded from a file or pushed in at runtime by an external assimilation driver."
+	  },
+	  "error_structure": {
+	    "type": "string",
+	    "delegate": "ComboBox;items:normal,log-normal",
+	    "description": "Error probability distribution",
+	    "default": "normal",
+	    "includeinoutput": "false",
+	    "ask_user": "true",
+	    "helptext": "Distribution assumed for the residual between modeled and observed values. 'normal' compares values directly; 'log-normal' compares the logs (suitable for strictly positive quantities spanning multiple orders of magnitude, e.g. concentrations or flows)."
+	  },
+	  "comparison_method": {
+	    "type": "string",
+	    "delegate": "ComboBox;items:Least Squared,Similarity,Weighted Least Squared",
+	    "description": "Comparison Method",
+	    "default": "Least Squared",
+	    "includeinoutput": "false",
+	    "ask_user": "true",
+	    "helptext": "How modeled and observed series are compared. 'Least Squared' uses standard sum of squared residuals (negative log-likelihood for normal/log-normal errors). 'Similarity' compares autocorrelation structure and value distribution (Kolmogorov-Smirnov), useful when point-by-point matching is not meaningful. 'Weighted Least Squared' applies a temporal kernel that downweights older observations, suited for streaming data assimilation where recent measurements should dominate."
+	  },
+	  "error_standard_deviation": {
+	    "type": "value",
+	    "description": "Error standard deviation",
+	    "default": "1",
+	    "ask_user": "true",
+	    "delegate": "ValueBox",
+	    "estimate": "true",
+	    "helptext": "Standard deviation of the residual under the chosen error structure. For 'normal' errors, units match the observed quantity; for 'log-normal' errors, this is the standard deviation of log-residuals. May be set per-observation or pushed in at runtime from a Truth Twin metadata sidecar."
+	  },
+	  "autocorrelation_time-span": {
+	    "type": "value",
+	    "description": "Auto-correlation time-span",
+	    "default": "1",
+	    "ask_user": "true",
+	    "delegate": "UnitBox",
+	    "estimate": "false",
+	    "unit": "day",
+	    "helptext": "Time span over which to compute autocorrelation when 'Similarity' comparison is selected. The autocorrelation is sampled at 20 lags between zero and this span. Ignored for other comparison methods."
+	  },
+	  "kernel_tau": {
+	    "type": "value",
+	    "description": "Log decay rate (dimensionless)",
+	    "default": "1",
+	    "ask_user": "true",
+	    "delegate": "ValueBox",
+	    "estimate": "false",
+	    "helptext": "Dimensionless decay rate for the 'Weighted Least Squared' temporal kernel. For an observation at age delta > kernel_Delta0, the weight is (1 + ln(delta/kernel_Delta0)/kernel_tau)^(-kernel_alpha). Larger tau slows the decay; tau <= 0 disables weighting (uniform). Has no units because the ln() argument is dimensionless."
+	  },
+	  "kernel_alpha": {
+	    "type": "value",
+	    "description": "Power exponent",
+	    "default": "1",
+	    "ask_user": "true",
+	    "delegate": "ValueBox",
+	    "estimate": "false",
+	    "helptext": "Power exponent in the 'Weighted Least Squared' temporal kernel. Controls how quickly the weight falls off past the flat horizon. Larger alpha gives a sharper drop after kernel_Delta0; alpha = 0 gives uniform weights past the horizon."
+	  },
+	  "kernel_Delta0": {
+	    "type": "value",
+	    "description": "Flat-weight horizon",
+	    "default": "1",
+	    "ask_user": "true",
+	    "delegate": "UnitBox",
+	    "estimate": "false",
+	    "unit": "day",
+	    "helptext": "Recent-window length over which the 'Weighted Least Squared' kernel applies a uniform weight of 1. Observations newer than kernel_Delta0 (relative to the latest observation time) are treated equally; older observations are downweighted by the log-power tail. kernel_Delta0 <= 0 disables weighting (uniform)."
+	  }
+	},
   "fixed_head": {
     "type": "block",
     "description": "Fixed-head boundary",
