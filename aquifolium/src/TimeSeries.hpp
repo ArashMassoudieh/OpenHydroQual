@@ -2630,6 +2630,124 @@ TimeSeries<T> TimeSeries<T>::LogNormalCDF(T mean_log, T std_log, int n_intervals
     return result;
 }
 
+#ifdef GSL
+template<typename T>
+TimeSeries<T> TimeSeries<T>::add_OU_noise(T sigma, T tau) const {
+    TimeSeries<T> noisy;
+    noisy.reserve(this->size());
+    if (this->empty()) return noisy;
+
+    ensureGSLInitialized();
+
+    // Initialize epsilon at stationary distribution N(0,1)
+    T eps = static_cast<T>(gsl_ran_gaussian(r_, 1.0));
+
+    // First point
+    {
+        const auto& pt0 = (*this)[0];
+        T new_val = pt0.c * std::exp(sigma * eps);
+        noisy.emplace_back(DataPoint<T>{pt0.t, new_val, pt0.d});
+    }
+
+    // Step through remaining points
+    for (size_t i = 1; i < this->size(); ++i) {
+        const auto& pt_prev = (*this)[i - 1];
+        const auto& pt = (*this)[i];
+        T dt = pt.t - pt_prev.t;
+
+        if (tau <= T{0} || dt <= T{0}) {
+            // White-noise limit (or degenerate dt): redraw independently
+            eps = static_cast<T>(gsl_ran_gaussian(r_, 1.0));
+        } else {
+            T phi = std::exp(-dt / tau);
+            T sqrt_one_minus_phi2 = std::sqrt(std::max(T{0}, T{1} - phi * phi));
+            T eta = static_cast<T>(gsl_ran_gaussian(r_, 1.0));
+            eps = phi * eps + sqrt_one_minus_phi2 * eta;
+        }
+
+        T new_val = pt.c * std::exp(sigma * eps);
+        noisy.emplace_back(DataPoint<T>{pt.t, new_val, pt.d});
+    }
+
+    noisy.structured_ = this->structured_;
+    noisy.dt_ = this->dt_;
+    noisy.filename = this->filename;
+    noisy.computeMaxFabs();
+    return noisy;
+}
+
+// ---------------------------------------------------------------------------
+// weighted_mse
+//
+// Recency-weighted mean-squared error between two time series, using a
+// logarithmic-decay weight kernel with a plateau on recent observations:
+//
+//   w(delta) = 1                                          if delta < Delta0
+//   w(delta) = (1 + ln(delta/Delta0)/tau)^{-alpha}        otherwise
+//
+//   delta = t_now - t_i
+//
+//   WMSE = sum_i w_i (y_i - M(t_i))^2  /  sum_i w_i
+//
+// Iterates over `observed` timestamps; samples `model` via interpol().
+//
+// Edge cases:
+//   - empty observed         -> returns 0
+//   - delta < 0 (future obs) -> w = 1 (plateau)
+//   - Delta0 <= 0 or tau <= 0 -> w = 1 everywhere (defensive fallback;
+//                                produces a plain MSE rather than NaN
+//                                inside a tight GA fitness loop)
+//   - sum of weights == 0    -> returns 0
+// ---------------------------------------------------------------------------
+template<typename T>
+T weighted_mse(const TimeSeries<T>& observed,
+               const TimeSeries<T>& model,
+               T t_now,
+               T Delta0,
+               T tau,
+               T alpha)
+{
+    if (observed.empty()) return T{0};
+
+    const bool kernel_active = (Delta0 > T{0}) && (tau > T{0});
+
+    T sum_w  = T{0};
+    T sum_we = T{0};   // sum of w_i * residual_i^2
+
+    for (size_t i = 0; i < observed.size(); ++i)
+    {
+        const T t_i = observed.getTime(i);
+        const T y_i = observed.getValue(i);
+        const T m_i = model.interpol(t_i);
+        const T r   = y_i - m_i;
+
+        T w;
+        if (!kernel_active)
+        {
+            w = T{1};
+        }
+        else
+        {
+            const T delta = t_now - t_i;
+            if (delta < Delta0)
+            {
+                w = T{1};
+            }
+            else
+            {
+                const T arg = T{1} + std::log(delta / Delta0) / tau;
+                w = std::pow(arg, -alpha);
+            }
+        }
+
+        sum_w  += w;
+        sum_we += w * r * r;
+    }
+
+    if (sum_w <= T{0}) return T{0};
+    return sum_we / sum_w;
+}
+#endif
 
 
 

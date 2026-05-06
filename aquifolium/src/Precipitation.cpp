@@ -239,4 +239,77 @@ void CPrecipitation::append(const double &_s, const double &_e, const double &in
 
 }
 
+#ifdef Q_JSON_SUPPORT
+#include <QJsonObject>
+#include <QJsonArray>
+
+QJsonObject CPrecipitation::toJsonObject() const
+{
+    QJsonObject json;
+
+    if (!filename.empty())
+    {
+        // Case A: backed by a file on disk. Just record the path; the
+        // reader will pull the bins from that file when needed.
+        json["filename"] = QString::fromStdString(filename);
+        return json;
+    }
+
+    // Case B: injected at runtime, no backing file. Embed the bins inline
+    // so the snapshot is self-contained.
+    QJsonArray bins;
+    for (int j = 0; j < n; ++j)
+    {
+        QJsonObject bin;
+        bin["s"] = s[j];
+        bin["e"] = e[j];
+        bin["i"] = i[j];
+        bins.append(bin);
+    }
+    json["bins"] = bins;
+    return json;
+}
+
+bool CPrecipitation::fromJsonObject(const QJsonObject &obj)
+{
+    // Reset
+    s.clear();
+    e.clear();
+    i.clear();
+    n = 0;
+    filename.clear();
+
+    if (obj.contains("filename"))
+    {
+        const QString fn = obj.value("filename").toString();
+        if (!fn.isEmpty())
+        {
+            getfromfile(fn.toStdString());   // existing method, populates s/e/i/n
+            return true;
+        }
+    }
+
+    if (obj.contains("bins"))
+    {
+        const QJsonArray bins = obj.value("bins").toArray();
+        s.reserve(bins.size());
+        e.reserve(bins.size());
+        i.reserve(bins.size());
+        for (const auto &v : bins)
+        {
+            const QJsonObject bin = v.toObject();
+            s.push_back(bin.value("s").toDouble());
+            e.push_back(bin.value("e").toDouble());
+            i.push_back(bin.value("i").toDouble());
+            ++n;
+        }
+        if (n >= 2)
+            dt = e[1] - s[1];
+        return true;
+    }
+
+    // Empty object — leave CPrecipitation empty, not an error.
+    return true;
+}
+#endif
 

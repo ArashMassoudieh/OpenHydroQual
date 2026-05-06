@@ -252,7 +252,8 @@
       "includeinoutput": "true",
       "description": "Precipitation intensity",
       "ask_user": "true",
-      "delegate": "Browser;time series"
+      "delegate": "Browser;time series",
+      "unit": "m/day;mm/day;mm/hr"
    },
    "kernel_delay_parameter": {
       "type": "value",
@@ -297,6 +298,12 @@
       "includeinoutput": "true",
       "expression": "flow_scale/(kernel_smoothed_forcast+0.0000001)"
     },
+    "effective_K": {
+      "type": "expression",
+      "description": "Headloss coefficient for valve (truncated)",
+      "includeinoutput": "true",
+      "expression": "_hsd(kernel_smoothed_forcast-threshold)*valve_K"
+    },
      "flow_scale": {
       "type": "value",
       "default": "20",
@@ -313,7 +320,7 @@
 	"type": "expression",
 	"expression": "1/kernel_delay_parameter",
 	"description": "lambda",
-	"includeinoutput": "false",
+	"includeinoutput": "true",
         "ask_user": "false"
    }, 
    "kernel_smoothed_forcast": {
@@ -322,7 +329,7 @@
 	"description": "Kernel Smoothed Forcast",
 	"includeinoutput": "true",
         "ask_user": "false",
-        "unit": "m/day"
+        "unit": "m/day;mm/day;mm/hr"
    },
     "flow": {
       "type": "rule",

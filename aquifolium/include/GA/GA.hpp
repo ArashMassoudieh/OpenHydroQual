@@ -1017,25 +1017,42 @@ void CGA<T>::getinifromoutput(string filename)
 
 }
 
+// ---------------------------------------------------------------------------
+// getinitialpop
+//
+// Read an initial population from a clean CSV-style file (one parameter
+// vector per line, comma-separated, decoded values). Used when the caller
+// wants to seed the GA from a hand-crafted / external population rather
+// than from a previous optimize() output file.
+//
+// Lines are ignored if blank or if numeric parsing fails. No header row
+// is expected.
+//
+// The previous version pushed every row s.size() times into initial_pop,
+// which corrupted the population. The fix pushes once per row.
+// ---------------------------------------------------------------------------
 template<class T>
 void CGA<T>::getinitialpop(string filename)
 {
-	ifstream file(filename);
-	vector<string> s;
+    initial_pop.clear();
 
-	while (file.eof() == false)
-	{
-		s = aquiutils::getline(file);
+    ifstream file(filename);
+    if (!file.is_open()) return;
 
-		if (s.size()>0)
-		{
-			vector<double> x;
-			for (int j=0; j<s.size(); j++)
-				initial_pop.push_back(aquiutils::ATOF(s));
+    vector<string> s;
+    while (file.eof() == false)
+    {
+        s = aquiutils::getline(file);
+        if (s.empty()) continue;
 
-		}
-	}
-	file.close();
+        // Single push per row; aquiutils::ATOF takes the whole tokenized line
+        // and returns the parsed numeric vector.
+        initial_pop.push_back(aquiutils::ATOF(s));
+
+        // Defensive: stop once we have maxpop rows.
+        if (static_cast<int>(initial_pop.size()) >= GA_params.maxpop) break;
+    }
+    file.close();
 }
 
 

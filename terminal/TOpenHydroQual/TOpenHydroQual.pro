@@ -11,6 +11,7 @@ INCLUDEPATH += ../../aquifolium/src
 INCLUDEPATH += ../../aquifolium/include/GA
 INCLUDEPATH += ../../aquifolium/include/MCMC
 INCLUDEPATH += ../../../jsoncpp/include/
+INCLUDEPATH += ../../
 
 if==macx:CONFIG += staticlib
 macx: DEFINES +=mac_version
@@ -18,6 +19,7 @@ linux: DEFINES +=ubuntu_version
 win32: DEFINES +=windows_version
 
 DEFINES += Terminal_version
+DEFINES += Q_JSON_SUPPORT
 
 TARGET = OpenHydroQual-Console
 TEMPLATE = app
@@ -109,6 +111,7 @@ SOURCES += \
         main.cpp
 
 HEADERS += \
+    ../../XString.h \
     ../../aquifolium/include/Objective_Function.h \
     ../../aquifolium/include/Objective_Function_Set.h \
     ../../aquifolium/include/Precipitation.h \

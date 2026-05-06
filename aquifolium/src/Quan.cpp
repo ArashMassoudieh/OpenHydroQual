@@ -20,7 +20,7 @@
 #include "System.h"
 #include "Precipitation.h"
 #include "Expression.h"
-#ifdef Q_GUI_SUPPORT
+#ifdef Q_JSON_SUPPORT
 #include "XString.h"
 #endif
 #ifndef mac_version
@@ -909,10 +909,10 @@ void Quan::Update()
 
 bool Quan::SetTimeSeries(const string& filename, bool prec)
 {
-    qDebug() << ">>> SetTimeSeries called";
-    qDebug() << "    filename:" << QString::fromStdString(filename);
-    qDebug() << "    default_unit:" << QString::fromStdString(default_unit);
-    qDebug() << "    current unit:" << QString::fromStdString(unit);
+    //qDebug() << ">>> SetTimeSeries called";
+    //qDebug() << "    filename:" << QString::fromStdString(filename);
+    //qDebug() << "    default_unit:" << QString::fromStdString(default_unit);
+    //qDebug() << "    current unit:" << QString::fromStdString(unit);
 
     if (filename.empty())
     {
@@ -920,7 +920,7 @@ bool Quan::SetTimeSeries(const string& filename, bool prec)
         _timeseries.setFilename("");
         _timeseries.setUnit("");
         _timeseries.setName("");
-        qDebug() << "    Cleared timeseries AND filename";
+        //qDebug() << "    Cleared timeseries AND filename";
         return true;
     }
 
@@ -938,23 +938,23 @@ bool Quan::SetTimeSeries(const string& filename, bool prec)
             // File data is in whatever unit is currently set
             string file_unit = unit.empty() ? default_unit : unit;
 
-            qDebug() << "    File loaded, size:" << _timeseries.size();
-            qDebug() << "    File interpreted as:" << QString::fromStdString(file_unit);
+            //qDebug() << "    File loaded, size:" << _timeseries.size();
+            //qDebug() << "    File interpreted as:" << QString::fromStdString(file_unit);
             if (_timeseries.size() > 0) {
-                qDebug() << "    Raw max value:" << _timeseries.maxC();
+                //qDebug() << "    Raw max value:" << _timeseries.maxC();
             }
 
             // CRITICAL: Convert from declared unit to SI (default_unit) for storage
             if (file_unit != default_unit)
             {
-                qDebug() << "    Converting from" << QString::fromStdString(file_unit)
-                << "to SI:" << QString::fromStdString(default_unit);
+                //qDebug() << "    Converting from" << QString::fromStdString(file_unit)
+                //<< "to SI:" << QString::fromStdString(default_unit);
 
                 double from_coeff = XString::coefficient(QString::fromStdString(file_unit));
                 double to_coeff = XString::coefficient(QString::fromStdString(default_unit));
                 double conversion_factor = from_coeff / to_coeff;
 
-                qDebug() << "    Conversion factor:" << conversion_factor;
+                //qDebug() << "    Conversion factor:" << conversion_factor;
 
                 TimeSeries<double> converted_ts;
                 converted_ts.reserve(_timeseries.size());
@@ -968,7 +968,7 @@ bool Quan::SetTimeSeries(const string& filename, bool prec)
                 _timeseries = converted_ts;
 
                 if (_timeseries.size() > 0) {
-                    qDebug() << "    Converted max value:" << _timeseries.maxC();
+                    //qDebug() << "    Converted max value:" << _timeseries.maxC();
                 }
             }
 
@@ -976,9 +976,9 @@ bool Quan::SetTimeSeries(const string& filename, bool prec)
             _timeseries_unit = file_unit;  // Remember declared unit
             _timeseries.setUnit(file_unit); // Store for persistence
 
-            qDebug() << "    Data stored in SI units (default_unit)";
-            qDebug() << "    Declared unit (_timeseries_unit):" << QString::fromStdString(_timeseries_unit);
-            qDebug() << "<<< SetTimeSeries done";
+            //qDebug() << "    Data stored in SI units (default_unit)";
+            //qDebug() << "    Declared unit (_timeseries_unit):" << QString::fromStdString(_timeseries_unit);
+            //qDebug() << "<<< SetTimeSeries done";
 
             return true;
         }
@@ -1109,6 +1109,13 @@ bool Quan::ConvertTimeSeriesUnit(const string& from_unit, const string& to_unit)
 bool Quan::SetTimeSeries(const CPrecipitation& timeseries)
 {
     _timeseries = timeseries.getflow(1)[0];
+    return true;
+
+}
+
+bool Quan::SetTimeSeries(const TimeSeries<double>& timeseries)
+{
+    _timeseries = timeseries;
     return true;
 
 }
@@ -1538,27 +1545,22 @@ bool Quan::InitializePreCalcFunction(int n_inc)
 QJsonObject Quan::toJsonObject() const
 {
     QJsonObject json;
-
     // Identity
     json["name"] = QString::fromStdString(_var_name);
     json["type"] = QString::fromStdString(tostring(type));
     json["string_value"] = QString::fromStdString(_string_value);
-
     // Values
     json["_val"] = _val;
     json["_val_star"] = _val_star;
     json["value_star_updated"] = value_star_updated;
-
     // Expression / Rule
     if (type == _type::expression)
         json["expression"] = QString::fromStdString(_expression.ToString());
     if (type == _type::rule)
         json["rule"] = QString::fromStdString(_rule.ToString());
-
     // Source
     json["sourcename"] = QString::fromStdString(sourcename);
     json["source_set"] = (source != nullptr);
-
     // Flow / mass balance
     json["perform_mass_balance"] = perform_mass_balance;
     json["corresponding_flow_quan"] = QString::fromStdString(corresponding_flow_quan);
@@ -1566,7 +1568,6 @@ QJsonObject Quan::toJsonObject() const
     for (const auto& s : corresponding_inflow_quan)
         inflow_arr.append(QString::fromStdString(s));
     json["corresponding_inflow_quan"] = inflow_arr;
-
     // Flags
     json["includeinoutput"] = includeinoutput;
     json["estimable"] = estimable;
@@ -1575,7 +1576,6 @@ QJsonObject Quan::toJsonObject() const
     json["ask_from_user"] = ask_from_user;
     json["experiment_dependent"] = experiment_dependent;
     json["calculate_initial_value_from_expression"] = calculate_initial_value_from_expression;
-
     // Metadata
     json["description"] = QString::fromStdString(description);
     json["unit"] = QString::fromStdString(unit);
@@ -1588,10 +1588,16 @@ QJsonObject Quan::toJsonObject() const
     json["abbreviation"] = QString::fromStdString(abbreviation);
     json["OutputItem"] = QString::fromStdString(OutputItem);
     json["_parameterassignedto"] = QString::fromStdString(_parameterassignedto);
-
     // Timeseries info
-    json["timeseries_size"] = static_cast<int>(_timeseries.size());
-    json["_timeseries_unit"] = QString::fromStdString(_timeseries_unit);
+    json["timeseries_size"]   = static_cast<int>(_timeseries.size());
+    json["_timeseries_unit"]  = QString::fromStdString(_timeseries_unit);
+
+    // Timeseries content: if the precipitation has a backing file, the
+    // filename is sufficient (and gets emitted as part of its own JSON).
+    // If filename is empty but bins are present (runtime injection), embed
+    // them inline so the snapshot is self-contained.
+    if (_timeseries.size() > 0 || !_timeseries.getFilename().empty())
+        json["timeseries"] = _timeseries.toJson();
 
     return json;
 }

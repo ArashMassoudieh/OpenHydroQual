@@ -696,21 +696,34 @@ void QuanSet::CreateCPPcode(const string &source, const string header)
 QJsonObject QuanSet::toJson(bool allvariables, bool calculatevalue)
 {
     QJsonObject out;
-    for (map<string,Quan>::iterator it=begin(); it!=end(); it++)
+    for (map<string, Quan>::iterator it = begin(); it != end(); it++)
     {
+        if (!it->second.AskFromUser() && !allvariables)
+            continue;
 
-        if (it->second.AskFromUser() || allvariables)
-        {    if (it->second.Delegate()=="UnitBox" || it->second.Delegate() == "ValueBox" )
-                out[QString::fromStdString(it->first)] = QString::fromStdString(at(it->first).GetProperty(true || calculatevalue));
-            else
-                out[QString::fromStdString(it->first)] = QString::fromStdString(at(it->first).GetProperty(false || calculatevalue));
+        const string &delegate = it->second.Delegate();
+
+        // expressionEditor: user-defined expression text (e.g. Observation.expression,
+        // Objective_Function.expression). Always persist the source text — its
+        // current numeric value is meaningless to round-trip.
+        if (delegate == "expressionEditor")
+        {
+            out[QString::fromStdString(it->first)] =
+                QString::fromStdString(at(it->first).GetProperty(false));
+            continue;
         }
 
-    }
+        // ValueBox / UnitBox: scalar UI fields — always persist the current
+        // numeric value (matching Quan::toCommand).
+        // Everything else: respect calculatevalue.
+        const bool numeric =
+            (delegate == "ValueBox" || delegate == "UnitBox" || calculatevalue);
 
+        out[QString::fromStdString(it->first)] =
+            QString::fromStdString(at(it->first).GetProperty(numeric));
+    }
     return out;
 }
-
 
 QJsonArray QuanSet::toJsonSetAsParameter()
 {

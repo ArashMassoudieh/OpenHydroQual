@@ -159,6 +159,14 @@ public:
     TimeSeriesSet<T> getpercentiles(const std::vector<T>& fractions) const; ///< Get specified percentiles at all times
     TimeSeriesSet<T> distribution(int n_bins, int start_index, int end_index) const; ///< Density histograms
     TimeSeriesSet<T> add_noise(const std::vector<T>& stddevs, bool log_noise = false) const; ///< Add Gaussian noise
+
+    /**
+     * @brief Apply multiplicative log-normal OU-correlated noise to each
+     *        series with shared sigma and tau. Each series gets an
+     *        independent OU chain.
+     */
+    TimeSeriesSet<T> add_OU_noise(T sigma, T tau) const;
+
     TimeSeriesSet<T> sort(int column_index = 0) const; ///< Sort based on a column
     TimeSeriesSet<T> ConverttoNormalScore() const; ///< Convert each to normal score
     TimeSeriesSet<T> AutoCorrelation(const double& span, const double& increment) const; ///< Autocorrelation function

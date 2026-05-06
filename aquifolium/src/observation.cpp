@@ -109,7 +109,6 @@ double Observation::CalcMisfit()
     //qDebug()<<"Inside the misfit function";
     if (Variable("observed_data")->GetTimeSeries()!=nullptr)
     {
-
         fit_measures.clear();
         if (Variable("comparison_method")->GetProperty()=="Least Squared")
         {
@@ -139,6 +138,61 @@ double Observation::CalcMisfit()
             }
             else
                 return 0;
+        }
+        // -----------------------------------------------------------------
+        // Weighted Least Squared:
+        // Same residual-based misfit as Least Squared but with a temporal
+        // kernel that downweights older observations relative to the most
+        // recent one. The kernel is anchored at t_now = last observed time,
+        // so the freshest observation always gets weight 1 and older
+        // observations are downweighted by a log-power tail past Delta0.
+        // R2/NSE are reported unweighted as diagnostics. sigma is not used
+        // here — only the relative misfit across GA candidates matters for
+        // parameter estimation.
+        // -----------------------------------------------------------------
+        else if (Variable("comparison_method")->GetProperty()=="Weighted Least Squared")
+        {
+            TimeSeries<double>* obs = Variable("observed_data")->GetTimeSeries();
+            if (obs->size() == 0)
+            {
+                fit_measures.resize(3);
+                return 0;
+            }
+
+            const double t_now  = obs->getTime(obs->size() - 1);
+            const double Delta0 = Variable("kernel_Delta0")->GetVal();
+            const double tau    = Variable("kernel_tau")->GetVal();
+            const double alpha  = Variable("kernel_alpha")->GetVal();
+
+            double fit_mse = 0;
+            double _R2     = 0;
+            double Nash_Sutcliffe_efficiency = 0;
+
+            if (Variable("error_structure")->GetProperty()=="normal")
+            {
+                fit_mse = weighted_mse(*obs, modeled_time_series, t_now, Delta0, tau, alpha);
+                _R2 = R2(&modeled_time_series, obs);
+                Nash_Sutcliffe_efficiency = NSE(&modeled_time_series, obs);
+            }
+            else if (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal")
+            {
+                TimeSeries<double> obs_log = obs->log(1e-8);
+                TimeSeries<double> mod_log = modeled_time_series.log(1e-8);
+                fit_mse = weighted_mse(obs_log, mod_log, t_now, Delta0, tau, alpha);
+                _R2 = R2(mod_log, obs_log);
+                Nash_Sutcliffe_efficiency = NSE(mod_log, obs_log);
+            }
+            else
+            {
+                fit_measures.resize(3);
+                return 0;
+            }
+
+            fit_measures.push_back(fit_mse);
+            fit_measures.push_back(_R2);
+            fit_measures.push_back(Nash_Sutcliffe_efficiency);
+
+            return fit_mse;
         }
         else
         {
@@ -174,7 +228,6 @@ double Observation::CalcMisfit()
         fit_measures.resize(3);
         return 0;
     }
-
 }
 
 void Observation::append_value(double t, double val)

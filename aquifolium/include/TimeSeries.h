@@ -264,6 +264,21 @@ public:
     void CreateOUProcess(const T& t_start, const T& t_end, const T& dt, const T& theta); ///< Ornstein-Uhlenbeck
     TimeSeries<T> MapfromNormalScoreToDistribution(const std::string& distribution, const std::vector<double>& parameters);
     TimeSeries<T> MapfromNormalScoreToDistribution(const TimeSeries<double>& distribution);
+    /**
+     * @brief Returns a copy of the series with multiplicative log-normal
+     *        OU-correlated noise applied: x_noised = x * exp(sigma * epsilon),
+     *        where epsilon is an Ornstein-Uhlenbeck process with correlation
+     *        time tau and unit stationary variance.
+     *
+     * Uses exact discretization of the OU SDE so the noise amplitude is
+     * accurate for arbitrary spacing relative to tau.
+     *
+     * @param sigma Standard deviation of log-multiplicative noise.
+     * @param tau Correlation time (same units as series time vector).
+     *            tau <= 0 is treated as the white-noise limit.
+     * @return TimeSeries<T> noised copy with the same time vector.
+     */
+    TimeSeries<T> add_OU_noise(T sigma, T tau) const;
 #endif
 
     void CreatePeriodicStepFunction(const T& t_start, const T& t_end, const T& duration, const T& gap, const T& magnitude);
@@ -581,6 +596,14 @@ TimeSeries<T> operator>(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
 
 template<typename T>
 T sum_interpolate(const std::vector<TimeSeries<T>>& series_list, T time);
+
+template<typename T>
+T weighted_mse(const TimeSeries<T>& observed,
+               const TimeSeries<T>& model,
+               T t_now,
+               T Delta0,
+               T tau,
+               T alpha = T{1});
 
 
 namespace TimeSeriesMetrics {

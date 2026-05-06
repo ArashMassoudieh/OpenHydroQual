@@ -16,6 +16,7 @@
 
 #ifndef ENUMS_H
 #define ENUMS_H
+#ifdef Q_GUI_SUPPORT
 #include "qcolor.h"
 
 enum Operation_Modes{ Draw_Connector, Node1_selected, Pan, NormalMode, resizeNode, ZoomWindow };
@@ -68,6 +69,6 @@ struct objectColor
     QColor color1, color2, defaultColor;
 };
 
-
+#endif
 
 #endif // ENUMS_H

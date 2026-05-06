@@ -22,6 +22,10 @@
 #include "XString.h"
 #endif
 
+#ifdef Q_JSON_SUPPORT
+#include <QJsonObject>
+#endif
+
 Object::Object()
 {
     //ctor
@@ -634,6 +638,7 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
 
     if (var[prop].GetType() == Quan::_type::timeseries || var[prop].GetType() == Quan::_type::prec_timeseries)
     {
+        if (value == "") return true;
         return var[prop].SetProperty(value);
     }
     if (var[prop].GetType() == Quan::_type::source)

@@ -153,27 +153,39 @@ bool MetaModel::AppendFromJsonFile(const string &filename)
     Json::Value root;
     Json::CharReaderBuilder builder;
     JSONCPP_STRING errs;
-
     std::ifstream file(filename);
     if (!file.good())
     {
         std::cout << "File " + filename + " was not found!";
         return false;
     }
-
     if (!Json::parseFromStream(builder, file, &root, &errs)) {
         last_error = errs;
         return false;
     }
-
-    for (Json::ValueIterator object_types=root.begin(); object_types!=root.end(); ++object_types)
+    for (Json::ValueIterator object_types = root.begin(); object_types != root.end(); ++object_types)
     {
+        // Parse "solutionorder" specially: it's an array of variable names
+        // (not a QuanSet). Append only entries not already present, so
+        // re-loading the same template (e.g. across hot-restart cycles) is
+        // idempotent.
+        if (object_types.key().asString() == "solutionorder")
+        {
+            for (Json::Value::ArrayIndex i = 0; i != root["solutionorder"].size(); i++) {
+                const string s = root["solutionorder"][i].asString();
+                if (std::find(solvevariableorder.begin(), solvevariableorder.end(), s)
+                    == solvevariableorder.end())
+                {
+                    solvevariableorder.push_back(s);
+                }
+            }
+            continue;   // skip Append below — solutionorder isn't a QuanSet
+        }
         QuanSet quanset(object_types);
-        Append(object_types.key().asString(),quanset);
+        Append(object_types.key().asString(), quanset);
     }
     return true;
 }
-
 
 void MetaModel::Clear()
 {

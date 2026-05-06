@@ -86,8 +86,6 @@ SOURCES += \
         ../../aquifolium/src/Condition.cpp \
         ../../aquifolium/src/ErrorHandler.cpp \
         ../../aquifolium/src/Expression.cpp \
-        ../../aquifolium/src/ExpressionNode.cpp \
-        ../../aquifolium/src/ExpressionParser.cpp \
         ../../aquifolium/src/Link.cpp \
         ../../aquifolium/src/Matrix.cpp \
         ../../aquifolium/src/Matrix_arma.cpp \
