@@ -270,21 +270,40 @@ CGA<T>::~CGA()
 template<class T>
 void CGA<T>::initialize()
 {
-	for (int i=0; i<GA_params.maxpop; i++)
-	{
-		Ind[i].initialize();
-	}
+    std::cout << "[GA-DBG] initialize() ENTER, initial_pop.size()=" << initial_pop.size() << "\n";
 
-	if (filenames.initialpopfilemame!="")
-	{
-		getinifromoutput(filenames.pathname+filenames.initialpopfilemame);
-		for (int i=0; i<initial_pop.size(); i++)
-			for (int j=0; j<max(int(initial_pop[i].size()),GA_params.nParam); j++)
-				if (loged[j]==1)
-					Ind[i].x[j] = log10(initial_pop[i][j]);
-				else
-					Ind[i].x[j] = initial_pop[i][j];
-	}
+    for (int i = 0; i < GA_params.maxpop; i++)
+    {
+        Ind[i].initialize();
+    }
+    std::cout << "[GA-DBG] initialize() after Ind[i].initialize() — first individual: ";
+    for (int j = 0; j < GA_params.nParam; j++)
+        std::cout << Ind[0].x[j] << " ";
+    std::cout << "\n";
+
+    if (!initial_pop.empty())
+    {
+        const int n = std::min(static_cast<int>(initial_pop.size()), GA_params.maxpop);
+        std::cout << "[GA-DBG] initialize() seeding " << n << " individuals from initial_pop\n";
+        for (int i = 0; i < n; i++)
+        {
+            const int nP = std::min(static_cast<int>(initial_pop[i].size()), GA_params.nParam);
+            for (int j = 0; j < nP; j++)
+            {
+                Ind[i].x[j] = initial_pop[i][j];
+            }
+        }
+        std::cout << "[GA-DBG] initialize() after seeding — first individual: ";
+        for (int j = 0; j < GA_params.nParam; j++)
+            std::cout << Ind[0].x[j] << " ";
+        std::cout << "\n";
+    }
+    else
+    {
+        std::cout << "[GA-DBG] initialize() initial_pop EMPTY — staying with random\n";
+    }
+
+    std::cout << "[GA-DBG] initialize() EXIT\n";
 }
 
 template<class T>
@@ -555,14 +574,16 @@ void CGA<T>::SetParameters(Object *obj)
 template<class T>
 int CGA<T>::optimize()
 {
+    std::cout << "[GA-DBG] optimize() ENTER, initial_pop.size()=" << initial_pop.size() << "\n";
+
     #ifdef Q_GUI_SUPPORT
 	QCoreApplication::processEvents();
     #endif // Q_GUI_SUPPORT
     string RunFileName;
     if (aquiutils::contains(filenames.outputfilename,"/"))
-        RunFileName = filenames.outputfilename;
-    else
-        RunFileName = filenames.pathname + filenames.outputfilename;
+            RunFileName = filenames.outputfilename;
+        else
+            RunFileName = filenames.pathname + filenames.outputfilename;
 
 	FILE *FileOut;
 	FILE *FileOut1;
@@ -581,6 +602,11 @@ int CGA<T>::optimize()
 	vector<double> X(Ind[0].nParams);
 
 	initialize();
+    std::cout << "[GA-DBG] optimize() after initialize() — Ind[0].x = ";
+    for (int j = 0; j < GA_params.nParam; j++)
+        std::cout << Ind[0].x[j] << " ";
+    std::cout << "\n";
+
 	double ininumenhancements = GA_params.numenhancements;
 	GA_params.numenhancements = 0;
 
@@ -1035,24 +1061,108 @@ template<class T>
 void CGA<T>::getinitialpop(string filename)
 {
     initial_pop.clear();
+    std::cout << "[GA-DBG] getinitialpop() ENTER, filename=" << filename
+              << " nParam=" << GA_params.nParam
+              << " maxpop=" << GA_params.maxpop << "\n";
 
     ifstream file(filename);
-    if (!file.is_open()) return;
+    if (!file.is_open())
+    {
+        std::cout << "[GA-DBG] getinitialpop: file failed to open\n";
+        return;
+    }
 
     vector<string> s;
-    while (file.eof() == false)
+    bool inDataBlock     = false;
+    int  lastGenSeen     = -1;
+    vector<vector<double>> rowsForLastGen;
+    int lineNum          = 0;
+    int dataRowsSeen     = 0;
+    int genHeadersSeen   = 0;
+
+    while (!file.eof())
     {
         s = aquiutils::getline(file);
+        lineNum++;
         if (s.empty()) continue;
 
-        // Single push per row; aquiutils::ATOF takes the whole tokenized line
-        // and returns the parsed numeric vector.
-        initial_pop.push_back(aquiutils::ATOF(s));
+        // First 30 lines: trace what tokenization is producing
+        if (lineNum <= 30)
+        {
+            std::cout << "[GA-DBG]  L" << lineNum
+                      << " size=" << s.size()
+                      << " s[0]='" << s[0] << "'";
+            if (s.size() > 1) std::cout << " s[1]='" << s[1] << "'";
+            std::cout << " inBlock=" << inDataBlock << "\n";
+        }
 
-        // Defensive: stop once we have maxpop rows.
-        if (static_cast<int>(initial_pop.size()) >= GA_params.maxpop) break;
+        // Cycle delimiter: "=== Cycle N | timestamp ... ===" — no commas,
+        // arrives as one token. Match by prefix.
+        if (s[0].size() >= 3 && s[0].substr(0, 3) == "===")
+        {
+            inDataBlock = false;
+            continue;
+        }
+
+        // Generation header: "Generation: N" — no commas, one token.
+        // Match by prefix and parse the integer from after the colon.
+        if (s[0].size() >= 11 && s[0].substr(0, 11) == "Generation:")
+        {
+            const int gen = atoi(s[0].c_str() + 11);
+            genHeadersSeen++;
+            if (gen != lastGenSeen)
+            {
+                lastGenSeen = gen;
+                rowsForLastGen.clear();
+            }
+            inDataBlock = true;
+            continue;
+        }
+
+        // Column header line: "ID, EngineeredSoilKsat, ..." — comma-separated,
+        // s[0] is exactly "ID".
+        if (s[0] == "ID") continue;
+
+        // Terminator: "Final Enhancements" — no commas, one token.
+        if (s[0].size() >= 5 && s[0].substr(0, 5) == "Final") break;
+
+        // Data row: comma-separated, columns are
+        //   [ID, EngKsat, NatAlpha, NatKsat, likelihood, Fitness, Rank, ...obs metrics...]
+        // We want columns 1..nParam (skip ID at column 0).
+        if (inDataBlock && static_cast<int>(s.size()) > GA_params.nParam)
+        {
+            vector<double> params(GA_params.nParam);
+            for (int i = 0; i < GA_params.nParam; i++)
+            {
+                params[i] = atof(s[i + 1].c_str());
+                // Convert to GA's internal log-space representation
+                // for parameters with log-normal priors.
+                if (loged[i] == 1)
+                    params[i] = log10(params[i]);
+            }
+            rowsForLastGen.push_back(params);
+            dataRowsSeen++;
+
+            if (dataRowsSeen <= 3)
+            {
+                std::cout << "[GA-DBG]    parsed row " << dataRowsSeen << ":";
+                for (auto v : params) std::cout << " " << v;
+                std::cout << "\n";
+            }
+
+            // Snapshot when we have a complete generation. Subsequent
+            // complete generations will overwrite, so initial_pop ends
+            // up holding the most recent complete generation in the file.
+            if (static_cast<int>(rowsForLastGen.size()) >= GA_params.maxpop)
+            {
+                initial_pop = rowsForLastGen;
+            }
+        }
     }
     file.close();
+
+    std::cout << "[GA-DBG] getinitialpop EXIT, lines=" << lineNum
+              << " genHeaders=" << genHeadersSeen
+              << " dataRows=" << dataRowsSeen
+              << " initial_pop.size=" << initial_pop.size() << "\n";
 }
-
-
