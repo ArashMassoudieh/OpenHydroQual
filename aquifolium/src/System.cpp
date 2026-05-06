@@ -845,6 +845,7 @@ void System::HandleSolveFailure(int& fail_counter, RestorePoint& restorepoint)
         + ", dt = " + aquiutils::numbertostring(SolverTempVars.dt));
 
 #ifndef Q_GUI_SUPPORT
+    if (!silent)
     cout << SolverTempVars.fail_reason.back()
         << ", dt = " << SolverTempVars.dt << endl;
 #endif
