@@ -46,7 +46,7 @@
 
 "external_source": {
   "type": "expression",
-  "expression": "_hsd(depth-max_depth_criteria)*increase_rate*_pos(max_gate_opening-mass)/_pos(max_gate_opening-mass+0.01) - _hsd(low_depth_criteria-depth)*decrease_rate*_pos(mass-min_safe_opening)/_pos(mass+0.01)",
+  "expression": "_hsd(head-max_depth_criteria)*increase_rate*_pos(max_gate_opening-mass)/_pos(max_gate_opening-mass+0.01) - _hsd(low_depth_criteria-head)*decrease_rate*_pos(mass)/_pos(mass+0.01)",
   "includeinoutput": "true",
   "description": "Rate of Change (with Min Safe Opening)",
   "ask_user": "false",
@@ -183,13 +183,19 @@
     	        "gate_opening" : {
 		      	"type": "expression",
 			"description": "Gate Opening",
-                       "expression" : "_hsd(Gate_Opening_1:mass.s-0.00001)*_max(_min(Gate_Opening_1:mass.s;Gate_Opening_1:max_gate_opening);Gate_Opening_1:min_safe_opening)",
+                       "expression" : "_hsd(Gate_Opening_1:mass.s-0.01)*_max(_min(Gate_Opening_1:mass.s;Gate_Opening_1:max_gate_opening);Gate_Opening_1:min_safe_opening)",
 			"includeinoutput" : "true"
 		},
 		"min_gate_opening" : {
 		      	"type": "expression",
 			"description": "Min Gate Opening",
                         "expression" : "Gate_Opening_1:min_safe_opening",
+			"includeinoutput" : "true"
+		},
+		"hsd" : {
+		      	"type": "expression",
+			"description": "hsd",
+                        "expression" : "_hsd(Gate_Opening_1:mass.s-0.01)",
 			"includeinoutput" : "true"
 		},
 		"length" : {
