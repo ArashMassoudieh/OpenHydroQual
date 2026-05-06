@@ -1,0 +1,183 @@
+{
+  "GSI_Block": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "GSI Block",
+    "icon": {
+      "filename": "stormwaterpond.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "The name of the pond object. Used for identifying it in the model interface and results."
+    },
+    "Storage": {
+      "description": "Initial Storage;Storage",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation,inflow",
+	  "initial_value_expression": "area*depth",
+      "ask_user": "false",
+      "unit": "m~^3;ft~^3",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "includeinoutput": "true",
+      "criteria": "Storage>-0.0000001",
+      "warningmessage": "Storage can not be a negaive number!",
+      "helptext": "Initial volume of water stored in the pond at the beginning of the simulation."
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "helptext": "The time series containing the inflow rate into the pond",
+      "description": "Inflow rate time series",
+      "ask_user": "true",
+      "delegate": "Browser"
+    },
+    "area": {
+      "type": "value",
+      "description": "Catchment area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+	  "unit": "m~^2",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "area must be positive!",
+      "helptext": "Catchment Area"
+    },
+    "runoff_coefficient": {
+      "type": "value",
+      "description": "Runoff coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "runoff_coefficient>0",
+      "warningmessage": "beta exponent must be positive!",
+      "helptext": "Runoff coefficient"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "Storage/area",
+      "description": "Water depth",
+	  "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "ask_user": "true",
+      "includeinoutput": "true"
+    },
+    "Precipitation": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "precipitation time series",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Select a precipitation source object that provides rainfall input to the pond."
+    },
+	"Effective_Precipitation": {
+      "type": "expression",
+      "expression": "Precipitation*runoff_coefficient",
+      "description": "Effective Precipitation",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom elevation of pond",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic head",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    }
+  },
+  "Outflow_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Outflow link",
+    "icon": {
+      "filename": "vnotchweir.png"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,200,200"
+    },
+    "crest_elevation": {
+      "type": "value",
+      "description": "Crest Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "alpha": {
+      "type": "value",
+      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "alpha>0",
+      "warningmessage": "alpha must be positive"
+    },
+    "beta": {
+      "type": "value",
+      "description": "Exponent beta in Q=alpha*(h-z_0)^beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "2.5",
+      "criteria": "beta>0",
+      "warningmessage": "beta must be positive"
+    },
+     "alpha2": {
+      "type": "value",
+      "description": "Coefficient alpha2 in Q=alpha2*d^beta2",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "alpha>0",
+      "warningmessage": "alpha must be positive"
+    },
+    "beta2": {
+      "type": "value",
+      "description": "Exponent beta2 in Q=alpha2*d^beta2",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "2.5",
+      "criteria": "beta>0",
+      "warningmessage": "beta must be positive"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "area.s*(alpha*_pos(head.s-crest_elevation)^beta+0*alpha2*d^beta2)",
+      "includeinoutput": "true",
+      "applylimit": "true"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "1",
+      "includeinoutput": "false",
+      "applylimit": "false"
+    },
+    "length": {
+      "type": "value",
+      "description": "length",
+      "default": "1",
+      "includeinoutput": "false"
+    }
+  }
+}
