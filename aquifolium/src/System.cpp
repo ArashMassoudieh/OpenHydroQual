@@ -904,7 +904,7 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
     }
 #endif
 
-    // Restore point — independent of GUI
+    // Restore point ï¿½ independent of GUI
     if ((counter - 1) % restore_interval == 0)
     {
         restorepoint.GetSystem()->CopyStateVariablesFrom(this);
@@ -915,7 +915,7 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
             + ": Restore point saved!");
     }
 
-    // Intermittent output writing — independent of GUI
+    // Intermittent output writing ï¿½ independent of GUI
     if (SimulationParameters.write_outputs_intermittently)
     {
         double phase_now = aquiutils::mod(
