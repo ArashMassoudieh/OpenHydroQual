@@ -1,6 +1,6 @@
 /*
  * OpenHydroQual - Environmental Modeling Platform
- * Copyright (C) 2025 Arash Massoudieh
+ * Copyright (C) 2025 EnviroInformatics, LLC
  *
  * This file is part of OpenHydroQual.
  *
