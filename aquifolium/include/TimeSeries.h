@@ -597,13 +597,14 @@ TimeSeries<T> operator>(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
 template<typename T>
 T sum_interpolate(const std::vector<TimeSeries<T>>& series_list, T time);
 
-template<typename T>
-T weighted_mse(const TimeSeries<T>& observed,
-               const TimeSeries<T>& model,
-               T t_now,
-               T Delta0,
-               T tau,
-               T alpha = T{1});
+template<class T>
+double weighted_mse(const TimeSeries<T>& obs,
+    const TimeSeries<T>& mod,
+    double t_now,
+    double Delta0,
+    double tau,
+    double alpha,
+    double* sum_w_out = nullptr);
 
 
 namespace TimeSeriesMetrics {
