@@ -48,6 +48,17 @@
       "warningmessage": "alpha coefficient must be positive!",
       "helptext": "The coefficient (~alpha) in the pond volume-depth relationship: Storage = alpha * depth^beta."
     },
+    "alpha_multiplier": {
+      "type": "value",
+      "description": "Alpha multiplier - This number is multiplied by alpha parameter (for calibration of multiple ponds)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "alpha_multiplier>0",
+      "warningmessage": "alpha multiplier must be positive!",
+      "helptext": "The coefficient (~alpha) in the pond volume-depth relationship: Storage = alpha * depth^beta."
+    },
     "beta": {
       "type": "value",
       "description": "The exponent (~beta) in the rating curve S = ~alpha d^~beta",
@@ -61,7 +72,7 @@
     },
     "depth": {
       "type": "expression",
-      "expression": "_pos(Storage^2/(alpha*(Storage+0.1)))^(1/beta)",
+      "expression": "_pos(Storage^2/(alpha_multiplier*alpha*(Storage+0.1)))^(1/beta)",
       "description": "Water depth",
       "ask_user": "false",
       "includeinoutput": "true",
@@ -102,7 +113,7 @@
     },
     "area": {
       "type": "expression",
-      "expression": "alpha*beta*(depth^(beta-1))",
+      "expression": "alpha*alpha_multiplier*beta*(depth^(beta-1))",
       "description": "Surface area",
       "ask_user": "false",
       "includeinoutput": "true",
