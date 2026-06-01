@@ -347,6 +347,7 @@
       "includeinoutput": "false",
       "ask_user": "true",
       "delegate": "UnitBox",
+      "estimate": "true",
       "unit": "m/day;ft/day;cm/s;in/s;m/s",
       "criteria": "hydraulic_conductivity>0",
       "warningmessage": "Hydraulic conductivity must be greater than zero"
