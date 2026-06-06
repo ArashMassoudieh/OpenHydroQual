@@ -2305,11 +2305,24 @@ void MainWindow::onrunmodel()
         if (copiedsystem.observation(i)->GetModeledTimeSeries()!=nullptr)
             if (copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()!=nullptr)
                 mapped_modeled_results.append(copiedsystem.observation(i)->GetModeledTimeSeries()->interpol(copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()),copiedsystem.observation(i)->GetName());
-
     }
-
     ObjectiveFunctionValues.writetofile(workingfolder.toStdString() + "/" + "objective_function_values.txt");
-    FitMeasures.writetofile(workingfolder.toStdString() + "/" + "fit_measures.txt");
+
+    // Write fit measures with observation names and labels
+    std::ofstream fitfile(workingfolder.toStdString() + "/" + "fit_measures.txt");
+    fitfile << "Observation\tMSE\tR2\tNSE\n";
+    for (unsigned int i=0; i<copiedsystem.ObservationsCount(); i++)
+    {
+        fitfile << copiedsystem.observation(i)->GetName();
+        if (copiedsystem.observation(i)->fit_measures.size()==3)
+            for (unsigned int j=0; j<3; j++)
+                fitfile << "\t" << copiedsystem.observation(i)->fit_measures[j];
+        else
+            fitfile << "\t\t\t";
+        fitfile << "\n";
+    }
+    fitfile.close();
+
     mapped_modeled_results.write(workingfolder.toStdString() + "/" + "mapped_modeled_results.txt");
     actionrun->setEnabled(true);
     rtw->AppendLog(std::string("All tasks finished!"));

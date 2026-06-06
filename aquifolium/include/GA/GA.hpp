@@ -364,7 +364,16 @@ void CGA<T>::assignfitnesses()
 
 
 #ifndef NO_OPENMP
-	omp_set_num_threads(numberOfThreads);
+    omp_set_num_threads(numberOfThreads);
+
+// --- diagnostic: confirm OpenMP is live and how many threads ---
+#pragma omp parallel
+    {
+#pragma omp single
+        std::cout << "OMP active, threads=" << omp_get_num_threads()
+                  << " / max " << omp_get_max_threads()
+                  << ", numberOfThreads=" << numberOfThreads << std::endl;
+    }
 #endif
 int counter=0;
 #ifndef NO_OPENMP
