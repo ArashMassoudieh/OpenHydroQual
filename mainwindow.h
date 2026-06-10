@@ -34,13 +34,17 @@
 #include "aboutdialog.h"
 #include "undodata.h"
 #include "ItemPropertiesWidget.h"
+#include <QDir>
 
 #ifdef windows_version
     #define RESOURCE_DIRECTORY qApp->applicationDirPath().toStdString()+"/../../resources"
 #endif
 
 #ifdef ubuntu_version
-    #define RESOURCE_DIRECTORY qApp->applicationDirPath().toStdString()+"/../../resources"
+    #define RESOURCE_DIRECTORY \
+        (QDir(QString::fromStdString(qApp->applicationDirPath().toStdString()+"/../resources")).exists() ? \
+        qApp->applicationDirPath().toStdString()+"/../resources" : \
+        qApp->applicationDirPath().toStdString()+"/../../resources")
 #endif
 
 #ifdef mac_version
