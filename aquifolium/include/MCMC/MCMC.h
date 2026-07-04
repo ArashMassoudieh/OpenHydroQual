@@ -71,7 +71,9 @@ struct _MCMC_settings
 
 };
 
+#ifdef Q_GUI_SUPPORT
 class ProgressWindow;
+#endif
 class Parameter_Set;
 class Parameter;
 
@@ -136,7 +138,9 @@ public:
     void get_outputpercentiles(TimeSeriesSet<double> &MCMCout);
 
 	vector<double> calc_output_percentiles;
+#ifdef Q_GUI_SUPPORT
     void SetProgressWindow(ProgressWindow *_rtw);
+#endif
 	double accepted_count=0, total_count=0;
     string last_error;
     void Perform();

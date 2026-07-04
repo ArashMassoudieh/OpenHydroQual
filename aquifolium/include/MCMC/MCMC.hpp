@@ -28,7 +28,7 @@
 #endif
 #include "Utilities.h"
 #include "Parameter_Set.h"
-
+#include <thread>
 #ifndef _WINDOWS
 #ifndef _MacOS
 extern "C" {
@@ -461,6 +461,7 @@ vector<double> CMCMC<T>::purturb(int k)
 	return X;
 }
 
+#ifdef Q_GUI_SUPPORT
 template<class T>
 bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 {
@@ -611,6 +612,7 @@ void CMCMC<T>::SetProgressWindow(ProgressWindow *_rtw)
 {
     rtw = _rtw;
 }
+#endif
 
 template<class T>
 CMCMC<T>::CMCMC(T *_system)

@@ -1827,14 +1827,17 @@ bool TimeSeries<T>::wiggle_sl(T tol) const {
 
 template<typename T>
 void TimeSeries<T>::knock_out(T cutoff_time) {
-    size_t keep_count = 0;
-
-    while (keep_count < this->size() && (*this)[keep_count].t <= cutoff_time) {
-        ++keep_count;
+    // Rebuild keeping only samples whose *time* (via getTime) is <= cutoff.
+    // Uses getTime() rather than the raw .t member, and does not assume
+    // the series is sorted.
+    TimeSeries<T> kept;
+    kept.setName(this->name());
+    for (size_t i = 0; i < this->size(); ++i) {
+        if (this->getTime(i) <= cutoff_time)
+            kept.append(this->getTime(i), this->getValue(i));
     }
-
-    this->resize(keep_count);
-    max_fabs_valid_ = false;  // Invalidate cached max_fabs since data changed
+    *this = kept;
+    max_fabs_valid_ = false;
 }
 
 template<typename T>
