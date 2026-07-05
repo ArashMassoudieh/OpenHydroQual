@@ -188,6 +188,7 @@ double Parameter::CalcPriorProbability(const double &x)
         else
             return 1e-30;
     }
+    return 1e-30;
 }
 
 double Parameter::CalcLogPriorProbability(const double &x)
@@ -206,4 +207,5 @@ double Parameter::CalcLogPriorProbability(const double &x)
         else
             return log(1e-30);
     }
+    return 1e-30;
 }

@@ -46,6 +46,7 @@ class QuanSet: public unordered_map<string, Quan>
         size_t Count(const string &s) const {return count(s);}
         Quan& operator[] (const string &s);
         Quan& GetVar(const string &s);
+        static Quan& missingQuanDummy();
         Quan* GetVar(int i);
         Quan* GetVarAskable(int i);
         void UnUpdateAllValues();

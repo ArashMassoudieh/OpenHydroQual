@@ -711,18 +711,17 @@ vector<string> Object::ItemswithOutput()
 const vector<string> &Object::operators() const
 {
     if (parent)
-    {
         return parent->operators;
-    }
-
-
+    static const vector<string> s_empty;
+    return s_empty;
 }
+
 const vector<string> &Object::functions() const
 {
     if (parent)
-    {
         return parent->functions;
-    }
+    static const vector<string> s_empty;
+    return s_empty;
 }
 
 bool Object::RenameConstituents(const string &oldname, const string &newname)

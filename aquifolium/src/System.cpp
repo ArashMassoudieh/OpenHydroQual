@@ -2969,8 +2969,9 @@ QStringList System::QGetAllObjectsofTypeCategory(QString _type)
 			out.append(QString::fromStdString(Parameters().getKeyAtIndex(i)));
 
 	if (_type == "Objective_Functions")
+        return out;
 
-	return out;
+    return out;
 }
 #endif // Qt_version
 

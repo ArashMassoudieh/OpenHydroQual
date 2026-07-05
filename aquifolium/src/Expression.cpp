@@ -1080,7 +1080,7 @@ int Expression::find_order_of_source_container(int j)
                 return find_order_of_source_container(-CalculationStructure.targets[aquiutils::lookup(CalculationStructure.sources,j,true)]-1000);
         }
     }
-
+    return -1;
 }
 
 int Expression::get_target_item_of_term(int term_id)

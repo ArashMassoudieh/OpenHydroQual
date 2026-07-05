@@ -235,11 +235,19 @@ void QuanSet::Append(QuanSet &qset)
 
 }
 
+Quan& QuanSet::missingQuanDummy()
+{
+    static thread_local Quan s_missing;
+    s_missing = Quan();   // reset: a previous miss's writes don't leak
+    return s_missing;
+}
+
 Quan& QuanSet::operator[] (const string &s)
 {
     if (!Find((s)))
     {
         last_error = "Variable " + s + " does not exist!";
+        return missingQuanDummy();
     }
     else
         return at(s);
@@ -250,6 +258,7 @@ Quan& QuanSet::GetVar(const string &s)
     if (!Find(s))
     {
         AppendError(Name(),"QuanSet","GetVar","Variable " + s + " does not exist!",2001);
+        return missingQuanDummy();
     }
     else
         return at(s);
