@@ -462,6 +462,153 @@
       "ask_user": "true",
       "estimate": "true"
     }
+  },
+  "Flow_control_device (function, uncertain)": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Flow control device (function, forecast uncertainty)",
+    "icon": {
+      "filename": "control_valve.png"
+    },
+    "timeseries": {
+      "type": "timeseries_prec",
+      "includeinoutput": "true",
+      "description": "Precipitation intensity (real)",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "m/day;mm/day;mm/hr"
+   },
+    "timeseries_corrupted": {
+      "type": "timeseries_prec",
+      "includeinoutput": "true",
+      "description": "Precipitation intensity (corrupted/noisy)",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "m/day;mm/day;mm/hr"
+   },
+   "kernel_delay_parameter": {
+      "type": "value",
+      "default": "5",
+      "description": "Mean kernel delay time",
+      "delegate": "UnitBox",
+      "unit": "day",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "The mean time of the exponential kernel function for precipitation forcast",
+      "criteria": "kernel_delay_parameter>0",
+      "warningmessage": "Mean kernel delay time must be greater than zero"
+    },
+   "time_scale": {
+      "type": "value",
+      "default": "5",
+      "description": "Forecast trust time scale",
+      "delegate": "UnitBox",
+      "unit": "day",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "Time scale over which the forecast decays from the real precipitation (near future) to the corrupted precipitation (far future). The real series is weighted by exp(-(tau-t)/time_scale) and the corrupted series by 1-exp(-(tau-t)/time_scale).",
+      "criteria": "time_scale>0",
+      "warningmessage": "Forecast trust time scale must be greater than zero"
+    },
+    "diameter": {
+      "type": "value",
+      "default": "0.2",
+      "description": "Diameter",
+      "delegate": "UnitBox",
+      "unit": "m;ft;in;cm",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "Valve Diameter",
+      "criteria": "diameter>0",
+      "warningmessage": "Diameter must be greater than zero"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Area",
+      "expression": "3.1415*(diameter^2)/4",
+      "unit": "m^2;ft^2;inch^2"
+    },
+    "max_flow": {
+      "type": "expression",
+      "description": "Maximum flow",
+      "includeinoutput": "true",
+      "expression": "86400*_sqr(2*9.81*_pos(head.s-head.e)/valve_K)*area",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "valve_K": {
+      "type": "expression",
+      "description": "Headloss coefficient for valve",
+      "includeinoutput": "true",
+      "expression": "flow_scale/(kernel_smoothed_forcast+0.0000001)"
+    },
+    "effective_K": {
+      "type": "expression",
+      "description": "Headloss coefficient for valve (truncated)",
+      "includeinoutput": "true",
+      "expression": "_hsd(kernel_smoothed_forcast-threshold)*valve_K"
+    },
+     "flow_scale": {
+      "type": "value",
+      "default": "20",
+      "description": "Valve Flow factor",
+      "delegate": "UnitBox",
+      "unit": "m/day",
+      "ask_user": "true",
+      "estimate": "true",
+      "helptext": "The scale factor detemining the flow as a function of rain forcast",
+      "criteria": "flow_scale>0",
+      "warningmessage": "Flow scale must be greater than zero"
+    },
+   "lambda": {
+	"type": "expression",
+	"expression": "1/kernel_delay_parameter",
+	"description": "lambda (kernel decay rate)",
+	"includeinoutput": "false",
+        "ask_user": "false"
+   },
+   "mu": {
+	"type": "expression",
+	"expression": "1/kernel_delay_parameter+1/time_scale",
+	"description": "mu (combined kernel + trust decay rate)",
+	"includeinoutput": "false",
+        "ask_user": "false"
+   },
+   "ratio": {
+	"type": "expression",
+	"expression": "lambda/mu",
+	"description": "lambda/mu weighting factor",
+	"includeinoutput": "false",
+        "ask_user": "false"
+   },
+   "kernel_smoothed_forcast": {
+	"type": "expression",
+	"expression": "ratio*_ekr(timeseries;mu)+_ekr(timeseries_corrupted;lambda)-ratio*_ekr(timeseries_corrupted;mu)",
+	"description": "Kernel Smoothed Forcast (time-dependent real/corrupted blend)",
+	"includeinoutput": "true",
+        "ask_user": "false",
+        "unit": "m/day;mm/day;mm/hr"
+   },
+    "flow": {
+      "type": "rule",
+      "description": "Flow",
+      "rule": {
+	      "kernel_smoothed_forcast<threshold": "0",
+	      "kernel_smoothed_forcast>threshold": "max_flow"
+    	},
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s"
+    },
+    "threshold": {
+      "type": "value",
+      "default": "0",
+      "description": "Threshold",
+      "delegate": "UnitBox",
+      "unit": "m/day",
+      "ask_user": "true",
+      "estimate": "true"
+    }
   }
-  
+
 }
