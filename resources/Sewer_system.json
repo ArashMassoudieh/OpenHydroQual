@@ -801,5 +801,284 @@
       "default": "250,0,50",
       "ask_user": "false"
     }
+  },
+  "Street Gutter Segment": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Street Gutter Segment",
+    "icon": {
+      "filename": "street_gutter.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "initial_value_expression": "length*(base_width+0.5*side_slope*depth)*depth",
+      "ask_user": "false",
+      "estimate": "true",
+      "unit": "m^3;ft^3"
+    },
+    "base_width": {
+      "type": "value",
+      "description": "Gutter Base Width",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "default": "0",
+      "criteria": "base_width>-0.0000001",
+      "warningmessage": "Base width must be non-negative",
+      "helptext": "Width of the flat bottom of the gutter pan. Set to zero for a pure triangular (curb-and-pavement) gutter section."
+    },
+    "side_slope": {
+      "type": "value",
+      "description": "Pavement Cross Slope (H:V)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "40",
+      "criteria": "side_slope>0",
+      "warningmessage": "Side slope must be greater than zero",
+      "helptext": "Horizontal-to-vertical ratio of the inclined pavement (street) side of the gutter. A value of 40 corresponds to a 2.5% street cross slope. The opposite side is the vertical curb face."
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's Roughness Coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.016",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness must be greater than zero",
+      "helptext": "Roughness coefficient used in Manning's equation to estimate flow resistance. A default of 0.016 is typical for a concrete street gutter."
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "helptext": "Elevation of the gutter invert relative to the model's vertical datum."
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "(-base_width+_sqt(base_width^2+2*side_slope*Storage/length))/side_slope",
+      "description": "Initial Water Depth; Water Depth",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "includeinoutput": "true",
+      "criteria": "depth>-0.0000001",
+      "warningmessage": "Depth must be non-negative",
+      "helptext": "Depth of water measured at the vertical curb face. If depth is initially unknown, it is estimated based on storage."
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic Head",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "length": {
+      "type": "value",
+      "description": "Segment length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero",
+      "helptext": "Length of the gutter segment in the direction of flow."
+    },
+    "area": {
+      "type": "expression",
+      "expression": "(base_width+0.5*side_slope*depth)*depth",
+      "description": "Cross-sectional area",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2"
+    },
+    "spread": {
+      "type": "expression",
+      "expression": "base_width+side_slope*depth",
+      "description": "Top width / spread",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "perimeter": {
+      "type": "expression",
+      "expression": "base_width+depth+_sqt(1+side_slope^2)*depth",
+      "description": "Wetted Perimeter",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "helptext": "Inflow time series (e.g., surface runoff entering the gutter).",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    }
+  },
+  "Gutter2Gutter_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Link from a street gutter segment to another",
+    "icon": {
+      "filename": "gutter_link.png"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(_bkw(head;area);0)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "(perimeter.s+perimeter.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Velocity",
+      "expression": "flow/area/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    }
+  },
+  "Curb_cut": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Curb cut from a street gutter segment to a receiving block",
+    "icon": {
+      "filename": "curb_cut.png"
+    },
+    "width": {
+      "type": "value",
+      "description": "Curb cut width",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "criteria": "width>0",
+      "warningmessage": "Curb cut width must be greater than zero",
+      "helptext": "Length of the curb opening measured along the curb line. Acts as the crest length of the rectangular weir."
+    },
+    "crest_offset": {
+      "type": "value",
+      "description": "Crest elevation above the gutter invert",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "default": "0",
+      "helptext": "Elevation of the curb cut invert relative to the bottom elevation of the gutter segment it is attached to. Zero means the cut is flush with the gutter invert."
+    },
+    "discharge_coefficient": {
+      "type": "value",
+      "description": "Discharge coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.6",
+      "criteria": "discharge_coefficient>0",
+      "warningmessage": "Discharge coefficient must be greater than zero",
+      "helptext": "Weir discharge coefficient. A value of 0.6 corresponds to the standard free rectangular weir coefficient of 1.77 m^0.5/s (about 3.2 in US units)."
+    },
+    "crest_elevation": {
+      "type": "expression",
+      "description": "Curb cut crest elevation",
+      "expression": "bottom_elevation.s+crest_offset",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "h_gutter": {
+      "type": "expression",
+      "description": "Gutter head above the crest",
+      "expression": "_pos(head.s-crest_elevation)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;cm;in"
+    },
+    "h_target": {
+      "type": "expression",
+      "description": "Receiving block head above the crest",
+      "expression": "_pos(head.e-crest_elevation)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;cm;in"
+    },
+    "driving_head": {
+      "type": "expression",
+      "description": "Driving head",
+      "expression": "h_gutter-h_target",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*discharge_coefficient*width*(2.9525*driving_head*_sqr(_abs(driving_head))+_min(h_gutter;h_target)*_sqt(19.62*driving_head))",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "0,150,100",
+      "ask_user": "false"
+    }
   }
 }
