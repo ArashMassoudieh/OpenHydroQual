@@ -123,7 +123,13 @@ double Observation::CalcMisfit()
                 fit_measures.push_back(fit_mse);
                 fit_measures.push_back(_R2);
                 fit_measures.push_back(Nash_Sutcliffe_efficiency);
-                return Variable("observed_data")->GetTimeSeries()->size()*(fit_mse/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
+                // Gaussian negative log-likelihood, constants dropped:
+                //   -log L = N*log(sigma) + sum_i r_i^2 / (2 sigma^2)
+                // diff2() returns the MEAN squared error, so sum_i r_i^2 =
+                // N * fit_mse and the whole thing is N*(MSE/(2 sigma^2) +
+                // log sigma). The factor 2 is what makes sigma's MAP the
+                // RMS residual; without it sigma is inflated by sqrt(2).
+                return Variable("observed_data")->GetTimeSeries()->size()*(fit_mse/(2.0*pow(Variable("error_standard_deviation")->GetVal(),2))+log(Variable("error_standard_deviation")->GetVal()));
 
             }
             else if (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal")
@@ -134,7 +140,8 @@ double Observation::CalcMisfit()
                 fit_measures.push_back(fit_mse);
                 fit_measures.push_back(_R2);
                 fit_measures.push_back(Nash_Sutcliffe_efficiency);
-                return Variable("observed_data")->GetTimeSeries()->size()*(fit_mse/pow(Variable("error_standard_deviation")->GetVal(),2)+log(Variable("error_standard_deviation")->GetVal()));
+                // Same Gaussian NLL as the normal branch, in log space.
+                return Variable("observed_data")->GetTimeSeries()->size()*(fit_mse/(2.0*pow(Variable("error_standard_deviation")->GetVal(),2))+log(Variable("error_standard_deviation")->GetVal()));
             }
             else
                 return 0;
@@ -196,7 +203,12 @@ double Observation::CalcMisfit()
             fit_measures.push_back(_R2);
             fit_measures.push_back(Nash_Sutcliffe_efficiency);
 
-            return sum_w * (fit_mse / pow(sigma, 2) + log(sigma));
+            // Kernel-weighted Gaussian NLL, constants dropped:
+            //   -log L = sum_w*log(sigma) + sum_i w_i r_i^2 / (2 sigma^2)
+            // weighted_mse() returns the WEIGHTED MEAN squared error, so
+            // sum_i w_i r_i^2 = sum_w * fit_mse. sum_w is the kernel
+            // effective sample size, replacing N.
+            return sum_w * (fit_mse / (2.0 * pow(sigma, 2)) + log(sigma));
         }
         else
         {

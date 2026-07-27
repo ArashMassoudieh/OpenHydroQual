@@ -2697,7 +2697,7 @@ TimeSeries<T> TimeSeries<T>::add_OU_noise(T sigma, T tau) const {
 // If `sum_w_out` is non-null, the accumulated sum of weights is written to
 // it on return. This is the effective sample size under the kernel and is
 // needed by callers that build a proper weighted-likelihood misfit
-// (e.g. sum_w * (WMSE / sigma^2 + log(sigma))). The kernel is computed
+// (e.g. sum_w * (WMSE / (2 sigma^2) + log(sigma))). The kernel is computed
 // once, so retrieving sum_w this way avoids a second pass.
 //
 // Edge cases:
@@ -2726,7 +2726,7 @@ TimeSeries<T> TimeSeries<T>::add_OU_noise(T sigma, T tau) const {
 // If `sum_w_out` is non-null, the accumulated sum of weights is written to
 // it on return. This is the effective sample size under the kernel and is
 // needed by callers that build a proper weighted-likelihood misfit
-// (e.g. sum_w * (WMSE / sigma^2 + log(sigma))). The kernel is computed
+// (e.g. sum_w * (WMSE / (2 sigma^2) + log(sigma))). The kernel is computed
 // once, so retrieving sum_w this way avoids a second pass.
 //
 // Edge cases:
