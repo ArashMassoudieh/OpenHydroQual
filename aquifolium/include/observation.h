@@ -63,6 +63,19 @@ class Observation: public Object
         void SetPercentile95(const TimeSeriesSet<double>& rpct95) {percentile95 = rpct95;}
         TimeSeriesSet<double>& Percentile95() {return percentile95;}
         vector<double> fit_measures;
+
+        // Effective-information scale for this observation's likelihood.
+        // Residuals are serially correlated (sensor noise AND model structural
+        // error), so N observations carry only N/tau_int independent pieces of
+        // information. CalcMisfit divides the log-likelihood by this factor so
+        // the posterior width reflects information actually present rather than
+        // the raw sample count. 1.0 = no correction (default; previous
+        // behaviour). Set externally per cycle -- it is a property of the
+        // residual series, not of the model file, so it is deliberately NOT a
+        // Quan and does not appear in templates.
+        void SetLikelihoodScale(double s) { likelihood_scale = (s > 0.0 ? s : 1.0); }
+        double GetLikelihoodScale() const { return likelihood_scale; }
+
     protected:
 
     private:
@@ -73,6 +86,7 @@ class Observation: public Object
         System *system; // pointer to the system the observation is evaluated at
         string lasterror;
         double current_value=0;
+        double likelihood_scale=1.0; // tau_int; divides the log-likelihood
         string outputitem="";
         TimeSeriesSet<double> realizations;
         TimeSeriesSet<double> percentile95;

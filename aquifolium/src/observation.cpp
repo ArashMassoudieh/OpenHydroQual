@@ -55,6 +55,8 @@ Observation::Observation(const Observation& other)
     location = other.location;
     modeled_time_series = other.modeled_time_series;
     observed_time_series = other.observed_time_series;
+    likelihood_scale = other.likelihood_scale;   // must survive System copies:
+                                                 // every MCMC chain works on a copy
 }
 
 Observation& Observation::operator=(const Observation& rhs)
@@ -64,6 +66,7 @@ Observation& Observation::operator=(const Observation& rhs)
     expression = rhs.expression;
     location = rhs.location;
     observed_time_series = rhs.observed_time_series;
+    likelihood_scale = rhs.likelihood_scale;
     modeled_time_series.clear();
     return *this;
 }
@@ -129,7 +132,7 @@ double Observation::CalcMisfit()
                 // N * fit_mse and the whole thing is N*(MSE/(2 sigma^2) +
                 // log sigma). The factor 2 is what makes sigma's MAP the
                 // RMS residual; without it sigma is inflated by sqrt(2).
-                return Variable("observed_data")->GetTimeSeries()->size()*(fit_mse/(2.0*pow(Variable("error_standard_deviation")->GetVal(),2))+log(Variable("error_standard_deviation")->GetVal()));
+                return (Variable("observed_data")->GetTimeSeries()->size()/likelihood_scale)*(fit_mse/(2.0*pow(Variable("error_standard_deviation")->GetVal(),2))+log(Variable("error_standard_deviation")->GetVal()));
 
             }
             else if (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal")
@@ -141,7 +144,7 @@ double Observation::CalcMisfit()
                 fit_measures.push_back(_R2);
                 fit_measures.push_back(Nash_Sutcliffe_efficiency);
                 // Same Gaussian NLL as the normal branch, in log space.
-                return Variable("observed_data")->GetTimeSeries()->size()*(fit_mse/(2.0*pow(Variable("error_standard_deviation")->GetVal(),2))+log(Variable("error_standard_deviation")->GetVal()));
+                return (Variable("observed_data")->GetTimeSeries()->size()/likelihood_scale)*(fit_mse/(2.0*pow(Variable("error_standard_deviation")->GetVal(),2))+log(Variable("error_standard_deviation")->GetVal()));
             }
             else
                 return 0;
@@ -208,7 +211,7 @@ double Observation::CalcMisfit()
             // weighted_mse() returns the WEIGHTED MEAN squared error, so
             // sum_i w_i r_i^2 = sum_w * fit_mse. sum_w is the kernel
             // effective sample size, replacing N.
-            return sum_w * (fit_mse / (2.0 * pow(sigma, 2)) + log(sigma));
+            return (sum_w / likelihood_scale) * (fit_mse / (2.0 * pow(sigma, 2)) + log(sigma));
         }
         else
         {
