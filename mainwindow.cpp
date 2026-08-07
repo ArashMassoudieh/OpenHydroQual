@@ -14,7 +14,7 @@
  */
 
 
-#define openhydroqual_version "2.0.5"
+#define openhydroqual_version "2.0.6"
 #define last_modified "August, 7, 2026"
 
 #ifdef _WIN32

@@ -4,7 +4,7 @@ set -e  # Exit on error
 
 # === Settings ===
 PACKAGE_NAME="openhydroqual"
-VERSION="2.0.5"
+VERSION="2.0.6"
 ARCH="amd64"
 VERSIONED_DEB_FILE="${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
 FIXED_NAME="openhydroqual_amd64.deb"

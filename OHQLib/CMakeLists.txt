@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(OHQLib
-    VERSION 2.0.5
+    VERSION 2.0.6
     DESCRIPTION "OpenHydroQual Aquifolium Simulation Engine"
     LANGUAGES CXX
 )
@@ -130,6 +130,7 @@ set(OHQ_SOURCES
     ${AQUIFOLIUM_ROOT}/src/ErrorHandler.cpp
     ${AQUIFOLIUM_ROOT}/src/Expression.cpp
     ${AQUIFOLIUM_ROOT}/src/Link.cpp
+    ${AQUIFOLIUM_ROOT}/src/Composite.cpp
     ${AQUIFOLIUM_ROOT}/src/Matrix.cpp
     ${AQUIFOLIUM_ROOT}/src/Matrix_arma.cpp
     ${AQUIFOLIUM_ROOT}/src/MetaModel.cpp
@@ -188,6 +189,7 @@ set(OHQ_HEADERS
     ${AQUIFOLIUM_ROOT}/include/BTCSet.h
     ${AQUIFOLIUM_ROOT}/include/Expression.h
     ${AQUIFOLIUM_ROOT}/include/Link.h
+    ${AQUIFOLIUM_ROOT}/include/Composite.h
     ${AQUIFOLIUM_ROOT}/include/Matrix.h
     ${AQUIFOLIUM_ROOT}/include/Matrix_arma.h
     ${AQUIFOLIUM_ROOT}/include/MetaModel.h
@@ -315,7 +317,7 @@ endif()
 
 # ── Versioning ───────────────────────────────────────────────────────────────
 set_target_properties(OHQLib PROPERTIES
-    VERSION   ${PROJECT_VERSION}        # libOHQLib.so.2.0.5
+    VERSION   ${PROJECT_VERSION}        # libOHQLib.so.2.0.6
     SOVERSION ${PROJECT_VERSION_MAJOR}  # libOHQLib.so.2
     OUTPUT_NAME OHQLib
 )
