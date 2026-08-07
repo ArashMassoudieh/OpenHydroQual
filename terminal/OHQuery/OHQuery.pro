@@ -87,6 +87,7 @@ SOURCES += \
         ../../aquifolium/src/ErrorHandler.cpp \
         ../../aquifolium/src/Expression.cpp \
         ../../aquifolium/src/Link.cpp \
+        ../../aquifolium/src/Composite.cpp \
         ../../aquifolium/src/Matrix.cpp \
         ../../aquifolium/src/Matrix_arma.cpp \
         ../../aquifolium/src/MetaModel.cpp \
@@ -157,6 +158,7 @@ HEADERS += \
     ../../aquifolium/include/safevector.hpp \
     ../../aquifolium/include/Block.h \
     ../../aquifolium/include/Link.h \
+    ../../aquifolium/include/Composite.h \
     ../../aquifolium/include/Matrix.h \
     ../../aquifolium/include/Matrix_arma.h \
     ../../aquifolium/include/MetaModel.h \

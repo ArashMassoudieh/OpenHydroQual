@@ -182,6 +182,7 @@ SOURCES += \
     expressioneditor.cpp \
     logwindow.cpp \
     ./aquifolium/src/Link.cpp \
+    ./aquifolium/src/Composite.cpp \
     ./aquifolium/src/reaction.cpp \
     wizard_select_dialog.cpp
 
@@ -227,6 +228,7 @@ HEADERS += \
     ./aquifolium/include/Block.h \
     ./aquifolium/include/Expression.h \
     ./aquifolium/include/Link.h \
+    ./aquifolium/include/Composite.h \
     ./aquifolium/include/Matrix.h \
     ./aquifolium/include/Matrix_arma.h \
     ./aquifolium/include/MetaModel.h \

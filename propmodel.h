@@ -26,6 +26,7 @@ private:
     Q_OBJECT
     QuanSet *quanset = nullptr;
     MainWindow *mainwindow;
+    bool readonly = false;
 public:
     PropModel(QuanSet*, QObject *parent = nullptr, MainWindow *_mainwindow = nullptr);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -35,6 +36,14 @@ public:
     bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex & index) const override;
     System* GetSystem();
+    /**
+     * @brief Whether the displayed object is a composite member
+     *
+     * Member values are fully determined by their composite's group-level
+     * properties, so they are shown but never edited. To change one, expose it
+     * in the composite type or ungroup the composite.
+     */
+    bool IsReadOnly() const {return readonly;}
 private:
     int rows(const QModelIndex & index = QModelIndex()) const{
 

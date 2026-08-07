@@ -96,6 +96,80 @@
     },
     "helptext": "Fixed flow"
   },
+  "Effluent flow": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Effluent flow (clarified water drawn from the top of a clarifier)",
+    "icon": {
+      "filename": "effluent_flow.png"
+    },
+    "flow": {
+      "type": "value",
+      "description": "Flow rate",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s",
+      "helptext": "Flow rate of the clarified effluent. Behaves exactly like a fixed flow; the separate type is what lets a Clarifier draw effluent from its upper compartment while sludge leaves the lower one."
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "0.000000001",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "60,170,230"
+    },
+    "helptext": "Effluent flow"
+  },
+  "Sludge flow": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Sludge flow (underflow drawn from the bottom of a clarifier)",
+    "icon": {
+      "filename": "sludge_flow.png"
+    },
+    "flow": {
+      "type": "value",
+      "description": "Flow rate",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s",
+      "helptext": "Flow rate of the sludge stream. Behaves exactly like a fixed flow; the separate type is what lets a Clarifier route return and waste sludge out of its lower compartment while influent and effluent attach to the upper one."
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "0.000000001",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "150,75,0"
+    },
+    "helptext": "Sludge flow"
+  },
   "Sedimentation tank element interface": {
     "type": "link",
     "typecategory": "Connectors",
@@ -147,5 +221,145 @@
       "default": "0,0,200"
     },
     "helptext": "Settling element interface"
+  },
+  "Clarifier": {
+    "type": "composite",
+    "typecategory": "Blocks",
+    "description": "Clarifier: upper (clarification) and lower (thickening) settling compartments",
+    "icon": {
+      "filename": "clarifier.png"
+    },
+    "helptext": "A two-compartment secondary clarifier. Influent attaches to the upper compartment, clarified water leaves it through an 'Effluent flow' link, and return and waste sludge are drawn from the lower compartment through 'Sludge flow' links.",
+    "members": {
+      "Upper": {
+        "type": "Settling compartment",
+        "dx": "0",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Lower": {
+        "type": "Settling compartment",
+        "dx": "0",
+        "dy": "250",
+        "_width": "200",
+        "_height": "200"
+      }
+    },
+    "internal_links": {
+      "interface": {
+        "type": "Sedimentation tank element interface",
+        "from": "Upper",
+        "to": "Lower"
+      }
+    },
+    "external_links": {
+      "*": {
+        "from": "Upper",
+        "to": "Upper"
+      },
+      "Effluent flow": {
+        "from": "Upper",
+        "to": "Upper"
+      },
+      "Sludge flow": {
+        "from": "Lower",
+        "to": "Lower"
+      }
+    },
+    "surface_area": {
+      "type": "value",
+      "description": "Cross-sectional area of the compartment interface",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^2;ft^2",
+      "default": "100",
+      "estimate": "true",
+      "criteria": "surface_area>0",
+      "warningmessage": "The surface area must be positive!",
+      "helptext": "Plan area over which solids settle from the upper compartment into the lower one.",
+      "applyto": {
+        "interface#area": "surface_area"
+      }
+    },
+    "underflow": {
+      "type": "value",
+      "description": "Flow drawn from the upper into the lower compartment",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s",
+      "default": "95",
+      "estimate": "true",
+      "helptext": "Total underflow, i.e. the sum of the return and waste sludge streams leaving the lower compartment.",
+      "applyto": {
+        "interface#constant_flow": "underflow"
+      }
+    },
+    "underflow_timeseries": {
+      "type": "timeseries",
+      "description": "Time variable component of the underflow",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "applyto": {
+        "interface#time_variable_flow": "underflow_timeseries"
+      }
+    },
+    "interface_elevation": {
+      "type": "value",
+      "description": "Elevation of the interface between the two compartments",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "helptext": "Bottom of the upper compartment.",
+      "applyto": {
+        "Upper#bottom_elevation": "interface_elevation"
+      }
+    },
+    "floor_elevation": {
+      "type": "value",
+      "description": "Elevation of the clarifier floor",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "-1",
+      "helptext": "Bottom of the lower compartment.",
+      "applyto": {
+        "Lower#bottom_elevation": "floor_elevation"
+      }
+    },
+    "upper_storage": {
+      "type": "value",
+      "description": "Initial volume of water in the upper compartment",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3;ft^3",
+      "default": "100",
+      "estimate": "true",
+      "applyto": {
+        "Upper#Storage": "upper_storage"
+      }
+    },
+    "lower_storage": {
+      "type": "value",
+      "description": "Initial volume of water in the lower compartment",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3;ft^3",
+      "default": "100",
+      "estimate": "true",
+      "applyto": {
+        "Lower#Storage": "lower_storage"
+      }
+    },
+    "inflow": {
+      "type": "timeseries",
+      "description": "External inflow time series into the upper compartment",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "applyto": {
+        "Upper#inflow": "inflow"
+      }
+    }
   }
 }

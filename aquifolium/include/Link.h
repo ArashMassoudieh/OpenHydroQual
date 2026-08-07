@@ -43,6 +43,14 @@ class Link: public Object
             return nullptr;
         };
         string toCommand();
+        /**
+         * @brief Serializes with the endpoint names overridden
+         *
+         * Used when saving a link whose real endpoint is a composite member:
+         * the file records the composite, and the member is re-resolved by
+         * link type on load.
+         */
+        string toCommand(const string &fromname, const string &toname);
         vector<string> GetAllRequieredStartingBlockProperties(); 
         vector<string> GetAllRequieredDestinationBlockProperties();
         bool ShiftLinkedBlock(int shift, Expression::loc loc);

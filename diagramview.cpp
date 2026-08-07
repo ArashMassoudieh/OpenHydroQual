@@ -337,6 +337,9 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
             mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_width", aquiutils::numbertostring(xx-px));
             mainWindow()->GetSystem()->object(resizenode->Name().toStdString())->SetProperty("_height", aquiutils::numbertostring(yy-py));
         }
+        // Resizing a composite repositions its members relative to the new origin.
+        if (Composite *composite = mainWindow()->GetSystem()->composite(resizenode->Name().toStdString()))
+            composite->ApplyGeometry(mainWindow()->GetSystem());
         resizenode->update();
         mainWindow()->AddStatetoUndoData();
         for(Edge *edge : resizenode->edges())
@@ -527,6 +530,10 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
                 n->object()->SetVal("y",n->y());
                 n->object()->SetVal("_width", n->Width());
                 n->object()->SetVal("_height", n->Height());
+                // Moving a composite has to carry its members with it, so that
+                // ungrouping later leaves them where the user expects.
+                if (Composite *composite = mainWindow()->GetSystem()->composite(n->Name().toStdString()))
+                    composite->ApplyGeometry(mainWindow()->GetSystem());
             }
         }
     }
@@ -589,7 +596,25 @@ void DiagramView::wheelEvent(QWheelEvent* pWheelEvent)
 }
 void DiagramView::copyselectednode(QString nodename)
 {
-    
+    QString sourcename = (nodename == "") ? nodenametobedeleted : nodename;
+
+    // Copying a composite copies the whole component: the group-level property
+    // values are carried over and the members and internal links are recreated
+    // from the type on paste. External links are not copied.
+    if (Composite *source = mainWindow()->GetSystem()->composite(sourcename.toStdString()))
+    {
+        copied_composite = Composite(*source);
+        copied_composite.SetVal("x", source->GetProperty("x") + 210);
+        copied_composite.SetVal("y", source->GetProperty("y") + 210);
+        copied_composite.MemberNames().clear();
+        copied_composite.InternalLinkNames().clear();
+        copied_composite.AssignRandomPrimaryKey();
+        copied_composite.SetName(mainWindow()->CreateNewName(copied_composite.GetType()));
+        copied_is_composite = true;
+        return;
+    }
+    copied_is_composite = false;
+
     if (nodename == "")
     {
         copied_block = Block(*(mainWindow()->GetSystem()->block(nodenametobedeleted.toStdString())));
@@ -611,6 +636,23 @@ void DiagramView::copyselectednode(QString nodename)
 void DiagramView::pastecopieddnode()
 {
     mainWindow()->SetActiveUndo();
+
+    if (copied_is_composite)
+    {
+        mainWindow()->GetSystem()->AddComposite(copied_composite, false);
+        Composite *pasted = mainWindow()->GetSystem()->composite(copied_composite.GetName());
+        if (pasted)
+            pasted->Instantiate(mainWindow()->GetSystem());
+        mainWindow()->GetSystem()->SetVariableParents();
+        mainWindow()->resetPropModel();
+        mainWindow()->PopulatePropertyTable(nullptr);
+        mainWindow()->RecreateGraphicItemsFromSystem(false);
+        mainWindow()->RefreshTreeView();
+        nodenametobecopied = "";
+        mainWindow()->AddStatetoUndoData();
+        return;
+    }
+
     mainWindow()->GetSystem()->AddBlock(copied_block, false);
     Node* node = new Node(this, mainWindow()->GetSystem());
     repaint();
@@ -886,7 +928,17 @@ void DiagramView::nodeContextMenuRequested(Node* n, QPointF pos, QMenu *menu)
     QAction* copyaction = menu->addAction("Copy");
     nodenametobecopied = n->Name();
     connect(copyaction, SIGNAL(triggered()), this, SLOT(copyselectednode()));
-    
+
+    // A composite can be exploded into the plain blocks and links it is made
+    // of. One-way: there is no regroup.
+    if (mainWindow()->GetSystem()->composite(n->Name().toStdString()))
+    {
+        QAction* ungroupaction = menu->addAction("Ungroup");
+        ungroupaction->setObjectName(n->Name());
+        called_by_clicking_on_graphical_object = true;
+        connect(ungroupaction, SIGNAL(triggered()), mainWindow(), SLOT(onungroupcomposite()));
+    }
+
     menu->addAction("Select");
     menu->addSeparator();
     QMenu* results = menu->addMenu("Results");

@@ -282,7 +282,10 @@ void MainWindow::tablePropShowContextMenu(const QPoint&pos)
         QMenu *estimatesMenu = new QMenu("Parameters");
         menu->addMenu(estimatesMenu);
         estimatesMenu->setEnabled(false);
-        if (i2.data(CustomRoleCodes::Role::EstimateCode).toBool())
+        // Parameters bind at composite level only: a member's value is
+        // overwritten by its composite's mappings on every ApplyParameters().
+        bool bindable = (propmodel == nullptr) || !propmodel->IsReadOnly();
+        if (bindable && i2.data(CustomRoleCodes::Role::EstimateCode).toBool())
         {
             for (unsigned int i=0 ; i< GetSystem()->ParametersCount(); i++)
                 estimatesMenu->addAction(QString::fromStdString(GetSystem()->Parameters()[i]->GetName()));// , this, SLOT(addParameter()));
@@ -484,6 +487,39 @@ bool MainWindow::BuildObjectsToolBar()
         connect(action, SIGNAL(triggered()), this, SLOT(onaddblock()));
     }
 
+    // Composites sit on the Blocks toolbar: the user drops and wires them
+    // exactly like a block.
+    if (system.GetAllCompositeTypes().size() > 0)
+    {
+        ui->BlocksToolBar->addSeparator();
+        for (unsigned int i = 0; i < system.GetAllCompositeTypes().size(); i++)
+        {
+            string compositetype = system.GetAllCompositeTypes()[i];
+            QAction* action = new QAction(this);
+            action->setObjectName(QString::fromStdString(compositetype));
+            QIcon icon;
+
+            QString iconFileName = QString::fromStdString(system.GetModel(compositetype)->IconFileName());
+            QString iconPath;
+
+            if (iconFileName.contains("/"))
+                iconPath = iconFileName;
+            else
+                iconPath = QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/") + iconFileName;
+
+            if (!QFile::exists(iconPath))
+                LogError("Icon file '" + iconPath + "' was not found!");
+            else
+                icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
+
+            action->setIcon(icon);
+            action->setToolTip(QString::fromStdString(system.GetModel(compositetype)->Description()));
+            action->setText(QString::fromStdString(compositetype));
+            ui->BlocksToolBar->addAction(action);
+            connect(action, SIGNAL(triggered()), this, SLOT(onaddcomposite()));
+        }
+    }
+
     // Build Links toolbar
     for (unsigned int i = 0; i < system.GetAllLinkTypes().size(); i++)
     {
@@ -677,6 +713,30 @@ bool MainWindow::ReCreateObjectsMenu()
 
     }
 
+    if (system.GetAllCompositeTypes().size() > 0)
+    {
+        ui->menuBlocks->addSeparator();
+        for (unsigned int i = 0; i < system.GetAllCompositeTypes().size(); i++)
+        {
+            string compositetype = system.GetAllCompositeTypes()[i];
+            QAction* action = new QAction(this);
+            action->setObjectName(QString::fromStdString(compositetype));
+            action->setText(QString::fromStdString(system.GetModel(compositetype)->Description()));
+            QIcon icon;
+            QString iconFileName = QString::fromStdString(system.GetModel(compositetype)->IconFileName());
+            QString iconPath = iconFileName.contains("/") ? iconFileName
+                             : QString::fromStdString(RESOURCE_DIRECTORY + "/Icons/") + iconFileName;
+            if (!QFile::exists(iconPath))
+                LogError("Icon file '" + iconPath + "' was not found!");
+            else
+                icon.addFile(iconPath, QSize(), QIcon::Normal, QIcon::Off);
+            action->setIcon(icon);
+            action->setToolTip(QString::fromStdString(system.GetModel(compositetype)->Description()));
+            ui->menuBlocks->addAction(action);
+            connect(action, SIGNAL(triggered()), this, SLOT(onaddcomposite()));
+        }
+    }
+
     for (unsigned int i = 0; i < system.GetAllLinkTypes().size(); i++)
     {
         //qDebug() << QString::fromStdString(system.GetAllLinkTypes()[i]);
@@ -803,6 +863,59 @@ void MainWindow::onaddblock()
     undoData.AppendAfterActive(&system);
  }
 
+void MainWindow::onaddcomposite()
+{
+    QObject* obj = sender();
+    Composite composite;
+    if (!composite.SetQuantities(system.GetMetaModel(),obj->objectName().toStdString()))
+    {
+        LogError(QString::fromStdString(composite.lasterror()));
+        return;
+    }
+
+    composite.SetType(obj->objectName().toStdString());
+    string name = CreateNewName(obj->objectName().toStdString());
+    composite.SetName(name);
+    undoData.SetActiveSystem(&system);
+    system.AddComposite(composite);
+    system.object(name)->SetName(name);
+    system.object(name)->AssignRandomPrimaryKey();
+
+    if (!system.composite(name)->Instantiate(&system))
+        LogAllSystemErrors();
+
+    system.SetVariableParents();
+
+    // Members and internal links appeared, so rebuild rather than adding one node.
+    RecreateGraphicItemsFromSystem(false);
+    dView->UpdateSceneRect();
+    dView->repaint();
+    RefreshTreeView();
+    LogAddDelete("Composite '" + QString::fromStdString(name) + "' was added!");
+    undoData.AppendAfterActive(&system);
+}
+
+void MainWindow::onungroupcomposite()
+{
+    QObject* obj = sender();
+    QString name = obj->objectName();
+    if (name=="" || system.composite(name.toStdString())==nullptr)
+        return;
+
+    undoData.SetActiveSystem(&system);
+    if (!system.UngroupComposite(name.toStdString()))
+    {
+        LogAllSystemErrors();
+        return;
+    }
+    system.SetVariableParents();
+    PopulatePropertyTable(nullptr);
+    RecreateGraphicItemsFromSystem(false);
+    RefreshTreeView();
+    LogAddDelete("Composite '" + name + "' was ungrouped!");
+    undoData.AppendAfterActive(&system);
+}
+
 void MainWindow::onaddlink()
 {
     QObject* obj = sender();
@@ -831,7 +944,35 @@ bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
     link.SetType(type.toStdString());
     link.SetName(LinkName.toStdString());
     undoData.SetActiveSystem(&system);
-    if (!system.AddLink(link, sourceblock.toStdString(), targetblock.toStdString()))
+
+    // The node the user dropped on may be a composite; resolve it to the member
+    // its type exposes for this link type.
+    string sourcename = sourceblock.toStdString();
+    string targetname = targetblock.toStdString();
+    if (Composite *sourcecomposite = system.composite(sourcename))
+    {
+        sourcename = sourcecomposite->ResolvePort(type.toStdString(), Expression::loc::source);
+        if (sourcename == "")
+        {
+            QString msg = "A link of type '" + type + "' cannot start at '" + sourceblock + "'.";
+            QMessageBox::question(this, "Link cannot attach to this component!", msg, QMessageBox::Ok);
+            LogError(msg);
+            return false;
+        }
+    }
+    if (Composite *targetcomposite = system.composite(targetname))
+    {
+        targetname = targetcomposite->ResolvePort(type.toStdString(), Expression::loc::destination);
+        if (targetname == "")
+        {
+            QString msg = "A link of type '" + type + "' cannot end at '" + targetblock + "'.";
+            QMessageBox::question(this, "Link cannot attach to this component!", msg, QMessageBox::Ok);
+            LogError(msg);
+            return false;
+        }
+    }
+
+    if (!system.AddLink(link, sourcename, targetname))
     {
         qDebug() << QString::fromStdString(system.lasterror());
         QMessageBox::question(this, "Link does not match the connected block!", QString::fromStdString(system.lasterror()), QMessageBox::Ok);
@@ -1098,8 +1239,50 @@ void MainWindow::RefreshTreeView()
         }
     }
 
+    // Composites appear as a single entry with their members nested beneath, so
+    // member results stay reachable without cluttering the diagram.
+    for (unsigned int i=0; i<system.CompositesCount(); i++)
+    {
+        QString TypeCategory = QString::fromStdString(system.composite(i)->TypeCategory());
+        QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(TypeCategory,Qt::MatchExactly);
+        if (MatchedItems.size()!=1)
+        {
+            qDebug() << "No unique category called '" + TypeCategory + "' was found!";
+            continue;
+        }
+        QTreeWidgetItem *treeitem = MatchedItems[0];
+        QTreeWidgetItem *compositeitem = new QTreeWidgetItem(treeitem);
+        compositeitem->setData(0,Qt::UserRole,"child");
+        compositeitem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
+        compositeitem->setText(0,QString::fromStdString(system.composite(i)->GetName()));
+        treeitem->addChild(compositeitem);
+
+        const vector<string> &members = system.composite(i)->MemberNames();
+        for (unsigned int j=0; j<members.size(); j++)
+        {
+            QTreeWidgetItem *memberitem = new QTreeWidgetItem(compositeitem);
+            memberitem->setData(0,Qt::UserRole,"child");
+            memberitem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
+            memberitem->setText(0,QString::fromStdString(members[j]));
+            compositeitem->addChild(memberitem);
+        }
+        const vector<string> &internallinks = system.composite(i)->InternalLinkNames();
+        for (unsigned int j=0; j<internallinks.size(); j++)
+        {
+            QTreeWidgetItem *linkitem = new QTreeWidgetItem(compositeitem);
+            linkitem->setData(0,Qt::UserRole,"child");
+            linkitem->setData(0,CustomRoleCodes::Role::TypeRole,TypeCategory);
+            linkitem->setText(0,QString::fromStdString(internallinks[j]));
+            compositeitem->addChild(linkitem);
+        }
+    }
+
     for (unsigned int i=0; i<system.BlockCount(); i++)
     {
+        // Members are listed under their composite, not at category level.
+        if (system.OwnerComposite(system.block(i)->GetName()))
+            continue;
+
         QString TypeCategory = QString::fromStdString(system.block(i)->TypeCategory());
         QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.block(i)->TypeCategory()),Qt::MatchExactly);
         if (MatchedItems.size()==0)
@@ -1118,6 +1301,10 @@ void MainWindow::RefreshTreeView()
 
     for (unsigned int i=0; i<system.LinksCount(); i++)
     {
+        // Internal links are listed under their composite, not at category level.
+        if (system.OwnerComposite(system.link(i)->GetName()))
+            continue;
+
         QString TypeCategory = QString::fromStdString(system.link(i)->TypeCategory());
         QList<QTreeWidgetItem*> MatchedItems = ui->treeWidget->findItems(QString::fromStdString(system.link(i)->TypeCategory()),Qt::MatchExactly);
         if (MatchedItems.size()==0)
@@ -2165,11 +2352,35 @@ void MainWindow::LogAllSystemErrors(ErrorHandler *errs)
 
 }
 
+QString MainWindow::NodeNameFor(const std::string &objectname)
+{
+    if (Composite *owner = system.OwnerComposite(objectname))
+        return QString::fromStdString(owner->GetName());
+    return QString::fromStdString(objectname);
+}
+
 void MainWindow::RecreateGraphicItemsFromSystem(bool zoom_all)
 {
     dView->DeleteAllItems();
+
+    // A composite is drawn as a single node; its members and the links between
+    // them are never drawn.
+    for (unsigned int i=0; i<system.CompositesCount(); i++)
+    {
+        Node *node = new Node(dView,&system);
+        system.composite(i)->AssignRandomPrimaryKey();
+        node->SetObject(system.composite(i));
+        node->setX(system.composite(i)->GetVal("x"));
+        node->setY(system.composite(i)->GetVal("y"));
+        node->setWidth(system.composite(i)->GetVal("_width"));
+        node->setHeight(system.composite(i)->GetVal("_height"));
+    }
+
     for (unsigned int i=0; i<system.BlockCount(); i++)
     {
+        if (system.OwnerComposite(system.block(i)->GetName()))
+            continue;
+
         Node *node = new Node(dView,&system);
         system.block(i)->AssignRandomPrimaryKey();
         node->SetObject(system.block(i));
@@ -2181,8 +2392,11 @@ void MainWindow::RecreateGraphicItemsFromSystem(bool zoom_all)
     }
     for (unsigned int i=0; i<system.LinksCount(); i++)
     {
-        Node *s_node = dView->node(QString::fromStdString(system.block(system.link(i)->s_Block_No())->GetName()));
-        Node *e_node = dView->node(QString::fromStdString(system.block(system.link(i)->e_Block_No())->GetName()));
+        if (system.OwnerComposite(system.link(i)->GetName()))
+            continue;
+
+        Node *s_node = dView->node(NodeNameFor(system.block(system.link(i)->s_Block_No())->GetName()));
+        Node *e_node = dView->node(NodeNameFor(system.block(system.link(i)->e_Block_No())->GetName()));
         if (s_node && e_node)
         {
             Edge *edge = new Edge(s_node,e_node,dView );

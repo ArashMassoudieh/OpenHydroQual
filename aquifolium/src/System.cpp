@@ -71,6 +71,7 @@ void System::CopyFrom(const System& other)
 {
     blocks = other.blocks;
     links = other.links;
+    composites = other.composites;
     sources = other.sources;
     constituents = other.constituents;
     reactions = other.reactions;
@@ -114,6 +115,7 @@ void System::Clear()
 {
     blocks.clear();
     links.clear();
+    composites.clear();
     sources.clear();
     constituents.clear();
     reactions.clear();
@@ -204,6 +206,74 @@ bool System::AddObservation(Observation &obs, bool SetQuantities)
     observation(obs.GetName())->SetParent(this);
     return true;
 
+}
+
+bool System::AddComposite(Composite &cmp, bool SetQuantities)
+{
+    composites.push_back(cmp);
+    Composite *added = composite(cmp.GetName());
+    added->SetParent(this);
+    if (SetQuantities)
+        added->SetQuantities(metamodel, cmp.GetType());
+    added->SetParent(this);
+    added->SetName(cmp.GetName());
+    return true;
+}
+
+bool System::UngroupComposite(const string &compositename)
+{
+    for (unsigned int i = 0; i < composites.size(); i++)
+        if (composites[i].GetName() == compositename)
+        {
+            // Members and internal links are already ordinary objects living in
+            // the normal containers; dissolving the group is just dropping the
+            // record that ties them together.
+            composites.erase(composites.begin() + i);
+            return true;
+        }
+
+    errorhandler.Append(GetName(),"System","UngroupComposite","Composite '" + compositename + "' was not found",18040);
+    return false;
+}
+
+Composite *System::OwnerComposite(const string &objectname)
+{
+    for (unsigned int i = 0; i < composites.size(); i++)
+        if (composites[i].Owns(objectname))
+            return &composites[i];
+    return nullptr;
+}
+
+const Composite *System::OwnerComposite(const string &objectname) const
+{
+    for (unsigned int i = 0; i < composites.size(); i++)
+        if (composites[i].Owns(objectname))
+            return &composites[i];
+    return nullptr;
+}
+
+Composite *System::composite(const string &s)
+{
+    for (unsigned int i = 0; i < composites.size(); i++)
+        if (composites[i].GetName() == s) return &composites[i];
+    return nullptr;
+}
+
+const Composite *System::composite(const string &s) const
+{
+    for (unsigned int i = 0; i < composites.size(); i++)
+        if (composites[i].GetName() == s) return &composites[i];
+    return nullptr;
+}
+
+vector<string> System::GetAllCompositeTypes() const
+{
+    vector<string> out;
+    for (map<string, QuanSet>::const_iterator it = metamodel.GetMetaModel()->cbegin(); it != metamodel.GetMetaModel()->cend(); it++)
+        if (it->second.BlockLink == blocklink::composite)
+            out.push_back(it->first);
+
+    return out;
 }
 
 bool System::AddLink(Link &lnk, const string &source, const string &destination, bool SetQuantities)
@@ -461,6 +531,9 @@ Object *System::object(const string &s)
     for (unsigned int i=0; i<blocks.size(); i++)
         if (blocks[i].GetName() == s) return &blocks[i];
 
+    for (unsigned int i=0; i<composites.size(); i++)
+        if (composites[i].GetName() == s) return &composites[i];
+
     for (unsigned int i=0; i<sources.size(); i++)
         if (sources[i].GetName() == s) return &sources[i];
 
@@ -498,6 +571,9 @@ const Object* System::object(const string& s) const
 
     for (unsigned int i = 0; i < blocks.size(); i++)
         if (blocks[i].GetName() == s) return &blocks[i];
+
+    for (unsigned int i = 0; i < composites.size(); i++)
+        if (composites[i].GetName() == s) return &composites[i];
 
     for (unsigned int i = 0; i < sources.size(); i++)
         if (sources[i].GetName() == s) return &sources[i];
@@ -2454,6 +2530,7 @@ void System::clear()
 {
     blocks.clear();
     links.clear();
+    composites.clear();
     Outputs.AllOutputs.clear();
     Outputs.ObservedOutputs.clear();
     sources.clear();
@@ -2781,6 +2858,12 @@ bool System::ApplyParameters()
                 return false;
             }
         }
+
+    // Parameters bind to group-level properties, so a calibrated value only
+    // reaches the members once the composite's mappings are re-evaluated.
+    for (unsigned int i = 0; i < composites.size(); i++)
+        composites[i].Propagate(this);
+
     return true;
 
 }
@@ -2793,6 +2876,9 @@ void System::SetAllParents()
 
     for (unsigned int i = 0; i < blocks.size(); i++)
         blocks[i].SetParent(this);
+
+    for (unsigned int i = 0; i < composites.size(); i++)
+        composites[i].SetParent(this);
 
     for (unsigned int i = 0; i < sources.size(); i++)
         sources[i].SetParent(this);
@@ -2976,7 +3062,7 @@ QStringList System::QGetAllObjectsofTypeCategory(QString _type)
 #endif // Qt_version
 
 
-bool System::SavetoScriptFile(const string &filename, const string &templatefilename, const vector<string> &_addedtemplates)
+bool System::SavetoScriptFile(const string &filename, const string &templatefilename, const vector<string> &_addedtemplates, bool expand_composites)
 {
     SetVariableParents();
     if (_addedtemplates.size()!=0)
@@ -3012,11 +3098,36 @@ bool System::SavetoScriptFile(const string &filename, const string &templatefile
     for (unsigned int i = 0; i < ReactionsCount(); i++)
         file << "create reaction;" << reactions[i].toCommand() << std::endl;
 
+    if (!expand_composites)
+        for (unsigned int i=0; i<composites.size(); i++)
+            file << "create composite;" << composites[i].toCommand() << std::endl;
+
     for (unsigned int i=0; i<blocks.size(); i++)
+    {
+        // Members are regenerated from the composite type on load.
+        if (!expand_composites && OwnerComposite(blocks[i].GetName()))
+            continue;
         file << "create block;" << blocks[i].toCommand() << std::endl;
+    }
 
     for (unsigned int i=0; i<links.size(); i++)
-        file << "create link;" << links[i].toCommand() << std::endl;
+    {
+        if (!expand_composites && OwnerComposite(links[i].GetName()))
+            continue;
+
+        string fromname = links[i].GetConnectedBlock(Expression::loc::source)->GetName();
+        string toname = links[i].GetConnectedBlock(Expression::loc::destination)->GetName();
+        if (!expand_composites)
+        {
+            // An external link attached to a member is recorded against the
+            // composite; the member is re-resolved by link type on load.
+            if (Composite *fromcomposite = OwnerComposite(fromname))
+                fromname = fromcomposite->GetName();
+            if (Composite *tocomposite = OwnerComposite(toname))
+                toname = tocomposite->GetName();
+        }
+        file << "create link;" << links[i].toCommand(fromname, toname) << std::endl;
+    }
 
     for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
         file << "create objectivefunction;" << ObjectiveFunctions()[i]->toCommand() << std::endl;
@@ -3026,13 +3137,26 @@ bool System::SavetoScriptFile(const string &filename, const string &templatefile
 
 
 
+    if (!expand_composites)
+        for (unsigned int i=0; i<composites.size(); i++)
+            if (composites[i].toCommandSetAsParam()!="")
+                file << composites[i].toCommandSetAsParam() << std::endl;
+
     for (unsigned int i=0; i<blocks.size(); i++)
+    {
+        if (!expand_composites && OwnerComposite(blocks[i].GetName()))
+            continue;
         if (blocks[i].toCommandSetAsParam()!="")
 			file << blocks[i].toCommandSetAsParam() << std::endl;
+    }
 
     for (unsigned int i=0; i<links.size(); i++)
+    {
+        if (!expand_composites && OwnerComposite(links[i].GetName()))
+            continue;
 		if (links[i].toCommandSetAsParam() != "")
 			file << links[i].toCommandSetAsParam() << std::endl;
+    }
 
     for (unsigned int i = 0; i < observations.size(); i++)
         if (observations[i].toCommandSetAsParam() != "")
@@ -3173,8 +3297,51 @@ void System::DisconnectLink(const string linkname)
         }
 }
 
+void System::RebuildLinkConnectivity()
+{
+    // links_from_ids/links_to_ids on each block and s_Block/e_Block on each
+    // link are derived from the s_Block_No/e_Block_No indices. Erasing from
+    // either container invalidates both - the cached Block* pointers dangle,
+    // and a block copy deliberately does not carry link ids, since a copied
+    // block has to be rewired from scratch. So rebuild them from the indices,
+    // which the erase paths do keep correct.
+    for (unsigned int i = 0; i < blocks.size(); i++)
+        blocks[i].ClearLinksToFrom();
+
+    for (unsigned int i = 0; i < links.size(); i++)
+    {
+        if (links[i].s_Block_No() >= blocks.size() || links[i].e_Block_No() >= blocks.size())
+        {
+            errorhandler.Append(GetName(),"System","RebuildLinkConnectivity","Link '" + links[i].GetName() + "' refers to a block that no longer exists",112);
+            continue;
+        }
+        links[i].Set_s_Block(&blocks[links[i].s_Block_No()]);
+        links[i].Set_e_Block(&blocks[links[i].e_Block_No()]);
+        blocks[links[i].s_Block_No()].AppendLink(i, Expression::loc::source);
+        blocks[links[i].e_Block_No()].AppendLink(i, Expression::loc::destination);
+    }
+}
+
 bool System::Delete(const string& objectname)
 {
+    for (unsigned int i = 0; i < composites.size(); i++)
+        if (composites[i].GetName() == objectname)
+        {
+            // Take a copy of the member list: Delete() below mutates the
+            // containers, and deleting a member block cascades to every link
+            // attached to it - internal and external alike.
+            vector<string> members = composites[i].MemberNames();
+            composites.erase(composites.begin() + i);
+            for (unsigned int j = 0; j < members.size(); j++)
+                Delete(members[j]);
+            return true;
+        }
+
+    // Deleting a member on its own would leave the group record dangling, so
+    // dissolve the group first and let the deletion proceed on plain objects.
+    if (Composite *owner = OwnerComposite(objectname))
+        UngroupComposite(owner->GetName());
+
     for (unsigned int i = 0; i < links.size(); i++)
         if (links[i].GetName() == objectname)
         {
@@ -3184,6 +3351,7 @@ bool System::Delete(const string& objectname)
                 blocks[j].shiftlinkIds(i);
             }
             links.erase(links.begin()+i);
+            RebuildLinkConnectivity();
 
             return true;
         }
@@ -3212,6 +3380,7 @@ bool System::Delete(const string& objectname)
                 if (links[j].e_Block_No() >= i)
                     links[j].ShiftLinkedBlock(-1, Expression::loc::destination);
             }
+            RebuildLinkConnectivity();
 
             return true;
         }
@@ -3662,6 +3831,70 @@ bool System::AddConstituentRelateProperties(Object *consttnt)
             if (reactions[i].GetVars()->Count(quanstobecopied[j].GetName())==0)
             {   reaction(i)->GetVars()->Append(quanstobecopied[j].GetName(),quanstobecopied[j]);
                 reaction(i)->Variable(quanstobecopied[j].GetName())->SetParent(reaction(i));
+            }
+        }
+    }
+
+    AddCompositeConstituentRelatedProperties();
+
+    return true;
+}
+
+bool System::AddCompositeConstituentRelatedProperties()
+{
+    if (composites.size() == 0)
+        return true;
+
+    // The exact set of quantity names that get copied onto blocks when a
+    // constituent, reaction or reaction parameter is added. Asking the same
+    // function that does the copying keeps the two in step - the copies
+    // themselves carry no marker, since GetToBeCopiedQuantities() resets their
+    // role before handing them over.
+    vector<string> derived;
+    for (unsigned int i = 0; i < constituents.size(); i++)
+    {
+        vector<Quan> quans = GetToBeCopiedQuantities(constituent(i), object_type::block);
+        for (unsigned int j = 0; j < quans.size(); j++) derived.push_back(quans[j].GetName());
+    }
+    for (unsigned int i = 0; i < reactions.size(); i++)
+    {
+        vector<Quan> quans = GetToBeCopiedQuantities(reaction(i), object_type::block);
+        for (unsigned int j = 0; j < quans.size(); j++) derived.push_back(quans[j].GetName());
+    }
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+    {
+        vector<Quan> quans = GetToBeCopiedQuantities(reactionparameter(i), object_type::block);
+        for (unsigned int j = 0; j < quans.size(); j++) derived.push_back(quans[j].GetName());
+    }
+
+    for (unsigned int c = 0; c < composites.size(); c++)
+    {
+        Composite *cmp = &composites[c];
+        QuanSet *model = GetModel(cmp->GetType());
+        if (!model) continue;
+
+        for (map<string, CompositeMember>::const_iterator mb = model->Members().cbegin(); mb != model->Members().cend(); mb++)
+        {
+            Block *blk = block(cmp->MemberName(mb->first));
+            if (!blk) continue;
+
+            for (unsigned int d = 0; d < derived.size(); d++)
+            {
+                const string qname = derived[d];
+                if (blk->GetVars()->Count(qname) == 0) continue;
+
+                // If the type declares this property itself, its own mapping governs.
+                if (model->Count(qname) != 0) continue;
+
+                if (cmp->GetVars()->Count(qname) == 0)
+                {
+                    Quan Q = blk->GetVars()->GetVar(qname);
+                    Q.ApplyTo().clear();
+                    cmp->GetVars()->Append(qname, Q);
+                    cmp->Variable(qname)->SetParent(cmp);
+                    cmp->GetVars()->Quantity_Order().push_back(qname);
+                }
+                cmp->Variable(qname)->ApplyTo()[mb->first + string(1, COMPOSITE_QUANTITY_SEPARATOR) + qname] = qname;
             }
         }
     }
@@ -4126,7 +4359,7 @@ bool System::WriteOutPuts()
 }
 
 #ifdef Q_JSON_SUPPORT
-bool System::SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariables, bool calculatevalue)
+bool System::SavetoJson(const string &filename, const vector<string> &_addedtemplates, bool allvariables, bool calculatevalue, bool expand_composites)
 {
     SetVariableParents();
     if (_addedtemplates.size()!=0)
@@ -4173,14 +4406,41 @@ bool System::SavetoJson(const string &filename, const vector<string> &_addedtemp
         ReactionsJsonObject[QString::fromStdString(reactions[i].GetName())] = reactions[i].toJson(allvariables);
     out["Reactions"] = ReactionsJsonObject;
 
+    if (!expand_composites && composites.size()>0)
+    {
+        QJsonObject CompositesJsonObject;
+        for (unsigned int i=0; i<composites.size(); i++)
+            CompositesJsonObject[QString::fromStdString(composites[i].GetName())] = composites[i].toJson(allvariables, calculatevalue);
+        out["Composites"] = CompositesJsonObject;
+    }
+
     QJsonObject BlocksJsonObject;
     for (unsigned int i=0; i<blocks.size(); i++)
+    {
+        // Members are regenerated from the composite type on load.
+        if (!expand_composites && OwnerComposite(blocks[i].GetName()))
+            continue;
         BlocksJsonObject[QString::fromStdString(blocks[i].GetName())] = blocks[i].toJson(allvariables, calculatevalue);
+    }
     out["Blocks"] = BlocksJsonObject;
 
     QJsonObject LinksJsonObject;
     for (unsigned int i=0; i<links.size(); i++)
-        LinksJsonObject[QString::fromStdString(links[i].GetName())] = links[i].toJson(allvariables, calculatevalue);
+    {
+        if (!expand_composites && OwnerComposite(links[i].GetName()))
+            continue;
+        QJsonObject LinkJson = links[i].toJson(allvariables, calculatevalue);
+        if (!expand_composites)
+        {
+            // An external link attached to a member is recorded against the
+            // composite; the member is re-resolved by link type on load.
+            if (Composite *fromcomposite = OwnerComposite(LinkJson["from"].toString().toStdString()))
+                LinkJson["from"] = QString::fromStdString(fromcomposite->GetName());
+            if (Composite *tocomposite = OwnerComposite(LinkJson["to"].toString().toStdString()))
+                LinkJson["to"] = QString::fromStdString(tocomposite->GetName());
+        }
+        LinksJsonObject[QString::fromStdString(links[i].GetName())] = LinkJson;
+    }
     out["Links"] = LinksJsonObject;
 
     QJsonObject ObjectiveFunctionsJsonObject;
@@ -4382,6 +4642,37 @@ bool System::LoadfromJson(const QJsonObject &root)
     }
 
 
+    // Composites come before blocks and links: instantiating one creates the
+    // member blocks that the links below may refer to.
+    QJsonObject CompositesJson = root["Composites"].toObject();
+    for (const QString& compositename: CompositesJson.keys())
+    {
+        QJsonObject CompositeJson = CompositesJson[compositename].toObject();
+        Composite current_composite;
+        current_composite.SetName(CompositeJson["name"].toString().toStdString());
+        current_composite.SetType(CompositeJson["type"].toString().toStdString());
+        AddComposite(current_composite);
+
+        Composite *added = composite(compositename.toStdString());
+        if (!added)
+        {
+            errorhandler.Append("System","Composite","ReadFromJson","Composite '" + compositename.toStdString() + "' could not be created",10016);
+            continue;
+        }
+        // Members first: constituent- and reaction-derived properties only
+        // appear on the composite once they exist.
+        added->Instantiate(this);
+
+        for (const QString &property: CompositeJson.keys())
+        {
+            if (property!="type" && property!="to" && property!="from")
+                if (!added->SetProperty(property.toStdString(),CompositeJson[property].toString().toStdString(),true, false))
+                    errorhandler.Append("System","Composite","ReadFromJson","Composite '" + compositename.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10016 );
+        }
+        added->ApplyGeometry(this);
+        added->Propagate(this);
+    }
+
     QJsonObject BlocksJson = root["Blocks"].toObject();
     for (const QString& blockname: BlocksJson.keys())
     {
@@ -4413,7 +4704,25 @@ bool System::LoadfromJson(const QJsonObject &root)
         Link current_link;
         current_link.SetName(LinkJson["name"].toString().toStdString());
         current_link.SetType(LinkJson["type"].toString().toStdString());
-        AddLink(current_link, LinkJson["from"].toString().toStdString(),LinkJson["to"].toString().toStdString());
+
+        // Either end may name a composite; resolve it to the member the
+        // composite type exposes for this link type.
+        string fromname = LinkJson["from"].toString().toStdString();
+        string toname = LinkJson["to"].toString().toStdString();
+        if (Composite *fromcomposite = composite(fromname))
+        {
+            fromname = fromcomposite->ResolvePort(current_link.GetType(), Expression::loc::source);
+            if (fromname == "")
+                errorhandler.Append("System","Link","ReadFromJson","A link of type '" + current_link.GetType() + "' cannot start at composite '" + LinkJson["from"].toString().toStdString() + "'",10017);
+        }
+        if (Composite *tocomposite = composite(toname))
+        {
+            toname = tocomposite->ResolvePort(current_link.GetType(), Expression::loc::destination);
+            if (toname == "")
+                errorhandler.Append("System","Link","ReadFromJson","A link of type '" + current_link.GetType() + "' cannot end at composite '" + LinkJson["to"].toString().toStdString() + "'",10017);
+        }
+
+        AddLink(current_link, fromname, toname);
 
         for (const QString &property: LinkJson.keys())
         {

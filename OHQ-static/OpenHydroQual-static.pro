@@ -102,6 +102,7 @@ SOURCES += \
     $${OHQPATH}/src/ErrorHandler.cpp \
     $${OHQPATH}/src/Expression.cpp \
     $${OHQPATH}/src/Link.cpp \
+    $${OHQPATH}/src/Composite.cpp \
     $${OHQPATH}/src/Matrix.cpp \
     $${OHQPATH}/src/Matrix_arma.cpp \
     $${OHQPATH}/src/MetaModel.cpp \

@@ -82,6 +82,11 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
                 BlockLink = blocklink::reaction;
                 ObjectType = "Reaction";
             }
+            else if (_type == "composite")
+            {
+                BlockLink = blocklink::composite;
+                ObjectType = "Composite";
+            }
             else
 			{
 				BlockLink = blocklink::entity;
@@ -91,6 +96,46 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
 		else if (it.key()=="description")
         {
             description = (*object_types)[it.key().asString()].asString();
+        }
+        else if (it.key()=="members")
+        {
+            for (Json::ValueIterator mb=it->begin(); mb!=it->end(); ++mb)
+            {
+                CompositeMember member;
+                member.type = (*mb)["type"].asString();
+                if (mb->isMember("dx")) member.dx = aquiutils::atof((*mb)["dx"].asString());
+                if (mb->isMember("dy")) member.dy = aquiutils::atof((*mb)["dy"].asString());
+                if (mb->isMember("_width")) member.width = aquiutils::atof((*mb)["_width"].asString());
+                if (mb->isMember("_height")) member.height = aquiutils::atof((*mb)["_height"].asString());
+                if (member.type.empty())
+                    AppendError(mb.key().asString(),"QuanSet","Constructor","Member '" + mb.key().asString() + "' of composite '" + Name() + "' has no 'type'",18022);
+                else
+                    members[mb.key().asString()] = member;
+            }
+        }
+        else if (it.key()=="internal_links")
+        {
+            for (Json::ValueIterator ln=it->begin(); ln!=it->end(); ++ln)
+            {
+                CompositeInternalLink link;
+                link.type = (*ln)["type"].asString();
+                link.from = (*ln)["from"].asString();
+                link.to = (*ln)["to"].asString();
+                if (link.type.empty() || link.from.empty() || link.to.empty())
+                    AppendError(ln.key().asString(),"QuanSet","Constructor","Internal link '" + ln.key().asString() + "' of composite '" + Name() + "' requires 'type', 'from' and 'to'",18023);
+                else
+                    internal_links[ln.key().asString()] = link;
+            }
+        }
+        else if (it.key()=="external_links")
+        {
+            for (Json::ValueIterator pt=it->begin(); pt!=it->end(); ++pt)
+            {
+                CompositePort port;
+                if (pt->isMember("from")) port.from = (*pt)["from"].asString();
+                if (pt->isMember("to")) port.to = (*pt)["to"].asString();
+                external_links[pt.key().asString()] = port;
+            }
         }
         else
         {
@@ -119,7 +164,38 @@ QuanSet::QuanSet(Json::ValueIterator& object_types)
         Q.AskFromUser() = true;
         Append("name",Q);
     }
-    if (ObjectType == "Block")
+    // jsoncpp orders object keys alphabetically, so "members" is parsed after the
+    // entries that refer to it. Cross-check the references only once the whole
+    // type has been read.
+    if (ObjectType == "Composite")
+    {
+        if (members.size()==0)
+            AppendError(Name(),"QuanSet","Constructor","Composite '" + Name() + "' declares no members",18024);
+        for (map<string, CompositeInternalLink>::iterator it=internal_links.begin(); it!=internal_links.end(); it++)
+        {
+            if (members.count(it->second.from)==0)
+                AppendError(Name(),"QuanSet","Constructor","Internal link '" + it->first + "' of composite '" + Name() + "' starts at undeclared member '" + it->second.from + "'",18025);
+            if (members.count(it->second.to)==0)
+                AppendError(Name(),"QuanSet","Constructor","Internal link '" + it->first + "' of composite '" + Name() + "' ends at undeclared member '" + it->second.to + "'",18025);
+        }
+        for (map<string, CompositePort>::iterator it=external_links.begin(); it!=external_links.end(); it++)
+        {
+            if (it->second.from!="" && members.count(it->second.from)==0)
+                AppendError(Name(),"QuanSet","Constructor","External link entry '" + it->first + "' of composite '" + Name() + "' refers to undeclared member '" + it->second.from + "'",18026);
+            if (it->second.to!="" && members.count(it->second.to)==0)
+                AppendError(Name(),"QuanSet","Constructor","External link entry '" + it->first + "' of composite '" + Name() + "' refers to undeclared member '" + it->second.to + "'",18026);
+        }
+        for (unordered_map<string, Quan>::iterator it=begin(); it!=end(); it++)
+            for (map<string,string>::const_iterator mp=it->second.ApplyTo().cbegin(); mp!=it->second.ApplyTo().cend(); mp++)
+            {
+                vector<string> target = aquiutils::split(mp->first,'#');
+                if (target.size()!=2)
+                    AppendError(Name(),"QuanSet","Constructor","Mapping target '" + mp->first + "' of composite '" + Name() + "' must have the form <member>#<quantity>",18027);
+                else if (members.count(target[0])==0 && internal_links.count(target[0])==0)
+                    AppendError(Name(),"QuanSet","Constructor","Mapping target '" + mp->first + "' of composite '" + Name() + "' refers to undeclared member or internal link '" + target[0] + "'",18027);
+            }
+    }
+    if (ObjectType == "Block" || ObjectType == "Composite")
     {
         if (this->count("x")==0)
         {
@@ -179,6 +255,9 @@ QuanSet::QuanSet(const QuanSet& other) : unordered_map<string, Quan>(other)
     name = other.name;
 	typecategory = other.typecategory;
     quantity_order = other.quantity_order;
+    members = other.members;
+    internal_links = other.internal_links;
+    external_links = other.external_links;
     normalizing_quantity = other.normalizing_quantity;
     parent = nullptr;
 
@@ -196,6 +275,9 @@ QuanSet& QuanSet::operator=(const QuanSet& rhs)
 	ObjectType = rhs.ObjectType;
 	typecategory = rhs.typecategory;
     quantity_order = rhs.quantity_order;
+    members = rhs.members;
+    internal_links = rhs.internal_links;
+    external_links = rhs.external_links;
     normalizing_quantity = rhs.normalizing_quantity;
     parent = nullptr;
     return *this;

@@ -172,6 +172,13 @@ Quan::Quan(Json::ValueIterator& it)
     if (it->isMember("delegate"))
         Delegate() = (*it)["delegate"].asString();
 
+    if (it->isMember("applyto"))
+    {
+        const Json::Value &maps = (*it)["applyto"];
+        for (Json::ValueConstIterator mp = maps.begin(); mp != maps.end(); ++mp)
+            applyto[mp.key().asString()] = mp->asString();
+    }
+
     if (it->isMember("category"))
         Category() = (*it)["category"].asString();
 
@@ -438,6 +445,7 @@ Quan::Quan(const Quan& other)
     _string_value = other._string_value;
     _rule = other._rule;
     sourcename = other.sourcename;
+    applyto = other.applyto;
     _var_name = other._var_name;
     _val = other._val;
     _val_star = other._val_star;
@@ -494,6 +502,7 @@ Quan& Quan::operator=(const Quan& rhs)
     //_parameters = rhs._parameters;
     _parameterassignedto = rhs._parameterassignedto;
     sourcename = rhs.sourcename;
+    applyto = rhs.applyto;
     type = rhs.type;
     corresponding_flow_quan = rhs.corresponding_flow_quan;
     corresponding_inflow_quan = rhs.corresponding_inflow_quan;

@@ -70,6 +70,13 @@ public:
     UndoData undoData;
     void PopulatePropertyTable(QuanSet* quanset);
     void RecreateGraphicItemsFromSystem(bool zoom_all=true);
+    /**
+     * @brief The name of the node that represents an object in the diagram
+     *
+     * For a composite member this is the owning composite, which is what the
+     * diagram actually draws; for anything else it is the object itself.
+     */
+    QString NodeNameFor(const std::string &objectname);
     void SetPropertyWindowTitle(const QString &title);
     void RefreshTreeView();
     QString resource_directory;
@@ -162,6 +169,8 @@ private slots:
     void on_check_showlogwindow();
     void on_object_browser_closed(bool visible);
     void onaddblock();
+    void onaddcomposite();
+    void onungroupcomposite();
     void onaddlink();
     void onaddsource();
     void onaddparameter();

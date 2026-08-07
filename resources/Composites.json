@@ -1,0 +1,250 @@
+{
+  "Bioretention_cell": {
+    "type": "composite",
+    "typecategory": "Composites",
+    "description": "Bioretention cell: ponding zone over engineered soil over an aggregate storage layer",
+    "icon": {
+      "filename": "SCM_template.png"
+    },
+    "members": {
+      "Pond": {
+        "type": "Pond",
+        "dx": "0",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Eng_soil": {
+        "type": "Soil",
+        "dx": "0",
+        "dy": "250",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Aggregate": {
+        "type": "Aggregate_storage_layer",
+        "dx": "0",
+        "dy": "500",
+        "_width": "200",
+        "_height": "200"
+      }
+    },
+    "internal_links": {
+      "ponding_to_soil": {
+        "type": "surfacewater_to_soil_link",
+        "from": "Pond",
+        "to": "Eng_soil"
+      },
+      "soil_to_aggregate": {
+        "type": "soil_to_aggregate_link",
+        "from": "Eng_soil",
+        "to": "Aggregate"
+      }
+    },
+    "external_links": {
+      "*": {
+        "from": "Pond",
+        "to": "Pond"
+      },
+      "drain_pipe": {
+        "from": "Aggregate",
+        "to": "Pond"
+      }
+    },
+
+    "area": {
+      "type": "value",
+      "description": "Footprint area of the cell",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2",
+      "default": "350",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "The footprint area must be positive!",
+      "helptext": "Plan area of the bioretention cell. Sets the area of the soil and aggregate layers and the ponding rating curve.",
+      "applyto": {
+        "Eng_soil#area": "area",
+        "Aggregate#area": "area",
+        "Pond#alpha": "area/(beta*0.1^(beta-1))"
+      }
+    },
+    "beta": {
+      "type": "value",
+      "description": "Exponent of the ponding stage-storage curve",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "2",
+      "criteria": "beta>0",
+      "warningmessage": "beta must be positive!",
+      "applyto": {
+        "Pond#beta": "beta"
+      }
+    },
+    "surface_elevation": {
+      "type": "value",
+      "description": "Elevation of the cell surface",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "estimate": "true",
+      "helptext": "Datum for the cell. The soil and aggregate layers are stacked below it using their thicknesses.",
+      "applyto": {
+        "Pond#bottom_elevation": "surface_elevation",
+        "Eng_soil#bottom_elevation": "surface_elevation-soil_depth",
+        "Aggregate#bottom_elevation": "surface_elevation-soil_depth-aggregate_depth"
+      }
+    },
+    "soil_depth": {
+      "type": "value",
+      "description": "Thickness of the engineered soil layer",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0.6",
+      "estimate": "true",
+      "criteria": "soil_depth>0",
+      "warningmessage": "The soil layer thickness must be positive!",
+      "applyto": {
+        "Eng_soil#depth": "soil_depth"
+      }
+    },
+    "aggregate_depth": {
+      "type": "value",
+      "description": "Thickness of the aggregate storage layer",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0.3",
+      "estimate": "true",
+      "criteria": "aggregate_depth>0",
+      "warningmessage": "The aggregate layer thickness must be positive!",
+      "applyto": {
+        "Aggregate#depth": "aggregate_depth"
+      }
+    },
+    "K_sat": {
+      "type": "value",
+      "description": "Saturated hydraulic conductivity of the engineered soil",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day",
+      "default": "10",
+      "estimate": "true",
+      "criteria": "K_sat>0",
+      "warningmessage": "The saturated hydraulic conductivity must be positive!",
+      "applyto": {
+        "Eng_soil#K_sat_original": "K_sat"
+      }
+    },
+    "alpha_vG": {
+      "type": "value",
+      "description": "van Genuchten ~alpha of the engineered soil",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/m;1/ft",
+      "default": "1",
+      "estimate": "true",
+      "applyto": {
+        "Eng_soil#alpha": "alpha_vG"
+      }
+    },
+    "n_vG": {
+      "type": "value",
+      "description": "van Genuchten n of the engineered soil",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1.41",
+      "estimate": "true",
+      "applyto": {
+        "Eng_soil#n": "n_vG"
+      }
+    },
+    "theta_sat": {
+      "type": "value",
+      "description": "Saturated moisture content of the engineered soil",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.4",
+      "estimate": "true",
+      "applyto": {
+        "Eng_soil#theta_sat": "theta_sat"
+      }
+    },
+    "theta_res": {
+      "type": "value",
+      "description": "Residual moisture content of the engineered soil",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.05",
+      "estimate": "true",
+      "applyto": {
+        "Eng_soil#theta_res": "theta_res"
+      }
+    },
+    "porosity": {
+      "type": "value",
+      "description": "Porosity of the aggregate storage layer",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.4",
+      "estimate": "true",
+      "applyto": {
+        "Aggregate#porosity": "porosity"
+      }
+    },
+    "initial_ponding_storage": {
+      "type": "value",
+      "description": "Initial volume of water ponded on the surface",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "default": "0",
+      "helptext": "Initial condition of the ponding zone. Exposed here because a member property that the composite does not expose cannot be edited.",
+      "applyto": {
+        "Pond#Storage": "initial_ponding_storage"
+      }
+    },
+    "initial_soil_moisture": {
+      "type": "value",
+      "description": "Initial moisture content of the engineered soil",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.2",
+      "applyto": {
+        "Eng_soil#theta": "initial_soil_moisture"
+      }
+    },
+    "initial_aggregate_storage": {
+      "type": "value",
+      "description": "Initial volume of water stored in the aggregate layer",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3",
+      "default": "0",
+      "applyto": {
+        "Aggregate#Storage": "initial_aggregate_storage"
+      }
+    },
+    "Precipitation": {
+      "type": "source",
+      "description": "Precipitation source applied to the ponding zone",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "applyto": {
+        "Pond#Precipitation": "Precipitation"
+      }
+    },
+    "Evapotranspiration": {
+      "type": "source",
+      "description": "Evapotranspiration source applied to the ponding zone and the soil",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "applyto": {
+        "Pond#Evapotranspiration": "Evapotranspiration",
+        "Eng_soil#Evapotranspiration": "Evapotranspiration"
+      }
+    }
+  }
+}

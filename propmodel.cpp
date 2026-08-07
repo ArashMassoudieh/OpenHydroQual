@@ -32,6 +32,11 @@ PropModel::PropModel(QuanSet* _quanset, QObject *parent, MainWindow *_mainwindow
 {
     quanset = _quanset;
     mainwindow = _mainwindow;
+
+    // A composite member is displayed but not editable: its values come from
+    // the composite's group-level properties.
+    if (quanset != nullptr && quanset->Parent() != nullptr && GetSystem() != nullptr)
+        readonly = (GetSystem()->OwnerComposite(quanset->Parent()->GetName()) != nullptr);
 }
 
 int PropModel::rowCount(const QModelIndex &i) const
@@ -342,6 +347,16 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
             r = quanset->GetVar(VariableName.toStdString()).SetProperty(value.toString().toStdString(),true);
         }
 
+        // Editing a group-level property has to be pushed down to the members
+        // it drives; geometry changes move them too.
+        if (Composite *composite = mainwindow->GetSystem()->composite(quanset->Parent()->GetName()))
+        {
+            if (VariableName == "x" || VariableName == "y" || VariableName == "_width" || VariableName == "_height")
+                composite->ApplyGeometry(mainwindow->GetSystem());
+            else
+                composite->Propagate(mainwindow->GetSystem());
+        }
+
         if (VariableName == "x")
         {
             mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setX(value.toInt());
@@ -383,6 +398,8 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
 
 Qt::ItemFlags PropModel::flags(const QModelIndex & /*index*/) const
 {
+    if (readonly)
+        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     return Qt::ItemIsSelectable |  Qt::ItemIsEditable | Qt::ItemIsEnabled ;
 }
 

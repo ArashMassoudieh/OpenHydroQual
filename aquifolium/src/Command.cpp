@@ -483,6 +483,42 @@ bool Command::Execute(System *_sys)
             else
                 return false;
         }
+        if (aquiutils::tolower(arguments[0])=="composite")
+        {
+            if (Validate())
+            {
+                Composite C;
+                C.SetName(assignments["name"]);
+                C.SetType(assignments["type"]);
+                if (!sys->AddComposite(C))
+                    return false;
+
+                Composite *added = sys->composite(assignments["name"]);
+                if (!added)
+                {
+                    sys->GetErrorHandler()->Append("system","command","Execute","Composite '" + assignments["name"] + "' could not be created",11238);
+                    return false;
+                }
+
+                // Instantiate first, with the type's defaults: constituent- and
+                // reaction-derived properties only appear on the composite once
+                // its members exist, and the file may well assign them.
+                if (!added->Instantiate(sys))
+                    return false;
+
+                for (map<string,string>::iterator it=assignments.begin(); it!=assignments.end(); it++)
+                {
+                    if (it->first!="type" && it->first!="to" && it->first!="from")
+                        added->SetProperty(it->first, it->second, true, false);
+                }
+
+                // Now push the file's values down onto the members.
+                added->ApplyGeometry(sys);
+                return added->Propagate(sys);
+            }
+            else
+                return false;
+        }
         if (aquiutils::tolower(arguments[0])=="link")
         {
             if (Validate())
@@ -491,7 +527,30 @@ bool Command::Execute(System *_sys)
                 L.SetName(assignments["name"]);
                 L.SetType(assignments["type"]);
 
-				if (sys->AddLink(L, assignments["from"], assignments["to"]))
+                // An external link may name a composite at either end; resolve
+                // it to the member the composite type exposes for this link type.
+                string fromname = assignments["from"];
+                string toname = assignments["to"];
+                if (Composite *fromcomposite = sys->composite(fromname))
+                {
+                    fromname = fromcomposite->ResolvePort(assignments["type"], Expression::loc::source);
+                    if (fromname == "")
+                    {
+                        sys->GetErrorHandler()->Append("system","command","Execute","A link of type '" + assignments["type"] + "' cannot start at composite '" + assignments["from"] + "'",11239);
+                        return false;
+                    }
+                }
+                if (Composite *tocomposite = sys->composite(toname))
+                {
+                    toname = tocomposite->ResolvePort(assignments["type"], Expression::loc::destination);
+                    if (toname == "")
+                    {
+                        sys->GetErrorHandler()->Append("system","command","Execute","A link of type '" + assignments["type"] + "' cannot end at composite '" + assignments["to"] + "'",11239);
+                        return false;
+                    }
+                }
+
+				if (sys->AddLink(L, fromname, toname))
                 {
                     L.SetName(assignments["name"]);
 					for (map<string, string>::iterator it = assignments.begin(); it != assignments.end(); it++)

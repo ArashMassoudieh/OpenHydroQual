@@ -28,7 +28,7 @@
 
 using namespace std;
 
-enum class object_type {none, block, link, source, parameter, objective_function, reaction, reaction_parameter, constituent, observation};
+enum class object_type {none, block, link, source, parameter, objective_function, reaction, reaction_parameter, constituent, observation, composite};
 
 class Object
 {

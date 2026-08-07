@@ -1,0 +1,66 @@
+loadtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/wastewater.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/mass_transfer.json
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=0
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=simulation_end_time, value=36557
+setvalue; object=system, quantity=simulation_start_time, value=36526
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=numthreads, value=8
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=c_n_weight, value=1
+setvalue; object=system, quantity=initial_time_step, value=0.01
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=max_timestep_decrease_factor, value=100000
+setvalue; object=system, quantity=max_timestep_increase_factor, value=50
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=write_interval, value=100
+setvalue; object=system, quantity=write_solution_details, value=No
+create constituent;type=Constituent,concentration=0,constant_inflow_concentration=0,diffusion_coefficient=0,dispersivity=0,external_mass_flow_timeseries=,external_source=,name=S_s,stoichiometric_constant=0,time_variable_inflow_concentration=
+create constituent;type=Particle,concentration=0,constant_inflow_concentration=0,external_mass_flow_timeseries=,external_source=,name=X_bh,settling_velocity=864,stoichiometric_constant=0,time_variable_inflow_concentration=,turbidity_coefficient=0,turbidity_exponent=0
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=40,name=K_s,reference_temperature=0,temperature=
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=0.4,name=Y,reference_temperature=0,temperature=
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=0.05,name=k_d,reference_temperature=0,temperature=
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=2,name=mu_max,reference_temperature=0,temperature=
+create reaction;type=Reaction,S_s:stoichiometric_constant=1,X_bh:stoichiometric_constant=-1,name=Decay,rate_expression=(k_d*X_bh)
+create reaction;type=Reaction,S_s:stoichiometric_constant=(0-1/Y),X_bh:stoichiometric_constant=1,name=Growth,rate_expression=(mu_max*S_s/(S_s+K_s)*X_bh)
+create block;type=Reactor,S_s:concentration=0,S_s:constant_inflow_concentration=100,S_s:external_mass_flow_timeseries=,S_s:external_source=,S_s:time_variable_inflow_concentration=,Storage=400[m~^3],X_bh:concentration=1,X_bh:constant_inflow_concentration=0,X_bh:external_mass_flow_timeseries=,X_bh:external_source=,X_bh:time_variable_inflow_concentration=,_height=200,_width=200,bottom_elevation=0,constant_inflow=100[m~^3/day],name=Reactor_1,time_variable_inflow=,x=0,y=901
+create block;type=Reactor,S_s:concentration=0,S_s:constant_inflow_concentration=0,S_s:external_mass_flow_timeseries=,S_s:external_source=,S_s:time_variable_inflow_concentration=,Storage=400[m~^3],X_bh:concentration=1,X_bh:constant_inflow_concentration=0,X_bh:external_mass_flow_timeseries=,X_bh:external_source=,X_bh:time_variable_inflow_concentration=,_height=200,_width=200,bottom_elevation=0,constant_inflow=0[m~^3/day],name=Reactor_2(0:0),time_variable_inflow=,x=300,y=896
+create block;type=Reactor,S_s:concentration=0,S_s:constant_inflow_concentration=0,S_s:external_mass_flow_timeseries=,S_s:external_source=,S_s:time_variable_inflow_concentration=,Storage=400[m~^3],X_bh:concentration=1,X_bh:constant_inflow_concentration=0,X_bh:external_mass_flow_timeseries=,X_bh:external_source=,X_bh:time_variable_inflow_concentration=,_height=200,_width=200,bottom_elevation=0,constant_inflow=0[m~^3/day],name=Reactor_2(1:0),time_variable_inflow=,x=600,y=896
+create block;type=Reactor,S_s:concentration=0,S_s:constant_inflow_concentration=0,S_s:external_mass_flow_timeseries=,S_s:external_source=,S_s:time_variable_inflow_concentration=,Storage=400[m~^3],X_bh:concentration=1,X_bh:constant_inflow_concentration=0,X_bh:external_mass_flow_timeseries=,X_bh:external_source=,X_bh:time_variable_inflow_concentration=,_height=200,_width=200,bottom_elevation=0,constant_inflow=0[m~^3/day],name=Reactor_2(2:0),time_variable_inflow=,x=900,y=896
+create block;type=fixed_head,S_s:concentration=0,S_s:constant_inflow_concentration=0,S_s:external_mass_flow_timeseries=,S_s:external_source=,S_s:time_variable_inflow_concentration=,Storage=100000,X_bh:concentration=0,X_bh:constant_inflow_concentration=0,X_bh:external_mass_flow_timeseries=,X_bh:external_source=,X_bh:time_variable_inflow_concentration=,_height=200,_width=200,head=0,name=Effluent,x=1772,y=898
+create block;type=fixed_head,S_s:concentration=0,S_s:constant_inflow_concentration=0,S_s:external_mass_flow_timeseries=,S_s:external_source=,S_s:time_variable_inflow_concentration=,Storage=100000,X_bh:concentration=0,X_bh:constant_inflow_concentration=0,X_bh:external_mass_flow_timeseries=,X_bh:external_source=,X_bh:time_variable_inflow_concentration=,_height=200,_width=200,head=-1,name=Waste,x=1757,y=1197
+create composite;type=Clarifier,name=Clarifier_1,x=1463,y=903,_width=200,_height=200,surface_area=100[m~^2],underflow=95[m~^3/day],underflow_timeseries=,interface_elevation=0[m],floor_elevation=-1[m],upper_storage=100[m~^3],lower_storage=100[m~^3],inflow=,S_s:concentration=0,S_s:constant_inflow_concentration=0,S_s:external_mass_flow_timeseries=,S_s:external_source=,S_s:time_variable_inflow_concentration=,X_bh:concentration=0,X_bh:constant_inflow_concentration=0,X_bh:external_mass_flow_timeseries=,X_bh:external_source=,X_bh:time_variable_inflow_concentration=
+create link;from=Reactor_1,to=Reactor_2(0:0),type=Fixed flow,flow=190,name=Reactor to Reactor(0)
+create link;from=Reactor_2(0:0),to=Reactor_2(1:0),type=Fixed flow,flow=190,name=Reactor_2(0:0)-Reactor_2(1:0)
+create link;from=Reactor_2(1:0),to=Reactor_2(2:0),type=Fixed flow,flow=190,name=Reactor_2(1:0)-Reactor_2(2:0)
+create link;from=Reactor_2(2:0),to=Clarifier_1,type=Fixed flow,flow=190,name=Reactor_2 to Clarifier
+create link;from=Clarifier_1,to=Effluent,type=Effluent flow,flow=95,name=Clarifier to Effluent
+create link;from=Clarifier_1,to=Reactor_1,type=Sludge flow,flow=90,name=Return sludge
+create link;from=Clarifier_1,to=Waste,type=Sludge flow,flow=5,name=Waste sludge

@@ -22,6 +22,7 @@
 #include "enums.h"
 #include "ray.h"
 #include "Block.h"
+#include "Composite.h"
 
 class MainWindow;
 class Node;
@@ -82,7 +83,9 @@ private:
     QString nodenametobedeleted = ""; 
     QString timeseriestobeshown = ""; 
     QString nodenametobecopied = "";
-    Block copied_block; 
+    Block copied_block;
+    Composite copied_composite;
+    bool copied_is_composite = false;
     bool RecreateGraphics = false; 
 signals:
     void Mouse_Pos(int, int, QString);

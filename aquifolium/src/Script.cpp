@@ -126,6 +126,9 @@ void Script::FillMustBeSpecified()
         mustbespecifiedatcreation["create"]["block"] = vector<string>();
             mustbespecifiedatcreation["create"]["block"].push_back("name");
             mustbespecifiedatcreation["create"]["block"].push_back("type");
+        mustbespecifiedatcreation["create"]["composite"] = vector<string>();
+            mustbespecifiedatcreation["create"]["composite"].push_back("name");
+            mustbespecifiedatcreation["create"]["composite"].push_back("type");
         mustbespecifiedatcreation["create"]["link"] = vector<string>();
             mustbespecifiedatcreation["create"]["link"].push_back("name");
             mustbespecifiedatcreation["create"]["link"].push_back("type");

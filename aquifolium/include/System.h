@@ -18,6 +18,7 @@
 
 #include "Block.h"
 #include "Link.h"
+#include "Composite.h"
 #include "Object.h"
 #include "Source.h"
 #include "constituent.h"
@@ -43,7 +44,7 @@
 #include "logwindow.h"
 #endif
 
- // std:: qualifiers used explicitly — no 'using namespace std' in headers
+ // std:: qualifiers used explicitly ï¿½ no 'using namespace std' in headers
 
 #ifdef SUPER_LU
 #include "Matrix_arma_sp.h"
@@ -178,6 +179,57 @@ public:
     bool AddReaction(Reaction& rxn, bool SetQuantities = true);
     bool AddObservation(Observation& obs, bool SetQuantities = true);
     bool AddReactionParameter(RxnParameter& rxn, bool SetQuantities = true);
+
+    /**
+     * @brief Adds a composite and creates its member blocks and internal links
+     * @param cmp The composite to add; must already have its name and type set
+     * @param SetQuantities Whether to populate its quantities from the metamodel
+     * @return true if the composite and all of its members were created
+     */
+    bool AddComposite(Composite& cmp, bool SetQuantities = true);
+
+    /**
+     * @brief Exposes constituent- and reaction-derived member quantities on their composites
+     * @return true on completion
+     *
+     * Quantities copied onto blocks when a constituent, reaction or reaction
+     * parameter is added cannot be declared by a composite type, because their
+     * names are only known at run time. For each such quantity found on a
+     * member, a group-level property of the same name is created that fans out
+     * to every member carrying it, so all members share one value. A quantity
+     * the composite type declares explicitly is left alone - the author's own
+     * mapping wins.
+     */
+    bool AddCompositeConstituentRelatedProperties();
+
+    /**
+     * @brief Dissolves a composite, leaving its members as ordinary blocks and links
+     * @param compositename The composite to ungroup
+     * @return true if the composite existed and was dissolved
+     *
+     * Members and internal links are kept exactly as they are and become
+     * independent objects; the composite's own group-level property values are
+     * discarded. External links are untouched - they already reference member
+     * blocks. One-way: there is no regroup.
+     */
+    bool UngroupComposite(const std::string& compositename);
+
+    /**
+     * @brief The composite owning the named block or link, or nullptr
+     */
+    Composite* OwnerComposite(const std::string& objectname);
+    const Composite* OwnerComposite(const std::string& objectname) const;
+
+    /**
+     * @brief Rebuilds the link/block cross-references from the stored indices
+     *
+     * Each block caches the indices of the links attached to it, and each link
+     * caches Block* pointers to its endpoints. Both are derived from
+     * s_Block_No/e_Block_No and are invalidated whenever the block or link
+     * vector is erased from. Call this after any such mutation.
+     */
+    void RebuildLinkConnectivity();
+
     bool Delete(const std::string& objectname);
 
     // =====================================================================
@@ -201,6 +253,8 @@ public:
     const Parameter* parameter(const string& s) const;
     Objective_Function* objectivefunction(const std::string& s);
     const Objective_Function* objectivefunction(const string& s) const;
+    Composite* composite(const std::string& s);
+    const Composite* composite(const string& s) const;
     Object* object(const std::string& s);
     const Object* object(const string& s) const;
     Object* settings(const std::string& s);
@@ -228,6 +282,18 @@ public:
     Link* link(unsigned int i)
     {
         if (i < links.size()) return &links[i];
+        return nullptr;
+    }
+
+    Composite* composite(unsigned int i)
+    {
+        if (i < composites.size()) return &composites[i];
+        return nullptr;
+    }
+
+    const Composite* composite(unsigned int i) const
+    {
+        if (i < composites.size()) return &composites[i];
         return nullptr;
     }
 
@@ -322,6 +388,7 @@ public:
     // =====================================================================
     unsigned int BlockCount() const { return blocks.size(); }
     unsigned int LinksCount() const { return links.size(); }
+    unsigned int CompositesCount() const { return composites.size(); }
     unsigned int SourcesCount() const { return sources.size(); }
     unsigned int ConstituentsCount() const { return constituents.size(); }
     unsigned int ReactionsCount() const { return reactions.size(); }
@@ -334,7 +401,7 @@ public:
 
     // =====================================================================
     // Entity name listing
-    //   [CHANGE] Add const — these only iterate and collect names
+    //   [CHANGE] Add const ï¿½ these only iterate and collect names
     // =====================================================================
     std::vector<std::string> GetAllBlockNames() const;
     std::vector<std::string> GetAllLinkNames() const;
@@ -344,10 +411,11 @@ public:
 
     // =====================================================================
     // Entity type listing
-    //   [CHANGE] Add const — these only iterate and collect types
+    //   [CHANGE] Add const ï¿½ these only iterate and collect types
     // =====================================================================
     std::vector<std::string> GetAllBlockTypes() const;
     std::vector<std::string> GetAllLinkTypes() const;
+    std::vector<std::string> GetAllCompositeTypes() const;
     std::vector<std::string> GetAllSourceTypes() const;
     std::vector<std::string> GetAllTypesOf(const std::string& type) const;
 
@@ -558,15 +626,44 @@ public:
 
 
     // =====================================================================
-    // Serialization — Script
+    // Serialization ï¿½ Script
     // =====================================================================
-    bool SavetoScriptFile(const std::string& filename, const std::string& templatefilename = "", const std::vector<std::string>& addedtemplates = std::vector<std::string>());
+    /**
+     * @brief Writes the model out as a command script
+     * @param filename Destination file
+     * @param templatefilename Main template to emit a "loadtemplate" line for
+     * @param addedtemplates Additional templates to emit "addtemplate" lines for
+     * @param expand_composites Write members individually instead of as composites
+     * @return true on success
+     *
+     * By default each composite is written as a single "create composite" line
+     * and its members and internal links are omitted, since they are
+     * regenerated from the template on load. External links referencing a
+     * member are written against the composite instead, and re-resolved to a
+     * member by link type when the file is read back.
+     *
+     * With expand_composites set, composites are skipped entirely and their
+     * members and internal links are written as ordinary blocks and links -
+     * the same output an ungrouped model produces. Use it to export a model
+     * that older builds, or tools unaware of composites, can read.
+     */
+    bool SavetoScriptFile(const std::string& filename, const std::string& templatefilename = "", const std::vector<std::string>& addedtemplates = std::vector<std::string>(), bool expand_composites = false);
 
     // =====================================================================
-    // Serialization — JSON (Qt-dependent)
+    // Serialization ï¿½ JSON (Qt-dependent)
     // =====================================================================
 #if defined(QT_GUI_SUPPORT) || defined (Q_JSON_SUPPORT)
-    bool SavetoJson(const std::string& filename, const std::vector<std::string>& _addedtemplates, bool allvariable = false, bool calculatevalue = false);
+    /**
+     * @brief Writes the model out as JSON
+     * @param expand_composites Write members individually instead of as composites
+     *
+     * Mirrors SavetoScriptFile: by default composites are written as single
+     * entries under "Composites" and their members and internal links are
+     * omitted, with external links recorded against the composite. With
+     * expand_composites set, the output contains only ordinary blocks and
+     * links, exactly as it did before composites existed.
+     */
+    bool SavetoJson(const std::string& filename, const std::vector<std::string>& _addedtemplates, bool allvariable = false, bool calculatevalue = false, bool expand_composites = false);
     bool LoadfromJson(const QString& jsonfilename);
     bool LoadfromJson(const QJsonDocument& jsondoc);
     bool LoadfromJson(const QJsonObject& jsondoc);
@@ -606,6 +703,7 @@ private:
     // =====================================================================
     SafeVector<Block> blocks;
     SafeVector<Link> links;
+    SafeVector<Composite> composites;
     SafeVector<Source> sources;
     SafeVector<Constituent> constituents;
     SafeVector<Reaction> reactions;

@@ -155,6 +155,16 @@ public:
     bool SetProperty(const string& val, bool force_value = false, bool check_criteria = true);
     string GetProperty(bool force_value = false);
     bool SetSourceName(const string& s) { sourcename = s; return true; }
+    /**
+     * @brief Mapping from this (composite-level) quantity onto member quantities
+     *
+     * Only populated for quantities belonging to a composite type. Keys are
+     * member-qualified quantity names of the form "<member>#<quantity>" and
+     * values are expressions written in terms of composite-level property
+     * names. Empty for every ordinary block/link/source quantity.
+     */
+    map<string, string>& ApplyTo() { return applyto; }
+    const map<string, string>& ApplyTo() const { return applyto; }
     string toCommand();
     void SetOutputItem(const string& s)
     {
@@ -215,6 +225,7 @@ private:
     TimeSeries<timeseriesprecision> _timeseries;
     Source* source = nullptr;
     string sourcename = "";
+    map<string, string> applyto;
     string _var_name;
     string _string_value = "";
     double _val = 0;

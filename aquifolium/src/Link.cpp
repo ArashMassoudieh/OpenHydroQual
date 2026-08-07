@@ -44,7 +44,13 @@ Link& Link::operator=(const Link& rhs)
 
 string Link::toCommand()
 {
-    string out = "from=" + Object::GetConnectedBlock(Expression::loc::source)->GetName() + "," + "to=" + Object::GetConnectedBlock(Expression::loc::destination)->GetName() + ",";
+    return toCommand(Object::GetConnectedBlock(Expression::loc::source)->GetName(),
+                     Object::GetConnectedBlock(Expression::loc::destination)->GetName());
+}
+
+string Link::toCommand(const string &fromname, const string &toname)
+{
+    string out = "from=" + fromname + "," + "to=" + toname + ",";
     out += Object::toCommand();
     return out;
 }
