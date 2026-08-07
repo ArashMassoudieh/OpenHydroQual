@@ -1,0 +1,158 @@
+{
+    "Blocks": {
+        "Comparison_outlet": {
+            "Storage": "12320.1",
+            "_height": "200",
+            "_width": "200",
+            "head": "0",
+            "name": "Comparison_outlet",
+            "type": "fixed_head",
+            "x": "1700",
+            "y": "1100"
+        },
+        "Watershed_outlet": {
+            "Storage": "32033.4",
+            "_height": "200",
+            "_width": "200",
+            "head": "0",
+            "name": "Watershed_outlet",
+            "type": "fixed_head",
+            "x": "1700",
+            "y": "300"
+        }
+    },
+    "Composites": {
+        "Rural": {
+            "CN": "65",
+            "Precipitation": "Storm",
+            "_height": "260",
+            "_width": "260",
+            "area": "1e+06",
+            "hydraulic_length": "2000",
+            "initial_abstraction_depth": "0",
+            "name": "Rural",
+            "recovery_coefficient": "0.1",
+            "slope": "0.03",
+            "type": "CN_Catchment",
+            "x": "200",
+            "y": "0"
+        },
+        "Rural_3res": {
+            "CN": "65",
+            "Precipitation": "Storm",
+            "_height": "260",
+            "_width": "260",
+            "area": "1e+06",
+            "hydraulic_length": "2000",
+            "initial_abstraction_depth": "0",
+            "name": "Rural_3res",
+            "recovery_coefficient": "0.1",
+            "slope": "0.03",
+            "type": "CN_Catchment_3",
+            "x": "200",
+            "y": "1100"
+        },
+        "Urban": {
+            "CN": "90",
+            "Precipitation": "Storm",
+            "_height": "260",
+            "_width": "260",
+            "area": "400000",
+            "hydraulic_length": "800",
+            "initial_abstraction_depth": "0",
+            "name": "Urban",
+            "recovery_coefficient": "0.1",
+            "slope": "0.01",
+            "type": "CN_Catchment",
+            "x": "900",
+            "y": "300"
+        }
+    },
+    "Constituents": {
+    },
+    "Links": {
+        "Rural_3res_hydrograph": {
+            "from": "Rural_3res",
+            "name": "Rural_3res_hydrograph",
+            "to": "Comparison_outlet",
+            "type": "CN_outlet"
+        },
+        "Rural_runoff": {
+            "from": "Rural",
+            "name": "Rural_runoff",
+            "to": "Urban",
+            "type": "CN_outlet"
+        },
+        "Watershed_hydrograph": {
+            "from": "Urban",
+            "name": "Watershed_hydrograph",
+            "to": "Watershed_outlet",
+            "type": "CN_outlet"
+        }
+    },
+    "Objective Functions": {
+    },
+    "Observations": {
+    },
+    "Parameters": {
+    },
+    "Reaction Parameters": {
+    },
+    "Reactions": {
+    },
+    "Set As Parameters": [
+    ],
+    "Settings": {
+        "acceptance_rate": "0.15",
+        "add_noise_to_realizations": "No",
+        "alloutputfile": "output.txt",
+        "c_n_weight": "1",
+        "continue_based_on_file_name": "",
+        "initial_purturbation": "No",
+        "initial_time_step": "0.0001",
+        "initual_purturbation_factor": "0.05",
+        "jacobian_method": "Inverse Jacobian",
+        "max_timestep_decrease_factor": "100000",
+        "max_timestep_increase_factor": "50",
+        "maximum_number_of_matrix_inverstions": "200000",
+        "maximum_time_allowed": "86400",
+        "maxpop": "40",
+        "minimum_timestep": "1e-08",
+        "n_threads": "8",
+        "ngen": "40",
+        "nr_timestep_reduction_factor": "0.75",
+        "nr_timestep_reduction_factor_fail": "0.2",
+        "nr_tolerance": "1e-06",
+        "number_of_burnout_samples": "0",
+        "number_of_chains": "8",
+        "number_of_post_estimate_realizations": "10",
+        "number_of_samples": "1000",
+        "number_of_threads": "1",
+        "numthreads": "8",
+        "observed_outputfile": "observedoutput.txt",
+        "outputfile": "GA_output.txt",
+        "pcross": "1",
+        "perform_global_sensitivity": "No",
+        "pmute": "0.02",
+        "purturbation_change_scale": "0.75",
+        "record_interval": "1",
+        "samples_filename": "mcmc.txt",
+        "shakescale": "0.05",
+        "shakescalered": "0.75",
+        "simulation_end_time": "36527.5",
+        "simulation_start_time": "36527.5",
+        "write_interval": "20",
+        "write_solution_details": "No"
+    },
+    "Sources": {
+        "Storm": {
+            "name": "Storm",
+            "timeseries": "",
+            "type": "Precipitation"
+        }
+    },
+    "Templates": [
+        "/home/arash/Projects/OpenHydroQual/resources/main_components.json",
+        "/home/arash/Projects/OpenHydroQual/resources/cn_catchment.json"
+    ]
+}

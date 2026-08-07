@@ -1,0 +1,507 @@
+{
+  "CN_retention": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "SCS Curve Number abstraction store",
+    "icon": {
+      "filename": "cn_retention.png"
+    },
+    "helptext": "Accumulates the water abstracted from rainfall by an SCS Curve Number catchment - the initial abstraction Ia = 0.2S followed by the continuing retention, up to a total of 1.2S. Its state determines the fraction of incoming rainfall that becomes runoff. Normally used as a member of a CN_Catchment composite rather than on its own.",
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "loss",
+      "initial_value_expression": "area*initial_abstraction_depth",
+      "description": "Abstracted volume",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "estimate": "true",
+      "unit": "m^3;ft^3"
+    },
+    "CN": {
+      "type": "value",
+      "description": "Curve Number",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "75",
+      "estimate": "true",
+      "criteria": "CN<99",
+      "warningmessage": "The Curve Number must be below 99; the usable range is about 30 to 98.",
+      "helptext": "SCS/NRCS Curve Number for the antecedent moisture condition of interest. Usable range is roughly 30 to 98; the maximum retention S becomes zero at CN = 100."
+    },
+    "area": {
+      "type": "value",
+      "description": "Catchment area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;km~^2",
+      "default": "10000",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "The area must be positive!"
+    },
+    "recovery_coefficient": {
+      "type": "value",
+      "description": "Drying (recovery) coefficient",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day;1/hr",
+      "default": "0.1",
+      "estimate": "true",
+      "helptext": "First-order rate at which the abstraction store empties between storms, so that the Curve Number method can be used in continuous simulation. Its inverse is the recovery time constant, which should sit between a typical storm duration and a typical inter-event time. The recovered water leaves the model.",
+      "criteria": "recovery_coefficient>-0.0000001",
+      "warningmessage": "The recovery coefficient cannot be negative!"
+    },
+    "initial_abstraction_depth": {
+      "type": "value",
+      "description": "Initial depth of water already abstracted",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;mm;in;ft",
+      "default": "0",
+      "helptext": "Antecedent condition. Zero means the store starts empty, so the first 0.2S of rainfall produces no runoff at all."
+    },
+    "S": {
+      "type": "expression",
+      "expression": "25.4/CN-0.254",
+      "description": "Maximum retention depth",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "Ia": {
+      "type": "expression",
+      "expression": "0.2*S",
+      "description": "Initial abstraction depth",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "W": {
+      "type": "expression",
+      "expression": "Storage/area",
+      "description": "Abstracted depth",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "C": {
+      "type": "expression",
+      "expression": "_pos(1-((S+Ia-W)/S)^2)",
+      "description": "Runoff fraction",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "loss": {
+      "type": "expression",
+      "expression": "-recovery_coefficient*Storage",
+      "description": "Drying loss",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^3/day;ft^3/day"
+    }
+  },
+
+  "CN_reservoir": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Linear reservoir element of a runoff routing cascade",
+    "icon": {
+      "filename": "cn_reservoir.png"
+    },
+    "helptext": "One element of a Nash cascade: outflow is Storage divided by the residence time K. A chain of these turns a rainfall-excess rate into a hydrograph whose shape approximates the NRCS dimensionless unit hydrograph. Normally used as a member of a CN_Catchment composite rather than on its own.",
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation",
+      "description": "Stored volume",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "estimate": "true",
+      "unit": "m^3;ft^3"
+    },
+    "K": {
+      "type": "value",
+      "description": "Reservoir residence time",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "day;hr;min",
+      "default": "0.01",
+      "estimate": "true",
+      "criteria": "K>0",
+      "warningmessage": "The residence time must be positive!"
+    },
+    "area": {
+      "type": "value",
+      "description": "Contributing area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;km~^2",
+      "default": "10000",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "The area must be positive!",
+      "helptext": "Rainfall is applied as a volumetric rate equal to intensity times this area, so it must be set even on reservoirs that receive no rain directly."
+    },
+    "Precipitation": {
+      "type": "source",
+      "description": "Precipitation source",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "includeinoutput": "true",
+      "unit": "m^3/day;ft^3/day"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "Storage/area",
+      "description": "Equivalent depth",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "discharge": {
+      "type": "expression",
+      "expression": "Storage/K",
+      "description": "Outflow rate",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    }
+  },
+
+  "CN_partition_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Curve Number rainfall partition",
+    "icon": {
+      "filename": "cn_partition_link.png"
+    },
+    "helptext": "Carries the abstracted fraction of the rainfall falling on the surface reservoir into the Curve Number abstraction store. The remainder stays in the surface reservoir and becomes runoff. Internal to a CN_Catchment composite.",
+    "flow": {
+      "type": "expression",
+      "expression": "Precipitation.s*(1-C.e)",
+      "description": "Abstraction rate",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "0.000000001",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "150,100,40"
+    }
+  },
+
+  "CN_cascade_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Routing cascade connector",
+    "icon": {
+      "filename": "cn_cascade_link.png"
+    },
+    "helptext": "Linear reservoir discharge, Storage/K, from one cascade element to the next. Internal to a CN_Catchment composite.",
+    "flow": {
+      "type": "expression",
+      "expression": "Storage.s/K.s",
+      "description": "Discharge",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "0.000000001",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,150,200"
+    }
+  },
+
+  "CN_outlet": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Curve Number catchment outlet",
+    "icon": {
+      "filename": "cn_outlet.png"
+    },
+    "helptext": "Outlet hydrograph of a Curve Number catchment: the discharge of the last element of its routing cascade. This is the only way water leaves a CN_Catchment, and it may discharge to any block that accepts inflow.",
+    "flow": {
+      "type": "expression",
+      "expression": "Storage.s/K.s",
+      "description": "Outflow rate",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "0.000000001",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,80,200"
+    }
+  },
+
+  "CN_Catchment": {
+    "type": "composite",
+    "typecategory": "Blocks",
+    "description": "SCS Curve Number catchment, NRCS unit hydrograph (5-reservoir cascade)",
+    "icon": {
+      "filename": "cn_catchment.png"
+    },
+    "helptext": "Rainfall-runoff catchment using the classical SCS Curve Number method with Ia = 0.2S, routed through a five-element Nash cascade whose residence time is derived from the NRCS lag equation. Five elements reproduce the peak of the NRCS dimensionless unit hydrograph closely. Runoff volume is exactly the Curve Number equation Q = (P-Ia)^2/(P-Ia+S). Water leaves only through a CN_outlet link.",
+    "members": {
+      "Retention": { "type": "CN_retention", "dx": "300", "dy": "0",   "_width": "200", "_height": "200" },
+      "R1":        { "type": "CN_reservoir", "dx": "0",   "dy": "250", "_width": "200", "_height": "200" },
+      "R2":        { "type": "CN_reservoir", "dx": "0",   "dy": "500", "_width": "200", "_height": "200" },
+      "R3":        { "type": "CN_reservoir", "dx": "0",   "dy": "750", "_width": "200", "_height": "200" },
+      "R4":        { "type": "CN_reservoir", "dx": "0",   "dy": "1000","_width": "200", "_height": "200" },
+      "R5":        { "type": "CN_reservoir", "dx": "0",   "dy": "1250","_width": "200", "_height": "200" }
+    },
+    "internal_links": {
+      "partition": { "type": "CN_partition_link", "from": "R1", "to": "Retention" },
+      "casc_1_2":  { "type": "CN_cascade_link",   "from": "R1", "to": "R2" },
+      "casc_2_3":  { "type": "CN_cascade_link",   "from": "R2", "to": "R3" },
+      "casc_3_4":  { "type": "CN_cascade_link",   "from": "R3", "to": "R4" },
+      "casc_4_5":  { "type": "CN_cascade_link",   "from": "R4", "to": "R5" }
+    },
+    "external_links": {
+      "*":         { "to": "R1" },
+      "CN_outlet": { "from": "R5", "to": "R1" }
+    },
+
+    "CN": {
+      "type": "value",
+      "description": "Curve Number",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "75",
+      "estimate": "true",
+      "criteria": "CN<99",
+      "warningmessage": "The Curve Number must be below 99; the usable range is about 30 to 98.",
+      "helptext": "Sets the maximum retention S = 25.4/CN - 0.254 m and the initial abstraction Ia = 0.2S, and also enters the NRCS lag equation.",
+      "applyto": { "Retention#CN": "CN" }
+    },
+    "area": {
+      "type": "value",
+      "description": "Catchment area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;km~^2",
+      "default": "100000",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "The area must be positive!",
+      "applyto": {
+        "Retention#area": "area",
+        "R1#area": "area", "R2#area": "area", "R3#area": "area",
+        "R4#area": "area", "R5#area": "area"
+      }
+    },
+    "hydraulic_length": {
+      "type": "value",
+      "description": "Longest flow path",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;km;yd",
+      "default": "1000",
+      "estimate": "true",
+      "criteria": "hydraulic_length>0",
+      "warningmessage": "The flow path length must be positive!",
+      "helptext": "Hydraulic length of the catchment. With the Curve Number and the slope it sets the NRCS lag L = l^0.8*(1000/CN-9)^0.7/(176300*sqrt(slope)) in days, and every cascade element gets a residence time K = L/(n-1), which places the peak of the hydrograph exactly at the lag.",
+      "applyto": {
+        "R1#K": "hydraulic_length^0.8*(1000/CN-9)^0.7/(176300*slope^0.5)/4",
+        "R2#K": "hydraulic_length^0.8*(1000/CN-9)^0.7/(176300*slope^0.5)/4",
+        "R3#K": "hydraulic_length^0.8*(1000/CN-9)^0.7/(176300*slope^0.5)/4",
+        "R4#K": "hydraulic_length^0.8*(1000/CN-9)^0.7/(176300*slope^0.5)/4",
+        "R5#K": "hydraulic_length^0.8*(1000/CN-9)^0.7/(176300*slope^0.5)/4"
+      }
+    },
+    "slope": {
+      "type": "value",
+      "description": "Average catchment slope",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.02",
+      "estimate": "true",
+      "criteria": "slope>0",
+      "warningmessage": "The slope must be positive!",
+      "helptext": "Dimensionless, as a rise over run (m/m). The NRCS lag equation is written for percent slope; the conversion is done internally."
+    },
+    "recovery_coefficient": {
+      "type": "value",
+      "description": "Drying (recovery) coefficient",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day;1/hr",
+      "default": "0.1",
+      "estimate": "true",
+      "helptext": "Rate at which the abstraction store empties between storms, allowing continuous simulation. Its inverse should sit between a typical storm duration and a typical inter-event time. The recovered water leaves the model.",
+      "applyto": { "Retention#recovery_coefficient": "recovery_coefficient" }
+    },
+    "initial_abstraction_depth": {
+      "type": "value",
+      "description": "Initial depth of water already abstracted",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;mm;in;ft",
+      "default": "0",
+      "helptext": "Antecedent condition. Zero means the first 0.2S of rainfall produces no runoff.",
+      "applyto": { "Retention#initial_abstraction_depth": "initial_abstraction_depth" }
+    },
+    "Precipitation": {
+      "type": "source",
+      "description": "Precipitation source",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Applied to the surface reservoir; the Curve Number partition then splits it into runoff and abstraction.",
+      "applyto": { "R1#Precipitation": "Precipitation" }
+    }
+  },
+
+  "CN_Catchment_3": {
+    "type": "composite",
+    "typecategory": "Blocks",
+    "description": "SCS Curve Number catchment, 3-reservoir routing cascade",
+    "icon": {
+      "filename": "cn_catchment_3.png"
+    },
+    "helptext": "As CN_Catchment but with a three-element routing cascade. Time to peak is still placed exactly at the NRCS lag; the hydrograph peak is flatter and the recession longer than the NRCS dimensionless unit hydrograph, which the five-element version matches more closely. Use it where fewer state variables are preferred.",
+    "members": {
+      "Retention": { "type": "CN_retention", "dx": "300", "dy": "0",   "_width": "200", "_height": "200" },
+      "R1":        { "type": "CN_reservoir", "dx": "0",   "dy": "250", "_width": "200", "_height": "200" },
+      "R2":        { "type": "CN_reservoir", "dx": "0",   "dy": "500", "_width": "200", "_height": "200" },
+      "R3":        { "type": "CN_reservoir", "dx": "0",   "dy": "750", "_width": "200", "_height": "200" }
+    },
+    "internal_links": {
+      "partition": { "type": "CN_partition_link", "from": "R1", "to": "Retention" },
+      "casc_1_2":  { "type": "CN_cascade_link",   "from": "R1", "to": "R2" },
+      "casc_2_3":  { "type": "CN_cascade_link",   "from": "R2", "to": "R3" }
+    },
+    "external_links": {
+      "*":         { "to": "R1" },
+      "CN_outlet": { "from": "R3", "to": "R1" }
+    },
+
+    "CN": {
+      "type": "value",
+      "description": "Curve Number",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "75",
+      "estimate": "true",
+      "criteria": "CN<99",
+      "warningmessage": "The Curve Number must be below 99; the usable range is about 30 to 98.",
+      "applyto": { "Retention#CN": "CN" }
+    },
+    "area": {
+      "type": "value",
+      "description": "Catchment area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;km~^2",
+      "default": "100000",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "The area must be positive!",
+      "applyto": {
+        "Retention#area": "area",
+        "R1#area": "area", "R2#area": "area", "R3#area": "area"
+      }
+    },
+    "hydraulic_length": {
+      "type": "value",
+      "description": "Longest flow path",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;km;yd",
+      "default": "1000",
+      "estimate": "true",
+      "criteria": "hydraulic_length>0",
+      "warningmessage": "The flow path length must be positive!",
+      "helptext": "With the Curve Number and the slope it sets the NRCS lag L = l^0.8*(1000/CN-9)^0.7/(176300*sqrt(slope)) in days; each of the three elements gets K = L/2, placing the peak at the lag.",
+      "applyto": {
+        "R1#K": "hydraulic_length^0.8*(1000/CN-9)^0.7/(176300*slope^0.5)/2",
+        "R2#K": "hydraulic_length^0.8*(1000/CN-9)^0.7/(176300*slope^0.5)/2",
+        "R3#K": "hydraulic_length^0.8*(1000/CN-9)^0.7/(176300*slope^0.5)/2"
+      }
+    },
+    "slope": {
+      "type": "value",
+      "description": "Average catchment slope",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.02",
+      "estimate": "true",
+      "criteria": "slope>0",
+      "warningmessage": "The slope must be positive!",
+      "helptext": "Dimensionless, as a rise over run (m/m)."
+    },
+    "recovery_coefficient": {
+      "type": "value",
+      "description": "Drying (recovery) coefficient",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day;1/hr",
+      "default": "0.1",
+      "estimate": "true",
+      "applyto": { "Retention#recovery_coefficient": "recovery_coefficient" }
+    },
+    "initial_abstraction_depth": {
+      "type": "value",
+      "description": "Initial depth of water already abstracted",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;mm;in;ft",
+      "default": "0",
+      "applyto": { "Retention#initial_abstraction_depth": "initial_abstraction_depth" }
+    },
+    "Precipitation": {
+      "type": "source",
+      "description": "Precipitation source",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "applyto": { "R1#Precipitation": "Precipitation" }
+    }
+  }
+}

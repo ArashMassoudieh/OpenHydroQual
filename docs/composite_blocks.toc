@@ -1,0 +1,30 @@
+\contentsline {section}{\numberline {1}Concept}{2}{section.1}%
+\contentsline {section}{\numberline {2}Anatomy of a declaration}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Header fields}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Members}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Internal links}{3}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}External links (ports)}{4}{subsection.2.4}%
+\contentsline {paragraph}{The one-type-one-port rule.}{4}{section*.2}%
+\contentsline {subsection}{\numberline {2.5}Exposed properties and mappings}{4}{subsection.2.5}%
+\contentsline {subsubsection}{\numberline {2.5.1}How a mapping is evaluated}{5}{subsubsection.2.5.1}%
+\contentsline {paragraph}{Expressions see only composite properties.}{5}{section*.3}%
+\contentsline {subsection}{\numberline {2.6}Naming}{5}{subsection.2.6}%
+\contentsline {section}{\numberline {3}What happens at run time}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Instantiation}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}When propagation runs}{6}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Constituents and reactions}{6}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Persistence}{6}{section.4}%
+\contentsline {paragraph}{Expanded output.}{7}{section*.4}%
+\contentsline {section}{\numberline {5}Behaviour in the interface}{7}{section.5}%
+\contentsline {section}{\numberline {6}Registering a plugin}{7}{section.6}%
+\contentsline {section}{\numberline {7}Pitfalls}{7}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Drive the real initial-condition handle}{7}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Satisfy the internal links' required properties}{8}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Anything unexposed is unreachable}{8}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Watch out for confined-style head formulations}{8}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Port ambiguity}{8}{subsection.7.5}%
+\contentsline {section}{\numberline {8}A recipe}{8}{section.8}%
+\contentsline {section}{\numberline {9}Testing a new composite}{9}{section.9}%
+\contentsline {section}{\numberline {10}Worked example: a two-compartment clarifier}{9}{section.10}%
+\contentsline {section}{\numberline {11}Worked example: a hydrologic response unit}{10}{section.11}%
+\contentsline {section}{\numberline {12}Limitations}{10}{section.12}%

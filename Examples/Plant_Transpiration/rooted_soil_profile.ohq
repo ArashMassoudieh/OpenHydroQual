@@ -1,0 +1,57 @@
+loadtemplate; filename = /home/arash/Projects/OpenHydroQual/build/Desktop_Qt_6_8_3-Debug/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/unsaturated_soil.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/plants.json
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=10
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=simulation_end_time, value=36646
+setvalue; object=system, quantity=simulation_start_time, value=36526
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=numthreads, value=8
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=c_n_weight, value=1
+setvalue; object=system, quantity=initial_time_step, value=0.001
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=max_timestep_decrease_factor, value=100000
+setvalue; object=system, quantity=max_timestep_increase_factor, value=50
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=minimum_timestep, value=1e-08
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_tolerance, value=1e-06
+setvalue; object=system, quantity=write_interval, value=50
+setvalue; object=system, quantity=write_solution_details, value=No
+create source;type=Precipitation,name=Rain,timeseries=rainfall.csv
+create source;type=Transpiration_Time_Series (Soil),Kcb=1.05,name=Crop_upper,root_fraction=0.5,timeseries=et0.csv
+create source;type=Transpiration_Time_Series (Soil),Kcb=1.05,name=Crop_middle,root_fraction=0.3,timeseries=et0.csv
+create source;type=Transpiration_Time_Series (Soil),Kcb=1.05,name=Crop_lower,root_fraction=0.2,timeseries=et0.csv
+create block;type=Catchment,Evapotranspiration=,ManningCoeff=0.15,Precipitation=Rain,Runoff_coeff=1,Slope=0.005,Width=100,_height=200,_width=200,area=10000[m~^2],depression_storage=0.003,depth=0,elevation=10,inflow=,loss_coefficient=0,name=Field_surface,x=0,y=0
+create block;type=Soil,Evapotranspiration=Crop_upper,K_sat_original=0.6,K_sat_scale_factor=1,MC_to_EC_Threshold_Moisture=0,MC_to_EC_coefficient=0,MC_to_EC_exponent=0,_height=200,_width=200,act_X=0,act_Y=0,alpha=1.5,aniso_ratio=1,area=10000,bottom_elevation=9.7,depth=0.3,n=1.4,name=Root_zone_upper,specific_storage=0.01,theta=0.3,theta_res=0.06,theta_sat=0.42,x=0,y=250
+create block;type=Soil,Evapotranspiration=Crop_middle,K_sat_original=0.6,K_sat_scale_factor=1,MC_to_EC_Threshold_Moisture=0,MC_to_EC_coefficient=0,MC_to_EC_exponent=0,_height=200,_width=200,act_X=0,act_Y=0,alpha=1.5,aniso_ratio=1,area=10000,bottom_elevation=9.3,depth=0.4,n=1.4,name=Root_zone_middle,specific_storage=0.01,theta=0.3,theta_res=0.06,theta_sat=0.42,x=0,y=500
+create block;type=Soil,Evapotranspiration=Crop_lower,K_sat_original=0.6,K_sat_scale_factor=1,MC_to_EC_Threshold_Moisture=0,MC_to_EC_coefficient=0,MC_to_EC_exponent=0,_height=200,_width=200,act_X=0,act_Y=0,alpha=1.5,aniso_ratio=1,area=10000,bottom_elevation=8.5,depth=0.8,n=1.4,name=Root_zone_lower,specific_storage=0.01,theta=0.3,theta_res=0.06,theta_sat=0.42,x=0,y=750
+create block;type=fixed_head,Storage=100000,_height=200,_width=200,head=7.5,name=Water_table,x=0,y=1000
+create link;from=Field_surface,to=Root_zone_upper,type=surfacewater_to_soil_link,name=Infiltration
+create link;from=Root_zone_upper,to=Root_zone_middle,type=soil_to_soil_link,name=Percolation_upper
+create link;from=Root_zone_middle,to=Root_zone_lower,type=soil_to_soil_link,name=Percolation_lower
+create link;from=Root_zone_lower,to=Water_table,type=soil_to_fixedhead_link,name=Deep_drainage

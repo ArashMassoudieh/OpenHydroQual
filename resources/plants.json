@@ -2,7 +2,7 @@
   "Plant": {
     "type": "block",
     "typecategory": "Blocks",
-    "description": "Plant", 
+    "description": "Plant",
     "icon": {
       "filename": "plant.png"
     },
@@ -21,7 +21,6 @@
       "includeinoutput": "true",
       "description": "Initial Biomass; Biomass",
       "unit": "kg;g",
-      "includeinoutput": "true",
       "delegate": "UnitBox",
       "ask_user": "true"
     },
@@ -32,107 +31,107 @@
       "delegate": "ValueBox",
       "ask_user": "true"
     },
-    "solar_radiation":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Solar Radiation (W/m^2)",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "solar_radiation": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Solar Radiation (W/m^2)",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "Temperature":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Temperature time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "Temperature": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Temperature time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "wind_speed":{
-    	"type": "timeseries",
-	"includeinoutput": "true",
-	"description": "Wind time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "wind_speed": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Wind time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "wind_scale_fact" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Wind scale factor",
-    	"default": "1",
-    	"delegate": "ValueBox",
-		"estimate": "true"
+    "wind_scale_fact": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Wind scale factor",
+      "default": "1",
+      "delegate": "ValueBox",
+      "estimate": "true"
     },
-    "solar_scale_fact" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Solar radiation scale factor",
-    	"default": "1",
-    	"delegate": "ValueBox",
-	"estimate": "true"
+    "solar_scale_fact": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Solar radiation scale factor",
+      "default": "1",
+      "delegate": "ValueBox",
+      "estimate": "true"
     },
-    "R_h" : {
-    	"type": "timeseries",
-    	"includeinoutput": "true",
-	"description": "Relative humidity time series",
-    	"ask_user": "true",
-	"delegate": "Browser"
+    "R_h": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Relative humidity time series",
+      "ask_user": "true",
+      "delegate": "Browser"
     },
-    "z2" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Wind measurement elevation",
-    	"default": "2",
-    	"criteria": "z2>0",
-        "warningmessage": "Wind reference height must be greater than zero",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft;cm;in"
+    "z2": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Wind measurement elevation",
+      "default": "2",
+      "criteria": "z2>0",
+      "warningmessage": "Wind reference height must be greater than zero",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in"
     },
-    "z0" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Roughness height",
-    	"default": "0.0003",
-    	"criteria": "z0>0",
-       "warningmessage": "Roughness height must be greater than zero",
-    	"delegate": "UnitBox",
-    	"unit": "m;ft;cm;in"
+    "z0": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Roughness height",
+      "default": "0.0003",
+      "criteria": "z0>0",
+      "warningmessage": "Roughness height must be greater than zero",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in"
     },
-    "gamma" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "psychrometric constant (Pa/C)",
-    	"default": "66.8",
-    	"criteria": "gamma>0",
-       "warningmessage": "psychrometric constant must be greater than zero",
-    	"delegate": "ValueBox"
+    "gamma": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "psychrometric constant (Pa/C)",
+      "default": "66.8",
+      "criteria": "gamma>0",
+      "warningmessage": "psychrometric constant must be greater than zero",
+      "delegate": "ValueBox"
     },
-    "area" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Planted area",
-    	"default": "1",
-    	"criteria": "area>0",
-       "warningmessage": "planted area must be greater than zero",
-    	"delegate": "UnitBox",
-    	"unit": "m~^2; ft~^2"
+    "area": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Planted area",
+      "default": "1",
+      "criteria": "area>0",
+      "warningmessage": "planted area must be greater than zero",
+      "delegate": "UnitBox",
+      "unit": "m~^2; ft~^2"
     },
     "B": {
-    	"type": "expression",
-	"includeinoutput": "true",
-	"description": "B coefficient",
-	"ask_user": "false",
-	"expression": "0.000102*wind_speed*wind_scale_fact/(_log(z2/z0))^2"
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "B coefficient",
+      "ask_user": "false",
+      "expression": "0.000102*wind_speed*wind_scale_fact/(_log(z2/z0))^2"
     },
     "e_as": {
-    	"type": "expression",
-    	"expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
-	"includeinoutput": "true",
-	"description": "Saturated humidity"
+      "type": "expression",
+      "expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
+      "includeinoutput": "true",
+      "description": "Saturated humidity"
     },
     "Ea": {
       "type": "expression",
@@ -141,12 +140,11 @@
       "ask_user": "false",
       "expression": "B*e_as*(R_h-1)"
     },
-    "l_v" :
-    {
-	"type": "expression",
-	"description": "Latent Heat of Evaporation (J/kg)",
-      	"expression": "2501000-2370*Temperature",
-	"ask_user": "false"
+    "l_v": {
+      "type": "expression",
+      "description": "Latent Heat of Evaporation (J/kg)",
+      "expression": "2501000-2370*Temperature",
+      "ask_user": "false"
     },
     "Er": {
       "type": "expression",
@@ -176,27 +174,26 @@
       "ask_user": "false",
       "expression": "-plant_alpha*(1-Storage*1000000/Biomass)^plant_beta"
     },
-    "plant_alpha" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Coefficient for calculating plant matric suction",
-    	"default": "1000",
-    	"delegate": "ValueBox",
-	"estimate": "true"
+    "plant_alpha": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Coefficient for calculating plant matric suction",
+      "default": "1000",
+      "delegate": "ValueBox",
+      "estimate": "true"
     },
-    "plant_beta" : {
-    	"type": "value",
-    	"ask_user": "true",
-	"includeinoutput": "false",
-    	"description": "Exponent for calculating plant matric suction",
-    	"default": "2",
-    	"delegate": "ValueBox",
-	"estimate": "true"
+    "plant_beta": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Exponent for calculating plant matric suction",
+      "default": "2",
+      "delegate": "ValueBox",
+      "estimate": "true"
     }
   },
-  "Soil_to_plant_link":
-  {
+  "Soil_to_plant_link": {
     "type": "link",
     "typecategory": "Connectors",
     "icon": {
@@ -231,6 +228,850 @@
       "type": "string",
       "default": "120,120,0"
     }
+  },
+  "Transpiration_Time_Series (Soil)": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Transpiration from soil, crop coefficient with supplied ET0",
+    "icon": {
+      "filename": "transpiration_timeseries.png"
+    },
+    "helptext": "Plant transpiration from a soil layer: T = ET0 * Kcb * Ks * root_fraction, with the reference evapotranspiration ET0 supplied as a time series. Water stress reduces transpiration linearly from 1 at field capacity (3.3 m suction) to 0 at wilting point (150 m suction), both evaluated from the layer's own van Genuchten retention curve. Note this is a LINEAR stress function, not the FAO-56 Ks, which stays at 1 until the readily available water is depleted and only then declines; this component therefore transpires somewhat less under mild depletion. TRANSPIRATION ONLY - soil evaporation must be supplied separately by an Evapotranspiration_*(Soil) source. Do not also attach a single-Kc evapotranspiration source to the same layer, or the loss will be counted twice.",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "area*_min(_pos(Se-(1+(alpha*150)^n)^(0-m))/((1+(alpha*3.3)^n)^(0-m)-(1+(alpha*150)^n)^(0-m));1)",
+      "description": "Area times the FAO-56 water stress coefficient"
+    },
+    "Kcb": {
+      "type": "value",
+      "description": "Basal crop coefficient (transpiration only)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.9",
+      "estimate": "true",
+      "criteria": "Kcb>0",
+      "warningmessage": "The basal crop coefficient must be positive!",
+      "helptext": "FAO-56 basal crop coefficient Kcb, which covers transpiration only. Soil evaporation is NOT included and must be supplied separately by an Evapotranspiration_*(Soil) source; see the plugin documentation."
+    },
+    "root_fraction": {
+      "type": "value",
+      "description": "Fraction of the root system in this layer",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "root_fraction>-0.0000001",
+      "warningmessage": "The root fraction cannot be negative!",
+      "helptext": "Share of total transpiration drawn from the layer this source is attached to. Attach the same source to several layers with fractions summing to one, or use separate sources per layer."
+    },
+    "timeseries": {
+      "type": "timeseries",
+      "description": "Reference evapotranspiration ET0",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "m/day;mm/day;in/day",
+      "helptext": "Reference evapotranspiration time series."
+    },
+    "rate": {
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "0-Kcb*root_fraction",
+      "description": "Negative basal crop coefficient times root fraction"
+    }
+  },
+  "Transpiration_Penman (Soil)": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Transpiration from soil, crop coefficient with Penman ET0",
+    "icon": {
+      "filename": "transpiration_penman.png"
+    },
+    "helptext": "Plant transpiration from a soil layer: T = ET0 * Kcb * Ks * root_fraction, with the reference evapotranspiration computed internally from solar radiation, air temperature, relative humidity and wind speed by the Penman combination equation. Water stress reduces transpiration linearly from 1 at field capacity (3.3 m suction) to 0 at wilting point (150 m suction), both evaluated from the layer's own van Genuchten retention curve. Note this is a LINEAR stress function, not the FAO-56 Ks, which stays at 1 until the readily available water is depleted and only then declines; this component therefore transpires somewhat less under mild depletion. TRANSPIRATION ONLY - soil evaporation must be supplied separately by an Evapotranspiration_*(Soil) source. Do not also attach a single-Kc evapotranspiration source to the same layer, or the loss will be counted twice.",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "area*_min(_pos(Se-(1+(alpha*150)^n)^(0-m))/((1+(alpha*3.3)^n)^(0-m)-(1+(alpha*150)^n)^(0-m));1)",
+      "description": "Area times the FAO-56 water stress coefficient"
+    },
+    "Kcb": {
+      "type": "value",
+      "description": "Basal crop coefficient (transpiration only)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.9",
+      "estimate": "true",
+      "criteria": "Kcb>0",
+      "warningmessage": "The basal crop coefficient must be positive!",
+      "helptext": "FAO-56 basal crop coefficient Kcb, which covers transpiration only. Soil evaporation is NOT included and must be supplied separately by an Evapotranspiration_*(Soil) source; see the plugin documentation."
+    },
+    "root_fraction": {
+      "type": "value",
+      "description": "Fraction of the root system in this layer",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "root_fraction>-0.0000001",
+      "warningmessage": "The root fraction cannot be negative!",
+      "helptext": "Share of total transpiration drawn from the layer this source is attached to. Attach the same source to several layers with fractions summing to one, or use separate sources per layer."
+    },
+    "solar_radiation": {
+      "type": "timeseries",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "description": "Solar radiation",
+      "unit": "W/m^2"
+    },
+    "Temperature": {
+      "type": "timeseries",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "description": "Air temperature",
+      "unit": "~degreeC"
+    },
+    "wind_speed": {
+      "type": "timeseries",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "description": "Wind speed",
+      "unit": "m/s"
+    },
+    "R_h": {
+      "type": "timeseries",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "description": "Relative humidity (0-1)"
+    },
+    "wind_scale_fact": {
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1",
+      "description": "Wind scale factor"
+    },
+    "solar_scale_fact": {
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1",
+      "description": "Solar scale factor"
+    },
+    "z2": {
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "default": "2",
+      "description": "Wind measurement height"
+    },
+    "z0": {
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "default": "0.0003",
+      "description": "Roughness height"
+    },
+    "gamma": {
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "66.8",
+      "description": "Psychrometric constant"
+    },
+    "B": {
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "0.000102*wind_speed*wind_scale_fact/(_log(z2/z0))^2"
+    },
+    "e_as": {
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "611*_exp(17.27*Temperature/(237.3+Temperature))"
+    },
+    "Ea": {
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "B*e_as*(R_h-1)"
+    },
+    "l_v": {
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "2501000-2370*Temperature"
+    },
+    "Er": {
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "0-solar_scale_fact*solar_radiation/(l_v*1000)*86400"
+    },
+    "Delta": {
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "4098*e_as/(237.3+Temperature)"
+    },
+    "rate": {
+      "type": "expression",
+      "ask_user": "false",
+      "expression": "Kcb*root_fraction*((Delta*Er/(Delta+gamma))+(gamma*Ea/(Delta+gamma)))",
+      "description": "Kcb times root fraction times the Penman reference rate",
+      "unit": "m/day"
+    }
+  },
+  "Crop": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Crop: demand-driven plant with multi-layer root uptake",
+    "icon": {
+      "filename": "crop.png"
+    },
+    "helptext": "A plant that draws water from one or more soil layers through Root_uptake_link connectors. Potential transpiration is ET0*Kcb*(1-exp(-k*LAI))*area; it is distributed over the rooted layers by an exponential root density and reduced in each layer by the Feddes water stress function. With compensation on, wetter layers make up for stressed ones. Draw one Root_uptake_link from each soil layer to this block; the root fractions are computed from the rooting depth and the layers' own geometry, so they need not be entered by hand. TRANSPIRATION ONLY - soil evaporation must be supplied separately by an Evapotranspiration_*(Soil) source on the top layer.",
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "transpiration",
+      "initial_value_expression": "0.0001*area",
+      "description": "Water held in the canopy pathway",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^3;ft^3"
+    },
+    "area": {
+      "type": "value",
+      "description": "Ground area covered by the plant",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;km~^2",
+      "default": "10000",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "The area must be positive!"
+    },
+    "surface_elevation": {
+      "type": "value",
+      "description": "Elevation of the ground surface",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "helptext": "Datum for root depth. Each uptake link measures its layer's depth below this level."
+    },
+    "LAI_constant": {
+      "type": "value",
+      "description": "Constant leaf area index",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "3",
+      "estimate": "true",
+      "criteria": "LAI_constant>-0.0000001",
+      "warningmessage": "LAI cannot be negative!"
+    },
+    "LAI_timeseries": {
+      "type": "timeseries",
+      "description": "Time variable leaf area index",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "helptext": "Added to the constant value, so leave it empty for a static canopy. Supply a crop-calendar or remote-sensing series for a seasonal canopy."
+    },
+    "LAI": {
+      "type": "expression",
+      "expression": "LAI_constant+LAI_timeseries",
+      "description": "Leaf area index",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "k_extinction": {
+      "type": "value",
+      "description": "Canopy extinction coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.6",
+      "estimate": "true",
+      "criteria": "k_extinction>0",
+      "warningmessage": "The extinction coefficient must be positive!",
+      "helptext": "Beer's law coefficient setting how quickly the canopy intercepts radiation. The transpiring fraction of the surface is 1-exp(-k*LAI)."
+    },
+    "cover_fraction": {
+      "type": "expression",
+      "expression": "1-_exp(0-k_extinction*LAI)",
+      "description": "Fraction of the surface transpiring",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "Kcb": {
+      "type": "value",
+      "description": "Basal crop coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1.0",
+      "estimate": "true",
+      "criteria": "Kcb>0",
+      "warningmessage": "The basal crop coefficient must be positive!",
+      "helptext": "FAO-56 basal crop coefficient, covering transpiration only. Soil evaporation is not included."
+    },
+    "root_depth_constant": {
+      "type": "value",
+      "description": "Constant rooting depth",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "default": "1.0",
+      "estimate": "true",
+      "criteria": "root_depth_constant>0",
+      "warningmessage": "The rooting depth must be positive!"
+    },
+    "root_depth_timeseries": {
+      "type": "timeseries",
+      "description": "Time variable rooting depth",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "m;ft;cm",
+      "helptext": "Added to the constant value, so leave it empty for a static root system. Supply a series to let roots deepen through a season."
+    },
+    "root_depth": {
+      "type": "expression",
+      "expression": "root_depth_constant+root_depth_timeseries",
+      "description": "Rooting depth",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "root_lambda": {
+      "type": "value",
+      "description": "Root density shape parameter",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "2.0",
+      "estimate": "true",
+      "criteria": "root_lambda>0",
+      "warningmessage": "The shape parameter must be positive!",
+      "helptext": "Root density falls off as exp(-lambda*z/root_depth). Small values approach a uniform distribution, larger values concentrate roots near the surface. Around 2 is typical."
+    },
+    "h_anoxic": {
+      "type": "value",
+      "description": "Feddes h1, pressure head above which uptake stops (anoxia)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;cm;ft",
+      "default": "-0.1"
+    },
+    "h_optimal_wet": {
+      "type": "value",
+      "description": "Feddes h2, wet end of the optimal range",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;cm;ft",
+      "default": "-0.25"
+    },
+    "h_optimal_dry": {
+      "type": "value",
+      "description": "Feddes h3, dry end of the optimal range",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;cm;ft",
+      "default": "-5",
+      "estimate": "true"
+    },
+    "h_wilting": {
+      "type": "value",
+      "description": "Feddes h4, wilting point pressure head",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;cm;ft",
+      "default": "-160",
+      "estimate": "true"
+    },
+    "compensation": {
+      "type": "value",
+      "description": "Root water compensation (1 = on, 0 = off)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1",
+      "helptext": "With compensation on, layers that are wet make up for layers that are stressed, so total uptake stays at the potential rate as long as any rooted layer can supply. With it off, stress in one layer is simply lost. Compensation is the standard behaviour in SWAP and APEX."
+    },
+    "sum_beta_alpha": {
+      "type": "expression",
+      "expression": "beta_alpha.v/(beta.v+0.000000001)",
+      "description": "Root-weighted mean water availability",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "compensation_factor": {
+      "type": "expression",
+      "expression": "1/(compensation*_max(sum_beta_alpha;0.001)+(1-compensation))",
+      "description": "Uptake compensation factor",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "Tp": {
+      "type": "expression",
+      "expression": "ET0*Kcb*cover_fraction*area",
+      "description": "Potential transpiration",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "K_plant": {
+      "type": "value",
+      "description": "Canopy pathway residence time",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "day;hr;min",
+      "default": "0.01",
+      "estimate": "true",
+      "criteria": "K_plant>0",
+      "warningmessage": "The residence time must be positive!",
+      "helptext": "Time constant of the plant water pathway. It should be short compared with a day; it exists so that uptake and transpiration balance dynamically rather than instantaneously."
+    },
+    "transpiration": {
+      "type": "expression",
+      "expression": "0-Storage/K_plant",
+      "description": "Actual transpiration",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "relative_transpiration": {
+      "type": "expression",
+      "expression": "Storage/K_plant/(Tp+0.000001)",
+      "description": "Actual over potential transpiration",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "soil_stress": {
+      "type": "expression",
+      "expression": "sum_beta_alpha",
+      "description": "Root-weighted soil water stress coefficient",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "ET0": {
+      "type": "timeseries",
+      "description": "Reference evapotranspiration",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "m/day;mm/day;in/day"
+    }
+  },
+  "Crop_Penman": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Crop with Penman ET0: demand-driven plant with multi-layer root uptake",
+    "icon": {
+      "filename": "crop_penman.png"
+    },
+    "helptext": "As Crop, but the reference evapotranspiration is computed internally from solar radiation, air temperature, relative humidity and wind speed by the Penman combination equation instead of being supplied as a time series.",
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "transpiration",
+      "initial_value_expression": "0.0001*area",
+      "description": "Water held in the canopy pathway",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^3;ft^3"
+    },
+    "area": {
+      "type": "value",
+      "description": "Ground area covered by the plant",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;km~^2",
+      "default": "10000",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "The area must be positive!"
+    },
+    "surface_elevation": {
+      "type": "value",
+      "description": "Elevation of the ground surface",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "helptext": "Datum for root depth. Each uptake link measures its layer's depth below this level."
+    },
+    "LAI_constant": {
+      "type": "value",
+      "description": "Constant leaf area index",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "3",
+      "estimate": "true",
+      "criteria": "LAI_constant>-0.0000001",
+      "warningmessage": "LAI cannot be negative!"
+    },
+    "LAI_timeseries": {
+      "type": "timeseries",
+      "description": "Time variable leaf area index",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "helptext": "Added to the constant value, so leave it empty for a static canopy. Supply a crop-calendar or remote-sensing series for a seasonal canopy."
+    },
+    "LAI": {
+      "type": "expression",
+      "expression": "LAI_constant+LAI_timeseries",
+      "description": "Leaf area index",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "k_extinction": {
+      "type": "value",
+      "description": "Canopy extinction coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.6",
+      "estimate": "true",
+      "criteria": "k_extinction>0",
+      "warningmessage": "The extinction coefficient must be positive!",
+      "helptext": "Beer's law coefficient setting how quickly the canopy intercepts radiation. The transpiring fraction of the surface is 1-exp(-k*LAI)."
+    },
+    "cover_fraction": {
+      "type": "expression",
+      "expression": "1-_exp(0-k_extinction*LAI)",
+      "description": "Fraction of the surface transpiring",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "Kcb": {
+      "type": "value",
+      "description": "Basal crop coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1.0",
+      "estimate": "true",
+      "criteria": "Kcb>0",
+      "warningmessage": "The basal crop coefficient must be positive!",
+      "helptext": "FAO-56 basal crop coefficient, covering transpiration only. Soil evaporation is not included."
+    },
+    "root_depth_constant": {
+      "type": "value",
+      "description": "Constant rooting depth",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "default": "1.0",
+      "estimate": "true",
+      "criteria": "root_depth_constant>0",
+      "warningmessage": "The rooting depth must be positive!"
+    },
+    "root_depth_timeseries": {
+      "type": "timeseries",
+      "description": "Time variable rooting depth",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "m;ft;cm",
+      "helptext": "Added to the constant value, so leave it empty for a static root system. Supply a series to let roots deepen through a season."
+    },
+    "root_depth": {
+      "type": "expression",
+      "expression": "root_depth_constant+root_depth_timeseries",
+      "description": "Rooting depth",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "root_lambda": {
+      "type": "value",
+      "description": "Root density shape parameter",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "2.0",
+      "estimate": "true",
+      "criteria": "root_lambda>0",
+      "warningmessage": "The shape parameter must be positive!",
+      "helptext": "Root density falls off as exp(-lambda*z/root_depth). Small values approach a uniform distribution, larger values concentrate roots near the surface. Around 2 is typical."
+    },
+    "h_anoxic": {
+      "type": "value",
+      "description": "Feddes h1, pressure head above which uptake stops (anoxia)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;cm;ft",
+      "default": "-0.1"
+    },
+    "h_optimal_wet": {
+      "type": "value",
+      "description": "Feddes h2, wet end of the optimal range",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;cm;ft",
+      "default": "-0.25"
+    },
+    "h_optimal_dry": {
+      "type": "value",
+      "description": "Feddes h3, dry end of the optimal range",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;cm;ft",
+      "default": "-5",
+      "estimate": "true"
+    },
+    "h_wilting": {
+      "type": "value",
+      "description": "Feddes h4, wilting point pressure head",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;cm;ft",
+      "default": "-160",
+      "estimate": "true"
+    },
+    "compensation": {
+      "type": "value",
+      "description": "Root water compensation (1 = on, 0 = off)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1",
+      "helptext": "With compensation on, layers that are wet make up for layers that are stressed, so total uptake stays at the potential rate as long as any rooted layer can supply. With it off, stress in one layer is simply lost. Compensation is the standard behaviour in SWAP and APEX."
+    },
+    "sum_beta_alpha": {
+      "type": "expression",
+      "expression": "beta_alpha.v/(beta.v+0.000000001)",
+      "description": "Root-weighted mean water availability",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "compensation_factor": {
+      "type": "expression",
+      "expression": "1/(compensation*_max(sum_beta_alpha;0.001)+(1-compensation))",
+      "description": "Uptake compensation factor",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "Tp": {
+      "type": "expression",
+      "expression": "ET0*Kcb*cover_fraction*area",
+      "description": "Potential transpiration",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "K_plant": {
+      "type": "value",
+      "description": "Canopy pathway residence time",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "day;hr;min",
+      "default": "0.01",
+      "estimate": "true",
+      "criteria": "K_plant>0",
+      "warningmessage": "The residence time must be positive!",
+      "helptext": "Time constant of the plant water pathway. It should be short compared with a day; it exists so that uptake and transpiration balance dynamically rather than instantaneously."
+    },
+    "transpiration": {
+      "type": "expression",
+      "expression": "0-Storage/K_plant",
+      "description": "Actual transpiration",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "relative_transpiration": {
+      "type": "expression",
+      "expression": "Storage/K_plant/(Tp+0.000001)",
+      "description": "Actual over potential transpiration",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "soil_stress": {
+      "type": "expression",
+      "expression": "sum_beta_alpha",
+      "description": "Root-weighted soil water stress coefficient",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "solar_radiation": {
+      "type": "timeseries",
+      "description": "Solar radiation",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "W/m^2"
+    },
+    "Temperature": {
+      "type": "timeseries",
+      "description": "Air temperature",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "~degreeC"
+    },
+    "wind_speed": {
+      "type": "timeseries",
+      "description": "Wind speed",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "m/s"
+    },
+    "R_h": {
+      "type": "timeseries",
+      "description": "Relative humidity (0-1)",
+      "ask_user": "true",
+      "delegate": "Browser;time series"
+    },
+    "wind_scale_fact": {
+      "type": "value",
+      "description": "Wind scale factor",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1"
+    },
+    "solar_scale_fact": {
+      "type": "value",
+      "description": "Solar scale factor",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1"
+    },
+    "z2": {
+      "type": "value",
+      "description": "Wind measurement height",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "default": "2"
+    },
+    "z0": {
+      "type": "value",
+      "description": "Roughness height",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "default": "0.0003"
+    },
+    "gamma": {
+      "type": "value",
+      "description": "Psychrometric constant",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "66.8"
+    },
+    "B": {
+      "type": "expression",
+      "expression": "0.000102*wind_speed*wind_scale_fact/(_log(z2/z0))^2",
+      "description": "Aerodynamic term",
+      "ask_user": "false"
+    },
+    "e_as": {
+      "type": "expression",
+      "expression": "611*_exp(17.27*Temperature/(237.3+Temperature))",
+      "description": "Saturation vapour pressure",
+      "ask_user": "false"
+    },
+    "Ea": {
+      "type": "expression",
+      "expression": "B*e_as*(R_h-1)",
+      "description": "Aerodynamic evaporation",
+      "ask_user": "false"
+    },
+    "l_v": {
+      "type": "expression",
+      "expression": "2501000-2370*Temperature",
+      "description": "Latent heat of vaporisation",
+      "ask_user": "false"
+    },
+    "Er": {
+      "type": "expression",
+      "expression": "0-solar_scale_fact*solar_radiation/(l_v*1000)*86400",
+      "description": "Radiation evaporation",
+      "ask_user": "false"
+    },
+    "Delta": {
+      "type": "expression",
+      "expression": "4098*e_as/(237.3+Temperature)",
+      "description": "Slope of the vapour pressure curve",
+      "ask_user": "false"
+    },
+    "ET0": {
+      "type": "expression",
+      "expression": "0-((Delta*Er/(Delta+gamma))+(gamma*Ea/(Delta+gamma)))",
+      "description": "Reference evapotranspiration",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m/day"
+    }
+  },
+  "Root_uptake_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Root water uptake from a soil layer",
+    "icon": {
+      "filename": "root_uptake_link.png"
+    },
+    "helptext": "Draw from a soil layer to a Crop block. The share of the root system in this layer is computed from the layer's own top and bottom elevations and the crop's rooting depth and shape parameter, so no root fraction has to be entered. Uptake is the crop's potential transpiration times that share, reduced by the Feddes stress function evaluated on this layer's pressure head, and scaled by the crop's compensation factor.",
+    "z_top": {
+      "type": "expression",
+      "expression": "_min(_pos(surface_elevation.e-bottom_elevation.s-depth.s);root_depth.e)",
+      "description": "Depth to the top of the layer",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "z_bottom": {
+      "type": "expression",
+      "expression": "_min(_pos(surface_elevation.e-bottom_elevation.s);root_depth.e)",
+      "description": "Depth to the bottom of the layer",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "beta": {
+      "type": "expression",
+      "expression": "(_exp(0-root_lambda.e*z_top/root_depth.e)-_exp(0-root_lambda.e*z_bottom/root_depth.e))/(1-_exp(0-root_lambda.e))",
+      "description": "Share of the root system in this layer",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "alpha": {
+      "type": "expression",
+      "expression": "_pos(_min(_min((pressure_head.s-h_wilting.e)/(h_optimal_dry.e-h_wilting.e);1);(pressure_head.s-h_anoxic.e)/(h_optimal_wet.e-h_anoxic.e)))",
+      "description": "Feddes water stress coefficient",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "beta_alpha": {
+      "type": "expression",
+      "expression": "beta*alpha",
+      "description": "Root share times stress",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "Tp.e*beta*alpha*compensation_factor.e",
+      "description": "Root water uptake",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "length": {
+      "type": "expression",
+      "expression": "1",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "0.000000001",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "color": {
+      "type": "string",
+      "default": "90,150,40"
+    }
   }
 }
-

@@ -1,0 +1,673 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codekey}{RGB}{20,80,160}
+\definecolor{codestr}{RGB}{150,60,20}
+\definecolor{codecom}{RGB}{110,110,110}
+
+\lstdefinestyle{json}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framerule=0pt,
+  framesep=6pt,
+  xleftmargin=6pt,
+  stringstyle=\color{codestr},
+  literate=
+    *{:}{{{\color{codekey}:}}}{1}
+     {\{}{{{\color{codekey}\{}}}{1}
+     {\}}{{{\color{codekey}\}}}}{1},
+}
+
+\lstdefinestyle{plain}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framerule=0pt,
+  framesep=6pt,
+  xleftmargin=6pt,
+}
+
+\lstset{style=json}
+
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\file}[1]{\texttt{\small #1}}
+
+% ---- GitHub links to files in the repository ---------------------------------
+\newcommand{\ghbase}{https://github.com/ArashMassoudieh/OpenHydroQual/blob/master}
+\newcommand{\ghtree}{https://github.com/ArashMassoudieh/OpenHydroQual/tree/master}
+\newcommand{\exfile}[1]{\href{\ghbase/#1}{\file{#1}}}
+\newcommand{\exdir}[1]{\href{\ghtree/#1}{\file{#1}}}
+
+\title{\textbf{Composite Blocks in OpenHydroQual}\\[0.3em]
+       \large A guide to building multi-block components}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-2.5em}
+
+\begin{abstract}
+\noindent
+A \emph{composite} is a group of blocks and the links between them that the
+user sees and manipulates as a single block. The computational engine is
+unaware of composites: their members are ordinary \code{Block} and \code{Link}
+objects, and every solver, parameter-estimation and output path treats them
+individually. What a composite changes is the model file, which carries one
+line instead of many, and the diagram, which draws one node instead of many.
+This document explains how to declare a composite type in a plugin file, what
+the engine does with that declaration, and the pitfalls that are easy to hit
+and hard to diagnose.
+\end{abstract}
+
+\tableofcontents
+
+\section{Concept}
+
+A composite type is declared in an ordinary template (plugin) JSON file, next
+to the block and link types, and is loaded the same way with
+\code{addtemplate}. Dropping one on the diagram creates its member blocks and
+the links between them in a single step; the members are then driven entirely
+by the composite's own properties.
+
+Three principles govern the design, and most of the practical advice in this
+document follows from them.
+
+\begin{description}[style=nextline,leftmargin=1.2em]
+\item[The engine never sees a composite.]
+Members are real blocks and links in the system's normal containers. They are
+assembled into the state-variable matrices exactly like anything else. A
+composite therefore cannot change the physics, only how a model is written
+down and drawn.
+
+\item[Members are strictly encapsulated.]
+A member's property values are fully determined by the composite's exposed
+properties. Members are never edited individually: their property panels are
+read-only, and any value the composite type does not expose is unreachable. If
+a user needs a knob the type does not offer, they \emph{ungroup} the composite,
+after which it is plain blocks and links.
+
+\item[The composite is the unit of saving and of drawing, not of computing.]
+The model file carries \code{create composite;} with the group-level property
+values; the members are regenerated from the type when the file is read. In the
+diagram a composite is one node.
+\end{description}
+
+\section{Anatomy of a declaration}
+
+A composite type is a top-level entry in a template JSON file with
+\code{"type": "composite"}. Beyond the usual header fields it recognises three
+reserved keys --- \code{members}, \code{internal\_links} and
+\code{external\_links} --- and every other entry is an ordinary quantity
+declaration that may carry an \code{applyto} mapping.
+
+\begin{lstlisting}
+"Clarifier": {
+  "type": "composite",
+  "typecategory": "Blocks",
+  "description": "Clarifier: upper and lower settling compartments",
+  "icon": { "filename": "clarifier.png" },
+  "helptext": "Influent and effluent attach to the upper compartment; ...",
+
+  "members": {
+    "Upper": { "type": "Settling compartment",
+               "dx": "0", "dy": "0",   "_width": "200", "_height": "200" },
+    "Lower": { "type": "Settling compartment",
+               "dx": "0", "dy": "250", "_width": "200", "_height": "200" }
+  },
+
+  "internal_links": {
+    "interface": { "type": "Sedimentation tank element interface",
+                   "from": "Upper", "to": "Lower" }
+  },
+
+  "external_links": {
+    "*":              { "from": "Upper", "to": "Upper" },
+    "Effluent flow":  { "from": "Upper", "to": "Upper" },
+    "Sludge flow":    { "from": "Lower", "to": "Lower" }
+  },
+
+  "surface_area": {
+    "type": "value",
+    "description": "Cross-sectional area of the compartment interface",
+    "ask_user": "true", "delegate": "UnitBox", "unit": "m^2;ft^2",
+    "default": "100", "estimate": "true",
+    "criteria": "surface_area>0",
+    "warningmessage": "The surface area must be positive!",
+    "applyto": { "interface#area": "surface_area" }
+  }
+}
+\end{lstlisting}
+
+\subsection{Header fields}
+
+\begin{longtable}{@{}p{0.22\textwidth}p{0.72\textwidth}@{}}
+\toprule
+\textbf{Key} & \textbf{Meaning}\\
+\midrule
+\endhead
+\code{type} & Must be \code{"composite"}.\\
+\code{typecategory} & Toolbar and object-browser grouping. \code{"Blocks"} puts
+the composite alongside ordinary blocks, which is usually what you want since
+the user treats it as one.\\
+\code{description} & Shown as the toolbar tooltip and the menu entry.\\
+\code{icon} & \code{\{"filename": "name.png"\}}, resolved against
+\exdir{resources/Icons}. See section~\ref{sec:register}.\\
+\code{helptext} & Long-form help for the component.\\
+\bottomrule
+\end{longtable}
+
+\subsection{Members}
+
+Each entry declares one member block. The key is the \emph{member role} and
+becomes part of the instance name.
+
+\begin{longtable}{@{}p{0.16\textwidth}p{0.78\textwidth}@{}}
+\toprule
+\textbf{Field} & \textbf{Meaning}\\
+\midrule
+\endhead
+\code{type} & The block type to instantiate. It must exist in the metamodel
+when the composite is used, so make sure the template that defines it is loaded
+--- either the same file, or one the user also adds.\\
+\code{dx}, \code{dy} & Position \emph{offset} from the composite's own
+\code{x}/\code{y}. Members are not drawn, but these offsets decide the layout
+after an ungroup, so give them sensible values.\\
+\code{\_width}, \code{\_height} & Member node size, used after ungrouping.\\
+\bottomrule
+\end{longtable}
+
+\subsection{Internal links}
+
+Each entry declares one link between two members. \code{from} and \code{to} are
+member \emph{keys}, not instance names.
+
+\begin{lstlisting}
+"internal_links": {
+  "percolation_1_2": { "type": "soil_to_soil_link",
+                       "from": "Soil_1", "to": "Soil_2" }
+}
+\end{lstlisting}
+
+\noindent
+Internal links are part of the component: they are created with it, deleted
+with it, and never appear in the diagram. Section~\ref{sec:internalreq} covers
+an important obligation they carry.
+
+\subsection{External links (ports)}\label{sec:ports}
+
+When a user draws a link onto a composite node, the endpoint has to be resolved
+to one of the members. Resolution is \emph{by link type}:
+
+\begin{lstlisting}
+"external_links": {
+  "*":                        { "from": "Catchment",   "to": "Catchment" },
+  "groundwater_link":         { "from": "Groundwater", "to": "Groundwater" },
+  "groundwater_to_fixedhead": { "from": "Groundwater" }
+}
+\end{lstlisting}
+
+\noindent
+The key is a link type name; \code{"*"} is the fallback for any type not listed
+explicitly. \code{from} applies when the composite is the link's source,
+\code{to} when it is the destination. Omitting one direction means a link of
+that type may not attach that way, and the user gets a clear message rather
+than a silent mis-connection.
+
+Once the port resolves, the ordinary link validation runs against the
+\emph{member}, so a link that requires certain quantities on its endpoints is
+still checked properly.
+
+\paragraph{The one-type-one-port rule.}
+A given link type can attach at only one place per direction. This is the main
+constraint the port design imposes, and it shapes component design. In a
+clarifier, influent and effluent attach to the upper compartment while return
+and waste sludge leave the lower one --- if all four were the same generic
+\code{Fixed flow} type, they could not be told apart. The remedy is to give the
+distinct roles distinct link types (\code{Effluent flow} and
+\code{Sludge flow}), which is also self-documenting in the diagram. Declaring
+such a type is cheap: it is usually a copy of the generic flow link with a
+different name, colour and icon.
+
+\subsection{Exposed properties and mappings}\label{sec:mappings}
+
+Every remaining entry is an ordinary quantity declaration --- the same fields
+you would write for a block property (\code{type}, \code{description},
+\code{ask\_user}, \code{delegate}, \code{unit}, \code{default},
+\code{estimate}, \code{criteria}, \code{warningmessage}, \code{helptext}) ---
+plus an optional \code{applyto} object that says which member quantities it
+drives.
+
+\begin{lstlisting}
+"depth_to_groundwater": {
+  "type": "value",
+  "description": "Depth from the ground surface to the water table",
+  "ask_user": "true", "delegate": "UnitBox", "unit": "m;ft",
+  "default": "3.5", "estimate": "true",
+  "applyto": {
+    "Soil_1#depth": "depth_to_groundwater/7",
+    "Soil_2#depth": "2*depth_to_groundwater/7",
+    "Soil_3#depth": "4*depth_to_groundwater/7"
+  }
+}
+\end{lstlisting}
+
+Each \code{applyto} entry is \code{"<member>\#<quantity>": "<mapping>"}.
+
+\begin{itemize}[leftmargin=1.4em]
+\item \textbf{The target} names a member block \emph{or an internal link} ---
+both are addressable, so an internal link's own properties can be driven from
+the group level.
+\item \textbf{The separator} between object and quantity is \code{\#}. It is
+not \code{.} (reserved by the expression parser for the \code{.s}/\code{.e}
+endpoint suffixes) and not \code{:} (already the constituent scoping separator
+inside quantity names).
+\item \textbf{One property may drive many targets}, and many properties may
+drive targets on the same member. All mappings are re-applied together whenever
+propagation runs, so it does not matter which property hosts which mapping ---
+group them wherever they read most clearly.
+\end{itemize}
+
+\subsubsection{How a mapping is evaluated}\label{sec:eval}
+
+This is the single most important rule in the document, and getting it wrong
+produces confusing errors.
+
+\begin{description}[style=nextline,leftmargin=1.2em]
+\item[Numeric targets --- types \code{value}, \code{balance}, \code{constant}.]
+The mapping is an arithmetic \emph{expression}, evaluated against the
+composite's own properties. Anything the expression engine understands is
+allowed.
+\item[Every other target --- \code{source}, \code{timeseries}, \code{string},
+\code{boolean}, \code{expression}.]
+The mapping must be the \textbf{bare name of a composite property}; its value
+is passed through unchanged. Arithmetic is not available here.
+\end{description}
+
+\noindent
+Note that \code{expression}-typed quantities fall in the second group even
+though they hold numbers. Several common initial conditions are declared this
+way --- \code{Soil.theta} and \code{Groundwater cell.moisture\_content} are
+both \code{expression} --- so they must be driven by a bare property name:
+
+\begin{lstlisting}
+"initial_moisture_content": {
+  "type": "value", "ask_user": "true", "delegate": "ValueBox",
+  "default": "0.2",
+  "applyto": {
+    "Soil_1#theta": "initial_moisture_content",
+    "Soil_2#theta": "initial_moisture_content",
+    "Soil_3#theta": "initial_moisture_content"
+  }
+}
+\end{lstlisting}
+
+\noindent
+If you need arithmetic on such a target --- say a saturation fraction times a
+porosity --- expose the derived value itself instead, and document the
+relationship in the help text.
+
+\paragraph{Expressions see only composite properties.}
+A mapping expression is evaluated against the composite, so every symbol in it
+must be another composite-level property. It cannot reach into a member. If a
+formula needs a member's parameter, expose that parameter at the group level
+too and drive the member from it.
+
+\subsection{Naming}
+
+\begin{longtable}{@{}p{0.34\textwidth}p{0.60\textwidth}@{}}
+\toprule
+\textbf{Form} & \textbf{Example}\\
+\midrule
+\endhead
+Member instance name & \code{Clarifier\_1\_\_Upper} \quad
+(\code{<instance>\_\_<member key>})\\
+Internal link instance name & \code{Clarifier\_1\_\_interface}\\
+Mapping target & \code{Upper\#Storage}\\
+Output column & \code{Clarifier\_1\_\_Upper\_Storage} \quad
+(\code{<block>\_<quantity>}, unchanged from ordinary blocks)\\
+\bottomrule
+\end{longtable}
+
+\noindent
+Because \code{\_\_} is the instance separator, avoid it in instance names you
+type by hand. Member keys become user-visible in the object browser and the
+results menu, so choose readable ones: \code{Upper}, \code{Lower},
+\code{Soil\_1}, \code{interface}.
+
+\section{What happens at run time}
+
+\subsection{Instantiation}
+
+When a composite is created --- from the toolbar, from a file, or by pasting
+--- the following happens in order:
+
+\begin{enumerate}[leftmargin=1.6em]
+\item member blocks are created, named \code{<instance>\_\_<key>};
+\item internal links are created and connected between them;
+\item geometry is applied: each member's \code{x}/\code{y} is the composite's
+position plus the declared offsets, and the members' geometry quantities are
+hidden from the property panel;
+\item constituent- and reaction-derived properties are exposed on the composite
+(section~\ref{sec:constituents});
+\item the group-level values from the file are assigned;
+\item \textbf{propagation} runs: every \code{applyto} mapping is evaluated and
+written to its target.
+\end{enumerate}
+
+\noindent
+Members are created in alphabetical order of their keys, so if creation order
+ever matters to you, name the keys accordingly.
+
+\subsection{When propagation runs}
+
+Mappings are re-applied at three moments, and it is worth knowing all three:
+
+\begin{enumerate}[leftmargin=1.6em]
+\item at instantiation, as above;
+\item when the user edits a group-level property in the diagram or the property
+panel;
+\item during \code{ApplyParameters()}, so that a calibrated value reaches the
+members.
+\end{enumerate}
+
+\noindent
+The third is what makes parameter estimation work through a composite, and it
+has a corollary: \textbf{parameters bind at the composite level only}. A
+parameter assigned directly to a member quantity would be overwritten by the
+next propagation, so the property panel disables parameter assignment for
+members.
+
+\subsection{Constituents and reactions}\label{sec:constituents}
+
+When a constituent, reaction or reaction parameter is added, the engine copies
+a set of derived quantities onto every block --- \code{X\_bh:concentration} and
+friends. Their names are only known at run time, so a composite type cannot
+declare mappings for them.
+
+They are therefore exposed automatically: for each derived quantity found on
+one or more members, a group-level property of the same name is created that
+fans out to \emph{every} member carrying it. All members consequently share one
+value for such quantities. If your type declares a property with the same name
+explicitly, your declaration wins and no automatic mapping is generated.
+
+\section{Persistence}
+
+A composite is written as a single command carrying only its group-level
+properties:
+
+\begin{lstlisting}[style=plain]
+create composite;type=Clarifier,name=Clarifier_1,x=1273,y=994,
+    surface_area=100[m~^2],underflow=95[m~^3/day],upper_storage=100[m~^3], ...
+\end{lstlisting}
+
+\noindent
+No members or internal links appear in the file --- they are regenerated from
+the type when it is read. External links attached to a composite are written
+against the \emph{composite} name and re-resolved to a member by link type on
+load:
+
+\begin{lstlisting}[style=plain]
+create link;from=Clarifier_1,to=Effluent,type=Effluent flow,flow=95,name=...
+\end{lstlisting}
+
+\noindent
+A consequence worth stating plainly: a model file no longer fully describes its
+own structure. Editing a composite type in the template changes every saved
+model that uses it. Treat a published composite type as an interface.
+
+\paragraph{Expanded output.}
+Both serialisers can also write a model in \emph{expanded} form, in which
+composites are omitted and their members and internal links are written as
+ordinary blocks and links --- the same output an ungrouped model produces. This
+is available as an API flag (\code{expand\_composites}) for headless use and
+export; the GUI always saves in composite form. Note that a parameter bound to
+a group-level property has nowhere to live in an expanded file, so calibration
+setup is not preserved there.
+
+\section{Behaviour in the interface}
+
+\begin{longtable}{@{}p{0.26\textwidth}p{0.68\textwidth}@{}}
+\toprule
+\textbf{Action} & \textbf{Result}\\
+\midrule
+\endhead
+Toolbar / Blocks menu & Composite types appear after the block types, with
+their icon and description.\\
+Diagram & One node, drawn with the composite's icon. Members and internal links
+are never drawn.\\
+Moving / resizing & Members follow, keeping their declared offsets.\\
+Property panel & Selecting the node shows the group-level properties. Member
+geometry (\code{x}, \code{y}, \code{\_width}, \code{\_height}) is hidden, since
+members have no node of their own.\\
+Object browser & The composite appears with its members and internal links
+nested beneath it, read-only, so member values stay inspectable.\\
+Results menu & Grouped one submenu per member and internal link, listing that
+member's output items.\\
+Ungroup & Right-click the node. Members and links become independent objects
+and the model saves flat afterwards. One-way: there is no regroup.\\
+Delete & Removes the composite, its members, its internal links and any
+external link attached to them.\\
+Copy / paste & Copies the composite and its internal links. External links are
+not copied.\\
+\bottomrule
+\end{longtable}
+
+\section{Registering a plugin}\label{sec:register}
+
+Put the composite in any template JSON in \file{resources/}. To make the file
+selectable from the plugin chooser, add a line to
+\exfile{resources/default\_templates.list}:
+
+\begin{lstlisting}[style=plain]
+Hydrologic Response Unit, hydrologic_response_unit.json, hydrologic_response_unit.png
+\end{lstlisting}
+
+\noindent
+The three fields are the display name, the JSON file and the icon. Icons live
+in \exdir{resources/Icons} and follow the existing convention: 256$\times$256
+PNG with a transparent background, cropped to the artwork and centred. The same
+image may be used for the plugin entry and for the composite type.
+
+\section{Pitfalls}
+
+Every item below was encountered while building the two shipped composites.
+They share a characteristic: the model still loads and runs, so nothing draws
+attention to the mistake.
+
+\subsection{Drive the real initial-condition handle}\label{sec:initial}
+
+Many storage quantities are derived, not set. \code{Soil.Storage} is declared
+\code{ask\_user: false} with
+\code{initial\_value\_expression: "area*depth*theta"}, and
+\code{Groundwater cell.Storage} likewise derives from
+\code{area*depth*moisture\_content}. Mapping such a \code{Storage} directly
+appears to work --- the value is written --- but it is recomputed from its
+expression during initialisation and your value is discarded.
+
+\begin{quote}
+\textbf{Symptom:} changing the exposed property has no effect whatsoever; two
+runs with different initial conditions agree to many decimal places.
+\end{quote}
+
+\noindent
+Map the quantity the expression reads --- \code{theta},
+\code{moisture\_content} --- not the storage it produces. Both happen to be
+\code{expression}-typed, so by section~\ref{sec:eval} their mappings must be
+bare property names.
+
+\subsection{Satisfy the internal links' required properties}\label{sec:internalreq}
+
+An internal link belongs to the composite, so nobody else will configure it. If
+its type declares a property with \code{ask\_user: true} and no usable default,
+the composite \emph{must} map it. \code{soil2groundwater\_link.area} is exactly
+this case: no default, so it starts at zero.
+
+\begin{quote}
+\textbf{Symptom:} a flux that should exist is identically zero --- in that
+example, no water ever reaches the groundwater --- while the model solves
+happily.
+\end{quote}
+
+\noindent
+Before shipping a type, list every \code{ask\_user} property of every internal
+link type and confirm each is either mapped or has a sound default.
+
+\subsection{Anything unexposed is unreachable}
+
+This is encapsulation working as designed, but it puts real weight on the
+author. A property the type does not expose cannot be edited, and cannot even
+be saved --- it reverts to the type's default on reload. Expose everything a
+user might reasonably want to change, and remember that this includes initial
+conditions. The escape valve is ungrouping.
+
+\subsection{Watch out for confined-style head formulations}
+
+Some block types compute head in a way that punishes a plausible-looking
+initial condition. \code{Groundwater cell} uses
+\[
+  \text{head} = \text{cell top} +
+  \frac{\text{moisture content} - \text{porosity}}{\text{specific storage}},
+\]
+so at full saturation the head sits at the top of the cell, and a small deficit
+becomes a large elastic underpressure: with a specific storage of $0.01$, a
+moisture content $0.025$ below porosity puts the head $2.5$~m low. Choose
+defaults that correspond to a sensible state, and say so in the help text.
+
+\subsection{Port ambiguity}
+
+Covered in section~\ref{sec:ports}: one link type attaches at one place per
+direction. If two roles on your component need the same generic link type,
+introduce a distinct type for one of them.
+
+\section{A recipe}
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Decide the members and the internal links, and check that the link types
+you need exist and connect those block types.
+\item For each internal link type, list its \code{ask\_user} properties and plan
+a mapping or confirm a sound default (section~\ref{sec:internalreq}).
+\item Decide the ports. Group the external link types by which member they
+should attach to, and add a distinct link type if two roles collide
+(section~\ref{sec:ports}).
+\item Decide the exposed properties. Work outward from what a user would
+actually type: dimensions, material properties, sources, initial conditions.
+For each, find the member quantity that genuinely controls it
+(section~\ref{sec:initial}).
+\item Write the mappings, respecting the numeric / bare-name rule
+(section~\ref{sec:eval}).
+\item Give every property a description, a unit, a default, and where it helps
+a \code{criteria} with a \code{warningmessage}.
+\item Add the icon and register the plugin (section~\ref{sec:register}).
+\item Test (section~\ref{sec:testing}).
+\end{enumerate}
+
+\section{Testing a new composite}\label{sec:testing}
+
+Build a small model that uses the component and check, in order:
+
+\begin{enumerate}[leftmargin=1.6em]
+\item \textbf{It instantiates.} The expected number of blocks and links appear,
+with the expected names.
+\item \textbf{Derived values are right.} Read a few member quantities back and
+compare against what the mappings should have produced --- especially anything
+computed from several group properties.
+\item \textbf{Every knob bites.} Change each exposed property and confirm a
+member value actually changes. This is what catches the
+\hyperref[sec:initial]{initial-condition trap}, and nothing else does.
+\item \textbf{Ports resolve.} Draw one external link of each type and confirm it
+lands on the intended member.
+\item \textbf{It round-trips.} Save, reload, and confirm the member values and
+port resolutions survive.
+\item \textbf{It verifies and solves.} \code{VerifyAllQuantities} should report
+nothing, and the run should complete. Check the result is physically sensible,
+not merely finite.
+\item \textbf{Ungroup works.} The members should survive as plain blocks with
+their geometry restored.
+\end{enumerate}
+
+\section{Worked example: a two-compartment clarifier}
+
+The full type is in \exfile{resources/wastewater.json}. Two
+\code{Settling compartment} members joined by a
+\code{Sedimentation tank element interface}; influent and effluent attach to
+the upper compartment, return and waste sludge leave the lower one. Because all
+four would otherwise be \code{Fixed flow}, two dedicated link types are
+declared alongside it, \code{Effluent flow} and \code{Sludge flow}, which give
+the ports something to key on and make the diagram readable. Group properties
+cover the interface area, the underflow, the two compartment elevations, the
+initial volumes, and an external inflow series.
+
+A model using it is in \exfile{Examples/ASM\_Clarifier\_Composite.ohq}: an
+activated-sludge plant of four reactors whose settler is a single node.
+
+\section{Worked example: a hydrologic response unit}
+
+The full type is in \exfile{resources/hydrologic\_response\_unit.json}. Five
+members --- a \code{Catchment}, three \code{Soil} layers and a
+\code{Groundwater cell} --- with infiltration, two percolation links and a
+recharge link between them. It illustrates several ideas at once:
+
+\begin{itemize}[leftmargin=1.4em]
+\item \textbf{Derived geometry.} The user supplies a surface elevation, a depth
+to groundwater and a groundwater thickness; the layer thicknesses (in a
+$1\!:\!2\!:\!4$ ratio, finest at the surface where moisture gradients are
+steepest) and all four bottom elevations are computed:
+\begin{lstlisting}
+"Soil_1#bottom_elevation": "surface_elevation-depth_to_groundwater/7",
+"Soil_2#bottom_elevation": "surface_elevation-3*depth_to_groundwater/7",
+"Soil_3#bottom_elevation": "surface_elevation-depth_to_groundwater"
+\end{lstlisting}
+\item \textbf{One property, many members.} A single \code{area} drives the
+catchment, all three soil layers, the groundwater cell \emph{and} the recharge
+link's interface area.
+\item \textbf{Selective application.} Evapotranspiration maps to the top soil
+layer only, while precipitation goes to the catchment.
+\item \textbf{Shared material properties.} The three layers discretise one soil
+profile rather than representing different materials, so they share one
+\code{K\_sat}, one \code{alpha\_vG} and so on. Splitting these per layer is a
+mechanical edit if heterogeneous layers are wanted.
+\end{itemize}
+
+\noindent
+A two-unit hillslope model using it is in
+\exfile{Examples/Hydrologic\_Response\_Unit/HRU\_hillslope.ohq}.
+
+\section{Limitations}
+
+\begin{itemize}[leftmargin=1.4em]
+\item \textbf{The member list is fixed.} A composite type declares a definite
+set of members; the count cannot be driven by a property. Variable-length
+structures --- an $n$-layer column, a channel reach of $n$ segments, an
+$n_x\times n_y$ aquifer grid --- need one type per size, or the existing grid
+generator.
+\item \textbf{No nesting.} A composite cannot contain another composite.
+\item \textbf{No per-member unique data.} Values that are neither shared nor a
+formula over group properties --- a measured conductivity for each individual
+layer, say --- cannot be expressed. Such models are built by ungrouping.
+\item \textbf{Ungroup is one-way.} There is no regroup.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,25 @@
+\contentsline {section}{\numberline {1}The classical method}{1}{section.1}%
+\contentsline {section}{\numberline {2}Differential formulation}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}A single state}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Why this is the classical method, exactly}{2}{subsection.2.2}%
+\contentsline {paragraph}{The initial abstraction is automatic.}{2}{section*.2}%
+\contentsline {paragraph}{Beyond the threshold, the curve number equation is recovered.}{2}{section*.3}%
+\contentsline {paragraph}{Numerical behaviour.}{3}{section*.4}%
+\contentsline {subsection}{\numberline {2.3}Recovery between storms}{3}{subsection.2.3}%
+\contentsline {section}{\numberline {3}The outlet hydrograph}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Volume versus shape}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Nash cascade}{3}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Matching the NRCS unit hydrograph}{3}{subsection.3.3}%
+\contentsline {paragraph}{Timing.}{3}{section*.5}%
+\contentsline {paragraph}{Shape.}{4}{section*.6}%
+\contentsline {subsection}{\numberline {3.4}Lag from catchment properties}{4}{subsection.3.4}%
+\contentsline {section}{\numberline {4}Implementation}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Structure}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Types}{5}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Ports}{5}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Parameters}{6}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Outputs}{6}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Verification}{6}{section.5}%
+\contentsline {paragraph}{Not yet verified.}{6}{section*.7}%
+\contentsline {section}{\numberline {6}Worked usage}{7}{section.6}%
+\contentsline {section}{\numberline {7}Assumptions and limitations}{7}{section.7}%
