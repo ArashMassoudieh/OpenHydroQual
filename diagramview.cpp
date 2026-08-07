@@ -942,6 +942,40 @@ void DiagramView::nodeContextMenuRequested(Node* n, QPointF pos, QMenu *menu)
     menu->addAction("Select");
     menu->addSeparator();
     QMenu* results = menu->addMenu("Results");
+    if (Composite *composite = mainWindow()->GetSystem()->composite(n->Name().toStdString()))
+    {
+        // A composite is not simulated itself - the results belong to its
+        // members, so group them one submenu per member and internal link.
+        vector<string> owned = composite->MemberNames();
+        const vector<string> &internals = composite->InternalLinkNames();
+        owned.insert(owned.end(), internals.begin(), internals.end());
+
+        for (unsigned int m = 0; m < owned.size(); m++)
+        {
+            Object *member = mainWindow()->GetSystem()->object(owned[m]);
+            if (!member) continue;
+
+            // Label with the member's role, not its instance-qualified name.
+            QString label = QString::fromStdString(owned[m]);
+            QString prefix = n->Name() + QString(COMPOSITE_MEMBER_SEPARATOR);
+            if (label.startsWith(prefix))
+                label = label.mid(prefix.length());
+
+            QMenu *membermenu = results->addMenu(label);
+            vector<string> items = member->ItemswithOutput();
+            for (unsigned int i = 0; i < items.size(); i++)
+            {
+                QAction* graphaction = membermenu->addAction(QString::fromStdString(member->Variable(items[i])->Description(true)));
+                QVariant v = QVariant::fromValue(QString::fromStdString(items[i]) + ";" + QString::fromStdString(member->Variable(items[i])->GetOutputItem()));
+                graphaction->setData(v);
+                called_by_clicking_on_graphical_object = true;
+                connect(graphaction, SIGNAL(triggered()), this, SLOT(showgraph()));
+            }
+            if (items.size() == 0)
+                membermenu->setEnabled(false);
+        }
+    }
+    else
     for (unsigned int i = 0; i < n->object()->ItemswithOutput().size(); i++)
     {
         timeseriestobeshown = QString::fromStdString(n->object()->ItemswithOutput()[i]);

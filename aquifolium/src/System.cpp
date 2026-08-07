@@ -217,6 +217,9 @@ bool System::AddComposite(Composite &cmp, bool SetQuantities)
         added->SetQuantities(metamodel, cmp.GetType());
     added->SetParent(this);
     added->SetName(cmp.GetName());
+    // The diagram looks a node's object up by primary key; leaving it empty
+    // would match whichever unkeyed object came first.
+    added->AssignRandomPrimaryKey();
     return true;
 }
 
@@ -227,7 +230,9 @@ bool System::UngroupComposite(const string &compositename)
         {
             // Members and internal links are already ordinary objects living in
             // the normal containers; dissolving the group is just dropping the
-            // record that ties them together.
+            // record that ties them together. They get their own nodes now, so
+            // their geometry becomes editable again.
+            composites[i].SetMemberGeometryVisible(this, true);
             composites.erase(composites.begin() + i);
             return true;
         }
@@ -659,6 +664,13 @@ Object *System::GetObjectBasedOnPrimaryKey(const string &s)
 
     for (unsigned int i=0; i<blocks.size(); i++)
         if (blocks[i].GetPrimaryKey() == s) return &blocks[i];
+
+    // Composites are drawn as nodes too, and Node::object() resolves through
+    // here: without this a composite node has no object, so it paints nothing,
+    // reports an empty name (which hides every link attached to it) and makes
+    // the property editor dereference a null node.
+    for (unsigned int i=0; i<composites.size(); i++)
+        if (composites[i].GetPrimaryKey() == s) return &composites[i];
 
     for (unsigned int i=0; i<sources.size(); i++)
         if (sources[i].GetPrimaryKey() == s) return &sources[i];
@@ -3098,6 +3110,13 @@ bool System::SavetoScriptFile(const string &filename, const string &templatefile
     for (unsigned int i = 0; i < ReactionsCount(); i++)
         file << "create reaction;" << reactions[i].toCommand() << std::endl;
 
+    // toCommand() only writes user-visible quantities, so members need their
+    // geometry made visible again for an expanded write - otherwise the
+    // exported blocks come back stacked on the default position.
+    if (expand_composites)
+        for (unsigned int i=0; i<composites.size(); i++)
+            composites[i].SetMemberGeometryVisible(this, true);
+
     if (!expand_composites)
         for (unsigned int i=0; i<composites.size(); i++)
             file << "create composite;" << composites[i].toCommand() << std::endl;
@@ -3174,6 +3193,10 @@ bool System::SavetoScriptFile(const string &filename, const string &templatefile
         if (constituents[i].toCommandSetAsParam() != "")
             file << constituents[i].toCommandSetAsParam() << std::endl;
     file.close();
+
+    if (expand_composites)
+        for (unsigned int i=0; i<composites.size(); i++)
+            composites[i].SetMemberGeometryVisible(this, false);
 
     return true;
 }

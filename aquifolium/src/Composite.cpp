@@ -141,6 +141,7 @@ bool Composite::Instantiate(System *sys)
     }
 
     ApplyGeometry(sys);
+    SetMemberGeometryVisible(sys, false);
 
     // Constituents may already exist, in which case the members just picked up
     // their derived quantities and the composite needs matching properties.
@@ -169,6 +170,21 @@ void Composite::ApplyGeometry(System *sys)
         blk->SetVal("y", y0 + it->second.dy);
         blk->SetVal("_width", it->second.width);
         blk->SetVal("_height", it->second.height);
+    }
+}
+
+void Composite::SetMemberGeometryVisible(System *sys, bool visible)
+{
+    if (!sys) return;
+
+    static const char *geometry[4] = {"x", "y", "_width", "_height"};
+    for (unsigned int i=0; i<members.size(); i++)
+    {
+        Block *blk = sys->block(members[i]);
+        if (!blk) continue;
+        for (int g=0; g<4; g++)
+            if (blk->HasQuantity(geometry[g]))
+                blk->Variable(geometry[g])->AskFromUser() = visible;
     }
 }
 

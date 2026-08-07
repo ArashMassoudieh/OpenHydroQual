@@ -1,0 +1,11 @@
+class, object name, function, description, error code
+Object,Clarifier_1__Lower,GetVal,property 'inflow_concentration' does not exist in 'Clarifier_1__Lower',1002
+Object,Clarifier_1__Upper,GetVal,property 'inflow_concentration' does not exist in 'Clarifier_1__Upper',1002
+Object,Reactor_1,GetVal,property 'inflow_concentration' does not exist in 'Reactor_1',1002
+Object,Reactor_2(0:0),GetVal,property 'inflow_concentration' does not exist in 'Reactor_2(0:0)',1002
+Object,Reactor_2(1:0),GetVal,property 'inflow_concentration' does not exist in 'Reactor_2(1:0)',1002
+Object,Reactor_2(2:0),GetVal,property 'inflow_concentration' does not exist in 'Reactor_2(2:0)',1002
+Object,Effluent,GetVal,property 'inflow' does not exist in 'Effluent',1002
+Object,Effluent,GetVal,property 'inflow_concentration' does not exist in 'Effluent',1002
+Object,Waste,GetVal,property 'inflow' does not exist in 'Waste',1002
+Object,Waste,GetVal,property 'inflow_concentration' does not exist in 'Waste',1002

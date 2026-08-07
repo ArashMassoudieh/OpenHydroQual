@@ -357,21 +357,19 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
                 composite->Propagate(mainwindow->GetSystem());
         }
 
-        if (VariableName == "x")
+        // Not every object is drawn - composite members have no node of their
+        // own - so the geometry quantities may have nothing to move.
+        Node *itsnode = mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()));
+        if (itsnode)
         {
-            mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setX(value.toInt());
-        }
-        if (VariableName == "y")
-        {
-            mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setY(value.toInt());
-        }
-        if (VariableName == "_width")
-        {
-            mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setWidth(value.toInt());
-        }
-        if (VariableName == "_height")
-        {
-            mainwindow->GetDiagramView()->node(QString::fromStdString(quanset->Parent()->GetName()))->setHeight(value.toInt());
+            if (VariableName == "x")
+                itsnode->setX(value.toInt());
+            if (VariableName == "y")
+                itsnode->setY(value.toInt());
+            if (VariableName == "_width")
+                itsnode->setWidth(value.toInt());
+            if (VariableName == "_height")
+                itsnode->setHeight(value.toInt());
         }
     }
     else

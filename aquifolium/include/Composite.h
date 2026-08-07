@@ -146,6 +146,19 @@ public:
      */
     void ApplyGeometry(System *sys);
 
+    /**
+     * @brief Shows or hides the members' x/y/_width/_height in the property editor
+     * @param sys The owning system
+     * @param visible Whether the geometry quantities should be user-visible
+     *
+     * Members are not drawn individually and their positions are derived from
+     * the composite's own geometry, so those four quantities are noise in a
+     * member's property panel - and editing them would address a node that does
+     * not exist. They are hidden while the member belongs to a composite, and
+     * restored when it is ungrouped or written out in expanded form.
+     */
+    void SetMemberGeometryVisible(System *sys, bool visible);
+
 private:
     vector<string> members;
     vector<string> internal_links;

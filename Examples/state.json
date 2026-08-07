@@ -1,0 +1,346 @@
+{
+    "Blocks": {
+        "Effluent": {
+            "S_s:concentration": "0.028695",
+            "S_s:constant_inflow_concentration": "0",
+            "S_s:external_mass_flow_timeseries": "",
+            "S_s:external_source": "",
+            "S_s:time_variable_inflow_concentration": "",
+            "Storage": "103037",
+            "X_bh:concentration": "0.000849083",
+            "X_bh:constant_inflow_concentration": "0",
+            "X_bh:external_mass_flow_timeseries": "",
+            "X_bh:external_source": "",
+            "X_bh:time_variable_inflow_concentration": "",
+            "_height": "200",
+            "_width": "200",
+            "head": "0",
+            "name": "Effluent",
+            "type": "fixed_head",
+            "x": "1772",
+            "y": "898"
+        },
+        "Reactor_1": {
+            "S_s:concentration": "4.61789",
+            "S_s:constant_inflow_concentration": "100",
+            "S_s:external_mass_flow_timeseries": "",
+            "S_s:external_source": "",
+            "S_s:time_variable_inflow_concentration": "",
+            "Storage": "400",
+            "X_bh:concentration": "49.1155",
+            "X_bh:constant_inflow_concentration": "0",
+            "X_bh:external_mass_flow_timeseries": "",
+            "X_bh:external_source": "",
+            "X_bh:time_variable_inflow_concentration": "",
+            "_height": "200",
+            "_width": "200",
+            "bottom_elevation": "0",
+            "constant_inflow": "100",
+            "name": "Reactor_1",
+            "time_variable_inflow": "",
+            "type": "Reactor",
+            "x": "0",
+            "y": "901"
+        },
+        "Reactor_2(0:0)": {
+            "S_s:concentration": "0.733981",
+            "S_s:constant_inflow_concentration": "0",
+            "S_s:external_mass_flow_timeseries": "",
+            "S_s:external_source": "",
+            "S_s:time_variable_inflow_concentration": "",
+            "Storage": "400",
+            "X_bh:concentration": "46.2596",
+            "X_bh:constant_inflow_concentration": "0",
+            "X_bh:external_mass_flow_timeseries": "",
+            "X_bh:external_source": "",
+            "X_bh:time_variable_inflow_concentration": "",
+            "_height": "200",
+            "_width": "200",
+            "bottom_elevation": "0",
+            "constant_inflow": "0",
+            "name": "Reactor_2(0:0)",
+            "time_variable_inflow": "",
+            "type": "Reactor",
+            "x": "300",
+            "y": "896"
+        },
+        "Reactor_2(1:0)": {
+            "S_s:concentration": "0.432046",
+            "S_s:constant_inflow_concentration": "0",
+            "S_s:external_mass_flow_timeseries": "",
+            "S_s:external_source": "",
+            "S_s:time_variable_inflow_concentration": "",
+            "Storage": "400",
+            "X_bh:concentration": "42.2077",
+            "X_bh:constant_inflow_concentration": "0",
+            "X_bh:external_mass_flow_timeseries": "",
+            "X_bh:external_source": "",
+            "X_bh:time_variable_inflow_concentration": "",
+            "_height": "200",
+            "_width": "200",
+            "bottom_elevation": "0",
+            "constant_inflow": "0",
+            "name": "Reactor_2(1:0)",
+            "time_variable_inflow": "",
+            "type": "Reactor",
+            "x": "600",
+            "y": "896"
+        },
+        "Reactor_2(2:0)": {
+            "S_s:concentration": "0.406649",
+            "S_s:constant_inflow_concentration": "0",
+            "S_s:external_mass_flow_timeseries": "",
+            "S_s:external_source": "",
+            "S_s:time_variable_inflow_concentration": "",
+            "Storage": "400",
+            "X_bh:concentration": "38.2741",
+            "X_bh:constant_inflow_concentration": "0",
+            "X_bh:external_mass_flow_timeseries": "",
+            "X_bh:external_source": "",
+            "X_bh:time_variable_inflow_concentration": "",
+            "_height": "200",
+            "_width": "200",
+            "bottom_elevation": "0",
+            "constant_inflow": "0",
+            "name": "Reactor_2(2:0)",
+            "time_variable_inflow": "",
+            "type": "Reactor",
+            "x": "900",
+            "y": "896"
+        },
+        "Waste": {
+            "S_s:concentration": "0.0232547",
+            "S_s:constant_inflow_concentration": "0",
+            "S_s:external_mass_flow_timeseries": "",
+            "S_s:external_source": "",
+            "S_s:time_variable_inflow_concentration": "",
+            "Storage": "100160",
+            "X_bh:concentration": "0.038666",
+            "X_bh:constant_inflow_concentration": "0",
+            "X_bh:external_mass_flow_timeseries": "",
+            "X_bh:external_source": "",
+            "X_bh:time_variable_inflow_concentration": "",
+            "_height": "200",
+            "_width": "200",
+            "head": "-1",
+            "name": "Waste",
+            "type": "fixed_head",
+            "x": "1757",
+            "y": "1197"
+        }
+    },
+    "Composites": {
+        "Clarifier_1": {
+            "S_s:concentration": "0",
+            "S_s:constant_inflow_concentration": "0",
+            "S_s:external_mass_flow_timeseries": "",
+            "S_s:external_source": "",
+            "S_s:time_variable_inflow_concentration": "",
+            "X_bh:concentration": "0",
+            "X_bh:constant_inflow_concentration": "0",
+            "X_bh:external_mass_flow_timeseries": "",
+            "X_bh:external_source": "",
+            "X_bh:time_variable_inflow_concentration": "",
+            "_height": "200",
+            "_width": "200",
+            "floor_elevation": "-1",
+            "inflow": "",
+            "interface_elevation": "0",
+            "lower_storage": "100",
+            "name": "Clarifier_1",
+            "surface_area": "100",
+            "type": "Clarifier",
+            "underflow": "95",
+            "underflow_timeseries": "",
+            "upper_storage": "100",
+            "x": "1273.88",
+            "y": "994.977"
+        }
+    },
+    "Constituents": {
+        "S_s": {
+            "concentration": "0",
+            "constant_inflow_concentration": "0",
+            "diffusion_coefficient": "0",
+            "dispersivity": "0",
+            "external_mass_flow_timeseries": "",
+            "external_source": "",
+            "name": "S_s",
+            "stoichiometric_constant": "0",
+            "time_variable_inflow_concentration": "",
+            "type": "Constituent"
+        },
+        "X_bh": {
+            "concentration": "0",
+            "constant_inflow_concentration": "0",
+            "external_mass_flow_timeseries": "",
+            "external_source": "",
+            "name": "X_bh",
+            "settling_velocity": "864",
+            "stoichiometric_constant": "0",
+            "time_variable_inflow_concentration": "",
+            "turbidity_coefficient": "0",
+            "turbidity_exponent": "0",
+            "type": "Particle"
+        }
+    },
+    "Links": {
+        "Clarifier to Effluent": {
+            "flow": "95",
+            "from": "Clarifier_1",
+            "name": "Clarifier to Effluent",
+            "to": "Effluent",
+            "type": "Effluent flow"
+        },
+        "Reactor to Reactor(0)": {
+            "flow": "190",
+            "from": "Reactor_1",
+            "name": "Reactor to Reactor(0)",
+            "to": "Reactor_2(0:0)",
+            "type": "Fixed flow"
+        },
+        "Reactor_2 to Clarifier": {
+            "flow": "190",
+            "from": "Reactor_2(2:0)",
+            "name": "Reactor_2 to Clarifier",
+            "to": "Clarifier_1",
+            "type": "Fixed flow"
+        },
+        "Reactor_2(0:0)-Reactor_2(1:0)": {
+            "flow": "190",
+            "from": "Reactor_2(0:0)",
+            "name": "Reactor_2(0:0)-Reactor_2(1:0)",
+            "to": "Reactor_2(1:0)",
+            "type": "Fixed flow"
+        },
+        "Reactor_2(1:0)-Reactor_2(2:0)": {
+            "flow": "190",
+            "from": "Reactor_2(1:0)",
+            "name": "Reactor_2(1:0)-Reactor_2(2:0)",
+            "to": "Reactor_2(2:0)",
+            "type": "Fixed flow"
+        },
+        "Return sludge": {
+            "flow": "90",
+            "from": "Clarifier_1",
+            "name": "Return sludge",
+            "to": "Reactor_1",
+            "type": "Sludge flow"
+        },
+        "Waste sludge": {
+            "flow": "5",
+            "from": "Clarifier_1",
+            "name": "Waste sludge",
+            "to": "Waste",
+            "type": "Sludge flow"
+        }
+    },
+    "Objective Functions": {
+    },
+    "Observations": {
+    },
+    "Parameters": {
+    },
+    "Reaction Parameters": {
+        "K_s": {
+            "Arrhenius_factor": "1",
+            "base_value": "40",
+            "name": "K_s",
+            "reference_temperature": "0",
+            "temperature": "",
+            "type": "ReactionParameter"
+        },
+        "Y": {
+            "Arrhenius_factor": "1",
+            "base_value": "0.4",
+            "name": "Y",
+            "reference_temperature": "0",
+            "temperature": "",
+            "type": "ReactionParameter"
+        },
+        "k_d": {
+            "Arrhenius_factor": "1",
+            "base_value": "0.05",
+            "name": "k_d",
+            "reference_temperature": "0",
+            "temperature": "",
+            "type": "ReactionParameter"
+        },
+        "mu_max": {
+            "Arrhenius_factor": "1",
+            "base_value": "2",
+            "name": "mu_max",
+            "reference_temperature": "0",
+            "temperature": "",
+            "type": "ReactionParameter"
+        }
+    },
+    "Reactions": {
+        "Decay": {
+            "S_s:stoichiometric_constant": "1",
+            "X_bh:stoichiometric_constant": "-1",
+            "name": "Decay",
+            "rate_expression": "(k_d*X_bh)",
+            "type": "Reaction"
+        },
+        "Growth": {
+            "S_s:stoichiometric_constant": "(0-1/Y)",
+            "X_bh:stoichiometric_constant": "1",
+            "name": "Growth",
+            "rate_expression": "(mu_max*S_s/(S_s+K_s)*X_bh)",
+            "type": "Reaction"
+        }
+    },
+    "Set As Parameters": [
+    ],
+    "Settings": {
+        "acceptance_rate": "0.15",
+        "add_noise_to_realizations": "No",
+        "alloutputfile": "output.txt",
+        "c_n_weight": "1",
+        "continue_based_on_file_name": "",
+        "initial_purturbation": "No",
+        "initial_time_step": "0.01",
+        "initual_purturbation_factor": "0.05",
+        "jacobian_method": "Inverse Jacobian",
+        "max_timestep_decrease_factor": "100000",
+        "max_timestep_increase_factor": "50",
+        "maximum_number_of_matrix_inverstions": "200000",
+        "maximum_time_allowed": "86400",
+        "maxpop": "40",
+        "minimum_timestep": "1e-06",
+        "n_threads": "8",
+        "ngen": "40",
+        "nr_timestep_reduction_factor": "0.75",
+        "nr_timestep_reduction_factor_fail": "0.2",
+        "nr_tolerance": "0.001",
+        "number_of_burnout_samples": "0",
+        "number_of_chains": "8",
+        "number_of_post_estimate_realizations": "0",
+        "number_of_samples": "1000",
+        "number_of_threads": "1",
+        "numthreads": "8",
+        "observed_outputfile": "observedoutput.txt",
+        "outputfile": "GA_output.txt",
+        "pcross": "1",
+        "perform_global_sensitivity": "No",
+        "pmute": "0.02",
+        "purturbation_change_scale": "0.75",
+        "record_interval": "1",
+        "samples_filename": "mcmc.txt",
+        "shakescale": "0.05",
+        "shakescalered": "0.75",
+        "simulation_end_time": "36557",
+        "simulation_start_time": "36558",
+        "write_interval": "100",
+        "write_solution_details": "No"
+    },
+    "Sources": {
+    },
+    "Templates": [
+        "/home/arash/Projects/OpenHydroQual/build/Desktop_Qt_6_8_3-Debug/../../resources/main_components.json",
+        "/home/arash/Projects/OpenHydroQual/resources/main_components.json",
+        "/home/arash/Projects/OpenHydroQual/resources/wastewater.json",
+        "/home/arash/Projects/OpenHydroQual/resources/mass_transfer.json"
+    ]
+}
