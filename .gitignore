@@ -424,3 +424,5 @@ terminal/build-TOpenHydroQual-Desktop_Qt_6_9_1-Release/
 Examples/Plant_Transpiration/errors.txt
 
 Examples/Crop_Root_Uptake/errors.txt
+
+Examples/*/output*.txt
