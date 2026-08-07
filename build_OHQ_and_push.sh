@@ -18,8 +18,10 @@ BIN_PATH="${STAGING_DIR}/opt/OpenHydroQual/bin/Release"
 EXECUTABLE="${BUILD_DIR}/OpenHydroQual"
 
 # === Step 1: Build the Qt application ===
+# qmake writes the Makefile into the current directory, so run it from inside
+# the source tree rather than from the parent.
 echo "🔧 Running qmake6..."
-qmake6 "$PRO_FILE"
+( cd "$BUILD_DIR" && qmake6 "$(basename "$PRO_FILE")" CONFIG+=release )
 
 echo "⚙️ Running make..."
 make -C "$BUILD_DIR" -j$(nproc)
