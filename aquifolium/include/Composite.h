@@ -159,6 +159,25 @@ public:
      */
     void SetMemberGeometryVisible(System *sys, bool visible);
 
+    /**
+     * @brief Makes every quantity this composite drives user-visible, for serialization
+     * @param sys The owning system
+     * @return The previous visibility of each quantity, keyed "<object>#<quantity>"
+     *
+     * toCommand() writes only user-visible quantities, but a mapping may drive
+     * one that the member's own type hides - Groundwater cell's Storage, for
+     * instance. Writing members out in expanded form without this silently
+     * drops those values, which for an initial condition means the exported
+     * model starts somewhere quite different. Pass the returned map back to
+     * RestoreDerivedQuantities() once the write is done.
+     */
+    map<string, bool> RevealDerivedQuantities(System *sys);
+
+    /**
+     * @brief Undoes RevealDerivedQuantities() using the visibility it returned
+     */
+    void RestoreDerivedQuantities(System *sys, const map<string, bool> &saved);
+
 private:
     vector<string> members;
     vector<string> internal_links;

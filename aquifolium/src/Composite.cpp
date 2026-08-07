@@ -188,6 +188,40 @@ void Composite::SetMemberGeometryVisible(System *sys, bool visible)
     }
 }
 
+map<string, bool> Composite::RevealDerivedQuantities(System *sys)
+{
+    map<string, bool> saved;
+    if (!sys) return saved;
+
+    for (unordered_map<string, Quan>::iterator it=GetVars()->begin(); it!=GetVars()->end(); it++)
+        for (map<string, string>::const_iterator mp=it->second.ApplyTo().cbegin(); mp!=it->second.ApplyTo().cend(); mp++)
+        {
+            vector<string> target = aquiutils::split(mp->first, COMPOSITE_QUANTITY_SEPARATOR);
+            if (target.size()!=2) continue;
+            Object *owner = sys->object(MemberName(target[0]));
+            if (!owner || !owner->HasQuantity(target[1])) continue;
+
+            const string key = MemberName(target[0]) + string(1, COMPOSITE_QUANTITY_SEPARATOR) + target[1];
+            if (saved.count(key)) continue;
+            saved[key] = owner->Variable(target[1])->AskFromUser();
+            owner->Variable(target[1])->AskFromUser() = true;
+        }
+    return saved;
+}
+
+void Composite::RestoreDerivedQuantities(System *sys, const map<string, bool> &saved)
+{
+    if (!sys) return;
+    for (map<string, bool>::const_iterator it=saved.cbegin(); it!=saved.cend(); it++)
+    {
+        vector<string> target = aquiutils::split(it->first, COMPOSITE_QUANTITY_SEPARATOR);
+        if (target.size()!=2) continue;
+        Object *owner = sys->object(target[0]);
+        if (!owner || !owner->HasQuantity(target[1])) continue;
+        owner->Variable(target[1])->AskFromUser() = it->second;
+    }
+}
+
 bool Composite::Propagate(System *sys)
 {
     if (!sys) return false;

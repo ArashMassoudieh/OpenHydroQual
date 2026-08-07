@@ -3110,12 +3110,17 @@ bool System::SavetoScriptFile(const string &filename, const string &templatefile
     for (unsigned int i = 0; i < ReactionsCount(); i++)
         file << "create reaction;" << reactions[i].toCommand() << std::endl;
 
-    // toCommand() only writes user-visible quantities, so members need their
-    // geometry made visible again for an expanded write - otherwise the
-    // exported blocks come back stacked on the default position.
+    // toCommand() only writes user-visible quantities, so an expanded write has
+    // to reveal everything the composites drive - their members' geometry, and
+    // any mapped quantity the member's own type hides (an initial condition
+    // such as Groundwater cell's Storage, for instance).
+    vector<map<string, bool> > revealed(composites.size());
     if (expand_composites)
         for (unsigned int i=0; i<composites.size(); i++)
+        {
             composites[i].SetMemberGeometryVisible(this, true);
+            revealed[i] = composites[i].RevealDerivedQuantities(this);
+        }
 
     if (!expand_composites)
         for (unsigned int i=0; i<composites.size(); i++)
@@ -3196,7 +3201,10 @@ bool System::SavetoScriptFile(const string &filename, const string &templatefile
 
     if (expand_composites)
         for (unsigned int i=0; i<composites.size(); i++)
+        {
+            composites[i].RestoreDerivedQuantities(this, revealed[i]);
             composites[i].SetMemberGeometryVisible(this, false);
+        }
 
     return true;
 }

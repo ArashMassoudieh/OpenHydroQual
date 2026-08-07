@@ -1,0 +1,25 @@
+loadtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/unsaturated_soil.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/groundwater.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/soil_evapotranspiration_models.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/hydrologic_response_unit.json
+setvalue; object=system, quantity=simulation_start_time, value=36526
+setvalue; object=system, quantity=simulation_end_time, value=36556
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=initial_time_step, value=0.001
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=write_interval, value=100
+setvalue; object=system, quantity=n_threads, value=8
+create source;type=Precipitation,name=Rain,timeseries=precipitation.csv
+create source;type=Evapotranspiration_Time_Series (Soil),name=ET,timeseries=evapotranspiration.csv,corr_fact=1
+create block;type=fixed_head,name=Stream,x=1600,y=1150,_width=200,_height=200,head=88
+create block;type=fixed_head,name=Catchment_outlet,x=1600,y=0,_width=200,_height=200,head=90
+create composite;type=Hydrologic_Response_Unit,name=Upslope,x=200,y=0,_width=260,_height=260,area=20000[m~^2],surface_elevation=100[m],depth_to_groundwater=7[m],groundwater_thickness=6[m],Precipitation=Rain,Evapotranspiration=ET,catchment_slope=0.05,catchment_width=200[m],manning_coefficient=0.1,depression_storage=0.002[m],K_sat=0.5[m/day],alpha_vG=1.5[1/m],n_vG=1.4,theta_sat=0.42,theta_res=0.06,initial_moisture_content=0.22,recharge_K=0.5[m/day],groundwater_K=5[m/day],groundwater_porosity=0.25,initial_groundwater_saturation=0.9
+create composite;type=Hydrologic_Response_Unit,name=Downslope,x=900,y=0,_width=260,_height=260,area=20000[m~^2],surface_elevation=94[m],depth_to_groundwater=4[m],groundwater_thickness=6[m],Precipitation=Rain,Evapotranspiration=ET,catchment_slope=0.02,catchment_width=200[m],manning_coefficient=0.12,depression_storage=0.003[m],K_sat=0.5[m/day],alpha_vG=1.5[1/m],n_vG=1.4,theta_sat=0.42,theta_res=0.06,initial_moisture_content=0.24,recharge_K=0.5[m/day],groundwater_K=5[m/day],groundwater_porosity=0.25,initial_groundwater_saturation=0.9
+create link;from=Upslope,to=Downslope,type=Catchment_link,name=Overland_flow
+create link;from=Downslope,to=Catchment_outlet,type=Catchment_link,name=Runoff_to_outlet
+create link;from=Upslope,to=Downslope,type=groundwater_link,name=Groundwater_throughflow,area=1200[m~^2],length=200[m]
+create link;from=Downslope,to=Stream,type=groundwater_to_fixedhead,name=Baseflow_to_stream,area=1200[m~^2],length=100[m]
