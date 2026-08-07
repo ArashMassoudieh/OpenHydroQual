@@ -1,0 +1,194 @@
+{
+    "Blocks": {
+        "Catchment_outlet": {
+            "Storage": "100000",
+            "_height": "200",
+            "_width": "200",
+            "head": "90",
+            "name": "Catchment_outlet",
+            "type": "fixed_head",
+            "x": "1600",
+            "y": "0"
+        },
+        "Stream": {
+            "Storage": "102729",
+            "_height": "200",
+            "_width": "200",
+            "head": "88",
+            "name": "Stream",
+            "type": "fixed_head",
+            "x": "1600",
+            "y": "1150"
+        }
+    },
+    "Composites": {
+        "Downslope": {
+            "Evapotranspiration": "ET",
+            "K_sat": "0.5",
+            "Precipitation": "Rain",
+            "_height": "260",
+            "_width": "260",
+            "alpha_vG": "1.5",
+            "area": "20000",
+            "catchment_slope": "0.02",
+            "catchment_width": "200",
+            "depression_storage": "0.003",
+            "depth_to_groundwater": "4",
+            "groundwater_K": "5",
+            "groundwater_porosity": "0.25",
+            "groundwater_specific_storage": "0.01",
+            "groundwater_thickness": "6",
+            "initial_groundwater_moisture_content": "0.25",
+            "initial_moisture_content": "0.24",
+            "manning_coefficient": "0.12",
+            "n_vG": "1.4",
+            "name": "Downslope",
+            "recharge_K": "0.5",
+            "runoff_coefficient": "1",
+            "soil_specific_storage": "0.01",
+            "surface_elevation": "94",
+            "theta_res": "0.06",
+            "theta_sat": "0.42",
+            "type": "Hydrologic_Response_Unit",
+            "x": "900",
+            "y": "0"
+        },
+        "Upslope": {
+            "Evapotranspiration": "ET",
+            "K_sat": "0.5",
+            "Precipitation": "Rain",
+            "_height": "260",
+            "_width": "260",
+            "alpha_vG": "1.5",
+            "area": "20000",
+            "catchment_slope": "0.05",
+            "catchment_width": "200",
+            "depression_storage": "0.002",
+            "depth_to_groundwater": "7",
+            "groundwater_K": "5",
+            "groundwater_porosity": "0.25",
+            "groundwater_specific_storage": "0.01",
+            "groundwater_thickness": "6",
+            "initial_groundwater_moisture_content": "0.25",
+            "initial_moisture_content": "0.22",
+            "manning_coefficient": "0.1",
+            "n_vG": "1.4",
+            "name": "Upslope",
+            "recharge_K": "0.5",
+            "runoff_coefficient": "1",
+            "soil_specific_storage": "0.01",
+            "surface_elevation": "100",
+            "theta_res": "0.06",
+            "theta_sat": "0.42",
+            "type": "Hydrologic_Response_Unit",
+            "x": "200",
+            "y": "0"
+        }
+    },
+    "Constituents": {
+    },
+    "Links": {
+        "Baseflow_to_stream": {
+            "area": "1200",
+            "from": "Downslope",
+            "length": "100",
+            "name": "Baseflow_to_stream",
+            "to": "Stream",
+            "type": "groundwater_to_fixedhead"
+        },
+        "Groundwater_throughflow": {
+            "area": "1200",
+            "from": "Upslope",
+            "length": "200",
+            "name": "Groundwater_throughflow",
+            "to": "Downslope",
+            "type": "groundwater_link"
+        },
+        "Overland_flow": {
+            "from": "Upslope",
+            "name": "Overland_flow",
+            "to": "Downslope",
+            "type": "Catchment_link"
+        },
+        "Runoff_to_outlet": {
+            "from": "Downslope",
+            "name": "Runoff_to_outlet",
+            "to": "Catchment_outlet",
+            "type": "Catchment_link"
+        }
+    },
+    "Objective Functions": {
+    },
+    "Observations": {
+    },
+    "Parameters": {
+    },
+    "Reaction Parameters": {
+    },
+    "Reactions": {
+    },
+    "Set As Parameters": [
+    ],
+    "Settings": {
+        "acceptance_rate": "0.15",
+        "add_noise_to_realizations": "No",
+        "alloutputfile": "output.txt",
+        "c_n_weight": "1",
+        "continue_based_on_file_name": "",
+        "initial_purturbation": "No",
+        "initial_time_step": "0.001",
+        "initual_purturbation_factor": "0.05",
+        "jacobian_method": "Inverse Jacobian",
+        "max_timestep_decrease_factor": "100000",
+        "max_timestep_increase_factor": "50",
+        "maximum_number_of_matrix_inverstions": "200000",
+        "maximum_time_allowed": "86400",
+        "maxpop": "40",
+        "minimum_timestep": "1e-06",
+        "n_threads": "8",
+        "ngen": "40",
+        "nr_timestep_reduction_factor": "0.75",
+        "nr_timestep_reduction_factor_fail": "0.2",
+        "nr_tolerance": "0.001",
+        "number_of_burnout_samples": "0",
+        "number_of_chains": "8",
+        "number_of_post_estimate_realizations": "10",
+        "number_of_samples": "1000",
+        "number_of_threads": "1",
+        "numthreads": "8",
+        "observed_outputfile": "observedoutput.txt",
+        "outputfile": "GA_output.txt",
+        "pcross": "1",
+        "perform_global_sensitivity": "No",
+        "pmute": "0.02",
+        "purturbation_change_scale": "0.75",
+        "record_interval": "1",
+        "samples_filename": "mcmc.txt",
+        "shakescale": "0.05",
+        "shakescalered": "0.75",
+        "simulation_end_time": "36556",
+        "simulation_start_time": "36556",
+        "write_interval": "100",
+        "write_solution_details": "No"
+    },
+    "Sources": {
+        "ET": {
+            "corr_fact": "1",
+            "name": "ET",
+            "timeseries": "",
+            "type": "Evapotranspiration_Time_Series (Soil)"
+        },
+        "Rain": {
+            "name": "Rain",
+            "timeseries": "",
+            "type": "Precipitation"
+        }
+    },
+    "Templates": [
+        "/home/arash/Projects/OpenHydroQual/resources/main_components.json",
+        "/home/arash/Projects/OpenHydroQual/resources/unsaturated_soil.json",
+        "/home/arash/Projects/OpenHydroQual/resources/groundwater.json",
+        "/home/arash/Projects/OpenHydroQual/resources/soil_evapotranspiration_models.json",
+        "/home/arash/Projects/OpenHydroQual/resources/hydrologic_response_unit.json"
+    ]
+}

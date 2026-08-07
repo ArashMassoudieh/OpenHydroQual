@@ -397,15 +397,15 @@
         "Groundwater#specific_storage": "groundwater_specific_storage"
       }
     },
-    "initial_groundwater_saturation": {
+    "initial_groundwater_moisture_content": {
       "type": "value",
-      "description": "Initial fraction of the groundwater cell pore space that is filled",
+      "description": "Initial moisture content of the groundwater cell",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "default": "1",
-      "helptext": "1 means the cell starts fully saturated. The initial stored volume is this fraction times area, thickness and porosity.",
+      "default": "0.25",
+      "helptext": "Set this equal to the groundwater porosity for a fully saturated start, which is almost always what you want. The groundwater cell uses a confined formulation, head = cell top + (moisture content - porosity)/specific storage, so at full saturation the head sits at the top of the cell and any deficit becomes an elastic underpressure: with a specific storage of 0.01, a moisture content 0.025 below porosity already puts the head 2.5 m low. The cell's initial storage follows as area times thickness times this value.",
       "applyto": {
-        "Groundwater#Storage": "initial_groundwater_saturation*area*groundwater_thickness*groundwater_porosity"
+        "Groundwater#moisture_content": "initial_groundwater_moisture_content"
       }
     }
   }

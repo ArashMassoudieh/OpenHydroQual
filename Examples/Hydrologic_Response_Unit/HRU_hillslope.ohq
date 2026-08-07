@@ -1,25 +1,56 @@
-loadtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/main_components.json
+loadtemplate; filename = /home/arash/Projects/OpenHydroQual/build/Desktop_Qt_6_8_3-Debug/../../resources/main_components.json
 addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/main_components.json
 addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/unsaturated_soil.json
 addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/groundwater.json
 addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/soil_evapotranspiration_models.json
 addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/hydrologic_response_unit.json
-setvalue; object=system, quantity=simulation_start_time, value=36526
-setvalue; object=system, quantity=simulation_end_time, value=36556
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=10
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
 setvalue; object=system, quantity=alloutputfile, value=output.txt
 setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=simulation_end_time, value=36556
+setvalue; object=system, quantity=simulation_start_time, value=36526
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=numthreads, value=8
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=c_n_weight, value=1
 setvalue; object=system, quantity=initial_time_step, value=0.001
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=max_timestep_decrease_factor, value=100000
+setvalue; object=system, quantity=max_timestep_increase_factor, value=50
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
 setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
 setvalue; object=system, quantity=nr_tolerance, value=0.001
 setvalue; object=system, quantity=write_interval, value=100
-setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=write_solution_details, value=No
 create source;type=Precipitation,name=Rain,timeseries=precipitation.csv
-create source;type=Evapotranspiration_Time_Series (Soil),name=ET,timeseries=evapotranspiration.csv,corr_fact=1
-create block;type=fixed_head,name=Stream,x=1600,y=1150,_width=200,_height=200,head=88
-create block;type=fixed_head,name=Catchment_outlet,x=1600,y=0,_width=200,_height=200,head=90
-create composite;type=Hydrologic_Response_Unit,name=Upslope,x=200,y=0,_width=260,_height=260,area=20000[m~^2],surface_elevation=100[m],depth_to_groundwater=7[m],groundwater_thickness=6[m],Precipitation=Rain,Evapotranspiration=ET,catchment_slope=0.05,catchment_width=200[m],manning_coefficient=0.1,depression_storage=0.002[m],K_sat=0.5[m/day],alpha_vG=1.5[1/m],n_vG=1.4,theta_sat=0.42,theta_res=0.06,initial_moisture_content=0.22,recharge_K=0.5[m/day],groundwater_K=5[m/day],groundwater_porosity=0.25,initial_groundwater_saturation=0.9
-create composite;type=Hydrologic_Response_Unit,name=Downslope,x=900,y=0,_width=260,_height=260,area=20000[m~^2],surface_elevation=94[m],depth_to_groundwater=4[m],groundwater_thickness=6[m],Precipitation=Rain,Evapotranspiration=ET,catchment_slope=0.02,catchment_width=200[m],manning_coefficient=0.12,depression_storage=0.003[m],K_sat=0.5[m/day],alpha_vG=1.5[1/m],n_vG=1.4,theta_sat=0.42,theta_res=0.06,initial_moisture_content=0.24,recharge_K=0.5[m/day],groundwater_K=5[m/day],groundwater_porosity=0.25,initial_groundwater_saturation=0.9
+create source;type=Evapotranspiration_Time_Series (Soil),corr_fact=1,name=ET,timeseries=evapotranspiration.csv
+create composite;type=Hydrologic_Response_Unit,Evapotranspiration=ET,K_sat=0.5,Precipitation=Rain,_height=260,_width=260,alpha_vG=1.5,area=20000,catchment_slope=0.05,catchment_width=200,depression_storage=0.002,depth_to_groundwater=7,groundwater_K=5,groundwater_porosity=0.25,groundwater_specific_storage=0.01,groundwater_thickness=6,initial_groundwater_moisture_content=0.25,initial_moisture_content=0.22,manning_coefficient=0.1,n_vG=1.4,name=Upslope,recharge_K=0.5,runoff_coefficient=1,soil_specific_storage=0.01,surface_elevation=100,theta_res=0.06,theta_sat=0.42,x=200,y=0
+create composite;type=Hydrologic_Response_Unit,Evapotranspiration=ET,K_sat=0.5,Precipitation=Rain,_height=260,_width=260,alpha_vG=1.5,area=20000,catchment_slope=0.02,catchment_width=200,depression_storage=0.003,depth_to_groundwater=4,groundwater_K=5,groundwater_porosity=0.25,groundwater_specific_storage=0.01,groundwater_thickness=6,initial_groundwater_moisture_content=0.25,initial_moisture_content=0.24,manning_coefficient=0.12,n_vG=1.4,name=Downslope,recharge_K=0.5,runoff_coefficient=1,soil_specific_storage=0.01,surface_elevation=94,theta_res=0.06,theta_sat=0.42,x=900,y=0
+create block;type=fixed_head,Storage=100000,_height=200,_width=200,head=88,name=Stream,x=1600,y=1150
+create block;type=fixed_head,Storage=100000,_height=200,_width=200,head=90,name=Catchment_outlet,x=1600,y=0
 create link;from=Upslope,to=Downslope,type=Catchment_link,name=Overland_flow
 create link;from=Downslope,to=Catchment_outlet,type=Catchment_link,name=Runoff_to_outlet
-create link;from=Upslope,to=Downslope,type=groundwater_link,name=Groundwater_throughflow,area=1200[m~^2],length=200[m]
-create link;from=Downslope,to=Stream,type=groundwater_to_fixedhead,name=Baseflow_to_stream,area=1200[m~^2],length=100[m]
+create link;from=Upslope,to=Downslope,type=groundwater_link,area=1200,length=200,name=Groundwater_throughflow
+create link;from=Downslope,to=Stream,type=groundwater_to_fixedhead,area=1200,length=100,name=Baseflow_to_stream
