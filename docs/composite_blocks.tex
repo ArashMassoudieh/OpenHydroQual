@@ -533,9 +533,9 @@ as it was rather than half-loaded.
 given and then looked up in the default template folder, so
 \code{"groundwater.json"} resolves wherever the templates happen to be
 installed. An absolute path would only work on the machine it was written on.
-\item \textbf{Each file is loaded once,} identified by its file name. Loading
-\file{/some/where/unsaturated\_soil.json} explicitly and then a plugin that
-requires \code{"unsaturated\_soil.json"} parses it a single time.
+\item \textbf{Each file is loaded once,} identified by its file name. Adding
+\file{unsaturated\_soil.json} by its full path and then a plugin that requires
+it by name parses it a single time.
 \item \textbf{Cycles are reported, not followed.} A file that requires itself
 through any chain fails with the chain in the message.
 \item \textbf{Dependencies are not written back.} A saved model lists only the
