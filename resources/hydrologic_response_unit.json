@@ -1,4 +1,9 @@
 {
+  "requires": [
+    "main_components.json",
+    "unsaturated_soil.json",
+    "groundwater.json"
+  ],
   "Hydrologic_Response_Unit": {
     "type": "composite",
     "typecategory": "Blocks",

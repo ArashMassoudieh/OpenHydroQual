@@ -871,5 +871,232 @@
       "delegate": "ComboBox;Sources",
       "unit": "g/day"
     }
+  },
+  "Plug flow reactor": {
+    "type": "composite",
+    "typecategory": "Blocks",
+    "description": "Plug flow reactor (10 reactors in series)",
+    "icon": {
+      "filename": "plug_flow_reactor.png"
+    },
+    "helptext": "A plug-flow reactor represented as ten equally sized, completely mixed reactors in series joined by fixed-flow links. Influent attaches to the first reactor and effluent leaves the last one, both through ordinary 'Fixed flow' links, so a link drawn into the unit enters at its head and a link drawn out of it leaves at its tail. The reach volume is length*area and is divided equally among the ten reactors; the hydraulic residence time of the whole unit is therefore length*area/flow and that of each reactor is one tenth of it. Ten tanks in series reproduce a residence-time distribution with a dimensionless variance of 0.1 about the mean, which is the amount of numerical dispersion this discretisation carries; a sharper front requires more tanks, which means ungrouping the unit and extending the chain by hand. Constituents and reactions added to the model are shared by all ten reactors.",
+    "members": {
+      "R01": {
+        "type": "Reactor",
+        "dx": "0",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "R02": {
+        "type": "Reactor",
+        "dx": "250",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "R03": {
+        "type": "Reactor",
+        "dx": "500",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "R04": {
+        "type": "Reactor",
+        "dx": "750",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "R05": {
+        "type": "Reactor",
+        "dx": "1000",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "R06": {
+        "type": "Reactor",
+        "dx": "1250",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "R07": {
+        "type": "Reactor",
+        "dx": "1500",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "R08": {
+        "type": "Reactor",
+        "dx": "1750",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "R09": {
+        "type": "Reactor",
+        "dx": "2000",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "R10": {
+        "type": "Reactor",
+        "dx": "2250",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      }
+    },
+    "internal_links": {
+      "flow_01_02": {
+        "type": "Fixed flow",
+        "from": "R01",
+        "to": "R02"
+      },
+      "flow_02_03": {
+        "type": "Fixed flow",
+        "from": "R02",
+        "to": "R03"
+      },
+      "flow_03_04": {
+        "type": "Fixed flow",
+        "from": "R03",
+        "to": "R04"
+      },
+      "flow_04_05": {
+        "type": "Fixed flow",
+        "from": "R04",
+        "to": "R05"
+      },
+      "flow_05_06": {
+        "type": "Fixed flow",
+        "from": "R05",
+        "to": "R06"
+      },
+      "flow_06_07": {
+        "type": "Fixed flow",
+        "from": "R06",
+        "to": "R07"
+      },
+      "flow_07_08": {
+        "type": "Fixed flow",
+        "from": "R07",
+        "to": "R08"
+      },
+      "flow_08_09": {
+        "type": "Fixed flow",
+        "from": "R08",
+        "to": "R09"
+      },
+      "flow_09_10": {
+        "type": "Fixed flow",
+        "from": "R09",
+        "to": "R10"
+      }
+    },
+    "external_links": {
+      "*": {
+        "from": "R10",
+        "to": "R01"
+      },
+      "Fixed flow": {
+        "from": "R10",
+        "to": "R01"
+      },
+      "Flex_flow": {
+        "from": "R10",
+        "to": "R01"
+      },
+      "Time-Dependent flow": {
+        "from": "R10",
+        "to": "R01"
+      }
+    },
+    "length": {
+      "type": "value",
+      "description": "Length of the reactor",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "100",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "The length must be positive!",
+      "helptext": "Length of the flow path. Together with the cross-sectional area it sets the total volume, which is split equally among the ten reactors. The volume mappings are hosted here, but they are re-evaluated whenever any group property changes, so editing the area updates them too.",
+      "applyto": {
+        "R01#Storage": "length*area/10",
+        "R02#Storage": "length*area/10",
+        "R03#Storage": "length*area/10",
+        "R04#Storage": "length*area/10",
+        "R05#Storage": "length*area/10",
+        "R06#Storage": "length*area/10",
+        "R07#Storage": "length*area/10",
+        "R08#Storage": "length*area/10",
+        "R09#Storage": "length*area/10",
+        "R10#Storage": "length*area/10"
+      }
+    },
+    "area": {
+      "type": "value",
+      "description": "Cross-sectional area of the reactor",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^2;ft^2",
+      "default": "10",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "The cross-sectional area must be positive!",
+      "helptext": "Area of the section perpendicular to the flow direction. The volume of each of the ten reactors is length*area/10."
+    },
+    "flow": {
+      "type": "value",
+      "description": "Flow rate through the reactor",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s",
+      "default": "100",
+      "estimate": "true",
+      "criteria": "flow>=0",
+      "warningmessage": "The flow rate cannot be negative!",
+      "helptext": "Throughflow carried by each of the nine internal connectors. It must match the flow of the external links attached to the two ends, otherwise the reactors fill or empty. The hydraulic residence time of the unit is length*area/flow.",
+      "applyto": {
+        "flow_01_02#flow": "flow",
+        "flow_02_03#flow": "flow",
+        "flow_03_04#flow": "flow",
+        "flow_04_05#flow": "flow",
+        "flow_05_06#flow": "flow",
+        "flow_06_07#flow": "flow",
+        "flow_07_08#flow": "flow",
+        "flow_08_09#flow": "flow",
+        "flow_09_10#flow": "flow"
+      }
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "estimate": "true",
+      "helptext": "Elevation of the reactor floor, applied identically to all ten reactors. Model a sloping reach by ungrouping the unit and setting the elevations individually.",
+      "applyto": {
+        "R01#bottom_elevation": "bottom_elevation",
+        "R02#bottom_elevation": "bottom_elevation",
+        "R03#bottom_elevation": "bottom_elevation",
+        "R04#bottom_elevation": "bottom_elevation",
+        "R05#bottom_elevation": "bottom_elevation",
+        "R06#bottom_elevation": "bottom_elevation",
+        "R07#bottom_elevation": "bottom_elevation",
+        "R08#bottom_elevation": "bottom_elevation",
+        "R09#bottom_elevation": "bottom_elevation",
+        "R10#bottom_elevation": "bottom_elevation"
+      }
+    }
   }
 }

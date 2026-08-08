@@ -134,6 +134,12 @@ bool MetaModel::GetFromJsonFile(const string &filename)
     {
         //qDebug()<<QString::fromStdString(object_types.key().asString());
 
+        // "requires" lists the template files this one depends on. System
+        // resolves and loads them before this file is parsed, so there is
+        // nothing left to do here — it is not an object type.
+        if (object_types.key().asString() == "requires")
+            continue;
+
         if (object_types.key().asString()=="solutionorder")
         {
             for (Json::Value::ArrayIndex i = 0; i != root["solutionorder"].size(); i++)
@@ -165,6 +171,12 @@ bool MetaModel::AppendFromJsonFile(const string &filename)
     }
     for (Json::ValueIterator object_types = root.begin(); object_types != root.end(); ++object_types)
     {
+        // "requires" lists the template files this one depends on. System
+        // resolves and loads them before this file is parsed, so there is
+        // nothing left to do here — it is not an object type.
+        if (object_types.key().asString() == "requires")
+            continue;
+
         // Parse "solutionorder" specially: it's an array of variable names
         // (not a QuanSet). Append only entries not already present, so
         // re-loading the same template (e.g. across hot-restart cycles) is

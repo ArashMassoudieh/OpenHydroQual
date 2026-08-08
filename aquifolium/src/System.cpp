@@ -81,6 +81,10 @@ void System::CopyFrom(const System& other)
     parameter_set = other.parameter_set;
     Settings = other.Settings;
     metamodel = other.metamodel;
+    // Must travel with the metamodel: it records which template files the
+    // copied metamodel was built from, so a later AppendQuanTemplate does not
+    // parse one of them a second time.
+    loadedtemplates = other.loadedtemplates;
     silent = other.silent;
     SimulationParameters = other.SimulationParameters;
     SolverSettings = other.SolverSettings;
@@ -128,10 +132,11 @@ void System::Clear()
     Outputs.ObservedOutputs.clear();
     metamodel.Clear();
     solvevariableorder.clear();         
-    addedpropertiestoallblocks.clear(); 
-    addedpropertiestoalllinks.clear();  
-    addedtemplates.clear();             
-    fit_measures.clear();               
+    addedpropertiestoallblocks.clear();
+    addedpropertiestoalllinks.clear();
+    addedtemplates.clear();
+    loadedtemplates.clear();
+    fit_measures.clear();
     alltimeseries.clear();              
     errorhandler.clear();               
 }
@@ -684,27 +689,176 @@ Object *System::GetObjectBasedOnPrimaryKey(const string &s)
 
 }
 
+// A template is identified by its file name alone: the metamodel keys object
+// types globally, so two files with the same name cannot coexist in it anyway,
+// and the rest of the system already refers to templates this way (the
+// DefaultTemplatePath fallback, default_templates.list, the plugin chooser).
+// Keying on the name rather than the path is what makes
+// "/home/me/resources/mass_transfer.json" and a "requires" entry of
+// "mass_transfer.json" resolve to the same file instead of loading it twice.
+static string TemplateKey(const string &path)
+{
+    return aquiutils::tolower(aquiutils::GetOnlyFileName(path));
+}
+
+string System::ResolveTemplatePath(const string &filename)
+{
+    if (filename.empty()) return "";
+    if (aquiutils::FileExists(filename)) return filename;
+    string alternative = DefaultTemplatePath() + aquiutils::GetOnlyFileName(filename);
+    if (aquiutils::FileExists(alternative)) return alternative;
+    return "";
+}
+
+bool System::ReadTemplateRequires(const string &path, vector<string> &required, string &error)
+{
+    required.clear();
+
+    std::ifstream file(path);
+    if (!file.good())
+    {
+        error = "Template file '" + path + "' could not be opened";
+        return false;
+    }
+
+    Json::Value root;
+    Json::CharReaderBuilder builder;
+    JSONCPP_STRING errs;
+    if (!Json::parseFromStream(builder, file, &root, &errs))
+    {
+        error = "Template file '" + path + "' could not be parsed: " + string(errs);
+        return false;
+    }
+
+    if (!root.isMember("requires")) return true;
+
+    const Json::Value &req = root["requires"];
+    if (req.isString())
+    {
+        required.push_back(req.asString());
+        return true;
+    }
+    if (!req.isArray())
+    {
+        error = "'requires' in '" + path + "' must be a template file name or a list of them";
+        return false;
+    }
+    for (Json::Value::ArrayIndex i=0; i<req.size(); i++)
+        required.push_back(req[i].asString());
+
+    return true;
+}
+
+bool System::CollectTemplateDependencies(const string &filename, vector<string> &loadorder, vector<string> &chain)
+{
+    string path = ResolveTemplatePath(filename);
+    if (path.empty())
+    {
+        lasterror() = "Template file '" + filename + "' was not found"
+                    + (chain.empty() ? string("") : " (required by '" + chain.back() + "')");
+        errorhandler.Append(GetName(),"System","CollectTemplateDependencies",lasterror(),18040);
+        return false;
+    }
+
+    const string key = TemplateKey(path);
+
+    // Already in the metamodel from an earlier load.
+    if (aquiutils::lookup(loadedtemplates,key)!=-1) return true;
+
+    // Reached again while resolving its own dependencies.
+    if (aquiutils::lookup(chain,key)!=-1)
+    {
+        string cycle;
+        for (unsigned int i=0; i<chain.size(); i++) cycle += chain[i] + " -> ";
+        lasterror() = "Circular template dependency: " + cycle + key;
+        errorhandler.Append(GetName(),"System","CollectTemplateDependencies",lasterror(),18041);
+        return false;
+    }
+
+    // Already scheduled by another branch of this same resolution pass.
+    for (unsigned int i=0; i<loadorder.size(); i++)
+        if (TemplateKey(loadorder[i])==key) return true;
+
+    vector<string> required;
+    string error;
+    if (!ReadTemplateRequires(path,required,error))
+    {
+        lasterror() = error;
+        errorhandler.Append(GetName(),"System","CollectTemplateDependencies",error,18042);
+        return false;
+    }
+
+    chain.push_back(key);
+    for (unsigned int i=0; i<required.size(); i++)
+    {
+        if (!CollectTemplateDependencies(required[i],loadorder,chain))
+        {
+            chain.pop_back();
+            return false;
+        }
+    }
+    chain.pop_back();
+
+    // After its dependencies, so the types it refers to already exist.
+    loadorder.push_back(path);
+    return true;
+}
+
+// Parse an already-resolved load order into the metamodel.
+bool System::LoadTemplateFiles(const vector<string> &loadorder)
+{
+    for (unsigned int i=0; i<loadorder.size(); i++)
+    {
+        if (!metamodel.AppendFromJsonFile(loadorder[i]))
+        {
+            lasterror() = "Template file '" + loadorder[i] + "' could not be read: " + metamodel.GetLastError();
+            errorhandler.Append(GetName(),"System","LoadTemplateFiles",lasterror(),18043);
+            return false;
+        }
+        loadedtemplates.push_back(TemplateKey(loadorder[i]));
+    }
+    return true;
+}
+
 bool System::GetQuanTemplate(const string &filename)
 {
     //qDebug()<<QString::fromStdString(filename);
-    if (aquiutils::lookup(addedtemplates,filename)==-1)
+    if (aquiutils::lookup(addedtemplates,filename)!=-1) return true;
+
+    // This entry point replaces the metamodel rather than adding to it, so the
+    // dependency walk must not skip files that a previous load left behind.
+    // Resolve against an empty set, but only commit once resolution succeeded,
+    // so a missing file leaves the current metamodel intact.
+    vector<string> loadorder, chain;
+    vector<string> previouslyloaded = loadedtemplates;
+    loadedtemplates.clear();
+    if (!CollectTemplateDependencies(filename,loadorder,chain))
     {
-        if (!metamodel.GetFromJsonFile(filename)) return false;
-        addedtemplates.push_back(filename);
-        TransferQuantitiesFromMetaModel();
+        loadedtemplates = previouslyloaded;
+        return false;
     }
+
+    metamodel.Clear();
+    loadedtemplates.clear();
+    if (!LoadTemplateFiles(loadorder)) return false;
+
+    addedtemplates.push_back(filename);
+    TransferQuantitiesFromMetaModel();
     return true;
 }
 
 bool System::AppendQuanTemplate(const string &filename)
 {
+    vector<string> loadorder, chain;
+    if (!CollectTemplateDependencies(filename,loadorder,chain)) return false;
+
+    if (!LoadTemplateFiles(loadorder)) return false;
 
     if (aquiutils::lookup(addedtemplates,filename)==-1)
-    {
-        if (!metamodel.AppendFromJsonFile(filename)) return false;
         addedtemplates.push_back(filename);
+
+    if (loadorder.size()!=0)
         TransferQuantitiesFromMetaModel();
-    }
 
     return true;
 }
@@ -2554,9 +2708,10 @@ void System::clear()
     constituents.clear();
     errorhandler.clear();
     addedpropertiestoallblocks.clear();
-    addedpropertiestoalllinks.clear(); 
-    addedtemplates.clear(); 
-    alltimeseries.clear(); 
+    addedpropertiestoalllinks.clear();
+    addedtemplates.clear();
+    loadedtemplates.clear();
+    alltimeseries.clear();
     fit_measures.clear(); 
     
 }

@@ -545,6 +545,52 @@ public:
     QuanSet* GetModel(const std::string& type) { if (metamodel.Count(type) == 1) return metamodel[type]; else return nullptr; }
     bool GetQuanTemplate(const std::string& filename);
     bool AppendQuanTemplate(const std::string& filename);
+
+    /**
+     * @brief Locate a template file, falling back to the default template folder
+     * @param filename Path or bare file name as written in a model file or a "requires" list
+     * @return The path the file was found at, or "" if it was not found anywhere
+     *
+     * A path that exists is used as given; otherwise the file name alone is
+     * looked up under DefaultTemplatePath(). This is what lets a "requires"
+     * entry be a bare name such as "unsaturated_soil.json" and still resolve on
+     * a machine where the templates live somewhere else.
+     */
+    std::string ResolveTemplatePath(const std::string& filename);
+
+    /**
+     * @brief Read the "requires" list from a template file without loading it
+     * @param path Resolved path to the template file
+     * @param required Receives the declared dependencies, in declaration order
+     * @param error Receives a description if the file cannot be read or parsed
+     * @return false if the file could not be opened, parsed, or "requires" is malformed
+     */
+    static bool ReadTemplateRequires(const std::string& path,
+                                     std::vector<std::string>& required,
+                                     std::string& error);
+
+    /**
+     * @brief Walk the "requires" graph of a template and build its load order
+     * @param filename Template to resolve, as written by the caller
+     * @param loadorder Receives resolved paths, dependencies before dependants
+     * @param chain Files currently being resolved; used to detect cycles. Pass empty.
+     * @return false on a missing file, a malformed "requires", or a circular dependency
+     *
+     * Nothing is loaded and no state is touched, so a failure here leaves the
+     * metamodel exactly as it was. Templates already present in
+     * loadedtemplates are skipped.
+     */
+    bool CollectTemplateDependencies(const std::string& filename,
+                                     std::vector<std::string>& loadorder,
+                                     std::vector<std::string>& chain);
+
+    /**
+     * @brief Parse a resolved load order into the metamodel
+     * @param loadorder Paths produced by CollectTemplateDependencies
+     * @return false if any file failed to parse
+     */
+    bool LoadTemplateFiles(const std::vector<std::string>& loadorder);
+
     void CopyQuansToMembers();
     bool ReadSystemSettingsTemplate(const std::string& filename);
     void SetSystemSettings();
@@ -607,7 +653,16 @@ public:
     SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip);
     double GetMinimumNextTimeStepSize();
     Object* GetObjectBasedOnPrimaryKey(const std::string& s);
+    /// Templates the user or the model file asked for explicitly. This is what
+    /// gets written back out as "addtemplate" lines; dependencies pulled in
+    /// through a "requires" list are deliberately not listed, so a saved model
+    /// keeps working if a plugin's dependencies later change.
     std::vector<std::string> addedtemplates;
+
+    /// Lower-cased file names of every template actually parsed into the
+    /// metamodel, whether requested explicitly or pulled in as a dependency.
+    /// Used to load each file once regardless of how its path was spelled.
+    std::vector<std::string> loadedtemplates;
     void MakeObjectiveFunctionExpressionUniform();
     void MakeObservationsExpressionUniform();
     void UpdateObjectiveFunctions(double t);

@@ -190,8 +190,9 @@ becomes part of the instance name.
 \midrule
 \endhead
 \code{type} & The block type to instantiate. It must exist in the metamodel
-when the composite is used, so make sure the template that defines it is loaded
---- either the same file, or one the user also adds.\\
+when the composite is used. If it is declared in another template file, list
+that file in the plugin's \code{requires} (section~\ref{sec:requires}) so it is
+loaded automatically.\\
 \code{dx}, \code{dy} & Position \emph{offset} from the composite's own
 \code{x}/\code{y}. Members are not drawn, but these offsets decide the layout
 after an ungroup, so give them sensible values.\\
@@ -491,6 +492,65 @@ in \exdir{resources/Icons} and follow the existing convention: 256$\times$256
 PNG with a transparent background, cropped to the artwork and centred. The same
 image may be used for the plugin entry and for the composite type.
 
+\subsection{Declaring dependencies}\label{sec:requires}
+
+A composite almost always instantiates types that live in other template files.
+Those files must be in the metamodel before the composite is used, and relying
+on the user to add them by hand fails in a way that is easy to miss: the plugin
+loads, the type appears in the toolbar, and only when someone drops it does the
+member creation fail.
+
+Declare the dependency instead. A template file may carry a top-level
+\code{requires} key listing the other template files it needs:
+
+\begin{lstlisting}
+{
+  "requires": [
+    "main_components.json",
+    "unsaturated_soil.json",
+    "groundwater.json"
+  ],
+
+  "Hydrologic_Response_Unit": { "type": "composite", ... }
+}
+\end{lstlisting}
+
+\noindent
+\code{requires} sits alongside the type declarations but is not one: it is
+reserved, like \code{solutionorder}, and is never read as an object type. It may
+also be a single string rather than a list.
+
+\paragraph{How it is resolved.}
+Both \code{loadtemplate} and \code{addtemplate} walk the \code{requires} graph
+before parsing anything. The walk is depth-first and the load order puts
+dependencies ahead of the files that need them, so by the time a composite type
+is parsed the types it names already exist. Resolution is complete before the
+first file is read, which means a broken dependency leaves the metamodel exactly
+as it was rather than half-loaded.
+
+\begin{itemize}[leftmargin=1.4em]
+\item \textbf{Write bare file names, not paths.} An entry is first tried as
+given and then looked up in the default template folder, so
+\code{"groundwater.json"} resolves wherever the templates happen to be
+installed. An absolute path would only work on the machine it was written on.
+\item \textbf{Each file is loaded once,} identified by its file name. Loading
+\file{/some/where/unsaturated\_soil.json} explicitly and then a plugin that
+requires \code{"unsaturated\_soil.json"} parses it a single time.
+\item \textbf{Cycles are reported, not followed.} A file that requires itself
+through any chain fails with the chain in the message.
+\item \textbf{Dependencies are not written back.} A saved model lists only the
+templates that were asked for explicitly; the rest are re-resolved on load. A
+model saved today therefore keeps working if the plugin's dependency list
+changes later.
+\end{itemize}
+
+\paragraph{What to list.}
+Everything that declares a type named in \code{members} or
+\code{internal\_links}, and nothing else. Template files that merely offer the
+user something useful alongside your component --- an evapotranspiration model,
+say --- are not dependencies; leave those to the plugin chooser. Dependencies
+are transitive, so a file only needs to list what it uses directly.
+
 \section{Pitfalls}
 
 Every item below was encountered while building the two shipped composites.
@@ -567,6 +627,8 @@ introduce a distinct type for one of them.
 \begin{enumerate}[leftmargin=1.6em]
 \item Decide the members and the internal links, and check that the link types
 you need exist and connect those block types.
+\item List the template files that declare those types in the plugin's
+\code{requires} (section~\ref{sec:requires}), so they load with it.
 \item For each internal link type, list its \code{ask\_user} properties and plan
 a mapping or confirm a sound default (section~\ref{sec:internalreq}).
 \item Decide the ports. Group the external link types by which member they
@@ -589,6 +651,10 @@ a \code{criteria} with a \code{warningmessage}.
 Build a small model that uses the component and check, in order:
 
 \begin{enumerate}[leftmargin=1.6em]
+\item \textbf{It loads on its own.} Add only your plugin file, with no other
+template selected, and confirm the composite instantiates. This is what catches
+a \code{requires} entry you forgot (section~\ref{sec:requires}); a session in
+which you happen to have the other plugins loaded will not.
 \item \textbf{It instantiates.} The expected number of blocks and links appear,
 with the expected names.
 \item \textbf{Derived values are right.} Read a few member quantities back and
@@ -628,7 +694,9 @@ activated-sludge plant of four reactors whose settler is a single node.
 The full type is in \exfile{resources/hydrologic\_response\_unit.json}. Five
 members --- a \code{Catchment}, three \code{Soil} layers and a
 \code{Groundwater cell} --- with infiltration, two percolation links and a
-recharge link between them. It illustrates several ideas at once:
+recharge link between them. Those types come from three other template files,
+which the plugin lists in its \code{requires} so that selecting it alone is
+enough. It illustrates several ideas at once:
 
 \begin{itemize}[leftmargin=1.4em]
 \item \textbf{Derived geometry.} The user supplies a surface elevation, a depth

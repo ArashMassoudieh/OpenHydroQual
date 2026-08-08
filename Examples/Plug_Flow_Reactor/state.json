@@ -1,0 +1,143 @@
+{
+    "Blocks": {
+        "Effluent": {
+            "Storage": "103097",
+            "Tracer:concentration": "0.0203419",
+            "Tracer:constant_inflow_concentration": "0",
+            "Tracer:external_mass_flow_timeseries": "",
+            "Tracer:external_source": "",
+            "Tracer:time_variable_inflow_concentration": "",
+            "_height": "200",
+            "_width": "200",
+            "head": "0",
+            "name": "Effluent",
+            "type": "fixed_head",
+            "x": "350",
+            "y": "400"
+        },
+        "Influent": {
+            "Storage": "96902.8",
+            "Tracer:concentration": "1",
+            "Tracer:constant_inflow_concentration": "0",
+            "Tracer:external_mass_flow_timeseries": "",
+            "Tracer:external_source": "",
+            "Tracer:time_variable_inflow_concentration": "",
+            "_height": "200",
+            "_width": "200",
+            "head": "0",
+            "name": "Influent",
+            "type": "fixed_head",
+            "x": "-350",
+            "y": "400"
+        }
+    },
+    "Composites": {
+        "PFR_1": {
+            "Tracer:concentration": "0",
+            "Tracer:constant_inflow_concentration": "0",
+            "Tracer:external_mass_flow_timeseries": "",
+            "Tracer:external_source": "",
+            "Tracer:time_variable_inflow_concentration": "",
+            "_height": "200",
+            "_width": "200",
+            "area": "10",
+            "bottom_elevation": "0",
+            "flow": "100",
+            "length": "100",
+            "name": "PFR_1",
+            "type": "Plug flow reactor",
+            "x": "0",
+            "y": "400"
+        }
+    },
+    "Constituents": {
+        "Tracer": {
+            "concentration": "0",
+            "constant_inflow_concentration": "0",
+            "diffusion_coefficient": "0",
+            "dispersivity": "0",
+            "external_mass_flow_timeseries": "",
+            "external_source": "",
+            "name": "Tracer",
+            "stoichiometric_constant": "0",
+            "time_variable_inflow_concentration": "",
+            "type": "Constituent"
+        }
+    },
+    "Links": {
+        "Influent to PFR": {
+            "flow": "100",
+            "from": "Influent",
+            "name": "Influent to PFR",
+            "to": "PFR_1",
+            "type": "Fixed flow"
+        },
+        "PFR to Effluent": {
+            "flow": "100",
+            "from": "PFR_1",
+            "name": "PFR to Effluent",
+            "to": "Effluent",
+            "type": "Fixed flow"
+        }
+    },
+    "Objective Functions": {
+    },
+    "Observations": {
+    },
+    "Parameters": {
+    },
+    "Reaction Parameters": {
+    },
+    "Reactions": {
+    },
+    "Set As Parameters": [
+    ],
+    "Settings": {
+        "acceptance_rate": "0.15",
+        "add_noise_to_realizations": "No",
+        "alloutputfile": "output.txt",
+        "c_n_weight": "1",
+        "continue_based_on_file_name": "",
+        "initial_purturbation": "No",
+        "initial_time_step": "0.01",
+        "initual_purturbation_factor": "0.05",
+        "jacobian_method": "Inverse Jacobian",
+        "max_timestep_decrease_factor": "100000",
+        "max_timestep_increase_factor": "50",
+        "maximum_number_of_matrix_inverstions": "200000",
+        "maximum_time_allowed": "86400",
+        "maxpop": "40",
+        "minimum_timestep": "1e-06",
+        "n_threads": "8",
+        "ngen": "40",
+        "nr_timestep_reduction_factor": "0.75",
+        "nr_timestep_reduction_factor_fail": "0.2",
+        "nr_tolerance": "0.001",
+        "number_of_burnout_samples": "0",
+        "number_of_chains": "8",
+        "number_of_post_estimate_realizations": "0",
+        "number_of_samples": "1000",
+        "number_of_threads": "1",
+        "numthreads": "8",
+        "observed_outputfile": "observedoutput.txt",
+        "outputfile": "GA_output.txt",
+        "pcross": "1",
+        "perform_global_sensitivity": "No",
+        "pmute": "0.02",
+        "purturbation_change_scale": "0.75",
+        "record_interval": "1",
+        "samples_filename": "mcmc.txt",
+        "shakescale": "0.05",
+        "shakescalered": "0.75",
+        "simulation_end_time": "30",
+        "simulation_start_time": "30.9988",
+        "write_interval": "100",
+        "write_solution_details": "No"
+    },
+    "Sources": {
+    },
+    "Templates": [
+        "/home/arash/Projects/OpenHydroQual/resources/main_components.json",
+        "/home/arash/Projects/OpenHydroQual/resources/mass_transfer.json"
+    ]
+}
