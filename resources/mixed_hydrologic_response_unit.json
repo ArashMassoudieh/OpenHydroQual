@@ -151,7 +151,7 @@
       "delegate": "ValueBox",
       "default": "0.2",
       "estimate": "true",
-      "criteria": "impervious_fraction>0&impervious_fraction<1",
+      "criteria": "impervious_fraction*(1-impervious_fraction)>0",
       "warningmessage": "For the mixed HRU, impervious_fraction must be greater than 0 and less than 1. Use the original HRU for a fully non-impervious unit and a dedicated impervious HRU for a fully impervious unit.",
       "helptext": "GIS-derived fraction of the total HRU area assigned to Impervious_Catchment. This mixed component is intended only for 0 < impervious_fraction < 1. The remaining fraction, 1-impervious_fraction, is assigned to Catchment, the soil profile, groundwater, and recharge interface."
     },
@@ -369,7 +369,7 @@
       "delegate": "ValueBox",
       "default": "0.4",
       "estimate": "true",
-      "criteria": "theta_sat>0&theta_sat<=1",
+      "criteria": "theta_sat*(1-theta_sat)>=0",
       "warningmessage": "Saturated moisture content must be greater than 0 and no greater than 1.",
       "applyto": {
         "Soil_1#theta_sat": "theta_sat",
@@ -389,7 +389,7 @@
         "Soil_2#theta_res": "theta_res",
         "Soil_3#theta_res": "theta_res"
       },
-      "criteria": "theta_res>=0&theta_res<theta_sat",
+      "criteria": "theta_sat-theta_res>0",
       "warningmessage": "Residual moisture content must be nonnegative and less than saturated moisture content."
     },
     "soil_specific_storage": {
@@ -420,7 +420,7 @@
         "Soil_2#theta": "initial_moisture_content",
         "Soil_3#theta": "initial_moisture_content"
       },
-      "criteria": "initial_moisture_content>=theta_res&initial_moisture_content<=theta_sat",
+      "criteria": "(initial_moisture_content-theta_res)*(theta_sat-initial_moisture_content)>=0",
       "warningmessage": "Initial soil moisture content must lie between residual and saturated moisture contents."
     },
     "groundwater_K": {
@@ -445,7 +445,7 @@
       "delegate": "ValueBox",
       "default": "0.4",
       "estimate": "true",
-      "criteria": "groundwater_porosity>0&groundwater_porosity<=1",
+      "criteria": "groundwater_porosity*(1-groundwater_porosity)>=0",
       "warningmessage": "Groundwater porosity must be greater than 0 and no greater than 1.",
       "applyto": {
         "Groundwater#porosity": "groundwater_porosity"
@@ -475,7 +475,7 @@
       "applyto": {
         "Groundwater#moisture_content": "initial_groundwater_moisture_content"
       },
-      "criteria": "initial_groundwater_moisture_content>=0&initial_groundwater_moisture_content<=groundwater_porosity",
+      "criteria": "initial_groundwater_moisture_content*(groundwater_porosity-initial_groundwater_moisture_content)>=0",
       "warningmessage": "Initial groundwater moisture content must be nonnegative and cannot exceed groundwater porosity."
     },
     "impervious_manning_coefficient": {
