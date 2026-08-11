@@ -10,7 +10,7 @@
     "typecategory": "Blocks",
     "description": "Mixed hydrologic response unit with an infiltrating catchment, an impervious catchment, two surface-routing reaches, a three-layer unsaturated profile, and groundwater for baseflow.",
     "icon": {
-      "filename": "hydrologic_response_unit.png"
+      "filename": "mixed_hydrologic_response_unit.png"
     },
     "helptext": "A mixed-land-surface HRU for GIS-derived area fractions. Total HRU area is partitioned by impervious_fraction. Catchment receives area*(1-impervious_fraction) and remains coupled to Soil_1, Soil_2, Soil_3 and Groundwater. Impervious_Catchment receives area*impervious_fraction and has no infiltration, soil, or groundwater connection. Each surface drains through its own Trapezoidal Channel Segment used for local surface-runoff routing. Groundwater is exposed through groundwater_to_stream so GIStoOHQ can connect it directly to the actual watershed reach and represent groundwater discharge/baseflow separately from direct surface runoff. groundwater_link remains available for groundwater-to-groundwater connections, and groundwater_to_fixedhead remains available for boundary use.",
     "members": {
