@@ -12,7 +12,7 @@
     "icon": {
       "filename": "mixed_hydrologic_response_unit.png"
     },
-    "helptext": "A mixed-land-surface HRU for GIS-derived area fractions. Total HRU area is partitioned by impervious_fraction. Catchment receives area*(1-impervious_fraction) and remains coupled to Soil_1, Soil_2, Soil_3 and Groundwater. Impervious_Catchment receives area*impervious_fraction and has no infiltration, soil, or groundwater connection. Each surface drains through its own Trapezoidal Channel Segment used for local surface-runoff routing. Groundwater is exposed through groundwater_to_stream so GIStoOHQ can connect it directly to the actual watershed reach and represent groundwater discharge/baseflow separately from direct surface runoff. groundwater_link remains available for groundwater-to-groundwater connections, and groundwater_to_fixedhead remains available for boundary use.",
+    "helptext": "A mixed-land-surface HRU for GIS-derived area fractions. Total HRU area is partitioned by impervious_fraction. Catchment receives area*(1-impervious_fraction) and remains coupled to Soil_1, Soil_2, Soil_3 and Groundwater. Impervious_Catchment receives area*impervious_fraction and has no infiltration, soil, or groundwater connection. Each surface drains through its own Trapezoidal Channel Segment used for local surface-runoff routing. Groundwater is exposed through groundwater_to_stream for connection to a compatible receiving watershed stream/reach so groundwater discharge/baseflow remains separate from direct surface runoff. groundwater_link remains available for groundwater-to-groundwater connections, and groundwater_to_fixedhead remains available for boundary use.",
     "members": {
       "Catchment": {
         "type": "Catchment",
@@ -178,7 +178,7 @@
       "unit": "m;ft",
       "default": "0",
       "estimate": "true",
-      "helptext": "Ground-surface datum for the HRU. It sets the Catchment elevation, soil-layer elevations, Groundwater bottom elevation, and initial bottom elevations of the two local routing reaches. For GIS-generated watershed models, GIStoOHQ should assign reach/channel elevations consistently with DEM-derived downstream elevations so Trapezoidal_Channel_link has a physically meaningful hydraulic-head gradient.",
+      "helptext": "Ground-surface datum for the HRU. It sets the Catchment elevation, soil-layer elevations, Groundwater bottom elevation, and bottom elevations of the two local routing reaches. For GIS-generated watershed models, GIStoOHQ should assign reach/channel elevations consistently with DEM-derived downstream elevations so Trapezoidal_Channel_link has a physically meaningful hydraulic-head gradient.",
       "applyto": {
         "Catchment#elevation": "surface_elevation",
         "Soil_1#bottom_elevation": "surface_elevation-depth_to_groundwater/7",
@@ -245,7 +245,7 @@
     },
     "catchment_slope": {
       "type": "value",
-      "description": "Slope of the catchment surface",
+      "description": "Shared slope of the infiltrating and impervious catchment surfaces",
       "ask_user": "true",
       "delegate": "ValueBox",
       "default": "0.01",
@@ -255,11 +255,12 @@
       "applyto": {
         "Catchment#Slope": "catchment_slope",
         "Impervious_Catchment#Slope": "catchment_slope"
-      }
+      },
+      "helptext": "Average surface slope applied to both Catchment and Impervious_Catchment. GIStoOHQ may later provide separate surface-specific slopes if available."
     },
     "catchment_width": {
       "type": "value",
-      "description": "Overland flow width of the catchment",
+      "description": "Shared overland-flow width of the infiltrating and impervious catchment surfaces",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
@@ -270,7 +271,8 @@
       "applyto": {
         "Catchment#Width": "catchment_width",
         "Impervious_Catchment#Width": "catchment_width"
-      }
+      },
+      "helptext": "Overland-flow width applied to both Catchment and Impervious_Catchment. GIStoOHQ may later provide separate widths if derived from GIS geometry."
     },
     "manning_coefficient": {
       "type": "value",
@@ -434,7 +436,7 @@
       "applyto": {
         "Groundwater#hydraulic_conductivity": "groundwater_K"
       },
-      "helptext": "Hydraulic conductivity of the groundwater cell. Together with groundwater_to_stream connector properties and the head difference between Groundwater and the receiving stream, this controls baseflow/groundwater discharge."
+      "helptext": "Hydraulic conductivity of the groundwater cell. Together with groundwater_to_stream connector properties and the head difference between Groundwater and the receiving stream/reach, this controls groundwater discharge/baseflow."
     },
     "groundwater_porosity": {
       "type": "value",
