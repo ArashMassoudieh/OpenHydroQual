@@ -1,0 +1,572 @@
+{
+  "requires": [
+    "main_components.json",
+    "unsaturated_soil.json",
+    "groundwater.json",
+    "open_channel.json"
+  ],
+  "Mixed_Hydrologic_Response_Unit": {
+    "type": "composite",
+    "typecategory": "Blocks",
+    "description": "Mixed hydrologic response unit with an impervious catchment and an infiltrating catchment. Each surface drains through its own trapezoidal routing reach; only the infiltrating catchment overlies the three-layer unsaturated profile and groundwater.",
+    "icon": {
+      "filename": "hydrologic_response_unit.png"
+    },
+    "helptext": "A mixed-land-surface HRU for GIS-derived area fractions. Total HRU area is partitioned by impervious_fraction. The original Catchment receives area*(1-impervious_fraction) and remains coupled to Soil_1, Soil_2, Soil_3 and Groundwater. Impervious_Catchment receives area*impervious_fraction and has no infiltration, soil, or groundwater connection. Each catchment drains to its own Trapezoidal Channel Segment routing block.",
+    "members": {
+      "Catchment": {
+        "type": "Catchment",
+        "dx": "0",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Soil_1": {
+        "type": "Soil",
+        "dx": "0",
+        "dy": "250",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Soil_2": {
+        "type": "Soil",
+        "dx": "0",
+        "dy": "500",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Soil_3": {
+        "type": "Soil",
+        "dx": "0",
+        "dy": "750",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Groundwater": {
+        "type": "Groundwater cell",
+        "dx": "0",
+        "dy": "1000",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Impervious_Catchment": {
+        "type": "Catchment",
+        "dx": "300",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Reach": {
+        "type": "Trapezoidal Channel Segment",
+        "dx": "0",
+        "dy": "-250",
+        "_width": "240",
+        "_height": "200"
+      },
+      "Impervious_Reach": {
+        "type": "Trapezoidal Channel Segment",
+        "dx": "300",
+        "dy": "-250",
+        "_width": "240",
+        "_height": "200"
+      }
+    },
+    "internal_links": {
+      "infiltration": {
+        "type": "surfacewater_to_soil_link",
+        "from": "Catchment",
+        "to": "Soil_1"
+      },
+      "percolation_1_2": {
+        "type": "soil_to_soil_link",
+        "from": "Soil_1",
+        "to": "Soil_2"
+      },
+      "percolation_2_3": {
+        "type": "soil_to_soil_link",
+        "from": "Soil_2",
+        "to": "Soil_3"
+      },
+      "recharge": {
+        "type": "soil2groundwater_link",
+        "from": "Soil_3",
+        "to": "Groundwater"
+      },
+      "catchment_to_reach": {
+        "type": "Catchment_link",
+        "from": "Catchment",
+        "to": "Reach"
+      },
+      "impervious_catchment_to_reach": {
+        "type": "Catchment_link",
+        "from": "Impervious_Catchment",
+        "to": "Impervious_Reach"
+      }
+    },
+    "external_links": {
+      "Reach_link": {
+        "from": "Reach",
+        "to": "Trapezoidal Channel Segment"
+      },
+      "Impervious_Reach_link": {
+        "from": "Impervious_Reach",
+        "to": "Trapezoidal Channel Segment"
+      },
+      "groundwater_link": {
+        "from": "Groundwater",
+        "to": "Groundwater"
+      },
+      "groundwater_to_fixedhead": {
+        "from": "Groundwater"
+      }
+    },
+    "area": {
+      "type": "value",
+      "description": "Total plan area of the mixed hydrologic response unit",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2",
+      "default": "1000",
+      "estimate": "true",
+      "criteria": "area>0",
+      "warningmessage": "The area must be positive!",
+      "helptext": "Total HRU area before land-surface partitioning. Catchment, soils and groundwater receive the non-impervious fraction; Impervious_Catchment receives the impervious fraction.",
+      "applyto": {
+        "Catchment#area": "area*(1-impervious_fraction)",
+        "Impervious_Catchment#area": "area*impervious_fraction",
+        "Soil_1#area": "area*(1-impervious_fraction)",
+        "Soil_2#area": "area*(1-impervious_fraction)",
+        "Soil_3#area": "area*(1-impervious_fraction)",
+        "Groundwater#area": "area*(1-impervious_fraction)",
+        "recharge#area": "area*(1-impervious_fraction)"
+      }
+    },
+    "impervious_fraction": {
+      "type": "value",
+      "description": "Impervious fraction of the HRU plan area",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.2",
+      "estimate": "true",
+      "criteria": "impervious_fraction>=0&impervious_fraction<=1",
+      "warningmessage": "Impervious fraction must be between 0 and 1.",
+      "helptext": "GIS-derived fraction of the total HRU area assigned to Impervious_Catchment. The remaining fraction, 1-impervious_fraction, is assigned to Catchment, the soil profile, groundwater and recharge interface."
+    },
+    "recharge_K": {
+      "type": "value",
+      "description": "Hydraulic conductivity of the soil-aquifer interface",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;cm/s;m/s",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "recharge_K>0",
+      "warningmessage": "The interface hydraulic conductivity must be positive!",
+      "helptext": "Governs recharge from the bottom soil layer into the groundwater cell. Set it equal to K_sat for a homogeneous profile, or lower it to represent a clogging layer or aquitard at the water table.",
+      "applyto": {
+        "recharge#hydraulic_conductivity": "recharge_K"
+      }
+    },
+    "surface_elevation": {
+      "type": "value",
+      "description": "Ground surface elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "estimate": "true",
+      "helptext": "Datum for the whole column. Every bottom elevation below is measured down from here.",
+      "applyto": {
+        "Catchment#elevation": "surface_elevation",
+        "Soil_1#bottom_elevation": "surface_elevation-depth_to_groundwater/7",
+        "Soil_2#bottom_elevation": "surface_elevation-3*depth_to_groundwater/7",
+        "Soil_3#bottom_elevation": "surface_elevation-depth_to_groundwater",
+        "Groundwater#bottom_elevation": "surface_elevation-depth_to_groundwater-groundwater_thickness",
+        "Impervious_Catchment#elevation": "surface_elevation",
+        "Reach#bottom_elevation": "surface_elevation",
+        "Impervious_Reach#bottom_elevation": "surface_elevation"
+      }
+    },
+    "depth_to_groundwater": {
+      "type": "value",
+      "description": "Depth from the ground surface to the water table",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "3.5",
+      "estimate": "true",
+      "criteria": "depth_to_groundwater>0",
+      "warningmessage": "The depth to groundwater must be positive!",
+      "helptext": "Total thickness of the unsaturated profile. It is split between the three layers in a 1:2:4 ratio, so they are one seventh, two sevenths and four sevenths of this value.",
+      "applyto": {
+        "Soil_1#depth": "depth_to_groundwater/7",
+        "Soil_2#depth": "2*depth_to_groundwater/7",
+        "Soil_3#depth": "4*depth_to_groundwater/7"
+      }
+    },
+    "groundwater_thickness": {
+      "type": "value",
+      "description": "Thickness of the groundwater cell",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "5",
+      "estimate": "true",
+      "criteria": "groundwater_thickness>0",
+      "warningmessage": "The groundwater thickness must be positive!",
+      "helptext": "Saturated thickness below the water table. Its bottom elevation is the surface elevation less the depth to groundwater less this thickness.",
+      "applyto": {
+        "Groundwater#depth": "groundwater_thickness"
+      }
+    },
+    "Precipitation": {
+      "type": "source",
+      "description": "Precipitation source",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Applied to both catchment surfaces.",
+      "applyto": {
+        "Catchment#Precipitation": "Precipitation",
+        "Impervious_Catchment#Precipitation": "Precipitation"
+      }
+    },
+    "Evapotranspiration": {
+      "type": "source",
+      "description": "Evapotranspiration source (top soil layer only)",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Applied to the uppermost soil layer only; the deeper layers and the groundwater cell are not subject to evapotranspiration.",
+      "applyto": {
+        "Soil_1#Evapotranspiration": "Evapotranspiration"
+      }
+    },
+    "catchment_slope": {
+      "type": "value",
+      "description": "Slope of the catchment surface",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.01",
+      "estimate": "true",
+      "criteria": "catchment_slope>0",
+      "warningmessage": "The slope must be positive!",
+      "applyto": {
+        "Catchment#Slope": "catchment_slope",
+        "Impervious_Catchment#Slope": "catchment_slope"
+      }
+    },
+    "catchment_width": {
+      "type": "value",
+      "description": "Overland flow width of the catchment",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "30",
+      "estimate": "true",
+      "criteria": "catchment_width>0",
+      "warningmessage": "The width must be positive!",
+      "applyto": {
+        "Catchment#Width": "catchment_width",
+        "Impervious_Catchment#Width": "catchment_width"
+      }
+    },
+    "manning_coefficient": {
+      "type": "value",
+      "description": "Manning roughness coefficient of the infiltrating catchment surface",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.05",
+      "estimate": "true",
+      "criteria": "manning_coefficient>0",
+      "warningmessage": "The Manning coefficient must be positive!",
+      "applyto": {
+        "Catchment#ManningCoeff": "manning_coefficient"
+      }
+    },
+    "depression_storage": {
+      "type": "value",
+      "description": "Depression storage depth of the infiltrating catchment surface",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "estimate": "true",
+      "applyto": {
+        "Catchment#depression_storage": "depression_storage"
+      }
+    },
+    "runoff_coefficient": {
+      "type": "value",
+      "description": "Surface rainfall-to-runoff multiplier",
+      "ask_user": "false",
+      "delegate": "ValueBox",
+      "default": "1",
+      "estimate": "false",
+      "helptext": "Fixed at 1 for both catchments. GIS imperviousness is represented by area partitioning, not by the runoff coefficient. Infiltration losses on Catchment are represented explicitly through the soil and groundwater links.",
+      "applyto": {
+        "Catchment#Runoff_coeff": "runoff_coefficient",
+        "Impervious_Catchment#Runoff_coeff": "runoff_coefficient"
+      }
+    },
+    "K_sat": {
+      "type": "value",
+      "description": "Saturated hydraulic conductivity of the soil profile",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;cm/s;m/s",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "K_sat>0",
+      "warningmessage": "The saturated hydraulic conductivity must be positive!",
+      "helptext": "Shared by all three layers: they discretise one soil profile rather than representing different materials.",
+      "applyto": {
+        "Soil_1#K_sat_original": "K_sat",
+        "Soil_2#K_sat_original": "K_sat",
+        "Soil_3#K_sat_original": "K_sat"
+      }
+    },
+    "alpha_vG": {
+      "type": "value",
+      "description": "van Genuchten ~alpha of the soil profile",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/m;1/ft",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "alpha_vG>0",
+      "warningmessage": "van Genuchten alpha must be positive!",
+      "applyto": {
+        "Soil_1#alpha": "alpha_vG",
+        "Soil_2#alpha": "alpha_vG",
+        "Soil_3#alpha": "alpha_vG"
+      }
+    },
+    "n_vG": {
+      "type": "value",
+      "description": "van Genuchten n of the soil profile",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1.41",
+      "estimate": "true",
+      "criteria": "n_vG>1",
+      "warningmessage": "van Genuchten n must be greater than 1!",
+      "applyto": {
+        "Soil_1#n": "n_vG",
+        "Soil_2#n": "n_vG",
+        "Soil_3#n": "n_vG"
+      }
+    },
+    "theta_sat": {
+      "type": "value",
+      "description": "Saturated moisture content of the soil profile",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.4",
+      "estimate": "true",
+      "criteria": "theta_sat>0",
+      "warningmessage": "The saturated moisture content must be positive!",
+      "applyto": {
+        "Soil_1#theta_sat": "theta_sat",
+        "Soil_2#theta_sat": "theta_sat",
+        "Soil_3#theta_sat": "theta_sat"
+      }
+    },
+    "theta_res": {
+      "type": "value",
+      "description": "Residual moisture content of the soil profile",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.05",
+      "estimate": "true",
+      "applyto": {
+        "Soil_1#theta_res": "theta_res",
+        "Soil_2#theta_res": "theta_res",
+        "Soil_3#theta_res": "theta_res"
+      }
+    },
+    "soil_specific_storage": {
+      "type": "value",
+      "description": "Specific storage of the soil profile",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/m;1/ft",
+      "default": "0.01",
+      "estimate": "true",
+      "applyto": {
+        "Soil_1#specific_storage": "soil_specific_storage",
+        "Soil_2#specific_storage": "soil_specific_storage",
+        "Soil_3#specific_storage": "soil_specific_storage"
+      }
+    },
+    "initial_moisture_content": {
+      "type": "value",
+      "description": "Initial moisture content of the soil layers",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.2",
+      "helptext": "Initial condition for all three layers. Each layer's initial storage follows from its own area, thickness and this value.",
+      "applyto": {
+        "Soil_1#theta": "initial_moisture_content",
+        "Soil_2#theta": "initial_moisture_content",
+        "Soil_3#theta": "initial_moisture_content"
+      }
+    },
+    "groundwater_K": {
+      "type": "value",
+      "description": "Hydraulic conductivity of the groundwater cell",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;cm/s;m/s",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "groundwater_K>0",
+      "warningmessage": "The hydraulic conductivity must be positive!",
+      "applyto": {
+        "Groundwater#hydraulic_conductivity": "groundwater_K"
+      }
+    },
+    "groundwater_porosity": {
+      "type": "value",
+      "description": "Porosity of the groundwater cell",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.4",
+      "estimate": "true",
+      "criteria": "groundwater_porosity>0",
+      "warningmessage": "The porosity must be positive!",
+      "applyto": {
+        "Groundwater#porosity": "groundwater_porosity"
+      }
+    },
+    "groundwater_specific_storage": {
+      "type": "value",
+      "description": "Specific storage of the groundwater cell",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/m;1/ft",
+      "default": "0.01",
+      "estimate": "true",
+      "applyto": {
+        "Groundwater#specific_storage": "groundwater_specific_storage"
+      }
+    },
+    "initial_groundwater_moisture_content": {
+      "type": "value",
+      "description": "Initial moisture content of the groundwater cell",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.25",
+      "helptext": "Set this equal to the groundwater porosity for a fully saturated start, which is almost always what you want. The groundwater cell uses a confined formulation, head = cell top + (moisture content - porosity)/specific storage, so at full saturation the head sits at the top of the cell and any deficit becomes an elastic underpressure: with a specific storage of 0.01, a moisture content 0.025 below porosity already puts the head 2.5 m low. The cell's initial storage follows as area times thickness times this value.",
+      "applyto": {
+        "Groundwater#moisture_content": "initial_groundwater_moisture_content"
+      }
+    },
+    "impervious_manning_coefficient": {
+      "type": "value",
+      "description": "Manning roughness coefficient of the impervious catchment surface",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.015",
+      "estimate": "true",
+      "criteria": "impervious_manning_coefficient>0",
+      "warningmessage": "The Manning coefficient must be positive!",
+      "applyto": {
+        "Impervious_Catchment#ManningCoeff": "impervious_manning_coefficient"
+      }
+    },
+    "impervious_depression_storage": {
+      "type": "value",
+      "description": "Depression storage depth of the impervious catchment surface",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0.001",
+      "estimate": "true",
+      "applyto": {
+        "Impervious_Catchment#depression_storage": "impervious_depression_storage"
+      }
+    },
+    "reach_base_width": {
+      "type": "value",
+      "description": "Base width of the two internal routing reaches",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "reach_base_width>0",
+      "warningmessage": "Reach base width must be positive!",
+      "applyto": {
+        "Reach#base_width": "reach_base_width",
+        "Impervious_Reach#base_width": "reach_base_width"
+      }
+    },
+    "reach_side_slope": {
+      "type": "value",
+      "description": "Side slope of the two internal routing reaches",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "2",
+      "estimate": "true",
+      "criteria": "reach_side_slope>0",
+      "warningmessage": "Reach side slope must be positive!",
+      "applyto": {
+        "Reach#side_slope": "reach_side_slope",
+        "Impervious_Reach#side_slope": "reach_side_slope"
+      }
+    },
+    "reach_manning_coefficient": {
+      "type": "value",
+      "description": "Manning roughness coefficient of the two internal routing reaches",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.035",
+      "estimate": "true",
+      "criteria": "reach_manning_coefficient>0",
+      "warningmessage": "Reach Manning coefficient must be positive!",
+      "applyto": {
+        "Reach#ManningCoeff": "reach_manning_coefficient",
+        "Impervious_Reach#ManningCoeff": "reach_manning_coefficient"
+      }
+    },
+    "reach_length": {
+      "type": "value",
+      "description": "Length of the two internal routing reaches",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "10",
+      "estimate": "true",
+      "criteria": "reach_length>0",
+      "warningmessage": "Reach length must be positive!",
+      "applyto": {
+        "Reach#length": "reach_length",
+        "Impervious_Reach#length": "reach_length"
+      }
+    },
+    "initial_reach_depth": {
+      "type": "value",
+      "description": "Initial water depth in the two internal routing reaches",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0.01",
+      "estimate": "true",
+      "criteria": "initial_reach_depth>=0",
+      "warningmessage": "Initial reach depth must be non-negative!",
+      "applyto": {
+        "Reach#depth": "initial_reach_depth",
+        "Impervious_Reach#depth": "initial_reach_depth"
+      }
+    },
+    "reach_inflow_defaults": {
+      "type": "source",
+      "description": "Optional external inflow for internal routing reaches",
+      "ask_user": "false",
+      "helptext": "Left blank by default; catchment runoff enters through Catchment_link connections.",
+      "applyto": {
+        "Reach#inflow": "reach_inflow_defaults",
+        "Impervious_Reach#inflow": "reach_inflow_defaults"
+      }
+    }
+  }
+}
