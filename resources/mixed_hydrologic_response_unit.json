@@ -8,11 +8,11 @@
   "Mixed_Hydrologic_Response_Unit": {
     "type": "composite",
     "typecategory": "Blocks",
-    "description": "Mixed hydrologic response unit with an impervious catchment and an infiltrating catchment. Each surface drains through its own trapezoidal routing reach; only the infiltrating catchment overlies the three-layer unsaturated profile and groundwater.",
+    "description": "Mixed hydrologic response unit with an infiltrating catchment, an impervious catchment, two surface-routing reaches, a three-layer unsaturated profile, and groundwater for baseflow.",
     "icon": {
       "filename": "hydrologic_response_unit.png"
     },
-    "helptext": "A mixed-land-surface HRU for GIS-derived area fractions. Total HRU area is partitioned by impervious_fraction. The original Catchment receives area*(1-impervious_fraction) and remains coupled to Soil_1, Soil_2, Soil_3 and Groundwater. Impervious_Catchment receives area*impervious_fraction and has no infiltration, soil, or groundwater connection. Each catchment drains to its own Trapezoidal Channel Segment routing block.",
+    "helptext": "A mixed-land-surface HRU for GIS-derived area fractions. Total HRU area is partitioned by impervious_fraction. Catchment receives area*(1-impervious_fraction) and remains coupled to Soil_1, Soil_2, Soil_3 and Groundwater. Impervious_Catchment receives area*impervious_fraction and has no infiltration, soil, or groundwater connection. Each surface drains through its own Trapezoidal Channel Segment used for local surface-runoff routing. Groundwater is intentionally left as an external connection so GIStoOHQ can connect it to the actual watershed reach and represent groundwater discharge/baseflow separately from direct surface runoff.",
     "members": {
       "Catchment": {
         "type": "Catchment",
@@ -148,9 +148,9 @@
       "delegate": "ValueBox",
       "default": "0.2",
       "estimate": "true",
-      "criteria": "impervious_fraction>=0&impervious_fraction<=1",
-      "warningmessage": "Impervious fraction must be between 0 and 1.",
-      "helptext": "GIS-derived fraction of the total HRU area assigned to Impervious_Catchment. The remaining fraction, 1-impervious_fraction, is assigned to Catchment, the soil profile, groundwater and recharge interface."
+      "criteria": "impervious_fraction>0&impervious_fraction<1",
+      "warningmessage": "For the mixed HRU, impervious_fraction must be greater than 0 and less than 1. Use the original HRU for a fully non-impervious unit and a dedicated impervious HRU for a fully impervious unit.",
+      "helptext": "GIS-derived fraction of the total HRU area assigned to Impervious_Catchment. This mixed component is intended only for 0 < impervious_fraction < 1. The remaining fraction, 1-impervious_fraction, is assigned to Catchment, the soil profile, groundwater, and recharge interface."
     },
     "recharge_K": {
       "type": "value",
@@ -292,7 +292,9 @@
       "estimate": "true",
       "applyto": {
         "Catchment#depression_storage": "depression_storage"
-      }
+      },
+      "criteria": "depression_storage>=0",
+      "warningmessage": "Depression storage must be nonnegative."
     },
     "runoff_coefficient": {
       "type": "value",
@@ -301,7 +303,7 @@
       "delegate": "ValueBox",
       "default": "1",
       "estimate": "false",
-      "helptext": "Fixed at 1 for both catchments. GIS imperviousness is represented by area partitioning, not by the runoff coefficient. Infiltration losses on Catchment are represented explicitly through the soil and groundwater links.",
+      "helptext": "Fixed at 1 for both catchments. GIS imperviousness is represented by area partitioning rather than by runoff coefficient. On Catchment, infiltration is represented explicitly through the surfacewater_to_soil_link and subsequent soil/groundwater processes. On Impervious_Catchment, there is no infiltration link.",
       "applyto": {
         "Catchment#Runoff_coeff": "runoff_coefficient",
         "Impervious_Catchment#Runoff_coeff": "runoff_coefficient"
@@ -362,8 +364,8 @@
       "delegate": "ValueBox",
       "default": "0.4",
       "estimate": "true",
-      "criteria": "theta_sat>0",
-      "warningmessage": "The saturated moisture content must be positive!",
+      "criteria": "theta_sat>0&theta_sat<=1",
+      "warningmessage": "Saturated moisture content must be greater than 0 and no greater than 1.",
       "applyto": {
         "Soil_1#theta_sat": "theta_sat",
         "Soil_2#theta_sat": "theta_sat",
@@ -381,7 +383,9 @@
         "Soil_1#theta_res": "theta_res",
         "Soil_2#theta_res": "theta_res",
         "Soil_3#theta_res": "theta_res"
-      }
+      },
+      "criteria": "theta_res>=0&theta_res<theta_sat",
+      "warningmessage": "Residual moisture content must be nonnegative and less than saturated moisture content."
     },
     "soil_specific_storage": {
       "type": "value",
@@ -395,7 +399,9 @@
         "Soil_1#specific_storage": "soil_specific_storage",
         "Soil_2#specific_storage": "soil_specific_storage",
         "Soil_3#specific_storage": "soil_specific_storage"
-      }
+      },
+      "criteria": "soil_specific_storage>0",
+      "warningmessage": "Soil specific storage must be positive."
     },
     "initial_moisture_content": {
       "type": "value",
@@ -408,7 +414,9 @@
         "Soil_1#theta": "initial_moisture_content",
         "Soil_2#theta": "initial_moisture_content",
         "Soil_3#theta": "initial_moisture_content"
-      }
+      },
+      "criteria": "initial_moisture_content>=theta_res&initial_moisture_content<=theta_sat",
+      "warningmessage": "Initial soil moisture content must lie between residual and saturated moisture contents."
     },
     "groundwater_K": {
       "type": "value",
@@ -431,8 +439,8 @@
       "delegate": "ValueBox",
       "default": "0.4",
       "estimate": "true",
-      "criteria": "groundwater_porosity>0",
-      "warningmessage": "The porosity must be positive!",
+      "criteria": "groundwater_porosity>0&groundwater_porosity<=1",
+      "warningmessage": "Groundwater porosity must be greater than 0 and no greater than 1.",
       "applyto": {
         "Groundwater#porosity": "groundwater_porosity"
       }
@@ -447,18 +455,22 @@
       "estimate": "true",
       "applyto": {
         "Groundwater#specific_storage": "groundwater_specific_storage"
-      }
+      },
+      "criteria": "groundwater_specific_storage>0",
+      "warningmessage": "Groundwater specific storage must be positive."
     },
     "initial_groundwater_moisture_content": {
       "type": "value",
       "description": "Initial moisture content of the groundwater cell",
       "ask_user": "true",
       "delegate": "ValueBox",
-      "default": "0.25",
-      "helptext": "Set this equal to the groundwater porosity for a fully saturated start, which is almost always what you want. The groundwater cell uses a confined formulation, head = cell top + (moisture content - porosity)/specific storage, so at full saturation the head sits at the top of the cell and any deficit becomes an elastic underpressure: with a specific storage of 0.01, a moisture content 0.025 below porosity already puts the head 2.5 m low. The cell's initial storage follows as area times thickness times this value.",
+      "default": "0.4",
+      "helptext": "Initial groundwater moisture content. The default equals the default groundwater porosity (0.4), giving a saturated initial condition and placing the groundwater head at the top of the cell under the confined formulation. Groundwater is exposed externally so GIStoOHQ can connect it to the watershed reach as a baseflow source.",
       "applyto": {
         "Groundwater#moisture_content": "initial_groundwater_moisture_content"
-      }
+      },
+      "criteria": "initial_groundwater_moisture_content>=0&initial_groundwater_moisture_content<=groundwater_porosity",
+      "warningmessage": "Initial groundwater moisture content must be nonnegative and cannot exceed groundwater porosity."
     },
     "impervious_manning_coefficient": {
       "type": "value",
@@ -483,7 +495,9 @@
       "estimate": "true",
       "applyto": {
         "Impervious_Catchment#depression_storage": "impervious_depression_storage"
-      }
+      },
+      "criteria": "impervious_depression_storage>=0",
+      "warningmessage": "Impervious depression storage must be nonnegative."
     },
     "reach_base_width": {
       "type": "value",
@@ -496,8 +510,7 @@
       "criteria": "reach_base_width>0",
       "warningmessage": "Reach base width must be positive!",
       "applyto": {
-        "Reach#base_width": "reach_base_width",
-        "Impervious_Reach#base_width": "reach_base_width"
+        "Reach#base_width": "reach_base_width"
       }
     },
     "reach_side_slope": {
@@ -510,8 +523,7 @@
       "criteria": "reach_side_slope>0",
       "warningmessage": "Reach side slope must be positive!",
       "applyto": {
-        "Reach#side_slope": "reach_side_slope",
-        "Impervious_Reach#side_slope": "reach_side_slope"
+        "Reach#side_slope": "reach_side_slope"
       }
     },
     "reach_manning_coefficient": {
@@ -524,8 +536,7 @@
       "criteria": "reach_manning_coefficient>0",
       "warningmessage": "Reach Manning coefficient must be positive!",
       "applyto": {
-        "Reach#ManningCoeff": "reach_manning_coefficient",
-        "Impervious_Reach#ManningCoeff": "reach_manning_coefficient"
+        "Reach#ManningCoeff": "reach_manning_coefficient"
       }
     },
     "reach_length": {
@@ -539,8 +550,7 @@
       "criteria": "reach_length>0",
       "warningmessage": "Reach length must be positive!",
       "applyto": {
-        "Reach#length": "reach_length",
-        "Impervious_Reach#length": "reach_length"
+        "Reach#length": "reach_length"
       }
     },
     "initial_reach_depth": {
@@ -554,18 +564,75 @@
       "criteria": "initial_reach_depth>=0",
       "warningmessage": "Initial reach depth must be non-negative!",
       "applyto": {
-        "Reach#depth": "initial_reach_depth",
-        "Impervious_Reach#depth": "initial_reach_depth"
+        "Reach#depth": "initial_reach_depth"
       }
     },
-    "reach_inflow_defaults": {
-      "type": "source",
-      "description": "Optional external inflow for internal routing reaches",
-      "ask_user": "false",
-      "helptext": "Left blank by default; catchment runoff enters through Catchment_link connections.",
+    "impervious_reach_base_width": {
+      "type": "value",
+      "description": "Base width of the internal impervious routing reach",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "impervious_reach_base_width>0",
+      "warningmessage": "Impervious reach base width must be positive!",
       "applyto": {
-        "Reach#inflow": "reach_inflow_defaults",
-        "Impervious_Reach#inflow": "reach_inflow_defaults"
+        "Impervious_Reach#base_width": "impervious_reach_base_width"
+      }
+    },
+    "impervious_reach_side_slope": {
+      "type": "value",
+      "description": "Side slope of the internal impervious routing reach",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "2",
+      "estimate": "true",
+      "criteria": "impervious_reach_side_slope>0",
+      "warningmessage": "Impervious reach side slope must be positive!",
+      "applyto": {
+        "Impervious_Reach#side_slope": "impervious_reach_side_slope"
+      }
+    },
+    "impervious_reach_manning_coefficient": {
+      "type": "value",
+      "description": "Manning roughness coefficient of the internal impervious routing reach",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.02",
+      "estimate": "true",
+      "criteria": "impervious_reach_manning_coefficient>0",
+      "warningmessage": "Impervious reach Manning coefficient must be positive!",
+      "applyto": {
+        "Impervious_Reach#ManningCoeff": "impervious_reach_manning_coefficient"
+      }
+    },
+    "impervious_reach_length": {
+      "type": "value",
+      "description": "Length of the internal impervious routing reach",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "10",
+      "estimate": "true",
+      "criteria": "impervious_reach_length>0",
+      "warningmessage": "Impervious reach length must be positive!",
+      "applyto": {
+        "Impervious_Reach#length": "impervious_reach_length"
+      }
+    },
+    "initial_impervious_reach_depth": {
+      "type": "value",
+      "description": "Initial water depth in the internal impervious routing reach",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0.01",
+      "estimate": "true",
+      "criteria": "initial_impervious_reach_depth>=0",
+      "warningmessage": "Initial impervious reach depth must be nonnegative!",
+      "applyto": {
+        "Impervious_Reach#depth": "initial_impervious_reach_depth"
       }
     }
   }
