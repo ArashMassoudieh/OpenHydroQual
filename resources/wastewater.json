@@ -361,5 +361,223 @@
         "Upper#inflow": "inflow"
       }
     }
+  },
+  "Clarifier (4 layers)": {
+    "type": "composite",
+    "typecategory": "Blocks",
+    "description": "Clarifier: sedimentation basin discretized into four settling layers",
+    "icon": {
+      "filename": "clarifier_4layer.png"
+    },
+    "helptext": "A secondary clarifier / sedimentation basin discretized into four stacked settling layers. Influent attaches to the topmost layer, clarified water leaves it through an 'Effluent flow' link, and return and waste sludge are drawn from the bottom layer through 'Sludge flow' links. The underflow passes downward through all three internal interfaces, so the same flow and interface area are applied to each of them.",
+    "members": {
+      "Layer1": {
+        "type": "Settling compartment",
+        "dx": "0",
+        "dy": "0",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Layer2": {
+        "type": "Settling compartment",
+        "dx": "0",
+        "dy": "250",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Layer3": {
+        "type": "Settling compartment",
+        "dx": "0",
+        "dy": "500",
+        "_width": "200",
+        "_height": "200"
+      },
+      "Layer4": {
+        "type": "Settling compartment",
+        "dx": "0",
+        "dy": "750",
+        "_width": "200",
+        "_height": "200"
+      }
+    },
+    "internal_links": {
+      "interface12": {
+        "type": "Sedimentation tank element interface",
+        "from": "Layer1",
+        "to": "Layer2"
+      },
+      "interface23": {
+        "type": "Sedimentation tank element interface",
+        "from": "Layer2",
+        "to": "Layer3"
+      },
+      "interface34": {
+        "type": "Sedimentation tank element interface",
+        "from": "Layer3",
+        "to": "Layer4"
+      }
+    },
+    "external_links": {
+      "*": {
+        "from": "Layer1",
+        "to": "Layer1"
+      },
+      "Effluent flow": {
+        "from": "Layer1",
+        "to": "Layer1"
+      },
+      "Sludge flow": {
+        "from": "Layer4",
+        "to": "Layer4"
+      }
+    },
+    "surface_area": {
+      "type": "value",
+      "description": "Cross-sectional area of the layer interfaces",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^2;ft^2",
+      "default": "100",
+      "estimate": "true",
+      "criteria": "surface_area>0",
+      "warningmessage": "The surface area must be positive!",
+      "helptext": "Plan area over which solids settle from each layer into the one below it. The same area is applied to all three interfaces.",
+      "applyto": {
+        "interface12#area": "surface_area",
+        "interface23#area": "surface_area",
+        "interface34#area": "surface_area"
+      }
+    },
+    "underflow": {
+      "type": "value",
+      "description": "Flow drawn downward through the layers",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s",
+      "default": "95",
+      "estimate": "true",
+      "helptext": "Total underflow, i.e. the sum of the return and waste sludge streams leaving the bottom layer. The same flow is imposed on all three interfaces.",
+      "applyto": {
+        "interface12#constant_flow": "underflow",
+        "interface23#constant_flow": "underflow",
+        "interface34#constant_flow": "underflow"
+      }
+    },
+    "underflow_timeseries": {
+      "type": "timeseries",
+      "description": "Time variable component of the underflow",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "applyto": {
+        "interface12#time_variable_flow": "underflow_timeseries",
+        "interface23#time_variable_flow": "underflow_timeseries",
+        "interface34#time_variable_flow": "underflow_timeseries"
+      }
+    },
+    "interface_elevation_1_2": {
+      "type": "value",
+      "description": "Elevation of the interface between layers 1 and 2",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "helptext": "Bottom of the topmost layer.",
+      "applyto": {
+        "Layer1#bottom_elevation": "interface_elevation_1_2"
+      }
+    },
+    "interface_elevation_2_3": {
+      "type": "value",
+      "description": "Elevation of the interface between layers 2 and 3",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "-1",
+      "helptext": "Bottom of the second layer.",
+      "applyto": {
+        "Layer2#bottom_elevation": "interface_elevation_2_3"
+      }
+    },
+    "interface_elevation_3_4": {
+      "type": "value",
+      "description": "Elevation of the interface between layers 3 and 4",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "-2",
+      "helptext": "Bottom of the third layer.",
+      "applyto": {
+        "Layer3#bottom_elevation": "interface_elevation_3_4"
+      }
+    },
+    "floor_elevation": {
+      "type": "value",
+      "description": "Elevation of the clarifier floor",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "-3",
+      "helptext": "Bottom of the lowest layer.",
+      "applyto": {
+        "Layer4#bottom_elevation": "floor_elevation"
+      }
+    },
+    "layer1_storage": {
+      "type": "value",
+      "description": "Initial volume of water in layer 1 (top)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3;ft^3",
+      "default": "100",
+      "estimate": "true",
+      "applyto": {
+        "Layer1#Storage": "layer1_storage"
+      }
+    },
+    "layer2_storage": {
+      "type": "value",
+      "description": "Initial volume of water in layer 2",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3;ft^3",
+      "default": "100",
+      "estimate": "true",
+      "applyto": {
+        "Layer2#Storage": "layer2_storage"
+      }
+    },
+    "layer3_storage": {
+      "type": "value",
+      "description": "Initial volume of water in layer 3",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3;ft^3",
+      "default": "100",
+      "estimate": "true",
+      "applyto": {
+        "Layer3#Storage": "layer3_storage"
+      }
+    },
+    "layer4_storage": {
+      "type": "value",
+      "description": "Initial volume of water in layer 4 (bottom)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3;ft^3",
+      "default": "100",
+      "estimate": "true",
+      "applyto": {
+        "Layer4#Storage": "layer4_storage"
+      }
+    },
+    "inflow": {
+      "type": "timeseries",
+      "description": "External inflow time series into the top layer",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "applyto": {
+        "Layer1#inflow": "inflow"
+      }
+    }
   }
 }

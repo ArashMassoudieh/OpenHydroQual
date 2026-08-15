@@ -73,6 +73,7 @@ CONFIG(debug, debug|release) {
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        ../../aquifolium/src/Composite.cpp \
         ../../aquifolium/src/Block.cpp \
         ../../aquifolium/src/Command.cpp \
         ../../aquifolium/src/Condition.cpp \
@@ -133,6 +134,7 @@ HEADERS += \
     ../../aquifolium/include/restorepoint.h \
     ../../aquifolium/include/safevector.h \
     ../../aquifolium/include/safevector.hpp \
+    ../../aquifolium/include/Composite.h \
     ../../aquifolium/include/Block.h \
     ../../aquifolium/include/BTC.h \
     ../../aquifolium/include/BTCSet.h \

@@ -875,10 +875,11 @@
     },
     "inflow_loading": {
       "type": "expression",
-      "expression": "inflow_concentration*inflow",
+      "expression": "(constant_inflow_concentration+time_variable_inflow_concentration)*inflow",
       "includeinoutput": "true",
       "description": "Inflow loading",
-      "role": "copytoblocks"
+      "role": "copytoblocks",
+      "unit": "g/day;g/s;kg/day"
     }
   },
   "Reaction": {

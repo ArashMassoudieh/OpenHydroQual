@@ -1,0 +1,2 @@
+class, object name, function, description, error code
+Object,Effluent,GetVal,property 'inflow' does not exist in 'Effluent',1002

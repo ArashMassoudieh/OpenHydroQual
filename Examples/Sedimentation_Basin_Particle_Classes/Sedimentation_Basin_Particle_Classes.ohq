@@ -1,0 +1,54 @@
+loadtemplate; filename = /home/arash/Projects/OpenHydroQual/build/Desktop_Qt_6_8_2-Release/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/build/Desktop_Qt_6_8_2-Release/../../resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/mass_transfer.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/wastewater.json
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=0
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=simulation_end_time, value=36556
+setvalue; object=system, quantity=simulation_start_time, value=36526
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=numthreads, value=8
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=c_n_weight, value=1
+setvalue; object=system, quantity=initial_time_step, value=0.01
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=max_timestep_decrease_factor, value=100000
+setvalue; object=system, quantity=max_timestep_increase_factor, value=50
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=write_interval, value=100
+setvalue; object=system, quantity=write_solution_details, value=No
+create constituent;type=Particle,concentration=0,constant_inflow_concentration=0,external_mass_flow_timeseries=,external_source=,name=P1,settling_velocity=0.5[m/day],stoichiometric_constant=0,time_variable_inflow_concentration=,turbidity_coefficient=0,turbidity_exponent=0
+create constituent;type=Particle,concentration=0,constant_inflow_concentration=0,external_mass_flow_timeseries=,external_source=,name=P2,settling_velocity=2[m/day],stoichiometric_constant=0,time_variable_inflow_concentration=,turbidity_coefficient=0,turbidity_exponent=0
+create constituent;type=Particle,concentration=0,constant_inflow_concentration=0,external_mass_flow_timeseries=,external_source=,name=P3,settling_velocity=10[m/day],stoichiometric_constant=0,time_variable_inflow_concentration=,turbidity_coefficient=0,turbidity_exponent=0
+create constituent;type=Particle,concentration=0,constant_inflow_concentration=0,external_mass_flow_timeseries=,external_source=,name=P4,settling_velocity=50[m/day],stoichiometric_constant=0,time_variable_inflow_concentration=,turbidity_coefficient=0,turbidity_exponent=0
+create composite;type=Clarifier (4 layers),P1:concentration=0,P1:constant_inflow_concentration=0,P1:external_mass_flow_timeseries=,P1:external_source=,P1:time_variable_inflow_concentration=,P2:concentration=0,P2:constant_inflow_concentration=0,P2:external_mass_flow_timeseries=,P2:external_source=,P2:time_variable_inflow_concentration=,P3:concentration=0,P3:constant_inflow_concentration=0,P3:external_mass_flow_timeseries=,P3:external_source=,P3:time_variable_inflow_concentration=,P4:concentration=0,P4:constant_inflow_concentration=0,P4:external_mass_flow_timeseries=,P4:external_source=,P4:time_variable_inflow_concentration=,_height=200,_width=200,floor_elevation=-3,inflow=,interface_elevation_1_2=0,interface_elevation_2_3=-1,interface_elevation_3_4=-2,layer1_storage=400[m~^3],layer2_storage=400[m~^3],layer3_storage=400[m~^3],layer4_storage=400[m~^3],name=Sed_Basin,surface_area=400[m~^2],underflow=0[m~^3/day],underflow_timeseries=,x=700,y=900
+create block;type=Reactor,P1:concentration=50,P1:constant_inflow_concentration=50,P1:external_mass_flow_timeseries=,P1:external_source=,P1:time_variable_inflow_concentration=,P2:concentration=50,P2:constant_inflow_concentration=50,P2:external_mass_flow_timeseries=,P2:external_source=,P2:time_variable_inflow_concentration=,P3:concentration=50,P3:constant_inflow_concentration=50,P3:external_mass_flow_timeseries=,P3:external_source=,P3:time_variable_inflow_concentration=,P4:concentration=50,P4:constant_inflow_concentration=50,P4:external_mass_flow_timeseries=,P4:external_source=,P4:time_variable_inflow_concentration=,Storage=200[m~^3],_height=200,_width=200,bottom_elevation=0,constant_inflow=2000[m~^3/day],name=Influent,time_variable_inflow=,x=0,y=900
+create block;type=fixed_head,P1:concentration=0,P1:constant_inflow_concentration=0,P1:external_mass_flow_timeseries=,P1:external_source=,P1:time_variable_inflow_concentration=,P2:concentration=0,P2:constant_inflow_concentration=0,P2:external_mass_flow_timeseries=,P2:external_source=,P2:time_variable_inflow_concentration=,P3:concentration=0,P3:constant_inflow_concentration=0,P3:external_mass_flow_timeseries=,P3:external_source=,P3:time_variable_inflow_concentration=,P4:concentration=0,P4:constant_inflow_concentration=0,P4:external_mass_flow_timeseries=,P4:external_source=,P4:time_variable_inflow_concentration=,Storage=100000,_height=200,_width=200,head=0,name=Effluent,x=1400,y=900
+create link;from=Influent,to=Sed_Basin,type=Fixed flow,flow=2000,name=Influent to Basin
+create link;from=Sed_Basin,to=Effluent,type=Effluent flow,flow=2000,name=Basin to Effluent
