@@ -25,11 +25,16 @@ zeroes the advective flow on all three internal interfaces.
 | Inflow = outflow, `Q` | 2000 m³/day |
 | Plan area, `A` | 400 m² |
 | Overflow rate, `Q/A` | **5 m/day** |
-| Layer depth / volume | 1 m / 400 m³ each (4 m, 1600 m³ total) |
-| Layer bottom elevations | 0, −1, −2, −3 m |
+| Floor elevation | −3 m |
+| Depth | 4 m |
+| Total initial volume | 1600 m³ |
 | Influent concentration | 50 g/m³ per class (200 g/m³ total TSS) |
 | Underflow | **0** |
 | Simulated period | day 36526 → 36556 (30 days) |
+
+The per-layer geometry is derived, not entered: the four layer bottoms come out
+at −3, −2, −1 and 0 m (one quarter of the depth apart, measured up from the
+floor), and the 1600 m³ is split into 400 m³ per layer.
 
 ## Particle classes
 
@@ -70,6 +75,9 @@ quality.
 - Give the basin a sludge draw: attach a `Sludge flow` link from `Sed_Basin` and
   set `underflow` to that rate. Layer 4 then reaches a steady blanket instead of
   accumulating.
+- Change `depth` alone: the four layer elevations move together and stay evenly
+  spaced. Removal is unaffected — it depends on `Q/A`, not on depth — but the
+  transient does change, through the layer volumes.
 - Change `surface_area` to move the overflow rate `Q/A`; removal of every class
   shifts with it.
 - Add more classes, or replace the four with a measured settling-velocity

@@ -474,42 +474,6 @@
         "interface34#time_variable_flow": "underflow_timeseries"
       }
     },
-    "interface_elevation_1_2": {
-      "type": "value",
-      "description": "Elevation of the interface between layers 1 and 2",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft",
-      "default": "0",
-      "helptext": "Bottom of the topmost layer.",
-      "applyto": {
-        "Layer1#bottom_elevation": "interface_elevation_1_2"
-      }
-    },
-    "interface_elevation_2_3": {
-      "type": "value",
-      "description": "Elevation of the interface between layers 2 and 3",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft",
-      "default": "-1",
-      "helptext": "Bottom of the second layer.",
-      "applyto": {
-        "Layer2#bottom_elevation": "interface_elevation_2_3"
-      }
-    },
-    "interface_elevation_3_4": {
-      "type": "value",
-      "description": "Elevation of the interface between layers 3 and 4",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft",
-      "default": "-2",
-      "helptext": "Bottom of the third layer.",
-      "applyto": {
-        "Layer3#bottom_elevation": "interface_elevation_3_4"
-      }
-    },
     "floor_elevation": {
       "type": "value",
       "description": "Elevation of the clarifier floor",
@@ -517,57 +481,42 @@
       "delegate": "UnitBox",
       "unit": "m;ft",
       "default": "-3",
-      "helptext": "Bottom of the lowest layer.",
+      "helptext": "Bottom of the basin, i.e. the bottom of the lowest layer. The three internal interfaces sit automatically at one, two and three quarters of the depth above it, so the individual layer elevations are not entered.",
       "applyto": {
-        "Layer4#bottom_elevation": "floor_elevation"
+        "Layer4#bottom_elevation": "floor_elevation",
+        "Layer3#bottom_elevation": "(floor_elevation+0.25*depth)",
+        "Layer2#bottom_elevation": "(floor_elevation+0.5*depth)",
+        "Layer1#bottom_elevation": "(floor_elevation+0.75*depth)"
       }
     },
-    "layer1_storage": {
+    "depth": {
       "type": "value",
-      "description": "Initial volume of water in layer 1 (top)",
+      "description": "Depth of the clarifier",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "4",
+      "estimate": "true",
+      "criteria": "depth>0",
+      "warningmessage": "The depth must be positive!",
+      "helptext": "Total depth from the floor to the top of the uppermost layer. Each layer is one quarter of it."
+    },
+    "total_volume": {
+      "type": "value",
+      "description": "Initial volume of water in the clarifier",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m^3;ft^3",
-      "default": "100",
+      "default": "400",
       "estimate": "true",
+      "criteria": "total_volume>0",
+      "warningmessage": "The volume must be positive!",
+      "helptext": "Initial water volume of the whole basin, divided equally between the four layers.",
       "applyto": {
-        "Layer1#Storage": "layer1_storage"
-      }
-    },
-    "layer2_storage": {
-      "type": "value",
-      "description": "Initial volume of water in layer 2",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m^3;ft^3",
-      "default": "100",
-      "estimate": "true",
-      "applyto": {
-        "Layer2#Storage": "layer2_storage"
-      }
-    },
-    "layer3_storage": {
-      "type": "value",
-      "description": "Initial volume of water in layer 3",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m^3;ft^3",
-      "default": "100",
-      "estimate": "true",
-      "applyto": {
-        "Layer3#Storage": "layer3_storage"
-      }
-    },
-    "layer4_storage": {
-      "type": "value",
-      "description": "Initial volume of water in layer 4 (bottom)",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m^3;ft^3",
-      "default": "100",
-      "estimate": "true",
-      "applyto": {
-        "Layer4#Storage": "layer4_storage"
+        "Layer1#Storage": "total_volume/4",
+        "Layer2#Storage": "total_volume/4",
+        "Layer3#Storage": "total_volume/4",
+        "Layer4#Storage": "total_volume/4"
       }
     },
     "inflow": {

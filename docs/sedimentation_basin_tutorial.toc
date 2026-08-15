@@ -1,21 +1,21 @@
 \contentsline {section}{\numberline {1}What we are building}{2}{section.1}%
 \contentsline {subsection}{\numberline {1.1}The physical system}{2}{subsection.1.1}%
 \contentsline {subsection}{\numberline {1.2}Design point}{2}{subsection.1.2}%
-\contentsline {subsection}{\numberline {1.3}Components used}{2}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.3}Components used}{3}{subsection.1.3}%
 \contentsline {section}{\numberline {2}Route A --- building it in the graphical interface}{3}{section.2}%
 \contentsline {subsection}{\numberline {2.1}Start a project and load the plugins}{3}{subsection.2.1}%
 \contentsline {subsection}{\numberline {2.2}Declare the four particle classes}{3}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}Place the influent boundary}{4}{subsection.2.3}%
-\contentsline {subsection}{\numberline {2.4}Place the basin}{5}{subsection.2.4}%
-\contentsline {subsection}{\numberline {2.5}Place the effluent boundary}{5}{subsection.2.5}%
-\contentsline {subsection}{\numberline {2.6}Draw the two links}{6}{subsection.2.6}%
-\contentsline {subsection}{\numberline {2.7}Simulation settings}{6}{subsection.2.7}%
-\contentsline {subsection}{\numberline {2.8}Validate, run, save}{7}{subsection.2.8}%
-\contentsline {subsection}{\numberline {2.9}Viewing results}{7}{subsection.2.9}%
-\contentsline {section}{\numberline {3}Route B --- the model script}{7}{section.3}%
-\contentsline {section}{\numberline {4}What the model actually computes}{8}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Mass transfer across a link}{8}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Steady state}{9}{subsection.4.2}%
-\contentsline {section}{\numberline {5}Verification}{9}{section.5}%
-\contentsline {section}{\numberline {6}Pitfalls}{10}{section.6}%
-\contentsline {section}{\numberline {7}Variations to try}{10}{section.7}%
+\contentsline {subsection}{\numberline {2.3}Place the influent boundary}{6}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Place the basin}{6}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Place the effluent boundary}{6}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Draw the two links}{7}{subsection.2.6}%
+\contentsline {subsection}{\numberline {2.7}Simulation settings}{7}{subsection.2.7}%
+\contentsline {subsection}{\numberline {2.8}Validate, run, save}{8}{subsection.2.8}%
+\contentsline {subsection}{\numberline {2.9}Viewing results}{8}{subsection.2.9}%
+\contentsline {section}{\numberline {3}Route B --- the model script}{8}{section.3}%
+\contentsline {section}{\numberline {4}What the model actually computes}{9}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Mass transfer across a link}{9}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Steady state}{10}{subsection.4.2}%
+\contentsline {section}{\numberline {5}Verification}{10}{section.5}%
+\contentsline {section}{\numberline {6}Pitfalls}{11}{section.6}%
+\contentsline {section}{\numberline {7}Variations to try}{11}{section.7}%

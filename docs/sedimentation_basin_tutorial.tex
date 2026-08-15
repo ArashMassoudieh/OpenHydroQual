@@ -157,14 +157,20 @@ Symbol & Quantity & Value \\
 $Q$            & Inflow $=$ outflow                & $2000$ m\textsuperscript{3}/day \\
 $A$            & Plan area                          & $400$ m\textsuperscript{2} \\
 $v^{*}=Q/A$    & \textbf{Overflow rate}             & $\mathbf{5}$ \textbf{m/day} \\
-$h$            & Depth of each layer                & $1$ m \\
-$V$            & Volume of each layer               & $400$ m\textsuperscript{3} \\
+$z_0$          & Floor elevation                    & $-3$ m \\
+$H$            & Depth of the basin                 & $4$ m \\
+$V_\mathrm{tot}$ & Total initial volume             & $1600$ m\textsuperscript{3} \\
 $C_\mathrm{in}$& Influent concentration, per class  & $50$ g/m\textsuperscript{3} \\
 $Q_u$          & Underflow                          & $0$ \\
                & Simulated period                   & day $36526 \rightarrow 36556$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+Only the floor elevation and the total depth are entered. The layer bottoms are
+derived --- each layer is $H/4=1$ m thick, so they come out at $-3$, $-2$, $-1$
+and $0$ m --- and the total volume is divided equally, giving
+$400$~m\textsuperscript{3} per layer.
 
 The four particle classes are chosen to straddle the overflow rate, so that
 removal spans nearly the full range from negligible to almost complete:
@@ -297,8 +303,11 @@ below the separator. One click creates the whole four-layer stack. Set:
 
 \begin{table}[htbp]
 \centering
-\caption{Properties of the \code{Sed\_Basin} composite. The three interface
-elevations and the floor elevation are the \emph{bottoms} of layers 1--4.}
+\caption{Properties of the \code{Sed\_Basin} composite. This handful of values
+describes the whole four-layer stack; the per-layer geometry is derived from
+them. The two optional time-series inputs, \menu{External inflow time series
+into the top layer} and \menu{Time variable component of the underflow}, are
+left empty here.}
 \label{tab:basin}
 \begin{tabular}{llr}
 \toprule
@@ -307,16 +316,14 @@ Property & Meaning & Value \\
 \menu{Name} & -- & \code{Sed\_Basin} \\
 \menu{Cross-sectional area of the layer interfaces} & $A$ & $400$ m\textsuperscript{2} \\
 \menu{Flow drawn downward through the layers}       & $Q_u$ & $\mathbf{0}$ \\
-\menu{Elevation of the interface between layers 1 and 2} & bottom of layer 1 & $0$ m \\
-\menu{Elevation of the interface between layers 2 and 3} & bottom of layer 2 & $-1$ m \\
-\menu{Elevation of the interface between layers 3 and 4} & bottom of layer 3 & $-2$ m \\
-\menu{Elevation of the clarifier floor}                  & bottom of layer 4 & $-3$ m \\
-\menu{Initial volume of water in layer 1--4} & $V$ per layer & $400$ m\textsuperscript{3} each \\
+\menu{Elevation of the clarifier floor}             & $z_0$ & $-3$ m \\
+\menu{Depth of the clarifier}                       & $H$ & $4$ m \\
+\menu{Initial volume of water in the clarifier}     & $V_\mathrm{tot}$ & $1600$ m\textsuperscript{3} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Two points deserve emphasis.
+Three points deserve emphasis.
 
 \begin{description}[style=nextline,leftmargin=1.2em]
 \item[The underflow is what makes this a settling column rather than a clarifier.]
@@ -324,21 +331,35 @@ Setting \menu{Flow drawn downward through the layers} to zero puts zero
 advective flow on all three internal interfaces at once. The only remaining
 downward transport is settling.
 
-\item[The elevations must decrease downward.]
-The settling term is gated on the elevation difference between the two ends of
-each interface (Section~\ref{sec:physics}). If two adjacent layers were given
-the same bottom elevation, the gate would close and \emph{no solids would settle
-at all} --- with no error message. The layer volumes and the elevations are
-independent inputs, so keep them consistent: $400$~m\textsuperscript{3} over
-$400$~m\textsuperscript{2} is exactly the $1$~m of depth the elevations imply.
+\item[The layer geometry is derived, not entered.]
+The four layers are equal quarters of the depth, so their bottom elevations
+follow from the floor and the depth alone:
+\begin{equation}
+z_4 = z_0, \qquad z_3 = z_0 + \tfrac{H}{4}, \qquad
+z_2 = z_0 + \tfrac{H}{2}, \qquad z_1 = z_0 + \tfrac{3H}{4},
+\end{equation}
+which for this design point gives $-3$, $-2$, $-1$ and $0$ m. Likewise
+$V_\mathrm{tot}$ is split four ways, giving $400$~m\textsuperscript{3} per
+layer. This is what keeps the stack self-consistent: because the elevations are
+generated rather than typed, they are always strictly decreasing downward, and
+the settling gate of Section~\ref{sec:physics} can never be accidentally closed.
+
+\item[Volume and depth are independent.]
+$V_\mathrm{tot}$ is an \emph{initial condition} --- how much water is in the
+basin at $t=0$ --- while $H$ and $A$ describe the vessel. For a full prismatic
+basin they agree, $V_\mathrm{tot}=A\,H=1600$~m\textsuperscript{3}, as here, but
+nothing forces that.
 \end{description}
 
-\screenshot[0.8]{03-basin-properties}{The property panel of the
-\code{Clarifier (4 layers)} composite, showing every value from
-Table~\ref{tab:basin} --- note \menu{Flow drawn downward through the layers}
-$=0$. Scrolled off above are the per-constituent entries
-(\code{P1:Concentration} and friends), which stay at zero: the basin starts
-clean.}
+\screenshot[0.85]{03-basin-properties}{The property panel of the
+\code{Clarifier (4 layers)} composite. Every value of Table~\ref{tab:basin} is
+visible at once --- note \menu{Depth of the clarifier} and
+\menu{Elevation of the clarifier floor} in place of four separate layer
+elevations, \menu{Initial volume of water in the clarifier} in place of four
+layer volumes, and \menu{Flow drawn downward through the layers} $=0$. There is
+no per-layer entry anywhere in the panel: that geometry is derived. The
+\code{P4:\ldots} rows at the top are the per-constituent properties, which stay
+at zero --- the basin starts clean.}
 
 \subsection{Place the effluent boundary}
 
@@ -466,10 +487,7 @@ create block;type=Reactor,name=Influent,Storage=200,bottom_elevation=0,
 
 create composite;type=Clarifier (4 layers),name=Sed_Basin,
     surface_area=400,underflow=0,
-    interface_elevation_1_2=0,interface_elevation_2_3=-1,
-    interface_elevation_3_4=-2,floor_elevation=-3,
-    layer1_storage=400,layer2_storage=400,
-    layer3_storage=400,layer4_storage=400,
+    floor_elevation=-3,depth=4,total_volume=1600,
     x=700,y=900
 
 create block;type=fixed_head,name=Effluent,Storage=100000,
@@ -599,9 +617,12 @@ $100\,000$~m\textsuperscript{3} receiving reservoir, which is still filling and
 is much lower. This trips people up on the first run.
 
 \item[Equal elevations silently disable settling.]
-The settling term is gated on $z_i > z_{i+1}$. Give two adjacent layers the same
-bottom elevation and solids simply stop moving, with no diagnostic. If a model
-shows zero removal, check the elevations first.
+The settling term is gated on $z_i > z_{i+1}$: give two adjacent layers the same
+bottom elevation and solids simply stop moving, with no diagnostic. The
+\code{Clarifier (4 layers)} composite forecloses this by deriving the elevations
+from the floor and the depth, but the trap is live in any stack assembled from
+bare \code{Settling compartment} blocks --- including one produced by
+\menu{Ungroup}. If such a model shows zero removal, check the elevations first.
 
 \item[Constituents before blocks.]
 In a hand-written script, a \code{create block} that precedes
@@ -634,10 +655,16 @@ correctly zero.
       the layer interfaces} to $200$~m\textsuperscript{2} doubles $v^{*}$ to
       $10$~m/day and pushes every class's removal down; the tabulated $\eta$
       values move to $4.8$, $16.7$, $50$ and $83.3\%$.
+\item \textbf{Deepen the basin.} Raise \menu{Depth of the clarifier} on its own
+      and the four layer elevations move together, staying evenly spaced.
+      Steady-state removal does not budge --- it depends on $Q/A$, not on depth
+      --- but the transient does, through the layer volumes.
 \item \textbf{Refine the discretization.} Compare against the two-compartment
       \code{Clarifier}. With no underflow the steady-state effluent is identical
       --- it depends only on layer~1 --- but the sludge blanket and the transient
-      differ.
+      differ. Note that the two-compartment type still takes its interface and
+      floor elevations individually; only \code{Clarifier (4 layers)} derives
+      them.
 \item \textbf{Use a measured distribution.} Replace the four classes with a
       settling-velocity distribution from a column test; the model structure is
       unchanged.
