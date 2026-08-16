@@ -426,3 +426,5 @@ Examples/Plant_Transpiration/errors.txt
 Examples/Crop_Root_Uptake/errors.txt
 
 Examples/*/output*.txt
+
+Examples/Sedimentation_Basin_Particle_Classes/state.json
