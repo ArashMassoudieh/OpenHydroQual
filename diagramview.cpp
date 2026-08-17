@@ -656,11 +656,14 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         }
 
         emit changed();
+        // One link per activation of the tool. ClearLinkMode() unchecks the toolbar
+        // button and returns the view to NormalMode, which is what makes blocks and
+        // links selectable again - Draw_Connector holds ItemIsSelectable off, so
+        // staying armed left nothing clickable right after a link was drawn.
+        mainWindow()->ClearLinkMode();
+        // After ClearLinkMode(), which clears the status bar.
         mainWindow()->ShowStatusHint(tr("%1 added:  %2  →  %3")
                                          .arg(linktype, source->Name(), child->Name()));
-        // The tool stays armed so a run of links can be drawn without going back to the
-        // toolbar; Esc or clicking the tool again puts it away.
-        setMode(Operation_Modes::Draw_Connector);
         break;
     }
     //	default:
