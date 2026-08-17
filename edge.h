@@ -55,6 +55,15 @@ public:
     Node* destNode() {return dest;}
     int dist(const QPointF point);
     QString Name() {return QString::fromStdString(object()->GetName());}
+    /**
+     * @brief Whether the link was actually created
+     *
+     * The type/target checks used to fail silently inside the constructor - one of them
+     * with a `delete this` that left the caller holding a freed pointer. The caller now
+     * asks, reports LastError(), and deletes the edge itself.
+     */
+    bool IsValid() const { return valid; }
+    QString LastError() const { return lasterror; }
     enum { Type = UserType + 2 };
     int type() const Q_DECL_OVERRIDE{ return Type; }
 
@@ -66,6 +75,8 @@ private:
     System *system;
     string objectPrimaryKey;
     QString name;
+    bool valid = true;
+    QString lasterror;
     QColor GetColor(const string &clrstring);
 public slots:
     void hoverMoveEvent(QGraphicsSceneHoverEvent * event) override;

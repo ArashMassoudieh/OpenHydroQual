@@ -23,6 +23,8 @@
 #include "QMenu"
 #include "QStatusBar"
 #include "QRandomGenerator"
+#include <QKeyEvent>
+#include <QFileInfo>
 
 
 DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsView(parent)
@@ -38,7 +40,103 @@ DiagramView::DiagramView(QWidget* parent, MainWindow *_mainwindow) : QGraphicsVi
     setTransformationAnchor(AnchorUnderMouse);
     setMode(0);
     QObject::connect(MainGraphicsScene, SIGNAL(changed(const QList<QRectF>)), this, SLOT(sceneChanged()));
+    setFocusPolicy(Qt::StrongFocus); // so Esc reaches keyPressEvent() while drawing
+}
 
+void DiagramView::setconnectfeature(QString cf)
+{
+    connect_feature = cf;
+
+    // The pointer carries the icon of the link about to be drawn, so the armed tool is
+    // visible where the user is actually looking instead of only on the toolbar.
+    linkCursor = QCursor(Qt::CrossCursor);
+    if (!cf.isEmpty() && mainwindow && mainwindow->GetSystem()->GetModel(cf.toStdString()))
+    {
+        QString iconfile = QString::fromStdString(
+            mainwindow->GetSystem()->GetModel(cf.toStdString())->IconFileName());
+        if (!iconfile.isEmpty())
+        {
+            QString iconpath = iconfile.contains("/")
+                                   ? iconfile
+                                   : mainwindow->resource_directory + "/Icons/" + iconfile;
+            QPixmap icon(iconpath);
+            if (!icon.isNull())
+            {
+                // Crosshair top-left, icon offset below it, so the hot spot stays exact.
+                QPixmap cursorpixmap(40, 40);
+                cursorpixmap.fill(Qt::transparent);
+                QPainter painter(&cursorpixmap);
+                painter.setRenderHint(QPainter::SmoothPixmapTransform);
+                painter.drawPixmap(14, 14, icon.scaled(26, 26, Qt::KeepAspectRatio,
+                                                       Qt::SmoothTransformation));
+                painter.setPen(QPen(Qt::black, 1));
+                painter.drawLine(0, 6, 12, 6);
+                painter.drawLine(6, 0, 6, 12);
+                painter.end();
+                linkCursor = QCursor(cursorpixmap, 6, 6);
+            }
+        }
+    }
+    setModeCursor();
+}
+
+void DiagramView::PickNodeOrEdge(const QList<QGraphicsItem*> &items, Node *&node, Edge *&edge)
+{
+    node = nullptr;
+    edge = nullptr;
+    // Blocks win over links: a click on a block that happens to have a link crossing it
+    // is nearly always aimed at the block, and link drawing needs the block anyway.
+    for (QGraphicsItem *item : items)
+        if (item->type() == Node::Type)
+        {
+            node = qgraphicsitem_cast<Node*>(item);
+            return;
+        }
+    for (QGraphicsItem *item : items)
+        if (item->type() == Edge::Type)
+        {
+            edge = qgraphicsitem_cast<Edge*>(item);
+            return;
+        }
+}
+
+void DiagramView::BeginLinkFrom(Node *source)
+{
+    if (!source) return;
+    source->setFlag(QGraphicsItem::ItemIsMovable, false);
+    Node1 = source;
+    if (!tempRay)
+    {
+        tempRay = new Ray();
+        MainGraphicsScene->addItem(tempRay);
+    }
+    setMode(Operation_Modes::Node1_selected);
+    mainWindow()->ShowStatusHint(tr("%1 from '%2' - release over the target block.  Esc cancels.")
+                                     .arg(connect_feature, source->Name()));
+}
+
+void DiagramView::CancelLinkDrawing(const QString &reason)
+{
+    if (tempRay)
+    {
+        MainGraphicsScene->removeItem(tempRay);
+        delete tempRay;
+        tempRay = nullptr;
+    }
+    if (Node1)
+    {
+        Node1->setFlag(QGraphicsItem::ItemIsMovable, true);
+        Node1 = nullptr;
+    }
+    // The armed link type is deliberately kept: an accidental release on empty canvas
+    // should not force the user back to the toolbar to pick the same link again.
+    // setMode() rather than a bare assignment, so items get their movable/selectable
+    // flags back - Node1_selected leaves everything unselectable.
+    setMode(connect_feature.isEmpty() ? Operation_Modes::NormalMode
+                                      : Operation_Modes::Draw_Connector);
+
+    if (!reason.isEmpty())
+        mainWindow()->ShowStatusHint(reason);
 }
 
 void DiagramView::mousePressEvent(QMouseEvent *event)
@@ -57,19 +155,12 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
 
     Edge *edge=nullptr;
     Node *node=nullptr;
-    if (nodeedges.size()>0)
-    {   int i=rand()%nodeedges.size();
-        if (nodeedges[i]->type()==65537)
-        {   node = qgraphicsitem_cast<Node*> (nodeedges[i]); //Get the item at the position
-            //qDebug()<<i<<nodeedges[i]->type()<<node->Name();
-        }
-        else if (nodeedges[i]->type()==65538)
-        {   edge = qgraphicsitem_cast<Edge*> (nodeedges[i]); //Get the item at the position
-            //qDebug()<<i<<nodeedges[i]->type()<<edge->Name();
-        }
-    }
+    PickNodeOrEdge(nodeedges, node, edge);
 
-    if (!node && !edge && Operation_Mode!=Operation_Modes::Pan && Operation_Mode!=Operation_Modes::ZoomWindow)
+    if (!node && !edge && Operation_Mode!=Operation_Modes::Pan
+        && Operation_Mode!=Operation_Modes::ZoomWindow
+        && Operation_Mode!=Operation_Modes::Draw_Connector
+        && Operation_Mode!=Operation_Modes::Node1_selected)
     {
         //qDebug()<<"Mode set to normal";
         setMode(Operation_Modes::NormalMode);
@@ -89,6 +180,20 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
         return;
     }
     QGraphicsView::mousePressEvent(event); //Call the ancestor
+
+    // Starting a link used to live inside the NormalMode branch below, where the mode can
+    // never be Draw_Connector - so the only way to begin a link was to hit the few pixels
+    // of a block's border. Anywhere on the block works now.
+    if (event->buttons() == Qt::LeftButton && Operation_Mode == Operation_Modes::Draw_Connector)
+    {
+        if (node && node->itemType == Object_Types::Block)
+            BeginLinkFrom(node);
+        else
+            mainWindow()->ShowStatusHint(
+                tr("%1: start the link on a block.  Esc cancels.").arg(connect_feature));
+        return;
+    }
+
     if (Operation_Mode == Operation_Modes::NormalMode)
     {
         setDragMode((node || edge) ? QGraphicsView::NoDrag : QGraphicsView::RubberBandDrag);
@@ -111,28 +216,12 @@ void DiagramView::mousePressEvent(QMouseEvent *event)
                         node->setFlag(QGraphicsItem::ItemIsMovable, false);
                     }
                     else if (node->edge(xx, yy) && getselectedconnectfeature() != "") {
-                        node->setFlag(QGraphicsItem::ItemIsMovable, false);
-                        Node1 = node;
-                        tempRay = new Ray();
-                        MainGraphicsScene->addItem(tempRay);
-                        setMode(Operation_Modes::Node1_selected);
+                        BeginLinkFrom(node);
                     }
                     else
                         node->setFlag(QGraphicsItem::ItemIsMovable, true);
                 }
             }
-        if (event->buttons() == Qt::LeftButton && Operation_Mode == Operation_Modes::Draw_Connector)
-        {
-            if (node) {
-                if (node->itemType == Object_Types::Block) {
-                    node->setFlag(QGraphicsItem::ItemIsMovable, false);
-                    Node1 = node;
-                    tempRay = new Ray();
-                    MainGraphicsScene->addItem(tempRay);
-                    setMode(Operation_Modes::Node1_selected);
-                }
-            }
-        }
         if (event->buttons() == Qt::RightButton && !node && !edge)
         {
             if (nodenametobecopied != "")
@@ -161,7 +250,9 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
     //	//qDebug() << "Mouse MOVE, button: " << event->button() << ", modifier: " << event->modifiers() << ", buttons: " << event->buttons();
     _x = mapToScene(event->pos()).x();
     _y = mapToScene(event->pos()).y();
-    mainWindow()->statusBar()->showMessage(QString::number(_x)+"," + QString::number(_y));
+    // Its own permanent slot in the status bar, so it no longer wipes out the link
+    // instructions on every mouse move.
+    mainWindow()->ShowCursorPosition(_x, _y);
     int xx = _x;// mapToScene(event->pos()).x();
     int yy = _y;// mapToScene(event->pos()).y();
 
@@ -233,22 +324,40 @@ void DiagramView::mouseMoveEvent(QMouseEvent *event)
     //	if (e!=e1) e->setBold(false);
     //update();
     emit Mouse_Pos(_x, _y, txt);
-    if (Operation_Mode == Operation_Modes::Node1_selected)
+    if (Operation_Mode == Operation_Modes::Node1_selected && Node1 && tempRay)
     {
-        Node *child = qgraphicsitem_cast<Node*> (itemAt(event->pos())); //Get the item at the position
-        if (child)
-            if (Node1!=nullptr)
-                if ((child->itemType == Object_Types::Block) && (Node1->Name() != child->Name()))
-                {
-                    tempRay->setValidation(true);
-                    tempRay->adjust(Node1, child);
-                }
-        if (!child)
+        // Look through everything under the cursor rather than only the topmost item: a
+        // label or a crossing link sitting on top of a block used to make a perfectly
+        // good target read as invalid.
+        Node *hovered = nullptr;
+        Edge *hoverededge = nullptr;
+        PickNodeOrEdge(items(event->pos()), hovered, hoverededge);
+
+        const bool validtarget = hovered && hovered->itemType == Object_Types::Block
+                                 && hovered->Name() != Node1->Name();
+        if (validtarget)
+        {
+            tempRay->setValidation(true);
+            tempRay->adjust(Node1, hovered);
+            setCursor(linkCursor);
+            mainWindow()->ShowStatusHint(tr("%1:  %2  →  %3   (release to connect)")
+                                             .arg(connect_feature, Node1->Name(), hovered->Name()));
+        }
+        else
         {
             tempRay->setValidation(false);
             QPointF p = QPointF(mapToScene(event->pos()));
             tempRay->adjust(Node1, &p);
+            // The pointer says up front that releasing here will not connect anything.
+            setCursor(Qt::ForbiddenCursor);
+            if (hovered && hovered->Name() == Node1->Name())
+                mainWindow()->ShowStatusHint(tr("%1: a link cannot start and end on '%2'.")
+                                                 .arg(connect_feature, Node1->Name()));
+            else
+                mainWindow()->ShowStatusHint(tr("%1 from '%2' - release over the target block.  Esc cancels.")
+                                                 .arg(connect_feature, Node1->Name()));
         }
+        return;
     }
     if (Operation_Mode == Operation_Modes::NormalMode && dragMode()==DragMode::NoDrag)
     {
@@ -437,23 +546,25 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
         if (nodeedges.size()>0)
         {
             for (unsigned int i=0; i<nodeedges.size(); i++) {nodeedges[i]->setSelected(false);nodeedges[i]->setZValue(-2);}
-            int i=rand()%nodeedges.size();
-            if (nodeedges[i]->type()==65537)
-            {   node = qgraphicsitem_cast<Node*> (nodeedges[i]); //Get the item at the position
-                //qDebug()<<i<<nodeedges[i]->type()<<node->Name();
+            PickNodeOrEdge(nodeedges, node, edge);
+            if (node)
+            {
                 node->setSelected(true);
                 node->setZValue(100);
+                mainWindow()->ShowSelectedNode(node);
             }
-            else if (nodeedges[i]->type()==65538)
-            {   edge = qgraphicsitem_cast<Edge*> (nodeedges[i]); //Get the item at the position
-                //qDebug()<<i<<nodeedges[i]->type()<<edge->Name();
+            else if (edge)
+            {
                 edge->setSelected(true);
                 edge->setZValue(100);
+                // What the user asked for: the selected link's type and its two endpoints.
+                mainWindow()->ShowSelectedEdge(edge);
             }
         }
         else
         {
             UnSelectAll();
+            mainWindow()->ShowStatusHint("");
         }
 
         if (event->button() == Qt::LeftButton && dragMode()!=DragMode::RubberBandDrag)
@@ -492,21 +603,64 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *event)
     }
     case Operation_Modes::Node1_selected:
     {
-        if (Node1 == nullptr) return;
-        if (connect_feature=="") return;
-        Node1->setFlag(QGraphicsItem::ItemIsMovable);
-        setMode(1);
-        MainGraphicsScene->removeItem(tempRay);
-        delete tempRay;
-        Node *child = static_cast<Node*> (itemAt(event->pos())); //Get the item at the position
-        if (!child)	break;
-        if (child->itemType != Object_Types::Block) break;
-        if (Node1 != child) new Edge(Node1, child, connect_feature, this);
-        Node1=nullptr;
-        setMode(1);
+        if (Node1 == nullptr || connect_feature=="")
+        {
+            CancelLinkDrawing();
+            break;
+        }
+
+        Node *source = Node1;
+        const QString linktype = connect_feature;
+
+        // itemAt() returns the topmost item of any kind - the old static_cast<Node*> of
+        // an Edge or a label was undefined behaviour, and reading itemType off it is
+        // what made drops land in unpredictable places.
+        Node *child = nullptr;
+        Edge *hoverededge = nullptr;
+        PickNodeOrEdge(items(event->pos()), child, hoverededge);
+
+        if (!child || child->itemType != Object_Types::Block)
+        {
+            // Every abandoned attempt now leaves the tool armed and says why, instead of
+            // silently dropping into a state where the button looked active but was not.
+            CancelLinkDrawing(tr("%1 cancelled - the link has to end on a block.").arg(linktype));
+            break;
+        }
+        if (child == source)
+        {
+            CancelLinkDrawing(tr("%1 cancelled - a link cannot start and end on '%2'.")
+                                  .arg(linktype, source->Name()));
+            break;
+        }
+
+        // Tear the rubber band down before creating the link so the scene is clean
+        // whichever way the creation goes.
+        if (tempRay)
+        {
+            MainGraphicsScene->removeItem(tempRay);
+            delete tempRay;
+            tempRay = nullptr;
+        }
+        source->setFlag(QGraphicsItem::ItemIsMovable, true);
+        Node1 = nullptr;
+
+        Edge *newedge = new Edge(source, child, linktype, this);
+        if (!newedge->IsValid())
+        {
+            const QString why = newedge->LastError().isEmpty()
+                                    ? tr("the link could not be created")
+                                    : newedge->LastError();
+            delete newedge;
+            CancelLinkDrawing(tr("%1 not added - %2.").arg(linktype, why));
+            break;
+        }
+
         emit changed();
-        Operation_Mode = Operation_Modes::NormalMode;
-        connect_feature="";
+        mainWindow()->ShowStatusHint(tr("%1 added:  %2  →  %3")
+                                         .arg(linktype, source->Name(), child->Name()));
+        // The tool stays armed so a run of links can be drawn without going back to the
+        // toolbar; Esc or clicking the tool again puts it away.
+        setMode(Operation_Modes::Draw_Connector);
         break;
     }
     //	default:
@@ -881,11 +1035,31 @@ Operation_Modes DiagramView::setMode(Operation_Modes OMode, bool back)
     return (Operation_Mode);
 }
 
+void DiagramView::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Escape)
+    {
+        if (Operation_Mode == Operation_Modes::Node1_selected)
+        {
+            CancelLinkDrawing();
+            mainWindow()->ClearLinkMode();
+            return;
+        }
+        if (Operation_Mode == Operation_Modes::Draw_Connector)
+        {
+            mainWindow()->ClearLinkMode();
+            return;
+        }
+    }
+    QGraphicsView::keyPressEvent(event);
+}
+
 Operation_Modes DiagramView::setModeCursor()
 {
     switch (Operation_Mode) {
     case Operation_Modes::Draw_Connector:
-        setCursor(Qt::CrossCursor);
+        // Carries the icon of the armed link type - see setconnectfeature().
+        setCursor(linkCursor);
         break;
     case Operation_Modes::Pan:
         setCursor(Qt::OpenHandCursor);
@@ -894,7 +1068,7 @@ Operation_Modes DiagramView::setModeCursor()
         setCursor(Qt::CrossCursor);
         break;
     case Operation_Modes::Node1_selected:
-        setCursor(Qt::CrossCursor);
+        setCursor(linkCursor);
         break;
     case Operation_Modes::resizeNode:
         break;

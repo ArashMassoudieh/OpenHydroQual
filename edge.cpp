@@ -47,7 +47,11 @@ Edge::Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramVie
     }
     if (list.contains(dest))
     {
-        delete this;
+        // Was "delete this" inside the constructor, which is undefined behaviour and left
+        // the caller with a dangling pointer. The caller checks IsValid() and deletes.
+        valid = false;
+        lasterror = QString("'%1' and '%2' are already connected")
+                        .arg(sourceNode->Name()).arg(destNode->Name());
         return;
     }
 
@@ -62,9 +66,12 @@ Edge::Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramVie
     if (!parent->mainWindow()->AddLink(name, sourceNode->Name(), destNode->Name(), edgeType, this))
     {
         parent->MainGraphicsScene->removeItem(this);
-        return; 
+        valid = false;
+        lasterror = QString("'%1' is not a valid link between these blocks - see the log")
+                        .arg(edgeType);
+        return;
     }
-    
+
     source->addEdge(this);
     dest->addEdge(this);
     adjust();

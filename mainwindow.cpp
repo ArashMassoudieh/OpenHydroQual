@@ -48,6 +48,7 @@
 #include "qplotwindow.h"
 #endif
 #include <QInputDialog>
+#include <QSettings>
 #include "wizard_select_dialog.h"
 #ifndef Qt6
 #include <QtSvg/QGraphicsSvgItem>
@@ -135,7 +136,8 @@ MainWindow::MainWindow(QWidget *parent) :
     dView->setObjectName(QStringLiteral("graphicsView"));
     ui->horizontalLayout->addWidget(dView);
     LogWindow = new logwindow(this);
-    LogWindow->show();
+    SetupLogDock();
+    SetupStatusBar();
 
     maintemplatefilename = RESOURCE_DIRECTORY + "/main_components.json";
     qDebug()<<QString::fromStdString(maintemplatefilename);
@@ -197,7 +199,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionComponent_description, &QAction::triggered,this, &MainWindow::oncomponentdescriptions);
     PropertiesWidget = new ItemPropertiesWidget(ui->dockWidgetContents_3);
     PropertiesWidget->tableView()->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->verticalLayout->addWidget(PropertiesWidget);
+    SetupObjectBrowserSplitter();
     connect(PropertiesWidget->tableView(), SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(tablePropShowContextMenu(const QPoint&)));
 
     PropertiesWidget->tableView()->setItemDelegateForColumn(1,new Delegate(this,this));
@@ -209,6 +211,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
     qDebug()<<graphsClipboard.size();
     graphsClipboard.clear();
+    SetModified(false);
 
 
 }
@@ -223,6 +226,141 @@ void MainWindow::InactivateRedo(bool yes)
 {
     ui->actionRedo->setEnabled(!yes);
     ui->actionRedo->setDisabled(yes);
+}
+
+ProgressWindow *MainWindow::CreateProgressWindow()
+{
+    // Each run used to leave its progress window behind; only one is ever needed, so
+    // the previous run's window goes away when a new run starts.
+    if (rtw)
+    {
+        rtw->close();
+        delete rtw;
+        rtw = nullptr;
+    }
+    rtw = new ProgressWindow(this);
+    return rtw;
+}
+
+void MainWindow::SetupObjectBrowserSplitter()
+{
+    // The object browser tree and the properties panel used to be stacked in a plain
+    // QVBoxLayout, which made the boundary between them fixed. Moving them into a
+    // vertical splitter lets the user drag that boundary.
+    browserSplitter = new QSplitter(Qt::Vertical, ui->dockWidgetContents_3);
+    browserSplitter->setObjectName("browserSplitter");
+    browserSplitter->setChildrenCollapsible(false);
+    browserSplitter->setHandleWidth(6);
+
+    ui->verticalLayout->removeWidget(ui->treeWidget);
+    browserSplitter->addWidget(ui->treeWidget);
+    browserSplitter->addWidget(PropertiesWidget);
+
+    // Keep both panes usable no matter where the handle is dropped.
+    ui->treeWidget->setMinimumHeight(60);
+    PropertiesWidget->setMinimumHeight(60);
+    browserSplitter->setStretchFactor(0, 1);
+    browserSplitter->setStretchFactor(1, 1);
+
+    ui->verticalLayout->addWidget(browserSplitter);
+
+    QSettings settings("OpenHydroQual", "OpenHydroQual");
+    const QByteArray state = settings.value("ObjectBrowser/splitterState").toByteArray();
+    if (!state.isEmpty())
+        browserSplitter->restoreState(state);
+    else
+        browserSplitter->setSizes({ 300, 300 });
+}
+
+void MainWindow::SetupLogDock()
+{
+    // The log used to be a free floating dialog that covered the diagram and could get
+    // lost behind the main window. As a dock it parks at the bottom, and can still be
+    // dragged out to float over the diagram - translucently, see UpdateLogDockOpacity().
+    logDock = new QDockWidget(tr("Log"), this);
+    logDock->setObjectName("logDock");
+    logDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+    logDock->setWidget(LogWindow);
+
+    // A status strip, not a panel: small by default and cheap to give space back.
+    LogWindow->setMinimumHeight(40);
+    logDock->setMinimumHeight(60);
+
+    addDockWidget(Qt::BottomDockWidgetArea, logDock);
+    resizeDocks({ logDock }, { 120 }, Qt::Vertical);
+
+    connect(logDock, &QDockWidget::topLevelChanged, this, &MainWindow::UpdateLogDockOpacity);
+    connect(logDock, &QDockWidget::visibilityChanged,
+            ui->actionLog_Window, &QAction::setChecked);
+    ui->actionLog_Window->setChecked(true);
+}
+
+void MainWindow::SetupStatusBar()
+{
+    // Cursor coordinates get their own permanent slot on the right; the message area on
+    // the left is then free for what the user is doing or what is selected, instead of
+    // the two fighting over the same space on every mouse move.
+    cursorPositionLabel = new QLabel(this);
+    cursorPositionLabel->setMinimumWidth(120);
+    cursorPositionLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    statusBar()->addPermanentWidget(cursorPositionLabel);
+}
+
+void MainWindow::ShowStatusHint(const QString &hint)
+{
+    statusBar()->showMessage(hint);
+}
+
+void MainWindow::ShowCursorPosition(int x, int y)
+{
+    if (cursorPositionLabel)
+        cursorPositionLabel->setText(QString("x: %1  y: %2").arg(x).arg(y));
+}
+
+void MainWindow::ShowSelectedEdge(Edge *edge)
+{
+    if (!edge || !edge->object())
+    {
+        statusBar()->clearMessage();
+        return;
+    }
+
+    const QString type = QString::fromStdString(edge->object()->GetType());
+    const QString name = QString::fromStdString(edge->object()->GetName());
+    QString from, to;
+    if (edge->sourceNode()) from = edge->sourceNode()->Name();
+    if (edge->destNode())   to   = edge->destNode()->Name();
+
+    if (!from.isEmpty() && !to.isEmpty())
+        ShowStatusHint(tr("Link selected - %1 '%2':  %3  →  %4").arg(type, name, from, to));
+    else
+        ShowStatusHint(tr("Link selected - %1 '%2'").arg(type, name));
+}
+
+void MainWindow::ShowSelectedNode(Node *node)
+{
+    if (!node || !node->object())
+    {
+        statusBar()->clearMessage();
+        return;
+    }
+    ShowStatusHint(tr("%1 selected - '%2'")
+                       .arg(QString::fromStdString(node->object()->GetType()),
+                            QString::fromStdString(node->object()->GetName())));
+}
+
+void MainWindow::UpdateLogDockOpacity(bool floating)
+{
+    if (!logDock) return;
+    // Fully opaque while docked; see-through once it is floating over the diagram.
+    logDock->setWindowOpacity(floating ? 0.80 : 1.0);
+}
+
+void MainWindow::SaveObjectBrowserSplitterState()
+{
+    if (!browserSplitter) return;
+    QSettings settings("OpenHydroQual", "OpenHydroQual");
+    settings.setValue("ObjectBrowser/splitterState", browserSplitter->saveState());
 }
 
 
@@ -264,9 +402,9 @@ MainWindow::~MainWindow()
 {
     if (rtw)
         rtw->close();
-    LogWindow->close();
+    if (logDock)
+        logDock->close();
     delete ui;
-    exit; 
 }
 
 void MainWindow::tablePropShowContextMenu(const QPoint&pos)
@@ -379,12 +517,45 @@ bool MainWindow::Populate_TreeWidget()
     for (int i=0; i<treeitems.count(); i++)
     {
         QTreeWidgetItem *Item = new QTreeWidgetItem(ui->treeWidget);
-        QTreeWidgetItem(ui->treeWidget);
         Item->setText(0,treeitems[i]);
         Item->setData(0,Qt::UserRole,"main");
         ui->treeWidget->addTopLevelItem(Item);
     }
     return true;
+}
+
+/**
+ * @brief Identifies a tree item by the names along its path, e.g. "Blocks/Pond (1)"
+ *
+ * RefreshTreeView() rebuilds the tree from scratch, so item pointers cannot be used
+ * to carry expansion and selection across a refresh; these paths can.
+ */
+static QString TreeItemPath(const QTreeWidgetItem *item)
+{
+    QString path = item->text(0);
+    for (const QTreeWidgetItem *p = item->parent(); p != nullptr; p = p->parent())
+        path.prepend(p->text(0) + "/");
+    return path;
+}
+
+static void CollectExpandedTreeItems(const QTreeWidgetItem *item, QStringList &expanded)
+{
+    if (item->isExpanded())
+        expanded.append(TreeItemPath(item));
+    for (int i=0; i<item->childCount(); i++)
+        CollectExpandedTreeItems(item->child(i), expanded);
+}
+
+static void RestoreTreeItemState(QTreeWidget *tree, QTreeWidgetItem *item,
+                                 const QStringList &expanded, const QString &current)
+{
+    const QString path = TreeItemPath(item);
+    if (expanded.contains(path))
+        item->setExpanded(true);
+    if (!current.isEmpty() && path == current)
+        tree->setCurrentItem(item);
+    for (int i=0; i<item->childCount(); i++)
+        RestoreTreeItemState(tree, item->child(i), expanded, current);
 }
 
 void MainWindow::on_check_object_browser()
@@ -399,11 +570,11 @@ void MainWindow::on_check_object_browser()
 
 void MainWindow::on_check_showlogwindow()
 {
-    //ui->actionObject_Browser->setChecked(!ui->actionObject_Browser->isChecked());
+    if (!logDock) return;
     if (ui->actionLog_Window->isChecked())
-        LogWindow->show();
+        logDock->show();
     else
-        LogWindow->hide();
+        logDock->hide();
 
 }
 
@@ -414,6 +585,11 @@ void MainWindow::on_object_browser_closed(bool visible)
 
 bool MainWindow::BuildObjectsToolBar()
 {
+    // Toolbar clear() only detaches these actions - they belong to the main window and
+    // would otherwise pile up on every rebuild.
+    qDeleteAll(toolbarObjectActions_);
+    toolbarObjectActions_.clear();
+
     ui->mainToolBar->clear();
     ui->BlocksToolBar->clear();
     ui->LinksToolBar->clear();
@@ -464,6 +640,7 @@ bool MainWindow::BuildObjectsToolBar()
     for (unsigned int i = 0; i < system.GetAllBlockTypes().size(); i++)
     {
         QAction* action = new QAction(this);
+        toolbarObjectActions_.append(action);
         action->setObjectName(QString::fromStdString(system.GetAllBlockTypes()[i]));
         QIcon icon;
 
@@ -496,6 +673,7 @@ bool MainWindow::BuildObjectsToolBar()
         {
             string compositetype = system.GetAllCompositeTypes()[i];
             QAction* action = new QAction(this);
+            toolbarObjectActions_.append(action);
             action->setObjectName(QString::fromStdString(compositetype));
             QIcon icon;
 
@@ -524,6 +702,7 @@ bool MainWindow::BuildObjectsToolBar()
     for (unsigned int i = 0; i < system.GetAllLinkTypes().size(); i++)
     {
         QAction* action = new QAction(this);
+        toolbarObjectActions_.append(action);
         action->setCheckable(true);
         action->setObjectName(QString::fromStdString(system.GetAllLinkTypes()[i]));
         QIcon icon;
@@ -611,6 +790,7 @@ bool MainWindow::BuildObjectsToolBar()
                 {
                     string type = system.GetAllTypesOf(typecategory)[i];
                     QAction* action = new QAction(this);
+                    toolbarObjectActions_.append(action);
                     action->setCheckable(false);
                     action->setObjectName(QString::fromStdString(type));
                     QIcon icon;
@@ -679,6 +859,10 @@ void MainWindow::addToolbarLabel(QToolBar* toolbar, const QString& text)
 
 bool MainWindow::ReCreateObjectsMenu()
 {
+    // Same as in BuildObjectsToolBar: menu clear() does not own these actions.
+    qDeleteAll(menuObjectActions_);
+    menuObjectActions_.clear();
+
     ui->menuBlocks->clear();
     ui->menuLinks->clear();
     ui->menuChemistry->clear();
@@ -687,6 +871,7 @@ bool MainWindow::ReCreateObjectsMenu()
     {
         //qDebug() << QString::fromStdString(system.GetAllBlockTypes()[i]);
         QAction* action = new QAction(this);
+        menuObjectActions_.append(action);
         action->setObjectName(QString::fromStdString(system.GetAllBlockTypes()[i]));
         action->setText(QString::fromStdString(system.GetModel(system.GetAllBlockTypes()[i])->Description()));
         QIcon icon;
@@ -720,6 +905,7 @@ bool MainWindow::ReCreateObjectsMenu()
         {
             string compositetype = system.GetAllCompositeTypes()[i];
             QAction* action = new QAction(this);
+            menuObjectActions_.append(action);
             action->setObjectName(QString::fromStdString(compositetype));
             action->setText(QString::fromStdString(system.GetModel(compositetype)->Description()));
             QIcon icon;
@@ -741,6 +927,7 @@ bool MainWindow::ReCreateObjectsMenu()
     {
         //qDebug() << QString::fromStdString(system.GetAllLinkTypes()[i]);
         QAction* action = new QAction(this);
+        menuObjectActions_.append(action);
         action->setCheckable(true);
         action->setObjectName(QString::fromStdString(system.GetAllLinkTypes()[i]));
         action->setText(QString::fromStdString(system.GetModel(system.GetAllLinkTypes()[i])->Description()));
@@ -775,6 +962,7 @@ bool MainWindow::ReCreateObjectsMenu()
             {
                 string type = system.GetAllTypesOf(typecategory)[i];
                 QAction* action = new QAction(this);
+                menuObjectActions_.append(action);
                 action->setCheckable(false);
                 action->setObjectName(QString::fromStdString(type));
                 action->setText(QString::fromStdString(system.GetModel(type)->Description()));
@@ -918,16 +1106,43 @@ void MainWindow::onungroupcomposite()
 
 void MainWindow::onaddlink()
 {
-    QObject* obj = sender();
-    dView->setconnectfeature(obj->objectName());
-    foreach (QAction* action, ui->mainToolBar->actions())
+    QAction* triggered = qobject_cast<QAction*>(sender());
+    if (!triggered) return;
+    const QString linktype = triggered->objectName();
+
+    // Clicking the armed link type again puts the tool away.
+    if (dView->getselectedconnectfeature() == linktype && triggered->isChecked() == false)
     {
-        if (action->objectName()!=obj->objectName())
-            action->setChecked(false);
-        else
-            action->setChecked(true);
+        ClearLinkMode();
+        return;
     }
 
+    // Every other link tool has to come up, or two buttons look armed at once. The link
+    // actions live on LinksToolBar and menuLinks - the old loop searched mainToolBar,
+    // which is empty and hidden, so nothing was ever unchecked.
+    foreach (QAction* action, ui->LinksToolBar->actions())
+        action->setChecked(action->objectName() == linktype);
+    foreach (QAction* action, ui->menuLinks->actions())
+        action->setChecked(action->objectName() == linktype);
+    triggered->setChecked(true);
+
+    dView->setconnectfeature(linktype);
+    // Arming the mode is what makes the cursor change and the first click start a link;
+    // without it the button looked pressed while nothing was actually armed.
+    dView->setMode(Operation_Modes::Draw_Connector);
+    ShowStatusHint(tr("%1: click the source block, then the target block.  Esc cancels.")
+                       .arg(linktype));
+}
+
+void MainWindow::ClearLinkMode()
+{
+    foreach (QAction* action, ui->LinksToolBar->actions())
+        action->setChecked(false);
+    foreach (QAction* action, ui->menuLinks->actions())
+        action->setChecked(false);
+    dView->setconnectfeature("");
+    dView->setMode(Operation_Modes::NormalMode);
+    statusBar()->clearMessage();
 }
 
 bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, const QString &targetblock, const QString &type,  Edge* edge)
@@ -1042,7 +1257,7 @@ void MainWindow::onaddparameter()
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Parameter '" + QString::fromStdString(name) + "' was added!");
-    undoData.AppendtoLast(&system);
+    AddStatetoUndoData();
 }
 
 void MainWindow::onaddobjectivefunction()
@@ -1072,7 +1287,7 @@ void MainWindow::onaddobjectivefunction()
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Objective Function '" + QString::fromStdString(name) + "' was added!");
-    undoData.AppendtoLast(&system);
+    AddStatetoUndoData();
 
 }
 
@@ -1104,7 +1319,7 @@ void MainWindow::onaddobservation()
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Observation '" + QString::fromStdString(name) + "' was added!");
-    undoData.AppendtoLast(&system);
+    AddStatetoUndoData();
 }
 
 void MainWindow::onaddconstituent()
@@ -1136,7 +1351,7 @@ void MainWindow::onaddconstituent()
     system.AddConstituentRelateProperties(system.constituent(name));
     RefreshTreeView();
     LogAddDelete("Constituent '" + QString::fromStdString(name) + "' was added!");
-    undoData.AppendtoLast(&system);
+    AddStatetoUndoData();
 }
 
 void MainWindow::onaddreaction()
@@ -1169,7 +1384,7 @@ void MainWindow::onaddreaction()
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Reaction '" + QString::fromStdString(name) + "' was added!");
-    undoData.AppendtoLast(&system);
+    AddStatetoUndoData();
 
 }
 
@@ -1202,7 +1417,7 @@ void MainWindow::onaddreactionparameter()
     //system.object(name)->SetName(name);
     RefreshTreeView();
     LogAddDelete("Reaction '" + QString::fromStdString(name) + "' was added!");
-    undoData.AppendtoLast(&system);
+    AddStatetoUndoData();
 }
 
 
@@ -1217,6 +1432,14 @@ void MainWindow::onaddentity()
 
 void MainWindow::RefreshTreeView()
 {
+    // The tree is rebuilt from scratch below, so remember which branches were open and
+    // what was selected; otherwise every object added collapses the whole browser.
+    QStringList expandeditems;
+    for (int i=0; i<ui->treeWidget->topLevelItemCount(); i++)
+        CollectExpandedTreeItems(ui->treeWidget->topLevelItem(i), expandeditems);
+    const QString currentitem = ui->treeWidget->currentItem()
+                                    ? TreeItemPath(ui->treeWidget->currentItem()) : QString();
+
     Populate_TreeWidget();
     if (propmodel != nullptr)
         delete  propmodel;
@@ -1447,6 +1670,10 @@ void MainWindow::RefreshTreeView()
             treeitem->addChild(treechlditem);
         }
     }
+
+    for (int i=0; i<ui->treeWidget->topLevelItemCount(); i++)
+        RestoreTreeItemState(ui->treeWidget, ui->treeWidget->topLevelItem(i),
+                             expandeditems, currentitem);
 }
 
 string MainWindow::CreateNewName(string type, bool allow_parathesis)
@@ -1779,20 +2006,24 @@ void MainWindow::onDeleteItem()
 
 void MainWindow::on_Undo()
 {
-    if (undoData.CanUndo())
-        system = *undoData.Undo();
+    if (!undoData.CanUndo())
+        return;
+    system = *undoData.Undo();
     PopulatePropertyTable(nullptr);
     RecreateGraphicItemsFromSystem(false);
     RefreshTreeView();
+    SetModified();
 }
 
 void MainWindow::on_Redo()
 {
-    if (undoData.CanRedo())
-        system = *undoData.Redo();
+    if (!undoData.CanRedo())
+        return;
+    system = *undoData.Redo();
     PopulatePropertyTable(nullptr);
     RecreateGraphicItemsFromSystem(false);
     RefreshTreeView();
+    SetModified();
 }
 
 
@@ -1965,7 +2196,9 @@ void MainWindow::Populate_General_ToolBar()
     actionrun->setIcon(iconrun);
     ui->GeneraltoolBar->addAction(actionrun);
     actionrun->setText("Run Model");
-    actionrun->setToolTip("Run Model");
+    actionrun->setShortcut(QKeySequence(Qt::Key_F5));
+    actionrun->setShortcutContext(Qt::ApplicationShortcut);
+    actionrun->setToolTip("Run Model (F5)");
     actionrun->setObjectName("Run Model");
     connect(actionrun, SIGNAL(triggered()), this, SLOT(onrunmodel()));
     //optimize
@@ -2102,6 +2335,7 @@ void MainWindow::onsaveas()
 
         workingfolder = QFileInfo(fileName).canonicalPath();
         SetFileName(fileName);
+        SetModified(false);
         addToRecentFiles(fileName,true);
     }
 
@@ -2129,42 +2363,44 @@ void MainWindow::onsaveasJson()
 }
 void MainWindow::onloadJson()
 {
+    if (!MaybeSaveChanges())
+        return;
+
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open"), workingfolder,
                                                     tr("Json files (*.json);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
+    // Nothing was picked, so the current model must be left exactly as it is.
+    if (fileName=="")
+        return;
 
-    if (fileName!="")
-    {
-        system.clear();
-        system.SetWorkingFolder(QFileInfo(fileName).canonicalPath().toStdString()+"/");
-        //qDebug() <<"Working Folder: " << QString::fromStdString(system.GetWorkingFolder());
-        QFile file(fileName);
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QMessageBox::critical(nullptr,
-                                  "Error opening file",
-                                  "Could not open JSON file:\n" + fileName);
-            return;
-        }
-
-        QByteArray jsonData = file.readAll();
-        file.close();
-
-        QJsonParseError parseError;
-        QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
-
-        if (parseError.error != QJsonParseError::NoError) {
-            QMessageBox::critical(nullptr,
-                                  "JSON Parse Error",
-                                  "Failed to parse JSON file:\n" + fileName +
-                                      "\nError: " + parseError.errorString());
-            return; // return empty
-        }
-        system.LoadfromJson(doc);
-        SetFileName("");
-
-
+    system.clear();
+    system.SetWorkingFolder(QFileInfo(fileName).canonicalPath().toStdString()+"/");
+    //qDebug() <<"Working Folder: " << QString::fromStdString(system.GetWorkingFolder());
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::critical(nullptr,
+                              "Error opening file",
+                              "Could not open JSON file:\n" + fileName);
+        return;
     }
+
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
+
+    if (parseError.error != QJsonParseError::NoError) {
+        QMessageBox::critical(nullptr,
+                              "JSON Parse Error",
+                              "Failed to parse JSON file:\n" + fileName +
+                                  "\nError: " + parseError.errorString());
+        return; // return empty
+    }
+    system.LoadfromJson(doc);
+    SetFileName("");
+
     addedtemplatefilenames = system.addedtemplates;
     PopulatePropertyTable(nullptr);
     dView->DeleteAllItems();
@@ -2177,6 +2413,7 @@ void MainWindow::onloadJson()
     undoData.AppendtoLast(&system);
     if (undoData.active==0) InactivateUndo();
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
+    SetModified(false);
     ui->actionVisualize->setEnabled(false);
     actionviz->setEnabled(false);
 }
@@ -2209,6 +2446,7 @@ void MainWindow::onsave()
 
     if (filename!="" && filename!="unnamed.ohq")
     {   system.SavetoScriptFile(filename.toStdString(),maintemplatefilename, addedtemplatefilenames);
+        SetModified(false);
         addToRecentFiles(filename,true);
     }
     else
@@ -2228,27 +2466,29 @@ void MainWindow::onnormalmode()
 
 void MainWindow::onopen()
 {
+    if (!MaybeSaveChanges())
+        return;
 
     QString fileName = QFileDialog::getOpenFileName(this,
             tr("Open"), workingfolder,
             tr("OpenHydroQual files (*.ohq);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
 
+    // Nothing was picked, so the current model must be left exactly as it is.
+    if (fileName=="")
+        return;
 
-    if (fileName!="")
-    {
+    ResetSystem();
+    Script scr(fileName.toStdString(),&system);
+    system.clear();
+    system.SetWorkingFolder(QFileInfo(fileName).canonicalPath().toStdString()+"/");
+    qDebug() <<"Working Folder: " << QString::fromStdString(system.GetWorkingFolder());
+    system.CreateFromScript(scr,entitiesfilename);
+    workingfolder = QFileInfo(fileName).canonicalPath();
+    SetFileName(fileName);
+    qDebug() <<"Main Working Folder: " << workingfolder;
+    addToRecentFiles(fileName,true);
 
-        ResetSystem();
-        Script scr(fileName.toStdString(),&system);
-        system.clear();
-        system.SetWorkingFolder(QFileInfo(fileName).canonicalPath().toStdString()+"/");
-        qDebug() <<"Working Folder: " << QString::fromStdString(system.GetWorkingFolder());
-        system.CreateFromScript(scr,entitiesfilename);
-        workingfolder = QFileInfo(fileName).canonicalPath();
-        SetFileName(fileName);
-        qDebug() <<"Main Working Folder: " << workingfolder;
-        addToRecentFiles(fileName,true);
-    }
-    addedtemplatefilenames = system.addedtemplates; 
+    addedtemplatefilenames = system.addedtemplates;
     PopulatePropertyTable(nullptr);
     dView->DeleteAllItems();
     RecreateGraphicItemsFromSystem();
@@ -2260,6 +2500,7 @@ void MainWindow::onopen()
     undoData.AppendtoLast(&system);
     if (undoData.active==0) InactivateUndo();
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
+    SetModified(false);
     ui->actionVisualize->setEnabled(false);
     actionviz->setEnabled(false);
 
@@ -2276,11 +2517,7 @@ void MainWindow::oncomponentdescriptions()
 
 void MainWindow::onnewproject()
 {
-    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "OpenHydroQual",
-                                                                tr("Are you sure?\n"),
-                                                                QMessageBox::Cancel | QMessageBox::Yes,
-                                                                QMessageBox::Yes);
-    if (resBtn == QMessageBox::Cancel)
+    if (!MaybeSaveChanges())
         return;
 
     ResetSystem();
@@ -2297,17 +2534,14 @@ void MainWindow::onnewproject()
     undoData.AppendtoLast(&system);
     if (undoData.active==0) InactivateUndo();
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
+    SetModified(false);
     ui->actionVisualize->setEnabled(false);
     actionviz->setEnabled(false);
 }
 
 bool MainWindow::LoadModel(QString fileName)
 {
-    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "OpenHydroQual",
-                                                                tr("Are you sure?\n"),
-                                                                QMessageBox::Cancel | QMessageBox::Yes,
-                                                                QMessageBox::Yes);
-    if (resBtn == QMessageBox::Cancel)
+    if (!MaybeSaveChanges())
         return false;
 
     bool success = true;
@@ -2330,6 +2564,7 @@ bool MainWindow::LoadModel(QString fileName)
         BuildObjectsToolBar();
         ReCreateObjectsMenu();
         LogAllSystemErrors();
+        SetModified(false);
         return success;
     }
     else
@@ -2411,14 +2646,21 @@ void MainWindow::RecreateGraphicItemsFromSystem(bool zoom_all)
 
 void MainWindow::SetPropertyWindowTitle(const QString &title)
 {
-    int width = ui->dockWidget_3->size().width();
     PropertiesWidget->SetTitleText(title);
-
-
 }
 
 void MainWindow::onrunmodel()
 {
+    // Running saves the model first and can take a long time, so make sure it was not
+    // triggered by accident - F5 is easy to hit by mistake.
+    const QString shownname = filename.trimmed().isEmpty() ? QString("unnamed.ohq")
+                                                           : QFileInfo(filename).fileName();
+    if (QMessageBox::question(this, "OpenHydroQual",
+                              tr("Run the model '%1'?\n\nThe model will be saved before the run starts.").arg(shownname),
+                              QMessageBox::Yes | QMessageBox::Cancel,
+                              QMessageBox::Yes) != QMessageBox::Yes)
+        return;
+
     onsave();
     actionrun->setEnabled(false);
     ErrorHandler errs = system.VerifyAllQuantities();
@@ -2434,7 +2676,7 @@ void MainWindow::onrunmodel()
     qDebug()<<"Working folder: " << workingfolder;
     if (copiedsystem.GetSolverSettings().write_solution_details)
         copiedsystem.SetSolutionLogger(workingfolder.toStdString() + "/solution_details.txt");
-    rtw = new ProgressWindow(this);
+    CreateProgressWindow();
 	rtw->setWindowTitle("Running Model");
     rtw->SetStatus("Running Model");
     rtw->SetPrimaryChartXAxisTitle("Time");
@@ -2547,19 +2789,16 @@ void MainWindow::onrunmodel()
 
 void MainWindow::closeEvent (QCloseEvent *event)
 {
-    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "OpenHydroQual",
-                                                                tr("Are you sure?\n"),
-                                                                QMessageBox::Cancel | QMessageBox::Yes,
-                                                                QMessageBox::Yes);
-    if (resBtn != QMessageBox::Yes) {
+    if (!MaybeSaveChanges()) {
         event->ignore();
-    } else {
-        system.stop_triggered = true;
-        if (rtw) rtw->close();
-        if (LogWindow) LogWindow->close();
-        event->accept();
+        return;
     }
-    exit; 
+
+    system.stop_triggered = true;
+    SaveObjectBrowserSplitterState();
+    if (rtw) rtw->close();
+    if (logDock) logDock->close();
+    event->accept();
 }
 
 void MainWindow::onoptimize()
@@ -2582,7 +2821,7 @@ void MainWindow::onoptimize()
     optimizer->SetParameters(system.object("Optimizer"));
     optimizer->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
-    rtw = new ProgressWindow(this);
+    CreateProgressWindow();
     rtw->SetSecondaryProgressVisible(true);
     rtw->SetPrimaryChartXAxisTitle("Generation");
     rtw->SetPrimaryChartYAxisTitle("Objective Function Value");
@@ -2629,7 +2868,7 @@ void MainWindow::oninverserun()
     optimizer->SetParameters(system.object("Optimizer"));
     optimizer->filenames.pathname = workingfolder.toStdString() + "/";
     system.SetAllParents();
-    rtw = new ProgressWindow(this);
+    CreateProgressWindow();
 	rtw->SetPrimaryChartXAxisTitle("Generation");
     rtw->SetPrimaryChartYAxisTitle("-Log Likelihood");
     rtw->SetPrimaryChartTitle("-LL vs Generation");
@@ -2671,7 +2910,7 @@ void MainWindow::onmcmc()
     mcmc->FileInformation.outputpath = workingfolder.toStdString() + "/";
     mcmc->SetParameters(system.object("MCMC"));
     system.SetAllParents();
-    rtw = new ProgressWindow(this);
+    CreateProgressWindow();
     rtw->SetSecondaryChartVisible(true);
     rtw->show();
 	rtw->SetStatus("Bayesian Parameter Estimation");
@@ -2831,6 +3070,7 @@ void MainWindow::addplugin()
             ReCreateObjectsMenu();
             RefreshTreeView();
             addedtemplatefilenames.push_back(fileName.toStdString());
+            SetModified();
         }
         else
         {
@@ -2852,6 +3092,7 @@ void MainWindow::addplugin(const QString &fileName)
             ReCreateObjectsMenu();
             RefreshTreeView();
             addedtemplatefilenames.push_back(fileName.toStdString());
+            SetModified();
         }
         else
         {
@@ -2922,8 +3163,9 @@ bool MainWindow::Log(const QString &s)
 bool MainWindow::LogError(const QString &s)
 {
     LogWindow->AppendError(s);
-    ui->actionLog_Window->setChecked(true);
-    LogWindow->show();
+    // An error is worth surfacing the log for, even if the user had collapsed it.
+    if (logDock)
+        logDock->show();
     return true;
 }
 
@@ -2936,9 +3178,42 @@ bool MainWindow::LogAddDelete(const QString &s)
 void MainWindow::SetFileName(const QString &_filename)
 {
     filename = _filename;
-    if (filename.split('/').size()>0)
-        setWindowTitle("OpenHydroQual: " + filename.split('/')[filename.split('/').size()-1]);
+    UpdateWindowTitle();
+}
 
+void MainWindow::UpdateWindowTitle()
+{
+    const QString shownname = filename.trimmed().isEmpty() ? QString("unnamed.ohq")
+                                                           : QFileInfo(filename).fileName();
+    setWindowTitle("OpenHydroQual: " + shownname + (modelModified ? " *" : ""));
+}
+
+void MainWindow::SetModified(bool modified)
+{
+    modelModified = modified;
+    UpdateWindowTitle();
+}
+
+bool MainWindow::MaybeSaveChanges()
+{
+    if (!modelModified)
+        return true;
+
+    const QString shownname = filename.trimmed().isEmpty() ? QString("unnamed.ohq")
+                                                           : QFileInfo(filename).fileName();
+    QMessageBox::StandardButton resBtn = QMessageBox::warning(this, "OpenHydroQual",
+                tr("'%1' has unsaved changes.\n\nDo you want to save them?").arg(shownname),
+                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                QMessageBox::Save);
+
+    if (resBtn == QMessageBox::Cancel)
+        return false;
+    if (resBtn == QMessageBox::Discard)
+        return true;
+
+    onsave();
+    // A cancelled "Save As" leaves the model modified, so the caller must not proceed.
+    return !modelModified;
 }
 
 void MainWindow::readRecentFilesList()
@@ -3047,15 +3322,16 @@ void MainWindow::on_actionRecent_triggered()
 {
     QAction* a = static_cast<QAction*> (QObject::sender());
     QString fileName = a->text();
-    if (LoadModel(fileName))
-    {
-        addToRecentFiles(fileName, false);
-    }
+    // A failed or cancelled load must leave the current model and its undo history alone.
+    if (!LoadModel(fileName))
+        return;
+
+    addToRecentFiles(fileName, false);
     undoData = UndoData(this);
     undoData.AppendtoLast(&system);
     if (undoData.active==0) InactivateUndo();
     if (undoData.active==undoData.Systems.size()-1) InactivateRedo();
-
+    SetModified(false);
 }
 
 void MainWindow::removeFromRecentList(QAction* selectedFileAction)
@@ -3099,6 +3375,7 @@ bool MainWindow::CreateFileIfDoesNotExist(QString fileName)
 void MainWindow::AddStatetoUndoData()
 {
     undoData.AppendtoLast(&system);
+    SetModified();
 }
 
 
@@ -3458,7 +3735,7 @@ void MainWindow::onimport()
     LogAllSystemErrors();
 
     // Update undo system
-    undoData.AppendtoLast(&system);
+    AddStatetoUndoData();
     if (undoData.active == 0) InactivateUndo();
     if (undoData.active == undoData.Systems.size() - 1) InactivateRedo();
 

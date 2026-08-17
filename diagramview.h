@@ -42,7 +42,14 @@ public:
     MainWindow *mainWindow() {return  mainwindow;}
     colorCodeData colorCode;
     QString getselectedconnectfeature() {return connect_feature;} //returns the type of connector to be added.
-    void setconnectfeature(QString cf) {connect_feature = cf;} //sets the type of connector to be used
+    void setconnectfeature(QString cf); //sets the type of connector to be used
+    /**
+     * @brief Abandons a half drawn link and returns to normal mode
+     * @param reason shown in the status bar; empty just clears the message
+     */
+    void CancelLinkDrawing(const QString &reason = QString());
+    /** @brief Starts a link at @p source and follows the cursor until release */
+    void BeginLinkFrom(Node *source);
     Operation_Modes setMode(Operation_Modes OMode = Operation_Modes::NormalMode, bool back = false);
     Operation_Modes setModeCursor();
     Operation_Modes GetOperationMode() {return Operation_Mode;}
@@ -68,8 +75,22 @@ private:
     Operation_Modes Operation_Mode;
     Node *resizenode;
     corners resizecorner;
-    Node *Node1; // , *Node2;
-    Ray *tempRay;
+    Node *Node1 = nullptr; // , *Node2;
+    Ray *tempRay = nullptr;
+    /**
+     * @brief Cursor showing the icon of the link type being drawn
+     *
+     * Built when a link tool is armed, so the pointer itself says which link is about to
+     * be drawn instead of a generic crosshair.
+     */
+    QCursor linkCursor = QCursor(Qt::CrossCursor);
+    /**
+     * @brief Picks one item out of those under the cursor, preferring blocks over links
+     *
+     * This used to pick at random, which meant a click where a link crossed a block
+     * started a drag on whichever the coin toss chose.
+     */
+    static void PickNodeOrEdge(const QList<QGraphicsItem*> &items, Node *&node, Edge *&edge);
     int _x, _y;
     int x_ini, y_ini;
     QList<Node*> nodes(const QList<QGraphicsItem*> items) const;
@@ -94,6 +115,7 @@ public slots:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
     bool deleteselectednode(QString nodename="");
     void copyselectednode(QString nodename = "");
     void showgraph();

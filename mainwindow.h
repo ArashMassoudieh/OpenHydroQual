@@ -35,6 +35,8 @@
 #include "undodata.h"
 #include "ItemPropertiesWidget.h"
 #include <QDir>
+#include <QSplitter>
+#include <QDockWidget>
 
 #ifdef windows_version
     #define RESOURCE_DIRECTORY qApp->applicationDirPath().toStdString()+"/../../resources"
@@ -55,6 +57,10 @@
 namespace Ui {
 class MainWindow;
 }
+
+class Node;
+class Edge;
+class QLabel;
 
 class MainWindow : public QMainWindow
 {
@@ -110,12 +116,46 @@ public:
     void AddStatetoUndoData();
     void SetActiveUndo();
     void SetPropertyWindowIcon(const QString &iconfilename);
+    /**
+     * @brief Flags the model as having unsaved changes (or as freshly saved/loaded)
+     *
+     * Updates the window title, where unsaved changes are shown with a trailing '*'.
+     */
+    void SetModified(bool modified = true);
+    bool IsModified() const { return modelModified; }
+    /**
+     * @brief Shows what the user is doing or what is selected, on the left of the status bar
+     *
+     * Cursor coordinates live in their own permanent label on the right, so these two
+     * no longer overwrite each other.
+     */
+    void ShowStatusHint(const QString &hint);
+    void ShowCursorPosition(int x, int y);
+    /**
+     * @brief Puts the selected link's type and endpoints in the status bar
+     * @param edge the selected link, or nullptr to clear
+     */
+    void ShowSelectedEdge(Edge *edge);
+    void ShowSelectedNode(Node *node);
+    /** @brief Unchecks every link tool and drops the armed link type */
+    void ClearLinkMode();
     QString* GetWorkingFolder()
     {
         return &workingfolder;
     }
 private:
     logwindow *LogWindow;
+    QDockWidget *logDock = nullptr;
+    QLabel *cursorPositionLabel = nullptr;
+    void SetupLogDock();
+    void SetupStatusBar();
+    /**
+     * @brief Applies the translucent look while the log is floating over the diagram
+     *
+     * Window opacity only has an effect on top level windows, so it is applied when the
+     * dock is undocked and dropped again when it is re docked.
+     */
+    void UpdateLogDockOpacity(bool floating);
     Ui::MainWindow *ui;
     System system;
     DiagramView* dView;
@@ -131,8 +171,22 @@ private:
     vector<string> addedtemplatefilenames;
     string entitiesfilename;
     ProgressWindow *rtw = nullptr;
+    /**
+     * @brief Creates the progress window for a run, discarding the one from the previous run
+     *
+     * The window is deliberately not self-deleting on close: the solver holds this
+     * pointer for the whole run, so it stays alive until the next run replaces it.
+     */
+    ProgressWindow *CreateProgressWindow();
     void closeEvent (QCloseEvent *event) override;
     QString workingfolder = ".";
+    bool modelModified = false;
+    void UpdateWindowTitle();
+    /**
+     * @brief Offers to save a modified model before it is discarded
+     * @return false if the user cancelled, in which case the caller must abort
+     */
+    bool MaybeSaveChanges();
     QModelIndex addParameterIndex(const QModelIndex &index = QModelIndex());
     QModelIndex tableitemrightckicked;
     std::unique_ptr<QMenu> menu;
@@ -152,7 +206,18 @@ private:
     QAction* actionrun = nullptr;
     QAction* actionviz = nullptr;
     ItemPropertiesWidget *PropertiesWidget = nullptr;
+    QSplitter *browserSplitter = nullptr;
+    void SetupObjectBrowserSplitter();
+    void SaveObjectBrowserSplitterState();
     QMap<QString, QToolBar*> categoryToolbars_;
+    /**
+     * @brief The object-creation actions rebuilt whenever the template set changes
+     *
+     * They are parented to the main window, so clearing the toolbars and menus that
+     * show them does not destroy them; they are tracked here and deleted on rebuild.
+     */
+    QList<QAction*> toolbarObjectActions_;
+    QList<QAction*> menuObjectActions_;
 
     struct NameConflict {
         QString objectType;      // e.g., "Block", "Link", "Parameter"

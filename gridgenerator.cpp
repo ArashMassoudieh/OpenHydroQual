@@ -734,6 +734,7 @@ void GridGenerator::on_Generate()
     mainwindow->GetDiagramView()->repaint();
     mainwindow->undoData.AppendAfterActive(system());
     mainwindow->RecreateGraphicItemsFromSystem();
+    mainwindow->SetModified();
     this->close();
 }
 

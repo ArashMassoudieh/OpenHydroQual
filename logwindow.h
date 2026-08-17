@@ -17,13 +17,19 @@
 #ifndef LOGWINDOW_H
 #define LOGWINDOW_H
 
-#include <QDialog>
+#include <QWidget>
 
 namespace Ui {
 class logwindow;
 }
 
-class logwindow : public QDialog
+/**
+ * @brief The log pane
+ *
+ * A plain widget rather than a window: the main window puts it inside a dock widget
+ * so it can sit out of the way at the bottom, or be floated over the diagram.
+ */
+class logwindow : public QWidget
 {
     Q_OBJECT
 
@@ -33,9 +39,19 @@ public:
     void AppendText(const QString &s);
     void AppendError(const QString &s);
     void AppendBlue(const QString &s);
+    void Clear();
+    /**
+     * @brief A deliberately short preferred height
+     *
+     * A QTextBrowser asks for a tall default, which would make the log dock claim a
+     * large slice of the window on startup.
+     */
+    QSize sizeHint() const override { return QSize(400, 120); }
 
 private:
     Ui::logwindow *ui;
+    /** @brief Pins the view to the newest line; called after every append */
+    void ScrollToBottom();
 };
 
 #endif // LOGWINDOW_H
