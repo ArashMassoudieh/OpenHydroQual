@@ -283,6 +283,7 @@ bool Object::SetQuantities(MetaModel &m, const string& typ )
     SetDefaults();
     for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
         var[s->first].SetParent(this);
+    SyncNameQuantity();
 
     return true;
 }
@@ -301,6 +302,7 @@ bool Object::SetQuantities(MetaModel *m, const string& typ )
     SetDefaults();
     for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
         var[s->first].SetParent(this);
+    SyncNameQuantity();
     return true;
 }
 
@@ -320,7 +322,19 @@ bool Object::SetQuantities(System *sys, const string& typ )
     SetDefaults();
     for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
         var[s->first].SetParent(this);
+    SyncNameQuantity();
     return true;
+}
+
+// The "name" quantity is a mirror of Object::name, shown and edited in the
+// property window. Assigning a QuanSet from the metamodel replaces var
+// wholesale, so the mirror reverts to the template default and the property
+// window shows a blank name until something writes it back - which callers used
+// to have to remember to do, by name, one call site at a time.
+void Object::SyncNameQuantity()
+{
+    if (name != "" && var.Count("name") > 0)
+        var["name"].SetProperty(name);
 }
 
 void Object::SetDefaults()

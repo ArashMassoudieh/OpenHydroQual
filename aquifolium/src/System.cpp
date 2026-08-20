@@ -305,17 +305,50 @@ bool System::AddLink(Link &lnk, const string &source, const string &destination,
         return false;
     if (!VerifyAsSource(block(source), &lnk))
         return false;
+
+    // Link names must be unique. They key deletion, the output columns and
+    // every by-name lookup, and link(name) returns the first match — so a
+    // second link carrying an existing name would silently reconfigure the
+    // older namesake instead of itself. Two links between the same pair of
+    // blocks are legitimate (their flows simply add), but the natural name for
+    // both is identical, so disambiguate rather than alias.
+    const string requestedname = lnk.GetName();
+    const string uniquename = UniqueLinkName(requestedname);
+    if (uniquename != requestedname)
+    {
+        lnk.SetName(uniquename);
+        ShowMessage("A link named '" + requestedname + "' already exists; the new link was named '" + uniquename + "'");
+    }
+
     links.push_back(lnk);
-    link(lnk.GetName())->SetParent(this);
-    link(lnk.GetName())->SetConnectedBlock(Expression::loc::source, source);
-    link(lnk.GetName())->SetConnectedBlock(Expression::loc::destination, destination);
+
+    // Address the new link by index, not by name: a by-name lookup here is what
+    // made the aliasing above possible in the first place.
+    Link *newlink = link(static_cast<unsigned int>(links.size()-1));
+    newlink->SetParent(this);
+    newlink->SetConnectedBlock(Expression::loc::source, source);
+    newlink->SetConnectedBlock(Expression::loc::destination, destination);
 	block(source)->AppendLink(links.size()-1,Expression::loc::source);
 	block(destination)->AppendLink(links.size()-1,Expression::loc::destination);
     if (SetQuantities)
-        link(lnk.GetName())->SetQuantities(metamodel, lnk.GetType());
-	link(lnk.GetName())->SetParent(this);
-    AddAllConstituentRelateProperties(link(lnk.GetName()));
+        newlink->SetQuantities(metamodel, lnk.GetType());
+	newlink->SetParent(this);
+    AddAllConstituentRelateProperties(newlink);
 	return true;
+}
+
+string System::UniqueLinkName(const string &basename) const
+{
+    if (link(basename)==nullptr) return basename;
+
+    // There are finitely many links, so a free suffix always exists within
+    // links.size()+1 tries.
+    for (unsigned int i=2; i<=links.size()+1; i++)
+    {
+        string candidate = basename + " (" + aquiutils::numbertostring(i) + ")";
+        if (link(candidate)==nullptr) return candidate;
+    }
+    return basename;
 }
 
 Block *System::block(const string &s)
@@ -1961,27 +1994,45 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 SafeVector<int> System::SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited)
 {
+    SafeVector<int> visited;
+    return SetLimitedOutFlow(blockid, variable, outflowlimited, visited);
+}
+
+SafeVector<int> System::SetLimitedOutFlow(int blockid, const string &variable, bool outflowlimited, SafeVector<int> &visited)
+{
     SafeVector<int> blocks_affected;
+
+    // The flag propagates through rigid neighbours, and the neighbour graph can
+    // contain both cycles and — where two links join the same pair of blocks —
+    // repeated entries. Without this guard the recursion revisits blocks it has
+    // already flagged, exponentially in the number of parallel paths.
+    if (aquiutils::lookup(visited, blockid)!=-1) return blocks_affected;
+    visited.push_back(blockid);
+
     blocks_affected.push_back(blockid);
     blocks[blockid].SetLimitedOutflow(outflowlimited);
     blocks[blockid].SetOutflowLimitFactor(1,Expression::timing::present);
+
+    // connected_blocks[i] is the far end of the i-th link in GetLinksFrom(), so
+    // the two stay index-aligned even when several links share a neighbour.
     SafeVector<int> connected_blocks = ConnectedBlocksFrom(blockid);
     SafeVector<Link*> connected_links = blocks[blockid].GetLinksFrom();
     for (unsigned int i=0; i<connected_blocks.size(); i++)
     {
-        if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::ispositive(blocks[blockid].GetLinksFrom()[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present)))
+        if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::ispositive(connected_links[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present)))
         {
-            if (blocks[i].AllowLimitedFlow())
-                blocks_affected.append(SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited));
+            if (blocks[connected_blocks[i]].AllowLimitedFlow())
+                blocks_affected.append(SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited,visited));
         }
     }
     connected_blocks = ConnectedBlocksTo(blockid);
     connected_links = blocks[blockid].GetLinksTo();
     for (unsigned int i=0; i<connected_blocks.size(); i++)
     {
-        if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::isnegative(blocks[blockid].GetLinksTo()[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present)))
+        if (blocks[connected_blocks[i]].Variable(variable)->isrigid() && aquiutils::isnegative(connected_links[i]->GetVal(blocks[blockid].Variable(variable)->GetCorrespondingFlowVar(), Expression::timing::present)))
         {
-            blocks_affected.append(SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited));
+            if (blocks[connected_blocks[i]].AllowLimitedFlow())
+                blocks_affected.append(SetLimitedOutFlow(connected_blocks[i],variable,outflowlimited,visited));
         }
     }
     return blocks_affected;
@@ -3409,7 +3460,8 @@ bool System::ReadSystemSettingsTemplate(const string &filename)
 {
     Settings.clear();
     Json::Value root;
-    Json::Reader reader;
+    Json::CharReaderBuilder builder;
+    JSONCPP_STRING errs;
 
     std::ifstream file(filename);
     if (!file.good())
@@ -3418,16 +3470,12 @@ bool System::ReadSystemSettingsTemplate(const string &filename)
         return false;
     }
 
-    file >> root;
-
-    if (!reader.parse(file, root, true)) {
-        //for some reason it always fails to parse
-        std::cout << "Failed to parse configuration\n"
-            << reader.getFormattedErrorMessages();
-        lasterror() = "Failed to parse configuration\n";
+    if (!Json::parseFromStream(builder, file, &root, &errs)) {
+        std::cout << "Failed to parse configuration file " + filename + "\n" << errs;
+        lasterror() = "Failed to parse configuration file " + filename + "\n" + errs;
+        return false;
     }
 
-    Settings.clear();
     for (Json::ValueIterator object_types = root.begin(); object_types != root.end(); ++object_types)
     {
         //qDebug()<<QString::fromStdString(object_types.name());
@@ -4910,13 +4958,21 @@ bool System::LoadfromJson(const QJsonObject &root)
 
         AddLink(current_link, fromname, toname);
 
+        // AddLink writes the final (possibly disambiguated) name back into
+        // current_link. Use it, and check the lookup: the previous code
+        // dereferenced the result unconditionally.
+        const string actuallinkname = current_link.GetName();
+        Link *newlink = link(actuallinkname);
+        if (!newlink)
+            errorhandler.Append("System","Link","ReadFromJson","Link '" + actuallinkname + "' could not be found after being created",10018);
+        else
         for (const QString &property: LinkJson.keys())
         {
             if (property!="type" && property!="to" && property!="from")
             {
-                qDebug()<<linkname;
-                if (!link(linkname.toStdString())->SetProperty(property.toStdString(),LinkJson[property].toString().toStdString(),true, false))
-                    errorhandler.Append("System", "Link","ReadFromJson","Link '" + linkname.toStdString() + "' does not have a propery '" + property.toStdString() + "'",10013 );
+                const string value = (property=="name") ? actuallinkname : LinkJson[property].toString().toStdString();
+                if (!newlink->SetProperty(property.toStdString(),value,true, false))
+                    errorhandler.Append("System", "Link","ReadFromJson","Link '" + actuallinkname + "' does not have a propery '" + property.toStdString() + "'",10013 );
             }
         }
     }

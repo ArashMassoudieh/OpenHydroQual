@@ -552,11 +552,21 @@ bool Command::Execute(System *_sys)
 
 				if (sys->AddLink(L, fromname, toname))
                 {
-                    L.SetName(assignments["name"]);
+                    // AddLink disambiguates a name that is already taken and writes
+                    // the final name back into L. Address the new link by that name:
+                    // looking it up by the requested one would find the older
+                    // namesake and configure it instead of the link just created.
+                    const string actualname = L.GetName();
+                    Link *newlink = sys->link(actualname);
+                    if (!newlink)
+                    {
+                        sys->GetErrorHandler()->Append("system","command","Execute","Link '" + actualname + "' could not be found after being created",11240);
+                        return false;
+                    }
 					for (map<string, string>::iterator it = assignments.begin(); it != assignments.end(); it++)
 					{
 						if (it->first != "type" && it->first != "to" && it->first != "from")
-                            sys->link(assignments["name"])->SetProperty(it->first, it->second, true, false);
+                            newlink->SetProperty(it->first, it->first == "name" ? actualname : it->second, true, false);
 					}
 					return true;
 				}

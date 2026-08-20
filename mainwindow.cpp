@@ -1036,7 +1036,6 @@ void MainWindow::onaddblock()
     //qDebug() << "Adding Block to the system";
     undoData.SetActiveSystem(&system);
     system.AddBlock(block);
-    system.object(name)->SetName(name);
     Node *node = new Node(dView,&system);
     //qDebug() << "Node Created!";
     dView->UpdateSceneRect();
@@ -1066,7 +1065,6 @@ void MainWindow::onaddcomposite()
     composite.SetName(name);
     undoData.SetActiveSystem(&system);
     system.AddComposite(composite);
-    system.object(name)->SetName(name);
     system.object(name)->AssignRandomPrimaryKey();
 
     if (!system.composite(name)->Instantiate(&system))
@@ -1195,9 +1193,20 @@ bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
         //RecreateGraphicItemsFromSystem();
         return false; 
     }
-    system.object(LinkName.toStdString())->SetName(LinkName.toStdString());
-    system.object(LinkName.toStdString())->AssignRandomPrimaryKey();
-    edge->SetObject(system.object(LinkName.toStdString()));
+    // System::AddLink disambiguates a name that is already taken - which is the
+    // normal case for a second link between the same pair of blocks, since both
+    // get the same suggested "source - target" name - and writes the name the
+    // link actually got back into `link`. Bind the edge to that one; looking it
+    // up by the requested name would find the earlier namesake and rebind it.
+    const QString actualname = QString::fromStdString(link.GetName());
+    Object *newlink = system.object(actualname.toStdString());
+    if (!newlink)
+    {
+        LogError("Link '" + actualname + "' could not be found after being created");
+        return false;
+    }
+    newlink->AssignRandomPrimaryKey();
+    edge->SetObject(newlink);
     foreach (QAction* action, ui->LinksToolBar->actions())
     {
         action->setChecked(false);
@@ -1208,10 +1217,10 @@ bool MainWindow::AddLink(const QString &LinkName, const QString &sourceblock, co
         action->setChecked(false);
     }
     RefreshTreeView();
-    system.AddAllConstituentRelateProperties(system.link(LinkName.toStdString()));
+    system.AddAllConstituentRelateProperties(system.link(actualname.toStdString()));
     system.SetVariableParents();
 
-    LogAddDelete("Link '" + LinkName + "' was added!");
+    LogAddDelete("Link '" + actualname + "' was added!");
     undoData.AppendAfterActive(&system);
     return true;
 }
@@ -1228,7 +1237,6 @@ void MainWindow::onaddsource()
     undoData.AppendAfterActive(&system);
     system.AddSource(source);
     //qDebug() << "source added! " << obj->objectName();
-    system.object(name)->SetName(name);
     system.AddAllConstituentRelateProperties(system.source(name));
     RefreshTreeView();
     LogAddDelete("Source '" + QString::fromStdString(name) + "' was added!");
@@ -1314,7 +1322,6 @@ void MainWindow::onaddobservation()
     observation.SetName(name);
     undoData.SetActiveSystem(&system);
     system.AddObservation(observation);
-    system.object(name)->SetName(name);
     //qDebug() << "observation added! " << obj->objectName();
     //system.object(name)->SetName(name);
     RefreshTreeView();
@@ -1345,7 +1352,6 @@ void MainWindow::onaddconstituent()
     constituent.SetName(name);
     undoData.SetActiveSystem(&system);
     system.AddConstituent(constituent);
-    system.object(name)->SetName(name);
     //qDebug() << "Constituent added! " << obj->objectName();
     //system.object(name)->SetName(name);
     system.AddConstituentRelateProperties(system.constituent(name));
@@ -1377,7 +1383,6 @@ void MainWindow::onaddreaction()
     reaction.SetName(name);
     undoData.SetActiveSystem(&system);
     system.AddReaction(reaction);
-    system.object(name)->SetName(name);
     system.AddAllConstituentRelateProperties(system.reaction(name));
     system.AddConstituentRelateProperties(system.reaction(name));
     //qDebug() << "Reaction added! " << obj->objectName();
@@ -1411,7 +1416,6 @@ void MainWindow::onaddreactionparameter()
     reactionparameter.SetName(name);
     undoData.SetActiveSystem(&system);
     system.AddReactionParameter(reactionparameter);
-    system.object(name)->SetName(name);
     system.AddConstituentRelateProperties(system.reactionparameter(name));
     //qDebug() << "Reaction Parameter added! " << obj->objectName();
     //system.object(name)->SetName(name);

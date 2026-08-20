@@ -15,6 +15,7 @@
 
 
 #include "edge.h"
+#include <functional>
 #include "node.h"
 #include "qpainter.h"
 #include "diagramview.h"
@@ -39,21 +40,10 @@ Edge::Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramVie
     source = sourceNode;
     dest = destNode;
 
-    QList<Node*> list;
-    foreach (Edge *e , source->edges())
-    {
-        if (e->sourceNode() == source) list.append(e->destNode());
-        if (e->destNode() == source) list.append(e->sourceNode());
-    }
-    if (list.contains(dest))
-    {
-        // Was "delete this" inside the constructor, which is undefined behaviour and left
-        // the caller with a dangling pointer. The caller checks IsValid() and deletes.
-        valid = false;
-        lasterror = QString("'%1' and '%2' are already connected")
-                        .arg(sourceNode->Name()).arg(destNode->Name());
-        return;
-    }
+    // Several links may join the same pair of blocks - the engine sums their
+    // transfers - so there is deliberately no "already connected" refusal here.
+    // adjust() fans them out sideways so each stays individually visible,
+    // hoverable, selectable and deletable.
 
     setFlag(ItemIsSelectable);
     setFlag(ItemSendsGeometryChanges);
@@ -74,7 +64,7 @@ Edge::Edge(Node *sourceNode, Node *destNode, const QString &edgeType, DiagramVie
 
     source->addEdge(this);
     dest->addEdge(this);
-    adjust();
+    readjustBundle();
     //changed();
 }
 
@@ -87,21 +77,13 @@ Edge::Edge(Node *sourceNode, Node *destNode, DiagramView *_parent)
     source = sourceNode;
     dest = destNode;
 
-    QList<Node*> list;
-    foreach (Edge *e , source->edges())
-    {
-        if (e->sourceNode() == source) list.append(e->destNode());
-        if (e->destNode() == source) list.append(e->sourceNode());
-    }
-    if (list.contains(dest))
-    {
-        //_parent->log(QString("Duplicate connector from %1 to %2.").arg(source->Name()).arg(dest->Name()));
-        delete this;
-        return;
-    }
+    // As above, parallel links are legitimate. This used to refuse them with a
+    // "delete this" inside the constructor - undefined behaviour that left
+    // RecreateGraphicItemsFromSystem() using a freed pointer whenever a model
+    // file contained two links between the same pair of blocks.
     source->addEdge(this);
     dest->addEdge(this);
-    adjust();
+    readjustBundle();
 
     setFlag(ItemIsSelectable);
     setFlag(ItemSendsGeometryChanges);
@@ -163,6 +145,72 @@ void Edge::adjust()
         QPointF edgeOffsetDest(Dx, Dy);
         sourcePoint = line.p1() + edgeOffsetSource;
         destPoint = line.p2()  + edgeOffsetDest;
+
+    // Fan out links that share a pair of blocks. boundingRect(), shape() and
+    // paint() are all derived from these two points, so displacing them here is
+    // all it takes for each link to draw, hit-test and select on its own.
+    const qreal offset = parallelOffset();
+    if (!qFuzzyIsNull(offset))
+    {
+        const QLineF axis(sourcePoint, destPoint);
+        const qreal length = axis.length();
+        if (length > 0)
+        {
+            const QPointF normal(-axis.dy()/length, axis.dx()/length);
+            sourcePoint += normal*offset;
+            destPoint   += normal*offset;
+        }
+    }
+}
+
+QList<Edge*> Edge::parallelBundle() const
+{
+    QList<Edge*> bundle;
+    if (!source || !dest || source==dest)
+        return bundle;
+
+    // Anchor on a deterministic endpoint so every link in the bundle reads the
+    // same list in the same order, whichever direction it was drawn in. Ordered
+    // by pointer, not by name: Node::Name() resolves the object by primary key
+    // with a linear scan, and adjust() runs for every edge on every mouse-move
+    // while a block is being dragged.
+    Node *anchor = std::less<Node*>{}(source, dest) ? source : dest;
+    foreach (Edge *e, anchor->edges())
+    {
+        if (!e || !e->source || !e->dest) continue;
+        if ((e->source==source && e->dest==dest) || (e->source==dest && e->dest==source))
+            bundle.append(e);
+    }
+    return bundle;
+}
+
+qreal Edge::parallelOffset() const
+{
+    const QList<Edge*> bundle = parallelBundle();
+    if (bundle.size() < 2)
+        return 0;
+
+    const int index = bundle.indexOf(const_cast<Edge*>(this));
+    if (index < 0)
+        return 0;   // not wired into both endpoints yet; readjustBundle() follows
+
+    const qreal spacing = 4.0*(parent ? parent->linkthickness : 1.0) + 2.0*arrowSize;
+    const qreal centred = (index - (bundle.size()-1)/2.0)*spacing;
+
+    // Anchor-relative, so a link drawn B->A lands on the opposite side of the
+    // axis from one drawn A->B rather than on top of it.
+    Node *anchor = std::less<Node*>{}(source, dest) ? source : dest;
+    return (source==anchor) ? centred : -centred;
+}
+
+void Edge::readjustBundle()
+{
+    adjust();
+    // Adding or removing a link changes how many ways the bundle is split, so
+    // its siblings have to be repositioned too.
+    foreach (Edge *e, parallelBundle())
+        if (e && e!=this)
+            e->adjust();
 }
 
 QRectF Edge::boundingRect() const

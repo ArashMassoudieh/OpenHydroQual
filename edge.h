@@ -54,6 +54,12 @@ public:
     Node* sourceNode() {return source;}
     Node* destNode() {return dest;}
     int dist(const QPointF point);
+    /// Every link joining this link's two blocks, in a stable order.
+    QList<Edge*> parallelBundle() const;
+    /// Sideways displacement that keeps this link clear of its parallel siblings.
+    qreal parallelOffset() const;
+    /// Re-run adjust() on this link and every sibling sharing its two blocks.
+    void readjustBundle();
     QString Name() {return QString::fromStdString(object()->GetName());}
     /**
      * @brief Whether the link was actually created

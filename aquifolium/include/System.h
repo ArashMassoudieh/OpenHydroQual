@@ -239,6 +239,18 @@ public:
     const Block* block(const string& s) const;
     Link* link(const std::string& s);
     const Link* link(const string& s) const;
+
+    /**
+     * @brief Turn a proposed link name into one no existing link is using
+     * @param basename The name the caller wants
+     * @return basename if it is free, otherwise "basename (2)", "basename (3)", ...
+     *
+     * Link names key deletion, output columns and every by-name lookup, so they
+     * have to be unique. This matters most for two links joining the same pair
+     * of blocks, which is a valid configuration but whose endpoints suggest the
+     * same name for both.
+     */
+    std::string UniqueLinkName(const std::string& basename) const;
     Source* source(const std::string& s);
     const Source* source(const string& s) const;
     Constituent* constituent(const std::string& s);
@@ -425,6 +437,15 @@ public:
     SafeVector<int> ConnectedBlocksTo(int blockid);
     SafeVector<int> ConnectedBlocksFrom(int blockid);
     SafeVector<int> SetLimitedOutFlow(int blockid, const std::string& variable, bool outflowlimited);
+
+    /**
+     * @brief Recursive worker for SetLimitedOutFlow
+     * @param visited Blocks already flagged in this propagation; prevents the
+     *        walk from revisiting a block reached through a cycle or through
+     *        two links that share the same pair of endpoints.
+     */
+    SafeVector<int> SetLimitedOutFlow(int blockid, const std::string& variable, bool outflowlimited,
+                                      SafeVector<int>& visited);
     void DisconnectLink(const std::string linkname);
 
     // =====================================================================

@@ -67,6 +67,8 @@ class Object
         }
         string GetName() const;
         void SetDefaults();
+        /// Copy this object's name into its "name" quantity, if the type has one.
+        void SyncNameQuantity();
         virtual bool SetName(const string &_name, bool setprop=true);
         Object* GetConnectedBlock(Expression::loc l);
         void SetConnectedBlock(Expression::loc l, const string &blockname);

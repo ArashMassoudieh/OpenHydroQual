@@ -131,13 +131,13 @@ bool Composite::Instantiate(System *sys)
             success = false;
             continue;
         }
-        Link *lnk = sys->link(linkname);
+        // Instantiate() already refused to proceed if an object of this name
+        // existed, so AddLink should not have had to disambiguate - but address
+        // the link by the name it actually got rather than assuming.
+        Link *lnk = sys->link(L.GetName());
         if (lnk)
-        {
-            lnk->SetName(linkname);
             lnk->AssignRandomPrimaryKey();
-        }
-        internal_links.push_back(linkname);
+        internal_links.push_back(lnk ? lnk->GetName() : linkname);
     }
 
     ApplyGeometry(sys);
