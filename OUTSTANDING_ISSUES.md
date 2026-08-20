@@ -19,7 +19,7 @@ Recorded here only so we know what is done and what these notes assume.
    re-parsed the same now-exhausted stream and always failed at line 1 column 1.
    Replaced with a single `Json::parseFromStream` + `CharReaderBuilder`, matching
    `MetaModel::AppendFromJsonFile`, returning `false` with the real jsoncpp error.
-   `aquifolium/src/System.cpp:3408`.
+   `aquifolium/src/System.cpp:3408`. Also applied to the main checkout on 2026-08-19.
 
 2. **The `name` quantity was blanked whenever quantities were reset from the metamodel.**
    All three `Object::SetQuantities` overloads that take a `MetaModel`/`System`
@@ -27,6 +27,7 @@ Recorded here only so we know what is done and what these notes assume.
    to the template default. Callers had to write the name back afterwards, by name,
    one call site at a time. Added `Object::SyncNameQuantity()`, called from all
    three overloads. `aquifolium/src/Object.cpp:334`, `aquifolium/include/Object.h:71`.
+   Also applied to the main checkout on 2026-08-19.
 
 ---
 
@@ -125,7 +126,7 @@ Issue #2 (deleting the seven now-redundant write-backs) remains open as follow-u
 
 ---
 
-## 2. Redundant name write-backs elsewhere in the GUI — **Confirmed**
+## 2. Redundant name write-backs elsewhere in the GUI — **RESOLVED 2026-08-19**
 
 **Where:** seven remaining occurrences in `mainwindow.cpp` — lines 1039, 1069, 1231,
 1317, 1348, 1380, 1414 — plus several already commented out nearby.
@@ -140,7 +141,24 @@ restoration, which is what led to the link bug when one of them was removed. Wor
 deleting in one pass once #1 has landed and been tested.
 
 Note they also dereference `system.object(name)` without a null check, the same
-pattern that was just guarded in `AddLink`.
+pattern that was just guarded in `AddLink`. That was a live crash path: for
+constituents and reaction parameters, `Object::SetName` refuses names containing
+parentheses (issue #10), so the preceding `X.SetName(name)` could fail, leaving
+`system.object(name)` returning `nullptr` and this line dereferencing it.
+
+**Resolution:** all seven removed from `mainwindow.cpp`. Each `System::Add*` calls
+`SetQuantities(metamodel, type)` on the stored object, which is exactly where
+`Object::SyncNameQuantity()` now restores the name — verified for all six
+`Add*` variants by reading them, and functionally for `AddBlock` and `AddLink`:
+
+```
+BLOCK (no write-back): property box Name = 'New Reactor 1'   (object is 'New Reactor 1')
+LINK  (first):         property box Name = 'Reactor_1 - Reactor_2(0:0)'
+LINK  (parallel):      property box Name = 'Reactor_1 - Reactor_2(0:0) (2)'
+```
+
+`AddComposite` was doubly redundant — it already calls `added->SetName(cmp.GetName())`
+itself. The commented-out copies of this line nearby were left alone.
 
 ---
 
