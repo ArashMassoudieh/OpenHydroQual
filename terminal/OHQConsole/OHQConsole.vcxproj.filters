@@ -111,13 +111,13 @@
     <ClCompile Include="..\..\aquifolium\src\constituent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\jsoncpp\src\lib_json\json_reader.cpp">
+    <ClCompile Include="..\..\jsoncpp\src\lib_json\json_reader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\jsoncpp\src\lib_json\json_value.cpp">
+    <ClCompile Include="..\..\jsoncpp\src\lib_json\json_value.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\jsoncpp\src\lib_json\json_writer.cpp">
+    <ClCompile Include="..\..\jsoncpp\src\lib_json\json_writer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
@@ -248,31 +248,31 @@
     <ClInclude Include="..\..\aquifolium\include\Vector_arma.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\include\json\allocator.h">
+    <ClInclude Include="..\..\jsoncpp\include\json\allocator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\include\json\assertions.h">
+    <ClInclude Include="..\..\jsoncpp\include\json\assertions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\include\json\autolink.h">
+    <ClInclude Include="..\..\jsoncpp\include\json\autolink.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\include\json\config.h">
+    <ClInclude Include="..\..\jsoncpp\include\json\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\aquifolium\include\constituent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\include\json\features.h">
+    <ClInclude Include="..\..\jsoncpp\include\json\features.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\include\json\forwards.h">
+    <ClInclude Include="..\..\jsoncpp\include\json\forwards.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\include\json\json.h">
+    <ClInclude Include="..\..\jsoncpp\include\json\json.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\src\lib_json\json_tool.h">
+    <ClInclude Include="..\..\jsoncpp\src\lib_json\json_tool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\aquifolium\include\observation.h">
@@ -284,7 +284,7 @@
     <ClInclude Include="..\..\aquifolium\include\reaction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\include\json\reader.h">
+    <ClInclude Include="..\..\jsoncpp\include\json\reader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\aquifolium\include\restorepoint.h">
@@ -299,14 +299,14 @@
     <ClInclude Include="..\..\aquifolium\include\solutionlogger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\include\json\value.h">
+    <ClInclude Include="..\..\jsoncpp\include\json\value.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\include\json\version.h">
+    <ClInclude Include="..\..\jsoncpp\include\json\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\jsoncpp\src\lib_json\version.h.in" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\writer.h">
+    <ClInclude Include="..\..\jsoncpp\src\lib_json\version.h.in" />
+    <ClInclude Include="..\..\jsoncpp\include\json\writer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

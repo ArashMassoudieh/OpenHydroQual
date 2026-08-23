@@ -129,7 +129,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\QT\QT5.6.1\5.6\MSVC2015_64\include;release;C:\QT\QT5.6.1\5.6\MSVC2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;jsoncpp\include;include;..\qcustomplot;C:\QT\QT5.6.1\5.6\MSVC2015_64\include;release;C:\QT\QT5.6.1\5.6\MSVC2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>release\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -248,7 +248,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;..\jsoncpp\include;include;..\qcustomplot;C:\QT\QT5.6.1\5.6\MSVC2015_64\include;debug;C:\QT\QT5.6.1\5.6\MSVC2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;jsoncpp\include;include;..\qcustomplot;C:\QT\QT5.6.1\5.6\MSVC2015_64\include;debug;C:\QT\QT5.6.1\5.6\MSVC2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>debug\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -476,10 +476,10 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClInclude Include="aquifolium\include\TimeSeriesSet.h" />
     <ClInclude Include="aquifolium\include\Vector.h" />
     <ClInclude Include="aquifolium\include\Vector_arma.h" />
-    <ClInclude Include="..\jsoncpp\include\json\allocator.h" />
-    <ClInclude Include="..\jsoncpp\include\json\assertions.h" />
-    <ClInclude Include="..\jsoncpp\include\json\autolink.h" />
-    <ClInclude Include="..\jsoncpp\include\json\config.h" />
+    <ClInclude Include="jsoncpp\include\json\allocator.h" />
+    <ClInclude Include="jsoncpp\include\json\assertions.h" />
+    <ClInclude Include="jsoncpp\include\json\autolink.h" />
+    <ClInclude Include="jsoncpp\include\json\config.h" />
     <QtMoc Include="VisualizationGraphicsView.h" />
     <QtMoc Include="VisualizationDialog.h" />
     <QtMoc Include="wizard_select_dialog.h" />
@@ -493,10 +493,10 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClInclude Include="chartview.h" />
     <ClInclude Include="edge.h" />
     <ClInclude Include="enums.h" />
-    <ClInclude Include="..\jsoncpp\include\json\features.h" />
-    <ClInclude Include="..\jsoncpp\include\json\forwards.h" />
-    <ClInclude Include="..\jsoncpp\include\json\json.h" />
-    <ClInclude Include="..\jsoncpp\src\lib_json\json_tool.h" />
+    <ClInclude Include="jsoncpp\include\json\features.h" />
+    <ClInclude Include="jsoncpp\include\json\forwards.h" />
+    <ClInclude Include="jsoncpp\include\json\json.h" />
+    <ClInclude Include="jsoncpp\src\lib_json\json_tool.h" />
     <QtMoc Include="mainwindow.h">
     </QtMoc>
     <QtMoc Include="expEditor.h" />
@@ -514,15 +514,15 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClInclude Include="qplotter.h" />
     <QtMoc Include="qplotwindow.h" />
     <ClInclude Include="ray.h" />
-    <ClInclude Include="..\jsoncpp\include\json\reader.h" />
+    <ClInclude Include="jsoncpp\include\json\reader.h" />
     <QtMoc Include="TimeSeriesTextBox.h" />
     <ClInclude Include="undodata.h" />
     <QtMoc Include="UnitTextBox3.h" />
     <ClInclude Include="utilityfuncs.h" />
-    <ClInclude Include="..\jsoncpp\include\json\value.h" />
-    <ClInclude Include="..\jsoncpp\include\json\version.h" />
-    <ClInclude Include="..\jsoncpp\src\lib_json\version.h.in" />
-    <ClInclude Include="..\jsoncpp\include\json\writer.h" />
+    <ClInclude Include="jsoncpp\include\json\value.h" />
+    <ClInclude Include="jsoncpp\include\json\version.h" />
+    <ClInclude Include="jsoncpp\src\lib_json\version.h.in" />
+    <ClInclude Include="jsoncpp\include\json\writer.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

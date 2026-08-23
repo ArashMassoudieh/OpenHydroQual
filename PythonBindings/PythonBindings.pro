@@ -5,7 +5,7 @@ TEMPLATE = lib
 CONFIG += plugin no_plugin_name_prefix c++14
 TARGET = openhydroqual_py
 
-VERSION = 2.0.6
+VERSION = 2.0.7
 
 # Link against OHQLib
 LIBS += -L$$PWD/../OHQLib/build/Desktop_Qt_6_8_2-Release/ -lOHQLib

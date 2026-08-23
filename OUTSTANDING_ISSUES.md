@@ -193,19 +193,52 @@ rather than a live crash — but it should be `std::string(argv[1]).empty()` or 
 
 ---
 
-## 5. `TOpenHydroQual.pro` has wrong relative paths and cannot build — **Read-only**
+## 5. Console projects had wrong jsoncpp paths and could not build — **RESOLVED 2026-08-22**
 
-**Where:** `terminal/TOpenHydroQual/TOpenHydroQual.pro:13`, `109`–`111`, `148`–`160`.
+The same off-by-one appeared in the qmake project and in the Visual Studio projects:
+a jsoncpp path one level too deep, resolving outside the repository. Everything else
+in those files used the correct depth, so jsoncpp was the only broken reference.
 
-Refers to `../../../jsoncpp/...`, which from `terminal/TOpenHydroQual` resolves to the
-*parent of the repository*. Should be `../../jsoncpp/...`. This is why the console
-build was not usable for verification in this session and the GUI target had to be
-used instead. `terminal/TOpenHydroQual/build/Desktop-Debug/` is empty, suggesting it
-has not built successfully in some time.
+**qmake — `terminal/TOpenHydroQual/TOpenHydroQual.pro`.** Used `../../../jsoncpp/...`,
+which from `terminal/TOpenHydroQual` resolves to the *parent of the repository*.
+17 references corrected to `../../jsoncpp/...`. Verified by building it: qmake
+configures, all 42 translation units compile with no errors, it links, and the
+resulting `OpenHydroQual-Console` loads and solves
+`Examples/ASM_Clarifier_Composite.ohq` when run from a layout where `../../resources`
+exists (the installed `.deb` layout: binary in `bin/Release`, resources two levels up).
+
+**Visual Studio — `terminal/OHQConsole` and `terminal/OHQTerminal`.** Identical bug:
+`..\..\..\jsoncpp\` should be `..\..\jsoncpp\`. These were genuinely unbuildable —
+the broken references included `AdditionalIncludeDirectories` (so `#include <json/json.h>`
+could not resolve) and the three `ClCompile` entries for the jsoncpp sources.
+Corrected in the `.vcxproj` and `.vcxproj.filters` of both, 20/16 and 18/16 references.
+
+**Visual Studio — `QAquifolium.vcxproj`** (repository root). A partial version of the
+same problem: its `ClCompile` sources and one include directory were already correct,
+but the jsoncpp `ClInclude` listings and a second, bogus `..\jsoncpp\include` entry
+were one level too high. This did **not** break the build. 15 references normalised to
+`jsoncpp\...` for consistency.
+
+**Not verified:** the Visual Studio builds cannot be compiled on this Linux machine.
+The fix was checked by confirming every referenced path now resolves to a file that
+exists, which is exactly what was wrong; it is not a substitute for building on Windows.
+
+**Left alone — four stale listings per project**, pre-existing and unrelated to path
+depth. They are `ClInclude`/`HEADERS` entries only, so they do not affect compilation;
+they show as missing files in the IDE tree and as qmake warnings:
+
+- `aquifolium/include/StringOP.h` — header no longer exists
+- `jsoncpp/include/json/autolink.h` — removed upstream
+- `jsoncpp/include/json/features.h` — renamed upstream to `json_features.h`
+- `jsoncpp/src/lib_json/version.h.in` — no longer present
+
+The same three jsoncpp entries are what issue #8 reports for `OpenHydroQual.pro`.
+Cleaning all of them in one sweep across the five VS projects and the two `.pro` files
+would close #8 as well.
 
 ---
 
-## 6. Example models embed absolute, machine-specific paths — **Confirmed**
+## 6. Example models embed absolute, machine-specific paths — **MITIGATED 2026-08-22**
 
 **Where:** all 13 `Examples/*.ohq`.
 
@@ -218,8 +251,35 @@ Every example hard-codes `/home/arash/...` and a build directory that no longer 
 happens to climb back to the repository root. These will not load on any other machine,
 which makes the shipped examples unusable for new users.
 
-**Fix:** write `loadtemplate` paths relative to the resources directory, and have the
-loader resolve them against `DefaultTemplatePath()`.
+**Fix applied:** rather than rewriting the example files, `System::ResolveTemplatePath`
+now falls back to the resources folder shipped beside the executable. Resolution order
+is: the path as written; then `DefaultTemplatePath() + <basename>`; then
+`<applicationDirPath>/../../resources/<basename>`. Two levels up is correct for both
+layouts that ship — a shadow build (binary in `build/<config>`) and the installed
+package (binary in `/opt/OpenHydroQual/bin/Release`). Guarded on
+`QCoreApplication::instance()` so it is inert when no Qt application object exists,
+e.g. in the Python bindings.
+
+This is the single choke point: the `loadtemplate` and `addtemplate` commands, the
+`requires` dependency chain and `GetQuanTemplate` all route through it.
+
+Verified with every template path in a model rewritten to a nonexistent directory and
+**no** `DefaultTemplatePath` set, so only the new fallback could resolve them:
+
+```
+WITHOUT fallback: metamodel types loaded = 0, blocks=0 links=0
+                  lasterror=[Template file 'mass_transfer.json' was not found]
+WITH fallback:    metamodel types loaded = 42, blocks=8 links=8, quantities=23
+                  lasterror=[]
+```
+
+The unmodified example still loads identically, so the normal path is unaffected.
+
+**Still open:** the example files themselves continue to carry absolute paths from the
+authoring machine (including a `build/Desktop_Qt_6_8_3-Debug` directory that no longer
+exists). They now load anyway, but writing them relative would be the real cleanup.
+Worth checking what `System::SavetoScriptFile` emits, since that is what produced them —
+`aquifolium/src/System.cpp:3291` writes the `loadtemplate` line.
 
 ---
 

@@ -21,6 +21,8 @@
 #include <QIODevice>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QCoreApplication>
+#include <QDir>
 #pragma warning(pop)
 #pragma warning(disable : 4996)
 #include <json/json.h>
@@ -740,6 +742,22 @@ string System::ResolveTemplatePath(const string &filename)
     if (aquiutils::FileExists(filename)) return filename;
     string alternative = DefaultTemplatePath() + aquiutils::GetOnlyFileName(filename);
     if (aquiutils::FileExists(alternative)) return alternative;
+
+    // Last resort: the resources folder shipped next to the executable. A model
+    // file records the absolute template path from whichever machine wrote it,
+    // so a model that travels between machines - the examples in this
+    // repository included - names a path that does not exist here, and
+    // DefaultTemplatePath() only helps when the embedding application set it.
+    // Two levels above the executable is where resources sits in every layout
+    // that ships: a shadow build (binary in build/<config>) and the installed
+    // package (binary in /opt/OpenHydroQual/bin/Release).
+    if (QCoreApplication::instance() != nullptr)
+    {
+        const QString bundled = QDir::cleanPath(
+            QCoreApplication::applicationDirPath() + "/../../resources/"
+            + QString::fromStdString(aquiutils::GetOnlyFileName(filename)));
+        if (aquiutils::FileExists(bundled.toStdString())) return bundled.toStdString();
+    }
     return "";
 }
 

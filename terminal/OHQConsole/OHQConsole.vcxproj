@@ -92,7 +92,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\..\jsoncpp\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\jsoncpp\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -105,7 +105,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\..\jsoncpp\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\jsoncpp\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -123,7 +123,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\..\jsoncpp\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\jsoncpp\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -137,7 +137,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\..\jsoncpp\include;..\..\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\jsoncpp\include;..\..\include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -185,9 +185,9 @@
     <ClCompile Include="..\..\aquifolium\src\Vector.cpp" />
     <ClCompile Include="..\..\aquifolium\src\Vector_arma.cpp" />
     <ClCompile Include="..\..\aquifolium\src\constituent.cpp" />
-    <ClCompile Include="..\..\..\jsoncpp\src\lib_json\json_reader.cpp" />
-    <ClCompile Include="..\..\..\jsoncpp\src\lib_json\json_value.cpp" />
-    <ClCompile Include="..\..\..\jsoncpp\src\lib_json\json_writer.cpp" />
+    <ClCompile Include="..\..\jsoncpp\src\lib_json\json_reader.cpp" />
+    <ClCompile Include="..\..\jsoncpp\src\lib_json\json_value.cpp" />
+    <ClCompile Include="..\..\jsoncpp\src\lib_json\json_writer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="..\..\aquifolium\src\observation.cpp" />
     <ClCompile Include="..\..\aquifolium\src\precalculatedfunction.cpp" />
@@ -232,27 +232,27 @@
     <ClInclude Include="..\..\aquifolium\include\Utilities.h" />
     <ClInclude Include="..\..\aquifolium\include\Vector.h" />
     <ClInclude Include="..\..\aquifolium\include\Vector_arma.h" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\allocator.h" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\assertions.h" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\autolink.h" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\config.h" />
+    <ClInclude Include="..\..\jsoncpp\include\json\allocator.h" />
+    <ClInclude Include="..\..\jsoncpp\include\json\assertions.h" />
+    <ClInclude Include="..\..\jsoncpp\include\json\autolink.h" />
+    <ClInclude Include="..\..\jsoncpp\include\json\config.h" />
     <ClInclude Include="..\..\aquifolium\include\constituent.h" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\features.h" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\forwards.h" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\json.h" />
-    <ClInclude Include="..\..\..\jsoncpp\src\lib_json\json_tool.h" />
+    <ClInclude Include="..\..\jsoncpp\include\json\features.h" />
+    <ClInclude Include="..\..\jsoncpp\include\json\forwards.h" />
+    <ClInclude Include="..\..\jsoncpp\include\json\json.h" />
+    <ClInclude Include="..\..\jsoncpp\src\lib_json\json_tool.h" />
     <ClInclude Include="..\..\aquifolium\include\observation.h" />
     <ClInclude Include="..\..\aquifolium\include\precalculatedfunction.h" />
     <ClInclude Include="..\..\aquifolium\include\reaction.h" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\reader.h" />
+    <ClInclude Include="..\..\jsoncpp\include\json\reader.h" />
     <ClInclude Include="..\..\aquifolium\include\restorepoint.h" />
     <ClInclude Include="..\..\aquifolium\include\safevector.h" />
     <ClInclude Include="..\..\aquifolium\include\safevector.hpp" />
     <ClInclude Include="..\..\aquifolium\include\solutionlogger.h" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\value.h" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\version.h" />
-    <ClInclude Include="..\..\..\jsoncpp\src\lib_json\version.h.in" />
-    <ClInclude Include="..\..\..\jsoncpp\include\json\writer.h" />
+    <ClInclude Include="..\..\jsoncpp\include\json\value.h" />
+    <ClInclude Include="..\..\jsoncpp\include\json\version.h" />
+    <ClInclude Include="..\..\jsoncpp\src\lib_json\version.h.in" />
+    <ClInclude Include="..\..\jsoncpp\include\json\writer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -10,7 +10,7 @@ INCLUDEPATH += ../../aquifolium/include
 INCLUDEPATH += ../../aquifolium/src
 INCLUDEPATH += ../../aquifolium/include/GA
 INCLUDEPATH += ../../aquifolium/include/MCMC
-INCLUDEPATH += ../../../jsoncpp/include/
+INCLUDEPATH += ../../jsoncpp/include/
 INCLUDEPATH += ../../
 
 if==macx:CONFIG += staticlib
@@ -106,9 +106,9 @@ SOURCES += \
         ../../aquifolium/src/GA/Individual.cpp \
         ../../aquifolium/src/GA/DistributionNUnif.cpp \
         ../../aquifolium/src/GA/Distribution.cpp \
-        ../../../jsoncpp/src/lib_json/json_reader.cpp \
-        ../../../jsoncpp/src/lib_json/json_value.cpp \
-        ../../../jsoncpp/src/lib_json/json_writer.cpp \
+        ../../jsoncpp/src/lib_json/json_reader.cpp \
+        ../../jsoncpp/src/lib_json/json_value.cpp \
+        ../../jsoncpp/src/lib_json/json_writer.cpp \
         main.cpp
 
 HEADERS += \
@@ -145,19 +145,19 @@ HEADERS += \
     ../../aquifolium/include/System.h \
     ../../aquifolium/include/Vector.h \
     ../../aquifolium/include/Vector_arma.h \
-    ../../../jsoncpp/include/json/allocator.h \
-    ../../../jsoncpp/include/json/assertions.h \
-    ../../../jsoncpp/include/json/autolink.h \
-    ../../../jsoncpp/include/json/config.h \
-    ../../../jsoncpp/include/json/features.h \
-    ../../../jsoncpp/include/json/forwards.h \
-    ../../../jsoncpp/include/json/json.h \
-    ../../../jsoncpp/include/json/reader.h \
-    ../../../jsoncpp/include/json/value.h \
-    ../../../jsoncpp/include/json/version.h \
-    ../../../jsoncpp/include/json/writer.h \
-    ../../../jsoncpp/src/lib_json/json_tool.h \
-    ../../../jsoncpp/src/lib_json/version.h.in \
+    ../../jsoncpp/include/json/allocator.h \
+    ../../jsoncpp/include/json/assertions.h \
+    ../../jsoncpp/include/json/autolink.h \
+    ../../jsoncpp/include/json/config.h \
+    ../../jsoncpp/include/json/features.h \
+    ../../jsoncpp/include/json/forwards.h \
+    ../../jsoncpp/include/json/json.h \
+    ../../jsoncpp/include/json/reader.h \
+    ../../jsoncpp/include/json/value.h \
+    ../../jsoncpp/include/json/version.h \
+    ../../jsoncpp/include/json/writer.h \
+    ../../jsoncpp/src/lib_json/json_tool.h \
+    ../../jsoncpp/src/lib_json/version.h.in \
     ../../aquifolium/include/Parameter.h \
     ../../aquifolium/include/Parameter_Set.h \
     ../../aquifolium/include/Command.h \

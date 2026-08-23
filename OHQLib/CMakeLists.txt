@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(OHQLib
-    VERSION 2.0.6
+    VERSION 2.0.7
     DESCRIPTION "OpenHydroQual Aquifolium Simulation Engine"
     LANGUAGES CXX
 )
@@ -317,7 +317,7 @@ endif()
 
 # ── Versioning ───────────────────────────────────────────────────────────────
 set_target_properties(OHQLib PROPERTIES
-    VERSION   ${PROJECT_VERSION}        # libOHQLib.so.2.0.6
+    VERSION   ${PROJECT_VERSION}        # libOHQLib.so.2.0.7
     SOVERSION ${PROJECT_VERSION_MAJOR}  # libOHQLib.so.2
     OUTPUT_NAME OHQLib
 )
