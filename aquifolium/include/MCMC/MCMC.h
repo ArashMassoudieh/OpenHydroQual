@@ -71,9 +71,12 @@ struct _MCMC_settings
 
 };
 
-#ifdef Q_GUI_SUPPORT
+// Forward-declared unconditionally: the `rtw` member and the `step()` default
+// argument below are not inside Q_GUI_SUPPORT, so a headless build needs the
+// name to exist even though no ProgressWindow is ever constructed. (GA.h guards
+// its own member instead; either approach works, this one keeps the many
+// `if (rtw)` sites in MCMC.hpp unguarded and readable.)
 class ProgressWindow;
-#endif
 class Parameter_Set;
 class Parameter;
 
@@ -110,7 +113,7 @@ public:
     _MCMC_file_names FileInformation;
     double posterior(vector<double> par, int sample_number, bool out=false);
     void model(T *Model1 , vector<double> par);
-    ProgressWindow *rtw;
+    ProgressWindow *rtw = nullptr;   // headless runs leave this null; every use is `if (rtw)`-guarded
     int getparamno(int i,int ts)const;
     int get_act_paramno(int i);
     int get_time_series(int i);

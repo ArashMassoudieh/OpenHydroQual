@@ -647,7 +647,11 @@ public:
     // =====================================================================
     // Messaging, errors, and verification
     // =====================================================================
-    void SetSilent(bool _s) { silent = _s; }
+    // Silences all console output from this System: progress messages, solver
+    // failure notices and the error-handler echo. Errors are still recorded and
+    // still written by errorhandler.Write(). Settable from a script with
+    // `setvalue; object=system, quantity=silent, value=1`.
+    void SetSilent(bool _s) { silent = _s; errorhandler.SetSilent(_s); }
     bool IsSilent() const { return silent; }
     void ShowMessage(const std::string& msg) { if (!silent) std::cout << msg << std::endl; }
     ErrorHandler errorhandler;
@@ -920,7 +924,7 @@ private:
     Objective_Function_Set objective_function_set;
     Parameter_Set parameter_set;
     parameter_estimation_options ParameterEstimationMode = parameter_estimation_options::none;
-    bool silent;
+    bool silent = false;   // was uninitialised: a fresh System had an indeterminate verbosity
     _directories paths;
     std::vector<TimeSeries<timeseriesprecision>*> alltimeseries;
     unsigned int restore_interval = 200;

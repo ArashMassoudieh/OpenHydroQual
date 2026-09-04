@@ -978,8 +978,9 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     RestorePoint restorepoint(this);
 
 #ifdef Terminal_version
-    cout << "Running from time " << SolverTempVars.t
-        << " to " << SimulationParameters.tend << endl;
+    if (!silent)
+        cout << "Running from time " << SolverTempVars.t
+            << " to " << SimulationParameters.tend << endl;
 #endif
 
     int counter = 0;
@@ -1034,9 +1035,23 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     CALLGRIND_STOP_INSTRUMENTATION;
 #endif
 
+    // A run that stopped short of the requested end time has not produced a
+    // usable solution, even when no individual step reported a failure (a
+    // cancelled run, an exhausted restore point, or a solver that stalled).
+    // Solve() used to return true unconditionally and leave SolutionFailed
+    // clear, so callers -- GA and MCMC in particular -- accepted the partial
+    // result as a valid model evaluation and scored it against the data.
+    if (SolverTempVars.t < SimulationParameters.tend && !SolverTempVars.SolutionFailed)
+    {
+        LogMessage("Simulation stopped at t = " + aquiutils::numbertostring(SolverTempVars.t)
+            + " before the requested end time " + aquiutils::numbertostring(SimulationParameters.tend)
+            + ". The solution is incomplete.", true);
+        SolverTempVars.SolutionFailed = true;
+    }
+
     FinalizeOutputs(uniformizeoutput);
     SetSimulationDuration(time(nullptr) - SolverTempVars.time_start);
-    return true;
+    return !SolverTempVars.SolutionFailed;
 }
 
 void System::LogMessage(const string& msg, bool isWarning)
@@ -2856,10 +2871,19 @@ double System::GetObjectiveFunctionValue()
 {
     if (GetSolutionFailed())
         return  +1e18;
-    if (ParameterEstimationMode == parameter_estimation_options::optimize)
+
+    // In optimize mode the GA scores individuals on the objective-function set.
+    // Objective_Function_Set::Calculate() sums over its members, so a model that
+    // defines observations but no objective functions scored *exactly zero* for
+    // every individual that solved: a completely flat landscape, with selection
+    // ranking on nothing and the search reduced to a random walk. Fall back to the
+    // observation misfit in that case -- it is what the model actually specifies,
+    // and it is the same quantity MCMC scores on, so GA and MCMC agree.
+    if (ParameterEstimationMode == parameter_estimation_options::optimize
+        && ObjectiveFunctionsCount() > 0)
         return objective_function_set.Calculate();
-    else
-        return CalcMisfit();
+
+    return CalcMisfit();
 }
 
 void System::MakeObjectiveFunctionExpressionUniform()
@@ -5617,6 +5641,23 @@ bool System::ComputeNewtonStep(const string &variable, CVector_arma &X, CVector_
         {
             X1 = X + 0.5 * dx;
         }
+    }
+
+    // A non-finite step means the linear solve produced garbage. Treat it as a
+    // failed step so the timestep is reduced, rather than propagating NaN/Inf
+    // into the state vector where it silently poisons every later output.
+    if (!dx.is_finite())
+    {
+        if (GetSolutionLogger())
+        {
+            GetSolutionLogger()->WriteString("Newton step is not finite at t = "
+                + aquiutils::numbertostring(SolverTempVars.t));
+            GetSolutionLogger()->Flush();
+        }
+        SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) +
+                                             ": The Newton step was not finite");
+        if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+        return false;
     }
 
     return true;

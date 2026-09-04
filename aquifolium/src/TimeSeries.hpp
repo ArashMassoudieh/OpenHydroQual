@@ -1533,8 +1533,12 @@ template<typename T>
 TimeSeries<T> TimeSeries<T>::make_uniform(T increment, bool assignD) const {
     TimeSeries<T> out;
 
-	TimeSeries<T> nansRemoved = this->removeNaNs();
-    if (this->size() < 2) return out;
+    TimeSeries<T> nansRemoved = this->removeNaNs();
+
+    // Guard on the series we actually walk, not on `this`. A series whose
+    // finite points number fewer than two cannot be interpolated.
+    if (nansRemoved.size() < 2) return out;
+    if (!(increment > T{})) return out;          // a non-positive step would spin forever
 
     if (assignD) {
         // Ensure all distances are initialized
@@ -1545,38 +1549,46 @@ TimeSeries<T> TimeSeries<T>::make_uniform(T increment, bool assignD) const {
         }
     }
 
-    T t0 = this->front().t;
-    T t_end = this->back().t;
+    // t0/t_end must come from nansRemoved as well. Taking them from `this` while
+    // indexing nansRemoved is what made this function truncate silently: if any
+    // point was dropped as NaN, the index bound `i < size()-1` was reached before
+    // current_t got anywhere near `this->back().t`, and the loop simply stopped.
+    // Every caller (AllOutputs, ObservedOutputs and each observation's
+    // modeled_time_series in System::FinalizeOutputs) then received a series
+    // silently cut short, with no error raised anywhere.
+    T t0 = nansRemoved.front().t;
+    T t_end = nansRemoved.back().t;
 
+    const size_t last = nansRemoved.size() - 1;
     size_t i = 0;
     T current_t = t0;
 
-    while (current_t <= t_end && i < nansRemoved.size() - 1) {
+    while (current_t <= t_end) {
+        // Advance the source bracket until it straddles current_t. Bounded by
+        // `last - 1` so p2 is always valid; the emit below is unconditional, so
+        // running out of source points can no longer end the walk early.
+        while (i + 1 < last && nansRemoved[i + 1].t < current_t) ++i;
+
         const DataPoint<T>& p1 = nansRemoved[i];
         const DataPoint<T>& p2 = nansRemoved[i + 1];
 
-        if (p1.t <= current_t && current_t <= p2.t) {
-            T ratio = (current_t - p1.t) / (p2.t - p1.t);
-            if (p2.t == p1.t) ratio = 0.5; 
-            T c_interp = p1.c + ratio * (p2.c - p1.c);
-            std::optional<T> d_interp = std::nullopt;
+        T ratio = (p2.t == p1.t) ? T(0.5) : (current_t - p1.t) / (p2.t - p1.t);
+        T c_interp = p1.c + ratio * (p2.c - p1.c);
+        std::optional<T> d_interp = std::nullopt;
 
-            if (assignD && p1.d.has_value() && p2.d.has_value()) {
-                d_interp = p1.d.value() + ratio * (p2.d.value() - p1.d.value());
-            }
+        if (assignD && p1.d.has_value() && p2.d.has_value()) {
+            d_interp = p1.d.value() + ratio * (p2.d.value() - p1.d.value());
+        }
 
-            out.addPoint(current_t, c_interp, d_interp);
-            current_t += increment;
-        }
-        else {
-            ++i;
-        }
+        out.addPoint(current_t, c_interp, d_interp);
+        current_t += increment;
     }
+
     out.setName(name());
-	if (assignD) {
+    if (assignD) {
         out.assign_D();
     }
-    
+
     out.setUnit(unit());
     out.structured_ = true;
     out.dt_ = increment;

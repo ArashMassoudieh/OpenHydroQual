@@ -4,7 +4,7 @@ QT += core
 CONFIG += console
 CONFIG -= app_bundle
 
-CONFIG += c++14
+CONFIG += c++17   # aquifolium uses std::optional (TimeSeries DataPoint::d)
 
 INCLUDEPATH += ../../aquifolium/include
 INCLUDEPATH += ../../aquifolium/src
@@ -13,7 +13,7 @@ INCLUDEPATH += ../../aquifolium/include/MCMC
 INCLUDEPATH += ../../jsoncpp/include/
 INCLUDEPATH += ../../
 
-if==macx:CONFIG += staticlib
+macx: CONFIG += staticlib
 macx: DEFINES +=mac_version
 linux: DEFINES +=ubuntu_version
 win32: DEFINES +=windows_version

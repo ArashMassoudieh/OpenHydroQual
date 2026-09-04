@@ -137,6 +137,12 @@ CMatrix_arma Exp(const CMatrix_arma&);
 CMatrix_arma Sqrt(const CMatrix_arma&);
 CMatrix_arma Transpose(const CMatrix_arma&);
 CMatrix_arma Invert(const CMatrix_arma&);
+// Reciprocal-condition-number floor below which a Jacobian is treated as
+// singular by Invert(). Chosen well below anything a healthy model produces
+// (a well-scaled Jacobian sits around 1e-2..1e-8) but far above the ~1e-52
+// seen when a reaction stoichiometry introduces a huge scale disparity.
+constexpr double singular_rcond_threshold = 1e-14;
+
 bool Invert(const CMatrix_arma&, CMatrix_arma&);
 
 CVector normalize_diag(const CVector&, const CMatrix_arma&);

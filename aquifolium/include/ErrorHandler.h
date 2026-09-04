@@ -89,9 +89,16 @@ class ErrorHandler
         }
 #endif
 
+        // Console echo of newly appended errors. Errors are always retained for
+        // Write() regardless of this setting -- silent only suppresses the echo,
+        // which during a parameter-estimation run would otherwise repeat the same
+        // handful of model warnings once per forward solve and bury everything else.
+        void SetSilent(bool s) { silent = s; }
+        bool IsSilent() const { return silent; }
+
         void Flush()
         {
-            if (flushed_counter<errors.size())
+            if (!silent && flushed_counter<errors.size())
             {
                 for (int j=flushed_counter; j<errors.size(); j++)
                 {
@@ -122,6 +129,7 @@ class ErrorHandler
 
     private:
         int flushed_counter=0;
+        bool silent = false;
         vector<_error> errors;
         #ifdef Q_GUI_SUPPORT
         ProgressWindow *rtw = nullptr;

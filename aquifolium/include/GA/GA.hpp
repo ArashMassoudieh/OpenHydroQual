@@ -19,6 +19,7 @@
 // GA.cpp: implementation of the CGA class.
 ////////////////////////////////////////////////////////////////////////
 #include "GA.h"
+#include <iomanip>
 #include <stdlib.h>
 #ifndef mac_version
 #include <omp.h>
@@ -419,9 +420,20 @@ int counter=0;
                 fprintf(FileOut, "Simulation failed: %i\n:", Ind[k].parents.size());
                 fclose(FileOut);
             }
-            if (Ind[k].actual_fitness == 0)
+            if (Ind[k].actual_fitness == 0 && !Models[k].GetSolutionFailed())
             {
-                cout<<"Zero!"<<std::endl;
+                // A solved individual scoring exactly zero means the objective is
+                // not discriminating between parameter sets. Warn once rather than
+                // printing "Zero!" per individual per generation.
+                static bool warned_zero_fitness = false;
+                if (!warned_zero_fitness)
+                {
+                    warned_zero_fitness = true;
+                    cout << "WARNING: individual " << k << " solved but scored a fitness of "
+                            "exactly 0. If this repeats, the objective function is flat and the "
+                            "GA has nothing to rank on -- check that the model defines either "
+                            "objective functions or observations with observed data." << std::endl;
+                }
             }
             for (unsigned int i=0; i<Models[k].fit_measures.size(); i++)
                 Ind[k].fit_measures[i] = Models[k].fit_measures[i];
@@ -674,6 +686,27 @@ int CGA<T>::optimize()
         rtw->AddPrimaryChartPoint(double(current_generation+1),Ind[j].actual_fitness);
         rtw->ReplotPrimaryChart();
         QCoreApplication::processEvents();
+    }
+#else
+    {
+        // Headless per-generation report: best objective, how many individuals
+        // failed to solve, and where the best individual currently sits.
+        int failed = 0;
+        for (int kk = 0; kk < GA_params.maxpop; kk++)
+            if (Ind[kk].actual_fitness >= 1e17) failed++;
+
+        cout << "[gen " << setw(4) << current_generation + 1 << "/" << GA_params.nGen << "]"
+             << "  best objective " << scientific << setprecision(6) << Ind[j].actual_fitness
+             << "  failed " << failed << "/" << GA_params.maxpop
+             << "  shakescale " << defaultfloat << setprecision(4) << GA_params.shakescale
+             << endl;
+        cout << "        params:";
+        for (int kk = 0; kk < Ind[0].nParams; kk++)
+            cout << "  " << paramname[kk] << "="
+                 << scientific << setprecision(3)
+                 << (loged[kk] == 1 ? pow(10, Ind[j].x[kk]) : Ind[j].x[kk]);
+        cout << defaultfloat << endl;
+        cout.flush();
     }
 #endif
         if (current_generation>10)

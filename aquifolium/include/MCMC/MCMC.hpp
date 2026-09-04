@@ -18,6 +18,8 @@
 //
 
 #include <vector>
+#include <iomanip>
+#include <ctime>
 #include "NormalDist.h"
 #include <string>
 #ifndef mac_version
@@ -461,7 +463,9 @@ vector<double> CMCMC<T>::purturb(int k)
 	return X;
 }
 
-#ifdef Q_GUI_SUPPORT
+// NOTE: this used to sit inside #ifdef Q_GUI_SUPPORT in its entirety, which left
+// headless builds with no sampler at all (Perform() calls it). The guard is now
+// applied only to the individual ProgressWindow interactions below.
 template<class T>
 bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 {
@@ -488,11 +492,23 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 
     MCMC_Settings.ini_purt_fact = pertcoeff[0];
 	int k_0 = k;
+
+#ifndef Q_GUI_SUPPORT
+    // Headless progress state. accepted_count/total_count are zeroed by the
+    // perturbation-adaptation block below, so keep separate running totals for
+    // display and remember the last adapted acceptance rate.
+    const time_t chain_t0 = time(nullptr);
+    double cum_accepted = 0, cum_total = 0;
+    double logp_best_overall = -1e300;
+    int report_counter = 0;
+#endif
     for (unsigned int kk=k; kk<k+nsamps+MCMC_Settings.number_of_chains; kk+=MCMC_Settings.number_of_chains)
 	{
+#ifdef Q_GUI_SUPPORT
         QCoreApplication::processEvents(QEventLoop::AllEvents,10*1000);
-        if (rtw->Cancelled())
+        if (rtw && rtw->Cancelled())
 			break;
+#endif
 
 #ifndef NO_OPENMP
         omp_set_num_threads(MCMC_Settings.numberOfThreads);
@@ -529,7 +545,9 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 
 
 #pragma omp critical
-            {   if (rtw->DetailsOn())
+            {
+#ifdef Q_GUI_SUPPORT
+                if (rtw && rtw->DetailsOn())
                 {   QString s;
                     s = s+"Sample no: "+QString::number(jj) + " Parameters: ";
                     for (unsigned int i = 0; i < MCMC_Settings.number_of_parameters; i++)
@@ -541,6 +559,9 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
                     rtw->AppendDetails(s);
                     rtw->AppendDetails(" ");
                 }
+#else
+                (void)stuckcounter;
+#endif
             }
         }
 
@@ -552,7 +573,13 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 #endif
         accepted_count += accepted.sum();
         total_count += accepted.size();
+#ifndef Q_GUI_SUPPORT
+        cum_accepted += accepted.sum();
+        cum_total    += accepted.size();
+#endif
+#ifdef Q_GUI_SUPPORT
         QCoreApplication::processEvents(QEventLoop::AllEvents,100*1000);
+#endif
 
         if ((kk-k_0) % (50 * MCMC_Settings.number_of_chains) == 0 || kk == k + nsamps + MCMC_Settings.number_of_chains - 1)
 		{
@@ -593,6 +620,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 		}
 
 
+#ifdef Q_GUI_SUPPORT
 		if (rtw)
 		{
             double progress = double(kk) / double(nsamps);
@@ -602,11 +630,71 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
             rtw->ReplotPrimaryChart();
             rtw->ReplotSecondaryChart();
 		}
+#else
+        {
+            // ---- headless progress report -----------------------------------
+            const unsigned int nch  = MCMC_Settings.number_of_chains;
+            const unsigned int last = min((unsigned int)(kk + nch),
+                                          (unsigned int)MCMC_Settings.total_number_of_samples);
+
+            // Log-posterior across the chains just evaluated, plus the best seen so far.
+            double lp_sum = 0, lp_best_block = -1e300;
+            int lp_n = 0, best_idx = -1;
+            for (unsigned int j = kk; j < last && j < logp.size(); j++)
+            {
+                if (logp[j] <= -1e299) continue;
+                lp_sum += logp[j];
+                lp_n++;
+                if (logp[j] > lp_best_block) { lp_best_block = logp[j]; best_idx = (int)j; }
+            }
+            if (lp_best_block > logp_best_overall) logp_best_overall = lp_best_block;
+
+            // How many chains are stuck (proposal rejected repeatedly).
+            int stuck = 0;
+            for (unsigned int c = 0; c < nch; c++) if (stuckcounter[c] > 0) stuck++;
+
+            const double frac = double(kk - k_0 + nch) /
+                                double(max(1, (k_0 + nsamps) - k_0));
+            const long elapsed = (long)(time(nullptr) - chain_t0);
+            const long eta     = (frac > 1e-6) ? (long)(elapsed * (1.0 / frac - 1.0)) : 0;
+            auto hms = [](long sec) {
+                char buf[16];
+                snprintf(buf, sizeof(buf), "%02ld:%02ld:%02ld",
+                         sec / 3600, (sec / 60) % 60, sec % 60);
+                return string(buf);
+            };
+
+            cout << "[" << setw(6) << kk << "/" << (k_0 + nsamps) << "] "
+                 << setw(5) << fixed << setprecision(1) << (100.0 * frac) << "%"
+                 << "  logp best " << setprecision(2) << logp_best_overall
+                 << "  now " << (lp_n ? lp_sum / lp_n : 0.0)
+                 << "  accept " << setprecision(3)
+                 << (cum_total > 0 ? cum_accepted / cum_total : 0.0)
+                 << "  pert " << setprecision(4) << pertcoeff[0]
+                 << "  stuck " << stuck << "/" << nch
+                 << "  " << hms(elapsed) << " elapsed, ~" << hms(eta) << " left"
+                 << endl;
+
+            // Every 20th report, show where the best chain currently sits. This is
+            // what tells you whether the parameters are moving or the chain has
+            // parked on its prior.
+            if (best_idx >= 0 && (report_counter++ % 20) == 0)
+            {
+                cout << "        best sample #" << best_idx << ":";
+                for (int i = 0; i < MCMC_Settings.number_of_parameters; i++)
+                    cout << "  " << parameter(i)->GetName() << "="
+                         << scientific << setprecision(3) << Params[best_idx][i];
+                cout << fixed << endl;
+            }
+            cout.flush();
+        }
+#endif
 	}
 
 	return 0;
 }
 
+#ifdef Q_GUI_SUPPORT
 template<class T>
 void CMCMC<T>::SetProgressWindow(ProgressWindow *_rtw)
 {
@@ -821,11 +909,13 @@ void CMCMC<T>::ProduceRealizations(TimeSeriesSet<double> &MCMCout)
             for (unsigned int i=0; i<observations->size(); i++)
                 realized_timeseries[i].append(*(Sys1[j].observation(i)->GetModeledTimeSeries()));
 
+#ifdef Q_GUI_SUPPORT
         if (rtw)
         {
             double progress = double(jj*MCMC_Settings.numberOfThreads) / double(MCMC_Settings.number_of_post_estimate_realizations);
             rtw->SetProgress(progress);
         }
+#endif
     }
     vector<double> percents; percents.push_back(0.025); percents.push_back(0.5); percents.push_back(0.975);
     for (unsigned int i=0; i<observations->size(); i++)
@@ -837,7 +927,9 @@ void CMCMC<T>::ProduceRealizations(TimeSeriesSet<double> &MCMCout)
         observation(i)->SetRealizations(realized_timeseries[i]);
 
     }
-    rtw->SetProgress(1);
+#ifdef Q_GUI_SUPPORT
+    if (rtw) rtw->SetProgress(1);   // null in headless runs
+#endif
 }
 
 template<class T>
@@ -876,12 +968,24 @@ void CMCMC<T>::Perform()
     int mcmcstart = MCMC_Settings.number_of_chains;
     if (MCMC_Settings.continue_mcmc)
     {
-        if (rtw) rtw->AppendLog("Reading samples from ... " + MCMC_Settings.continue_filename);
+    #ifdef Q_GUI_SUPPORT
+    if (rtw) rtw->AppendLog("Reading samples from ... " + MCMC_Settings.continue_filename);
+#else
+    cout << ("Reading samples from ... " + MCMC_Settings.continue_filename) << endl;
+#endif
         mcmcstart = readfromfile(MCMC_Settings.continue_filename);
     }
+#ifdef Q_GUI_SUPPORT
     if (rtw) rtw->AppendLog(string("Generating samples ... "));
+#else
+    cout << (string("Generating samples ... ")) << endl;
+#endif
     step(mcmcstart, int((MCMC_Settings.total_number_of_samples - mcmcstart) / MCMC_Settings.number_of_chains)*MCMC_Settings.number_of_chains, FileInformation.outputfilename , rtw);
+#ifdef Q_GUI_SUPPORT
     if (rtw) rtw->AppendLog(string("Creating posterior distribution ..."));
+#else
+    cout << (string("Creating posterior distribution ...")) << endl;
+#endif
     TimeSeriesSet<double> all_posterior_distributions;
     TimeSeriesSet<double> parameter_samples;
     vector<CVector> posterior_percentiles;
@@ -924,6 +1028,10 @@ void CMCMC<T>::Perform()
 
     all_posterior_distributions.write(FileInformation.outputpath + "Posterior_distributions.txt");
 
+#ifdef Q_GUI_SUPPORT
     if (rtw) rtw->AppendLog(std::string("Generating Realizations ..."));
+#else
+    cout << (std::string("Generating Realizations ...")) << endl;
+#endif
     ProduceRealizations(parameter_samples);
 }
