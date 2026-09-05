@@ -587,6 +587,14 @@ CMatrix_arma operator/(const CMatrix_arma& A, double d) {
     return out;
 }
 
+CVector_arma operator/(const CVector_arma& V, const CMatrix_arma& M) {
+    arma::vec x;
+    if (!arma::solve(x, static_cast<const arma::mat&>(M),
+                        static_cast<const arma::vec&>(V)))
+        return CVector_arma();          // singular: empty result signals failure
+    return CVector_arma(x);
+}
+
 CMatrix_arma operator/(double d, const CMatrix_arma& A) {
     CMatrix_arma out(A.n_rows, A.n_cols);
     for (size_t i = 0; i < A.n_rows; ++i)

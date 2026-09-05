@@ -132,6 +132,16 @@ CMatrix_arma operator*(double, const CMatrix_arma&);
 CVector_arma operator*(const CMatrix_arma& A, const CVector_arma& x);
 CMatrix_arma operator/(const CMatrix_arma&, double);
 
+// Solve M*x = V and return x -- a linear solve, NOT element-wise division.
+// This is the overload that makes jacobian_method=Direct work: in that mode the
+// solver keeps the Jacobian itself rather than its inverse and forms the Newton
+// step as F/J. Without this declaration the expression binds to Armadillo's
+// element-wise operator/, which yields an n-by-n result and aborts when it is
+// assigned back into a column vector.
+// Returns an empty vector if M is singular; callers detect that by comparing
+// the result's size with the expected state-vector length.
+CVector_arma operator/(const CVector_arma& V, const CMatrix_arma& M);
+
 CMatrix_arma Log(const CMatrix_arma&);
 CMatrix_arma Exp(const CMatrix_arma&);
 CMatrix_arma Sqrt(const CMatrix_arma&);

@@ -6021,7 +6021,23 @@ bool System::ComputeNewtonStep(const string &variable, CVector_arma &X, CVector_
         }
         else
         {
-            dx = SolverTempVars.NR_coefficient[statevarno] * (F / SolverTempVars.Inverse_Jacobian[statevarno]);
+            // Direct mode: Inverse_Jacobian holds J itself, so this is a solve.
+            // An empty result means J was singular -- same check as the
+            // scalediagonal branch above, which this path previously lacked.
+            dx = F / SolverTempVars.Inverse_Jacobian[statevarno];
+            if (dx.size() != X.size())
+            {
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString("Jacobian matrix is singular");
+                    GetSolutionLogger()->Flush();
+                }
+                SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) +
+                                                     ": The Jacobian Matrix is not full-ranked");
+                if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+                return false;
+            }
+            dx *= SolverTempVars.NR_coefficient[statevarno];
             X -= dx;
         }
         if (SolverSettings.optimize_lambda)

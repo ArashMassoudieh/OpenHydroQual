@@ -28,7 +28,13 @@ INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
 INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += jsoncpp/include/
-INCLUDEPATH += include/
+# NOTE: ./include holds nothing but a vendored Armadillo 6.100.0, bundled for
+# Windows builds that have no system copy. It used to be added here, without a
+# platform guard, which put it ahead of /usr/include and silently forced the
+# Linux and macOS GUI builds onto Armadillo 6 while every other target (the
+# terminal build, the standalone GA/MCMC runners) used the system Armadillo 12.
+# Windows still gets it from INCLUDEPATH += $${LAPACK_INCLUDE} in the win32
+# block below, which resolves to this same directory.
 INCLUDEPATH += ../qcustomplot6/
 
 macx: DEFINES +=mac_version
