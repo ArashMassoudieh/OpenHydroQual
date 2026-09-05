@@ -82,8 +82,12 @@ CVector_arma CVector_arma::operator=(const mat& A) {
 
 // Arithmetic
 CVector_arma& CVector_arma::operator+() { return *this; }
-CVector_arma& CVector_arma::operator*=(double x) { (*this) *= x; return *this; }
-CVector_arma& CVector_arma::operator/=(double x) { (*this) /= x; return *this; }
+// These two must dispatch to the base class explicitly. Written as
+// `(*this) *= x` they resolve back to themselves and recurse until the stack is
+// exhausted -- the compiler picks the most derived overload, not arma::vec's.
+// The sibling operators below already do this correctly.
+CVector_arma& CVector_arma::operator*=(double x) { this->arma::vec::operator*=(x); return *this; }
+CVector_arma& CVector_arma::operator/=(double x) { this->arma::vec::operator/=(x); return *this; }
 CVector_arma& CVector_arma::operator+=(const CVector_arma& v) {
     this->arma::vec::operator+=(v);
     return *this;

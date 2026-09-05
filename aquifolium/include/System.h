@@ -78,6 +78,9 @@ struct solversettings
     double landtozero_factor = 0;
     bool optimize_lambda = true;
     bool direct_jacobian = false;
+    /// Solve J*dx = F with a sparse LU (SuperLU) instead of forming a dense
+    /// inverse. Set via jacobian_method = Sparse.
+    bool use_sparse_solver = false;
     bool write_solution_details = false;
     double maximum_simulation_time = 86400; //maximum simulation time allows in seconds
     int maximum_number_of_matrix_inversions = 200000; //maximum number of matrix inversions allowed
@@ -106,6 +109,11 @@ struct solvertemporaryvars
     std::vector<CMatrix_arma_sp> Inverse_Jacobian;
 #else
     std::vector<CMatrix_arma> Inverse_Jacobian;
+    /// Sparse factorisable Jacobian, used when solver setting
+    /// jacobian_method = Sparse. The block-diagonal structure of a model
+    /// with independent sub-systems makes this dramatically cheaper than
+    /// inverting the full matrix densely.
+    std::vector<arma::sp_mat> Sparse_Jacobian;
 #endif
     std::vector<double> NR_coefficient;
     std::vector<bool> updatejacobian;
@@ -866,6 +874,7 @@ private:
     {
         SolverTempVars.fail_reason.resize(n);
         SolverTempVars.Inverse_Jacobian.resize(n);
+        SolverTempVars.Sparse_Jacobian.resize(n);
         SolverTempVars.NR_coefficient.resize(n);
         SolverTempVars.numiterations.resize(n);
         SolverTempVars.updatejacobian.resize(n);

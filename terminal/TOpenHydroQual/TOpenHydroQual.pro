@@ -209,7 +209,7 @@ win32 {
 linux {
     #sudo apt-get install libblas-dev liblapack-dev
      DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS GSL
-     LIBS += -larmadillo -llapack -lblas -lgsl
+     LIBS += -larmadillo -llapack -lblas -lgsl -lsuperlu
 }
 
 macx {

@@ -982,7 +982,8 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         st.push_back({"initial_time_step",     aquiutils::numbertostring(SimulationParameters.dt0)});
         st.push_back({"minimum_timestep",      aquiutils::numbertostring(SolverSettings.minimum_timestep)});
         st.push_back({"nr_tolerance",          aquiutils::numbertostring(SolverSettings.NRtolerance)});
-        st.push_back({"jacobian_method",       SolverSettings.direct_jacobian ? "Direct" : "Inverse Jacobian"});
+        st.push_back({"jacobian_method",       SolverSettings.use_sparse_solver ? "Sparse"
+                                          : (SolverSettings.direct_jacobian ? "Direct" : "Inverse Jacobian")});
         st.push_back({"maximum_time_allowed",  aquiutils::numbertostring(SolverSettings.maximum_simulation_time)});
         st.push_back({"blocks",                aquiutils::numbertostring(int(blocks.size()))});
         st.push_back({"links",                 aquiutils::numbertostring(int(links.size()))});
@@ -1451,9 +1452,21 @@ bool System::SetProperty(const string &s, const string &val)
     if (s=="jacobian_method")
     {
         if (val=="Inverse Jacobian")
-            SolverSettings.direct_jacobian=false;
+        {   SolverSettings.direct_jacobian=false;
+            SolverSettings.use_sparse_solver=false;
+        }
         if (val=="Direct")
-            SolverSettings.direct_jacobian=true;
+        {   SolverSettings.direct_jacobian=true;
+            SolverSettings.use_sparse_solver=false;
+        }
+        if (val=="Sparse")
+        {   // Sparse LU on J*dx = F. Equivalent to "Inverse Jacobian" in what it
+            // computes, but never forms the inverse, so a model made of
+            // independent sub-systems (a block-diagonal Jacobian) costs a small
+            // multiple of one sub-system rather than the cube of the whole.
+            SolverSettings.direct_jacobian=false;
+            SolverSettings.use_sparse_solver=true;
+        }
         return true;
     }
     if (s=="alloutputfile")
@@ -1963,7 +1976,14 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
 
 
-                if (!SolverSettings.direct_jacobian)
+                if (SolverSettings.use_sparse_solver)
+                {
+                    // Store the Jacobian sparsely and let ComputeNewtonStep
+                    // factorise it; never form the dense inverse.
+                    SolverTempVars.Sparse_Jacobian[statevarno] =
+                        arma::sp_mat(static_cast<const arma::mat&>(J));
+                }
+                else if (!SolverSettings.direct_jacobian)
                 {   if (!Invert(J, SolverTempVars.Inverse_Jacobian[statevarno]))
                     {
                         LogJacobianFailure(J, transport);
@@ -5606,6 +5626,75 @@ bool System::ComputeNewtonStep(const string &variable, CVector_arma &X, CVector_
                                unsigned int statevarno, bool transport,
                                const vector<bool> &outflowlimitstatus_old)
 {
+    // ---- sparse path -------------------------------------------------------
+    // Factorise J and solve J*dx = F directly, instead of forming J^-1. For a
+    // model whose sub-systems are not linked (each column of a column study, for
+    // example) J is block diagonal, and a sparse LU costs a small multiple of one
+    // block rather than scaling with the cube of the whole system.
+    if (SolverSettings.use_sparse_solver)
+    {
+        if (SolverTempVars.updatejacobian[statevarno])
+        {
+            CMatrix_arma J = transport ? Jacobian(variable, X, transport)
+                                       : JacobianDirect(variable, X, transport);
+            SolverTempVars.epoch_count++;
+            if (SolverSettings.scalediagonal)
+                J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
+            SolverTempVars.Sparse_Jacobian[statevarno] = arma::sp_mat(static_cast<const arma::mat&>(J));
+            SolverTempVars.updatejacobian[statevarno] = false;
+        }
+
+        arma::vec dxv;
+        const arma::sp_mat &Jsp = SolverTempVars.Sparse_Jacobian[statevarno];
+        if (Jsp.n_rows != F.n_elem || Jsp.n_cols != F.n_elem)
+        {
+            SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) +
+                ": sparse Jacobian has the wrong shape (J=" +
+                aquiutils::numbertostring(int(Jsp.n_rows)) + "x" +
+                aquiutils::numbertostring(int(Jsp.n_cols)) + ", F=" +
+                aquiutils::numbertostring(int(F.n_elem)) + ", statevar=" +
+                aquiutils::numbertostring(int(statevarno)) +
+                (transport ? ", transport" : ", flow") + ")");
+            if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+            return false;
+        }
+        // Use the explicit SuperLU driver with equilibration rather than
+        // spsolve_simple: the Jacobian of a multi-constituent transport system
+        // is badly scaled (rows for immobile constituents differ from the
+        // aqueous rows by many orders of magnitude) and the simple driver does
+        // not survive it.
+        arma::superlu_opts sluopts;
+        sluopts.allow_ugly  = true;
+        sluopts.equilibrate = true;
+        bool slu_ok = false;
+        try { slu_ok = arma::spsolve(dxv, Jsp, static_cast<const arma::vec&>(F), "superlu", sluopts); }
+        catch (const std::exception &e) { slu_ok = false; }
+        catch (...)                     { slu_ok = false; }
+        if (!slu_ok)
+        {
+            LogJacobianFailure(CMatrix_arma(), transport);
+            SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) +
+                                                 ": Sparse solve of the Jacobian failed");
+            if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+            return false;
+        }
+
+        dx = CVector_arma(dxv);
+        if (!SolverSettings.scalediagonal)
+            dx *= SolverTempVars.NR_coefficient[statevarno];
+        X -= dx;
+        if (SolverSettings.optimize_lambda) X1 = X + 0.5 * dx;
+
+        if (!dx.is_finite())
+        {
+            SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) +
+                                                 ": The Newton step was not finite");
+            if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
+            return false;
+        }
+        return true;
+    }
+
     if (SolverTempVars.updatejacobian[statevarno])
     {
         CMatrix_arma J;
