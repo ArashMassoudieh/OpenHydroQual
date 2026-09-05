@@ -126,6 +126,16 @@ int main(int argc, char *argv[])
     }
 
     system->SetSilent(quiet);
+
+    // Honour write_solution_details from the model file, as the GUI does.
+    // Without this the setting is silently ignored in terminal runs and no
+    // diagnostic log is produced.
+    if (system->GetSolverSettings().write_solution_details)
+    {
+        const string logfile = system->GetWorkingFolder() + "solution_details.txt";
+        system->SetSolutionLogger(logfile);
+        if (!quiet) cout << "Solution details: " << logfile << endl;
+    }
     cout << "Solving ..." << endl;
     const bool ok = system->Solve();
 

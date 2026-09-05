@@ -939,7 +939,7 @@
     "icon": {
       "filename": "surface2soil2.png"
     },
-    "description": "Surfacewater to soil connector (surface storage limit)",
+    "description": "Surface water to soil connector with depression storage - infiltrates only while the surface water depth exceeds the source block's depression_storage, so a residual depth is retained and the surface never fully drains",
     "area": {
       "type": "expression",
       "description": "Interface area",
@@ -977,6 +977,6 @@
       "type": "string",
       "default": "0,0,180"
     },
-    "helptext": "Surfacewater to soil connector (surface storage limit)"
+    "helptext": "Connects a surface water block to a soil block. Flow is the Darcy flux driven by the head difference, gated by a smoothed switch on (depth.s - depression_storage.s): infiltration runs at full rate while the surface depth is above the depression storage and shuts off below it, leaving a residual ponded depth. The source block must define depression_storage (e.g. Catchment); use surfacewater_to_soil_link instead if the surface should be allowed to drain completely."
   }
 }

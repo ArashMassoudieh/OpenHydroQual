@@ -127,6 +127,9 @@ struct solvertemporaryvars
     double dt;
     double dt_base;
     bool SolutionFailed = false;
+    /// Name of the block (or block:constituent) that most recently forced a
+    /// solver failure; reported by the solution logger's summary.
+    std::string last_failed_location;
     CVector_arma Jacobia_Diagonal;
     time_t time_start; //simulation start time
     time_t simulation_duration = 0; //simulation duration

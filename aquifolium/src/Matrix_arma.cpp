@@ -382,26 +382,60 @@ CMatrix_arma Invert(const CMatrix_arma& M) {
     return M.inv();
 }
 
-bool Invert(const CMatrix_arma& M, CMatrix_arma& InvOut) {
-    // Reject a numerically singular system rather than letting an approximate
-    // inverse through. Armadillo will return a finite-but-meaningless result for
-    // a matrix this ill-conditioned (warning "solve(): system is singular
-    // (rcond: ...); attempting approx solution"), and the Newton iteration then
-    // applies it as an essentially zero-length step. The solver "converges" at
-    // every timestep, the state never advances, and the run reports success with
-    // a frozen solution. Returning false here routes the step into the existing
-    // timestep-reduction / restore-point machinery in System::Solve, which is
-    // what eventually sets SolutionFailed.
-    const double rc = arma::rcond(M);
-    if (!std::isfinite(rc) || rc < singular_rcond_threshold)
-        return false;
-
-    mat result;
-    bool ok = arma::inv(result, M);
-    if (ok && !result.is_finite()) ok = false;
-    if (ok) InvOut = result;
-    return ok;
+// Infinity norm (maximum absolute row sum). Written out rather than calling
+// arma::norm(), whose overload set does not accept CMatrix_arma directly.
+static double inf_norm_abs(const CMatrix_arma& A)
+{
+    double best = 0.0;
+    for (size_t i = 0; i < A.n_rows; ++i)
+    {
+        double rowsum = 0.0;
+        for (size_t j = 0; j < A.n_cols; ++j) rowsum += std::fabs(A(i, j));
+        if (rowsum > best) best = rowsum;
+    }
+    return best;
 }
+
+static double inf_norm_abs(const mat& A)
+{
+    double best = 0.0;
+    for (arma::uword i = 0; i < A.n_rows; ++i)
+    {
+        double rowsum = 0.0;
+        for (arma::uword j = 0; j < A.n_cols; ++j) rowsum += std::fabs(A(i, j));
+        if (rowsum > best) best = rowsum;
+    }
+    return best;
+}
+
+bool Invert(const CMatrix_arma& M, CMatrix_arma& InvOut) {
+    mat result;
+    if (!arma::inv(result, M)) return false;
+    if (!result.is_finite())   return false;
+
+    // Reject a numerically singular system rather than letting an approximate
+    // inverse through. Armadillo returns a finite-but-meaningless result for a
+    // matrix this ill-conditioned (warning "solve(): system is singular
+    // (rcond: ...); attempting approx solution"), and the Newton iteration then
+    // applies it as an essentially zero-length step: the solver "converges" at
+    // every timestep, the state never advances, and the run reports success
+    // with a frozen solution. Returning false routes the step into the existing
+    // timestep-reduction / restore-point machinery in System::Solve.
+    //
+    // ||M||_inf * ||M^-1||_inf is the standard cheap estimate of the condition
+    // number. It is used in preference to arma::rcond(), which is not exposed by
+    // every Armadillo build, and costs O(n^2) against the O(n^3) inverse already
+    // computed.
+    const double nM = inf_norm_abs(M);
+    const double nI = inf_norm_abs(result);
+    if (!std::isfinite(nM) || !std::isfinite(nI)) return false;
+    if (nM * nI > 1.0 / singular_rcond_threshold) return false;
+
+    InvOut = result;
+    return true;
+}
+
+
 
 CMatrix_arma oneoneprod(const CMatrix_arma& A, const CMatrix_arma& B) {
     if (A.n_rows != B.n_rows || A.n_cols != B.n_cols)

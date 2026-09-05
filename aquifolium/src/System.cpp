@@ -974,6 +974,22 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 
     InitializeSolver(applyparameters);
 
+    if (GetSolutionLogger())
+    {
+        vector<pair<string,string>> st;
+        st.push_back({"simulation_start_time", aquiutils::numbertostring(SimulationParameters.tstart)});
+        st.push_back({"simulation_end_time",   aquiutils::numbertostring(SimulationParameters.tend)});
+        st.push_back({"initial_time_step",     aquiutils::numbertostring(SimulationParameters.dt0)});
+        st.push_back({"minimum_timestep",      aquiutils::numbertostring(SolverSettings.minimum_timestep)});
+        st.push_back({"nr_tolerance",          aquiutils::numbertostring(SolverSettings.NRtolerance)});
+        st.push_back({"jacobian_method",       SolverSettings.direct_jacobian ? "Direct" : "Inverse Jacobian"});
+        st.push_back({"maximum_time_allowed",  aquiutils::numbertostring(SolverSettings.maximum_simulation_time)});
+        st.push_back({"blocks",                aquiutils::numbertostring(int(blocks.size()))});
+        st.push_back({"links",                 aquiutils::numbertostring(int(links.size()))});
+        st.push_back({"constituents",          aquiutils::numbertostring(int(ConstituentsCount()))});
+        GetSolutionLogger()->WriteHeader(GetName().empty() ? "(unnamed)" : GetName(), st);
+    }
+
     PopulateOutputs(false);
     RestorePoint restorepoint(this);
 
@@ -1048,6 +1064,10 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
             + ". The solution is incomplete.", true);
         SolverTempVars.SolutionFailed = true;
     }
+
+    if (GetSolutionLogger())
+        GetSolutionLogger()->WriteSummary(SolverTempVars.t, SimulationParameters.tend,
+                                          SolverTempVars.SolutionFailed);
 
     FinalizeOutputs(uniformizeoutput);
     SetSimulationDuration(time(nullptr) - SolverTempVars.time_start);
@@ -1147,6 +1167,24 @@ void System::InitializeSolver(bool applyparameters)
 
 void System::HandleSolveFailure(int& fail_counter, RestorePoint& restorepoint)
 {
+    // Record what forced the step down, and where. The summary at the end of
+    // the log ranks these, so a collapsing time step points straight at the
+    // block responsible instead of requiring a manual read of the stream.
+    if (GetSolutionLogger())
+    {
+        string cause = SolverTempVars.fail_reason.empty()
+                     ? string("unspecified")
+                     : SolverTempVars.fail_reason.back();
+        // the reason strings are prefixed "at <t>: "; keep only the reason
+        size_t c = cause.find(": ");
+        if (c != string::npos) cause = cause.substr(c + 2);
+        GetSolutionLogger()->TimeStepChange(
+            SolverTempVars.t, SolverTempVars.dt,
+            max(SolverTempVars.dt_base * SolverSettings.NR_timestep_reduction_factor_fail,
+                SimulationParameters.dt0 / (2 * SolverSettings.timestepminfactor)),
+            cause, SolverTempVars.last_failed_location);
+    }
+
     fail_counter++;
 
     LogDetails(SolverTempVars.fail_reason.back()
@@ -5500,11 +5538,13 @@ void System::LogErrorKeptIncreasing(const CVector_arma &F, bool transport, unsig
     logger->WriteString("Outflow limit vector: " +
                         CVector(GetOutflowLimitFactorVector(Expression::timing::present)).toString());
 
+    string loc = transport ? GetBlockConstituentSring(F.abs_max_elems())
+                           : blocks[F.abs_max_elems()].GetName();
+    SolverTempVars.last_failed_location = loc;
+    logger->Event(SolverTempVars.t, dt(), "error kept increasing", loc,
+                  "state variable " + aquiutils::numbertostring(int(statevarno)));
     logger->WriteString("Maximum error location:");
-    if (transport)
-        logger->WriteString("  - " + GetBlockConstituentSring(F.abs_max_elems()));
-    else
-        logger->WriteString("  - " + blocks[F.abs_max_elems()].GetName());
+    logger->WriteString("  - " + loc);
 
     logger->WriteString("Time step (dt): " + aquiutils::numbertostring(dt()));
 

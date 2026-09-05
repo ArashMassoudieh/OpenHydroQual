@@ -784,7 +784,7 @@
     "icon": { 
       "filename": "surface2soil2.png" 
     }, 
-    "description": "Surfacewater to soil connector (surface storage limit)", 
+    "description": "Surface water to soil connector with depression storage - infiltrates only while the surface water depth exceeds the source block's depression_storage, so a residual depth is retained and the surface never fully drains", 
     "area": { 
       "type": "expression", 
       "description": "Interface area", 
