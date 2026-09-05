@@ -29,6 +29,15 @@
 #include "qstring.h"
 #include "QDebug"
 
+// Define GA_VERBOSE_RESUME to trace how getinitialpop() tokenizes an existing
+// GA_output.txt. Left off by default: it printed every line of the file plus a
+// per-row dump on every run, which buried the actual progress report.
+#ifdef GA_VERBOSE_RESUME
+#define GA_DBG(x) do { std::cout << x; } while (0)
+#else
+#define GA_DBG(x) do { } while (0)
+#endif
+
 
 
 #ifdef Q_GUI_SUPPORT
@@ -271,21 +280,22 @@ CGA<T>::~CGA()
 template<class T>
 void CGA<T>::initialize()
 {
-    std::cout << "[GA-DBG] initialize() ENTER, initial_pop.size()=" << initial_pop.size() << "\n";
+    GA_DBG("[GA-DBG] initialize() ENTER, initial_pop.size()=" << initial_pop.size() << "\n");
 
     for (int i = 0; i < GA_params.maxpop; i++)
     {
         Ind[i].initialize();
     }
-    std::cout << "[GA-DBG] initialize() after Ind[i].initialize() — first individual: ";
-    for (int j = 0; j < GA_params.nParam; j++)
-        std::cout << Ind[0].x[j] << " ";
+#ifdef GA_VERBOSE_RESUME
+    GA_DBG("[GA-DBG] initialize() after Ind[i].initialize() — first individual: ");
+    for (int j = 0; j < GA_params.nParam; j++) std::cout << Ind[0].x[j] << " ";
     std::cout << "\n";
+#endif
 
     if (!initial_pop.empty())
     {
         const int n = std::min(static_cast<int>(initial_pop.size()), GA_params.maxpop);
-        std::cout << "[GA-DBG] initialize() seeding " << n << " individuals from initial_pop\n";
+        GA_DBG("[GA-DBG] initialize() seeding " << n << " individuals from initial_pop\n");
         for (int i = 0; i < n; i++)
         {
             const int nP = std::min(static_cast<int>(initial_pop[i].size()), GA_params.nParam);
@@ -294,17 +304,18 @@ void CGA<T>::initialize()
                 Ind[i].x[j] = initial_pop[i][j];
             }
         }
-        std::cout << "[GA-DBG] initialize() after seeding — first individual: ";
-        for (int j = 0; j < GA_params.nParam; j++)
-            std::cout << Ind[0].x[j] << " ";
+#ifdef GA_VERBOSE_RESUME
+        GA_DBG("[GA-DBG] initialize() after seeding — first individual: ");
+        for (int j = 0; j < GA_params.nParam; j++) std::cout << Ind[0].x[j] << " ";
         std::cout << "\n";
+#endif
     }
     else
     {
-        std::cout << "[GA-DBG] initialize() initial_pop EMPTY — staying with random\n";
+        GA_DBG("[GA-DBG] initialize() initial_pop EMPTY — staying with random\n");
     }
 
-    std::cout << "[GA-DBG] initialize() EXIT\n";
+    GA_DBG("[GA-DBG] initialize() EXIT\n");
 }
 
 template<class T>
@@ -389,12 +400,16 @@ int counter=0;
 #endif
             {
                 FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
-                fprintf(FileOut, "%i, ", k);
+                // Written before the solve starts, so the parameters of an
+                // individual that hangs or crashes are still on record. Named
+                // rather than positional: threads append concurrently, so lines
+                // for different individuals interleave and column position alone
+                // would be unreadable.
+                fprintf(FileOut, "gen %d | ind %-3d | START  ", current_generation, k);
                 for (int l=0; l<Ind[0].nParams; l++)
-                    if (loged[l]==1)
-                        fprintf(FileOut, "%le, ", pow(10,Ind[k].x[l]));
-                    else
-                        fprintf(FileOut, "%le, ", Ind[k].x[l]);
+                    fprintf(FileOut, "%s=%.6g%s", paramname[l].c_str(),
+                            (loged[l]==1 ? pow(10,Ind[k].x[l]) : Ind[k].x[l]),
+                            (l+1<Ind[0].nParams ? ", " : ""));
 
                 //fprintf(FileOut, "%le, %le, %i, %e, %i, %i", Ind[k].actual_fitness, Ind[k].fitness, Ind[k].rank, time_[k], threads_num[k],num_threads[k]);
                 //fprintf(FileOut, "%le, %le, %i, %e", Ind[k].actual_fitness, Ind[k].fitness, Ind[k].rank, time_[k]);
@@ -415,11 +430,11 @@ int counter=0;
                 fprintf(FileOut, "Simulation failed: %i, parent1=%i, parent2=%i, parent1_fitness=%e, parent2_fitness=%e, fitness=%e\n", k, Ind[k].parents[0], Ind[k].parents[1], Ind_old[Ind[k].parents[0]].actual_fitness, Ind_old[Ind[k].parents[1]].actual_fitness, Ind[k].actual_fitness);
                 fclose(FileOut);
             }
-            else if (Ind[k].parents.size()!=2){
-                FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
-                fprintf(FileOut, "Simulation failed: %i\n:", Ind[k].parents.size());
-                fclose(FileOut);
-            }
+            // Individuals in generation 0 (and any re-seeded from file) have no
+            // parents. That is normal, not a failure. The old code printed
+            // "Simulation failed: <n_parents>" here for every such individual,
+            // and left a stray ":" with no newline that ran into the next line.
+            // Whether the solve actually failed is reported on the eval line below.
             if (Ind[k].actual_fitness == 0 && !Models[k].GetSolutionFailed())
             {
                 // A solved individual scoring exactly zero means the objective is
@@ -461,9 +476,19 @@ int counter=0;
 			}
 #endif
 
+            // Already inside the omp critical opened above, so this append is
+            // serialised across threads.
             {
                 FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
-                fprintf(FileOut, "%i, fitness=%e, time=%e, internal_time=%e, failed=%i\n", k, Ind[k].actual_fitness, time_[k], double(Models[k].GetSimulationDuration()), Models[k].GetSolutionFailed());
+                // wall_s   : seconds the GA measured around Solve()
+                // solver_s : the same interval as the solver itself recorded
+                //            (they agree unless the solver bailed out early)
+                // solved   : yes/no -- did the run reach the simulation end time
+                fprintf(FileOut,
+                        "gen %d | ind %-3d | DONE   objective=%- 14.6e wall_s=%-6.0f solver_s=%-6.0f solved=%s\n",
+                        current_generation, k, Ind[k].actual_fitness,
+                        double(time_[k]), double(Models[k].GetSimulationDuration()),
+                        Models[k].GetSolutionFailed() ? "no" : "yes");
                 fclose(FileOut);
             }
 
@@ -595,7 +620,7 @@ void CGA<T>::SetParameters(Object *obj)
 template<class T>
 int CGA<T>::optimize()
 {
-    std::cout << "[GA-DBG] optimize() ENTER, initial_pop.size()=" << initial_pop.size() << "\n";
+    GA_DBG("[GA-DBG] optimize() ENTER, initial_pop.size()=" << initial_pop.size() << "\n");
 
     #ifdef Q_GUI_SUPPORT
 	QCoreApplication::processEvents();
@@ -609,24 +634,93 @@ int CGA<T>::optimize()
 	FILE *FileOut;
 	FILE *FileOut1;
 
-	FileOut = fopen(RunFileName.c_str(),"w");
+    // Resume support. getinitialpop() was defined but never called, so
+    // --continue (which sets getfromfilename) silently did nothing and every
+    // "resumed" run started from a random population. Read it here, BEFORE the
+    // fopen(...,"w") below truncates the very file we are reading, since
+    // --continue points getfromfilename at GA_output.txt itself.
+    if (!filenames.getfromfilename.empty())
+        getinitialpop(filenames.getfromfilename);
+
+    // ---- GA_output.txt preamble -------------------------------------------
+    // Every line here starts with '#'. It sits above the first "Generation:"
+    // line, so getinitialpop() -- which only reads inside a generation block --
+    // skips it, and --continue keeps working.
+    FileOut = fopen(RunFileName.c_str(),"w");
     if (!FileOut)
     {
         qDebug()<< QString::fromStdString("Unable to open '" + RunFileName + "'");
     }
-	fclose(FileOut);
+    else
+    {
+        const time_t now = time(nullptr);
+        char stamp[64]; strftime(stamp, sizeof(stamp), "%Y-%m-%d %H:%M:%S", localtime(&now));
+        fprintf(FileOut, "# OpenHydroQual -- genetic algorithm population log\n");
+        fprintf(FileOut, "# started            : %s\n", stamp);
+        fprintf(FileOut, "# population         : %d individuals\n", GA_params.maxpop);
+        fprintf(FileOut, "# generations        : %d\n", GA_params.nGen);
+        fprintf(FileOut, "# crossover / mutation prob : %g / %g\n", GA_params.pcross, GA_params.pmute);
+        fprintf(FileOut, "# shake scale        : %g (reduced by x%g each generation)\n",
+                GA_params.shakescale, GA_params.shakescalered);
+        fprintf(FileOut, "#\n# calibrated parameters (%d):\n", Ind[0].nParams);
+        for (int k=0; k<Ind[0].nParams; k++)
+            fprintf(FileOut, "#   %-24s sampled in %s space\n",
+                    paramname[k].c_str(), (loged[k]==1 ? "log10" : "linear"));
+        fprintf(FileOut, "#\n# observations (%u), each contributing MSE, R2 and NSE columns:\n",
+                Model->ObservationsCount());
+        for (unsigned int i=0; i<Model->ObservationsCount(); i++)
+            fprintf(FileOut, "#   %s\n", Model->observation(i)->GetName().c_str());
+        fprintf(FileOut, "#\n# One block per generation: a \"Generation: N\" line, a column header,\n");
+        fprintf(FileOut, "# then one row per individual. Columns:\n");
+        fprintf(FileOut, "#   ID          index of the individual within the generation\n");
+        fprintf(FileOut, "#   <params>    parameter values, in model units (log-sampled ones are\n");
+        fprintf(FileOut, "#               already converted back from log10)\n");
+        fprintf(FileOut, "#   likelihood  raw objective value; larger is better\n");
+        fprintf(FileOut, "#   Fitness     rank-derived selection weight, not a goodness-of-fit\n");
+        fprintf(FileOut, "#   Rank        1 = best in this generation\n");
+        fprintf(FileOut, "#   *_MSE       mean squared error for that observation\n");
+        fprintf(FileOut, "#   *_R2        coefficient of determination (correlation only)\n");
+        fprintf(FileOut, "#   *_NSE       Nash-Sutcliffe efficiency; <= 0 means the model is no\n");
+        fprintf(FileOut, "#               better than predicting the mean of the observations\n");
+        fprintf(FileOut, "#\n");
+        fclose(FileOut);
+    }
+
+    // ---- detail_GA.txt preamble -------------------------------------------
     FileOut1 = fopen((filenames.pathname + "detail_GA.txt").c_str(), "w");
-	fclose(FileOut1);
+    if (FileOut1)
+    {
+        const time_t now = time(nullptr);
+        char stamp[64]; strftime(stamp, sizeof(stamp), "%Y-%m-%d %H:%M:%S", localtime(&now));
+        fprintf(FileOut1, "OpenHydroQual -- genetic algorithm run trace\n");
+        fprintf(FileOut1, "started : %s\n", stamp);
+        fprintf(FileOut1, "%d individuals x %d generations, %d thread(s)\n\n",
+                GA_params.maxpop, GA_params.nGen, numberOfThreads);
+        fprintf(FileOut1, "Two lines are written per individual:\n");
+        fprintf(FileOut1, "  START  the parameter set, written before the solve begins so that an\n");
+        fprintf(FileOut1, "         individual which hangs or crashes is still on record\n");
+        fprintf(FileOut1, "  DONE   objective value and cost once the solve returns\n\n");
+        fprintf(FileOut1, "Fields on the DONE line:\n");
+        fprintf(FileOut1, "  objective  value being maximised; larger is better\n");
+        fprintf(FileOut1, "  wall_s     seconds the GA measured around the solve\n");
+        fprintf(FileOut1, "  solver_s   the same interval as recorded by the solver itself\n");
+        fprintf(FileOut1, "  solved     yes if the run reached the simulation end time, no otherwise\n\n");
+        fprintf(FileOut1, "Individuals are evaluated in parallel, so START and DONE lines for\n");
+        fprintf(FileOut1, "different individuals interleave. Match them on the gen/ind labels.\n");
+        fprintf(FileOut1, "%s\n", string(78,'-').c_str());
+        fclose(FileOut1);
+    }
 
 	double shakescaleini = GA_params.shakescale;
 
 	vector<double> X(Ind[0].nParams);
 
 	initialize();
-    std::cout << "[GA-DBG] optimize() after initialize() — Ind[0].x = ";
-    for (int j = 0; j < GA_params.nParam; j++)
-        std::cout << Ind[0].x[j] << " ";
+#ifdef GA_VERBOSE_RESUME
+    GA_DBG("[GA-DBG] optimize() after initialize() — Ind[0].x = ");
+    for (int j = 0; j < GA_params.nParam; j++) std::cout << Ind[0].x[j] << " ";
     std::cout << "\n";
+#endif
 
 	double ininumenhancements = GA_params.numenhancements;
 	GA_params.numenhancements = 0;
@@ -645,33 +739,41 @@ int CGA<T>::optimize()
 		FileOut = fopen(RunFileName.c_str(),"a");
         printf("Generation: %i\n", current_generation);
         fprintf(FileOut, "Generation: %i\n", current_generation);
-		fprintf(FileOut, "ID, ");
-		for (int k=0; k<Ind[0].nParams; k++)
-			fprintf(FileOut, "%s, ", paramname[k].c_str());
-        fprintf(FileOut, "%s, %s, %s, ", "likelihood", "Fitness", "Rank");
+        // Column header. Every field is separated by exactly ", " and the line
+        // carries no trailing comma, so the header and the data rows below have
+        // the same field count and can be read by any CSV parser.
+        fprintf(FileOut, "ID");
+        for (int k=0; k<Ind[0].nParams; k++)
+            fprintf(FileOut, ", %s", paramname[k].c_str());
+        fprintf(FileOut, ", %s, %s, %s", "likelihood", "Fitness", "Rank");
         for (unsigned int i=0; i<Model->ObservationsCount();i++)
         {
-            fprintf(FileOut, "%s, %s, %s,", (Model->observation(i)->GetName()+"_MSE").c_str(), (Model->observation(i)->GetName()+"_R2").c_str(), (Model->observation(i)->GetName()+"_NSE").c_str());
+            const string on = Model->observation(i)->GetName();
+            fprintf(FileOut, ", %s, %s, %s", (on+"_MSE").c_str(), (on+"_R2").c_str(), (on+"_NSE").c_str());
         }
         fprintf(FileOut, "\n");
         write_to_detailed_GA("Generation: " + aquiutils::numbertostring(current_generation));
 		for (int j1=0; j1<GA_params.maxpop; j1++)
 		{
 
-			fprintf(FileOut, "%i, ", j1);
+            // One field per header column, separated by ", ", no trailing comma.
+            // The old code ended the Rank field with ", " and then began each
+            // observation triplet with "," which injected an empty field and
+            // shifted every fit measure one column right of its header.
+            fprintf(FileOut, "%i", j1);
 
-			for (int k=0; k<Ind[0].nParams; k++)
-				if (loged[k] == 1)
-					fprintf(FileOut, "%le, ", pow(10, Ind[j1].x[k]));
-				else
-					fprintf(FileOut, "%le, ", Ind[j1].x[k]);
+            for (int k=0; k<Ind[0].nParams; k++)
+                if (loged[k] == 1)
+                    fprintf(FileOut, ", %le", pow(10, Ind[j1].x[k]));
+                else
+                    fprintf(FileOut, ", %le", Ind[j1].x[k]);
 
-            fprintf(FileOut, "%le, %le, %i, ", Ind[j1].actual_fitness, Ind[j1].fitness, Ind[j1].rank);
+            fprintf(FileOut, ", %le, %le, %i", Ind[j1].actual_fitness, Ind[j1].fitness, Ind[j1].rank);
             for (unsigned int i=0; i<Model->ObservationsCount();i++)
             {
-                fprintf(FileOut, ",%le, %le, %le", Ind[j1].fit_measures[i*3], Ind[j1].fit_measures[i*3+1], Ind[j1].fit_measures[i*3+2]);
+                fprintf(FileOut, ", %le, %le, %le", Ind[j1].fit_measures[i*3], Ind[j1].fit_measures[i*3+1], Ind[j1].fit_measures[i*3+2]);
             }
-			fprintf(FileOut, "\n");
+            fprintf(FileOut, "\n");
 		}
 		fclose(FileOut);
 
@@ -1103,14 +1205,14 @@ template<class T>
 void CGA<T>::getinitialpop(string filename)
 {
     initial_pop.clear();
-    std::cout << "[GA-DBG] getinitialpop() ENTER, filename=" << filename
+    GA_DBG("[GA-DBG] getinitialpop() ENTER, filename=" << filename
               << " nParam=" << GA_params.nParam
-              << " maxpop=" << GA_params.maxpop << "\n";
+              << " maxpop=" << GA_params.maxpop << "\n");
 
     ifstream file(filename);
     if (!file.is_open())
     {
-        std::cout << "[GA-DBG] getinitialpop: file failed to open\n";
+        GA_DBG("[GA-DBG] getinitialpop: file failed to open\n");
         return;
     }
 
@@ -1128,6 +1230,7 @@ void CGA<T>::getinitialpop(string filename)
         lineNum++;
         if (s.empty()) continue;
 
+#ifdef GA_VERBOSE_RESUME
         // First 30 lines: trace what tokenization is producing
         if (lineNum <= 30)
         {
@@ -1137,6 +1240,7 @@ void CGA<T>::getinitialpop(string filename)
             if (s.size() > 1) std::cout << " s[1]='" << s[1] << "'";
             std::cout << " inBlock=" << inDataBlock << "\n";
         }
+#endif
 
         // Cycle delimiter: "=== Cycle N | timestamp ... ===" — no commas,
         // arrives as one token. Match by prefix.
@@ -1185,12 +1289,14 @@ void CGA<T>::getinitialpop(string filename)
             rowsForLastGen.push_back(params);
             dataRowsSeen++;
 
+#ifdef GA_VERBOSE_RESUME
             if (dataRowsSeen <= 3)
             {
-                std::cout << "[GA-DBG]    parsed row " << dataRowsSeen << ":";
+                GA_DBG("[GA-DBG]    parsed row " << dataRowsSeen << ":");
                 for (auto v : params) std::cout << " " << v;
                 std::cout << "\n";
             }
+#endif
 
             // Snapshot when we have a complete generation. Subsequent
             // complete generations will overwrite, so initial_pop ends
@@ -1203,8 +1309,13 @@ void CGA<T>::getinitialpop(string filename)
     }
     file.close();
 
-    std::cout << "[GA-DBG] getinitialpop EXIT, lines=" << lineNum
-              << " genHeaders=" << genHeadersSeen
-              << " dataRows=" << dataRowsSeen
-              << " initial_pop.size=" << initial_pop.size() << "\n";
+    // Kept unconditional: when resuming, the one thing worth seeing is whether a
+    // full generation was actually recovered from the file.
+    std::cout << "Resume: read " << dataRowsSeen << " individuals across "
+              << genHeadersSeen << " generation(s) from " << filename
+              << "; seeding " << initial_pop.size() << " of "
+              << GA_params.maxpop << ".\n";
+    if (initial_pop.empty() && dataRowsSeen > 0)
+        std::cout << "Resume: no COMPLETE generation found -- starting from a "
+                     "random population instead.\n";
 }

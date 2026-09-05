@@ -97,11 +97,11 @@
   },
   "jacobian_method": {
    "type": "string",
-   "default": "Inverse Jacobian",
-   "description": "Equation system solution method",
+   "default": "Direct",
+   "description": "Linear solver for the Newton step",
    "ask_user": "true",
-   "delegate": "ComboBox, items: Inverse Jacobian, Direct, Sparse",
-   "code": "write_solution_details"
+   "delegate": "ComboBox, items: Direct, Inverse Jacobian, Sparse",
+   "code": "jacobian_method"
   },
   "write_intermittently": {
    "type": "string",
