@@ -81,6 +81,17 @@ struct solversettings
     /// Solve J*dx = F with a sparse LU (SuperLU) instead of forming a dense
     /// inverse. Set via jacobian_method = Sparse.
     bool use_sparse_solver = false;
+
+    /// Assemble the transport Jacobian by perturbing each state variable and
+    /// re-evaluating only the residual rows that variable can affect, instead of
+    /// the whole residual vector. Exact, not an approximation: the skipped rows
+    /// are structurally zero, and the assembled matrix is bit-identical to the
+    /// full method (verified on ASM, Wetland, Column_Study and Open_Channel).
+    /// Default since it is exact and much faster for models with many blocks;
+    /// set jacobian_assembly = Full to fall back.
+    bool dependency_jacobian = true;
+    /// Assemble both ways and report max|difference|. Diagnostic only; slow.
+    bool verify_jacobian = false;
     bool write_solution_details = false;
     double maximum_simulation_time = 86400; //maximum simulation time allows in seconds
     int maximum_number_of_matrix_inversions = 200000; //maximum number of matrix inversions allowed
@@ -138,6 +149,17 @@ struct solvertemporaryvars
     /// Name of the block (or block:constituent) that most recently forced a
     /// solver failure; reported by the solution logger's summary.
     std::string last_failed_location;
+
+    // ---- profiling counters (Stage 0) -------------------------------------
+    // Always collected; cost is a few integer increments and clock reads per
+    // Jacobian. Reported by the solution logger's summary so the expensive part
+    // of a slow run can be identified without guessing.
+    long   residual_evaluations   = 0;   ///< calls to GetResiduals()
+    long   jacobian_assemblies    = 0;   ///< calls to Jacobian()/JacobianDirect()
+    long   linear_solves          = 0;   ///< dense inversions or sparse solves
+    double seconds_in_assembly    = 0.0;
+    double seconds_in_linearsolve = 0.0;
+    double seconds_in_residuals   = 0.0;
     CVector_arma Jacobia_Diagonal;
     time_t time_start; //simulation start time
     time_t simulation_duration = 0; //simulation duration
@@ -834,6 +856,13 @@ private:
     CVector_arma GetResiduals(const std::string& variable, CVector_arma& X, bool transport = false);
     CVector_arma GetResiduals_TR(const std::string& variable, CVector_arma& X);
     CMatrix_arma Jacobian(const std::string& variable, CVector_arma& X, bool transport = false);
+    /// Dependency-aware transport Jacobian (jacobian_assembly = Dependency).
+    CMatrix_arma JacobianDependency(const std::string& variable, CVector_arma& X, bool transport);
+    /// Residual rows for one block and its link neighbours only, patched into F.
+    void GetResiduals_TR_Rows(const std::string& variable, CVector_arma& X,
+                              int perturbed_index, CVector_arma& F);
+    /// Blocks whose residuals can change when the given block's state changes.
+    std::vector<int> AffectedBlocks(int blockno);
     CMatrix_arma JacobianDirect(const std::string& variable, CVector_arma& X, bool transport);
     CVector_arma Jacobian(const std::string& variable, CVector_arma& V, CVector_arma& F0, int i, bool transport = false);
 #ifdef SUPER_LU

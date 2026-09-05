@@ -15,6 +15,8 @@
 
 
 #include "System.h"
+#include <chrono>
+#include <algorithm>
 #include <fstream>
 #include <qstring.h>
 #include <QFile>
@@ -48,6 +50,50 @@
 
 const vector<string> System::operators = { "+", "-", "*", "/", "^", "(", ")", ":" };
 const vector<string> System::functions = { "abs", "sgn", "exp", "pos", "min", "max", "mon", "mbs", "lpw" };
+
+namespace {
+/// Monotonic wall-clock seconds, for the solver profiling counters.
+inline double ohq_now_seconds()
+{
+    using namespace std::chrono;
+    return duration<double>(steady_clock::now().time_since_epoch()).count();
+}
+} // namespace
+
+
+namespace {
+/// Convert whichever dense matrix type CMatrix_arma currently names into an
+/// Armadillo sparse matrix. Written against getnumrows()/getnumcols()/operator()
+/// rather than casting to arma::mat, because System.h remaps CMatrix_arma to
+/// CMatrix in any build that defines DEBUG - including the GUI's debug config.
+inline arma::sp_mat ohq_to_sparse(CMatrix_arma &J)
+{
+    const int nr = J.getnumrows(), nc = J.getnumcols();
+    std::vector<arma::uword> ri, ci;
+    std::vector<double> vv;
+    ri.reserve(size_t(nr)*4); ci.reserve(size_t(nr)*4); vv.reserve(size_t(nr)*4);
+    for (int i = 0; i < nr; i++)
+        for (int j = 0; j < nc; j++)
+        {
+            const double v = J(i,j);
+            if (v != 0.0) { ri.push_back(i); ci.push_back(j); vv.push_back(v); }
+        }
+    if (vv.empty()) return arma::sp_mat(nr, nc);
+    arma::umat loc(2, vv.size());
+    for (size_t k = 0; k < vv.size(); k++) { loc(0,k) = ri[k]; loc(1,k) = ci[k]; }
+    return arma::sp_mat(loc, arma::vec(vv), nr, nc);
+}
+
+/// Same portability concern, for the right-hand side.
+inline arma::vec ohq_to_vec(const CVector_arma &v)
+{
+    const int n = v.getsize();
+    arma::vec out(n);
+    for (int i = 0; i < n; i++) out(i) = v[i];
+    return out;
+}
+} // namespace
+
 
 System::System() : Object::Object()
 {
@@ -984,6 +1030,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         st.push_back({"nr_tolerance",          aquiutils::numbertostring(SolverSettings.NRtolerance)});
         st.push_back({"jacobian_method",       SolverSettings.use_sparse_solver ? "Sparse"
                                           : (SolverSettings.direct_jacobian ? "Direct" : "Inverse Jacobian")});
+        st.push_back({"jacobian_assembly",     SolverSettings.dependency_jacobian ? "Dependency" : "Full"});
         st.push_back({"maximum_time_allowed",  aquiutils::numbertostring(SolverSettings.maximum_simulation_time)});
         st.push_back({"blocks",                aquiutils::numbertostring(int(blocks.size()))});
         st.push_back({"links",                 aquiutils::numbertostring(int(links.size()))});
@@ -1067,8 +1114,27 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     }
 
     if (GetSolutionLogger())
-        GetSolutionLogger()->WriteSummary(SolverTempVars.t, SimulationParameters.tend,
-                                          SolverTempVars.SolutionFailed);
+    {
+        auto lg = GetSolutionLogger();
+        lg->Section("SOLVER COST PROFILE");
+        const double total = SolverTempVars.seconds_in_assembly
+                           + SolverTempVars.seconds_in_linearsolve;
+        lg->KeyValue("residual evaluations", aquiutils::numbertostring(int(SolverTempVars.residual_evaluations)));
+        lg->KeyValue("Jacobian assemblies",  aquiutils::numbertostring(int(SolverTempVars.jacobian_assemblies)));
+        lg->KeyValue("linear solves",        aquiutils::numbertostring(int(SolverTempVars.linear_solves)));
+        lg->KeyValue("seconds in residual evaluation", aquiutils::numbertostring(SolverTempVars.seconds_in_residuals));
+        lg->KeyValue("seconds in Jacobian assembly",   aquiutils::numbertostring(SolverTempVars.seconds_in_assembly));
+        lg->KeyValue("seconds in linear solve",        aquiutils::numbertostring(SolverTempVars.seconds_in_linearsolve));
+        if (total > 0)
+        {
+            lg->KeyValue("assembly share of (assembly+solve)",
+                aquiutils::numbertostring(100.0*SolverTempVars.seconds_in_assembly/total) + " %");
+            lg->KeyValue("solve share of (assembly+solve)",
+                aquiutils::numbertostring(100.0*SolverTempVars.seconds_in_linearsolve/total) + " %");
+        }
+        lg->WriteSummary(SolverTempVars.t, SimulationParameters.tend,
+                         SolverTempVars.SolutionFailed);
+    }
 
     FinalizeOutputs(uniformizeoutput);
     SetSimulationDuration(time(nullptr) - SolverTempVars.time_start);
@@ -1448,6 +1514,21 @@ bool System::SetProperty(const string &s, const string &val)
     if (s=="inputpath")
     {
         paths.inputpath = val; return true;
+    }
+    if (s=="jacobian_assembly")
+    {
+        // Full       : perturb each state variable and re-evaluate the whole
+        //              residual vector (original behaviour, the default).
+        // Dependency : re-evaluate only the rows the perturbed variable can
+        //              reach - its own block and its link neighbours. Exact.
+        if (val=="Full")       SolverSettings.dependency_jacobian=false;
+        if (val=="Dependency") SolverSettings.dependency_jacobian=true;
+        return true;
+    }
+    if (s=="verify_jacobian")
+    {
+        SolverSettings.verify_jacobian = aquiutils::atoi(val);
+        return true;
     }
     if (s=="jacobian_method")
     {
@@ -1965,8 +2046,34 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             {
                 CMatrix_arma J;
                 if (transport)
-                    J = Jacobian(variable, X, transport);
-
+                {
+                    if (SolverSettings.dependency_jacobian)
+                    {
+                        J = JacobianDependency(variable, X, transport);
+                        if (SolverSettings.verify_jacobian)
+                        {
+                            // Assemble the reference way and compare. An assembly
+                            // optimisation that silently perturbs the Jacobian
+                            // changes the answers, so this must be provable.
+                            CMatrix_arma Jref = Jacobian(variable, X, transport);
+                            double worst = 0, scale = 0;
+                            for (int a = 0; a < Jref.getnumrows(); a++)
+                                for (int b2 = 0; b2 < Jref.getnumcols(); b2++)
+                                {
+                                    worst = std::max(worst, fabs(Jref(a,b2) - J(a,b2)));
+                                    scale = std::max(scale, fabs(Jref(a,b2)));
+                                }
+                            if (GetSolutionLogger())
+                                GetSolutionLogger()->Event(SolverTempVars.t, dt(),
+                                    "jacobian verification", "",
+                                    "max|dJ| = " + aquiutils::numbertostring(worst) +
+                                    "   max|J| = " + aquiutils::numbertostring(scale) +
+                                    "   relative = " + aquiutils::numbertostring(scale>0 ? worst/scale : 0.0));
+                        }
+                    }
+                    else
+                        J = Jacobian(variable, X, transport);
+                }
                 else
                     J = JacobianDirect(variable, X, transport);
 
@@ -1976,12 +2083,18 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                     J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
 
 
+                SolverTempVars.linear_solves++;
+                const double _t_ls0 = ohq_now_seconds();
+                struct _LsTimer {
+                    double t0; solvertemporaryvars *stv;
+                    ~_LsTimer() { stv->seconds_in_linearsolve += ohq_now_seconds() - t0; }
+                } _ls{_t_ls0, &SolverTempVars};
+
                 if (SolverSettings.use_sparse_solver)
                 {
                     // Store the Jacobian sparsely and let ComputeNewtonStep
                     // factorise it; never form the dense inverse.
-                    SolverTempVars.Sparse_Jacobian[statevarno] =
-                        arma::sp_mat(static_cast<const arma::mat&>(J));
+                    SolverTempVars.Sparse_Jacobian[statevarno] = ohq_to_sparse(J);
                 }
                 else if (!SolverSettings.direct_jacobian)
                 {   if (!Invert(J, SolverTempVars.Inverse_Jacobian[statevarno]))
@@ -2408,6 +2521,13 @@ void System::CalculateAllExpressions(Expression::timing tmg)
 
 CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool transport)
 {
+    SolverTempVars.residual_evaluations++;
+    const double _t_res0 = ohq_now_seconds();
+    struct _ResTimer {
+        double t0; solvertemporaryvars *stv;
+        ~_ResTimer() { stv->seconds_in_residuals += ohq_now_seconds() - t0; }
+    } _rt{_t_res0, &SolverTempVars};
+
     if (transport)
         return GetResiduals_TR(variable, X);
 
@@ -2612,8 +2732,136 @@ bool System::CalculateFlows(const string &var, const Expression::timing &tmg)
 	return true;
 }
 
+/// Blocks whose transport residuals can change when `blockno`'s state changes:
+/// the block itself, plus every block sharing a link with it. Residuals couple
+/// only through the storage term (own block), the reaction rates (own block,
+/// across constituents) and the link fluxes (one hop). Anything further away is
+/// structurally zero, so recomputing it is pure waste.
+std::vector<int> System::AffectedBlocks(int blockno)
+{
+    std::vector<int> out;
+    out.push_back(blockno);
+    SafeVector<Link*> lf = blocks[blockno].GetLinksFrom();
+    for (unsigned int i = 0; i < lf.size(); i++)
+    {
+        int nb = lf[i]->e_Block_No();
+        if (std::find(out.begin(), out.end(), nb) == out.end()) out.push_back(nb);
+    }
+    SafeVector<Link*> lt = blocks[blockno].GetLinksTo();
+    for (unsigned int i = 0; i < lt.size(); i++)
+    {
+        int nb = lt[i]->s_Block_No();
+        if (std::find(out.begin(), out.end(), nb) == out.end()) out.push_back(nb);
+    }
+    return out;
+}
+
+/// Recompute only the residual rows reachable from `perturbed_index`, patching
+/// them into F (which must already hold the residual for the unperturbed state).
+/// Mirrors GetResiduals_TR exactly for those rows.
+void System::GetResiduals_TR_Rows(const string &variable, CVector_arma &X,
+                                  int perturbed_index, CVector_arma &F)
+{
+    const int nC = ConstituentsCount();
+    const int b  = perturbed_index / nC;
+
+    SolverTempVars.residual_evaluations++;
+    const double _t0 = ohq_now_seconds();
+
+    // Write the whole state: cheap relative to expression evaluation, and it
+    // keeps this function's semantics identical to the full version.
+    SetStateVariables_TR(variable, X, Expression::timing::present);
+    UnUpdateAllVariables();
+
+    std::vector<int> affected = AffectedBlocks(b);
+
+    // storage + inflow + reaction terms for each affected block
+    for (size_t k = 0; k < affected.size(); k++)
+    {
+        int i = affected[k];
+        CVector V = blocks[i].GetAllReactionRates(Expression::timing::present);
+        for (int j = 0; j < nC; j++)
+            F[j + i*nC] = (X[j + i*nC]
+                           - blocks[i].GetVal(variable, constituent(j)->GetName(), Expression::timing::past))/dt()
+                          - blocks[i].GetInflowValue(variable, constituent(j)->GetName(), Expression::timing::present)
+                          - V[j];
+    }
+
+    // link fluxes touching any affected block
+    for (unsigned int i = 0; i < links.size(); i++)
+    {
+        int sb = links[i].s_Block_No(), eb = links[i].e_Block_No();
+        bool s_aff = std::find(affected.begin(), affected.end(), sb) != affected.end();
+        bool e_aff = std::find(affected.begin(), affected.end(), eb) != affected.end();
+        if (!s_aff && !e_aff) continue;
+        for (int j = 0; j < nC; j++)
+        {
+            double q = links[i].GetVal(
+                blocks[sb].Variable(variable, constituent(j)->GetName())->GetCorrespondingFlowVar(),
+                constituent(j)->GetName(), Expression::timing::present, true);
+            if (s_aff) F[j + nC*sb] += q;
+            if (e_aff) F[j + nC*eb] -= q;
+        }
+    }
+
+    SolverTempVars.seconds_in_residuals += ohq_now_seconds() - _t0;
+}
+
+/// Dependency-aware transport Jacobian. Same numerical differencing as
+/// Jacobian(), but each perturbation re-evaluates only the reachable rows.
+CMatrix_arma System::JacobianDependency(const string &variable, CVector_arma &X, bool transport)
+{
+    SolverTempVars.jacobian_assemblies++;
+    const double _t0 = ohq_now_seconds();
+
+    const int n  = X.size();
+    const int nC = ConstituentsCount();
+    CMatrix_arma M(n);
+
+    CVector_arma F0 = GetResiduals(variable, X, transport);
+
+    for (int i = 0; i < n; i++)
+    {
+        const double u = 1;
+        double epsilon = -1e-6*u*(fabs(X[i]) + 1);
+
+        CVector_arma V1(X);  V1[i] += epsilon;
+        CVector_arma F1 = F0;                       // rows outside the stencil are unchanged
+        GetResiduals_TR_Rows(variable, V1, i, F1);
+        CVector_arma grad = (F1 - F0)/epsilon;
+
+        if (!grad.is_finite() || grad[i]==0)
+        {
+            epsilon = +1e-6*u*(fabs(X[i]) + 1);
+            V1 = X;  V1[i] += epsilon;
+            F1 = F0;
+            GetResiduals_TR_Rows(variable, V1, i, F1);
+            grad = (F1 - F0)/epsilon;
+        }
+
+        // only the reachable rows can be non-zero; write those, leave the rest 0
+        const int b = i / nC;
+        std::vector<int> affected = AffectedBlocks(b);
+        for (size_t k = 0; k < affected.size(); k++)
+            for (int j = 0; j < nC; j++)
+            {
+                int row = j + affected[k]*nC;
+                M(i,row) = grad[row];
+            }
+    }
+
+    // restore the unperturbed state, as Jacobian() leaves it
+    GetResiduals(variable, X, transport);
+
+    SolverTempVars.seconds_in_assembly += ohq_now_seconds() - _t0;
+    return Transpose(M);
+}
+
 CMatrix_arma System::Jacobian(const string &variable, CVector_arma &X, bool transport)
 {
+    SolverTempVars.jacobian_assemblies++;
+    const double _t_asm0 = ohq_now_seconds();
+
     CMatrix_arma M(X.size());
     CVector_arma F0;
 
@@ -2629,6 +2877,7 @@ CMatrix_arma System::Jacobian(const string &variable, CVector_arma &X, bool tran
 
     }
 
+  SolverTempVars.seconds_in_assembly += ohq_now_seconds() - _t_asm0;
   return Transpose(M);
 }
 
@@ -5640,19 +5889,19 @@ bool System::ComputeNewtonStep(const string &variable, CVector_arma &X, CVector_
             SolverTempVars.epoch_count++;
             if (SolverSettings.scalediagonal)
                 J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
-            SolverTempVars.Sparse_Jacobian[statevarno] = arma::sp_mat(static_cast<const arma::mat&>(J));
+            SolverTempVars.Sparse_Jacobian[statevarno] = ohq_to_sparse(J);
             SolverTempVars.updatejacobian[statevarno] = false;
         }
 
         arma::vec dxv;
         const arma::sp_mat &Jsp = SolverTempVars.Sparse_Jacobian[statevarno];
-        if (Jsp.n_rows != F.n_elem || Jsp.n_cols != F.n_elem)
+        if (int(Jsp.n_rows) != F.getsize() || int(Jsp.n_cols) != F.getsize())
         {
             SolverTempVars.fail_reason.push_back("at " + aquiutils::numbertostring(SolverTempVars.t) +
                 ": sparse Jacobian has the wrong shape (J=" +
                 aquiutils::numbertostring(int(Jsp.n_rows)) + "x" +
                 aquiutils::numbertostring(int(Jsp.n_cols)) + ", F=" +
-                aquiutils::numbertostring(int(F.n_elem)) + ", statevar=" +
+                aquiutils::numbertostring(int(F.getsize())) + ", statevar=" +
                 aquiutils::numbertostring(int(statevarno)) +
                 (transport ? ", transport" : ", flow") + ")");
             if (!transport) SetOutflowLimitedVector(outflowlimitstatus_old);
@@ -5663,13 +5912,21 @@ bool System::ComputeNewtonStep(const string &variable, CVector_arma &X, CVector_
         // is badly scaled (rows for immobile constituents differ from the
         // aqueous rows by many orders of magnitude) and the simple driver does
         // not survive it.
+        bool slu_ok = false;
+#if defined(ARMA_VERSION_MAJOR) && (ARMA_VERSION_MAJOR >= 8)
+        // superlu_opts gained allow_ugly/equilibrate in Armadillo 8. The GUI
+        // still bundles Armadillo 6, so fall back to the plain driver there.
         arma::superlu_opts sluopts;
         sluopts.allow_ugly  = true;
         sluopts.equilibrate = true;
-        bool slu_ok = false;
-        try { slu_ok = arma::spsolve(dxv, Jsp, static_cast<const arma::vec&>(F), "superlu", sluopts); }
-        catch (const std::exception &e) { slu_ok = false; }
-        catch (...)                     { slu_ok = false; }
+        try { slu_ok = arma::spsolve(dxv, Jsp, ohq_to_vec(F), "superlu", sluopts); }
+        catch (const std::exception &) { slu_ok = false; }
+        catch (...)                    { slu_ok = false; }
+#else
+        try { slu_ok = arma::spsolve(dxv, Jsp, ohq_to_vec(F)); }
+        catch (const std::exception &) { slu_ok = false; }
+        catch (...)                    { slu_ok = false; }
+#endif
         if (!slu_ok)
         {
             LogJacobianFailure(CMatrix_arma(), transport);
@@ -5679,7 +5936,8 @@ bool System::ComputeNewtonStep(const string &variable, CVector_arma &X, CVector_
             return false;
         }
 
-        dx = CVector_arma(dxv);
+        dx = CVector_arma(int(dxv.n_elem));
+        for (int _k = 0; _k < int(dxv.n_elem); _k++) dx[_k] = dxv(_k);
         if (!SolverSettings.scalediagonal)
             dx *= SolverTempVars.NR_coefficient[statevarno];
         X -= dx;

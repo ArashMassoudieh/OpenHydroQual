@@ -102,7 +102,7 @@ void SolutionLogger::WriteHeader(const string &modelname,
         Push("");
         Push("  solver settings");
         size_t w = 0;
-        for (const auto &kv : settings) w = max(w, kv.first.size());
+        for (const auto &kv : settings) w = std::max(w, kv.first.size());
         for (const auto &kv : settings)
             Push("    " + pad(kv.first, w) + " : " + kv.second);
     }
@@ -154,7 +154,7 @@ void SolutionLogger::TopEntries(const string &title, const CVector_arma &v,
     sort(idx.begin(), idx.end(),
          [](const pair<double,size_t>&a, const pair<double,size_t>&b){ return a.first > b.first; });
 
-    Push("    " + title + "  (" + to_string(min<size_t>(topn, idx.size()))
+    Push("    " + title + "  (" + to_string(std::min<size_t>(topn, idx.size()))
          + " largest of " + to_string(idx.size()) + ")");
     for (unsigned int k = 0; k < topn && k < idx.size(); ++k)
     {

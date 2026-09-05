@@ -1,397 +1,413 @@
 {
-  "solver_settings": {
-    "description": "Solver Settings",
-    "type": "setting",
-    "typecategory": "Settings",
-    "c_n_weight": {
-      "type": "value",
-      "default": "1",
-      "description": "Crank-Nicholson Time Weight",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "cn_weight",
-      "helptext": "Time-weighting factor for the Crank-Nicholson scheme (0.5 for implicit midpoint rule, 1 for fully implicit)."
-    },
-    "name": {
-      "description": "Name",
-      "setvalue": "Solver Settings",
-      "type": "string",
-      "ask_user": "false",
-      "delegate": "String"
-    },
-    "n_threads": {
-      "type": "value",
-      "default": "8",
-      "description": "Number of threads to be used",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "n_threads",
-      "helptext": "Number of processor threads to use for parallel computation during simulation."
-    },
-    "nr_tolerance": {
-      "type": "value",
-      "default": "0.001",
-      "description": "Newton-Raphson Tolerance",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "nr_tolerance",
-      "helptext": "Tolerance for Newton-Raphson convergence. A smaller value results in more precise but potentially slower convergence."
-    },
-    "nr_timestep_reduction_factor": {
-      "type": "value",
-      "default": "0.75",
-      "description": "Newton-Raphson Time-step reduction factor",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "nr_timestep_reduction_factor",
-      "helptext": "Factor to reduce the time-step when convergence slows down. Typical values range between 0.5 and 0.9."
-    },
-    "nr_timestep_reduction_factor_fail": {
-      "type": "value",
-      "default": "0.2",
-      "description": "Newton-Raphson Time-step reduction factor when fail",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "nr_timestep_reduction_factor_fail",
-      "helptext": "Time-step reduction factor applied when Newton-Raphson iteration fails to converge."
-    },
-    "minimum_timestep": {
-      "type": "value",
-      "default": "1e-6",
-      "description": "Minimum time-step",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "minimum_timestep"
-    },
-    "initial_time_step": {
-      "type": "value",
-      "default": "1e-2",
-      "description": "Initial time-step",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "dt"
-    },
-    "maximum_time_allowed": {
-      "type": "value",
-      "default": "86400",
-      "description": "Maximum simulation time allowed (seconds)",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "maximum_time_allowed"
-    },
-    "maximum_number_of_matrix_inverstions": {
-      "type": "value",
-      "default": "200000",
-      "description": "Maximum number of jacobian calculations allowed",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "maximum_number_of_matrix_inverstions"
-    },
-    "write_solution_details": {
-      "type": "string",
-      "default": "No",
-      "description": "Write Solution Details",
-      "ask_user": "true",
-      "delegate": "ComboBox, items: Yes, No",
-      "code": "write_solution_details"
-    },
-    "jacobian_method": {
-      "type": "string",
-      "default": "Inverse Jacobian",
-      "description": "Equation system solution method",
-      "ask_user": "true",
-      "delegate": "ComboBox, items: Inverse Jacobian, Direct",
-      "code": "write_solution_details"
-    },
-    "write_intermittently": {
-      "type": "string",
-      "default": "No",
-      "description": "Write the outputs intermittently",
-      "ask_user": "false",
-      "delegate": "ComboBox, items: Yes, No",
-      "code": "write_intermittently"
-    },
-    "write_interval": {
-      "type": "value",
-      "default": "100",
-      "description": "Output write interval",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "day",
-      "code": "write_interval"
-    },
-    "max_timestep_increase_factor": {
-      "type": "value",
-      "default": "50",
-      "description": "Maximum allowable time-step increase factor with respect to the initial time-step",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "max_timestep_increase_factor"
-    },
-    "max_timestep_decrease_factor": {
-      "type": "value",
-      "default": "100000",
-      "description": "Maximum allowable time-step decrease factor with respect to the initial time-step",
-      "ask_user": "true",
-      "delegate": "ValueBox",
-      "code": "max_timestep_decrease_factor"
-    }
+ "solver_settings": {
+  "description": "Solver Settings",
+  "type": "setting",
+  "typecategory": "Settings",
+  "c_n_weight": {
+   "type": "value",
+   "default": "1",
+   "description": "Crank-Nicholson Time Weight",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "cn_weight",
+   "helptext": "Time-weighting factor for the Crank-Nicholson scheme (0.5 for implicit midpoint rule, 1 for fully implicit)."
   },
-  "general_parameters": {
-    "type": "setting",
-    "typecategory": "Settings",
-    "name": {
-      "description": "Name",
-      "setvalue": "General Settings",
-      "type": "string",
-      "ask_user": "false",
-      "delegate": "String"
-    },
-    "description": "General Parameters",
-    "simulation_start_time": {
-      "default": "0",
-      "description": "Simulation start time",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "DateTime",
-      "code": "time_min"
-    },
-    "simulation_end_time": {
-      "default": "1",
-      "description": "Simulation end time",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "DateTime",
-      "code": "time_max",
-      "criteria": "simulation_start_time<simulation_end_time",
-      "warningmessage": "End time must be greater than start time"
-    },
-    "alloutputfile": {
-      "default": "output.txt",
-      "description": "Output File Name (All outputs)",
-      "ask_user": "true",
-      "type": "string",
-      "delegate": "Browser_Save",
-      "code": "alloutputfile"
-    },
-    "observed_outputfile": {
-      "default": "observedoutput.txt",
-      "description": "Output corresponding to observed data",
-      "ask_user": "true",
-      "type": "string",
-      "delegate": "Browser_Save",
-      "code": "observed_outputfile"
-    }
+  "name": {
+   "description": "Name",
+   "setvalue": "Solver Settings",
+   "type": "string",
+   "ask_user": "false",
+   "delegate": "String"
   },
-  "optimizer": {
-    "type": "setting",
-    "typecategory": "Settings",
-    "name": {
-      "description": "Name",
-      "setvalue": "Optimizer",
-      "type": "string",
-      "ask_user": "false",
-      "delegate": "String"
-    },
-    "description": "Optimizer Parameters",
-    "maxpop": {
-      "default": "40",
-      "description": "Genetic Algorithm Population",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "maxpop"
-    },
-    "ngen": {
-      "default": "40",
-      "description": "Number of generations",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "ngen"
-    },
-    "numthreads": {
-      "default": "8",
-      "description": "Number of threads to be used",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "numthreads"
-    },
-    "pcross": {
-      "default": "1",
-      "description": "Cross over probability",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "pcross"
-    },
-    "pmute": {
-      "default": "0.02",
-      "description": "Mutation Probability",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "pmute"
-    },
-    "shakescale": {
-      "default": "0.05",
-      "description": "Shaking Scale",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "shakescale"
-    },
-    "shakescalered": {
-      "default": "0.75",
-      "description": "Shake Scale Reduction Factor",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "shakescalered"
-    },
-    "outputfile": {
-      "default": "GA_output.txt",
-      "description": "GA Output File Name",
-      "ask_user": "true",
-      "type": "string",
-      "delegate": "Browser_Save",
-      "code": "outputfile"
-    }
+  "n_threads": {
+   "type": "value",
+   "default": "8",
+   "description": "Number of threads to be used",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "n_threads",
+   "helptext": "Number of processor threads to use for parallel computation during simulation."
   },
-  "MCMC": {
-    "type": "setting",
-    "typecategory": "Settings",
-    "name": {
-      "description": "Name",
-      "setvalue": "MCMC",
-      "type": "string",
-      "ask_user": "false",
-      "delegate": "String"
-    },
-    "description": "Markov chain Monte Carlo settings",
-    "number_of_samples": {
-      "default": "1000",
-      "description": "Number of MCMC samples",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "number_of_samples"
-    },
-    "number_of_chains": {
-      "default": "8",
-      "description": "Number of chains",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "number_of_chains"
-    },
-    "number_of_burnout_samples": {
-      "default": "8",
-      "description": "Number of samples to be discarded (burn out)",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "number_of_burnout_samples",
-      "criteria": "number_of_burnout_samples<number_of_samples",
-      "warningmessage": "Number of burnout samples must be smaller than the number of samples"
-    },
-    "initual_purturbation_factor": {
-      "default": "0.05",
-      "description": "Initial perturbation factor",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "initual_purturbation_factor"
-    },
-    "record_interval": {
-      "default": "1",
-      "description": "The interval at which the samples are saved",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "record_interval",
-      "criteria": "record_interval>0",
-      "warningmessage": "Record interval must be greater than zero"
-    },
-    "initial_purturbation": {
-      "type": "string",
-      "default": "No",
-      "description": "Initially purturb the samples",
-      "ask_user": "true",
-      "delegate": "ComboBox, items: Yes, No",
-      "code": "initial_purturbation"
-    },
-    "perform_global_sensitivity": {
-      "type": "string",
-      "default": "No",
-      "description": "Perform global sensitivity",
-      "ask_user": "true",
-      "delegate": "ComboBox, items: Yes, No",
-      "code": "perform_global_sensitivity"
-    },
-    "continue_based_on_file_name": {
-      "description": "Continue MCMC using pre-created file",
-      "ask_user": "true",
-      "type": "string",
-      "delegate": "Browser",
-      "code": "continue_based_on_file_name"
-    },
-    "number_of_post_estimate_realizations": {
-      "default": "10",
-      "description": "Number of post-estimate realizations",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "number_of_post_estimate_realizations",
-      "criteria": "number_of_post_estimate_realizations>-1",
-      "warningmessage": "Number of realizations must be greater than zero"
-    },
-    "add_noise_to_realizations": {
-      "type": "string",
-      "default": "No",
-      "description": "Add error noise to the realizations",
-      "ask_user": "true",
-      "delegate": "ComboBox, items: Yes, No",
-      "code": "add_noise_to_realizations"
-    },
-    "number_of_threads": {
-      "default": "1",
-      "description": "Number of threads to be used",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "number_of_threads",
-      "criteria": "number_of_threads>0",
-      "warningmessage": "Number of threads must be greater than zero"
-    },
-    "acceptance_rate": {
-      "default": "0.15",
-      "description": "Desired acceptance rate",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "acceptance_rate",
-      "criteria": "acceptance_rate>0",
-      "warningmessage": "Desired acceptance rate must be greater than zero"
-    },
-    "purturbation_change_scale": {
-      "default": "0.75",
-      "description": "Coefficient of change of purtubation factor",
-      "ask_user": "true",
-      "type": "value",
-      "delegate": "ValueBox",
-      "code": "purturbation_change_scale",
-      "criteria": "purturbation_change_scale<1",
-      "warningmessage": "Purturbation change factor must be smaller than 1"
-    },
-    "samples_filename": {
-      "default": "mcmc.txt",
-      "description": "MCMC Output file",
-      "ask_user": "true",
-      "type": "string",
-      "delegate": "Browser_Save",
-      "code": "samples_filename"
-    }
+  "nr_tolerance": {
+   "type": "value",
+   "default": "0.001",
+   "description": "Newton-Raphson Tolerance",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "nr_tolerance",
+   "helptext": "Tolerance for Newton-Raphson convergence. A smaller value results in more precise but potentially slower convergence."
+  },
+  "nr_timestep_reduction_factor": {
+   "type": "value",
+   "default": "0.75",
+   "description": "Newton-Raphson Time-step reduction factor",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "nr_timestep_reduction_factor",
+   "helptext": "Factor to reduce the time-step when convergence slows down. Typical values range between 0.5 and 0.9."
+  },
+  "nr_timestep_reduction_factor_fail": {
+   "type": "value",
+   "default": "0.2",
+   "description": "Newton-Raphson Time-step reduction factor when fail",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "nr_timestep_reduction_factor_fail",
+   "helptext": "Time-step reduction factor applied when Newton-Raphson iteration fails to converge."
+  },
+  "minimum_timestep": {
+   "type": "value",
+   "default": "1e-6",
+   "description": "Minimum time-step",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "minimum_timestep"
+  },
+  "initial_time_step": {
+   "type": "value",
+   "default": "1e-2",
+   "description": "Initial time-step",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "dt"
+  },
+  "maximum_time_allowed": {
+   "type": "value",
+   "default": "86400",
+   "description": "Maximum simulation time allowed (seconds)",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "maximum_time_allowed"
+  },
+  "maximum_number_of_matrix_inverstions": {
+   "type": "value",
+   "default": "200000",
+   "description": "Maximum number of jacobian calculations allowed",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "maximum_number_of_matrix_inverstions"
+  },
+  "write_solution_details": {
+   "type": "string",
+   "default": "No",
+   "description": "Write Solution Details",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: Yes, No",
+   "code": "write_solution_details"
+  },
+  "jacobian_method": {
+   "type": "string",
+   "default": "Inverse Jacobian",
+   "description": "Equation system solution method",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: Inverse Jacobian, Direct, Sparse",
+   "code": "write_solution_details"
+  },
+  "write_intermittently": {
+   "type": "string",
+   "default": "No",
+   "description": "Write the outputs intermittently",
+   "ask_user": "false",
+   "delegate": "ComboBox, items: Yes, No",
+   "code": "write_intermittently"
+  },
+  "write_interval": {
+   "type": "value",
+   "default": "100",
+   "description": "Output write interval",
+   "ask_user": "true",
+   "delegate": "UnitBox",
+   "unit": "day",
+   "code": "write_interval"
+  },
+  "max_timestep_increase_factor": {
+   "type": "value",
+   "default": "50",
+   "description": "Maximum allowable time-step increase factor with respect to the initial time-step",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "max_timestep_increase_factor"
+  },
+  "max_timestep_decrease_factor": {
+   "type": "value",
+   "default": "100000",
+   "description": "Maximum allowable time-step decrease factor with respect to the initial time-step",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "max_timestep_decrease_factor"
+  },
+  "jacobian_assembly": {
+   "type": "string",
+   "default": "Dependency",
+   "description": "Transport Jacobian assembly: Full re-evaluates the whole residual per perturbation; Dependency re-evaluates only the rows the perturbed variable can reach (exact, much faster for models made of weakly coupled sub-systems)",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: Dependency, Full",
+   "code": "jacobian_assembly"
+  },
+  "verify_jacobian": {
+   "type": "bool",
+   "default": "0",
+   "description": "Assemble the transport Jacobian both ways and log the maximum difference. Diagnostic only - roughly doubles assembly cost",
+   "ask_user": "true",
+   "delegate": "CheckBox",
+   "code": "verify_jacobian"
   }
+ },
+ "general_parameters": {
+  "type": "setting",
+  "typecategory": "Settings",
+  "name": {
+   "description": "Name",
+   "setvalue": "General Settings",
+   "type": "string",
+   "ask_user": "false",
+   "delegate": "String"
+  },
+  "description": "General Parameters",
+  "simulation_start_time": {
+   "default": "0",
+   "description": "Simulation start time",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "DateTime",
+   "code": "time_min"
+  },
+  "simulation_end_time": {
+   "default": "1",
+   "description": "Simulation end time",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "DateTime",
+   "code": "time_max",
+   "criteria": "simulation_start_time<simulation_end_time",
+   "warningmessage": "End time must be greater than start time"
+  },
+  "alloutputfile": {
+   "default": "output.txt",
+   "description": "Output File Name (All outputs)",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "Browser_Save",
+   "code": "alloutputfile"
+  },
+  "observed_outputfile": {
+   "default": "observedoutput.txt",
+   "description": "Output corresponding to observed data",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "Browser_Save",
+   "code": "observed_outputfile"
+  }
+ },
+ "optimizer": {
+  "type": "setting",
+  "typecategory": "Settings",
+  "name": {
+   "description": "Name",
+   "setvalue": "Optimizer",
+   "type": "string",
+   "ask_user": "false",
+   "delegate": "String"
+  },
+  "description": "Optimizer Parameters",
+  "maxpop": {
+   "default": "40",
+   "description": "Genetic Algorithm Population",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "maxpop"
+  },
+  "ngen": {
+   "default": "40",
+   "description": "Number of generations",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "ngen"
+  },
+  "numthreads": {
+   "default": "8",
+   "description": "Number of threads to be used",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "numthreads"
+  },
+  "pcross": {
+   "default": "1",
+   "description": "Cross over probability",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "pcross"
+  },
+  "pmute": {
+   "default": "0.02",
+   "description": "Mutation Probability",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "pmute"
+  },
+  "shakescale": {
+   "default": "0.05",
+   "description": "Shaking Scale",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "shakescale"
+  },
+  "shakescalered": {
+   "default": "0.75",
+   "description": "Shake Scale Reduction Factor",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "shakescalered"
+  },
+  "outputfile": {
+   "default": "GA_output.txt",
+   "description": "GA Output File Name",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "Browser_Save",
+   "code": "outputfile"
+  }
+ },
+ "MCMC": {
+  "type": "setting",
+  "typecategory": "Settings",
+  "name": {
+   "description": "Name",
+   "setvalue": "MCMC",
+   "type": "string",
+   "ask_user": "false",
+   "delegate": "String"
+  },
+  "description": "Markov chain Monte Carlo settings",
+  "number_of_samples": {
+   "default": "1000",
+   "description": "Number of MCMC samples",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "number_of_samples"
+  },
+  "number_of_chains": {
+   "default": "8",
+   "description": "Number of chains",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "number_of_chains"
+  },
+  "number_of_burnout_samples": {
+   "default": "8",
+   "description": "Number of samples to be discarded (burn out)",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "number_of_burnout_samples",
+   "criteria": "number_of_burnout_samples<number_of_samples",
+   "warningmessage": "Number of burnout samples must be smaller than the number of samples"
+  },
+  "initual_purturbation_factor": {
+   "default": "0.05",
+   "description": "Initial perturbation factor",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "initual_purturbation_factor"
+  },
+  "record_interval": {
+   "default": "1",
+   "description": "The interval at which the samples are saved",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "record_interval",
+   "criteria": "record_interval>0",
+   "warningmessage": "Record interval must be greater than zero"
+  },
+  "initial_purturbation": {
+   "type": "string",
+   "default": "No",
+   "description": "Initially purturb the samples",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: Yes, No",
+   "code": "initial_purturbation"
+  },
+  "perform_global_sensitivity": {
+   "type": "string",
+   "default": "No",
+   "description": "Perform global sensitivity",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: Yes, No",
+   "code": "perform_global_sensitivity"
+  },
+  "continue_based_on_file_name": {
+   "description": "Continue MCMC using pre-created file",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "Browser",
+   "code": "continue_based_on_file_name"
+  },
+  "number_of_post_estimate_realizations": {
+   "default": "10",
+   "description": "Number of post-estimate realizations",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "number_of_post_estimate_realizations",
+   "criteria": "number_of_post_estimate_realizations>-1",
+   "warningmessage": "Number of realizations must be greater than zero"
+  },
+  "add_noise_to_realizations": {
+   "type": "string",
+   "default": "No",
+   "description": "Add error noise to the realizations",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: Yes, No",
+   "code": "add_noise_to_realizations"
+  },
+  "number_of_threads": {
+   "default": "1",
+   "description": "Number of threads to be used",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "number_of_threads",
+   "criteria": "number_of_threads>0",
+   "warningmessage": "Number of threads must be greater than zero"
+  },
+  "acceptance_rate": {
+   "default": "0.15",
+   "description": "Desired acceptance rate",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "acceptance_rate",
+   "criteria": "acceptance_rate>0",
+   "warningmessage": "Desired acceptance rate must be greater than zero"
+  },
+  "purturbation_change_scale": {
+   "default": "0.75",
+   "description": "Coefficient of change of purtubation factor",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "purturbation_change_scale",
+   "criteria": "purturbation_change_scale<1",
+   "warningmessage": "Purturbation change factor must be smaller than 1"
+  },
+  "samples_filename": {
+   "default": "mcmc.txt",
+   "description": "MCMC Output file",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "Browser_Save",
+   "code": "samples_filename"
+  }
+ }
 }
