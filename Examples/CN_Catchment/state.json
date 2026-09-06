@@ -152,7 +152,7 @@
         }
     },
     "Templates": [
-        "/home/arash/Projects/OpenHydroQual/resources/main_components.json",
-        "/home/arash/Projects/OpenHydroQual/resources/cn_catchment.json"
+        "C:/Projects/OpenHydroQual/x64/Release/../../resources/main_components.json",
+        "C:/Projects/OpenHydroQual/x64/Release/../../resources/cn_catchment.json"
     ]
 }
