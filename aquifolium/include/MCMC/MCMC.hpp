@@ -111,7 +111,11 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
     if (aquiutils::tolower(varname) == "number_of_samples") {MCMC_Settings.total_number_of_samples = aquiutils::atoi(value); return true;}
     if (aquiutils::tolower(varname) == "number_of_chains") {MCMC_Settings.number_of_chains = aquiutils::atoi(value); return true;}
     if (aquiutils::tolower(varname) == "number_of_burnout_samples") {MCMC_Settings.burnout_samples = aquiutils::atoi(value); return true;}
-    if (aquiutils::tolower(varname) == "initial_purturbation_factor") {MCMC_Settings.purturbation_factor = aquiutils::atof(value); return true;}
+    // settings.json declares this as "initual_purturbation_factor" and every
+    // saved model writes that spelling, so the correctly-spelt name alone never
+    // matched and the factor silently kept its default. Accept both.
+    if (aquiutils::tolower(varname) == "initial_purturbation_factor" ||
+        aquiutils::tolower(varname) == "initual_purturbation_factor") {MCMC_Settings.purturbation_factor = aquiutils::atof(value); return true;}
     if (aquiutils::tolower(varname) == "record_interval") {MCMC_Settings.save_interval = aquiutils::atoi(value); return true;}
     if (aquiutils::tolower(varname) == "initial_purturbation")
     {
@@ -302,12 +306,33 @@ void CMCMC<T>::initialize(bool random)
     else
     {
 
+        // Seeded start. Chain 0 sits exactly on the seeded parameter values so the
+        // best known point is always in the population; the remaining chains are
+        // dispersed around it. Without this every chain began on the identical
+        // point, so a multi-modal posterior could only ever be explored by
+        // diffusion away from the seed -- slow, and biased towards whichever mode
+        // the seed came from. Dispersion is lognormal for log-normal priors and
+        // Gaussian otherwise, scaled by pertcoeff (= initial_purturbation_factor
+        // times the prior's log-range), and clipped to the prior range.
+        // Set initial_purturbation = No to put every chain on the seed instead.
 #pragma omp parallel for
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
             double pp = 0;
             for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
-            {   Params[j][i] = parameter(i)->GetValue();
+            {   double v = parameter(i)->GetValue();
+                if (j > 0 && !MCMC_Settings.noinipurt)
+                {
+                    const double lo = parameter(i)->GetRange().low;
+                    const double hi = parameter(i)->GetRange().high;
+                    if (parameter(i)->GetPriorDistribution()=="log-normal")
+                        v = exp(log(v) + getnormalrand(0.0, pertcoeff[i]));
+                    else
+                        v = v + getnormalrand(0.0, pertcoeff[i]);
+                    if (v < lo) v = lo;
+                    if (v > hi) v = hi;
+                }
+                Params[j][i] = v;
                 if (parameter(i)->GetPriorDistribution()=="log-normal")
                     pp += log(Params[j][i]);
             }

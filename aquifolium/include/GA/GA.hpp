@@ -675,9 +675,14 @@ int CGA<T>::optimize()
         fprintf(FileOut, "#   ID          index of the individual within the generation\n");
         fprintf(FileOut, "#   <params>    parameter values, in model units (log-sampled ones are\n");
         fprintf(FileOut, "#               already converted back from log10)\n");
-        fprintf(FileOut, "#   likelihood  raw objective value; larger is better\n");
+        fprintf(FileOut, "#   neg_log_likelihood\n");
+        fprintf(FileOut, "#               the quantity the GA minimises: sum_i N_i *\n");
+        fprintf(FileOut, "#               (MSE_i/(2*sigma^2) + ln sigma), summed over the\n");
+        fprintf(FileOut, "#               observations. LOWER IS BETTER. A failed solve\n");
+        fprintf(FileOut, "#               scores +1e18. (Called \"likelihood\" before Sep 2026,\n");
+        fprintf(FileOut, "#               which had the sign backwards.)\n");
         fprintf(FileOut, "#   Fitness     rank-derived selection weight, not a goodness-of-fit\n");
-        fprintf(FileOut, "#   Rank        1 = best in this generation\n");
+        fprintf(FileOut, "#   Rank        1 = best (lowest neg_log_likelihood) in this generation\n");
         fprintf(FileOut, "#   *_MSE       mean squared error for that observation\n");
         fprintf(FileOut, "#   *_R2        coefficient of determination (correlation only)\n");
         fprintf(FileOut, "#   *_NSE       Nash-Sutcliffe efficiency; <= 0 means the model is no\n");
@@ -701,7 +706,8 @@ int CGA<T>::optimize()
         fprintf(FileOut1, "         individual which hangs or crashes is still on record\n");
         fprintf(FileOut1, "  DONE   objective value and cost once the solve returns\n\n");
         fprintf(FileOut1, "Fields on the DONE line:\n");
-        fprintf(FileOut1, "  objective  value being maximised; larger is better\n");
+        fprintf(FileOut1, "  objective  negative log-likelihood; LOWER IS BETTER (the GA\n");
+        fprintf(FileOut1, "             minimises it). A failed solve scores +1e18.\n");
         fprintf(FileOut1, "  wall_s     seconds the GA measured around the solve\n");
         fprintf(FileOut1, "  solver_s   the same interval as recorded by the solver itself\n");
         fprintf(FileOut1, "  solved     yes if the run reached the simulation end time, no otherwise\n\n");
@@ -745,7 +751,7 @@ int CGA<T>::optimize()
         fprintf(FileOut, "ID");
         for (int k=0; k<Ind[0].nParams; k++)
             fprintf(FileOut, ", %s", paramname[k].c_str());
-        fprintf(FileOut, ", %s, %s, %s", "likelihood", "Fitness", "Rank");
+        fprintf(FileOut, ", %s, %s, %s", "neg_log_likelihood", "Fitness", "Rank");
         for (unsigned int i=0; i<Model->ObservationsCount();i++)
         {
             const string on = Model->observation(i)->GetName();
