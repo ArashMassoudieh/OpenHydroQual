@@ -125,12 +125,6 @@ int main(int argc, char *argv[])
         return EXIT_MODEL_ERROR;
     }
 
-    // The solver settings parsed from the .ohq (initial_time_step, tolerances,
-    // write_interval, jacobian method) only reach the solver through this call.
-    // Without it they stay at their default-constructed values and Solve()
-    // aborts in Armadillo while sizing its work vectors.
-    system->SetSystemSettings();
-
     system->SetSilent(quiet);
 
     // Honour write_solution_details from the model file, as the GUI does.
