@@ -150,10 +150,25 @@ int main(int argc, char *argv[])
         return EXIT_SOLVE_FAIL;
     }
 
-    const string out = system->GetWorkingFolder()
-                     + (outfile.empty() ? system->OutputFileName() : outfile);
-    cout << "Writing outputs in '" << out << "'" << endl;
-    system->GetOutputs().write(out);
+    // Match System::WriteOutPuts(): an empty file name means "do not write this
+    // file". Observations are written independently of the bulk output, so a model
+    // can emit only the quantities it declared as Observations.
+    if (!system->ObservedOutputFileName().empty()) {
+        const string obs = system->GetWorkingFolder() + system->ObservedOutputFileName();
+        cout << "Writing observed outputs in '" << obs << "'" << endl;
+        system->GetObservedOutputs().write(obs);
+    }
+
+    const string outname = outfile.empty() ? system->OutputFileName() : outfile;
+    if (outname.empty()) {
+        cout << "No output file name given; bulk outputs not written." << endl;
+    } else if (!system->RecordResults()) {
+        cout << "record_results=No; bulk outputs not recorded." << endl;
+    } else {
+        const string out = system->GetWorkingFolder() + outname;
+        cout << "Writing outputs in '" << out << "'" << endl;
+        system->GetOutputs().write(out);
+    }
     delete system;
     return nerr_after > 0 ? EXIT_MODEL_ERROR : EXIT_OK;
 }

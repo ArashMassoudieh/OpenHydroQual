@@ -1570,6 +1570,11 @@ bool System::SetProperty(const string &s, const string &val)
             SolverSettings.write_solution_details = false;
         return true;
     }
+    if (s=="record_results")
+    {
+        SetRecordResults(aquiutils::trim(aquiutils::tolower(val))!="no");
+        return true;
+    }
     if (s=="write_intermittently")
     {
         if(aquiutils::trim(aquiutils::tolower(val))=="yes")
@@ -1926,14 +1931,19 @@ void System::PopulateOutputs(bool dolinks)
         }
 
 
+    }
+
+    // Observations are recorded regardless of RecordResults(): they are the lean,
+    // user-selected output, and switching off bulk recording must not silence them.
+    {
         for (unsigned int i = 0; i < observations.size(); i++)
         {
-            Outputs.AllOutputs["Obs_" + observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
+            if (RecordResults())
+                Outputs.AllOutputs["Obs_" + observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
             Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
             for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
-                if (it->second.IncludeInOutput())
+                if (it->second.IncludeInOutput() && RecordResults())
                 {
-                    //sources[i].CalcExpressions(Expression::timing::present);
                     Object* location;
                     if (it->second.GetType() == Quan::_type::expression)
                     {   location = object(observations[i].GetLocation());
@@ -1948,10 +1958,6 @@ void System::PopulateOutputs(bool dolinks)
                     }
                 }
         }
-    }
-    else
-    {
-
     }
 }
 
