@@ -111,6 +111,14 @@
    "delegate": "ComboBox, items: Yes, No",
    "code": "write_intermittently"
   },
+  "record_results": {
+   "type": "string",
+   "default": "Yes",
+   "description": "Record all block/link outputs. Set to No to record only Observations, which keeps memory and output size small for long runs.",
+   "ask_user": "false",
+   "delegate": "ComboBox, items: Yes, No",
+   "code": "record_results"
+  },
   "write_interval": {
    "type": "value",
    "default": "100",
