@@ -38,10 +38,6 @@ int main(int argc, char *argv[])
     cout<<"Executing script ..."<<endl;
     system = scr.CreateSystem();
     system->SetSilent(false);
-    // Solver settings parsed from the .ohq only reach the solver through this
-    // call; without it they keep their default-constructed values and Solve()
-    // aborts in Armadillo while sizing its work vectors.
-    system->SetSystemSettings();
     cout<<"Solving ..."<<endl;
     system->Solve();
     cout<<"Writing outputs ..."<<endl;
