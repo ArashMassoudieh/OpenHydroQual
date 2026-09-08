@@ -119,6 +119,21 @@
    "delegate": "ComboBox, items: Yes, No",
    "code": "record_results"
   },
+  "oscillation_control": {
+   "type": "string",
+   "default": "No",
+   "description": "Detect oscillating outputs during the solve and reduce the time step automatically. Use for problems where a converged step can still oscillate, e.g. strongly retarded transport with a fast sorption rate.",
+   "ask_user": "false",
+   "delegate": "ComboBox, items: Yes, No",
+   "code": "oscillation_control"
+  },
+  "oscillation_tolerance": {
+   "type": "number",
+   "default": "0.01",
+   "description": "Relative slope reversal that counts as oscillation rather than round-off (used only when oscillation_control is Yes).",
+   "ask_user": "false",
+   "code": "oscillation_tolerance"
+  },
   "write_interval": {
    "type": "value",
    "default": "100",
@@ -159,6 +174,42 @@
    "ask_user": "true",
    "delegate": "CheckBox",
    "code": "verify_jacobian"
+  },
+  "oscillation_max_reductions": {
+   "type": "number",
+   "default": "4",
+   "description": "Give up after this many rewind-and-refine attempts; each restarts at a fifth of the time step.",
+   "ask_user": "false",
+   "code": "oscillation_max_reductions"
+  },
+  "oscillation_remedy": {
+   "type": "string",
+   "default": "rewind",
+   "description": "Response to detected oscillation: 'rewind' returns to the last restore point and discards the spoiled samples; 'reduce' continues from the current state with a smaller time step.",
+   "ask_user": "false",
+   "delegate": "ComboBox, items: rewind, reduce",
+   "code": "oscillation_remedy"
+  },
+  "oscillation_relax_after": {
+   "type": "number",
+   "default": "40",
+   "description": "Relax the imposed time-step ceiling after this many consecutive oscillation-free checks (0 keeps it for the rest of the run).",
+   "ask_user": "false",
+   "code": "oscillation_relax_after"
+  },
+  "restore_interval": {
+   "type": "number",
+   "default": "200",
+   "description": "Time steps between restore points. A rewind returns to the last restore point, so this bounds how much work an oscillation rewind discards; smaller values make rewinds cheaper but copy the state more often.",
+   "ask_user": "false",
+   "code": "restore_interval"
+  },
+  "restore_point_max_uses": {
+   "type": "number",
+   "default": "2",
+   "description": "How many times one restore point may be reused before the solver refuses to rewind to it again.",
+   "ask_user": "false",
+   "code": "restore_point_max_uses"
   }
  },
  "general_parameters": {

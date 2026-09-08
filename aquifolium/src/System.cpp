@@ -976,6 +976,72 @@ void System::CopyQuansToMembers()
 
 }
 
+void System::TransportMassAndLoading(double &mass, double &loading)
+{
+    mass = 0; loading = 0;
+    if (ConstituentsCount() == 0) return;
+    CVector_arma M = GetStateVariables("mass", Expression::timing::past, true);
+    for (int k = 0; k < M.getsize(); k++) mass += fabs(M[k]);
+    CVector_arma L = GetStateVariables("inflow_loading", Expression::timing::past, true);
+    for (int k = 0; k < L.getsize(); k++) loading += fabs(L[k]);
+}
+
+std::vector<double> System::GatherSolvedState(const Expression::timing &tmg)
+{
+    // Solution order: the variables in solvevariableorder (Storage and friends),
+    // then the transport unknowns (constituent masses) if there are any.
+    std::vector<double> out;
+    for (unsigned int i = 0; i < solvevariableorder.size(); i++)
+    {
+        CVector_arma X = GetStateVariables(solvevariableorder[i], tmg, false);
+        for (int k = 0; k < X.getsize(); k++) out.push_back(X[k]);
+    }
+    if (ConstituentsCount() > 0)
+    {
+        // The transport unknowns are addressed by quantity name "mass", exactly
+        // as OneStepSolve does; passing a solvevariableorder entry here asks for
+        // "<constituent>:Storage", which does not exist.
+        CVector_arma X = GetStateVariables("mass", tmg, true);
+        for (int k = 0; k < X.getsize(); k++) out.push_back(X[k]);
+    }
+    return out;
+}
+
+int System::CountOscillatingStates(double tol)
+{
+    // Push the state just accepted onto a three-deep history.
+    std::vector<double> x = GatherSolvedState(Expression::timing::past);
+    SolverTempVars.osc_history.push_back(x);
+    if (SolverTempVars.osc_history.size() > 4)
+        SolverTempVars.osc_history.erase(SolverTempVars.osc_history.begin());
+    if (SolverTempVars.osc_history.size() < 4) return 0;
+
+    const std::vector<double> &c4 = SolverTempVars.osc_history[0];
+    const std::vector<double> &c3 = SolverTempVars.osc_history[1];
+    const std::vector<double> &c2 = SolverTempVars.osc_history[2];
+    const std::vector<double> &c1 = SolverTempVars.osc_history[3];
+    const size_t n = c1.size();
+    if (c2.size() != n || c3.size() != n || c4.size() != n) return 0;
+
+    int count = 0;
+    for (size_t i = 0; i < n; i++)
+    {
+        // Same test as TimeSeries::wiggle_sl: increments that alternate in sign
+        // and are not all negligible against the local magnitude. Steps are
+        // equal here, so the increments stand in for slopes.
+        const double scale = (fabs(c1[i]) + fabs(c2[i]) + fabs(c3[i]) + fabs(c4[i])) / 4.0
+                           + tol / 100.0;
+        if (scale <= 0) continue;
+        const double d1 = (c1[i] - c2[i]) / scale;
+        const double d2 = (c2[i] - c3[i]) / scale;
+        const double d3 = (c3[i] - c4[i]) / scale;
+        const bool all_small = fabs(d1) < tol && fabs(d2) < tol && fabs(d3) < tol;
+        const bool alternating = (d1 * d2 < 0) && (d2 * d3 < 0);
+        if (!all_small && alternating) count++;
+    }
+    return count;
+}
+
 vector<bool> System::OneStepSolve()
 {
     int transport = 0;
@@ -1069,6 +1135,9 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         if (counter % 50 == 0)
             SolverTempVars.SetUpdateJacobian(true);
 
+        if (SolverTempVars.dt_ceiling > 0)
+            SolverTempVars.dt_base = min(SolverTempVars.dt_base,
+                                         SolverTempVars.dt_ceiling);
         SolverTempVars.dt = min(SolverTempVars.dt_base, GetMinimumNextTimeStepSize());
         SolverTempVars.dt = max(SolverTempVars.dt,
             SimulationParameters.dt0 / SolverSettings.timestepminfactor);
@@ -1079,6 +1148,51 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
             HandleSolveFailure(fail_counter, restorepoint);
         else
             HandleSolveSuccess(counter, fail_counter, restorepoint, progress, progress_p);
+
+        // Newton can stop solving without failing: when the residual starts
+        // below the hard-coded 1e-12 floor the iteration is skipped entirely and
+        // the step is accepted unchanged. Harmless for a system genuinely at
+        // rest, fatal when mass is crossing the boundary -- the run then reports
+        // success and returns an identically zero field. Trigger on the
+        // mechanism (Newton not iterating) qualified by the forcing, not on the
+        // zero field, which only appears much later.
+        if (ConstituentsCount() > 0)
+        {
+            const bool not_iterating = SolverTempVars.nr_below_absolute_floor
+                                     > SolverTempVars.nr_floor_seen_at;
+            SolverTempVars.nr_floor_seen_at = SolverTempVars.nr_below_absolute_floor;
+            if (not_iterating && counter % 5 == 0)
+            {
+                double mass = 0, loading = 0;
+                TransportMassAndLoading(mass, loading);
+                if (loading > 0)
+                    SolverTempVars.null_solution_steps++;
+                else
+                    SolverTempVars.null_solution_steps = 0;
+            }
+            else if (!not_iterating)
+                SolverTempVars.null_solution_steps = 0;
+
+            if (SolverTempVars.null_solution_steps >= 20)
+            {
+                const string msg = "at " + aquiutils::numbertostring(SolverTempVars.t)
+                    + ": the Newton iteration is being skipped -- the initial residual"
+                      " is below the absolute floor (1e-12) while mass is entering the"
+                      " domain, so every step is accepted unchanged and the solution"
+                      " will stay identically zero. The time step is too small for the"
+                      " scale of this problem: raise initial_time_step, or rescale the"
+                      " state variables.";
+                SolverTempVars.fail_reason.push_back(msg);
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString(msg);
+                    GetSolutionLogger()->Flush();
+                }
+                LogMessage(msg, true);
+                SolverTempVars.SolutionFailed = true;
+                stop_triggered = true;
+            }
+        }
 
         if (CheckTerminationConditions())
             stop_triggered = true;
@@ -1122,6 +1236,11 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         lg->KeyValue("residual evaluations", aquiutils::numbertostring(int(SolverTempVars.residual_evaluations)));
         lg->KeyValue("Jacobian assemblies",  aquiutils::numbertostring(int(SolverTempVars.jacobian_assemblies)));
         lg->KeyValue("linear solves",        aquiutils::numbertostring(int(SolverTempVars.linear_solves)));
+        if (SolverSettings.oscillation_control)
+            lg->KeyValue("oscillation interventions",
+                aquiutils::numbertostring(SolverTempVars.osc_events));
+            lg->KeyValue("oscillation relaxations",
+                aquiutils::numbertostring(SolverTempVars.osc_relaxations));
         lg->KeyValue("seconds in residual evaluation", aquiutils::numbertostring(SolverTempVars.seconds_in_residuals));
         lg->KeyValue("seconds in Jacobian assembly",   aquiutils::numbertostring(SolverTempVars.seconds_in_assembly));
         lg->KeyValue("seconds in linear solve",        aquiutils::numbertostring(SolverTempVars.seconds_in_linearsolve));
@@ -1135,6 +1254,15 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         lg->WriteSummary(SolverTempVars.t, SimulationParameters.tend,
                          SolverTempVars.SolutionFailed);
     }
+
+    if (SolverSettings.oscillation_control && SolverTempVars.osc_events > 0)
+        LogMessage("oscillation control: "
+            + aquiutils::numbertostring(SolverTempVars.osc_events)
+            + " intervention(s) ("
+            + string(SolverSettings.oscillation_rewind ? "rewind" : "reduce")
+            + "), " + aquiutils::numbertostring(SolverTempVars.osc_relaxations)
+            + " relaxation(s); final dt = " + aquiutils::numbertostring(SolverTempVars.dt_base)
+            + (SolverTempVars.osc_gave_up ? " (gave up before it was clean)" : ""));
 
     FinalizeOutputs(uniformizeoutput);
     SetSimulationDuration(time(nullptr) - SolverTempVars.time_start);
@@ -1347,6 +1475,98 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
     UpdateObservations(SolverTempVars.t);
     PopulateOutputs();
     SolverTempVars.t += SolverTempVars.dt;
+
+    // Relax a ceiling imposed by any rewind once the solution has been well
+    // behaved for a while: the episode that forced it is usually transient, and
+    // holding the step down for the rest of a long run costs far more than the
+    // episode itself. A recurrence simply re-imposes the ceiling.
+    if (SolverTempVars.dt_ceiling > 0 && SolverSettings.oscillation_relax_after > 0)
+    {
+        if (++SolverTempVars.clean_steps >= SolverSettings.oscillation_relax_after)
+        {
+            SolverTempVars.clean_steps = 0;
+            SolverTempVars.dt_ceiling *= 2.0;
+            SolverTempVars.osc_relaxations++;
+            if (SolverTempVars.osc_reductions > 0) SolverTempVars.osc_reductions--;
+            if (SolverTempVars.dt_ceiling
+                >= SimulationParameters.dt0 * SolverSettings.timestepmaxfactor)
+            {
+                SolverTempVars.dt_ceiling = 0;
+                LogDetails("@ t = " + aquiutils::numbertostring(SolverTempVars.t)
+                    + ": sustained clean stepping; time-step ceiling released");
+            }
+        }
+    }
+
+    // A converged step can still be wrong: when the step is coarse relative to
+    // the fastest reaction the scheme oscillates and the run finishes with a
+    // non-monotone solution and no error at all. The remedy is the restore
+    // point: rewind to the last saved state, restart at a fifth of the step,
+    // and knock the oscillating samples out of the recorded output. Merely
+    // slowing down from here would leave that wobble in the delivered results.
+    if (SolverSettings.oscillation_control
+        && counter > 4
+        && counter - SolverTempVars.osc_last_counter > 4)   // cooldown
+    {
+        const int nosc = CountOscillatingStates(SolverSettings.oscillation_tolerance);
+        if (nosc > 0)
+        {
+            SolverTempVars.clean_steps = 0;
+            const bool budget_left =
+                SolverTempVars.osc_reductions < SolverSettings.oscillation_max_reductions;
+            bool acted = false;
+            if (budget_left && SolverSettings.oscillation_rewind)
+                acted = ResetBasedOnRestorePoint(&restorepoint);
+            else if (budget_left)
+            {
+                // Carry on from here with a smaller step. Same factor as the
+                // rewind path so the two are comparable; the difference is only
+                // that the already-recorded oscillation is not discarded.
+                SolverTempVars.dt_base /= 5.0;
+                SolverTempVars.dt = SolverTempVars.dt_base;
+                acted = true;
+            }
+            if (acted)
+            {
+                SolverTempVars.osc_reductions++;
+                SolverTempVars.osc_events++;
+                SolverTempVars.osc_last_counter = counter;
+                SolverTempVars.osc_history.clear();   // the state jumped backwards
+                SolverTempVars.SetUpdateJacobian(true);
+                // Hold the step there. dt_base otherwise recovers by ~1/0.75 per
+                // successful step and is back at the ceiling within ten steps,
+                // at which point the oscillation returns and the rewind is wasted.
+                LogDetails("@ t = " + aquiutils::numbertostring(SolverTempVars.t)
+                    + ": oscillation in " + aquiutils::numbertostring(nosc)
+                    + (SolverSettings.oscillation_rewind
+                        ? " state variable(s); rewound to the restore point, restarting at dt = "
+                        : " state variable(s); continuing at reduced dt = ")
+                    + aquiutils::numbertostring(SolverTempVars.dt_base));
+            }
+            else if (!SolverTempVars.osc_gave_up)
+            {
+                // Either the restore point is spent (two uses before a new one is
+                // saved) or the attempt budget is exhausted. Do not grind the step
+                // down further: past a point that stops Newton iterating at all.
+                SolverTempVars.osc_gave_up = true;
+                const string msg = "at " + aquiutils::numbertostring(SolverTempVars.t)
+                    + ": oscillation in " + aquiutils::numbertostring(nosc)
+                    + " state variable(s) could not be removed by rewinding and"
+                      " refining (" + aquiutils::numbertostring(SolverTempVars.osc_reductions)
+                    + " attempts, dt now "
+                    + aquiutils::numbertostring(SolverTempVars.dt_base)
+                    + ", budget " + aquiutils::numbertostring(SolverSettings.oscillation_max_reductions)
+                    + ", restore point used " + aquiutils::numbertostring(int(restorepoint.used_counter))
+                    + " time(s)). The results contain oscillation; treat them with caution.";
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString(msg);
+                    GetSolutionLogger()->Flush();
+                }
+                LogMessage(msg, true);
+            }
+        }
+    }
 
     if (SolverTempVars.MaxNumberOfIterations() > SolverSettings.NR_niteration_upper)
     {
@@ -1568,6 +1788,57 @@ bool System::SetProperty(const string &s, const string &val)
             SolverSettings.write_solution_details = true;
         else
             SolverSettings.write_solution_details = false;
+        return true;
+    }
+    if (s=="oscillation_control")
+    {
+        SolverSettings.oscillation_control = (aquiutils::trim(aquiutils::tolower(val))=="yes");
+        return true;
+    }
+    if (s=="restore_point_max_uses")
+    {
+        if (!aquiutils::trim(val).empty())
+        {
+            const int v = int(aquiutils::atof(val));
+            if (v > 0) restore_point_max_uses = (unsigned int)v;
+        }
+        return true;
+    }
+    if (s=="restore_interval")
+    {
+        if (!aquiutils::trim(val).empty())
+        {
+            const int v = int(aquiutils::atof(val));
+            if (v > 0) restore_interval = (unsigned int)v;
+        }
+        return true;
+    }
+    if (s=="oscillation_relax_after")
+    {
+        if (!aquiutils::trim(val).empty())
+            SolverSettings.oscillation_relax_after = int(aquiutils::atof(val));
+        return true;
+    }
+    if (s=="oscillation_remedy")
+    {
+        const string v = aquiutils::trim(aquiutils::tolower(val));
+        if (!v.empty()) SolverSettings.oscillation_rewind = (v != "reduce");
+        return true;
+    }
+    if (s=="oscillation_tolerance")
+    {
+        // SetSystemSettings() replays every registered setting, including ones
+        // the model never mentions, whose stored value is the empty string.
+        // atof("") is 0, which would silently destroy the default -- and a zero
+        // tolerance makes every sign alternation count as oscillation.
+        if (!aquiutils::trim(val).empty())
+            SolverSettings.oscillation_tolerance = aquiutils::atof(val);
+        return true;
+    }
+    if (s=="oscillation_max_reductions")
+    {
+        if (!aquiutils::trim(val).empty())
+            SolverSettings.oscillation_max_reductions = int(aquiutils::atof(val));
         return true;
     }
     if (s=="record_results")
@@ -2041,6 +2312,14 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 		double err_ini = F.norm2();
         double err;
         double err_p = err = err_ini;
+
+        // The loop below is guarded by `err > 1e-12`, an absolute floor. If the
+        // residual starts under it the body never runs and the step is accepted
+        // with the solution unchanged -- silently, and for every subsequent step
+        // too. Record that this happened; the caller decides whether it is a
+        // system genuinely at rest or a solver that has stopped solving.
+        if (err_ini <= 1e-12)
+            SolverTempVars.nr_below_absolute_floor++;
 
 		//if (SolverTempVars.NR_coefficient[statevarno]==0)
             SolverTempVars.NR_coefficient[statevarno] = 1;
@@ -4663,12 +4942,17 @@ bool System::CopyStateVariablesFrom(System *sys)
 
 bool System::ResetBasedOnRestorePoint(RestorePoint *rp)
 {
-    if (rp->used_counter>1) return false;
+    if (rp->used_counter >= restore_point_max_uses) return false;
     CopyStateVariablesFrom(rp->GetSystem());
     rp->used_counter++;
     SolverTempVars.t = rp->t;
     SolverTempVars.dt_base = rp->dt/5;
     SolverTempVars.dt = rp->dt/5;
+    // Hold the step there. Whatever forced this rewind -- oscillation or
+    // repeated Newton failure -- recurs if dt_base is allowed to climb straight
+    // back to its ceiling over the next few successful steps.
+    SolverTempVars.dt_ceiling = SolverTempVars.dt_base;
+    SolverTempVars.clean_steps = 0;
     Outputs.AllOutputs.knockout(SolverTempVars.t);
     Outputs.ObservedOutputs.knockout(SolverTempVars.t);
     rp->dt = SolverTempVars.dt;

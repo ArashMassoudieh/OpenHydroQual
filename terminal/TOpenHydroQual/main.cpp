@@ -142,8 +142,18 @@ int main(int argc, char *argv[])
         system->SetSolutionLogger(logfile);
         if (!quiet) cout << "Solution details: " << logfile << endl;
     }
+    // A model carrying calibrated parameters keeps the fitted values in the
+    // Parameter objects, not in the blocks and constituents themselves; the
+    // objects still hold whatever the builder wrote. Solve() only pushes them
+    // across when asked, so a forward run of a calibrated model would otherwise
+    // silently use the construction-time values (for the column models, a
+    // dispersivity of 1e-4 instead of the fitted 5e-2). Apply them whenever the
+    // model defines any.
+    const size_t npar = system->Parameters().size();
+    if (npar > 0)
+        cout << "Applying " << npar << " calibrated parameter(s)" << endl;
     cout << "Solving ..." << endl;
-    const bool ok = system->Solve();
+    const bool ok = system->Solve(npar > 0);
 
     const int nerr_after = system->GetErrorHandler()->Count();
     if (nerr_after > 0) {
