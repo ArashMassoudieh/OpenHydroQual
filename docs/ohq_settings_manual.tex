@@ -1,0 +1,300 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.05in]{geometry}
+\usepackage{booktabs}\usepackage{longtable}\usepackage{array}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!45!black]{hyperref}\usepackage{xcolor}
+\usepackage{titlesec}
+\titleformat{\subsection}{\normalfont\large\bfseries}{}{0pt}{}
+\setlength{\parskip}{5pt}\setlength{\parindent}{0pt}
+\title{\textbf{OpenHydroQual}\\[4pt]\large Settings Reference}
+\author{}\date{\today}
+\begin{document}\maketitle\thispagestyle{empty}
+
+\section*{Using this manual}
+Every field of the settings dialog has its own entry below, titled with the
+label shown on screen, so the table of contents can be used as an index. Each
+entry gives the default value, the available choices where a field offers them,
+and the name the field carries inside a saved model file.
+
+Fields are grouped as the interface groups them. Most models need only the
+General settings; the Solver settings matter when a run misbehaves, and the
+Optimization and MCMC groups only when calibrating against measurements.
+\vspace{6pt}
+\tableofcontents
+\newpage
+
+\section{General settings}
+These fields define what period is simulated and where the results are written. Most models need nothing beyond this group.
+\begin{longtable}{@{}p{0.60\textwidth}p{0.32\textwidth}@{}}
+\toprule \textrm{Field} & \textrm{Default} \\ \midrule \endhead
+Simulation start time & \texttt{\small 0} \\
+Simulation end time & \texttt{\small 1} \\
+Output File Name (All outputs) & \texttt{\small output.\allowbreak{}txt} \\
+Output corresponding to observed data & \texttt{\small observedoutput.\allowbreak{}txt} \\
+\bottomrule\end{longtable}
+\subsection{Simulation start time}
+{\small \textbf{Default:} \texttt{0} \quad\textbullet\quad \textbf{Name in file:} \texttt{simulation\_\allowbreak{}start\_\allowbreak{}time}}
+
+Start of the simulated period, in the time unit used by the model's input series.
+\subsection{Simulation end time}
+{\small \textbf{Default:} \texttt{1} \quad\textbullet\quad \textbf{Name in file:} \texttt{simulation\_\allowbreak{}end\_\allowbreak{}time}}
+
+End of the simulated period. It must be long enough for the behaviour being studied to appear: a run that stops before breakthrough gives no answer rather than a partial one.
+\subsection{Output File Name (All outputs)}
+{\small \textbf{Default:} \texttt{output.\allowbreak{}txt} \quad\textbullet\quad \textbf{Name in file:} \texttt{alloutputfile}}
+
+File receiving the recorded results for every block and link. This is the complete record and can be very large. Leave empty to suppress it entirely.
+\subsection{Output corresponding to observed data}
+{\small \textbf{Default:} \texttt{observedoutput.\allowbreak{}txt} \quad\textbullet\quad \textbf{Name in file:} \texttt{observed\_\allowbreak{}outputfile}}
+
+File receiving only the quantities declared as Observations, i.e. the modelled values at the points where measurements exist. Much smaller than the full output and the file to use when comparing against data.
+\section{Solver settings}
+These control how the equations are solved. The defaults are appropriate for ordinary problems; the fields below explain when a problem is not ordinary and which one to reach for.
+\begin{longtable}{@{}p{0.60\textwidth}p{0.32\textwidth}@{}}
+\toprule \textrm{Field} & \textrm{Default} \\ \midrule \endhead
+Crank-Nicholson Time Weight & \texttt{\small 1} \\
+Number of threads to be used & \texttt{\small 8} \\
+Newton-Raphson Tolerance & \texttt{\small 0.\allowbreak{}001} \\
+Newton-Raphson Time-step reduction factor & \texttt{\small 0.\allowbreak{}75} \\
+Newton-Raphson Time-step reduction factor when fail & \texttt{\small 0.\allowbreak{}2} \\
+Minimum time-step & \texttt{\small 1e-6} \\
+Initial time-step & \texttt{\small 1e-2} \\
+Maximum simulation time allowed (seconds) & \texttt{\small 86400} \\
+Maximum number of jacobian calculations allowed & \texttt{\small 200000} \\
+Write Solution Details & \texttt{\small No} \\
+Linear solver for the Newton step & \texttt{\small Direct} \\
+Write the outputs intermittently & \texttt{\small No} \\
+Record all block/link outputs & \texttt{\small Yes} \\
+Detect and suppress solution oscillation & \texttt{\small No} \\
+Oscillation detection tolerance & \texttt{\small 0.\allowbreak{}01} \\
+Output write interval & \texttt{\small 100} \\
+Maximum allowable time-step increase factor with respect to the initial time-step & \texttt{\small 50} \\
+Maximum allowable time-step decrease factor with respect to the initial time-step & \texttt{\small 100000} \\
+Transport Jacobian assembly & \texttt{\small Dependency} \\
+Verify Jacobian assembly (diagnostic) & \texttt{\small 0} \\
+Maximum oscillation interventions & \texttt{\small 4} \\
+Response to detected oscillation & \texttt{\small rewind} \\
+Clean steps before relaxing the time-step ceiling & \texttt{\small 40} \\
+Time steps between restore points & \texttt{\small 200} \\
+Maximum reuses of one restore point & \texttt{\small 2} \\
+\bottomrule\end{longtable}
+\subsection{Crank-Nicholson Time Weight}
+{\small \textbf{Default:} \texttt{1} \quad\textbullet\quad \textbf{Name in file:} \texttt{c\_\allowbreak{}n\_\allowbreak{}weight}}
+
+Time-weighting factor for the Crank-Nicholson scheme (0.5 for implicit midpoint rule, 1 for fully implicit).
+\subsection{Number of threads to be used}
+{\small \textbf{Default:} \texttt{8} \quad\textbullet\quad \textbf{Name in file:} \texttt{n\_\allowbreak{}threads}}
+
+Number of processor threads to use for parallel computation during simulation.
+\subsection{Newton-Raphson Tolerance}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}001} \quad\textbullet\quad \textbf{Name in file:} \texttt{nr\_\allowbreak{}tolerance}}
+
+Tolerance for Newton-Raphson convergence. A smaller value results in more precise but potentially slower convergence.
+\subsection{Newton-Raphson Time-step reduction factor}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}75} \quad\textbullet\quad \textbf{Name in file:} \texttt{nr\_\allowbreak{}timestep\_\allowbreak{}reduction\_\allowbreak{}factor}}
+
+Factor to reduce the time-step when convergence slows down. Typical values range between 0.5 and 0.9.
+\subsection{Newton-Raphson Time-step reduction factor when fail}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}2} \quad\textbullet\quad \textbf{Name in file:} \texttt{nr\_\allowbreak{}timestep\_\allowbreak{}reduction\_\allowbreak{}factor\_\allowbreak{}fail}}
+
+Time-step reduction factor applied when Newton-Raphson iteration fails to converge.
+\subsection{Minimum time-step}
+{\small \textbf{Default:} \texttt{1e-6} \quad\textbullet\quad \textbf{Name in file:} \texttt{minimum\_\allowbreak{}timestep}}
+
+Absolute floor on the time step, regardless of the other limits.
+\subsection{Initial time-step}
+{\small \textbf{Default:} \texttt{1e-2} \quad\textbullet\quad \textbf{Name in file:} \texttt{initial\_\allowbreak{}time\_\allowbreak{}step}}
+
+The step the run begins with, and the basis of the upper bound: the step can never exceed this value times the maximum increase factor. A very small value here therefore pins the step for the whole run unless that factor is raised to match. It is also the spacing on which results are written, so a ten times finer run produces ten times more output.
+\subsection{Maximum simulation time allowed (seconds)}
+{\small \textbf{Default:} \texttt{86400} \quad\textbullet\quad \textbf{Name in file:} \texttt{maximum\_\allowbreak{}time\_\allowbreak{}allowed}}
+
+Real-world clock limit in seconds. When it expires the run stops wherever it has reached, so an unattended run cannot continue indefinitely.
+\subsection{Maximum number of jacobian calculations allowed}
+{\small \textbf{Default:} \texttt{200000} \quad\textbullet\quad \textbf{Name in file:} \texttt{maximum\_\allowbreak{}number\_\allowbreak{}of\_\allowbreak{}matrix\_\allowbreak{}inverstions}}
+
+Overall budget of linear solves for the run.
+\subsection{Write Solution Details}
+{\small \textbf{Default:} \texttt{No} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{write\_\allowbreak{}solution\_\allowbreak{}details}}
+
+Produces a log of what the solver did: where it changed the time step, where it struggled and why. The first thing to switch on when a run behaves unexpectedly.
+\subsection{Linear solver for the Newton step}
+{\small \textbf{Default:} \texttt{Direct} \quad\textbullet\quad \textbf{Choices:} \texttt{Direct, Inverse Jacobian, Sparse} \quad\textbullet\quad \textbf{Name in file:} \texttt{jacobian\_\allowbreak{}method}}
+
+What is done with the assembled matrix. Direct factorises and solves, the normal choice. Inverse Jacobian forms the inverse explicitly: more work and slightly less accurate, but reusable across steps. Sparse stores only non-zero entries and pays off for large models where most of the matrix is empty.
+\subsection{Write the outputs intermittently}
+{\small \textbf{Default:} \texttt{No} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{write\_\allowbreak{}intermittently}}
+
+Whether results are written during the run rather than only at the end. Writing during the run lets you watch progress, at the cost of rewriting the file each time.
+\subsection{Record all block/link outputs}
+{\small \textbf{Default:} \texttt{Yes} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{record\_\allowbreak{}results}}
+
+Whether the values of every block and link are kept. Set to No, only quantities declared as Observations are stored. Because results are held in memory until the run ends this governs memory as well as file size: for a long run the difference can be several gigabytes against a few hundred kilobytes.
+\subsection{Detect and suppress solution oscillation}
+{\small \textbf{Default:} \texttt{No} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{oscillation\_\allowbreak{}control}}
+
+Watches for a solution that oscillates, i.e. rises and falls on alternate steps rather than advancing. This can happen when the step is coarse relative to the fastest reaction, and nothing is reported when it does: each step converges, the run completes, and the results may contain excursions that cannot be real. Off by default because some models genuinely oscillate and only the modeller can say whether a reversal is physical.
+\subsection{Oscillation detection tolerance}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}01} \quad\textbullet\quad \textbf{Name in file:} \texttt{oscillation\_\allowbreak{}tolerance}}
+
+A variable is flagged when it reverses direction twice in succession AND the movement exceeds this fraction of the variable's own magnitude. Both conditions are needed: the reversal pattern alone is satisfied by round-off, the magnitude alone by any rapidly changing but healthy solution.
+\subsection{Output write interval}
+{\small \textbf{Default:} \texttt{100} \quad\textbullet\quad \textbf{Name in file:} \texttt{write\_\allowbreak{}interval}}
+
+How often accumulated results are written to disk.
+\subsection{Maximum allowable time-step increase factor with respect to the initial time-step}
+{\small \textbf{Default:} \texttt{50} \quad\textbullet\quad \textbf{Name in file:} \texttt{max\_\allowbreak{}timestep\_\allowbreak{}increase\_\allowbreak{}factor}}
+
+A multiplier on the initial time-step that defines the largest step the run may ever take. It is a ceiling, not a rate of growth.
+\subsection{Maximum allowable time-step decrease factor with respect to the initial time-step}
+{\small \textbf{Default:} \texttt{100000} \quad\textbullet\quad \textbf{Name in file:} \texttt{max\_\allowbreak{}timestep\_\allowbreak{}decrease\_\allowbreak{}factor}}
+
+Bounds how far below the initial time-step the adaptive step may fall.
+\subsection{Transport Jacobian assembly}
+{\small \textbf{Default:} \texttt{Dependency} \quad\textbullet\quad \textbf{Choices:} \texttt{Dependency, Full} \quad\textbullet\quad \textbf{Name in file:} \texttt{jacobian\_\allowbreak{}assembly}}
+
+How the Jacobian is built. Full re-computes every equation for each perturbed unknown: always correct, but the work grows with the square of the model size. Dependency re-computes only the equations the perturbed unknown can reach, giving the same matrix far more quickly. Use Full only to check a suspected error in the dependency analysis.
+\subsection{Verify Jacobian assembly (diagnostic)}
+{\small \textbf{Default:} \texttt{0} \quad\textbullet\quad \textbf{Name in file:} \texttt{verify\_\allowbreak{}jacobian}}
+
+Assembles the Jacobian both ways and logs the largest disagreement. Roughly doubles the cost of every step; for diagnosis, not production.
+\subsection{Maximum oscillation interventions}
+{\small \textbf{Default:} \texttt{4} \quad\textbullet\quad \textbf{Name in file:} \texttt{oscillation\_\allowbreak{}max\_\allowbreak{}reductions}}
+
+How many times the solver may intervene before giving up and reporting that the oscillation could not be removed, rather than refining indefinitely.
+\subsection{Response to detected oscillation}
+{\small \textbf{Default:} \texttt{rewind} \quad\textbullet\quad \textbf{Choices:} \texttt{rewind, reduce} \quad\textbullet\quad \textbf{Name in file:} \texttt{oscillation\_\allowbreak{}remedy}}
+
+Rewind returns to the last restore point, restarts at a fifth of the step, and discards results already written past that point, so the oscillation is removed from the output rather than merely stopped. Reduce keeps the current state and continues with a smaller step: much cheaper, but anything already written stays. Choose rewind when the recorded results matter most, reduce when run time does.
+\subsection{Clean steps before relaxing the time-step ceiling}
+{\small \textbf{Default:} \texttt{40} \quad\textbullet\quad \textbf{Name in file:} \texttt{oscillation\_\allowbreak{}relax\_\allowbreak{}after}}
+
+Number of consecutive untroubled steps before the imposed ceiling is eased and the step allowed to grow again. Oscillation is often a passing episode, so holding the step down for the remainder of a long run can cost far more than the episode itself; but relaxing too eagerly invites the oscillation back. Set to 0 to hold the ceiling for the rest of the run.
+\subsection{Time steps between restore points}
+{\small \textbf{Default:} \texttt{200} \quad\textbullet\quad \textbf{Name in file:} \texttt{restore\_\allowbreak{}interval}}
+
+How often a complete snapshot of the model is saved. This controls both how much work is repeated when the solver goes back (it returns to the most recent snapshot) and how much time is spent taking them. Frequent snapshots make each rewind cheap but add overhead.
+\subsection{Maximum reuses of one restore point}
+{\small \textbf{Default:} \texttt{2} \quad\textbullet\quad \textbf{Name in file:} \texttt{restore\_\allowbreak{}point\_\allowbreak{}max\_\allowbreak{}uses}}
+
+How many times the solver may return to the same snapshot before refusing. The limit prevents returning to a state it cannot get past. If oscillation suppression reports that it gave up, raising this together with more frequent snapshots gives it more room.
+\section{Optimization}
+Used when the program is asked to find the parameter values that best reproduce a set of measurements. The method is a genetic algorithm: it keeps a collection of candidate parameter sets, scores each by running the whole model, and builds the next collection from those that scored best. These fields are ignored unless a calibration is run.
+\begin{longtable}{@{}p{0.60\textwidth}p{0.32\textwidth}@{}}
+\toprule \textrm{Field} & \textrm{Default} \\ \midrule \endhead
+Genetic Algorithm Population & \texttt{\small 40} \\
+Number of generations & \texttt{\small 40} \\
+Number of threads to be used & \texttt{\small 8} \\
+Cross over probability & \texttt{\small 1} \\
+Mutation Probability & \texttt{\small 0.\allowbreak{}02} \\
+Shaking Scale & \texttt{\small 0.\allowbreak{}05} \\
+Shake Scale Reduction Factor & \texttt{\small 0.\allowbreak{}75} \\
+GA Output File Name & \texttt{\small GA\_\allowbreak{}output.\allowbreak{}txt} \\
+\bottomrule\end{longtable}
+\subsection{Genetic Algorithm Population}
+{\small \textbf{Default:} \texttt{40} \quad\textbullet\quad \textbf{Name in file:} \texttt{maxpop}}
+
+How many candidate parameter sets exist at a time. Population times generations is the number of model runs, which sets how long the calibration takes. A larger population searches more broadly per round and suits parameters that trade off against one another.
+\subsection{Number of generations}
+{\small \textbf{Default:} \texttt{40} \quad\textbullet\quad \textbf{Name in file:} \texttt{ngen}}
+
+How many rounds of selection are run. More generations polish an answer that is already close.
+\subsection{Number of threads to be used}
+{\small \textbf{Default:} \texttt{8} \quad\textbullet\quad \textbf{Name in file:} \texttt{numthreads}}
+
+How many candidates are solved at once. Nothing is gained from more threads than candidates, or than the machine has cores.
+\subsection{Cross over probability}
+{\small \textbf{Default:} \texttt{1} \quad\textbullet\quad \textbf{Name in file:} \texttt{pcross}}
+
+Chance that two selected parents are combined rather than copied unchanged.
+\subsection{Mutation Probability}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}02} \quad\textbullet\quad \textbf{Name in file:} \texttt{pmute}}
+
+Chance that an individual parameter value is altered at random. Mutation lets the search escape a merely-good answer, so zero is unwise; far above a few percent turns the search into guesswork.
+\subsection{Shaking Scale}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}05} \quad\textbullet\quad \textbf{Name in file:} \texttt{shakescale}}
+
+Size of the random adjustment applied to parameter values, as a fraction of each parameter's range.
+\subsection{Shake Scale Reduction Factor}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}75} \quad\textbullet\quad \textbf{Name in file:} \texttt{shakescalered}}
+
+Multiplies the shaking scale after each generation, so the search is bold at first and increasingly fine as it settles.
+\subsection{GA Output File Name}
+{\small \textbf{Default:} \texttt{GA\_\allowbreak{}output.\allowbreak{}txt} \quad\textbullet\quad \textbf{Name in file:} \texttt{outputfile}}
+
+Records every candidate of every generation with its score: the file to open to see whether the search converged.
+\section{MCMC}
+Optimization returns the single best answer; this returns the range of answers consistent with the data. The sampler wanders through parameter space, spending time in each region in proportion to how well it explains the measurements, so the spread of what it collects measures how well each parameter is actually constrained.
+\begin{longtable}{@{}p{0.60\textwidth}p{0.32\textwidth}@{}}
+\toprule \textrm{Field} & \textrm{Default} \\ \midrule \endhead
+Number of MCMC samples & \texttt{\small 1000} \\
+Number of chains & \texttt{\small 8} \\
+Number of samples to be discarded (burn out) & \texttt{\small 8} \\
+Initial perturbation factor & \texttt{\small 0.\allowbreak{}05} \\
+The interval at which the samples are saved & \texttt{\small 1} \\
+Initially purturb the samples & \texttt{\small No} \\
+Perform global sensitivity & \texttt{\small No} \\
+Continue MCMC using pre-created file & \texttt{\small \textit{(empty)}} \\
+Number of post-estimate realizations & \texttt{\small 10} \\
+Add error noise to the realizations & \texttt{\small No} \\
+Number of threads to be used & \texttt{\small 1} \\
+Desired acceptance rate & \texttt{\small 0.\allowbreak{}15} \\
+Coefficient of change of purtubation factor & \texttt{\small 0.\allowbreak{}75} \\
+MCMC Output file & \texttt{\small mcmc.\allowbreak{}txt} \\
+\bottomrule\end{longtable}
+\subsection{Number of MCMC samples}
+{\small \textbf{Default:} \texttt{1000} \quad\textbullet\quad \textbf{Name in file:} \texttt{number\_\allowbreak{}of\_\allowbreak{}samples}}
+
+How many steps each walker takes.
+\subsection{Number of chains}
+{\small \textbf{Default:} \texttt{8} \quad\textbullet\quad \textbf{Name in file:} \texttt{number\_\allowbreak{}of\_\allowbreak{}chains}}
+
+How many independent walkers are run. Several walkers share the work, and agreement between walkers that started in different places is the usual evidence that the result can be trusted.
+\subsection{Number of samples to be discarded (burn out)}
+{\small \textbf{Default:} \texttt{8} \quad\textbullet\quad \textbf{Name in file:} \texttt{number\_\allowbreak{}of\_\allowbreak{}burnout\_\allowbreak{}samples}}
+
+Discards the beginning of each walk, which reflects where the walker started rather than the answer.
+\subsection{Initial perturbation factor}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}05} \quad\textbullet\quad \textbf{Name in file:} \texttt{initual\_\allowbreak{}purturbation\_\allowbreak{}factor}}
+
+Step size the sampler begins with.
+\subsection{The interval at which the samples are saved}
+{\small \textbf{Default:} \texttt{1} \quad\textbullet\quad \textbf{Name in file:} \texttt{record\_\allowbreak{}interval}}
+
+Keeps one sample in every so many. Consecutive samples resemble one another by the nature of the method, so this discards little information while keeping the file manageable.
+\subsection{Initially purturb the samples}
+{\small \textbf{Default:} \texttt{No} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{initial\_\allowbreak{}purturbation}}
+
+Scatters the starting positions of the walkers, which is what makes agreement between them meaningful.
+\subsection{Perform global sensitivity}
+{\small \textbf{Default:} \texttt{No} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{perform\_\allowbreak{}global\_\allowbreak{}sensitivity}}
+
+Additionally reports how much each parameter contributes to the variation in the results.
+\subsection{Continue MCMC using pre-created file}
+{\small \textbf{Default:} \texttt{\textit{empty}} \quad\textbullet\quad \textbf{Name in file:} \texttt{continue\_\allowbreak{}based\_\allowbreak{}on\_\allowbreak{}file\_\allowbreak{}name}}
+
+Resumes a previous run from its samples instead of starting over: how a run is extended when it has not yet settled.
+\subsection{Number of post-estimate realizations}
+{\small \textbf{Default:} \texttt{10} \quad\textbullet\quad \textbf{Name in file:} \texttt{number\_\allowbreak{}of\_\allowbreak{}post\_\allowbreak{}estimate\_\allowbreak{}realizations}}
+
+How many parameter sets are drawn from the result and re-run, so predictions come out as a range rather than a single line.
+\subsection{Add error noise to the realizations}
+{\small \textbf{Default:} \texttt{No} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{add\_\allowbreak{}noise\_\allowbreak{}to\_\allowbreak{}realizations}}
+
+Whether the residual error is added to those predictions. Without it the range shows uncertainty in the parameters alone; with it, the uncertainty in an actual future measurement, which is wider and usually the more honest thing to report.
+\subsection{Number of threads to be used}
+{\small \textbf{Default:} \texttt{1} \quad\textbullet\quad \textbf{Name in file:} \texttt{number\_\allowbreak{}of\_\allowbreak{}threads}}
+
+Spreads the chains over cores; more threads than chains achieves nothing.
+\subsection{Desired acceptance rate}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}15} \quad\textbullet\quad \textbf{Name in file:} \texttt{acceptance\_\allowbreak{}rate}}
+
+Target fraction of proposed moves accepted. A step too large is nearly always rejected and one too small explores too slowly, so the sampler tunes its step size to hit this. Values between about 0.15 and 0.3 are usual.
+\subsection{Coefficient of change of purtubation factor}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}75} \quad\textbullet\quad \textbf{Name in file:} \texttt{purturbation\_\allowbreak{}change\_\allowbreak{}scale}}
+
+How quickly the step size is adjusted toward the desired acceptance rate.
+\subsection{MCMC Output file}
+{\small \textbf{Default:} \texttt{mcmc.\allowbreak{}txt} \quad\textbullet\quad \textbf{Name in file:} \texttt{samples\_\allowbreak{}filename}}
+
+File receiving the recorded samples.
+\end{document}

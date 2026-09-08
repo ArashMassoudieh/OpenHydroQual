@@ -1524,6 +1524,12 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
                 // that the already-recorded oscillation is not discarded.
                 SolverTempVars.dt_base /= 5.0;
                 SolverTempVars.dt = SolverTempVars.dt_base;
+                // Hold it there. The rewind path gets this from
+                // ResetBasedOnRestorePoint; without it here, dt_base recovers by
+                // ~1/0.75 per successful step, is back at its ceiling within ten,
+                // and the oscillation returns -- so the reduction buys nothing.
+                SolverTempVars.dt_ceiling = SolverTempVars.dt_base;
+                SolverTempVars.clean_steps = 0;
                 acted = true;
             }
             if (acted)

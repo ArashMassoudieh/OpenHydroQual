@@ -1,0 +1,264 @@
+\section{Before you start}
+
+This manual describes every field in the settings dialog. It is organised the
+way the dialog is: \textbf{General settings} first, then \textbf{Solver
+settings}, then the two calibration groups, \textbf{Optimization} and
+\textbf{MCMC}. Fields are referred to by the label shown on screen. Each
+section ends with a table listing the fields, their defaults, and the internal
+name that appears in a saved model file, in case you ever need to read one.
+
+Most models need only the General settings. The Solver settings have defaults
+that work for ordinary problems; the sections below explain when a problem is
+not ordinary and which field to reach for. The Optimization and MCMC groups are
+used only when you are calibrating a model against measurements, and are
+ignored otherwise.
+
+\section{General settings}
+
+These four fields define what period is simulated and where the results go.
+
+\paragraph{Simulation start time and Simulation end time.}
+The period to simulate, in whatever time unit the model's input series use
+(days, if the inflow files are in days). The start time is usually zero. The
+end time deserves thought: it must be long enough for the behaviour you are
+studying to actually appear. A column that has not yet broken through by the
+end time does not give you a partial answer --- it gives you no answer.
+
+\paragraph{Output File Name (All outputs).}
+The file receiving the recorded results for every block and link in the model.
+This is the complete record and it can become very large; see \emph{Record all
+block/link outputs} under Solver settings if that becomes a problem. Leaving
+this field \emph{empty} suppresses the file entirely, which is useful when you
+only want the observed-data comparison.
+
+\paragraph{Output corresponding to observed data.}
+The file receiving only the quantities you have declared as Observations --- the
+modelled values at the points where you have measurements. This is the file to
+use when comparing the model against data, and it is far smaller than the full
+output.
+
+\section{Solver settings}
+
+\subsection{How the time step behaves}
+
+The solver does not use a fixed time step. It shortens the step when the
+equations become hard to solve and lengthens it again when they are easy. Four
+fields bound that behaviour.
+
+\textbf{Initial time-step} is where the run begins --- but it does more than
+that, and this catches people out. The step is never allowed to exceed the
+initial time-step multiplied by \textbf{Maximum allowable time-step increase
+factor}. That second field is a multiplier defining a ceiling, not a rate of
+growth. So choosing a very small initial time-step to be safe does not simply
+start the run gently: it pins the step small for the entire simulation unless
+you raise the multiplier to match. Similarly \textbf{Maximum allowable
+time-step decrease factor} bounds how far below the initial value the step may
+fall, and \textbf{Minimum time-step} is an absolute floor.
+
+The initial time-step has one further role: it is the spacing on which results
+are written out. Making a run ten times finer therefore also produces ten times
+as much output. The two cannot be set independently.
+
+\textbf{Maximum simulation time allowed} is a real-world clock limit in
+seconds. When it expires the run stops wherever it has reached. It is there so
+an unattended run cannot continue indefinitely.
+
+\subsection{How each step is solved}
+
+Every step solves a set of nonlinear equations by repeated linear
+approximation. \textbf{Newton-Raphson Tolerance} decides when the answer is
+close enough.
+
+This field is worth understanding rather than accepting. The test is made
+against an absolute residual, so it interacts with the size of the numbers in
+your model. In a problem where a strongly sorbing medium holds most of the mass,
+the change in dissolved concentration over one step can be hundreds or thousands
+of times smaller than the mass entering. If that change is smaller than the
+tolerance, the solver decides it has already converged and leaves the solution
+untouched --- every step, for the whole run. The run then completes and reports
+success while producing a result that is entirely zero. \emph{If a model that
+ought to transport something produces nothing, reduce this value first.}
+
+When the iteration needs too many attempts the solver shortens the step by
+\textbf{Newton-Raphson Time-step reduction factor}; when it fails outright it
+uses the more aggressive \textbf{Newton-Raphson Time-step reduction factor when
+fail}. \textbf{Maximum number of jacobian calculations allowed} is an overall
+budget for the run. \textbf{Crank-Nicholson Time Weight} selects the time
+weighting: $1$ is fully implicit and the most robust; $0.5$ is
+Crank--Nicholson, formally more accurate but less tolerant of stiff problems.
+
+\subsection{The Jacobian}
+
+To take a Newton step the solver needs the sensitivity of every equation to
+every unknown --- the Jacobian matrix. Two fields control how it is obtained.
+
+\textbf{Transport Jacobian assembly} chooses how the matrix is built.
+\emph{Full} re-computes every equation for each unknown it perturbs. That is
+always correct but the work grows with the square of the model size.
+\emph{Dependency} re-computes only the equations that the perturbed unknown can
+actually influence --- its own block and its immediate neighbours --- which
+produces exactly the same matrix far more quickly. Dependency is the sensible
+default; use Full only if you suspect the dependency analysis itself.
+
+\textbf{Linear solver for the Newton step} chooses what is done with the
+matrix. \emph{Direct} factorises it and solves, which is the normal choice.
+\emph{Inverse Jacobian} computes the inverse explicitly; that is more work and
+slightly less accurate, but the inverse can be reused over several steps.
+\emph{Sparse} stores only the non-zero entries, which pays off for large models
+where most of the matrix is empty.
+
+\textbf{Verify Jacobian assembly} builds the matrix both ways and reports the
+largest disagreement. It roughly doubles the cost of every step and is meant for
+diagnosis, not production.
+
+\subsection{When the solution oscillates}
+
+If the time step is coarse compared with the fastest reaction in a model, the
+solution can start to oscillate: a value rises and falls on alternate steps
+instead of moving steadily. Nothing is reported when this happens, because each
+individual step converges perfectly well. The run finishes normally and the
+results may contain excursions that cannot be real --- negative concentrations,
+for instance.
+
+\textbf{Detect and suppress solution oscillation} turns on a check for this.
+It is off by default, because some models genuinely do oscillate and only you
+can say whether a reversal is physical. When it is on, the solver watches the
+solution and flags a variable when it reverses direction twice in a row
+\emph{and} the movement is larger than \textbf{Oscillation detection tolerance}
+as a fraction of that variable's own size. Both conditions matter: the reversal
+pattern alone would be triggered by rounding, and the size alone by any rapidly
+changing but perfectly healthy solution. The default of $0.01$ means a movement
+of one percent.
+
+\textbf{Response to detected oscillation} chooses what happens next.
+\emph{Rewind} takes the solver back to the last saved state, restarts with a
+step five times smaller, and throws away the results already written past that
+point --- so the oscillation is removed from the output, not merely halted from
+there on. \emph{Reduce} keeps the current state and simply continues with a
+smaller step; it is much cheaper, but anything already written stays written.
+Choose rewind when the recorded results matter most, reduce when run time does.
+
+Either way the smaller step is held for a while, because otherwise it would
+climb back to its ceiling within a few steps and the oscillation would return.
+\textbf{Clean steps before relaxing the time-step ceiling} is how many
+untroubled steps must pass before the solver starts allowing the step to grow
+again. Oscillation is often a passing episode --- confined to a front moving
+through the model --- so keeping the step small for the rest of a long run can
+cost far more than the episode itself. \textbf{Maximum oscillation
+interventions} limits how many times the solver will intervene before giving up
+and telling you that it could not remove the oscillation, rather than refining
+forever.
+
+\subsection{Restore points}
+
+The solver saves a complete snapshot of the model from time to time so that it
+can go back to it --- after a failure, or when suppressing oscillation.
+
+\textbf{Time steps between restore points} sets how often those snapshots are
+taken. It controls two things at once: how much work is repeated when the
+solver goes back (it returns to the most recent snapshot), and how much time is
+spent taking snapshots. Frequent snapshots make each rewind cheap but add
+overhead; infrequent ones do the opposite.
+
+\textbf{Maximum reuses of one restore point} limits how many times the solver
+may return to the same snapshot before refusing. Without such a limit a solver
+could return to the same state indefinitely without ever getting past it. If
+oscillation suppression reports that it gave up, raising this together with more
+frequent snapshots gives it more room to work.
+
+\subsection{What gets written, and how often}
+
+\textbf{Record all block/link outputs} decides whether the values of every block
+and link are kept. Set to \emph{No}, only the quantities you declared as
+Observations are stored. This governs memory as much as file size, because
+results are held in memory until the run ends: for a long run the difference can
+be several gigabytes against a few hundred kilobytes. If a long run is running
+out of memory, this is the field to change.
+
+\textbf{Output write interval} is how often accumulated results are written to
+disk, and \textbf{Write the outputs intermittently} decides whether that
+happens during the run at all rather than only at the end. Writing during the
+run lets you watch progress, at the cost of rewriting the file each time.
+
+\textbf{Write Solution Details} produces a log of what the solver did --- where
+it changed the time step, where it struggled, and why. It is the first thing to
+switch on when a run behaves unexpectedly.
+
+\textbf{Number of threads to be used} sets how much parallelism a single
+simulation may use.
+
+\section{Optimization}
+
+These fields are used when you ask the program to find the parameter values that
+best reproduce your measurements. The method is a genetic algorithm: it keeps a
+collection of candidate parameter sets, scores each one by running the whole
+model, and builds the next collection from the ones that scored best.
+
+\textbf{Genetic Algorithm Population} is how many candidates exist at a time and
+\textbf{Number of generations} is how many rounds are run. Multiplied together
+they give the number of model runs, which is what determines how long the
+calibration takes: 40 candidates over 50 generations is 2000 simulations. A
+larger population searches more broadly in each round and is the better choice
+when you suspect parameters trade off against one another; more generations
+polish an answer that is already close.
+
+\textbf{Cross over probability} is the chance that two selected parents are
+combined rather than copied unchanged. \textbf{Mutation Probability} is the
+chance that an individual value is altered at random. Mutation is what lets the
+search escape a merely-good answer, so setting it to zero is unwise; setting it
+far above a few percent turns the search into guesswork.
+
+\textbf{Shaking Scale} is the size of the random adjustment applied to parameter
+values, and \textbf{Shake Scale Reduction Factor} shrinks it after each
+generation. Together they make the search bold at first and increasingly fine as
+it settles.
+
+\textbf{Number of threads to be used} runs several candidates at once. There is
+nothing to gain from more threads than you have candidates, or than the machine
+has cores.
+
+\textbf{GA Output File Name} records every candidate of every generation with
+its score --- the file to open to see whether the search actually converged.
+
+\section{MCMC}
+
+Optimization gives you the single best answer. MCMC gives you the range of
+answers consistent with the data: it wanders through parameter space spending
+time in each region in proportion to how well that region explains the
+measurements. The spread of what it collects tells you how confident you can be
+in each parameter, which a single best-fit value cannot.
+
+\textbf{Number of MCMC samples} is how many steps each walker takes.
+\textbf{Number of chains} is how many independent walkers there are. Several
+walkers serve two purposes: they share the work, and if walkers that started in
+different places end up agreeing, that is the usual evidence that the result can
+be trusted. \textbf{Number of threads to be used} spreads them over cores; more
+threads than chains achieves nothing.
+
+\textbf{Number of samples to be discarded (burn out)} throws away the beginning
+of each walk, which reflects where the walker happened to start rather than the
+answer. \textbf{Initially purturb the samples} scatters the starting positions,
+which is what makes the agreement between chains meaningful.
+
+A step that is too large is nearly always rejected and a step that is too small
+explores too slowly. The program therefore adjusts the step size automatically
+to hit the \textbf{Desired acceptance rate}, the fraction of proposed moves
+accepted; values between about $0.15$ and $0.3$ are usual. \textbf{Initial
+perturbation factor} is the step size it begins with, and \textbf{Coefficient of
+change of purtubation factor} how quickly it is adjusted.
+
+\textbf{The interval at which the samples are saved} keeps one sample in every
+so many. Consecutive samples resemble one another by the nature of the method,
+so this discards very little information while keeping the file manageable.
+\textbf{MCMC Output file} names it. \textbf{Continue MCMC using pre-created
+file} resumes a previous run instead of starting over, which is how a run is
+extended when it has not yet settled.
+
+\textbf{Number of post-estimate realizations} is how many parameter sets are
+drawn from the result and re-run, so that predictions come out as a range rather
+than a single line. \textbf{Add error noise to the realizations} decides what
+that range means: without it, it shows uncertainty in the parameters alone; with
+it, it shows the uncertainty in an actual future measurement, which is wider and
+usually the more honest thing to report. \textbf{Perform global sensitivity}
+additionally reports how much each parameter contributes to the variation in the
+results.

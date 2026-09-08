@@ -7,10 +7,10 @@
    "type": "value",
    "default": "1",
    "description": "Crank-Nicholson Time Weight",
+   "helptext": "Time-weighting factor for the Crank-Nicholson scheme (0.5 for implicit midpoint rule, 1 for fully implicit).",
    "ask_user": "true",
    "delegate": "ValueBox",
-   "code": "cn_weight",
-   "helptext": "Time-weighting factor for the Crank-Nicholson scheme (0.5 for implicit midpoint rule, 1 for fully implicit)."
+   "code": "cn_weight"
   },
   "name": {
    "description": "Name",
@@ -23,42 +23,43 @@
    "type": "value",
    "default": "8",
    "description": "Number of threads to be used",
+   "helptext": "Number of processor threads to use for parallel computation during simulation.",
    "ask_user": "true",
    "delegate": "ValueBox",
-   "code": "n_threads",
-   "helptext": "Number of processor threads to use for parallel computation during simulation."
+   "code": "n_threads"
   },
   "nr_tolerance": {
    "type": "value",
    "default": "0.001",
    "description": "Newton-Raphson Tolerance",
+   "helptext": "Tolerance for Newton-Raphson convergence. A smaller value results in more precise but potentially slower convergence.",
    "ask_user": "true",
    "delegate": "ValueBox",
-   "code": "nr_tolerance",
-   "helptext": "Tolerance for Newton-Raphson convergence. A smaller value results in more precise but potentially slower convergence."
+   "code": "nr_tolerance"
   },
   "nr_timestep_reduction_factor": {
    "type": "value",
    "default": "0.75",
    "description": "Newton-Raphson Time-step reduction factor",
+   "helptext": "Factor to reduce the time-step when convergence slows down. Typical values range between 0.5 and 0.9.",
    "ask_user": "true",
    "delegate": "ValueBox",
-   "code": "nr_timestep_reduction_factor",
-   "helptext": "Factor to reduce the time-step when convergence slows down. Typical values range between 0.5 and 0.9."
+   "code": "nr_timestep_reduction_factor"
   },
   "nr_timestep_reduction_factor_fail": {
    "type": "value",
    "default": "0.2",
    "description": "Newton-Raphson Time-step reduction factor when fail",
+   "helptext": "Time-step reduction factor applied when Newton-Raphson iteration fails to converge.",
    "ask_user": "true",
    "delegate": "ValueBox",
-   "code": "nr_timestep_reduction_factor_fail",
-   "helptext": "Time-step reduction factor applied when Newton-Raphson iteration fails to converge."
+   "code": "nr_timestep_reduction_factor_fail"
   },
   "minimum_timestep": {
    "type": "value",
    "default": "1e-6",
    "description": "Minimum time-step",
+   "helptext": "Absolute floor on the time step, regardless of the other limits.",
    "ask_user": "true",
    "delegate": "ValueBox",
    "code": "minimum_timestep"
@@ -67,6 +68,7 @@
    "type": "value",
    "default": "1e-2",
    "description": "Initial time-step",
+   "helptext": "The step the run begins with, and the basis of the upper bound: the step can never exceed this value times the maximum increase factor. A very small value here therefore pins the step for the whole run unless that factor is raised to match. It is also the spacing on which results are written, so a ten times finer run produces ten times more output.",
    "ask_user": "true",
    "delegate": "ValueBox",
    "code": "dt"
@@ -75,6 +77,7 @@
    "type": "value",
    "default": "86400",
    "description": "Maximum simulation time allowed (seconds)",
+   "helptext": "Real-world clock limit in seconds. When it expires the run stops wherever it has reached, so an unattended run cannot continue indefinitely.",
    "ask_user": "true",
    "delegate": "ValueBox",
    "code": "maximum_time_allowed"
@@ -83,6 +86,7 @@
    "type": "value",
    "default": "200000",
    "description": "Maximum number of jacobian calculations allowed",
+   "helptext": "Overall budget of linear solves for the run.",
    "ask_user": "true",
    "delegate": "ValueBox",
    "code": "maximum_number_of_matrix_inverstions"
@@ -91,6 +95,7 @@
    "type": "string",
    "default": "No",
    "description": "Write Solution Details",
+   "helptext": "Produces a log of what the solver did: where it changed the time step, where it struggled and why. The first thing to switch on when a run behaves unexpectedly.",
    "ask_user": "true",
    "delegate": "ComboBox, items: Yes, No",
    "code": "write_solution_details"
@@ -99,6 +104,7 @@
    "type": "string",
    "default": "Direct",
    "description": "Linear solver for the Newton step",
+   "helptext": "What is done with the assembled matrix. Direct factorises and solves, the normal choice. Inverse Jacobian forms the inverse explicitly: more work and slightly less accurate, but reusable across steps. Sparse stores only non-zero entries and pays off for large models where most of the matrix is empty.",
    "ask_user": "true",
    "delegate": "ComboBox, items: Direct, Inverse Jacobian, Sparse",
    "code": "jacobian_method"
@@ -107,6 +113,7 @@
    "type": "string",
    "default": "No",
    "description": "Write the outputs intermittently",
+   "helptext": "Whether results are written during the run rather than only at the end. Writing during the run lets you watch progress, at the cost of rewriting the file each time.",
    "ask_user": "false",
    "delegate": "ComboBox, items: Yes, No",
    "code": "write_intermittently"
@@ -114,7 +121,8 @@
   "record_results": {
    "type": "string",
    "default": "Yes",
-   "description": "Record all block/link outputs. Set to No to record only Observations, which keeps memory and output size small for long runs.",
+   "description": "Record all block/link outputs",
+   "helptext": "Whether the values of every block and link are kept. Set to No, only quantities declared as Observations are stored. Because results are held in memory until the run ends this governs memory as well as file size: for a long run the difference can be several gigabytes against a few hundred kilobytes.",
    "ask_user": "false",
    "delegate": "ComboBox, items: Yes, No",
    "code": "record_results"
@@ -122,7 +130,8 @@
   "oscillation_control": {
    "type": "string",
    "default": "No",
-   "description": "Detect oscillating outputs during the solve and reduce the time step automatically. Use for problems where a converged step can still oscillate, e.g. strongly retarded transport with a fast sorption rate.",
+   "description": "Detect and suppress solution oscillation",
+   "helptext": "Watches for a solution that oscillates, i.e. rises and falls on alternate steps rather than advancing. This can happen when the step is coarse relative to the fastest reaction, and nothing is reported when it does: each step converges, the run completes, and the results may contain excursions that cannot be real. Off by default because some models genuinely oscillate and only the modeller can say whether a reversal is physical.",
    "ask_user": "false",
    "delegate": "ComboBox, items: Yes, No",
    "code": "oscillation_control"
@@ -130,7 +139,8 @@
   "oscillation_tolerance": {
    "type": "number",
    "default": "0.01",
-   "description": "Relative slope reversal that counts as oscillation rather than round-off (used only when oscillation_control is Yes).",
+   "description": "Oscillation detection tolerance",
+   "helptext": "A variable is flagged when it reverses direction twice in succession AND the movement exceeds this fraction of the variable's own magnitude. Both conditions are needed: the reversal pattern alone is satisfied by round-off, the magnitude alone by any rapidly changing but healthy solution.",
    "ask_user": "false",
    "code": "oscillation_tolerance"
   },
@@ -138,6 +148,7 @@
    "type": "value",
    "default": "100",
    "description": "Output write interval",
+   "helptext": "How often accumulated results are written to disk.",
    "ask_user": "true",
    "delegate": "UnitBox",
    "unit": "day",
@@ -147,6 +158,7 @@
    "type": "value",
    "default": "50",
    "description": "Maximum allowable time-step increase factor with respect to the initial time-step",
+   "helptext": "A multiplier on the initial time-step that defines the largest step the run may ever take. It is a ceiling, not a rate of growth.",
    "ask_user": "true",
    "delegate": "ValueBox",
    "code": "max_timestep_increase_factor"
@@ -155,6 +167,7 @@
    "type": "value",
    "default": "100000",
    "description": "Maximum allowable time-step decrease factor with respect to the initial time-step",
+   "helptext": "Bounds how far below the initial time-step the adaptive step may fall.",
    "ask_user": "true",
    "delegate": "ValueBox",
    "code": "max_timestep_decrease_factor"
@@ -162,7 +175,8 @@
   "jacobian_assembly": {
    "type": "string",
    "default": "Dependency",
-   "description": "Transport Jacobian assembly: Full re-evaluates the whole residual per perturbation; Dependency re-evaluates only the rows the perturbed variable can reach (exact, much faster for models made of weakly coupled sub-systems)",
+   "description": "Transport Jacobian assembly",
+   "helptext": "How the Jacobian is built. Full re-computes every equation for each perturbed unknown: always correct, but the work grows with the square of the model size. Dependency re-computes only the equations the perturbed unknown can reach, giving the same matrix far more quickly. Use Full only to check a suspected error in the dependency analysis.",
    "ask_user": "true",
    "delegate": "ComboBox, items: Dependency, Full",
    "code": "jacobian_assembly"
@@ -170,7 +184,8 @@
   "verify_jacobian": {
    "type": "bool",
    "default": "0",
-   "description": "Assemble the transport Jacobian both ways and log the maximum difference. Diagnostic only - roughly doubles assembly cost",
+   "description": "Verify Jacobian assembly (diagnostic)",
+   "helptext": "Assembles the Jacobian both ways and logs the largest disagreement. Roughly doubles the cost of every step; for diagnosis, not production.",
    "ask_user": "true",
    "delegate": "CheckBox",
    "code": "verify_jacobian"
@@ -178,14 +193,16 @@
   "oscillation_max_reductions": {
    "type": "number",
    "default": "4",
-   "description": "Give up after this many rewind-and-refine attempts; each restarts at a fifth of the time step.",
+   "description": "Maximum oscillation interventions",
+   "helptext": "How many times the solver may intervene before giving up and reporting that the oscillation could not be removed, rather than refining indefinitely.",
    "ask_user": "false",
    "code": "oscillation_max_reductions"
   },
   "oscillation_remedy": {
    "type": "string",
    "default": "rewind",
-   "description": "Response to detected oscillation: 'rewind' returns to the last restore point and discards the spoiled samples; 'reduce' continues from the current state with a smaller time step.",
+   "description": "Response to detected oscillation",
+   "helptext": "Rewind returns to the last restore point, restarts at a fifth of the step, and discards results already written past that point, so the oscillation is removed from the output rather than merely stopped. Reduce keeps the current state and continues with a smaller step: much cheaper, but anything already written stays. Choose rewind when the recorded results matter most, reduce when run time does.",
    "ask_user": "false",
    "delegate": "ComboBox, items: rewind, reduce",
    "code": "oscillation_remedy"
@@ -193,21 +210,24 @@
   "oscillation_relax_after": {
    "type": "number",
    "default": "40",
-   "description": "Relax the imposed time-step ceiling after this many consecutive oscillation-free checks (0 keeps it for the rest of the run).",
+   "description": "Clean steps before relaxing the time-step ceiling",
+   "helptext": "Number of consecutive untroubled steps before the imposed ceiling is eased and the step allowed to grow again. Oscillation is often a passing episode, so holding the step down for the remainder of a long run can cost far more than the episode itself; but relaxing too eagerly invites the oscillation back. Set to 0 to hold the ceiling for the rest of the run.",
    "ask_user": "false",
    "code": "oscillation_relax_after"
   },
   "restore_interval": {
    "type": "number",
    "default": "200",
-   "description": "Time steps between restore points. A rewind returns to the last restore point, so this bounds how much work an oscillation rewind discards; smaller values make rewinds cheaper but copy the state more often.",
+   "description": "Time steps between restore points",
+   "helptext": "How often a complete snapshot of the model is saved. This controls both how much work is repeated when the solver goes back (it returns to the most recent snapshot) and how much time is spent taking them. Frequent snapshots make each rewind cheap but add overhead.",
    "ask_user": "false",
    "code": "restore_interval"
   },
   "restore_point_max_uses": {
    "type": "number",
    "default": "2",
-   "description": "How many times one restore point may be reused before the solver refuses to rewind to it again.",
+   "description": "Maximum reuses of one restore point",
+   "helptext": "How many times the solver may return to the same snapshot before refusing. The limit prevents returning to a state it cannot get past. If oscillation suppression reports that it gave up, raising this together with more frequent snapshots gives it more room.",
    "ask_user": "false",
    "code": "restore_point_max_uses"
   }
@@ -226,6 +246,7 @@
   "simulation_start_time": {
    "default": "0",
    "description": "Simulation start time",
+   "helptext": "Start of the simulated period, in the time unit used by the model's input series.",
    "ask_user": "true",
    "type": "value",
    "delegate": "DateTime",
@@ -234,6 +255,7 @@
   "simulation_end_time": {
    "default": "1",
    "description": "Simulation end time",
+   "helptext": "End of the simulated period. It must be long enough for the behaviour being studied to appear: a run that stops before breakthrough gives no answer rather than a partial one.",
    "ask_user": "true",
    "type": "value",
    "delegate": "DateTime",
@@ -244,6 +266,7 @@
   "alloutputfile": {
    "default": "output.txt",
    "description": "Output File Name (All outputs)",
+   "helptext": "File receiving the recorded results for every block and link. This is the complete record and can be very large. Leave empty to suppress it entirely.",
    "ask_user": "true",
    "type": "string",
    "delegate": "Browser_Save",
@@ -252,6 +275,7 @@
   "observed_outputfile": {
    "default": "observedoutput.txt",
    "description": "Output corresponding to observed data",
+   "helptext": "File receiving only the quantities declared as Observations, i.e. the modelled values at the points where measurements exist. Much smaller than the full output and the file to use when comparing against data.",
    "ask_user": "true",
    "type": "string",
    "delegate": "Browser_Save",
@@ -272,6 +296,7 @@
   "maxpop": {
    "default": "40",
    "description": "Genetic Algorithm Population",
+   "helptext": "How many candidate parameter sets exist at a time. Population times generations is the number of model runs, which sets how long the calibration takes. A larger population searches more broadly per round and suits parameters that trade off against one another.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -280,6 +305,7 @@
   "ngen": {
    "default": "40",
    "description": "Number of generations",
+   "helptext": "How many rounds of selection are run. More generations polish an answer that is already close.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -288,6 +314,7 @@
   "numthreads": {
    "default": "8",
    "description": "Number of threads to be used",
+   "helptext": "How many candidates are solved at once. Nothing is gained from more threads than candidates, or than the machine has cores.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -296,6 +323,7 @@
   "pcross": {
    "default": "1",
    "description": "Cross over probability",
+   "helptext": "Chance that two selected parents are combined rather than copied unchanged.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -304,6 +332,7 @@
   "pmute": {
    "default": "0.02",
    "description": "Mutation Probability",
+   "helptext": "Chance that an individual parameter value is altered at random. Mutation lets the search escape a merely-good answer, so zero is unwise; far above a few percent turns the search into guesswork.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -312,6 +341,7 @@
   "shakescale": {
    "default": "0.05",
    "description": "Shaking Scale",
+   "helptext": "Size of the random adjustment applied to parameter values, as a fraction of each parameter's range.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -320,6 +350,7 @@
   "shakescalered": {
    "default": "0.75",
    "description": "Shake Scale Reduction Factor",
+   "helptext": "Multiplies the shaking scale after each generation, so the search is bold at first and increasingly fine as it settles.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -328,6 +359,7 @@
   "outputfile": {
    "default": "GA_output.txt",
    "description": "GA Output File Name",
+   "helptext": "Records every candidate of every generation with its score: the file to open to see whether the search converged.",
    "ask_user": "true",
    "type": "string",
    "delegate": "Browser_Save",
@@ -348,6 +380,7 @@
   "number_of_samples": {
    "default": "1000",
    "description": "Number of MCMC samples",
+   "helptext": "How many steps each walker takes.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -356,6 +389,7 @@
   "number_of_chains": {
    "default": "8",
    "description": "Number of chains",
+   "helptext": "How many independent walkers are run. Several walkers share the work, and agreement between walkers that started in different places is the usual evidence that the result can be trusted.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -364,6 +398,7 @@
   "number_of_burnout_samples": {
    "default": "8",
    "description": "Number of samples to be discarded (burn out)",
+   "helptext": "Discards the beginning of each walk, which reflects where the walker started rather than the answer.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -374,6 +409,7 @@
   "initual_purturbation_factor": {
    "default": "0.05",
    "description": "Initial perturbation factor",
+   "helptext": "Step size the sampler begins with.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -382,6 +418,7 @@
   "record_interval": {
    "default": "1",
    "description": "The interval at which the samples are saved",
+   "helptext": "Keeps one sample in every so many. Consecutive samples resemble one another by the nature of the method, so this discards little information while keeping the file manageable.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -393,6 +430,7 @@
    "type": "string",
    "default": "No",
    "description": "Initially purturb the samples",
+   "helptext": "Scatters the starting positions of the walkers, which is what makes agreement between them meaningful.",
    "ask_user": "true",
    "delegate": "ComboBox, items: Yes, No",
    "code": "initial_purturbation"
@@ -401,12 +439,14 @@
    "type": "string",
    "default": "No",
    "description": "Perform global sensitivity",
+   "helptext": "Additionally reports how much each parameter contributes to the variation in the results.",
    "ask_user": "true",
    "delegate": "ComboBox, items: Yes, No",
    "code": "perform_global_sensitivity"
   },
   "continue_based_on_file_name": {
    "description": "Continue MCMC using pre-created file",
+   "helptext": "Resumes a previous run from its samples instead of starting over: how a run is extended when it has not yet settled.",
    "ask_user": "true",
    "type": "string",
    "delegate": "Browser",
@@ -415,6 +455,7 @@
   "number_of_post_estimate_realizations": {
    "default": "10",
    "description": "Number of post-estimate realizations",
+   "helptext": "How many parameter sets are drawn from the result and re-run, so predictions come out as a range rather than a single line.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -426,6 +467,7 @@
    "type": "string",
    "default": "No",
    "description": "Add error noise to the realizations",
+   "helptext": "Whether the residual error is added to those predictions. Without it the range shows uncertainty in the parameters alone; with it, the uncertainty in an actual future measurement, which is wider and usually the more honest thing to report.",
    "ask_user": "true",
    "delegate": "ComboBox, items: Yes, No",
    "code": "add_noise_to_realizations"
@@ -433,6 +475,7 @@
   "number_of_threads": {
    "default": "1",
    "description": "Number of threads to be used",
+   "helptext": "Spreads the chains over cores; more threads than chains achieves nothing.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -443,6 +486,7 @@
   "acceptance_rate": {
    "default": "0.15",
    "description": "Desired acceptance rate",
+   "helptext": "Target fraction of proposed moves accepted. A step too large is nearly always rejected and one too small explores too slowly, so the sampler tunes its step size to hit this. Values between about 0.15 and 0.3 are usual.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -453,6 +497,7 @@
   "purturbation_change_scale": {
    "default": "0.75",
    "description": "Coefficient of change of purtubation factor",
+   "helptext": "How quickly the step size is adjusted toward the desired acceptance rate.",
    "ask_user": "true",
    "type": "value",
    "delegate": "ValueBox",
@@ -463,6 +508,7 @@
   "samples_filename": {
    "default": "mcmc.txt",
    "description": "MCMC Output file",
+   "helptext": "File receiving the recorded samples.",
    "ask_user": "true",
    "type": "string",
    "delegate": "Browser_Save",
