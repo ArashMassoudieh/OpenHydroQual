@@ -13,6 +13,12 @@ DMG_PATH=~/Desktop/${DMG_NAME}
 # Path to your Qt installation (adjust version if needed)
 QT_PATH=~/Qt/6.10.1/macos/bin
 
+# notarytool keychain profile holding the Apple ID + app-specific password.
+# Create it once with:
+#   xcrun notarytool store-credentials "OHQ-notary" \
+#     --apple-id "arashmassoudieh@gmail.com" --team-id "H3BRP928NG"
+NOTARY_PROFILE="${NOTARY_PROFILE:-OHQ-notary}"
+
 echo "🧹 Cleaning previous builds..."
 rm -rf "${STAGING_DIR}"
 rm -f "${DMG_PATH}"
@@ -90,13 +96,18 @@ codesign --force --deep --options runtime \
 
 echo "📤 Submitting DMG for notarization..."
 xcrun notarytool submit "${DMG_PATH}" \
-  --apple-id "arashmassoudieh@gmail.com" \
-  --team-id "H3BRP928NG" \
-  --password "wzma-hwfk-cexx-mpdh" \
+  --keychain-profile "${NOTARY_PROFILE}" \
   --wait
 
 echo "📎 Stapling notarization ticket..."
 xcrun stapler staple "${DMG_PATH}"
 
-echo "✅ DMG signed, notarized, and stapled!"
+# Gatekeeper only checks notarization on quarantined (downloaded) files, so a
+# DMG that failed to notarize still opens fine locally and looks shippable.
+# Verify here instead of finding out from users after it is on the website.
+echo "🔍 Verifying notarization..."
+xcrun stapler validate "${DMG_PATH}"
+spctl -a -t open --context context:primary-signature -v "${DMG_PATH}"
+
+echo "✅ DMG signed, notarized, stapled, and verified!"
 
