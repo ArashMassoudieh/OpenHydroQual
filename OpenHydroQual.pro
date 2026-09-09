@@ -85,7 +85,7 @@ macx {
     DEFINES += mac_version ARMA_USE_LAPACK ARMA_USE_BLAS
 
     # Armadillo and GSL (adjust versions if needed)
-    INCLUDEPATH += $$PWD/../Armadillo
+    INCLUDEPATH += $$PWD/../Armadillo/include
     DEPENDPATH  += $$PWD/../Armadillo
     LIBS += -L$$PWD/../Armadillo -larmadillo.11.2.3 -llapack.3.10.1 -lblas.3.10.1
 
