@@ -1,0 +1,2829 @@
+{
+  "Circular Culvert": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Circular culvert with inlet/outlet control and optional road overtopping",
+    "icon": {
+      "filename": "culvert_circular.png"
+    },
+    "Number_of_barrels": {
+      "type": "value",
+      "description": "Number of barrels",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "Number_of_barrels>0",
+      "warningmessage": "The number of barrels must be greater than zero",
+      "helptext": "Number of identical barrels installed side by side. The barrel capacity is multiplied by this number."
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Barrel diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "criteria": "diameter>0",
+      "warningmessage": "Diameter must be greater than zero",
+      "helptext": "Internal diameter of a single barrel."
+    },
+    "length": {
+      "type": "value",
+      "description": "Barrel length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Barrel length must be greater than zero",
+      "helptext": "Length of the culvert barrel measured along its axis. Also used as the transport length for constituent dispersion."
+    },
+    "inlet_invert": {
+      "type": "value",
+      "description": "Inlet invert elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Elevation of the barrel invert at the upstream (inlet) face, on the same vertical datum as the connected blocks."
+    },
+    "outlet_invert": {
+      "type": "value",
+      "description": "Outlet invert elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Elevation of the barrel invert at the downstream (outlet) face, on the same vertical datum as the connected blocks."
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's roughness coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.013",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness coefficient must be greater than zero",
+      "helptext": "Barrel roughness used in the outlet-control friction loss. Typical values: 0.012-0.013 concrete, 0.024 corrugated metal."
+    },
+    "entrance_loss_coeff": {
+      "type": "value",
+      "description": "Entrance loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.5",
+      "criteria": "entrance_loss_coeff>-0.0000001",
+      "warningmessage": "The entrance loss coefficient must be non-negative",
+      "helptext": "Head loss coefficient at the culvert entrance (HDS-5 ke). Typical values: 0.2 grooved end with headwall, 0.5 square edge with headwall, 0.9 projecting corrugated pipe."
+    },
+    "HDS5_K": {
+      "type": "value",
+      "description": "HDS-5 inlet control K",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.0098",
+      "criteria": "HDS5_K>0",
+      "warningmessage": "The HDS-5 coefficient K must be greater than zero",
+      "helptext": "Coefficient K from HDS-5 Table A.1 (Constants for Inlet Control Design Equations), for the specific barrel shape, material and inlet edge configuration. The default corresponds to circular concrete pipe, square edge with headwall (Chart 1, scale 1). VERIFY this value against Table A.1 for your inlet before using the result in a design submittal."
+    },
+    "HDS5_M": {
+      "type": "value",
+      "description": "HDS-5 inlet control M",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "2.0",
+      "criteria": "HDS5_M>0",
+      "warningmessage": "The HDS-5 exponent M must be greater than zero",
+      "helptext": "Exponent M from HDS-5 Table A.1, paired with K for the same inlet configuration."
+    },
+    "HDS5_c": {
+      "type": "value",
+      "description": "HDS-5 inlet control c",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.0398",
+      "criteria": "HDS5_c>0",
+      "warningmessage": "The HDS-5 coefficient c must be greater than zero",
+      "helptext": "Coefficient c from HDS-5 Table A.1, used by the submerged inlet-control equation."
+    },
+    "HDS5_Y": {
+      "type": "value",
+      "description": "HDS-5 inlet control Y",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.67",
+      "helptext": "Coefficient Y from HDS-5 Table A.1, paired with c for the same inlet configuration."
+    },
+    "HDS5_form1_switch": {
+      "type": "value",
+      "description": "Unsubmerged equation form (1 = Form 1, 0 = Form 2)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "HDS5_form1_switch>-0.0000001",
+      "warningmessage": "The form switch must be 0 or 1",
+      "helptext": "Set to 1 when HDS-5 Table A.1 lists the inlet as equation Form (1), which adds the specific head at critical depth to the headwater. Set to 0 for Form (2). Most circular and box entries in Table A.1 are Form (1)."
+    },
+    "slope_correction_coeff": {
+      "type": "value",
+      "description": "Barrel slope correction coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.5",
+      "helptext": "Coefficient of the barrel slope term in the HDS-5 inlet-control equations. HDS-5 applies -0.5S for all inlets except mitered inlets, which use +0.7S; enter 0.5 for the normal case and -0.7 for a mitered inlet."
+    },
+    "Ku": {
+      "type": "expression",
+      "description": "HDS-5 unit conversion factor (SI)",
+      "expression": "1.811",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "exit_loss_coeff": {
+      "type": "value",
+      "description": "Exit loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "exit_loss_coeff>-0.0000001",
+      "warningmessage": "The exit loss coefficient must be non-negative",
+      "helptext": "Head loss coefficient at the culvert exit. A value of 1.0 represents full loss of the velocity head into a large receiving water body."
+    },
+    "road_crest_elevation": {
+      "type": "value",
+      "description": "Road crest elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "default": "0",
+      "helptext": "Elevation of the low point of the roadway over the culvert. Only used when the overtopping width is greater than zero."
+    },
+    "road_width": {
+      "type": "value",
+      "description": "Overtopping width",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "default": "0",
+      "criteria": "road_width>-0.0000001",
+      "warningmessage": "The overtopping width must be non-negative",
+      "helptext": "Crest length of the roadway acting as a weir when the headwater rises above the road. Leave at zero to disable overtopping."
+    },
+    "road_weir_coeff": {
+      "type": "value",
+      "description": "Roadway weir coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.7",
+      "helptext": "Free-flow roadway discharge coefficient Cr in HDS-5 Equation 3.9, Qo = Cd*L*HWr^1.5. HDS-5 gives Cr graphically in Figure 3.11A (deep overtopping) and 3.11B (shallow), and notes Cd(SI) = 0.552*Cd(English); the default of 1.7 corresponds to the deep-overtopping value of about 3.1 in US units."
+    },
+    "road_submergence_factor": {
+      "type": "value",
+      "description": "Roadway submergence correction factor kt",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "road_submergence_factor>0",
+      "warningmessage": "The roadway submergence correction factor must be greater than zero",
+      "helptext": "Correction factor kt for downstream submergence of the roadway crest, read from HDS-5 Figure 3.11C. It is 1.0 for a free overfall and falls towards zero as the tailwater encroaches on the crest. HDS-5 gives it as a graph, so it is entered rather than computed; check road_submergence_ratio in the results to see whether it matters for your event."
+    },
+    "road_submergence_ratio": {
+      "type": "expression",
+      "description": "Roadway tailwater submergence ratio",
+      "expression": "_pos(head.e-road_crest_elevation)/(_pos(head.s-road_crest_elevation)+0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "barrel_area": {
+      "type": "expression",
+      "description": "Full barrel cross-sectional area",
+      "expression": "0.7853981634*diameter^2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "hw_eff": {
+      "type": "expression",
+      "description": "Effective headwater elevation",
+      "expression": "_max(head.s;inlet_invert)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "tw_eff": {
+      "type": "expression",
+      "description": "Effective tailwater elevation",
+      "expression": "_max(head.e;outlet_invert)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "driving_head": {
+      "type": "expression",
+      "description": "Driving head",
+      "expression": "hw_eff-tw_eff",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "w_up": {
+      "type": "expression",
+      "description": "Upstream weighting factor",
+      "expression": "0.5+0.5*driving_head/(_abs(driving_head)+0.001)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "depth_in": {
+      "type": "expression",
+      "description": "Flow depth at the inlet face",
+      "expression": "_min(_pos(head.s-inlet_invert);diameter)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;in"
+    },
+    "depth_out": {
+      "type": "expression",
+      "description": "Flow depth at the outlet face",
+      "expression": "_min(_pos(head.e-outlet_invert);diameter)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;in"
+    },
+    "area_in": {
+      "type": "expression",
+      "description": "Wetted area at the inlet face",
+      "expression": "diameter^2*(-0.910331972*(depth_in/diameter)^3+1.376045712*(depth_in/diameter)^2+0.319684423*(depth_in/diameter))",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "area_out": {
+      "type": "expression",
+      "description": "Wetted area at the outlet face",
+      "expression": "diameter^2*(-0.910331972*(depth_out/diameter)^3+1.376045712*(depth_out/diameter)^2+0.319684423*(depth_out/diameter))",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "perimeter_in": {
+      "type": "expression",
+      "description": "Wetted perimeter at the inlet face",
+      "expression": "diameter*(5.486583*(depth_in/diameter)^3-8.60202*(depth_in/diameter)^2+6.1081605*(depth_in/diameter))",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "perimeter_out": {
+      "type": "expression",
+      "description": "Wetted perimeter at the outlet face",
+      "expression": "diameter*(5.486583*(depth_out/diameter)^3-8.60202*(depth_out/diameter)^2+6.1081605*(depth_out/diameter))",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow_area": {
+      "type": "expression",
+      "description": "Effective flow area of one barrel",
+      "expression": "w_up*area_in+(1-w_up)*area_out",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "hydraulic_radius": {
+      "type": "expression",
+      "description": "Effective hydraulic radius",
+      "expression": "_max(w_up*area_in/_max(perimeter_in;0.001)+(1-w_up)*area_out/_max(perimeter_out;0.001);0.001)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "control_head": {
+      "type": "expression",
+      "description": "Headwater depth above the controlling invert",
+      "expression": "w_up*_pos(head.s-inlet_invert)+(1-w_up)*_pos(head.e-outlet_invert)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "barrel_slope": {
+      "type": "expression",
+      "description": "Barrel slope",
+      "expression": "(inlet_invert-outlet_invert)/length",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hw_ratio": {
+      "type": "expression",
+      "description": "Headwater depth to barrel rise ratio (HW/D)",
+      "expression": "control_head/diameter",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hds5_target": {
+      "type": "expression",
+      "description": "HW/D corrected for barrel slope",
+      "expression": "_pos(hw_ratio+slope_correction_coeff*barrel_slope)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_1": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 1",
+      "expression": "_min(_pos(hds5_target);1.6)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_1": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 1",
+      "expression": "Ku/0.7853981634*hc_arg_1^2*(1.9179351-0.4294827*hc_arg_1-0.0636513*hc_arg_1^2+0.0260040*hc_arg_1^3-0.0431370*hc_arg_1^4+0.0178421*hc_arg_1^5)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_1": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 1",
+      "expression": "qstar_crit_1",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_2": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 2",
+      "expression": "_min(_pos(_pos(hds5_target-HDS5_K*qstar_1^HDS5_M));1.6)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_2": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 2",
+      "expression": "Ku/0.7853981634*hc_arg_2^2*(1.9179351-0.4294827*hc_arg_2-0.0636513*hc_arg_2^2+0.0260040*hc_arg_2^3-0.0431370*hc_arg_2^4+0.0178421*hc_arg_2^5)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_2": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 2",
+      "expression": "_min(0.5*(qstar_1+qstar_crit_2);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_3": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 3",
+      "expression": "_min(_pos(_pos(hds5_target-HDS5_K*qstar_2^HDS5_M));1.6)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_3": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 3",
+      "expression": "Ku/0.7853981634*hc_arg_3^2*(1.9179351-0.4294827*hc_arg_3-0.0636513*hc_arg_3^2+0.0260040*hc_arg_3^3-0.0431370*hc_arg_3^4+0.0178421*hc_arg_3^5)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_3": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 3",
+      "expression": "_min(0.5*(qstar_2+qstar_crit_3);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_4": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 4",
+      "expression": "_min(_pos(_pos(hds5_target-HDS5_K*qstar_3^HDS5_M));1.6)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_4": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 4",
+      "expression": "Ku/0.7853981634*hc_arg_4^2*(1.9179351-0.4294827*hc_arg_4-0.0636513*hc_arg_4^2+0.0260040*hc_arg_4^3-0.0431370*hc_arg_4^4+0.0178421*hc_arg_4^5)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_4": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 4",
+      "expression": "_min(0.5*(qstar_3+qstar_crit_4);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_unsubmerged_form2": {
+      "type": "expression",
+      "description": "Unsubmerged discharge parameter, HDS-5 Form 2",
+      "expression": "(_pos(hw_ratio)/HDS5_K)^(1/HDS5_M)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_unsubmerged": {
+      "type": "expression",
+      "description": "Unsubmerged inlet-control discharge parameter",
+      "expression": "HDS5_form1_switch*qstar_4+(1-HDS5_form1_switch)*qstar_unsubmerged_form2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "qstar_submerged": {
+      "type": "expression",
+      "description": "Submerged inlet-control discharge parameter",
+      "expression": "_sqr((hw_ratio-HDS5_Y+slope_correction_coeff*barrel_slope)/HDS5_c)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "submergence_weight": {
+      "type": "expression",
+      "description": "HDS-5 transition weight between the unsubmerged and submerged forms",
+      "expression": "_min(_max((qstar_submerged-3.5)/0.5;0);1)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "qstar": {
+      "type": "expression",
+      "description": "Inlet-control discharge parameter",
+      "expression": "(1-submergence_weight)*qstar_unsubmerged+submergence_weight*qstar_submerged",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "inlet_control_flow": {
+      "type": "expression",
+      "description": "Inlet-control capacity of one barrel (HDS-5)",
+      "expression": "qstar*barrel_area*diameter^0.5/Ku*86400",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "outlet_control_flow": {
+      "type": "expression",
+      "description": "Outlet-control capacity of one barrel",
+      "expression": "86400*flow_area*_sqt(19.62*driving_head/(entrance_loss_coeff+exit_loss_coeff+19.62*ManningCoeff^2*length/hydraulic_radius^1.33333))",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "barrel_flow": {
+      "type": "expression",
+      "description": "Flow through one barrel",
+      "expression": "_min(inlet_control_flow;_abs(outlet_control_flow))*outlet_control_flow/(_abs(outlet_control_flow)+0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "culvert_flow": {
+      "type": "expression",
+      "description": "Total flow through the culvert barrels",
+      "expression": "Number_of_barrels*barrel_flow",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "overtopping_flow": {
+      "type": "expression",
+      "description": "Flow over the roadway",
+      "expression": "86400*road_submergence_factor*road_weir_coeff*road_width*(_pos(head.s-road_crest_elevation)^1.5-_pos(head.e-road_crest_elevation)^1.5)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "culvert_flow+overtopping_flow",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "overtopping_fraction": {
+      "type": "expression",
+      "description": "Fraction of the total flow passing over the roadway",
+      "expression": "overtopping_flow/(_abs(flow)+0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Total flow area",
+      "expression": "Number_of_barrels*flow_area",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Barrel velocity",
+      "expression": "flow/_max(area;0.0001)/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "80,80,160",
+      "ask_user": "false"
+    }
+  },
+  "Box Culvert": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Rectangular (box) culvert with inlet/outlet control and optional road overtopping",
+    "icon": {
+      "filename": "culvert_box.png"
+    },
+    "Number_of_barrels": {
+      "type": "value",
+      "description": "Number of barrels",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "Number_of_barrels>0",
+      "warningmessage": "The number of barrels must be greater than zero",
+      "helptext": "Number of identical box cells installed side by side. The barrel capacity is multiplied by this number."
+    },
+    "barrel_width": {
+      "type": "value",
+      "description": "Barrel width (span)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "criteria": "barrel_width>0",
+      "warningmessage": "Barrel width must be greater than zero",
+      "helptext": "Clear internal span of a single box cell."
+    },
+    "barrel_height": {
+      "type": "value",
+      "description": "Barrel height (rise)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "criteria": "barrel_height>0",
+      "warningmessage": "Barrel height must be greater than zero",
+      "helptext": "Clear internal rise of a single box cell, measured from the invert to the soffit."
+    },
+    "length": {
+      "type": "value",
+      "description": "Barrel length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Barrel length must be greater than zero",
+      "helptext": "Length of the culvert barrel measured along its axis. Also used as the transport length for constituent dispersion."
+    },
+    "inlet_invert": {
+      "type": "value",
+      "description": "Inlet invert elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Elevation of the barrel invert at the upstream (inlet) face, on the same vertical datum as the connected blocks."
+    },
+    "outlet_invert": {
+      "type": "value",
+      "description": "Outlet invert elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Elevation of the barrel invert at the downstream (outlet) face, on the same vertical datum as the connected blocks."
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's roughness coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.013",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness coefficient must be greater than zero",
+      "helptext": "Barrel roughness used in the outlet-control friction loss. Typical value for a cast-in-place concrete box is 0.012-0.015."
+    },
+    "entrance_loss_coeff": {
+      "type": "value",
+      "description": "Entrance loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.5",
+      "criteria": "entrance_loss_coeff>-0.0000001",
+      "warningmessage": "The entrance loss coefficient must be non-negative",
+      "helptext": "Head loss coefficient at the culvert entrance (HDS-5 ke). Typical values: 0.2 wingwalls with a bevelled edge, 0.5 square-edged headwall, 0.7 parallel wingwalls."
+    },
+    "HDS5_K": {
+      "type": "value",
+      "description": "HDS-5 inlet control K",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.026",
+      "criteria": "HDS5_K>0",
+      "warningmessage": "The HDS-5 coefficient K must be greater than zero",
+      "helptext": "Coefficient K from HDS-5 Table A.1 (Constants for Inlet Control Equations), for the specific barrel shape, material and inlet edge configuration. The default is Chart 8, scale 1: rectangular concrete box with 30 to 75 degree wingwall flares, equation Form (1). Charts 9 through 13 cover bevelled, chamfered, skewed and offset box inlets and are Form (2); set HDS5_form1_switch to 0 for those."
+    },
+    "HDS5_M": {
+      "type": "value",
+      "description": "HDS-5 inlet control M",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.0",
+      "criteria": "HDS5_M>0",
+      "warningmessage": "The HDS-5 exponent M must be greater than zero",
+      "helptext": "Exponent M from HDS-5 Table A.1, paired with K for the same inlet configuration."
+    },
+    "HDS5_c": {
+      "type": "value",
+      "description": "HDS-5 inlet control c",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.0347",
+      "criteria": "HDS5_c>0",
+      "warningmessage": "The HDS-5 coefficient c must be greater than zero",
+      "helptext": "Coefficient c from HDS-5 Table A.1, used by the submerged inlet-control equation."
+    },
+    "HDS5_Y": {
+      "type": "value",
+      "description": "HDS-5 inlet control Y",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.81",
+      "helptext": "Coefficient Y from HDS-5 Table A.1, paired with c for the same inlet configuration."
+    },
+    "HDS5_form1_switch": {
+      "type": "value",
+      "description": "Unsubmerged equation form (1 = Form 1, 0 = Form 2)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "HDS5_form1_switch>-0.0000001",
+      "warningmessage": "The form switch must be 0 or 1",
+      "helptext": "Set to 1 when HDS-5 Table A.1 lists the inlet as equation Form (1), which adds the specific head at critical depth to the headwater. Set to 0 for Form (2). Most circular and box entries in Table A.1 are Form (1)."
+    },
+    "slope_correction_coeff": {
+      "type": "value",
+      "description": "Barrel slope correction coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.5",
+      "helptext": "Coefficient of the barrel slope term in the HDS-5 inlet-control equations. HDS-5 applies -0.5S for all inlets except mitered inlets, which use +0.7S; enter 0.5 for the normal case and -0.7 for a mitered inlet."
+    },
+    "Ku": {
+      "type": "expression",
+      "description": "HDS-5 unit conversion factor (SI)",
+      "expression": "1.811",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "exit_loss_coeff": {
+      "type": "value",
+      "description": "Exit loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "exit_loss_coeff>-0.0000001",
+      "warningmessage": "The exit loss coefficient must be non-negative",
+      "helptext": "Head loss coefficient at the culvert exit. A value of 1.0 represents full loss of the velocity head into a large receiving water body."
+    },
+    "road_crest_elevation": {
+      "type": "value",
+      "description": "Road crest elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "default": "0",
+      "helptext": "Elevation of the low point of the roadway over the culvert. Only used when the overtopping width is greater than zero."
+    },
+    "road_width": {
+      "type": "value",
+      "description": "Overtopping width",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "default": "0",
+      "criteria": "road_width>-0.0000001",
+      "warningmessage": "The overtopping width must be non-negative",
+      "helptext": "Crest length of the roadway acting as a weir when the headwater rises above the road. Leave at zero to disable overtopping."
+    },
+    "road_weir_coeff": {
+      "type": "value",
+      "description": "Roadway weir coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.7",
+      "helptext": "Free-flow roadway discharge coefficient Cr in HDS-5 Equation 3.9, Qo = Cd*L*HWr^1.5. HDS-5 gives Cr graphically in Figure 3.11A (deep overtopping) and 3.11B (shallow), and notes Cd(SI) = 0.552*Cd(English); the default of 1.7 corresponds to the deep-overtopping value of about 3.1 in US units."
+    },
+    "road_submergence_factor": {
+      "type": "value",
+      "description": "Roadway submergence correction factor kt",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "road_submergence_factor>0",
+      "warningmessage": "The roadway submergence correction factor must be greater than zero",
+      "helptext": "Correction factor kt for downstream submergence of the roadway crest, read from HDS-5 Figure 3.11C. It is 1.0 for a free overfall and falls towards zero as the tailwater encroaches on the crest. HDS-5 gives it as a graph, so it is entered rather than computed; check road_submergence_ratio in the results to see whether it matters for your event."
+    },
+    "road_submergence_ratio": {
+      "type": "expression",
+      "description": "Roadway tailwater submergence ratio",
+      "expression": "_pos(head.e-road_crest_elevation)/(_pos(head.s-road_crest_elevation)+0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "barrel_area": {
+      "type": "expression",
+      "description": "Full barrel cross-sectional area",
+      "expression": "barrel_width*barrel_height",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "hw_eff": {
+      "type": "expression",
+      "description": "Effective headwater elevation",
+      "expression": "_max(head.s;inlet_invert)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "tw_eff": {
+      "type": "expression",
+      "description": "Effective tailwater elevation",
+      "expression": "_max(head.e;outlet_invert)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "driving_head": {
+      "type": "expression",
+      "description": "Driving head",
+      "expression": "hw_eff-tw_eff",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "w_up": {
+      "type": "expression",
+      "description": "Upstream weighting factor",
+      "expression": "0.5+0.5*driving_head/(_abs(driving_head)+0.001)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "depth_in": {
+      "type": "expression",
+      "description": "Flow depth at the inlet face",
+      "expression": "_min(_pos(head.s-inlet_invert);barrel_height)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;in"
+    },
+    "depth_out": {
+      "type": "expression",
+      "description": "Flow depth at the outlet face",
+      "expression": "_min(_pos(head.e-outlet_invert);barrel_height)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;in"
+    },
+    "area_in": {
+      "type": "expression",
+      "description": "Wetted area at the inlet face",
+      "expression": "barrel_width*depth_in",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "area_out": {
+      "type": "expression",
+      "description": "Wetted area at the outlet face",
+      "expression": "barrel_width*depth_out",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "perimeter_in": {
+      "type": "expression",
+      "description": "Wetted perimeter at the inlet face",
+      "expression": "barrel_width*(1+(depth_in/barrel_height)^4)+2*depth_in",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "perimeter_out": {
+      "type": "expression",
+      "description": "Wetted perimeter at the outlet face",
+      "expression": "barrel_width*(1+(depth_out/barrel_height)^4)+2*depth_out",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow_area": {
+      "type": "expression",
+      "description": "Effective flow area of one barrel",
+      "expression": "w_up*area_in+(1-w_up)*area_out",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "hydraulic_radius": {
+      "type": "expression",
+      "description": "Effective hydraulic radius",
+      "expression": "_max(w_up*area_in/_max(perimeter_in;0.001)+(1-w_up)*area_out/_max(perimeter_out;0.001);0.001)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "control_head": {
+      "type": "expression",
+      "description": "Headwater depth above the controlling invert",
+      "expression": "w_up*_pos(head.s-inlet_invert)+(1-w_up)*_pos(head.e-outlet_invert)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "barrel_slope": {
+      "type": "expression",
+      "description": "Barrel slope",
+      "expression": "(inlet_invert-outlet_invert)/length",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hw_ratio": {
+      "type": "expression",
+      "description": "Headwater depth to barrel rise ratio (HW/D)",
+      "expression": "control_head/barrel_height",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hds5_target": {
+      "type": "expression",
+      "description": "HW/D corrected for barrel slope",
+      "expression": "_pos(hw_ratio+slope_correction_coeff*barrel_slope)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_1": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 1",
+      "expression": "_pos(hds5_target)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_1": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 1",
+      "expression": "Ku*3.132092*_min(0.6666667*hc_arg_1;1)^1.5",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_1": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 1",
+      "expression": "qstar_crit_1",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_2": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 2",
+      "expression": "_pos(_pos(hds5_target-HDS5_K*qstar_1^HDS5_M))",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_2": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 2",
+      "expression": "Ku*3.132092*_min(0.6666667*hc_arg_2;1)^1.5",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_2": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 2",
+      "expression": "_min(0.5*(qstar_1+qstar_crit_2);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_3": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 3",
+      "expression": "_pos(_pos(hds5_target-HDS5_K*qstar_2^HDS5_M))",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_3": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 3",
+      "expression": "Ku*3.132092*_min(0.6666667*hc_arg_3;1)^1.5",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_3": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 3",
+      "expression": "_min(0.5*(qstar_2+qstar_crit_3);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_4": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 4",
+      "expression": "_pos(_pos(hds5_target-HDS5_K*qstar_3^HDS5_M))",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_4": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 4",
+      "expression": "Ku*3.132092*_min(0.6666667*hc_arg_4;1)^1.5",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_4": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 4",
+      "expression": "_min(0.5*(qstar_3+qstar_crit_4);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_unsubmerged_form2": {
+      "type": "expression",
+      "description": "Unsubmerged discharge parameter, HDS-5 Form 2",
+      "expression": "(_pos(hw_ratio)/HDS5_K)^(1/HDS5_M)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_unsubmerged": {
+      "type": "expression",
+      "description": "Unsubmerged inlet-control discharge parameter",
+      "expression": "HDS5_form1_switch*qstar_4+(1-HDS5_form1_switch)*qstar_unsubmerged_form2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "qstar_submerged": {
+      "type": "expression",
+      "description": "Submerged inlet-control discharge parameter",
+      "expression": "_sqr((hw_ratio-HDS5_Y+slope_correction_coeff*barrel_slope)/HDS5_c)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "submergence_weight": {
+      "type": "expression",
+      "description": "HDS-5 transition weight between the unsubmerged and submerged forms",
+      "expression": "_min(_max((qstar_submerged-3.5)/0.5;0);1)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "qstar": {
+      "type": "expression",
+      "description": "Inlet-control discharge parameter",
+      "expression": "(1-submergence_weight)*qstar_unsubmerged+submergence_weight*qstar_submerged",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "inlet_control_flow": {
+      "type": "expression",
+      "description": "Inlet-control capacity of one barrel (HDS-5)",
+      "expression": "qstar*barrel_area*barrel_height^0.5/Ku*86400",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "outlet_control_flow": {
+      "type": "expression",
+      "description": "Outlet-control capacity of one barrel",
+      "expression": "86400*flow_area*_sqt(19.62*driving_head/(entrance_loss_coeff+exit_loss_coeff+19.62*ManningCoeff^2*length/hydraulic_radius^1.33333))",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "barrel_flow": {
+      "type": "expression",
+      "description": "Flow through one barrel",
+      "expression": "_min(inlet_control_flow;_abs(outlet_control_flow))*outlet_control_flow/(_abs(outlet_control_flow)+0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "culvert_flow": {
+      "type": "expression",
+      "description": "Total flow through the culvert barrels",
+      "expression": "Number_of_barrels*barrel_flow",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "overtopping_flow": {
+      "type": "expression",
+      "description": "Flow over the roadway",
+      "expression": "86400*road_submergence_factor*road_weir_coeff*road_width*(_pos(head.s-road_crest_elevation)^1.5-_pos(head.e-road_crest_elevation)^1.5)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "culvert_flow+overtopping_flow",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "overtopping_fraction": {
+      "type": "expression",
+      "description": "Fraction of the total flow passing over the roadway",
+      "expression": "overtopping_flow/(_abs(flow)+0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Total flow area",
+      "expression": "Number_of_barrels*flow_area",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Barrel velocity",
+      "expression": "flow/_max(area;0.0001)/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "80,80,160",
+      "ask_user": "false"
+    }
+  },
+  "Culvert Barrel (Circular)": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Storage-routed circular culvert barrel placed between two open channel segments",
+    "icon": {
+      "filename": "culvert_circular.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "initial_value_expression": "Number_of_barrels*length*diameter^2*(-0.910331972*(depth/diameter)^3+1.376045712*(depth/diameter)^2+0.319684423*(depth/diameter))",
+      "ask_user": "false",
+      "estimate": "true",
+      "unit": "m^3;ft^3",
+      "inflow": "inflow"
+    },
+    "Number_of_barrels": {
+      "type": "value",
+      "description": "Number of barrels",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "Number_of_barrels>0",
+      "warningmessage": "The number of barrels must be greater than zero",
+      "helptext": "Number of identical barrels installed side by side. Storage, flow area and capacity all scale with this number."
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Barrel diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "criteria": "diameter>0",
+      "warningmessage": "Diameter must be greater than zero",
+      "helptext": "Internal diameter of a single barrel."
+    },
+    "length": {
+      "type": "value",
+      "description": "Barrel length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Barrel length must be greater than zero",
+      "helptext": "Length of the barrel along its axis. Sets the barrel storage volume and the friction loss."
+    },
+    "inlet_invert": {
+      "type": "value",
+      "description": "Inlet invert elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Elevation of the barrel invert at the upstream face, on the same vertical datum as the connected channel segments."
+    },
+    "outlet_invert": {
+      "type": "value",
+      "description": "Outlet invert elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Elevation of the barrel invert at the downstream face, on the same vertical datum as the connected channel segments."
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's roughness coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.013",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness coefficient must be greater than zero",
+      "helptext": "Barrel roughness. Typical values: 0.012-0.013 concrete, 0.024 corrugated metal."
+    },
+    "inflow": {
+      "type": "timeseries",
+      "description": "Direct inflow time series",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "unit": "m^3/day;m^3/s;ft^3/s",
+      "helptext": "Optional flow added directly to the barrel, for example drainage entering through the barrel walls or a lateral connection. Leave empty when the barrel is fed only by its inlet and outlet links."
+    },
+    "inlet_crest_width_factor": {
+      "type": "value",
+      "description": "Effective inlet crest width factor",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.65",
+      "criteria": "inlet_crest_width_factor>0",
+      "warningmessage": "The effective inlet crest width factor must be greater than zero",
+      "helptext": "Fraction of the diameter used as the effective crest width in the unsubmerged inlet-control rating of the attached inlet link. The default of 0.65 reproduces the HDS-5 unsubmerged inlet-control curve for a square-edged circular pipe to within about 10 percent over 0<HW/D<1."
+    },
+    "slot_width_ratio": {
+      "type": "value",
+      "description": "Preissmann slot width ratio",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.02",
+      "criteria": "slot_width_ratio>0",
+      "warningmessage": "The Preissmann slot width ratio must be greater than zero",
+      "helptext": "Width of the virtual slot above the barrel crown, as a fraction of the diameter. The slot converts surcharged (pressurized) flow into an equivalent free-surface stage so the barrel can build head above its crown. Smaller values are more physically accurate but stiffer to solve."
+    },
+    "bottom_elevation": {
+      "type": "expression",
+      "description": "Reference invert elevation",
+      "expression": "(inlet_invert+outlet_invert)/2",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "barrel_rise": {
+      "type": "expression",
+      "description": "Barrel rise",
+      "expression": "diameter",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "barrel_area": {
+      "type": "expression",
+      "description": "Full cross-sectional area of one barrel",
+      "expression": "0.7853981634*diameter^2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "inlet_crest_width": {
+      "type": "expression",
+      "description": "Effective inlet crest width",
+      "expression": "inlet_crest_width_factor*diameter",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "full_storage": {
+      "type": "expression",
+      "description": "Storage at which the barrel just runs full",
+      "expression": "Number_of_barrels*length*barrel_area",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3;ft^3"
+    },
+    "fill_ratio": {
+      "type": "expression",
+      "description": "Fraction of the barrel section that is wetted",
+      "expression": "_min(_pos(Storage)/_max(full_storage;0.000001);1)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "depth": {
+      "type": "expression",
+      "description": "Initial Water Depth; Water Depth",
+      "expression": "diameter*(1.9470734*fill_ratio-4.948471*fill_ratio^2+10.344915*fill_ratio^3-10.5243768*fill_ratio^4+4.1808594*fill_ratio^5)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "includeinoutput": "true",
+      "criteria": "depth>-0.0000001",
+      "warningmessage": "Depth must be non-negative",
+      "helptext": "Water depth in the barrel measured above the reference invert. Supplied as an initial condition; thereafter it is recovered from the barrel storage by inverting the circular area-depth relation (accurate to about 0.5 percent of the diameter)."
+    },
+    "surcharge_head": {
+      "type": "expression",
+      "description": "Head above the barrel crown when surcharged",
+      "expression": "_pos(Storage-full_storage)/_max(Number_of_barrels*length*slot_width_ratio*diameter;0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "head": {
+      "type": "expression",
+      "description": "Hydraulic Head",
+      "expression": "bottom_elevation+depth+surcharge_head",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Total wetted cross-sectional area",
+      "expression": "Number_of_barrels*barrel_area*fill_ratio",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Total wetted perimeter",
+      "expression": "Number_of_barrels*diameter*(5.486583*(depth/diameter)^3-8.60202*(depth/diameter)^2+6.1081605*(depth/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hydraulic_radius": {
+      "type": "expression",
+      "description": "Hydraulic radius",
+      "expression": "_max(area/_max(perimeter;0.001);0.001)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "friction_loss_coeff": {
+      "type": "expression",
+      "description": "Barrel friction loss coefficient",
+      "expression": "19.62*ManningCoeff^2*length/hydraulic_radius^1.33333",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    }
+  },
+  "Culvert Barrel (Box)": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Storage-routed rectangular (box) culvert barrel placed between two open channel segments",
+    "icon": {
+      "filename": "culvert_box.png"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "initial_value_expression": "Number_of_barrels*length*barrel_width*depth",
+      "ask_user": "false",
+      "estimate": "true",
+      "unit": "m^3;ft^3",
+      "inflow": "inflow"
+    },
+    "Number_of_barrels": {
+      "type": "value",
+      "description": "Number of barrels",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "Number_of_barrels>0",
+      "warningmessage": "The number of barrels must be greater than zero",
+      "helptext": "Number of identical box cells installed side by side. Storage, flow area and capacity all scale with this number."
+    },
+    "barrel_width": {
+      "type": "value",
+      "description": "Barrel width (span)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "criteria": "barrel_width>0",
+      "warningmessage": "Barrel width must be greater than zero",
+      "helptext": "Clear internal span of a single box cell."
+    },
+    "barrel_height": {
+      "type": "value",
+      "description": "Barrel height (rise)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "criteria": "barrel_height>0",
+      "warningmessage": "Barrel height must be greater than zero",
+      "helptext": "Clear internal rise of a single box cell, measured from the invert to the soffit."
+    },
+    "length": {
+      "type": "value",
+      "description": "Barrel length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Barrel length must be greater than zero",
+      "helptext": "Length of the barrel along its axis. Sets the barrel storage volume and the friction loss."
+    },
+    "inlet_invert": {
+      "type": "value",
+      "description": "Inlet invert elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Elevation of the barrel invert at the upstream face, on the same vertical datum as the connected channel segments."
+    },
+    "outlet_invert": {
+      "type": "value",
+      "description": "Outlet invert elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Elevation of the barrel invert at the downstream face, on the same vertical datum as the connected channel segments."
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's roughness coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.013",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness coefficient must be greater than zero",
+      "helptext": "Barrel roughness. Typical value for a cast-in-place concrete box is 0.012-0.015."
+    },
+    "inflow": {
+      "type": "timeseries",
+      "description": "Direct inflow time series",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "unit": "m^3/day;m^3/s;ft^3/s",
+      "helptext": "Optional flow added directly to the barrel, for example drainage entering through the barrel walls or a lateral connection. Leave empty when the barrel is fed only by its inlet and outlet links."
+    },
+    "slot_width_ratio": {
+      "type": "value",
+      "description": "Preissmann slot width ratio",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.02",
+      "criteria": "slot_width_ratio>0",
+      "warningmessage": "The Preissmann slot width ratio must be greater than zero",
+      "helptext": "Width of the virtual slot above the barrel soffit, as a fraction of the span. The slot converts surcharged (pressurized) flow into an equivalent free-surface stage so the barrel can build head above its soffit. Smaller values are more physically accurate but stiffer to solve."
+    },
+    "bottom_elevation": {
+      "type": "expression",
+      "description": "Reference invert elevation",
+      "expression": "(inlet_invert+outlet_invert)/2",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "barrel_rise": {
+      "type": "expression",
+      "description": "Barrel rise",
+      "expression": "barrel_height",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "barrel_area": {
+      "type": "expression",
+      "description": "Full cross-sectional area of one barrel",
+      "expression": "barrel_width*barrel_height",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "inlet_crest_width": {
+      "type": "expression",
+      "description": "Effective inlet crest width",
+      "expression": "barrel_width",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "full_storage": {
+      "type": "expression",
+      "description": "Storage at which the barrel just runs full",
+      "expression": "Number_of_barrels*length*barrel_area",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3;ft^3"
+    },
+    "fill_ratio": {
+      "type": "expression",
+      "description": "Fraction of the barrel section that is wetted",
+      "expression": "_min(_pos(Storage)/_max(full_storage;0.000001);1)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "depth": {
+      "type": "expression",
+      "description": "Initial Water Depth; Water Depth",
+      "expression": "barrel_height*fill_ratio",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "includeinoutput": "true",
+      "criteria": "depth>-0.0000001",
+      "warningmessage": "Depth must be non-negative",
+      "helptext": "Water depth in the barrel measured above the reference invert. Supplied as an initial condition; thereafter it is recovered exactly from the barrel storage."
+    },
+    "surcharge_head": {
+      "type": "expression",
+      "description": "Head above the barrel soffit when surcharged",
+      "expression": "_pos(Storage-full_storage)/_max(Number_of_barrels*length*slot_width_ratio*barrel_width;0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "head": {
+      "type": "expression",
+      "description": "Hydraulic Head",
+      "expression": "bottom_elevation+depth+surcharge_head",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Total wetted cross-sectional area",
+      "expression": "Number_of_barrels*barrel_width*depth",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Total wetted perimeter",
+      "expression": "Number_of_barrels*(barrel_width*(1+(depth/barrel_height)^4)+2*depth)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hydraulic_radius": {
+      "type": "expression",
+      "description": "Hydraulic radius",
+      "expression": "_max(area/_max(perimeter;0.001);0.001)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "friction_loss_coeff": {
+      "type": "expression",
+      "description": "Barrel friction loss coefficient",
+      "expression": "19.62*ManningCoeff^2*length/hydraulic_radius^1.33333",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    }
+  },
+  "Roadway_Overtopping": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Weir flow over the roadway embankment, connecting the upstream and downstream channel segments directly",
+    "icon": {
+      "filename": "culvert_overtopping.png"
+    },
+    "road_crest_elevation": {
+      "type": "value",
+      "description": "Road crest elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Elevation of the low point of the roadway over the culvert. No flow occurs until the water surface rises above this elevation."
+    },
+    "road_width": {
+      "type": "value",
+      "description": "Overtopping width",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "criteria": "road_width>-0.0000001",
+      "warningmessage": "The overtopping width must be non-negative",
+      "helptext": "Crest length of the roadway acting as a weir, measured perpendicular to the flow direction."
+    },
+    "road_weir_coeff": {
+      "type": "value",
+      "description": "Roadway weir coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.7",
+      "criteria": "road_weir_coeff>0",
+      "warningmessage": "The roadway weir coefficient must be greater than zero",
+      "helptext": "Free-flow roadway discharge coefficient Cr in HDS-5 Equation 3.9, Qo = Cd*L*HWr^1.5. HDS-5 gives Cr graphically in Figure 3.11A (deep overtopping) and 3.11B (shallow), and notes Cd(SI) = 0.552*Cd(English); the default of 1.7 corresponds to the deep-overtopping value of about 3.1 in US units."
+    },
+    "road_submergence_factor": {
+      "type": "value",
+      "description": "Roadway submergence correction factor kt",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "road_submergence_factor>0",
+      "warningmessage": "The roadway submergence correction factor must be greater than zero",
+      "helptext": "Correction factor kt for downstream submergence of the roadway crest, read from HDS-5 Figure 3.11C. It is 1.0 for a free overfall and falls towards zero as the tailwater encroaches on the crest. HDS-5 gives it as a graph, so it is entered rather than computed; check road_submergence_ratio in the results to see whether it matters for your event."
+    },
+    "road_submergence_ratio": {
+      "type": "expression",
+      "description": "Roadway tailwater submergence ratio",
+      "expression": "_pos(head.e-road_crest_elevation)/(_pos(head.s-road_crest_elevation)+0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "head_upstream": {
+      "type": "expression",
+      "description": "Upstream head over the road crest",
+      "expression": "_pos(head.s-road_crest_elevation)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "head_downstream": {
+      "type": "expression",
+      "description": "Downstream head over the road crest",
+      "expression": "_pos(head.e-road_crest_elevation)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*road_submergence_factor*road_weir_coeff*road_width*(head_upstream^1.5-head_downstream^1.5)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Flow area over the road",
+      "expression": "road_width*_max(head_upstream;head_downstream)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "150,110,60",
+      "ask_user": "false"
+    }
+  },
+  "Channel_to_culvert (Circular)": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Inlet transition from an open channel segment to a circular culvert barrel (HDS-5 inlet control plus entrance loss)",
+    "icon": {
+      "filename": "culvert_inlet.png"
+    },
+    "entrance_loss_coeff": {
+      "type": "value",
+      "description": "Entrance loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.5",
+      "criteria": "entrance_loss_coeff>0",
+      "warningmessage": "The entrance loss coefficient must be greater than zero",
+      "helptext": "Head loss coefficient at the culvert entrance (HDS-5 ke). Typical values: 0.2 grooved end or bevelled edge with headwall, 0.5 square edge with headwall, 0.9 projecting corrugated pipe."
+    },
+    "HDS5_K": {
+      "type": "value",
+      "description": "HDS-5 inlet control K",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.0098",
+      "criteria": "HDS5_K>0",
+      "warningmessage": "The HDS-5 coefficient K must be greater than zero",
+      "helptext": "Coefficient K from HDS-5 Table A.1 (Constants for Inlet Control Design Equations), for the specific barrel shape, material and inlet edge configuration. The default corresponds to circular concrete pipe, square edge with headwall (Chart 1, scale 1). VERIFY this value against Table A.1 for your inlet before using the result in a design submittal."
+    },
+    "HDS5_M": {
+      "type": "value",
+      "description": "HDS-5 inlet control M",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "2.0",
+      "criteria": "HDS5_M>0",
+      "warningmessage": "The HDS-5 exponent M must be greater than zero",
+      "helptext": "Exponent M from HDS-5 Table A.1, paired with K for the same inlet configuration."
+    },
+    "HDS5_c": {
+      "type": "value",
+      "description": "HDS-5 inlet control c",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.0398",
+      "criteria": "HDS5_c>0",
+      "warningmessage": "The HDS-5 coefficient c must be greater than zero",
+      "helptext": "Coefficient c from HDS-5 Table A.1, used by the submerged inlet-control equation."
+    },
+    "HDS5_Y": {
+      "type": "value",
+      "description": "HDS-5 inlet control Y",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.67",
+      "helptext": "Coefficient Y from HDS-5 Table A.1, paired with c for the same inlet configuration."
+    },
+    "HDS5_form1_switch": {
+      "type": "value",
+      "description": "Unsubmerged equation form (1 = Form 1, 0 = Form 2)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "HDS5_form1_switch>-0.0000001",
+      "warningmessage": "The form switch must be 0 or 1",
+      "helptext": "Set to 1 when HDS-5 Table A.1 lists the inlet as equation Form (1), which adds the specific head at critical depth to the headwater. Set to 0 for Form (2). Most circular and box entries in Table A.1 are Form (1)."
+    },
+    "slope_correction_coeff": {
+      "type": "value",
+      "description": "Barrel slope correction coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.5",
+      "helptext": "Coefficient of the barrel slope term in the HDS-5 inlet-control equations. HDS-5 applies -0.5S for all inlets except mitered inlets, which use +0.7S; enter 0.5 for the normal case and -0.7 for a mitered inlet."
+    },
+    "Ku": {
+      "type": "expression",
+      "description": "HDS-5 unit conversion factor Ku (1.811 SI, 1.0 English)",
+      "expression": "1.811",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "driving_head": {
+      "type": "expression",
+      "description": "Driving head across the entrance",
+      "expression": "_max(head.s;inlet_invert.e)-_max(head.e;inlet_invert.e)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "w_up": {
+      "type": "expression",
+      "description": "Upstream weighting factor",
+      "expression": "0.5+0.5*driving_head/(_abs(driving_head)+0.001)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "control_head": {
+      "type": "expression",
+      "description": "Headwater depth above the inlet invert",
+      "expression": "w_up*_pos(head.s-inlet_invert.e)+(1-w_up)*_pos(head.e-inlet_invert.e)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "barrel_slope": {
+      "type": "expression",
+      "description": "Barrel slope",
+      "expression": "(inlet_invert.e-outlet_invert.e)/length.e",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hw_ratio": {
+      "type": "expression",
+      "description": "Headwater depth to barrel rise ratio (HW/D)",
+      "expression": "control_head/barrel_rise.e",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hds5_target": {
+      "type": "expression",
+      "description": "HW/D corrected for barrel slope",
+      "expression": "_pos(hw_ratio+slope_correction_coeff*barrel_slope)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_1": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 1",
+      "expression": "_min(_pos(hds5_target);1.6)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_1": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 1",
+      "expression": "Ku/0.7853981634*hc_arg_1^2*(1.9179351-0.4294827*hc_arg_1-0.0636513*hc_arg_1^2+0.0260040*hc_arg_1^3-0.0431370*hc_arg_1^4+0.0178421*hc_arg_1^5)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_1": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 1",
+      "expression": "qstar_crit_1",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_2": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 2",
+      "expression": "_min(_pos(_pos(hds5_target-HDS5_K*qstar_1^HDS5_M));1.6)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_2": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 2",
+      "expression": "Ku/0.7853981634*hc_arg_2^2*(1.9179351-0.4294827*hc_arg_2-0.0636513*hc_arg_2^2+0.0260040*hc_arg_2^3-0.0431370*hc_arg_2^4+0.0178421*hc_arg_2^5)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_2": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 2",
+      "expression": "_min(0.5*(qstar_1+qstar_crit_2);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_3": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 3",
+      "expression": "_min(_pos(_pos(hds5_target-HDS5_K*qstar_2^HDS5_M));1.6)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_3": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 3",
+      "expression": "Ku/0.7853981634*hc_arg_3^2*(1.9179351-0.4294827*hc_arg_3-0.0636513*hc_arg_3^2+0.0260040*hc_arg_3^3-0.0431370*hc_arg_3^4+0.0178421*hc_arg_3^5)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_3": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 3",
+      "expression": "_min(0.5*(qstar_2+qstar_crit_3);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_4": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 4",
+      "expression": "_min(_pos(_pos(hds5_target-HDS5_K*qstar_3^HDS5_M));1.6)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_4": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 4",
+      "expression": "Ku/0.7853981634*hc_arg_4^2*(1.9179351-0.4294827*hc_arg_4-0.0636513*hc_arg_4^2+0.0260040*hc_arg_4^3-0.0431370*hc_arg_4^4+0.0178421*hc_arg_4^5)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_4": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 4",
+      "expression": "_min(0.5*(qstar_3+qstar_crit_4);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_unsubmerged_form2": {
+      "type": "expression",
+      "description": "Unsubmerged discharge parameter, HDS-5 Form 2",
+      "expression": "(_pos(hw_ratio)/HDS5_K)^(1/HDS5_M)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_unsubmerged": {
+      "type": "expression",
+      "description": "Unsubmerged inlet-control discharge parameter",
+      "expression": "HDS5_form1_switch*qstar_4+(1-HDS5_form1_switch)*qstar_unsubmerged_form2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "qstar_submerged": {
+      "type": "expression",
+      "description": "Submerged inlet-control discharge parameter",
+      "expression": "_sqr((hw_ratio-HDS5_Y+slope_correction_coeff*barrel_slope)/HDS5_c)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "submergence_weight": {
+      "type": "expression",
+      "description": "HDS-5 transition weight between the unsubmerged and submerged forms",
+      "expression": "_min(_max((qstar_submerged-3.5)/0.5;0);1)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "qstar": {
+      "type": "expression",
+      "description": "Inlet-control discharge parameter",
+      "expression": "(1-submergence_weight)*qstar_unsubmerged+submergence_weight*qstar_submerged",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "inlet_control_flow": {
+      "type": "expression",
+      "description": "Inlet-control capacity (HDS-5)",
+      "expression": "86400*Number_of_barrels.e*qstar*barrel_area.e*barrel_rise.e^0.5/Ku",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "entrance_loss_flow": {
+      "type": "expression",
+      "description": "Entrance-loss limited flow",
+      "expression": "86400*Number_of_barrels.e*barrel_area.e*_sqt(19.62*driving_head/entrance_loss_coeff)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "_min(inlet_control_flow;_abs(entrance_loss_flow))*entrance_loss_flow/(_abs(entrance_loss_flow)+0.000001)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Flow area at the entrance",
+      "expression": "area.e",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Entrance velocity",
+      "expression": "flow/_max(area;0.0001)/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "80,80,160",
+      "ask_user": "false"
+    }
+  },
+  "Channel_to_culvert (Box)": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Inlet transition from an open channel segment to a box culvert barrel (HDS-5 inlet control plus entrance loss)",
+    "icon": {
+      "filename": "culvert_inlet.png"
+    },
+    "entrance_loss_coeff": {
+      "type": "value",
+      "description": "Entrance loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.5",
+      "criteria": "entrance_loss_coeff>0",
+      "warningmessage": "The entrance loss coefficient must be greater than zero",
+      "helptext": "Head loss coefficient at the culvert entrance (HDS-5 ke). Typical values: 0.2 grooved end or bevelled edge with headwall, 0.5 square edge with headwall, 0.9 projecting corrugated pipe."
+    },
+    "HDS5_K": {
+      "type": "value",
+      "description": "HDS-5 inlet control K",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.026",
+      "criteria": "HDS5_K>0",
+      "warningmessage": "The HDS-5 coefficient K must be greater than zero",
+      "helptext": "Coefficient K from HDS-5 Table A.1 (Constants for Inlet Control Equations), for the specific barrel shape, material and inlet edge configuration. The default is Chart 8, scale 1: rectangular concrete box with 30 to 75 degree wingwall flares, equation Form (1). Charts 9 through 13 cover bevelled, chamfered, skewed and offset box inlets and are Form (2); set HDS5_form1_switch to 0 for those."
+    },
+    "HDS5_M": {
+      "type": "value",
+      "description": "HDS-5 inlet control M",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.0",
+      "criteria": "HDS5_M>0",
+      "warningmessage": "The HDS-5 exponent M must be greater than zero",
+      "helptext": "Exponent M from HDS-5 Table A.1, paired with K for the same inlet configuration."
+    },
+    "HDS5_c": {
+      "type": "value",
+      "description": "HDS-5 inlet control c",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.0347",
+      "criteria": "HDS5_c>0",
+      "warningmessage": "The HDS-5 coefficient c must be greater than zero",
+      "helptext": "Coefficient c from HDS-5 Table A.1, used by the submerged inlet-control equation."
+    },
+    "HDS5_Y": {
+      "type": "value",
+      "description": "HDS-5 inlet control Y",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.81",
+      "helptext": "Coefficient Y from HDS-5 Table A.1, paired with c for the same inlet configuration."
+    },
+    "HDS5_form1_switch": {
+      "type": "value",
+      "description": "Unsubmerged equation form (1 = Form 1, 0 = Form 2)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "HDS5_form1_switch>-0.0000001",
+      "warningmessage": "The form switch must be 0 or 1",
+      "helptext": "Set to 1 when HDS-5 Table A.1 lists the inlet as equation Form (1), which adds the specific head at critical depth to the headwater. Set to 0 for Form (2). Most circular and box entries in Table A.1 are Form (1)."
+    },
+    "slope_correction_coeff": {
+      "type": "value",
+      "description": "Barrel slope correction coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.5",
+      "helptext": "Coefficient of the barrel slope term in the HDS-5 inlet-control equations. HDS-5 applies -0.5S for all inlets except mitered inlets, which use +0.7S; enter 0.5 for the normal case and -0.7 for a mitered inlet."
+    },
+    "Ku": {
+      "type": "expression",
+      "description": "HDS-5 unit conversion factor (SI)",
+      "expression": "1.811",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "driving_head": {
+      "type": "expression",
+      "description": "Driving head across the entrance",
+      "expression": "_max(head.s;inlet_invert.e)-_max(head.e;inlet_invert.e)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "w_up": {
+      "type": "expression",
+      "description": "Upstream weighting factor",
+      "expression": "0.5+0.5*driving_head/(_abs(driving_head)+0.001)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "control_head": {
+      "type": "expression",
+      "description": "Headwater depth above the inlet invert",
+      "expression": "w_up*_pos(head.s-inlet_invert.e)+(1-w_up)*_pos(head.e-inlet_invert.e)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "barrel_slope": {
+      "type": "expression",
+      "description": "Barrel slope",
+      "expression": "(inlet_invert.e-outlet_invert.e)/length.e",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hw_ratio": {
+      "type": "expression",
+      "description": "Headwater depth to barrel rise ratio (HW/D)",
+      "expression": "control_head/barrel_rise.e",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hds5_target": {
+      "type": "expression",
+      "description": "HW/D corrected for barrel slope",
+      "expression": "_pos(hw_ratio+slope_correction_coeff*barrel_slope)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_1": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 1",
+      "expression": "_pos(hds5_target)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_1": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 1",
+      "expression": "Ku*3.132092*_min(0.6666667*hc_arg_1;1)^1.5",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_1": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 1",
+      "expression": "qstar_crit_1",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_2": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 2",
+      "expression": "_pos(_pos(hds5_target-HDS5_K*qstar_1^HDS5_M))",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_2": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 2",
+      "expression": "Ku*3.132092*_min(0.6666667*hc_arg_2;1)^1.5",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_2": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 2",
+      "expression": "_min(0.5*(qstar_1+qstar_crit_2);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_3": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 3",
+      "expression": "_pos(_pos(hds5_target-HDS5_K*qstar_2^HDS5_M))",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_3": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 3",
+      "expression": "Ku*3.132092*_min(0.6666667*hc_arg_3;1)^1.5",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_3": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 3",
+      "expression": "_min(0.5*(qstar_2+qstar_crit_3);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "hc_arg_4": {
+      "type": "expression",
+      "description": "Critical-depth head argument, iteration 4",
+      "expression": "_pos(_pos(hds5_target-HDS5_K*qstar_3^HDS5_M))",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_crit_4": {
+      "type": "expression",
+      "description": "Critical discharge parameter, iteration 4",
+      "expression": "Ku*3.132092*_min(0.6666667*hc_arg_4;1)^1.5",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_4": {
+      "type": "expression",
+      "description": "Discharge parameter, iteration 4",
+      "expression": "_min(0.5*(qstar_3+qstar_crit_4);qstar_1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_unsubmerged_form2": {
+      "type": "expression",
+      "description": "Unsubmerged discharge parameter, HDS-5 Form 2",
+      "expression": "(_pos(hw_ratio)/HDS5_K)^(1/HDS5_M)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "qstar_unsubmerged": {
+      "type": "expression",
+      "description": "Unsubmerged inlet-control discharge parameter",
+      "expression": "HDS5_form1_switch*qstar_4+(1-HDS5_form1_switch)*qstar_unsubmerged_form2",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "qstar_submerged": {
+      "type": "expression",
+      "description": "Submerged inlet-control discharge parameter",
+      "expression": "_sqr((hw_ratio-HDS5_Y+slope_correction_coeff*barrel_slope)/HDS5_c)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "submergence_weight": {
+      "type": "expression",
+      "description": "HDS-5 transition weight between the unsubmerged and submerged forms",
+      "expression": "_min(_max((qstar_submerged-3.5)/0.5;0);1)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "qstar": {
+      "type": "expression",
+      "description": "Inlet-control discharge parameter",
+      "expression": "(1-submergence_weight)*qstar_unsubmerged+submergence_weight*qstar_submerged",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "inlet_control_flow": {
+      "type": "expression",
+      "description": "Inlet-control capacity (HDS-5)",
+      "expression": "86400*Number_of_barrels.e*qstar*barrel_area.e*barrel_rise.e^0.5/Ku",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "entrance_loss_flow": {
+      "type": "expression",
+      "description": "Entrance-loss limited flow",
+      "expression": "86400*Number_of_barrels.e*barrel_area.e*_sqt(19.62*driving_head/entrance_loss_coeff)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "_min(inlet_control_flow;_abs(entrance_loss_flow))*entrance_loss_flow/(_abs(entrance_loss_flow)+0.000001)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Flow area at the entrance",
+      "expression": "area.e",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Entrance velocity",
+      "expression": "flow/_max(area;0.0001)/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "80,80,160",
+      "ask_user": "false"
+    }
+  },
+  "Culvert_to_channel (Circular)": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Outlet transition from a circular culvert barrel to an open channel segment (barrel friction, exit loss, and the HDS-5 (dc+D)/2 hydraulic grade line rule)",
+    "icon": {
+      "filename": "culvert_outlet.png"
+    },
+    "exit_loss_coeff": {
+      "type": "value",
+      "description": "Exit loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "exit_loss_coeff>0",
+      "warningmessage": "The exit loss coefficient must be greater than zero",
+      "helptext": "Head loss coefficient at the culvert exit. A value of 1.0 represents full loss of the barrel velocity head into the receiving channel; use a smaller value when the outlet is well transitioned into a channel of similar section."
+    },
+    "hgl_rule_lower": {
+      "type": "value",
+      "description": "Lower limit of the (dc+D)/2 rule, as a headwater ratio",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.75",
+      "criteria": "hgl_rule_lower>0",
+      "warningmessage": "The lower limit must be greater than zero",
+      "helptext": "Barrel headwater ratio (head above the outlet invert divided by the barrel rise) below which the HDS-5 (dc+D)/2 hydraulic grade line rule is not applied at all. HDS-5 Section 3.2.2 states the approximate method should not be used if the inlet is unsubmerged and gives adequate results only down to a headwater of 0.75D, which is this default."
+    },
+    "hgl_rule_upper": {
+      "type": "value",
+      "description": "Upper limit of the (dc+D)/2 rule, as a headwater ratio",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.8",
+      "criteria": "hgl_rule_upper>hgl_rule_lower",
+      "warningmessage": "The upper limit must exceed the lower limit",
+      "helptext": "Barrel headwater ratio at which the (dc+D)/2 rule is applied in full; between the two limits it is ramped in linearly. HDS-5 treats the rule as fully applicable above about 1.2D, but applying it that abruptly makes the outlet rating curve non-monotonic and admits up to three simultaneous steady states, because the grade line rises faster than the driving head. A band of at least 1.05 in headwater ratio is needed to keep the rating single-valued; 1.8 is that minimum with margin."
+    },
+    "hs_eff": {
+      "type": "expression",
+      "description": "Effective barrel head",
+      "expression": "_max(head.s;outlet_invert.s)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "tw_plain": {
+      "type": "expression",
+      "description": "Tailwater elevation before the grade line rule",
+      "expression": "_max(head.e;outlet_invert.s)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "driving_head_plain": {
+      "type": "expression",
+      "description": "Uncorrected driving head",
+      "expression": "hs_eff-tw_plain",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "w_up": {
+      "type": "expression",
+      "description": "Upstream weighting factor",
+      "expression": "0.5+0.5*driving_head_plain/(_abs(driving_head_plain)+0.001)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "tailwater_fill_ratio": {
+      "type": "expression",
+      "description": "Barrel fill implied by the tailwater depth",
+      "expression": "_min(_pos(head.e-outlet_invert.s)/barrel_rise.s;1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Flow area at the outlet",
+      "expression": "w_up*area.s+(1-w_up)*Number_of_barrels.s*barrel_area.s*tailwater_fill_ratio",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "total_loss_coeff": {
+      "type": "expression",
+      "description": "Combined barrel friction and exit loss coefficient",
+      "expression": "exit_loss_coeff+friction_loss_coeff.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "barrel_head_ratio": {
+      "type": "expression",
+      "description": "Barrel head above the outlet invert, divided by the barrel rise",
+      "expression": "(head.s-outlet_invert.s)/barrel_rise.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hgl_gate": {
+      "type": "expression",
+      "description": "Applicability weight of the (dc+D)/2 rule",
+      "expression": "_min(_max((barrel_head_ratio-hgl_rule_lower)/(hgl_rule_upper-hgl_rule_lower);0);1)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow_1": {
+      "type": "expression",
+      "description": "Outlet discharge, iteration 1",
+      "expression": "86400*area*_sqt(19.62*(hs_eff-tw_plain)/total_loss_coeff)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "psi_1": {
+      "type": "expression",
+      "description": "Dimensionless discharge Q/(g^0.5 D^2.5), iteration 1",
+      "expression": "_min(_abs(flow_1)/86400/(Number_of_barrels.s*3.132092*barrel_rise.s^2.5);1.3)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "dc_1": {
+      "type": "expression",
+      "description": "Critical depth, iteration 1",
+      "expression": "barrel_rise.s*_min(_sqr(psi_1)*(0.9641769+0.3201129*psi_1-0.835724*psi_1^2+1.4329776*psi_1^3-1.4308019*psi_1^4+0.4947965*psi_1^5);1)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hgl_1": {
+      "type": "expression",
+      "description": "HDS-5 (dc+D)/2 grade line elevation, iteration 1",
+      "expression": "outlet_invert.s+(dc_1+barrel_rise.s)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "tw_2": {
+      "type": "expression",
+      "description": "Corrected tailwater elevation, iteration 1",
+      "expression": "tw_plain+hgl_gate*_pos(hgl_1-tw_plain)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow_2": {
+      "type": "expression",
+      "description": "Outlet discharge, iteration 2",
+      "expression": "86400*area*_sqt(19.62*(hs_eff-tw_2)/total_loss_coeff)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "psi_2": {
+      "type": "expression",
+      "description": "Dimensionless discharge Q/(g^0.5 D^2.5), iteration 2",
+      "expression": "_min(_abs(flow_2)/86400/(Number_of_barrels.s*3.132092*barrel_rise.s^2.5);1.3)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "dc_2": {
+      "type": "expression",
+      "description": "Critical depth, iteration 2",
+      "expression": "barrel_rise.s*_min(_sqr(psi_2)*(0.9641769+0.3201129*psi_2-0.835724*psi_2^2+1.4329776*psi_2^3-1.4308019*psi_2^4+0.4947965*psi_2^5);1)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hgl_2": {
+      "type": "expression",
+      "description": "HDS-5 (dc+D)/2 grade line elevation, iteration 2",
+      "expression": "outlet_invert.s+(dc_2+barrel_rise.s)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "tw_3": {
+      "type": "expression",
+      "description": "Corrected tailwater elevation, iteration 2",
+      "expression": "tw_plain+hgl_gate*_pos(hgl_2-tw_plain)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow_3": {
+      "type": "expression",
+      "description": "Outlet discharge, iteration 3",
+      "expression": "86400*area*_sqt(19.62*(hs_eff-tw_3)/total_loss_coeff)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "psi_3": {
+      "type": "expression",
+      "description": "Dimensionless discharge Q/(g^0.5 D^2.5), iteration 3",
+      "expression": "_min(_abs(flow_3)/86400/(Number_of_barrels.s*3.132092*barrel_rise.s^2.5);1.3)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "dc_3": {
+      "type": "expression",
+      "description": "Critical depth, iteration 3",
+      "expression": "barrel_rise.s*_min(_sqr(psi_3)*(0.9641769+0.3201129*psi_3-0.835724*psi_3^2+1.4329776*psi_3^3-1.4308019*psi_3^4+0.4947965*psi_3^5);1)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hgl_3": {
+      "type": "expression",
+      "description": "HDS-5 (dc+D)/2 grade line elevation, iteration 3",
+      "expression": "outlet_invert.s+(dc_3+barrel_rise.s)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "tw_4": {
+      "type": "expression",
+      "description": "Corrected tailwater elevation, iteration 3",
+      "expression": "tw_plain+hgl_gate*_pos(hgl_3-tw_plain)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow_4": {
+      "type": "expression",
+      "description": "Outlet discharge, iteration 4",
+      "expression": "86400*area*_sqt(19.62*(hs_eff-tw_4)/total_loss_coeff)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "tailwater_hgl": {
+      "type": "expression",
+      "description": "Tailwater elevation actually used",
+      "expression": "tw_4",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "critical_depth": {
+      "type": "expression",
+      "description": "Critical depth at the outlet",
+      "expression": "dc_3",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "driving_head": {
+      "type": "expression",
+      "description": "Driving head across the outlet",
+      "expression": "hs_eff-tw_4",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "flow_4",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Outlet velocity",
+      "expression": "flow/_max(area;0.0001)/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "80,80,160",
+      "ask_user": "false"
+    }
+  },
+  "Culvert_to_channel (Box)": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Outlet transition from a box culvert barrel to an open channel segment (barrel friction, exit loss, and the HDS-5 (dc+D)/2 hydraulic grade line rule)",
+    "icon": {
+      "filename": "culvert_outlet.png"
+    },
+    "exit_loss_coeff": {
+      "type": "value",
+      "description": "Exit loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "exit_loss_coeff>0",
+      "warningmessage": "The exit loss coefficient must be greater than zero",
+      "helptext": "Head loss coefficient at the culvert exit. A value of 1.0 represents full loss of the barrel velocity head into the receiving channel; use a smaller value when the outlet is well transitioned into a channel of similar section."
+    },
+    "hgl_rule_lower": {
+      "type": "value",
+      "description": "Lower limit of the (dc+D)/2 rule, as a headwater ratio",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.75",
+      "criteria": "hgl_rule_lower>0",
+      "warningmessage": "The lower limit must be greater than zero",
+      "helptext": "Barrel headwater ratio (head above the outlet invert divided by the barrel rise) below which the HDS-5 (dc+D)/2 hydraulic grade line rule is not applied at all. HDS-5 Section 3.2.2 states the approximate method should not be used if the inlet is unsubmerged and gives adequate results only down to a headwater of 0.75D, which is this default."
+    },
+    "hgl_rule_upper": {
+      "type": "value",
+      "description": "Upper limit of the (dc+D)/2 rule, as a headwater ratio",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.8",
+      "criteria": "hgl_rule_upper>hgl_rule_lower",
+      "warningmessage": "The upper limit must exceed the lower limit",
+      "helptext": "Barrel headwater ratio at which the (dc+D)/2 rule is applied in full; between the two limits it is ramped in linearly. HDS-5 treats the rule as fully applicable above about 1.2D, but applying it that abruptly makes the outlet rating curve non-monotonic and admits up to three simultaneous steady states, because the grade line rises faster than the driving head. A band of at least 1.05 in headwater ratio is needed to keep the rating single-valued; 1.8 is that minimum with margin."
+    },
+    "hs_eff": {
+      "type": "expression",
+      "description": "Effective barrel head",
+      "expression": "_max(head.s;outlet_invert.s)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "tw_plain": {
+      "type": "expression",
+      "description": "Tailwater elevation before the grade line rule",
+      "expression": "_max(head.e;outlet_invert.s)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "driving_head_plain": {
+      "type": "expression",
+      "description": "Uncorrected driving head",
+      "expression": "hs_eff-tw_plain",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "w_up": {
+      "type": "expression",
+      "description": "Upstream weighting factor",
+      "expression": "0.5+0.5*driving_head_plain/(_abs(driving_head_plain)+0.001)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "tailwater_fill_ratio": {
+      "type": "expression",
+      "description": "Barrel fill implied by the tailwater depth",
+      "expression": "_min(_pos(head.e-outlet_invert.s)/barrel_rise.s;1)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Flow area at the outlet",
+      "expression": "w_up*area.s+(1-w_up)*Number_of_barrels.s*barrel_area.s*tailwater_fill_ratio",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "total_loss_coeff": {
+      "type": "expression",
+      "description": "Combined barrel friction and exit loss coefficient",
+      "expression": "exit_loss_coeff+friction_loss_coeff.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "barrel_head_ratio": {
+      "type": "expression",
+      "description": "Barrel head above the outlet invert, divided by the barrel rise",
+      "expression": "(head.s-outlet_invert.s)/barrel_rise.s",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "hgl_gate": {
+      "type": "expression",
+      "description": "Applicability weight of the (dc+D)/2 rule",
+      "expression": "_min(_max((barrel_head_ratio-hgl_rule_lower)/(hgl_rule_upper-hgl_rule_lower);0);1)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "flow_1": {
+      "type": "expression",
+      "description": "Outlet discharge, iteration 1",
+      "expression": "86400*area*_sqt(19.62*(hs_eff-tw_plain)/total_loss_coeff)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "psi_1": {
+      "type": "expression",
+      "description": "Unit discharge per barrel, iteration 1",
+      "expression": "_abs(flow_1)/86400/(Number_of_barrels.s*barrel_area.s/barrel_rise.s)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "dc_1": {
+      "type": "expression",
+      "description": "Critical depth, iteration 1",
+      "expression": "_min((psi_1^2/9.81)^0.333333;barrel_rise.s)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hgl_1": {
+      "type": "expression",
+      "description": "HDS-5 (dc+D)/2 grade line elevation, iteration 1",
+      "expression": "outlet_invert.s+(dc_1+barrel_rise.s)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "tw_2": {
+      "type": "expression",
+      "description": "Corrected tailwater elevation, iteration 1",
+      "expression": "tw_plain+hgl_gate*_pos(hgl_1-tw_plain)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow_2": {
+      "type": "expression",
+      "description": "Outlet discharge, iteration 2",
+      "expression": "86400*area*_sqt(19.62*(hs_eff-tw_2)/total_loss_coeff)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "psi_2": {
+      "type": "expression",
+      "description": "Unit discharge per barrel, iteration 2",
+      "expression": "_abs(flow_2)/86400/(Number_of_barrels.s*barrel_area.s/barrel_rise.s)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "dc_2": {
+      "type": "expression",
+      "description": "Critical depth, iteration 2",
+      "expression": "_min((psi_2^2/9.81)^0.333333;barrel_rise.s)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hgl_2": {
+      "type": "expression",
+      "description": "HDS-5 (dc+D)/2 grade line elevation, iteration 2",
+      "expression": "outlet_invert.s+(dc_2+barrel_rise.s)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "tw_3": {
+      "type": "expression",
+      "description": "Corrected tailwater elevation, iteration 2",
+      "expression": "tw_plain+hgl_gate*_pos(hgl_2-tw_plain)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow_3": {
+      "type": "expression",
+      "description": "Outlet discharge, iteration 3",
+      "expression": "86400*area*_sqt(19.62*(hs_eff-tw_3)/total_loss_coeff)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "psi_3": {
+      "type": "expression",
+      "description": "Unit discharge per barrel, iteration 3",
+      "expression": "_abs(flow_3)/86400/(Number_of_barrels.s*barrel_area.s/barrel_rise.s)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "dc_3": {
+      "type": "expression",
+      "description": "Critical depth, iteration 3",
+      "expression": "_min((psi_3^2/9.81)^0.333333;barrel_rise.s)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hgl_3": {
+      "type": "expression",
+      "description": "HDS-5 (dc+D)/2 grade line elevation, iteration 3",
+      "expression": "outlet_invert.s+(dc_3+barrel_rise.s)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "tw_4": {
+      "type": "expression",
+      "description": "Corrected tailwater elevation, iteration 3",
+      "expression": "tw_plain+hgl_gate*_pos(hgl_3-tw_plain)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow_4": {
+      "type": "expression",
+      "description": "Outlet discharge, iteration 4",
+      "expression": "86400*area*_sqt(19.62*(hs_eff-tw_4)/total_loss_coeff)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "tailwater_hgl": {
+      "type": "expression",
+      "description": "Tailwater elevation actually used",
+      "expression": "tw_4",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "critical_depth": {
+      "type": "expression",
+      "description": "Critical depth at the outlet",
+      "expression": "dc_3",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "driving_head": {
+      "type": "expression",
+      "description": "Driving head across the outlet",
+      "expression": "hs_eff-tw_4",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "flow_4",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Outlet velocity",
+      "expression": "flow/_max(area;0.0001)/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "80,80,160",
+      "ask_user": "false"
+    }
+  }
+}

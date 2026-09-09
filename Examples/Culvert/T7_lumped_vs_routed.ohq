@@ -1,0 +1,24 @@
+loadtemplate; filename = main_components.json
+addtemplate; filename = open_channel.json
+addtemplate; filename = culvert.json
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=simulation_end_time, value=2
+setvalue; object=system, quantity=alloutputfile, value=T7_lumped_vs_routed_out.txt
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=minimum_timestep, value=1e-07
+setvalue; object=system, quantity=initial_time_step, value=0.0005
+setvalue; object=system, quantity=maximum_time_allowed, value=900
+setvalue; object=system, quantity=c_n_weight, value=1
+setvalue; object=system, quantity=write_interval, value=20
+create block;type=Trapezoidal Channel Segment,name=US_A,base_width=3,side_slope=2,ManningCoeff=0.035,bottom_elevation=0.5,length=100,depth=0.05,inflow=inflow_large.csv,ag_area=0,non_ag_area=0,dam_height=0,x=0,y=0,_width=200,_height=200
+create block;type=Trapezoidal Channel Segment,name=DS_A,base_width=3,side_slope=2,ManningCoeff=0.035,bottom_elevation=0.3,length=100,depth=0.05,inflow=,ag_area=0,non_ag_area=0,dam_height=0,x=600,y=0,_width=200,_height=200
+create block;type=fixed_head,name=Outfall_A,head=0.35,area=1,Storage=100000,x=900,y=0,_width=200,_height=200
+create link;from=US_A,to=DS_A,type=Circular Culvert,name=Culvert_A,Number_of_barrels=1,diameter=1.0,length=20,inlet_invert=0.5,outlet_invert=0.3,ManningCoeff=0.013,entrance_loss_coeff=0.5,HDS5_K=0.0098,HDS5_M=2.0,HDS5_c=0.0398,HDS5_Y=0.67,HDS5_form1_switch=1,slope_correction_coeff=0.5,exit_loss_coeff=1.0,road_crest_elevation=100,road_width=0,road_weir_coeff=1.7,road_submergence_factor=1
+create link;from=DS_A,to=Outfall_A,type=channel2fixed,name=Tail_A
+create block;type=Trapezoidal Channel Segment,name=US_B,base_width=3,side_slope=2,ManningCoeff=0.035,bottom_elevation=0.5,length=100,depth=0.05,inflow=inflow_large.csv,ag_area=0,non_ag_area=0,dam_height=0,x=0,y=400,_width=200,_height=200
+create block;type=Culvert Barrel (Circular),name=Barrel_B,Number_of_barrels=1,diameter=1.0,length=20,inlet_invert=0.5,outlet_invert=0.3,ManningCoeff=0.013,inlet_crest_width_factor=0.65,slot_width_ratio=0.05,inflow=,depth=0,x=300,y=400,_width=200,_height=200
+create block;type=Trapezoidal Channel Segment,name=DS_B,base_width=3,side_slope=2,ManningCoeff=0.035,bottom_elevation=0.3,length=100,depth=0.05,inflow=,ag_area=0,non_ag_area=0,dam_height=0,x=600,y=400,_width=200,_height=200
+create block;type=fixed_head,name=Outfall_B,head=0.35,area=1,Storage=100000,x=900,y=400,_width=200,_height=200
+create link;from=US_B,to=Barrel_B,type=Channel_to_culvert (Circular),name=Inlet_B,entrance_loss_coeff=0.5,HDS5_K=0.0098,HDS5_M=2.0,HDS5_c=0.0398,HDS5_Y=0.67,HDS5_form1_switch=1,slope_correction_coeff=0.5
+create link;from=Barrel_B,to=DS_B,type=Culvert_to_channel (Circular),name=Outlet_B,exit_loss_coeff=1.0,hgl_rule_lower=0.75,hgl_rule_upper=1.8
+create link;from=DS_B,to=Outfall_B,type=channel2fixed,name=Tail_B

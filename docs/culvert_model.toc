@@ -1,0 +1,32 @@
+\contentsline {section}{\numberline {1}Scope and conventions}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Units}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}What the expression language permits}{2}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Barrel geometry}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Circular section}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Recovering depth from storage}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Box section}{3}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Inlet control}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}The HDS-5 equations}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Inverting for discharge}{4}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}The critical-flow function}{4}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Resolving Form (1)}{4}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}The unsubmerged--submerged transition}{5}{subsection.3.5}%
+\contentsline {section}{\numberline {4}Outlet control}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}The $(d_c+D)/2$ grade line rule}{5}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Why the rule must be gated, and gated widely}{6}{subsection.4.2}%
+\contentsline {section}{\numberline {5}Combining the two controls}{6}{section.5}%
+\contentsline {section}{\numberline {6}The storage-routed barrel}{6}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Layout}{6}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Surcharge and the Preissmann slot}{7}{subsection.6.2}%
+\contentsline {section}{\numberline {7}Roadway overtopping and flow accounting}{7}{section.7}%
+\contentsline {section}{\numberline {8}Numerical considerations}{7}{section.8}%
+\contentsline {section}{\numberline {9}Components}{8}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Types}{8}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Barrel parameters}{8}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Inlet link parameters}{9}{subsection.9.3}%
+\contentsline {section}{\numberline {10}HDS-5 Table A.1 constants}{9}{section.10}%
+\contentsline {section}{\numberline {11}Verification}{10}{section.11}%
+\contentsline {subsection}{\numberline {11.1}Round trip against the forward equations}{10}{subsection.11.1}%
+\contentsline {subsection}{\numberline {11.2}End-to-end behaviour}{11}{subsection.11.2}%
+\contentsline {section}{\numberline {12}Assumptions and limitations}{11}{section.12}%
+\contentsline {section}{\numberline {13}References}{11}{section.13}%

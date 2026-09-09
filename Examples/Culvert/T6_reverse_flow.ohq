@@ -1,0 +1,19 @@
+loadtemplate; filename = main_components.json
+addtemplate; filename = open_channel.json
+addtemplate; filename = culvert.json
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=simulation_end_time, value=2
+setvalue; object=system, quantity=alloutputfile, value=T6_reverse_flow_out.txt
+setvalue; object=system, quantity=nr_tolerance, value=0.0001
+setvalue; object=system, quantity=minimum_timestep, value=1e-07
+setvalue; object=system, quantity=initial_time_step, value=5e-05
+setvalue; object=system, quantity=maximum_time_allowed, value=900
+setvalue; object=system, quantity=c_n_weight, value=1
+setvalue; object=system, quantity=write_interval, value=2000
+create block;type=Trapezoidal Channel Segment,name=US_Channel,base_width=3,side_slope=2,ManningCoeff=0.035,bottom_elevation=0.5,length=100,depth=0.05,inflow=inflow_small.csv,ag_area=0,non_ag_area=0,dam_height=0,x=0,y=0,_width=200,_height=200
+create block;type=Culvert Barrel (Circular),name=Barrel,Number_of_barrels=1,diameter=1.0,length=20,inlet_invert=0.5,outlet_invert=0.3,ManningCoeff=0.013,inlet_crest_width_factor=0.65,slot_width_ratio=0.05,inflow=,depth=0,x=300,y=0,_width=200,_height=200
+create block;type=Trapezoidal Channel Segment,name=DS_Channel,base_width=3,side_slope=2,ManningCoeff=0.035,bottom_elevation=0.3,length=100,depth=0.05,inflow=,ag_area=0,non_ag_area=0,dam_height=0,x=600,y=0,_width=200,_height=200
+create block;type=time_variable_fixed_head,name=Outfall,head=surge.csv,Dummy_timeseries=,Storage=100000,x=900,y=0,_width=200,_height=200
+create link;from=US_Channel,to=Barrel,type=Channel_to_culvert (Circular),name=Inlet,entrance_loss_coeff=0.5,HDS5_K=0.0098,HDS5_M=2.0,HDS5_c=0.0398,HDS5_Y=0.67,HDS5_form1_switch=1,slope_correction_coeff=0.5
+create link;from=Barrel,to=DS_Channel,type=Culvert_to_channel (Circular),name=Outlet,exit_loss_coeff=1.0,hgl_rule_lower=0.75,hgl_rule_upper=1.8
+create link;from=DS_Channel,to=Outfall,type=channel2fixed,name=Tailwater

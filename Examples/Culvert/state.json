@@ -1,0 +1,165 @@
+{
+    "Blocks": {
+        "Barrel": {
+            "ManningCoeff": "0.013",
+            "Number_of_barrels": "1",
+            "_height": "200",
+            "_width": "200",
+            "depth": "0",
+            "diameter": "1",
+            "inflow": "",
+            "inlet_crest_width_factor": "0.65",
+            "inlet_invert": "0.5",
+            "length": "20",
+            "name": "Barrel",
+            "outlet_invert": "0.3",
+            "slot_width_ratio": "0.05",
+            "type": "Culvert Barrel (Circular)",
+            "x": "300",
+            "y": "0"
+        },
+        "DS_Channel": {
+            "ManningCoeff": "0.035",
+            "_height": "200",
+            "_width": "200",
+            "ag_area": "0",
+            "ag_withdrawal_per_unit_area": "",
+            "base_width": "3",
+            "bottom_elevation": "0.3",
+            "dam_height": "0",
+            "depth": "0.00115444",
+            "inflow": "",
+            "length": "100",
+            "name": "DS_Channel",
+            "non_ag_area": "0",
+            "non_ag_withdrawal_per_unit_area": "",
+            "side_slope": "2",
+            "type": "Trapezoidal Channel Segment",
+            "x": "600",
+            "y": "0"
+        },
+        "Outfall": {
+            "Storage": "131480",
+            "_height": "200",
+            "_width": "200",
+            "head": "0.3",
+            "name": "Outfall",
+            "type": "fixed_head",
+            "x": "900",
+            "y": "0"
+        },
+        "US_Channel": {
+            "ManningCoeff": "0.035",
+            "_height": "200",
+            "_width": "200",
+            "ag_area": "0",
+            "ag_withdrawal_per_unit_area": "",
+            "base_width": "3",
+            "bottom_elevation": "0.5",
+            "dam_height": "0",
+            "depth": "-1.26589e-08",
+            "inflow": "",
+            "length": "100",
+            "name": "US_Channel",
+            "non_ag_area": "0",
+            "non_ag_withdrawal_per_unit_area": "",
+            "side_slope": "2",
+            "type": "Trapezoidal Channel Segment",
+            "x": "0",
+            "y": "0"
+        }
+    },
+    "Constituents": {
+    },
+    "Links": {
+        "Inlet": {
+            "HDS5_K": "0.0098",
+            "HDS5_M": "2",
+            "HDS5_Y": "0.67",
+            "HDS5_c": "0.0398",
+            "HDS5_form1_switch": "1",
+            "entrance_loss_coeff": "0.5",
+            "from": "US_Channel",
+            "name": "Inlet",
+            "slope_correction_coeff": "0.5",
+            "to": "Barrel",
+            "type": "Channel_to_culvert (Circular)"
+        },
+        "Outlet": {
+            "exit_loss_coeff": "1",
+            "from": "Barrel",
+            "name": "Outlet",
+            "to": "DS_Channel",
+            "type": "Culvert_to_channel"
+        },
+        "Tailwater": {
+            "from": "DS_Channel",
+            "name": "Tailwater",
+            "to": "Outfall",
+            "type": "channel2fixed"
+        }
+    },
+    "Objective Functions": {
+    },
+    "Observations": {
+    },
+    "Parameters": {
+    },
+    "Reaction Parameters": {
+    },
+    "Reactions": {
+    },
+    "Set As Parameters": [
+    ],
+    "Settings": {
+        "acceptance_rate": "0.15",
+        "add_noise_to_realizations": "No",
+        "alloutputfile": "T8_dry_to_dry_out.txt",
+        "c_n_weight": "1",
+        "continue_based_on_file_name": "",
+        "initial_purturbation": "No",
+        "initial_time_step": "0.0005",
+        "initual_purturbation_factor": "0.05",
+        "jacobian_assembly": "Dependency",
+        "jacobian_method": "Direct",
+        "max_timestep_decrease_factor": "100000",
+        "max_timestep_increase_factor": "50",
+        "maximum_number_of_matrix_inverstions": "200000",
+        "maximum_time_allowed": "900",
+        "maxpop": "40",
+        "minimum_timestep": "1e-07",
+        "n_threads": "8",
+        "ngen": "40",
+        "nr_timestep_reduction_factor": "0.75",
+        "nr_timestep_reduction_factor_fail": "0.2",
+        "nr_tolerance": "0.001",
+        "number_of_burnout_samples": "0",
+        "number_of_chains": "8",
+        "number_of_post_estimate_realizations": "10",
+        "number_of_samples": "1000",
+        "number_of_threads": "1",
+        "numthreads": "8",
+        "observed_outputfile": "observedoutput.txt",
+        "outputfile": "GA_output.txt",
+        "pcross": "1",
+        "perform_global_sensitivity": "No",
+        "pmute": "0.02",
+        "purturbation_change_scale": "0.75",
+        "record_interval": "1",
+        "samples_filename": "mcmc.txt",
+        "shakescale": "0.05",
+        "shakescalered": "0.75",
+        "simulation_end_time": "3",
+        "simulation_start_time": "3.02916",
+        "verify_jacobian": "",
+        "write_interval": "20",
+        "write_solution_details": "No"
+    },
+    "Sources": {
+    },
+    "Templates": [
+        "main_components.json",
+        "open_channel.json",
+        "culvert.json"
+    ]
+}
