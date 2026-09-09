@@ -25,8 +25,8 @@
 \contentsline {subsection}{\numberline {9.2}Barrel parameters}{8}{subsection.9.2}%
 \contentsline {subsection}{\numberline {9.3}Inlet link parameters}{9}{subsection.9.3}%
 \contentsline {section}{\numberline {10}HDS-5 Table A.1 constants}{9}{section.10}%
-\contentsline {section}{\numberline {11}Verification}{10}{section.11}%
-\contentsline {subsection}{\numberline {11.1}Round trip against the forward equations}{10}{subsection.11.1}%
+\contentsline {section}{\numberline {11}Verification}{11}{section.11}%
+\contentsline {subsection}{\numberline {11.1}Round trip against the forward equations}{11}{subsection.11.1}%
 \contentsline {subsection}{\numberline {11.2}End-to-end behaviour}{11}{subsection.11.2}%
 \contentsline {section}{\numberline {12}Assumptions and limitations}{11}{section.12}%
-\contentsline {section}{\numberline {13}References}{11}{section.13}%
+\contentsline {section}{\numberline {13}References}{12}{section.13}%

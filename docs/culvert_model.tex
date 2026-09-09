@@ -13,6 +13,7 @@
 \usepackage{enumitem}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}
+\usepackage{pdflscape}
 \usepackage[hidelinks]{hyperref}
 
 \definecolor{codebg}{RGB}{247,247,247}
@@ -643,9 +644,18 @@ shapes these components cover. Tapered-inlet and non-circular rows (Charts
 55--59 and Tables A.2--A.6) are omitted, as are shapes the templates do not
 represent.
 
-\begin{longtable}{@{}llcp{0.30\textwidth}ccccc@{}}
+\begin{landscape}
+\begingroup
+\setlength{\LTleft}{\fill}\setlength{\LTright}{\fill}
+\begin{longtable}{@{}clcp{0.42\textwidth}ccccc@{}}
+\caption*{\textbf{HDS-5 Table A.1} --- constants for inlet control equations, circular and rectangular shapes.}\\
 \toprule
-\textbf{Chart} & \textbf{Shape/Material} & \textbf{Sc.} & \textbf{Inlet configuration}
+\textbf{Chart} & \textbf{Shape / Material} & \textbf{Scale} & \textbf{Inlet configuration}
+ & \textbf{Form} & $K$ & $M$ & $c$ & $Y$\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Chart} & \textbf{Shape / Material} & \textbf{Scale} & \textbf{Inlet configuration}
  & \textbf{Form} & $K$ & $M$ & $c$ & $Y$\\
 \midrule
 \endhead
@@ -677,6 +687,8 @@ represent.
 13 & Rect. Box Top Bevel & 3 & 18.4$^\circ$ wingwall flares -- offset & 2 & 0.493 & 0.667 & 0.0227 & 0.887\\
 \bottomrule
 \end{longtable}
+\endgroup
+\end{landscape}
 
 \noindent
 Two things in this table are easy to get wrong. First, the equation form is not
