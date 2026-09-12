@@ -1443,21 +1443,6 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
 
         QCoreApplication::processEvents();
     }
-#else
-    // Terminal build: progress above is reported through rtw, which does not
-    // exist here, so a console run printed nothing at all between "Running from
-    // time" and the final line -- on a multi-hour model that is indistinguishable
-    // from a hang. Emit the same t/dt the GUI Details pane shows, once per whole
-    // percent of the run, whenever the system is not silent (-q, or
-    // "setvalue; object=system, quantity=silent, value=1").
-    if (!silent && int(progress / 0.01) > int(progress_p / 0.01))
-    {
-        cout << "  " << int(progress * 100 + 0.5) << "%   t = " << SolverTempVars.t
-             << " / " << SimulationParameters.tend
-             << "   dt = " << SolverTempVars.dt
-             << "   iterations = " << SolverTempVars.MaxNumberOfIterations()
-             << endl;
-    }
 #endif
 
     // Restore point � independent of GUI
@@ -5097,59 +5082,38 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
     CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Expression::timing::present,transport);
     SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma_sp jacobian_sp(BlockCount());
-
-    // Triplet assembly, and the loops below are deliberately SERIAL.
-    //
-    // They used to carry `#pragma omp parallel for ... if (n_threads>1)`. That was
-    // unsafe twice over. First, links share block indices, and
-    // CMatrix_arma_sp::operator() hands back a reference into an arma::sp_mat,
-    // which INSERTS the entry when it is absent and reallocates the CSC arrays --
-    // so concurrent iterations were restructuring the matrix, not merely racing on
-    // a value. Second, and fatal on its own: Gradient() takes its derivative by
-    // perturbing the state of `wrt`, reading, then restoring it. Two threads on
-    // links that share a block perturb and restore the SAME block, so the
-    // derivative itself comes out wrong. No assembly scheme fixes that; the loop
-    // cannot be parallel while Gradient mutates shared state. The dense twin in
-    // JacobianDirect() was commented out for the same reason; this copy was missed.
-    //
-    // Going serial costs little, because the insertion pattern it replaces was the
-    // real expense: every jacobian_sp(i,j) += ... walked the CSC structure, O(nnz)
-    // per write. Values are now collected as (row, col, value) triplets and the
-    // matrix is built once, add_values=true summing the duplicates that sharing
-    // produces.
-    std::vector<arma::uword> jac_r, jac_c;
-    std::vector<double> jac_v;
-    const size_t jac_guess = 8 * size_t(LinksCount()) + 2 * size_t(BlockCount());
-    jac_r.reserve(jac_guess); jac_c.reserve(jac_guess); jac_v.reserve(jac_guess);
-    auto jac_add = [&](int r, int c, double v)
-    {   jac_r.push_back(arma::uword(r)); jac_c.push_back(arma::uword(c)); jac_v.push_back(v); };
-
+#ifndef NO_OPENMP
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
+#endif
     for (int i=0; i<LinksCount(); i++)
     {
         if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
-        {   jac_add(link(i)->s_Block_No(),link(i)->s_Block_No(),(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
-            jac_add(link(i)->e_Block_No(),link(i)->s_Block_No(),-(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
+        {   jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
         }
         else
         {
-            jac_add(link(i)->s_Block_No(),link(i)->s_Block_No(),(aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
-            jac_add(link(i)->e_Block_No(),link(i)->s_Block_No(),-(aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
+            jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
         }
         if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
         {
-            jac_add(link(i)->s_Block_No(),link(i)->e_Block_No(),(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
-            jac_add(link(i)->e_Block_No(),link(i)->e_Block_No(),-(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
+            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
         }
         else
         {
-            jac_add(link(i)->s_Block_No(),link(i)->e_Block_No(),-(aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
-            jac_add(link(i)->e_Block_No(),link(i)->e_Block_No(),(aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
+            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) -= aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
         }
     }
+#ifndef NO_OPENMP
+#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
+#endif
     for (int i=0; i<BlockCount(); i++)
     {
         if (!block(i)->GetLimitedOutflow() && !block(i)->isrigid(variable))
-            jac_add(i,i,(1/SolverTempVars.dt));
+            jacobian_sp(i,i) += 1/SolverTempVars.dt;
         for (unsigned int j=0; j<block(i)->Variable(variable)->GetCorrespondingInflowVar().size(); j++)
         {
             if (block(i)->Variable(variable)->GetCorrespondingInflowVar()[j] != "")
@@ -5157,28 +5121,14 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
                 if (Variable(block(i)->Variable(variable)->GetCorrespondingInflowVar()[j]))
                 {
                     if (!block(i)->GetLimitedOutflow())
-                        jac_add(i,i,-(Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable)));
+                        jacobian_sp(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
                     else
                     {   double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
-                        if (inflow<0) jac_add(i,i,-(inflow));
+                        if (inflow<0) jacobian_sp(i,i) -= inflow;
                     }
                 }
             }
         }
-    }
-
-    // One construction from the triplets. add_values=true sums entries that repeat,
-    // which is exactly what several links sharing a block produces, so the result is
-    // identical to the accumulated += it replaces.
-    if (!jac_v.empty())
-    {
-        arma::umat jac_loc(2, jac_v.size());
-        for (size_t k = 0; k < jac_v.size(); k++)
-        {   jac_loc(0, k) = jac_r[k];
-            jac_loc(1, k) = jac_c[k]; }
-        arma::vec jac_vals(jac_v);
-        jacobian_sp.matr = arma::sp_mat(true, jac_loc, jac_vals,
-                                        arma::uword(BlockCount()), arma::uword(BlockCount()));
     }
 
     for (unsigned int i = 0; i < blocks.size(); i++)

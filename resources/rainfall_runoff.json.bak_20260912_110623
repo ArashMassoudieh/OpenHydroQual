@@ -264,8 +264,8 @@
     },
     "flow": {
       "type": "expression",
-      "description": "Flow (positive catchment->stream; negative is backwater from the stream onto the catchment)",
-      "expression": "86400*(Width/ManningCoeff.s)*_sqt(hydraulic_gradient)*(_pos(_max(depth.s;head.e-elevation.s)-depression_storage.s)^1.666667)",
+      "description": "Flow",
+      "expression": "86400*(Width/ManningCoeff.s)*_sqt(hydraulic_gradient)*(_pos(depth.s-depression_storage.s)^1.666667)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",

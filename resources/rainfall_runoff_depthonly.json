@@ -17,7 +17,7 @@
       "massbalance": "true",
       "flow": "flow",
       "inflow": "Precipitation,Evapotranspiration,loss",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Storage",
       "ask_user": "false",
       "initial_value_expression": "area*depth",
@@ -26,7 +26,7 @@
     },
     "Precipitation": {
       "type": "source",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "precipitation time series",
       "ask_user": "true",
       "delegate": "ComboBox;Sources",
@@ -35,7 +35,7 @@
     },
     "Evapotranspiration": {
       "type": "source",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Evapotranspiration",
       "ask_user": "true",
       "delegate": "ComboBox;Sources",
@@ -45,7 +45,7 @@
     "loss": {
       "type": "expression",
       "expression": "-loss_coefficient*Storage",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Loss rate",
       "ask_user": "false",
       "delegate": "ComboBox;Sources",
@@ -93,7 +93,7 @@
       "expression": "elevation+depth",
       "description": "Average water head",
       "ask_user": "false",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "unit": "m;ft"
     },
     "depression_storage": {
@@ -144,20 +144,20 @@
       "type": "expression",
       "expression": "_hsd(head.s-head.e)*_pos(depth.s-depression_storage.s)+_hsd(head.e-head.s)*_pos(depth.e-depression_storage.e)",
       "description": "Flow depth",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "unit": "m;ft;in;mm"
     },
     "ManningCoeff": {
       "type": "expression",
       "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
       "description": "Manning's coefficient",
-      "includeinoutput": "true"
+      "includeinoutput": "false"
     },
     "hydraulic_gradient": {
       "type": "expression",
       "description": "Hydraulic gradient",
       "expression": "(head.s-head.e)/Length",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "false"
     },
     "flow": {
@@ -208,7 +208,7 @@
       "type": "expression",
       "description": "Hydraulic gradient",
       "expression": "(head.s-head.e)/Length",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "false"
     },
     "flow": {
@@ -259,7 +259,7 @@
       "type": "expression",
       "description": "Hydraulic gradient",
       "expression": "(head.s-head.e)/Length",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "ask_user": "false"
     },
     "flow": {
@@ -290,7 +290,7 @@
       "massbalance": "true",
       "flow": "flow",
       "inflow": "Precipitation,Evapotranspiration,loss",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Initial Storage;Storage",
       "ask_user": "false",
       "initial_value_expression": "area*depth",
@@ -299,7 +299,7 @@
     },
     "Precipitation": {
       "type": "source",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "precipitation time series",
       "helptext": "A precipitation source object must be selected.",
       "ask_user": "true",
@@ -308,7 +308,7 @@
     },
     "Evapotranspiration": {
       "type": "source",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Evapotranspiration",
       "helptext": "A evapotranspiration 'source' object must be selected. In order to add an evapotransporation model a plug-in containing evapotranspiration models first needed to be added to the model",
       "ask_user": "true",
@@ -318,7 +318,7 @@
     "loss": {
       "type": "expression",
       "expression": "-loss_coefficient*Storage",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "description": "Loss rate",
       "ask_user": "false",
       "delegate": "ComboBox;Sources",
@@ -383,7 +383,7 @@
       "expression": "elevation+depth",
       "description": "Average water head",
       "ask_user": "false",
-      "includeinoutput": "true",
+      "includeinoutput": "false",
       "unit": "m;ft"
     },
     "depression_storage": {

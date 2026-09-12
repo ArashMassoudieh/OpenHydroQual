@@ -1,20 +1,54 @@
-loadtemplate; filename = main_components.json
+loadtemplate; filename = /home/arash/Projects/OpenHydroQual/build/Desktop_Qt_6_8_2-Release/../../resources/main_components.json
+addtemplate; filename = main_components.json
 addtemplate; filename = open_channel.json
 addtemplate; filename = culvert.json
-setvalue; object=system, quantity=simulation_start_time, value=0
-setvalue; object=system, quantity=simulation_end_time, value=2
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=10
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
 setvalue; object=system, quantity=alloutputfile, value=T4_roadway_overtopping_out.txt
-setvalue; object=system, quantity=nr_tolerance, value=0.001
-setvalue; object=system, quantity=minimum_timestep, value=1e-07
-setvalue; object=system, quantity=initial_time_step, value=0.0005
-setvalue; object=system, quantity=maximum_time_allowed, value=900
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=simulation_end_time, value=2
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=numthreads, value=8
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=shakescalered, value=0.75
 setvalue; object=system, quantity=c_n_weight, value=1
+setvalue; object=system, quantity=initial_time_step, value=0.0005
+setvalue; object=system, quantity=jacobian_assembly, value=Dependency
+setvalue; object=system, quantity=jacobian_method, value=Direct
+setvalue; object=system, quantity=max_timestep_decrease_factor, value=100000
+setvalue; object=system, quantity=max_timestep_increase_factor, value=50
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=maximum_time_allowed, value=900
+setvalue; object=system, quantity=minimum_timestep, value=1e-07
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=verify_jacobian, value=
 setvalue; object=system, quantity=write_interval, value=20
-create block;type=Trapezoidal Channel Segment,name=US_Channel,base_width=3,side_slope=2,ManningCoeff=0.035,bottom_elevation=0.5,length=100,depth=0.05,inflow=inflow_extreme.csv,ag_area=0,non_ag_area=0,dam_height=0,x=0,y=0,_width=200,_height=200
-create block;type=Culvert Barrel (Circular),name=Barrel,Number_of_barrels=1,diameter=1.0,length=20,inlet_invert=0.5,outlet_invert=0.3,ManningCoeff=0.013,inlet_crest_width_factor=0.65,slot_width_ratio=0.05,inflow=,depth=0,x=300,y=0,_width=200,_height=200
-create block;type=Trapezoidal Channel Segment,name=DS_Channel,base_width=3,side_slope=2,ManningCoeff=0.035,bottom_elevation=0.3,length=100,depth=0.05,inflow=,ag_area=0,non_ag_area=0,dam_height=0,x=600,y=0,_width=200,_height=200
-create block;type=fixed_head,name=Outfall,head=0.35,area=1,Storage=100000,x=900,y=0,_width=200,_height=200
-create link;from=US_Channel,to=Barrel,type=Channel_to_culvert (Circular),name=Inlet,entrance_loss_coeff=0.5,HDS5_K=0.0098,HDS5_M=2.0,HDS5_c=0.0398,HDS5_Y=0.67,HDS5_form1_switch=1,slope_correction_coeff=0.5
-create link;from=Barrel,to=DS_Channel,type=Culvert_to_channel (Circular),name=Outlet,exit_loss_coeff=1.0,hgl_rule_lower=0.75,hgl_rule_upper=1.8
+setvalue; object=system, quantity=write_solution_details, value=No
+create block;type=Trapezoidal Channel Segment,ManningCoeff=0.035,_height=200,_width=200,ag_area=0,ag_withdrawal_per_unit_area=,base_width=3,bottom_elevation=0.5,dam_height=0,depth=0.05,inflow=inflow_extreme.csv,length=100,name=US_Channel,non_ag_area=0,non_ag_withdrawal_per_unit_area=,side_slope=2,x=0,y=0
+create block;type=Culvert Barrel (Circular),ManningCoeff=0.013,Number_of_barrels=1,_height=200,_width=200,depth=0,diameter=1,inflow=,inlet_crest_width_factor=0.65,inlet_invert=0.5,length=20,name=Barrel,outlet_invert=0.3,slot_width_ratio=0.05,x=293.365,y=29.0267
+create block;type=Trapezoidal Channel Segment,ManningCoeff=0.035,_height=200,_width=200,ag_area=0,ag_withdrawal_per_unit_area=,base_width=3,bottom_elevation=0.3,dam_height=0,depth=0.05,inflow=,length=100,name=DS_Channel,non_ag_area=0,non_ag_withdrawal_per_unit_area=,side_slope=2,x=600,y=0
+create block;type=fixed_head,Storage=100000,_height=200,_width=200,head=0.35,name=Outfall,x=900,y=0
+create link;from=US_Channel,to=Barrel,type=Channel_to_culvert (Circular),HDS5_K=0.0098,HDS5_M=2,HDS5_Y=0.67,HDS5_c=0.0398,HDS5_form1_switch=1,entrance_loss_coeff=0.5,name=Inlet,slope_correction_coeff=0.5
+create link;from=Barrel,to=DS_Channel,type=Culvert_to_channel,exit_loss_coeff=1,name=Outlet
 create link;from=DS_Channel,to=Outfall,type=channel2fixed,name=Tailwater
-create link;from=US_Channel,to=DS_Channel,type=Roadway_Overtopping,name=Road,road_crest_elevation=2.3,road_width=12,road_weir_coeff=1.7,road_submergence_factor=1
+create link;from=US_Channel,to=DS_Channel,type=Roadway_Overtopping,name=Road,road_crest_elevation=2.3,road_weir_coeff=1.7,road_width=12
