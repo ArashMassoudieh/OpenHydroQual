@@ -459,8 +459,7 @@ CVector solve_ar(const CMatrix_arma& A, const CVector& b) {
     mat B(b.size(), 1);
     for (size_t i = 0; i < b.size(); ++i) B(i, 0) = b[i];
     mat X;
-    // no_approx: see operator/ above -- without it this throw can never fire.
-    if (!arma::solve(X, A, B, arma::solve_opts::no_approx))
+    if (!arma::solve(X, A, B))
         throw std::runtime_error("solve_ar failed: matrix may be singular");
     CVector out(b.size());
     for (size_t i = 0; i < b.size(); ++i) out[i] = X(i, 0);
@@ -590,16 +589,8 @@ CMatrix_arma operator/(const CMatrix_arma& A, double d) {
 
 CVector_arma operator/(const CVector_arma& V, const CMatrix_arma& M) {
     arma::vec x;
-    // no_approx is what makes the guard below real. Armadillo's default solve()
-    // does NOT return false on a singular matrix: it warns ("attempting approx
-    // solution"), computes a least-squares answer by an SVD-class fallback, and
-    // returns true. In the Newton step that answer then passed the size check and
-    // was accepted -- and on a 6,486-block grid the fallback cost ~10 minutes per
-    // iteration, so the run looked hung. With no_approx a singular system returns
-    // false, the empty vector is caught in ComputeNewtonStep, and the solver
-    // reduces dt and retries, as the sparse path already does via slu_ok.
     if (!arma::solve(x, static_cast<const arma::mat&>(M),
-                        static_cast<const arma::vec&>(V), arma::solve_opts::no_approx))
+                        static_cast<const arma::vec&>(V)))
         return CVector_arma();          // singular: empty result signals failure
     return CVector_arma(x);
 }

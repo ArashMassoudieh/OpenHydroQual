@@ -1,0 +1,19 @@
+loadtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/mass_transfer.json
+setvalue; object=system, quantity=simulation_end_time, value=5
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=c_n_weight, value=1
+setvalue; object=system, quantity=initial_time_step, value=0.01
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=max_timestep_decrease_factor, value=100000
+setvalue; object=system, quantity=max_timestep_increase_factor, value=50
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=write_interval, value=100
+create block;type=Reactor,Storage=100,_height=200,_width=200,bottom_elevation=0,constant_inflow=0,name=Tank,time_variable_inflow=,x=0,y=400
+create block;type=Reactor,Storage=1000000,_height=200,_width=200,bottom_elevation=0,constant_inflow=0,name=Sink,time_variable_inflow=,x=600,y=400
+create link;from=Tank,to=Sink,type=Fixed flow,flow=50,name=Tank - Sink
