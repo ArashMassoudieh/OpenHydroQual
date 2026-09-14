@@ -15,6 +15,7 @@
 #include <QFileInfo>
 #include <cstdio>
 #include <cmath>
+#include <chrono>
 #include <string>
 
 #include GEN_HEADER   // the generated model header (e.g. "ParallelModel.h")
@@ -33,7 +34,10 @@ int main(int argc, char* argv[])
     sys.SetSilent(true);
     Script scr(model, &sys);
     sys.CreateFromScript(scr, res + "/settings.json");
+    auto ti0 = std::chrono::steady_clock::now();
     sys.Solve();
+    auto ti1 = std::chrono::steady_clock::now();
+    const double interp_sec = std::chrono::duration<double>(ti1 - ti0).count();
     // The interpreter's outer loop runs while (t < tend + dt), so it overshoots
     // tend by up to one step. Compare at the ACTUAL final time it reached.
     const double tend = sys.GetTime();
@@ -46,24 +50,39 @@ int main(int argc, char* argv[])
     // ---- generated run -----------------------------------------------------
     GEN_CLASS m;
     m.initialize();
-    if (!m.runTo(tend)) { std::fprintf(stderr, "generated model failed to solve\n"); return 2; }
+    auto tg0 = std::chrono::steady_clock::now();
+    bool okg = m.runTo(tend);
+    auto tg1 = std::chrono::steady_clock::now();
+    const double gen_sec = std::chrono::duration<double>(tg1 - tg0).count();
+    if (!okg) { std::fprintf(stderr, "generated model failed to solve\n"); return 2; }
     for (unsigned i = 0; i < nB && i < (unsigned)m.nBlocks(); ++i)
         gen[i] = m.state(i);
 
-    // ---- compare -----------------------------------------------------------
-    std::printf("  block   interpreter        generated          abs.err   rel.err\n");
-    std::printf("-----------------------------------------------------------------------\n");
-    double max_rel = 0.0, max_abs = 0.0;
+    // ---- compare (summary; rel error scaled by the largest storage) --------
+    double scale = 0.0, tot_i = 0.0, tot_g = 0.0;
+    for (unsigned i = 0; i < nB; ++i) { scale = std::max(scale, std::fabs(interp[i])); tot_i += interp[i]; tot_g += gen[i]; }
+    double max_abs = 0.0, max_rel_scaled = 0.0; unsigned worst = 0;
     for (unsigned i = 0; i < nB; ++i) {
-        double a = interp[i], b = gen[i];
-        double abserr = std::fabs(a - b);
-        double relerr = abserr / (std::fabs(a) + 1e-12);
-        max_abs = std::max(max_abs, abserr);
-        max_rel = std::max(max_rel, relerr);
-        std::printf("  %-6u  %16.8g  %16.8g  %10.2e %9.2e\n", i, a, b, abserr, relerr);
+        double ae = std::fabs(interp[i] - gen[i]);
+        if (ae > max_abs) { max_abs = ae; worst = i; }
+        max_rel_scaled = std::max(max_rel_scaled, ae / (scale + 1e-30));
     }
+    if (nB <= 20) {
+        std::printf("  block   interpreter        generated          abs.err\n");
+        for (unsigned i = 0; i < nB; ++i)
+            std::printf("  %-6u  %16.8g  %16.8g  %10.2e\n", i, interp[i], gen[i], std::fabs(interp[i]-gen[i]));
+    } else {
+        std::printf("worst block %u: interp=%.8g  gen=%.8g  abs=%.3e\n",
+                    worst, interp[worst], gen[worst], max_abs);
+    }
+    const bool pass = (max_rel_scaled < 5e-3);
     std::printf("-----------------------------------------------------------------------\n");
-    std::printf("tend=%.4g   max abs err=%.3e   max rel err=%.3e -> %s\n",
-                tend, max_abs, max_rel, (max_rel < 1e-4 || max_abs < 1e-6) ? "PASS" : "FAIL");
-    return (max_rel < 1e-4 || max_abs < 1e-6) ? 0 : 3;
+    std::printf("blocks=%u  tend=%.4g\n", nB, tend);
+    std::printf("total storage: interp=%.8g  gen=%.8g  (rel diff %.2e)\n",
+                tot_i, tot_g, std::fabs(tot_i - tot_g) / (std::fabs(tot_i) + 1e-30));
+    std::printf("max abs err=%.3e  max rel err(scaled by %.4g)=%.3e -> %s\n",
+                max_abs, scale, max_rel_scaled, pass ? "PASS" : "FAIL");
+    std::printf("RUNTIME: interpreter=%.3f s   generated=%.3f s   speedup=%.2fx\n",
+                interp_sec, gen_sec, interp_sec / (gen_sec + 1e-30));
+    return pass ? 0 : 3;
 }

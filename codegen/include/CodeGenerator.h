@@ -39,6 +39,21 @@ struct GenOptions {
     std::string stateVariable = "Storage";  // the solutionorder variable to integrate
     bool        emitJacobian  = true;        // analytical Jacobian (else numerical)
     bool        transport     = false;       // constituents (phase 2)
+
+    // Standalone-project emission (GUI "Model > Export to C++" and
+    // `ohq_generate --project`). When set, generate() also writes into outputDir:
+    //   runtime/*.h        the header-only runtime (embedded copy, see
+    //                      EmbeddedRuntime.h) so the folder builds anywhere
+    //   CMakeLists.txt     cross-platform build; Windows via
+    //                      `cmake -G "Visual Studio 17 2022"`
+    //   main.cpp           [executable] runs tstart->tend, writes a CSV of the
+    //                      state variables, prints wall time
+    //   <Class>_api.h/.cpp [library] a C ABI (create/initialize/step/runTo/
+    //                      state/time/destroy) so any language can embed it
+    //   README.md          build + run instructions
+    bool        emitProject   = false;
+    bool        asLibrary     = false;       // library target instead of executable
+    bool        sharedLibrary = false;       // [library] SHARED (.so/.dll) vs STATIC
 };
 
 class CodeGenerator {

@@ -99,24 +99,111 @@ generated model supplies only the model-specific parts: topology
 (`linkSrc/linkDst`), `rigid[]` flags, `computeFluxes()` (raw link flows + own
 inflows over effective storage), and `initialStorage()`.
 
+### Rules (`Quan::_type::rule`) — done
+Rule quantities are emitted as first-match-wins `if / else if` chains
+(matching `Rule::calc`), with each condition a chained inequality
+(`(a<b) && (b<c)`). Minimal const getters were added to `Rule`
+(`Count()`) and `Condition` (`Expr(i)`, `IsLessThan(i)`) to enable
+introspection. Rule metadata entries (a `"unit"` key parsed as a
+zero-operator condition) are skipped. The analyzer collects a rule's
+condition/result references so it tiers and orders like an expression.
+
+### Initial values
+Evaluated numerically via the interpreter at generation time
+(`Object::CalculateInitialValues`) and emitted as literals — robust when an
+initial-value expression references non-constant quantities (e.g. a channel's
+initial Storage from an initial depth).
+
 ### Parity status (verified by `tests/parity_harness.cpp`)
 Compared at the interpreter's actual final time (its outer loop runs while
 `t < tend + dt`, overshooting `tend` by up to one step):
 
 | model | what it exercises | max rel err |
 |-------|-------------------|-------------|
-| `Parallel_Links` | fixed flows, no limiting | 2.6e-4 (residual is end-of-run time rounding: interpreter state at t≈5.194 vs reported 5.198) |
-| `Draining_Tank`  | a tank drained to empty → **limiting engages** | **6.5e-15 (machine precision)** |
+| `Parallel_Links` | fixed flows, no limiting | 2.6e-4 (end-of-run time rounding) |
+| `Draining_Tank`  | a tank drained to empty → **limiting** | **6.5e-15** |
+| `Reservoir_Rule` | **piecewise rule flow** + limiting | **9.3e-16** |
 
 Time scheme matches the interpreter (`c_n_weight = 1`, fully implicit).
 
-### Limitations (next up, priority order)
-- **Rules** (`Quan::_type::rule`) rejected with a clear error (need `Condition`
-  introspection).
-- **Transport / constituents** not emitted (constituent mass states like
-  `DOM_mass`); flow-only models work. Surfaced by `Examples/Wet_pond`.
-- **Analytical Jacobian** — numerical FD for now; AD over the trees is the
-  planned optimization.
+### Fixed-head boundaries — supported
+Validated in isolation (`Examples/Fixed_Head_Test`, 3e-12). A `fixed_head` block
+is a normal block whose `head` is a constant value; it integrates as storage
+with an imposed head, which is exactly what the interpreter does. The
+`Examples/Culvert` mismatch is **HDS-5 culvert/open-channel hydraulics** (the
+channel/barrel flow expressions with `_ups` regime switching), a separate deep
+effort — not a boundary-block issue.
+
+### Transport / constituents — Phase A (advection) done
+A second solve phase (`runtime/ohq_transport.h`) over `mass[block][constituent]`
+runs after the flow phase using its committed storages/flows. Constituent
+quantities are `"<constituent>:<var>"` `Quan`s; expressions come pre-revised
+(bare `concentration` already reads `Tracer:concentration`; shared `Storage`/`flow`
+stay bare and resolve to the fixed flow-phase results). Advective flux is
+`_ups(flow;concentration)` — emitted as `flow>0 ? flow*conc(source) : flow*conc(dest)`
+(2-arg `_ups`/`_bkw` support in the emitter, covered by `tests/test_emitter.cpp`).
+The generator emits the constituent state enum, constituent input members
+(values/series), a topologically-ordered `computeTransportFluxes` (blocks before
+links), and a two-phase `step()`.
+
+**Validated** on `Examples/Plug_Flow_Reactor/PFR_tracer` (`tests/parity_transport.cpp`):
+the 10 PFR reactors match the interpreter to **~1e-6**; the two huge boundary
+reservoirs agree to **1.6e-3** (mass conserved; the residual is adaptive-step path
+difference on slowly-evolving 1e5-storage reservoirs, the same effect as
+Parallel_Links' end-time rounding).
+
+- **Missing quantity → 0** in constituent expressions (matches the interpreter):
+  e.g. `inflow` on a fixed_head, diffusion coefficients on a link.
+
+### Transport / constituents — Phase B (reactions) done
+Reaction terms `Σ_r rate_r·stoich_{r,j}·Storage` are emitted into the transport
+`inflowOwn`. Rate/stoichiometry expressions resolve bare **constituent names** to
+`Pos(<block>:concentration)` and **reaction parameters** to their computed
+`value` (`RxnParameter::CalcVal`), mirroring `Object::GetVal`'s fallbacks.
+Validated on `Decay_Test.ohq` (first-order decay): reproduces the decay, ~2.7%
+below the interpreter at t=3 (dt-path/stiffness; see issues.md ISSUE 4).
+Multi-constituent + Arrhenius reaction parameters (Wet_pond) is the next target.
+
+### Solver settings emitted from the model
+The generated solvers now use the model's own settings (`GetSolverSettings`):
+tolerance, iteration bounds, dt grow (1/reduction) / shrink (reduction) / fail
+factors, dt max/min factors, and landtozero — so adaptation matches the
+interpreter rather than codegen defaults. Flow models still match at machine
+precision.
+
+### Sources & spiky forcing (rainfall) — fixed
+- `source`-type quantities (e.g. `Precipitation` = a `create source` object) are
+  now valued as `coefficient * timeseries * rate` (per `Source::GetValue`), with
+  each unique source's series baked once and shared across all objects that use
+  it (one rain gauge → 1024 cells). Non-finite series points are skipped.
+- The solver clamps `dt` to the forcing time-series sample times (breakpoints),
+  matching the interpreter's `GetMinimumNextTimeStepSize`, so a sharp rainfall
+  pulse is never stepped over (this alone fixed a ~45% runoff-volume error).
+
+### Sparse Jacobian — large models are now fast
+`runtime/ohq_sparse.h`: CSR + ILU(0)-preconditioned BiCGSTAB (dense fallback).
+The mass-balance solver builds the Jacobian sparsity from block adjacency,
+fills it with **graph-colored finite differences** (~15–20 residual evals
+instead of n), and solves sparsely — replacing dense O(n^3). Enabled for
+n >= 100 blocks.
+
+### Benchmark: `AZ12-140_grid_25m` (1061 blocks, 2084 links, rainfall-driven)
+| | result |
+|---|---|
+| generation | 1061 blocks → 60k-line header |
+| generated run | **62.9 s** single-thread (was >15 min dense, timing out) |
+| correctness | 991/1061 blocks < 1e-6 vs interpreter; total mass diff 0.75% |
+| remaining ~2% | Outfall/EdgeSink + culvert-feeding channels — outflow-limiting
+  / negative-storage edge behavior (interpreter allows small negative storages
+  the generated limiter clamps to 0) |
+
+### Other limitations
+- **Analytical Jacobian** — colored-FD numerical Jacobian now; symbolic AD over
+  the trees remains a further optimization.
+- **Outflow-limiting parity** — the negative-storage edge behavior above is the
+  next item to reach bit-identical results on drainage-network models.
+- **Dead-code elimination** — emit only per-iteration quantities reachable from
+  the residual.
 
 ## Build & test
 
@@ -130,12 +217,45 @@ cmake --build codegen/build -j
 The generator target needs the OHQ core: `libOHQLib.so` (set `-DOHQLIB_DIR=...`)
 and Qt6. Generated model libraries need none of that — only `codegen/runtime/`.
 
+## Export to C++ — self-contained project folders
+
+The generator can emit a **complete, buildable folder** rather than just the
+header, so a model can be compiled on a machine with no OpenHydroQual at all:
+
+```
+<out>/
+  <Class>.h            generated model
+  runtime/*.h          header-only runtime (an embedded copy, see below)
+  CMakeLists.txt       Linux/macOS: cmake -S . -B build && cmake --build build
+                       Windows:     cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+  main.cpp             [executable]  runs tstart->tend, CSV of every step, wall time
+  <Class>_api.h/.cpp   [library]     C ABI: create/initialize/step/step_to/run_to/
+                                     time/state/state_name/(n_mass/mass)/destroy
+  example.cpp          [library]     minimal client (also a link check)
+  README.md
+```
+
+- **GUI:** `Model > Export to C++…` — asks for a parent folder + new folder
+  name (also the class name), then *Library* (static / shared) or *Executable*.
+  Implemented in `mainwindow.cpp::onexporttocpp`; the generator sources are
+  compiled into the GUI (`OpenHydroQual.pro`).
+- **CLI:** `ohq_generate <model.ohq> <resources> <out> <Class> --project exe|lib|shared`
+  (same code path as the GUI).
+- **Embedded runtime:** `runtime/*.h` are compiled into the generator as string
+  literals by `tools/embed_runtime.py` → `src/EmbeddedRuntime.cpp` (chunked to
+  stay under MSVC's literal limit). **Re-run the script after editing anything
+  in `runtime/`.**
+- The generated class also exposes `stateName(i)`, `constituentName(j)`,
+  `simulationStart()/simulationEnd()` and `stepTo(t_end)` (one step, dt
+  clamped) for drivers and embedding.
+
+Options live in `GenOptions` (`emitProject`, `asLibrary`, `sharedLibrary`).
+
 ## Next phase
 
-1. `DependencyAnalyzer::analyze` — build the quantity graph from `Expression`
-   refs + `Quan` types; propagate state/time labels; fold constants.
-2. `CodeGenerator::generate` — walk `System` blocks/links, order quantities,
-   drive the emitter per tier, and write `<Class>.h/.cpp` in the `two_pond_model.h`
-   shape (incl. analytical Jacobian).
-3. Parity: rules, rigid/outflow-limit switching, then transport/constituents.
-4. Validation harness: interpreted vs compiled outputs over `Examples/`.
+The purpose of all this is to run **OpenHydroTwin**'s GA / streaming-MCMC data
+assimilation on a generated library. The plan — required codegen features
+(runtime-settable parameters, emitted observations, series setters, state
+import/export, a versioned C kernel ABI), the `System::Solve` hook, and the
+twin-side config/loader — is in
+`/home/arash/Projects/OpenHydroTwin/CODEGEN_ROADMAP.md`.

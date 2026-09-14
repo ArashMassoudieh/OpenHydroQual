@@ -64,8 +64,113 @@
 #include "gridgenerator.h"
 #include "metamodelhelpdialog.h"
 #include "VisualizationDialog.h"
+#include "CodeGenerator.h"
+#include <QMessageBox>
+#include <QDir>
 
 using namespace std;
+
+// ---------------------------------------------------------------------------
+// Model > Export to C++...
+// Compiles the currently loaded model into a standalone C++ solver project
+// (see codegen/): a self-contained folder with the generated model header, the
+// header-only runtime, a CMakeLists.txt (Linux/macOS make, Windows Visual
+// Studio) and either main.cpp (executable) or a C-API wrapper (library). Every
+// equation is hard-coded -- no expression interpreter -- which is what the
+// digital-twin assimilation loop (OpenHydroTwin) will link for speed.
+// ---------------------------------------------------------------------------
+void MainWindow::onexporttocpp()
+{
+    if (system.BlockCount() == 0)
+    {
+        QMessageBox::warning(this, tr("Export to C++"),
+                             tr("The model has no blocks. Build or open a model first."));
+        return;
+    }
+
+    // 1. Where to create the project folder, and its name (created here).
+    const QString parentDir = QFileDialog::getExistingDirectory(
+        this, tr("Export to C++ -- choose where to create the project folder"));
+    if (parentDir.isEmpty()) return;
+
+    bool ok = false;
+    const QString folderName = QInputDialog::getText(this, tr("Export to C++"),
+        tr("Name of the new project folder (also used as the C++ class name):"),
+        QLineEdit::Normal, "OHQModel", &ok).trimmed();
+    if (!ok || folderName.isEmpty()) return;
+
+    QDir parent(parentDir);
+    const QString outDir = parent.filePath(folderName);
+    if (QFileInfo::exists(outDir))
+    {
+        if (QMessageBox::question(this, tr("Export to C++"),
+                tr("'%1' already exists. Overwrite its generated files?").arg(outDir))
+            != QMessageBox::Yes)
+            return;
+    }
+    else if (!parent.mkpath(folderName))
+    {
+        QMessageBox::critical(this, tr("Export to C++"),
+                              tr("Cannot create folder '%1'.").arg(outDir));
+        return;
+    }
+
+    // 2. Library or executable (and static vs shared for a library).
+    QMessageBox typeBox(this);
+    typeBox.setWindowTitle(tr("Export to C++"));
+    typeBox.setText(tr("Build the generated model as a library or a standalone executable?"));
+    typeBox.setInformativeText(tr(
+        "Library: a C API (.a/.lib, or shared .so/.dll) to embed in other programs, "
+        "e.g. the OpenHydroTwin assimilation loop.\n"
+        "Executable: runs the forward model and writes a CSV of the results."));
+    QPushButton* libBtn = typeBox.addButton(tr("Library"), QMessageBox::AcceptRole);
+    QPushButton* exeBtn = typeBox.addButton(tr("Executable"), QMessageBox::AcceptRole);
+    typeBox.addButton(QMessageBox::Cancel);
+    typeBox.exec();
+    if (typeBox.clickedButton() != libBtn && typeBox.clickedButton() != exeBtn) return;
+    const bool asLibrary = (typeBox.clickedButton() == libBtn);
+    bool shared = false;
+    if (asLibrary)
+        shared = (QMessageBox::question(this, tr("Export to C++"),
+                    tr("Build as a SHARED library (.so / .dll)?\nChoose No for a static library."),
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes);
+
+    // 3. Class name: a C++ identifier derived from the folder name.
+    QString cls;
+    for (const QChar& ch : folderName)
+        cls += (ch.isLetterOrNumber() || ch == QChar('_')) ? ch : QChar('_');
+    if (cls.isEmpty() || cls[0].isDigit()) cls.prepend("Model_");
+
+    // 4. Generate.
+    ohqcg::GenOptions opt;
+    opt.className     = cls.toStdString();
+    opt.outputDir     = outDir.toStdString();
+    opt.emitProject   = true;
+    opt.asLibrary     = asLibrary;
+    opt.sharedLibrary = shared;
+    try
+    {
+        ohqcg::CodeGenerator().generate(system, opt);
+    }
+    catch (const std::exception& e)
+    {
+        QMessageBox::critical(this, tr("Export to C++"),
+                              tr("Code generation failed:\n%1").arg(e.what()));
+        Log(QString("Export to C++ failed: ") + e.what());
+        return;
+    }
+
+    const QString target = asLibrary ? (shared ? tr("shared library") : tr("static library"))
+                                     : tr("executable");
+    QMessageBox::information(this, tr("Export to C++"),
+        tr("Generated a standalone C++ %1 project in:\n%2\n\n"
+           "Build it with CMake:\n"
+           "  Linux/macOS:  cmake -S . -B build && cmake --build build\n"
+           "  Windows:      cmake -S . -B build -G \"Visual Studio 17 2022\" -A x64\n"
+           "                cmake --build build --config Release\n\n"
+           "See README.md in the folder for the API.").arg(target, outDir));
+    Log("Exported model to C++ (" + target + "): " + outDir);
+}
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -183,6 +288,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionSave_State_to_Json,SIGNAL(triggered()),this,SLOT(onsaveasJson()));
     connect(ui->actionLoad_Json,SIGNAL(triggered()),this,SLOT(onloadJson()));
     connect(ui->actionExport_to_SVG,SIGNAL(triggered()),this,SLOT(onexporttosvg()));
+    connect(ui->actionExport_to_Cpp,SIGNAL(triggered()),this,SLOT(onexporttocpp()));
     connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(onabout()));
     connect(ui->actionUndo,SIGNAL(triggered()),this,SLOT(on_Undo()));
     connect(ui->actionRedo,SIGNAL(triggered()),this,SLOT(on_Redo()));
@@ -604,8 +710,9 @@ bool MainWindow::BuildObjectsToolBar()
     categoryToolbars_.clear();
 
     // Set smaller icon size and text style for standard toolbars
+    const int iconextent = ObjectToolbarIconExtent();
     for (QToolBar* toolbar : { ui->BlocksToolBar, ui->LinksToolBar, ui->SourcesToolBar }) {
-        toolbar->setIconSize(QSize(20, 20));
+        toolbar->setIconSize(QSize(iconextent, iconextent));
         toolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
         toolbar->setVisible(true);
         toolbar->setStyleSheet(
@@ -749,7 +856,7 @@ bool MainWindow::BuildObjectsToolBar()
                     // Create new toolbar for this category
                     categoryToolbar = new QToolBar(categoryName, this);
                     categoryToolbar->setObjectName(categoryName + "ToolBar");
-                    categoryToolbar->setIconSize(QSize(20, 20));
+                    categoryToolbar->setIconSize(QSize(iconextent, iconextent));
                     categoryToolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
                     categoryToolbar->setMovable(true);
                     categoryToolbar->setFloatable(true);
@@ -839,6 +946,38 @@ bool MainWindow::BuildObjectsToolBar()
     ui->mainToolBar->setVisible(false);
 
     return true;
+}
+
+int MainWindow::ObjectToolbarIconExtent() const
+{
+    // 20 is the size the Blocks/Links/Sources toolbars have always used.
+    return toolbarIconSize == ToolbarIconSize::Large ? 32 : 20;
+}
+
+int MainWindow::GeneralToolbarIconExtent() const
+{
+    // 32 is what mainwindow.ui gives the vertical File/View toolbar.
+    return toolbarIconSize == ToolbarIconSize::Large ? 48 : 32;
+}
+
+void MainWindow::ApplyToolbarIconSize()
+{
+    const int objectextent = ObjectToolbarIconExtent();
+    for (QToolBar* toolbar : { ui->BlocksToolBar, ui->LinksToolBar, ui->SourcesToolBar })
+        toolbar->setIconSize(QSize(objectextent, objectextent));
+    // The per-category toolbars are created on the fly by BuildObjectsToolBar().
+    for (QToolBar* toolbar : categoryToolbars_.values())
+        toolbar->setIconSize(QSize(objectextent, objectextent));
+
+    const int generalextent = GeneralToolbarIconExtent();
+    ui->GeneraltoolBar->setIconSize(QSize(generalextent, generalextent));
+}
+
+void MainWindow::SetToolbarIconSize(ToolbarIconSize size)
+{
+    if (size == toolbarIconSize) return;
+    toolbarIconSize = size;
+    ApplyToolbarIconSize();
 }
 
 // Compact helper method:

@@ -1,0 +1,21 @@
+loadtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/main_components.json
+addtemplate; filename = /home/arash/Projects/OpenHydroQual/resources/open_channel.json
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=simulation_end_time, value=2
+setvalue; object=system, quantity=c_n_weight, value=1
+setvalue; object=system, quantity=initial_time_step, value=0.001
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=max_timestep_decrease_factor, value=100000
+setvalue; object=system, quantity=max_timestep_increase_factor, value=50
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=write_interval, value=100
+create block;type=Trapezoidal Channel Segment,name=A,base_width=2,side_slope=1.5,ManningCoeff=0.03,bottom_elevation=1.0,length=100,Storage=500,depth=0,ag_area=0,non_ag_area=0,dam_height=0,x=0,y=0,_width=200,_height=200
+create block;type=Trapezoidal Channel Segment,name=B,base_width=2,side_slope=1.5,ManningCoeff=0.03,bottom_elevation=0.5,length=100,Storage=10,depth=0,ag_area=0,non_ag_area=0,dam_height=0,x=300,y=0,_width=200,_height=200
+create block;type=fixed_head,name=Outlet,head=0.2,area=1,Storage=100000,x=600,y=0,_width=200,_height=200
+create link;from=A,to=B,type=Trapezoidal_Channel_link,name=AB
+create link;from=B,to=Outlet,type=channel2fixed,name=BOut

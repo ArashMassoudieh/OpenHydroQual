@@ -100,7 +100,8 @@ std::string ExpressionEmitter::emitNode(const Expression& e) const
         return formatConstant(e.constant);
 
     if (e.param_constant_expression == "parameter") {
-        const Loc loc = locationOf(e);
+        Loc loc = locationOf(e);
+        if (selfOverride_ && loc == Loc::self) loc = selfAs_;   // _ups/_bkw remap
         if (!ctx_.resolveValue)
             throw std::runtime_error("ExpressionEmitter: no value resolver");
         return ctx_.resolveValue(e.parameter, loc);
@@ -128,6 +129,26 @@ std::string ExpressionEmitter::emitFunction(const Expression& e) const
 
     const std::string& fn = e.function;
 
+    // Two-argument link forms of _ups / _bkw (advective upstream selection):
+    //   _ups(a, b) = a>0 ? a*b(source) : a*b(dest)   [a evaluated on the link]
+    //   _bkw(a, b) = (a(source)-a(dest))>0 ? b(source) : b(dest)
+    if ((fn == "ups" || fn == "bkw") && groups.size() == 2) {
+        const auto& g0 = groups[0];
+        const auto& g1 = groups[1];
+        if (fn == "ups") {
+            const std::string a  = emitArithmetic(e, g0.first, g0.second);
+            const std::string bs = emitArgWithSelf(e, g1.first, g1.second, Loc::source);
+            const std::string bd = emitArgWithSelf(e, g1.first, g1.second, Loc::destination);
+            return "((" + a + ") > 0.0 ? (" + a + ") * (" + bs + ") : (" + a + ") * (" + bd + "))";
+        } else { // bkw
+            const std::string as = emitArgWithSelf(e, g0.first, g0.second, Loc::source);
+            const std::string ad = emitArgWithSelf(e, g0.first, g0.second, Loc::destination);
+            const std::string bs = emitArgWithSelf(e, g1.first, g1.second, Loc::source);
+            const std::string bd = emitArgWithSelf(e, g1.first, g1.second, Loc::destination);
+            return "(((" + as + ") - (" + ad + ")) > 0.0 ? (" + bs + ") : (" + bd + "))";
+        }
+    }
+
     // Kernel functions: first argument is a time series handle.
     if (fn == "ekr" || fn == "gkr") {
         if (groups.empty()) throw std::runtime_error("_" + fn + " with no arguments");
@@ -152,6 +173,15 @@ std::string ExpressionEmitter::emitFunction(const Expression& e) const
         out += emitArithmetic(e, groups[g].first, groups[g].second);
     }
     out += ")";
+    return out;
+}
+
+std::string ExpressionEmitter::emitArgWithSelf(const Expression& parent, int begin, int end, Loc as) const
+{
+    const bool prevOv = selfOverride_; const Loc prevAs = selfAs_;
+    selfOverride_ = true; selfAs_ = as;
+    std::string out = emitArithmetic(parent, begin, end);
+    selfOverride_ = prevOv; selfAs_ = prevAs;
     return out;
 }
 

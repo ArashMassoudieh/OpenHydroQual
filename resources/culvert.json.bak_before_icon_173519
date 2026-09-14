@@ -2828,9 +2828,6 @@
  },
  "Supercritical_Contraction": {
   "type": "link",
-  "icon": {
-   "filename": "culvert_contraction.png"
-  },
   "typecategory": "Connectors",
   "description": "Contraction passing supercritical flow, sized by specific energy",
   "throat_width": {

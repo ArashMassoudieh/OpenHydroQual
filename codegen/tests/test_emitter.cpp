@@ -61,6 +61,9 @@ int main()
     // the real forecast expression from precipitation_forcast.json (uncertain)
     check("ratio*_ekr(timeseries;mu)+_ekr(timeseries_corrupted;lambda)-ratio*_ekr(timeseries_corrupted;mu)",
           "(((ratio_ * ts_timeseries_.ekr(t_new, mu_)) + ts_timeseries_corrupted_.ekr(t_new, lambda_)) - (ratio_ * ts_timeseries_corrupted_.ekr(t_new, mu_)))");
+    // 2-arg _ups advective flux: a>0 ? a*conc(source) : a*conc(dest)
+    check("_ups(flow;concentration)",
+          "((flow_) > 0.0 ? (flow_) * (src.concentration_) : (flow_) * (dst.concentration_))");
     // nested intrinsics + orifice max_flow
     check("86400*_sqr(2*9.81*_pos(head.s-head.e)/valve_K)*area",
           "((86400.0 * ohq::f_sqr((((2.0 * 9.81) * ohq::pos((src.head_ - dst.head_))) / valve_K_))) * area_)");

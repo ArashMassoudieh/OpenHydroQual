@@ -33,11 +33,34 @@ static Loc locFromText(const std::string& t)
     return Loc::self;
 }
 
+// Collect leaves, remapping self-located refs to `selfAs` (for _ups/_bkw args).
+static void collectRefsSelfAs(const Expression& e, std::vector<std::pair<std::string, Loc>>& out, Loc selfAs)
+{
+    if (e.param_constant_expression == "parameter") {
+        Loc loc = locFromText(e.text);
+        if (loc == Loc::self) loc = selfAs;
+        out.emplace_back(e.parameter, loc);
+        return;
+    }
+    for (const Expression& t : e.terms)
+        collectRefsSelfAs(t, out, selfAs);
+}
+
 // Recursively collect (name, location) of every parameter leaf in an Expression.
 static void collectRefs(const Expression& e, std::vector<std::pair<std::string, Loc>>& out)
 {
     if (e.param_constant_expression == "parameter") {
         out.emplace_back(e.parameter, locFromText(e.text));
+        return;
+    }
+    // The 2-argument link forms of _ups/_bkw evaluate their arguments at the
+    // source and destination blocks, so self-located refs inside them actually
+    // depend on both endpoints. Record both so tiering/ordering see the coupling.
+    if ((e.function == "ups" || e.function == "bkw") && e.terms.size() == 2) {
+        for (const Expression& t : e.terms) {
+            collectRefsSelfAs(t, out, Loc::source);
+            collectRefsSelfAs(t, out, Loc::destination);
+        }
         return;
     }
     for (const Expression& t : e.terms)
@@ -105,10 +128,25 @@ AnalysisResult DependencyAnalyzer::analyze(System& system) const
                     info.dependencies.push_back(resolveRef(system, obj, isLink, r.first, r.second));
                 break;
             }
-            case Quan::_type::rule:
-                // Conservative: rules are treated as per-iteration (state) for now.
-                info.dependsOnState = true;
+            case Quan::_type::rule: {
+                // Collect references from every condition operand and every
+                // result expression so the rule tiers/orders like an expression.
+                Rule* r = q.GetRule();
+                if (r) {
+                    std::vector<std::pair<std::string, Loc>> refs;
+                    for (int ri = 0; ri < r->Count(); ++ri) {
+                        _condplusresult* cr = (*r)[ri];
+                        const Condition& c = cr->condition;
+                        if (c.Count() < 2) continue;   // skip metadata (e.g. "unit")
+                        for (unsigned e = 0; e < c.Count(); ++e)
+                            collectRefs(c.Expr(e), refs);
+                        collectRefs(cr->result, refs);
+                    }
+                    for (auto& rf : refs)
+                        info.dependencies.push_back(resolveRef(system, obj, isLink, rf.first, rf.second));
+                }
                 break;
+            }
             default:
                 break;
             }

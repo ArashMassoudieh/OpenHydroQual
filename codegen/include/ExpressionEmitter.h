@@ -60,8 +60,14 @@ private:
     static std::string apply(const std::string& op, const std::string& l, const std::string& r);
     // Parse a parameter leaf's location from its raw text ("x", "x.s", "x.e", "x.v").
     static Loc locationOf(const Expression& leaf);
+    // Emit an argument group with self-references remapped to `as` (for the 2-arg
+    // link forms of _ups / _bkw, which evaluate an argument at source/destination).
+    std::string emitArgWithSelf(const Expression& parent, int begin, int end, Loc as) const;
 
     EmitContext ctx_;
+    // Active self-location override (used only while emitting _ups/_bkw arguments).
+    mutable bool selfOverride_ = false;
+    mutable Loc  selfAs_ = Loc::self;
 };
 
 } // namespace ohqcg

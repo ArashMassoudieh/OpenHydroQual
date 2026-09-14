@@ -31,7 +31,9 @@
 
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include "ohq_linalg.h"
+#include "ohq_sparse.h"
 #include "ohq_solver.h"   // SolverSettings
 
 namespace ohq {
@@ -44,6 +46,16 @@ public:
 
     SolverSettings& settings() { return s_; }
     double landtozero = 0.0;   // matches settings.json default
+
+    // Forcing breakpoints (sorted): time-series sample times. dt is clamped so a
+    // step never crosses one, matching the interpreter's GetMinimumNextTimeStepSize
+    // so spiky forcing (e.g. a rainfall pulse) is never stepped over.
+    std::vector<double> breakpoints;
+    void setBreakpoints(const double* a, int n) { breakpoints.assign(a, a + n); }
+    // Hard stop time: dt is clamped so a step never crosses it (used by the
+    // two-phase transport runTo so both phases land exactly on t_end).
+    double stopTime_ = 1e300;
+    void setStop(double t) { stopTime_ = t; }
 
     void initialize(double tstart, double dt0)
     {
@@ -63,6 +75,39 @@ public:
         }
         m_.initialStorage(storage_.data());
         last_iters_ = 0;
+
+        // sparse Jacobian pattern: block adjacency (self + link-connected blocks)
+        nbr_.assign(n_, {});
+        std::vector<std::vector<int>> pattern(n_);
+        for (int b = 0; b < n_; ++b) {
+            std::vector<int> cols{b};
+            for (int l : linksFrom_[b]) cols.push_back(m_.linkDst(l));
+            for (int l : linksTo_[b])   cols.push_back(m_.linkSrc(l));
+            std::sort(cols.begin(), cols.end());
+            cols.erase(std::unique(cols.begin(), cols.end()), cols.end());
+            pattern[b] = cols;
+            for (int c : cols) if (c != b) nbr_[b].push_back(c);
+        }
+        useSparse_ = (n_ >= 100);
+        if (useSparse_) {
+            jac_.build(pattern);
+            // Greedy distance-2 coloring so columns sharing no residual row are
+            // perturbed together: the FD Jacobian then costs ~(#colors) residual
+            // evals instead of n. (Two columns conflict if within graph distance 2.)
+            color_.assign(n_, -1);
+            for (int j = 0; j < n_; ++j) {
+                std::vector<int> used;
+                auto note = [&](int k){ if (color_[k] >= 0) used.push_back(color_[k]); };
+                note(j);
+                for (int a : nbr_[j]) { note(a); for (int b : nbr_[a]) note(b); }
+                std::sort(used.begin(), used.end());
+                int c = 0; for (int u : used) { if (u == c) ++c; else if (u > c) break; }
+                color_[j] = c;
+            }
+            int ncol = 0; for (int c : color_) ncol = std::max(ncol, c + 1);
+            colorGroups_.assign(ncol, {});
+            for (int j = 0; j < n_; ++j) colorGroups_[color_[j]].push_back(j);
+        }
     }
 
     double time() const { return t_; }
@@ -70,10 +115,19 @@ public:
     double storage(int b) const { return storage_[b]; }
     bool   isLimited(int b) const { return limited_[b] != 0; }
     int    lastIterations() const { return last_iters_; }
+    // Committed link flow (raw flow * outflow-limit factor) from the last step;
+    // consumed by the transport phase.
+    double linkFlow(int l) const { return committedFlow_.empty() ? 0.0 : committedFlow_[l]; }
 
     bool step()
     {
         const double dt_min = dt0_ * s_.dt_min_factor;
+        // Clamp dt so the step lands on/before the next forcing breakpoint.
+        if (!breakpoints.empty()) {
+            auto it = std::upper_bound(breakpoints.begin(), breakpoints.end(), t_ + 1e-12);
+            if (it != breakpoints.end() && t_ + dt_ > *it) dt_ = *it - t_;
+        }
+        if (stopTime_ - t_ > 1e-30 && t_ + dt_ > stopTime_) dt_ = stopTime_ - t_;
         int stepFails = 0;
         for (;;) {
             for (int b = 0; b < n_; ++b) past_[b] = storage_[b];
@@ -106,6 +160,18 @@ public:
             }
 
             if (ok && !switched) {
+                // refresh fluxes at the converged solution, then record committed
+                // link flows (raw flow * limiting factor) for the transport phase
+                assemble(X_.data(), F_.data());
+                committedFlow_.assign(nl_ > 0 ? nl_ : 1, 0.0);
+                for (int l = 0; l < nl_; ++l) {
+                    const int s = m_.linkSrc(l), e = m_.linkDst(l);
+                    const double q = flowRaw_[l];
+                    double factor = 1.0;
+                    if (limited_[s] && q > 0)      factor = X_[s];
+                    else if (limited_[e] && q < 0) factor = X_[e];
+                    committedFlow_[l] = q * factor;
+                }
                 for (int b = 0; b < n_; ++b) {
                     if (limited_[b]) { factor_[b] = X_[b]; storage_[b] = past_[b] * landtozero; }
                     else             { storage_[b] = X_[b]; }
@@ -201,19 +267,10 @@ private:
         assemble(X_.data(), F_.data());
         double err = norm(F_), err_ini = err, xnorm = norm(X_) + 1e-30;
         if (err < s_.abs_floor) { iters = 0; iters_last_ = 0; return true; }
-        std::vector<double> J(n_ * n_), Jc(n_ * n_), Fc(n_), dx(n_), Xtry(n_), F0(n_);
+        std::vector<double> dx(n_), Xtry(n_), F0(n_);
         for (iters = 1; iters <= s_.max_iterations; ++iters) {
-            // numerical Jacobian (FD), matching the interpreter's default column kernel
             assemble(X_.data(), F0.data());
-            for (int j = 0; j < n_; ++j) {
-                const double eps = -1e-6 * (std::fabs(X_[j]) + 1.0);
-                const double save = X_[j]; X_[j] += eps;
-                assemble(X_.data(), F_.data());
-                for (int i = 0; i < n_; ++i) J[i * n_ + j] = (F_[i] - F0[i]) / eps;
-                X_[j] = save;
-            }
-            Jc = J; Fc = F0;
-            if (!solveInPlace(n_, Jc.data(), Fc.data(), dx.data())) return false;
+            if (!computeStep(F0, dx)) return false;
             double lambda = s_.nr_coefficient, err_try = err;
             for (int ls = 0; ls < 12; ++ls) {
                 for (int i = 0; i < n_; ++i) Xtry[i] = X_[i] - lambda * dx[i];
@@ -232,6 +289,40 @@ private:
         iters_last_ = iters; return false;
     }
 
+    // Newton step: numerical-FD Jacobian + solve. Sparse (ILU0-BiCGSTAB over the
+    // block-adjacency pattern) for large systems, dense Gaussian elimination for
+    // small ones (and as a fallback if the iterative solve fails to converge).
+    bool computeStep(const std::vector<double>& F0, std::vector<double>& dx)
+    {
+        std::vector<double> Fp(n_);
+        if (useSparse_) {
+            jac_.setZero();
+            std::vector<double> eps(n_, 0.0);
+            for (const auto& group : colorGroups_) {
+                for (int j : group) { eps[j] = -1e-6 * (std::fabs(X_[j]) + 1.0); X_[j] += eps[j]; }
+                assemble(X_.data(), Fp.data());
+                for (int j : group) {
+                    jac_.add(j, j, (Fp[j] - F0[j]) / eps[j]);
+                    for (int i : nbr_[j]) jac_.add(i, j, (Fp[i] - F0[i]) / eps[j]);
+                }
+                for (int j : group) X_[j] -= eps[j];   // restore
+            }
+            std::fill(dx.begin(), dx.end(), 0.0);
+            std::vector<double> rhs(F0);
+            if (bicgstab(jac_, rhs.data(), dx.data())) return true;
+            // otherwise fall through to the dense direct solve
+        }
+        std::vector<double> J(n_ * n_, 0.0), Fc(F0);
+        for (int j = 0; j < n_; ++j) {
+            const double eps = -1e-6 * (std::fabs(X_[j]) + 1.0);
+            const double save = X_[j]; X_[j] += eps;
+            assemble(X_.data(), Fp.data());
+            for (int i = 0; i < n_; ++i) J[i * n_ + j] = (Fp[i] - F0[i]) / eps;
+            X_[j] = save;
+        }
+        return solveInPlace(n_, J.data(), Fc.data(), dx.data());
+    }
+
     static double norm(const std::vector<double>& v)
     { double s = 0; for (double x : v) s += x*x; return std::sqrt(s); }
 
@@ -240,8 +331,15 @@ private:
     int n_ = 0, nl_ = 0, last_iters_ = 0, iters_last_ = 0;
     double t_ = 0, dt_ = 0, dt0_ = 0, tnew_ = 0;
     std::vector<double> storage_, past_, factor_, X_, F_, eff_, flowRaw_, inflowOwn_;
+    std::vector<double> committedFlow_;
     std::vector<char> limited_, allow_;
     std::vector<std::vector<int>> linksFrom_, linksTo_;
+    // sparse Jacobian machinery
+    SparseCSR jac_;
+    std::vector<std::vector<int>> nbr_;   // block adjacency (excludes self)
+    std::vector<int> color_;
+    std::vector<std::vector<int>> colorGroups_;
+    bool useSparse_ = false;
 };
 
 } // namespace ohq

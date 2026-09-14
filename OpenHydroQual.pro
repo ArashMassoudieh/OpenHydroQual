@@ -28,6 +28,10 @@ INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
 INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += jsoncpp/include/
+# Model -> C++ compiler (Model > Export to C++). Generator only; the generated
+# code links the header-only codegen/runtime, which is embedded in
+# codegen/src/EmbeddedRuntime.cpp (regenerate with codegen/tools/embed_runtime.py).
+INCLUDEPATH += ./codegen/include
 # NOTE: ./include holds nothing but a vendored Armadillo 6.100.0, bundled for
 # Windows builds that have no system copy. It used to be added here, without a
 # platform guard, which put it ahead of /usr/include and silently forced the
@@ -120,6 +124,10 @@ CONFIG(debug, debug|release) {
 
 
 SOURCES += \
+    codegen/src/ExpressionEmitter.cpp \
+    codegen/src/DependencyAnalyzer.cpp \
+    codegen/src/CodeGenerator.cpp \
+    codegen/src/EmbeddedRuntime.cpp \
     ProgressWindow.cpp \
     TimeSeriesTextBox.cpp \
     VisualizationDialog.cpp \
