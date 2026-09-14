@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
         const double tprev = m.time();
         if (!m.stepTo(tend)) { okg = false; break; }
         ++steps;
-        m.computeObservations(v.data());
+        m.computeObservations(v.data(), m.time());
         for (int i = 0; i < nO; ++i) stamped[i].push(tprev, v[i]);
     }
     const double gen_sec = std::chrono::duration<double>(std::chrono::steady_clock::now() - tg0).count();

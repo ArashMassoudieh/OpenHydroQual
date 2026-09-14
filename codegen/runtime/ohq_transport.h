@@ -59,6 +59,9 @@ public:
 
     // Advance one step of size dt at time t, using the model's cached flow-phase
     // storages/flows.
+    // force a Jacobian refresh (System::SetUpdateJacobian(true))
+    void requestJacobianUpdate() { updateJac_ = true; }
+    int lastIterations() const { return last_iters_; }
     bool step(double t, double dt)
     {
         t_ = t; dt_ = dt;
@@ -81,34 +84,165 @@ private:
         }
     }
 
+    // FD Jacobian of the transport residual, factorised for reuse across
+    // iterations AND steps (SolverTempVars.updatejacobian persists likewise).
+    bool assembleJacobian(const std::vector<double>& F0)
+    {
+        Jfac_.assign(n_ * n_, 0.0);
+        std::vector<double> Fp(n_);
+        for (int jc = 0; jc < n_; ++jc) {
+            double eps = -1e-6 * (std::fabs(mass_[jc]) + 1.0);
+            const double save = mass_[jc]; mass_[jc] += eps;
+            assemble(mass_.data(), Fp.data());
+            for (int i = 0; i < n_; ++i) Jfac_[i * n_ + jc] = (Fp[i] - F0[i]) / eps;
+            mass_[jc] = save;
+            // System::Jacobian (System.cpp:3269): a column that comes back
+            // non-finite, or whose diagonal is exactly zero, is recomputed with
+            // the opposite perturbation sign.
+            bool redo = (Jfac_[jc * n_ + jc] == 0.0);
+            for (int i = 0; i < n_ && !redo; ++i) if (!std::isfinite(Jfac_[i * n_ + jc])) redo = true;
+            if (redo) {
+                eps = +1e-6 * (std::fabs(mass_[jc]) + 1.0);
+                mass_[jc] += eps;
+                assemble(mass_.data(), Fp.data());
+                for (int i = 0; i < n_; ++i) Jfac_[i * n_ + jc] = (Fp[i] - F0[i]) / eps;
+                mass_[jc] = save;
+            }
+        }
+        piv_.assign(n_, 0);
+        return luFactor(n_, Jfac_.data(), piv_.data());
+    }
+
     bool newton()
+    {
+        if (s_.interpreter_newton) return newtonInterp();
+        return newtonLineSearch();
+    }
+
+    // Same port as MassBalanceSolver::newtonInterp -- see the comment there. The
+    // interpreter runs this identical loop for the constituent state variable,
+    // only with a different residual and Jacobian.
+    bool newtonInterp()
+    {
+        if (s_.jac_refresh_every > 0 && (stepCounter_ + 1) % s_.jac_refresh_every == 0)
+            updateJac_ = true;                       // System.cpp:1136-1138 (1-based)
+        ++stepCounter_;
+        const double X_norm = norm(mass_);
+        double dx_norm = X_norm * 10 + 1;
+        // mass_ = the state the model actually holds (the FULL damped step, what
+        // the step commits); Xit = the local iterate AdjustNRCoefficient may move
+        // to the half-step. See the comment in MassBalanceSolver::newtonInterp --
+        // this phase exits after one iteration via the dx_norm escape, so
+        // committing the half-step here halves every accepted increment.
+        std::vector<double> Xit = mass_, X_past = mass_;
+        assemble(mass_.data(), F_.data());
+        double err_ini = norm(F_);
+        double err = err_ini, err_p = err_ini;
+        double error_increase_counter = 0;
+        nrCoeff_ = 1.0;
+        last_iters_ = 0;
+        if (X_norm <= 0.0) return true;
+        std::vector<double> dx(n_), X1(n_), F1(n_);
+        while (err / (err_ini + 1e-8 * X_norm) > s_.tolerance && err > 1e-12
+               && dx_norm / X_norm > 1e-10)
+        {
+            ++last_iters_;
+            if (s_.update_jacobian_every_iteration) updateJac_ = true;
+            if (updateJac_) {
+                std::vector<double> F0(F_);
+                if (!assembleJacobian(F0)) return false;
+                updateJac_ = false;
+            }
+            luSolve(n_, Jfac_.data(), piv_.data(), F_.data(), dx.data());
+            for (int i = 0; i < n_; ++i) dx[i] *= nrCoeff_;
+            dx_norm = norm(dx);
+            for (int i = 0; i < n_; ++i) mass_[i] = Xit[i] - dx[i];   // full step
+            if (s_.optimize_lambda) {
+                for (int i = 0; i < n_; ++i) X1[i] = mass_[i] + 0.5 * dx[i];
+                assemble(X1.data(), F1.data());
+            }
+            assemble(mass_.data(), F_.data());
+            err_p = err;
+            err = norm(F_);
+            if (s_.optimize_lambda) {
+                const double err2 = norm(F1);
+                if (err2 < err) {
+                    nrCoeff_ = std::max(nrCoeff_ / 2.0, 0.05);
+                    updateJac_ = true;
+                    Xit = X1;
+                } else {
+                    nrCoeff_ = std::max(std::min(nrCoeff_ * 1.25, 1.0), 0.05);
+                    Xit = mass_;
+                }
+                if (std::min(err2, err) > err_p) error_increase_counter++;
+            } else {
+                if (err > err_p * 0.9) {
+                    nrCoeff_ = std::max(nrCoeff_ * s_.nr_coeff_reduction, 0.05);
+                    updateJac_ = true;
+                    Xit = X_past;
+                } else {
+                    Xit = mass_;
+                }
+                if (err > err_p) error_increase_counter++;
+                else if (err < err_p / 2.0) {
+                    if (nrCoeff_ < 0.99) updateJac_ = true;
+                    nrCoeff_ = std::max(std::min(nrCoeff_ / s_.nr_coeff_reduction, 1.0), 0.05);
+                }
+            }
+            if (error_increase_counter > 10) return false;
+            if (last_iters_ > s_.max_iterations)  return false;
+        }
+        return true;
+    }
+
+    bool newtonLineSearch()
     {
         assemble(mass_.data(), F_.data());
         double err = norm(F_), err_ini = err, xnorm = norm(mass_) + 1e-30;
+        last_iters_ = 0;
         if (err < s_.abs_floor) return true;
         std::vector<double> J(n_ * n_), Jc(n_ * n_), Fc(n_), dx(n_), Xtry(n_), F0(n_);
+        std::vector<int> piv(n_);
+        bool needJac = true;              // lagged mode: assemble on demand
         for (int it = 1; it <= s_.max_iterations; ++it) {
             assemble(mass_.data(), F0.data());
-            for (int jc = 0; jc < n_; ++jc) {
-                const double eps = -1e-6 * (std::fabs(mass_[jc]) + 1.0);
-                const double save = mass_[jc]; mass_[jc] += eps;
-                assemble(mass_.data(), F_.data());
-                for (int i = 0; i < n_; ++i) J[i * n_ + jc] = (F_[i] - F0[i]) / eps;
-                mass_[jc] = save;
+            if (!s_.lag_jacobian || needJac) {
+                for (int jc = 0; jc < n_; ++jc) {
+                    const double eps = -1e-6 * (std::fabs(mass_[jc]) + 1.0);
+                    const double save = mass_[jc]; mass_[jc] += eps;
+                    assemble(mass_.data(), F_.data());
+                    for (int i = 0; i < n_; ++i) J[i * n_ + jc] = (F_[i] - F0[i]) / eps;
+                    mass_[jc] = save;
+                }
+                if (s_.lag_jacobian) {
+                    Jc = J;
+                    if (!luFactor(n_, Jc.data(), piv.data())) return false;
+                    needJac = false;
+                }
             }
-            Jc = J; Fc = F0;
-            if (!solveInPlace(n_, Jc.data(), Fc.data(), dx.data())) return false;
+            if (s_.lag_jacobian) {
+                luSolve(n_, Jc.data(), piv.data(), F0.data(), dx.data());
+            } else {
+                Jc = J; Fc = F0;
+                if (!solveInPlace(n_, Jc.data(), Fc.data(), dx.data())) return false;
+            }
             double lambda = s_.nr_coefficient, err_try = err;
+            int ls_used = 0;
             for (int ls = 0; ls < 12; ++ls) {
+                ls_used = ls;
                 for (int i = 0; i < n_; ++i) Xtry[i] = mass_[i] - lambda * dx[i];
                 assemble(Xtry.data(), F_.data());
                 err_try = norm(F_);
                 if (err_try < err || err_try < s_.abs_floor) break;
                 lambda *= 0.5;
             }
+            // A damped step means the stored factors no longer describe the local
+            // slope well; refresh, as AdjustNRCoefficient does (System.cpp:6468).
+            if (s_.lag_jacobian && (ls_used > 0 || err_try > err * 0.9)) needJac = true;
             mass_ = Xtry;
             double dxn = 0; for (int i = 0; i < n_; ++i) dxn += (lambda*dx[i])*(lambda*dx[i]);
             dxn = std::sqrt(dxn); xnorm = norm(mass_) + 1e-30; err = err_try;
+            last_iters_ = it;
             if (err/(err_ini+1e-8*xnorm) < s_.tolerance || err < s_.abs_floor || dxn/xnorm < 1e-10)
                 return true;
         }
@@ -120,9 +254,16 @@ private:
 
     Model& m_;
     SolverSettings s_;
+    int last_iters_ = 0;
     int n_ = 0, nc_ = 0, nl_ = 0;
     double t_ = 0, dt_ = 0;
     std::vector<double> mass_, past_, F_, mt_, inflow_;
+    // interpreter-parity Newton state (persists across steps, as in System.cpp)
+    std::vector<double> Jfac_;
+    std::vector<int> piv_;
+    bool updateJac_ = true;
+    double nrCoeff_ = 1.0;
+    long stepCounter_ = 0;
 };
 
 } // namespace ohq

@@ -151,9 +151,19 @@ public:
         committedFlow_.assign(nl_ > 0 ? nl_ : 1, 0.0);
     }
 
+    // dt ceiling imposed by an oscillation rewind (System.cpp:1140): clamps the
+    // adaptive base so it cannot climb straight back to where it oscillated.
+    // force a Jacobian refresh (System::SetUpdateJacobian(true))
+    void requestJacobianUpdate() { updateJac_ = true; }
+    void   setDtCeiling(double v) { dtCeiling_ = v; }
+    double dtCeiling() const      { return dtCeiling_; }
+    double dtBase() const         { return dt_; }
+    void   setDtBase(double v)    { dt_ = v; }
+
     bool step()
     {
         int stepFails = 0;
+        if (dtCeiling_ > 0) dt_ = std::min(dt_, dtCeiling_);
         for (;;) {
             // applied step (see clampSeries_ comment); dt_ stays the adaptive base
             double dta = std::min(dt_, minNextDt());
@@ -164,10 +174,22 @@ public:
             }
             if (stopTime_ - t_ > 1e-30 && t_ + dta > stopTime_) dta = stopTime_ - t_;
             dtApplied_ = dta;
+            // System.cpp:1138 -- every 50th accepted step the Jacobian is refreshed
+            // unconditionally, whatever the chord scheme thinks
+            // System.cpp:1136-1138 increments `counter` BEFORE testing it, so the
+            // refresh lands on the 50th, 100th, ... accepted step (1-based).
+            if (s_.jac_refresh_every > 0 && (stepCounter_ + 1) % s_.jac_refresh_every == 0)
+                updateJac_ = true;
             for (int b = 0; b < n_; ++b) past_[b] = storage_[b];
             std::vector<char> limitedAtStart = limited_;
             std::vector<double> factorAtStart = factor_;
-            tnew_ = t_ + dta;
+            // Interpreter convention (System.cpp:1494): SolverTempVars.t is advanced
+            // in HandleSolveSuccess, AFTER OneStepSolve, so every time-dependent
+            // expression evaluated during the Newton solve reads GetTime() = the
+            // step's START time. Backward Euler in the state, forcing at t_n.
+            // Evaluating at t_n+1 instead shifts the whole residual sequence by one
+            // step, which is what put the two codes' Jacobians on different dt.
+            tnew_ = s_.forcing_at_step_start ? t_ : t_ + dta;
             m_.precomputeStep(tnew_);
             for (int b = 0; b < n_; ++b) allow_[b] = 1;
 
@@ -184,8 +206,10 @@ public:
                     if (X_[b] < -1e-13 && !limited_[b] && outflowCanOccur(b)) {
                         setLimited(b, true);
                         switched = true;
+                        updateJac_ = true;            // System.cpp:2505
                     } else if (X_[b] >= 1.0 && limited_[b]) {
                         limited_[b] = 0; allow_[b] = 0; switched = true;
+                        updateJac_ = true;            // System.cpp:2525
                     } else if (X_[b] < 0.0 && limited_[b]) {
                         factor_[b] = 0.0;
                     }
@@ -213,12 +237,17 @@ public:
                 t_ += dta; lastDt_ = dta;
                 // post-success adaptation of dt_base (System.cpp ~1591-1605): shrink from the
                 // APPLIED dt (floored at minimum_timestep), grow the base (capped)
+                ++stepCounter_;
+                // System.cpp:1620 -- an iteration overshoot also forces a refresh
+                // and resets the damping coefficient
+                if (iters_last_ > s_.iter_upper) { updateJac_ = true; nrCoeff_ = 1.0; }
                 if (iters_last_ > s_.iter_upper)      dt_ = std::max(dta * s_.dt_reduce, s_.dt_abs_min);
                 else if (iters_last_ < s_.iter_lower) dt_ = std::min(dt_ * s_.dt_grow, dt0_ * s_.dt_max_factor);
                 return true;
             }
             // failed (HandleSolveFailure): restore limited state, shrink dt_base, floor, retry
             limited_ = limitedAtStart; factor_ = factorAtStart;
+            updateJac_ = true;                      // System.cpp:1399 (HandleSolveFailure)
             if (++stepFails > s_.max_step_failures) return false;
             dt_ = std::max(dt_ * s_.dt_reduce_fail, 0.5 * dt0_ * s_.dt_floor_factor);
         }
@@ -300,6 +329,97 @@ private:
 
     bool newton(int& iters)
     {
+        if (s_.interpreter_newton) return newtonInterp(iters);
+        return newtonLineSearch(iters);
+    }
+
+    // Faithful port of System::OneStepSolve's Newton loop (System.cpp:2361-2492)
+    // together with ComputeNewtonStep (6320-6325) and AdjustNRCoefficient (6450).
+    // Every quirk is deliberate and load-bearing for parity:
+    //   - X_norm is taken ONCE from the initial guess and never refreshed;
+    //   - the convergence test runs BEFORE each iteration, on the previous err;
+    //   - dx = NR_coefficient * J^-1 F, and F is the residual at the PREVIOUS
+    //     iterate -- after X is replaced by the half-step X1 the stored F is not
+    //     recomputed, so the next step is taken from a stale right-hand side;
+    //   - the Jacobian flag persists across steps unless something requests it.
+    bool newtonInterp(int& iters)
+    {
+        const double X_norm = norm(X_) + 0.0;
+        double dx_norm = X_norm * 10 + 1;
+        // The interpreter keeps two things that are easy to conflate:
+        //   X_    -- the state last written into the model by GetResiduals, i.e.
+        //            the FULL damped step. This is what the step commits.
+        //   Xit   -- the local iterate, which AdjustNRCoefficient may set to the
+        //            half-step X1 (or back to X_past). It only feeds the NEXT
+        //            iteration; it is never written into the model.
+        // Committing X1 instead of X_ doubles the accepted increment whenever the
+        // loop exits right after the half-step was adopted -- which is every step
+        // in the transport phase, where the dx_norm escape stops it at one
+        // iteration. (System.cpp:2457-2492 / 6417-6440.)
+        std::vector<double> Xit = X_, X_past = X_;
+        assemble(X_.data(), F_.data());
+        double err_ini = norm(F_);
+        double err = err_ini, err_p = err_ini;
+        double error_increase_counter = 0;
+        nrCoeff_ = 1.0;                       // System.cpp:2375, reset per attempt
+        iters = 0;
+        if (X_norm <= 0.0) { iters_last_ = 0; return true; }
+        std::vector<double> dx(n_), X1(n_), F1(n_);
+        while (err / (err_ini + 1e-8 * X_norm) > s_.tolerance && err > 1e-12
+               && dx_norm / X_norm > 1e-10)
+        {
+            ++iters;
+            if (s_.update_jacobian_every_iteration) updateJac_ = true;
+            if (updateJac_) {
+                std::vector<double> F0(F_);
+                if (!assembleJacobian(F0)) { iters_last_ = iters; return false; }
+                updateJac_ = false;
+            }
+            if (!solveCached(F_, dx)) { iters_last_ = iters; return false; }
+            for (int i = 0; i < n_; ++i) dx[i] *= nrCoeff_;
+            dx_norm = norm(dx);
+            for (int i = 0; i < n_; ++i) X_[i] = Xit[i] - dx[i];     // full step
+            if (s_.optimize_lambda) {
+                for (int i = 0; i < n_; ++i) X1[i] = X_[i] + 0.5 * dx[i];
+                assemble(X1.data(), F1.data());
+            }
+            assemble(X_.data(), F_.data());   // model ends the iteration at X_
+            err_p = err;
+            err = norm(F_);
+            if (s_.optimize_lambda) {
+                const double err2 = norm(F1);
+                if (err2 < err) {
+                    nrCoeff_ = std::max(nrCoeff_ / 2.0, 0.05);
+                    updateJac_ = true;
+                    Xit = X1;
+                } else {
+                    nrCoeff_ = std::max(std::min(nrCoeff_ * 1.25, 1.0), 0.05);
+                    Xit = X_;
+                }
+                if (std::min(err2, err) > err_p) error_increase_counter++;
+            } else {
+                if (err > err_p * 0.9) {
+                    nrCoeff_ = std::max(nrCoeff_ * s_.nr_coeff_reduction, 0.05);
+                    updateJac_ = true;
+                    Xit = X_past;
+                } else {
+                    Xit = X_;
+                }
+                if (err > err_p) error_increase_counter++;
+                else if (err < err_p / 2.0) {
+                    if (nrCoeff_ < 0.99) updateJac_ = true;
+                    nrCoeff_ = std::max(std::min(nrCoeff_ / s_.nr_coeff_reduction, 1.0), 0.05);
+                }
+            }
+            if (error_increase_counter > 10) { iters_last_ = iters; return false; }
+            if (iters > s_.max_iterations)    { iters_last_ = iters; return false; }
+        }
+        iters_last_ = iters;
+        return true;
+    }
+
+    bool newtonLineSearch(int& iters)
+    {
         assemble(X_.data(), F_.data());
         double err = norm(F_), err_ini = err, xnorm = norm(X_) + 1e-30;
         if (err < s_.abs_floor) { iters = 0; iters_last_ = 0; return true; }
@@ -325,10 +445,11 @@ private:
         iters_last_ = iters; return false;
     }
 
-    // Newton step: numerical-FD Jacobian + solve. Sparse (ILU0-BiCGSTAB over the
-    // block-adjacency pattern) for large systems, dense Gaussian elimination for
-    // small ones (and as a fallback if the iterative solve fails to converge).
-    bool computeStep(const std::vector<double>& F0, std::vector<double>& dx)
+    // ---- Jacobian: assembly and solve, kept separate so the factors can be
+    // reused across iterations AND across steps, as SolverTempVars.updatejacobian
+    // does in the interpreter. Sparse (ILU0-BiCGSTAB over the block-adjacency
+    // pattern) for large systems, dense LU for small ones.
+    bool assembleJacobian(const std::vector<double>& F0)
     {
         std::vector<double> Fp(n_);
         if (useSparse_) {
@@ -343,20 +464,52 @@ private:
                 }
                 for (int j : group) X_[j] -= eps[j];   // restore
             }
-            std::fill(dx.begin(), dx.end(), 0.0);
-            std::vector<double> rhs(F0);
-            if (bicgstab(jac_, rhs.data(), dx.data())) return true;
-            // otherwise fall through to the dense direct solve
+            haveSparseJac_ = true;
+            // Keep a dense LU of the SAME matrix. BiCGSTAB fails routinely on this
+            // Jacobian (badly scaled rows), and the fallback must solve the matrix
+            // we assembled -- re-assembling a fresh one there silently turns the
+            // chord scheme into true Newton, which is exactly what made codegen
+            // converge in one iteration where the interpreter needs twenty.
+            dense_.assign(n_ * n_, 0.0);
+            for (int i = 0; i < n_; ++i)
+                for (int k = jac_.rowptr[i]; k < jac_.rowptr[i + 1]; ++k)
+                    dense_[i * n_ + jac_.colidx[k]] = jac_.val[k];
+            piv_.assign(n_, 0);
+            return luFactor(n_, dense_.data(), piv_.data());
         }
-        std::vector<double> J(n_ * n_, 0.0), Fc(F0);
+        dense_.assign(n_ * n_, 0.0);
         for (int j = 0; j < n_; ++j) {
             const double eps = -1e-6 * (std::fabs(X_[j]) + 1.0);
             const double save = X_[j]; X_[j] += eps;
             assemble(X_.data(), Fp.data());
-            for (int i = 0; i < n_; ++i) J[i * n_ + j] = (Fp[i] - F0[i]) / eps;
+            for (int i = 0; i < n_; ++i) dense_[i * n_ + j] = (Fp[i] - F0[i]) / eps;
             X_[j] = save;
         }
-        return solveInPlace(n_, J.data(), Fc.data(), dx.data());
+        piv_.assign(n_, 0);
+        haveSparseJac_ = false;
+        return luFactor(n_, dense_.data(), piv_.data());
+    }
+
+    // dx = J^-1 * rhs, using the stored Jacobian / factors.
+    bool solveCached(const std::vector<double>& rhs, std::vector<double>& dx)
+    {
+        if (haveSparseJac_) {
+            std::fill(dx.begin(), dx.end(), 0.0);
+            std::vector<double> b(rhs);
+            if (bicgstab(jac_, b.data(), dx.data())) return true;
+            // BiCGSTAB stalled: direct solve of the SAME cached matrix
+            luSolve(n_, dense_.data(), piv_.data(), rhs.data(), dx.data());
+            return true;
+        }
+        luSolve(n_, dense_.data(), piv_.data(), rhs.data(), dx.data());
+        return true;
+    }
+
+    // Newton step (legacy path): fresh FD Jacobian + solve, every iteration.
+    bool computeStep(const std::vector<double>& F0, std::vector<double>& dx)
+    {
+        if (!assembleJacobian(F0)) return false;
+        return solveCached(F0, dx);
     }
 
     static double norm(const std::vector<double>& v)
@@ -377,6 +530,15 @@ private:
     std::vector<int> color_;
     std::vector<std::vector<int>> colorGroups_;
     bool useSparse_ = false;
+    // interpreter-parity Newton state; updateJac_ deliberately PERSISTS across
+    // steps, as SolverTempVars.updatejacobian does
+    std::vector<double> dense_;
+    std::vector<int> piv_;
+    bool haveSparseJac_ = false;
+    bool updateJac_ = true;
+    double nrCoeff_ = 1.0;
+    long stepCounter_ = 0;
+    double dtCeiling_ = 0;
 };
 
 } // namespace ohq

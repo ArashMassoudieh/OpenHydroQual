@@ -71,6 +71,38 @@ public:
         return std::max(interp, dt);
     }
 
+    // ---- interpreter parity: TimeSeries<double>::make_uniform ---------------
+    // (aquifolium/src/TimeSeries.hpp:1533 -- the live class behind
+    // TimeSeriesSet<outputtimeseriesprecision>; the CTimeSeries in BTC.hpp is
+    // the legacy one and walks the grid differently.)
+    // System::FinalizeOutputs resamples every recorded series onto a grid of
+    // step `increment` anchored at t[0] before writing, so an output row is an
+    // interpolation between two accepted steps, never a step itself. The step
+    // stays adaptive; only the OUTPUT is uniform. Reproduced point for point:
+    // non-finite samples dropped first, the grid advanced by repeated addition
+    // (so the same rounding walk), the bracket advanced while t[i+1] < t_grid
+    // but never past last-1, and every grid point emitted unconditionally.
+    TimeSeries makeUniform(double increment) const
+    {
+        TimeSeries out;
+        TimeSeries src;
+        for (std::size_t k = 0; k < t.size() && k < c.size(); ++k)
+            if (std::isfinite(t[k]) && std::isfinite(c[k])) src.push(t[k], c[k]);
+        if (src.size() < 2) return out;
+        if (!(increment > 0.0)) return out;
+
+        const std::size_t last = src.size() - 1;
+        std::size_t i = 0;
+        const double t_end = src.t[last];
+        for (double cur = src.t[0]; cur <= t_end; cur += increment) {
+            while (i + 1 < last && src.t[i + 1] < cur) ++i;
+            const double dt = src.t[i + 1] - src.t[i];
+            const double ratio = (dt == 0.0) ? 0.5 : (cur - src.t[i]) / dt;
+            out.push(cur, src.c[i] + ratio * (src.c[i + 1] - src.c[i]));
+        }
+        return out;
+    }
+
     // Index of the last sample with t[i] <= x (clamped into [0, size-1]).
     // Mirrors CTimeSeries::GetElementNumberAt semantics closely enough for the
     // kernels, which only use it to bound the integration window.

@@ -285,3 +285,80 @@ already clamps on all forcing series (`addClampSeries`, `interpol_D` port).
   baked as static tables (compile time 10 min → 2 s).
 - Wetland benchmark:
   `OpenHydroTwin/deployments/Wetland_truth_codegen/benchmark/README.md`.
+
+---
+
+## ISSUE 9 — Link expressions reference an unresolvable bare `dispersivity`, silently 0
+
+**Status:** open (found 2026-09-14 during codegen↔interpreter parity work).
+**Affects:** the interpreter. Cosmetic in effect, but it produces the
+"*N* error(s) during the solve" banner on every transport model and masks real
+errors.
+
+### Symptom
+Running the 8-column study model (`ColumnStudy/CodegenBench8/col8.ohq`) always
+reports `*** 8 error(s) during the solve:` with no further detail. The run is
+otherwise correct.
+
+### Cause
+`Object::GetVal(s, ...)` (aquifolium/src/Object.cpp:99) resolves a bare name on
+a link through a fallback chain, and when every branch misses it appends
+`property '<s>' does not exist in '<object>'` (code 1002) and returns **0**.
+
+`Cu_aq:diffusive_masstransfer` on a link evaluates two different terms (seen
+with the `OHQ_TERMLOG` trace added during this work):
+
+```
+TERMLOG-ENTRY parameter='dispersivity'       W='Flow1-1' quan=(nil)          <- misses, returns 0 + error
+TERMLOG       parameter='Cu_aq:dispersivity' W='Flow1-1' out=0.0485256       <- resolves via the constituent
+```
+
+The qualified form resolves (Object.cpp:138: a `<constituent>:<property>` name
+is routed to the constituent object). The bare form does not: the links carry no
+`dispersivity` and no `Cu_aq:dispersivity` quantity — only the three expression
+quantities `Cu_aq:advective_masstransfer`, `Cu_aq:diffusive_masstransfer`,
+`Cu_aq:masstransfer`.
+
+### Why it matters
+The result is numerically right — the qualified term supplies the value — but
+every transport model emits spurious errors, so a genuine error is easy to miss.
+Worth deciding whether the bare term should be dropped at copy time or resolved
+the same way as the qualified one.
+
+---
+
+## ISSUE 10 — `optimize_lambda`: the adopted half-step is discarded at loop exit
+
+**Status:** open, behaviour question (found 2026-09-14).
+**Affects:** the interpreter (codegen now reproduces it deliberately).
+
+### What happens
+In `System::OneStepSolve` (System.cpp:2457-2492) each iteration runs:
+
+1. `ComputeNewtonStep`: `X -= dx` (X is now the full damped step), `X1 = X + 0.5*dx`
+2. `F1 = GetResiduals(X1)`  — loads X1 into the model
+3. `F  = GetResiduals(X)`   — loads the **full step** back in
+4. `AdjustNRCoefficient` may set `X = X1` (System.cpp:6467) — **local variable only**
+
+So the model's committed state is always the full step. When the loop exits
+immediately after the half-step was adopted, the half-step is silently
+discarded and never reaches the state.
+
+### Why it matters
+This is not rare. In the transport phase the third loop escape,
+`dx_norm/X_norm < 1e-10` (System.cpp:2377), fires after **one** iteration on
+every step of the column model, because the sorbed mass dominates the state
+vector and dwarfs the aqueous correction (measured `dx_norm/X_norm ~ 7e-13`).
+So on every step `optimize_lambda` decides the half-step is better, and every
+step then commits the full step anyway. The accepted increment is exactly 2x the
+one the damping selected.
+
+This may well be intended (the convergence test is evaluated on the full step's
+residual, so committing that is self-consistent) — but if the half-step is meant
+to be adopted, it must be written back through `SetStateVariables` before the
+loop exits. Worth a decision either way; it changes results.
+
+### Note on the escape itself
+Because that escape is scale-dependent, `nr_tolerance` has **no effect** on the
+transport phase of a sorption-dominated model — it always takes exactly one
+iteration. That is worth knowing when tuning accuracy.

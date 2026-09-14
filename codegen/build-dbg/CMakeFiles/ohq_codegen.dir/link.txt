@@ -1,0 +1,2 @@
+/usr/bin/ar qc libohq_codegen.a CMakeFiles/ohq_codegen.dir/src/ExpressionEmitter.cpp.o CMakeFiles/ohq_codegen.dir/src/DependencyAnalyzer.cpp.o CMakeFiles/ohq_codegen.dir/src/CodeGenerator.cpp.o CMakeFiles/ohq_codegen.dir/src/EmbeddedRuntime.cpp.o
+/usr/bin/ranlib libohq_codegen.a

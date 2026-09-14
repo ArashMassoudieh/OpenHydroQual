@@ -51,6 +51,47 @@ inline bool solveInPlace(int n, double* J, double* b, double* x)
     return true;
 }
 
+// LU factorisation with partial pivoting, so one Jacobian can serve several
+// Newton iterations (the interpreter's lagged-Jacobian / chord scheme).
+// A is overwritten with its LU factors; piv receives the row swaps.
+inline bool luFactor(int n, double* A, int* piv)
+{
+    for (int col = 0; col < n; ++col) {
+        int p = col; double best = std::fabs(A[col * n + col]);
+        for (int r = col + 1; r < n; ++r) {
+            double v = std::fabs(A[r * n + col]);
+            if (v > best) { best = v; p = r; }
+        }
+        if (best < 1e-300) return false;
+        piv[col] = p;
+        if (p != col) for (int k = 0; k < n; ++k) std::swap(A[col * n + k], A[p * n + k]);
+        const double diag = A[col * n + col];
+        for (int r = col + 1; r < n; ++r) {
+            const double f = A[r * n + col] / diag;
+            A[r * n + col] = f;                       // store the multiplier (L)
+            if (f == 0.0) continue;
+            for (int k = col + 1; k < n; ++k) A[r * n + k] -= f * A[col * n + k];
+        }
+    }
+    return true;
+}
+
+// Solve using factors from luFactor. b is not modified; x receives the solution.
+inline void luSolve(int n, const double* LU, const int* piv, const double* b, double* x)
+{
+    for (int i = 0; i < n; ++i) x[i] = b[i];
+    for (int col = 0; col < n; ++col) {
+        const int p = piv[col];
+        if (p != col) std::swap(x[col], x[p]);
+        for (int r = col + 1; r < n; ++r) x[r] -= LU[r * n + col] * x[col];
+    }
+    for (int r = n - 1; r >= 0; --r) {
+        double v = x[r];
+        for (int k = r + 1; k < n; ++k) v -= LU[r * n + k] * x[k];
+        x[r] = v / LU[r * n + r];
+    }
+}
+
 } // namespace ohq
 
 #endif // OHQ_LINALG_H

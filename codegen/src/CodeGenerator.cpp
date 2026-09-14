@@ -170,6 +170,23 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     paramBound[o->GetName() + "::" + qs[k]] = static_cast<int>(i);
                 else
                     paramNotes.push_back(p->GetName() + " -> " + locs[k] + "." + qs[k] + ": not a value quantity, left as generated");
+            } else if (ot == object_type::constituent) {
+                // A constituent property (dispersivity, diffusion_coefficient, ...)
+                // is copied onto every block/link as "<constituent>:<quan>", and
+                // Object::GetVal resolves a bare `dispersivity` inside a link
+                // expression through that copy (Object.cpp:127). Bind the
+                // parameter to the constituent AND to every copy, or
+                // applyParameters() would leave the copies at their baked value.
+                int bound = 0;
+                paramBound[o->GetName() + "::" + qs[k]] = static_cast<int>(i);
+                const std::string cq = o->GetName() + ":" + qs[k];
+                for (unsigned b = 0; b < system.BlockCount(); ++b)
+                    if (system.block(b)->Variable(cq)) { paramBound[system.block(b)->GetName() + "::" + cq] = static_cast<int>(i); ++bound; }
+                for (unsigned l = 0; l < system.LinksCount(); ++l)
+                    if (system.link(l)->Variable(cq)) { paramBound[system.link(l)->GetName() + "::" + cq] = static_cast<int>(i); ++bound; }
+                if (!bound)
+                    paramNotes.push_back(p->GetName() + " -> " + locs[k] + "." + qs[k]
+                                         + ": constituent property not copied onto any block or link");
             } else {
                 paramNotes.push_back(p->GetName() + " -> " + locs[k] + "." + qs[k]
                                      + ": not a model quantity (e.g. an observation's sigma); the host applies it");
@@ -578,8 +595,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
 
         // transport resolver: Storage->fixed flow storage, flow->fixed flow,
         // <const>:mass->transport state, else member/local.
-        std::function<EmitContext(Object*, bool, int)> makeCtxT;   // recursive: source coefficients
-        makeCtxT = [&](Object* cur, bool isLink, int curLinkIdx) -> EmitContext {
+        std::function<EmitContext(Object*, bool, int, const std::string&)> makeCtxT;   // recursive: source coefficients
+        makeCtxT = [&](Object* cur, bool isLink, int curLinkIdx, const std::string& curConst) -> EmitContext {
             EmitContext ctx; ctx.timeVar = "t_new";
             auto target = [&, cur, isLink](Loc loc) -> Object* {
                 if (!isLink || loc == Loc::self) return cur;
@@ -587,12 +604,44 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 if (loc == Loc::destination) return (Object*)system.block(cur->e_Block_No());
                 return cur;
             };
-            ctx.resolveValue = [&, target, isLink, curLinkIdx](const std::string& name, Loc loc) -> std::string {
+            ctx.resolveValue = [&, target, isLink, curLinkIdx, curConst](const std::string& name0, Loc loc) -> std::string {
                 Object* t = target(loc);
+                std::string name = name0;
                 Quan* q = t->Variable(name);
-                // A missing quantity evaluates to 0 in the interpreter (constituent
-                // expressions are copied to objects that may lack some referenced
-                // quantity, e.g. 'inflow' on a fixed_head, diffusion on a link).
+                // Object::GetVal (Object.cpp:127) resolves a bare name that the
+                // object does not carry through the copy made for the constituent
+                // being evaluated -- "<constituent>:<name>". That is how a link
+                // expression such as
+                //   (diffusion_coefficient*area + dispersivity*flow)/length*(...)
+                // reaches the constituent's dispersivity. Without this the term
+                // silently became 0 and the dispersive coupling vanished from the
+                // Jacobian entirely.
+                if (!q && !curConst.empty()) {
+                    if (Quan* qc = t->Variable(curConst + ":" + name)) { q = qc; name = curConst + ":" + name; }
+                }
+                // "<constituent>:<property>" that the object does not carry resolves
+                // to the CONSTITUENT object's property (Object.cpp:138). This is how
+                // a link's diffusive_masstransfer reaches Cu_aq's dispersivity: the
+                // links hold no copy of it at all. Missing this baked the whole
+                // dispersive term as 0 and dropped its Jacobian coupling.
+                if (!q) {
+                    const std::size_t colon = name.find(':');
+                    if (colon != std::string::npos) {
+                        const std::string cname = name.substr(0, colon);
+                        const std::string prop  = name.substr(colon + 1);
+                        if (Object* cobj = (Object*)system.constituent(cname)) {
+                            if (Quan* cq = cobj->Variable(prop)) {
+                                if (const std::string pb = paramRef(cname, prop); !pb.empty())
+                                    return pb;                       // calibrated: track params_[i]
+                                if (cq->GetType() == Quan::_type::value ||
+                                    cq->GetType() == Quan::_type::constant)
+                                    return fmt(cobj->GetVal(prop, Expression::timing::present));
+                            }
+                        }
+                    }
+                }
+                // Only after that does a missing quantity evaluate to 0, as it does
+                // in the interpreter (e.g. 'inflow' on a fixed_head).
                 if (!q) return "0.0";
                 if (name == stateVar)                         // flow-phase storage (fixed)
                     return "flowStorage_[" + stateEnum(t->GetName(), stateVar) + "]";
@@ -613,7 +662,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     std::string coeff = "1.0", rate = "1.0";
                     if (Quan* cq = s->Variable("coefficient")) {
                         if (cq->GetType() == Quan::_type::expression)
-                            coeff = "(" + ExpressionEmitter(makeCtxT(t, tIsLink, curLinkIdx)).translate(*cq->GetExpression()) + ")";
+                            coeff = "(" + ExpressionEmitter(makeCtxT(t, tIsLink, curLinkIdx, curConst)).translate(*cq->GetExpression()) + ")";
                         else coeff = srcSym(s->GetName(), "coefficient");
                     }
                     if (Quan* rq = s->Variable("rate")) {
@@ -695,7 +744,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             for (auto& kv : indeg) if (std::find(ordered.begin(), ordered.end(), kv.first) == ordered.end()) ordered.push_back(kv.first);
             for (const std::string& key : ordered) {
                 const TNode& nd = tnodes[key];
-                ExpressionEmitter em(makeCtxT(nd.o, nd.isLink, nd.linkIdx));
+                ExpressionEmitter em(makeCtxT(nd.o, nd.isLink, nd.linkIdx, constPrefix(nd.qn)));
                 const Expression* ex = nd.o->Variable(nd.qn)->GetExpression();
                 const std::string code = em.translate(*ex);
                 if (std::getenv("OHQCG_DEBUG"))   // OHQCG_DEBUG=1 ohq_generate ... : trace transport emission
@@ -732,7 +781,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 Quan* q = blk->Variable(name);
                 if (q) {
                     if (q->GetType() == Quan::_type::source)   // same expansion as the transport ctx
-                        return makeCtxT(blk, false, -1).resolveValue(name, Loc::self);
+                        return makeCtxT(blk, false, -1, std::string()).resolveValue(name, Loc::self);
                     if (isSeriesType(q->GetType())) return tsHandle(blk->GetName(), name) + ".interpol(t_new)";
                     return sym(blk->GetName(), name);
                 }
@@ -762,7 +811,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 transBody << "        inflowOwn[" << (b * nC + j) << "] = 0.0";
                 Quan* balt = blk->Variable(cj + ":mass");
                 if (balt) {
-                    EmitContext ctx = makeCtxT(blk, false, -1);
+                    EmitContext ctx = makeCtxT(blk, false, -1, std::string());
                     for (const std::string& inf : balt->GetCorrespondingInflowVar()) {
                         if (inf.empty()) continue;
                         std::string nm = blk->Variable(inf) ? inf : (blk->Variable(cj + ":" + inf) ? cj + ":" + inf : "");
@@ -811,7 +860,32 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             ctx.resolveValue = [&, target, isLink, linkIdx](const std::string& name, Loc loc) -> std::string {
                 Object* t = target(loc);
                 Quan* q = t->Variable(name);
-                if (!q) return "0.0";
+                if (!q) {
+                    // Object::GetVal's fallbacks (Object.cpp:109) for a name that is
+                    // not a quantity of this object. Same chain the reaction resolver
+                    // uses; without it a bare constituent name in an observation
+                    // expression silently evaluated to 0.
+                    //   1. a constituent  -> Pos(<constituent>:concentration)
+                    //   2. a reaction parameter -> its ":value", else the object's value
+                    if (system.constituent(name)) {
+                        if (Quan* qc = t->Variable(name + ":concentration")) {
+                            if (qc->GetType() == Quan::_type::expression) {
+                                const bool tIsLink2 = (t->ObjectType() == object_type::link);
+                                int li2 = -1;
+                                if (tIsLink2) for (unsigned l = 0; l < nL; ++l)
+                                    if ((Object*)system.link(l) == t) li2 = (int)l;
+                                return "ohq::pos(" + ExpressionEmitter(makeCtxObs(t, tIsLink2, li2))
+                                                        .translate(*qc->GetExpression()) + ")";
+                            }
+                            return "ohq::pos(" + sym(t->GetName(), name + ":concentration") + ")";
+                        }
+                    }
+                    if (system.reactionparameter(name)) {
+                        if (t->Variable(name + ":value")) return sym(t->GetName(), name + ":value");
+                        return fmt(system.reactionparameter(name)->CalcVal("value", Expression::timing::present));
+                    }
+                    return "0.0";
+                }
                 if (name == stateVar) return "solver_.storage(" + stateEnum(t->GetName(), stateVar) + ")";
                 if (q->GetType() == Quan::_type::balance)
                     return nC ? "transport_.mass(" + massEnum(t->GetName(), constPrefix(name)) + ")" : std::string("0.0");
@@ -901,15 +975,145 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     std::string tStep =
         std::string("    bool step() {\n"
                     "        const double t_prev = solver_.time(); (void)t_prev;\n"
+                    "        ++stepCounter_;   // 1-based, as System::Solve's `counter`\n"
+                    "        if (solver_.settings().oscillation_control\n"
+                    "            && (stepCounter_ - 1) % (long)solver_.settings().restore_interval == 0)\n"
+                    "            saveRestorePoint();\n"
                     "        if (!solver_.step()) return false;\n")
         + (L ? "        for (int b=0;b<N_STATES;++b) flowStorage_[b]=solver_.storage(b);\n"
                "        for (int l=0;l<N_LINKS;++l) flowFlow_[l]=solver_.linkFlow(l);\n"
                "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
-        + (T ? "        // integrate transport over the ACCEPTED step: after a successful flow\n"
-               "        // step solver_.dt() already holds the grown proposal for the next one\n"
-               "        if (!transport_.step(solver_.time(), solver_.time() - t_prev)) return false;\n" : "")
-        + (O ? "        recordObservations();\n" : "")
+        + (T ? "        // integrate transport over the ACCEPTED step. The forcing time is the\n"
+               "        // step's START, as in the interpreter (see forcing_at_step_start).\n"
+               "        if (!transport_.step(t_prev, solver_.time() - t_prev)) return false;\n" : "")
+        + (O ? "        recordObservations(t_prev);   // System.cpp:1492, stamped before t advances\n" : "")
+        + "        oscillationControl();   // inert unless the setting is on\n"
         + "        return true;\n    }\n";
+    // ---- oscillation control (System.cpp:1531-1610, CountOscillatingStates
+    // 1012, ResetBasedOnRestorePoint 5130). Emitted unconditionally; inert
+    // unless solver_.settings().oscillation_control is on.
+    std::string oscApi =
+        std::string("    // ---- oscillation control ---------------------------------------------\n")
+        + "    // A converged step can still be wrong: coarse dt against a fast reaction\n"
+        + "    // makes the scheme alternate. Detect a sign-alternating triple in the\n"
+        + "    // accepted states, then either rewind to the last restore point and\n"
+        + "    // restart at dt/5 (discarding the samples already spoiled) or simply\n"
+        + "    // continue at dt/5. Mirrors System::Solve's block step for step.\n"
+        + "    struct RestorePoint {\n"
+        + "        double t = 0, dt = 0;\n"
+        + "        std::vector<double> storage, mass, limitFactor;\n"
+        + "        std::vector<int> limited;\n"
+        + "        unsigned used = 0;\n"
+        + "        bool valid = false;\n"
+        + "    };\n"
+        + "    int  oscillationEvents() const      { return osc_events_; }\n"
+        + "    int  oscillationReductions() const  { return osc_reductions_; }\n"
+        + "    int  oscillationRelaxations() const { return osc_relaxations_; }\n"
+        + "    bool oscillationGaveUp() const      { return osc_gave_up_; }\n"
+        + "    // The solution order the interpreter uses: the flow states, then the\n"
+        + "    // transport unknowns (System::GatherSolvedState).\n"
+        + "    void gatherSolvedState(std::vector<double>& out) const {\n"
+        + "        out.clear();\n"
+        + "        for (int b = 0; b < N_STATES; ++b) out.push_back(solver_.storage(b));\n"
+        + (T ? "        for (int i = 0; i < N_MASS; ++i) out.push_back(transport_.mass(i));\n" : "")
+        + "    }\n"
+        + "    void saveRestorePoint() {\n"
+        + "        rp_.storage.assign(N_STATES, 0.0); rp_.limited.assign(N_STATES, 0);\n"
+        + "        rp_.limitFactor.assign(N_STATES, 1.0);\n"
+        + (T ? "        rp_.mass.assign(N_MASS, 0.0);\n" : "")
+        + "        exportState(rp_.storage.data(), " + std::string(T ? "rp_.mass.data()" : "nullptr")
+          + ", rp_.limited.data(), rp_.limitFactor.data());\n"
+        + "        rp_.t = solver_.time(); rp_.dt = solver_.dtBase(); rp_.used = 0; rp_.valid = true;\n"
+        + "    }\n"
+        + "    // ResetBasedOnRestorePoint: restart at a fifth of the step and hold it\n"
+        + "    // there with a ceiling, or the oscillation returns within ten steps.\n"
+        + "    bool resetToRestorePoint() {\n"
+        + "        const auto& S = solver_.settings();\n"
+        + "        if (!rp_.valid || rp_.used >= S.restore_point_max_uses) return false;\n"
+        + "        importState(rp_.t, rp_.storage.data(), " + std::string(T ? "rp_.mass.data()" : "nullptr")
+          + ", rp_.limited.data(), rp_.limitFactor.data());\n"
+        + "        rp_.used++;\n"
+        + "        const double dtn = rp_.dt / 5.0;\n"
+        + "        solver_.setDtBase(dtn); solver_.setDtCeiling(dtn);\n"
+        + "        clean_steps_ = 0;\n"
+        + "        knockoutOutputs(rp_.t);\n"
+        + "        rp_.dt = dtn;\n"
+        + "        return true;\n"
+        + "    }\n"
+        + "    // TimeSeriesSet::knockout -- drop the samples the rewind invalidated.\n"
+        + "    void knockoutOutputs(double tcut) {\n"
+        + "        for (auto& s : obs_) {\n"
+        + "            ohq::TimeSeries kept;\n"
+        + "            for (std::size_t k = 0; k < s.size(); ++k)\n"
+        + "                if (s.t[k] <= tcut) kept.push(s.t[k], s.c[k]);\n"
+        + "            s = kept;\n"
+        + "        }\n"
+        + "    }\n"
+        + "    // CountOscillatingStates: increments that alternate in sign and are not\n"
+        + "    // all negligible against the local magnitude (TimeSeries::wiggle_sl).\n"
+        + "    int countOscillatingStates(double tol) {\n"
+        + "        std::vector<double> x; gatherSolvedState(x);\n"
+        + "        osc_history_.push_back(x);\n"
+        + "        if (osc_history_.size() > 4) osc_history_.erase(osc_history_.begin());\n"
+        + "        if (osc_history_.size() < 4) return 0;\n"
+        + "        const std::vector<double>& c4 = osc_history_[0];\n"
+        + "        const std::vector<double>& c3 = osc_history_[1];\n"
+        + "        const std::vector<double>& c2 = osc_history_[2];\n"
+        + "        const std::vector<double>& c1 = osc_history_[3];\n"
+        + "        const std::size_t n = c1.size();\n"
+        + "        if (c2.size() != n || c3.size() != n || c4.size() != n) return 0;\n"
+        + "        int count = 0;\n"
+        + "        for (std::size_t i = 0; i < n; ++i) {\n"
+        + "            const double scale = (std::fabs(c1[i]) + std::fabs(c2[i]) + std::fabs(c3[i])\n"
+        + "                                  + std::fabs(c4[i])) / 4.0 + tol / 100.0;\n"
+        + "            if (scale <= 0) continue;\n"
+        + "            const double d1 = (c1[i] - c2[i]) / scale;\n"
+        + "            const double d2 = (c2[i] - c3[i]) / scale;\n"
+        + "            const double d3 = (c3[i] - c4[i]) / scale;\n"
+        + "            const bool all_small   = std::fabs(d1) < tol && std::fabs(d2) < tol && std::fabs(d3) < tol;\n"
+        + "            const bool alternating = (d1 * d2 < 0) && (d2 * d3 < 0);\n"
+        + "            if (!all_small && alternating) count++;\n"
+        + "        }\n"
+        + "        return count;\n"
+        + "    }\n"
+        + "    // Run after an accepted step, in System::Solve's order: relax an existing\n"
+        + "    // ceiling first, then test for oscillation.\n"
+        + "    void oscillationControl() {\n"
+        + "        const auto& S = solver_.settings();\n"
+        + "        if (solver_.dtCeiling() > 0 && S.oscillation_relax_after > 0) {\n"
+        + "            if (++clean_steps_ >= S.oscillation_relax_after) {\n"
+        + "                clean_steps_ = 0;\n"
+        + "                solver_.setDtCeiling(solver_.dtCeiling() * 2.0);\n"
+        + "                osc_relaxations_++;\n"
+        + "                if (osc_reductions_ > 0) osc_reductions_--;\n"
+        + "                if (solver_.dtCeiling() >= dt0_ * S.dt_max_factor) solver_.setDtCeiling(0.0);\n"
+        + "            }\n"
+        + "        }\n"
+        + "        if (!S.oscillation_control) return;\n"
+        + "        if (stepCounter_ <= 4 || stepCounter_ - osc_last_counter_ <= 4) return;   // cooldown\n"
+        + "        const int nosc = countOscillatingStates(S.oscillation_tolerance);\n"
+        + "        if (nosc <= 0) return;\n"
+        + "        clean_steps_ = 0;\n"
+        + "        const bool budget_left = osc_reductions_ < S.oscillation_max_reductions;\n"
+        + "        bool acted = false;\n"
+        + "        if (budget_left && S.oscillation_rewind) acted = resetToRestorePoint();\n"
+        + "        else if (budget_left) {\n"
+        + "            const double dtn = solver_.dtBase() / 5.0;\n"
+        + "            solver_.setDtBase(dtn); solver_.setDtCeiling(dtn);\n"
+        + "            clean_steps_ = 0;\n"
+        + "            acted = true;\n"
+        + "        }\n"
+        + "        if (acted) {\n"
+        + "            osc_reductions_++; osc_events_++;\n"
+        + "            osc_last_counter_ = stepCounter_;\n"
+        + "            osc_history_.clear();          // the state jumped backwards\n"
+        + "            solver_.requestJacobianUpdate();\n"
+        + (T ? "            transport_.requestJacobianUpdate();\n" : "")
+        + "        } else if (!osc_gave_up_) {\n"
+        + "            osc_gave_up_ = true;           // budget exhausted; report once\n"
+        + "        }\n"
+        + "    }\n";
+
     std::string localsFn = L ? (
         std::string("    // flow-phase per-iteration quantities, recomputed once per accepted step\n")
         + "    // from the committed storages (transport expressions and observations read them)\n"
@@ -926,11 +1130,19 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + [&]{ std::string s; for (const std::string& n : paramNotes) s += "    // NOTE parameter binding not owned by the kernel: " + n + "\n"; return s; }()
         + "    // ---- observations (expression on object, at the accepted state, every step) ----\n"
         + "    static const char* observationName(int i) { static const char* a[] = {" + (O ? obsNameArr.str() : std::string("\"\"")) + "}; return a[i]; }\n"
-        + "    void computeObservations(double* out) const {\n        const double t_new = solver_.time(); (void)t_new; (void)out;\n" + obsBody.str() + "    }\n"
+        + "    // t_eval is the step's START time: the interpreter calls UpdateObservations\n"
+          "    // (System.cpp:1492) before advancing SolverTempVars.t, so an observation\n"
+          "    // expression sees the new state at the old time.\n"
+        + "    void computeObservations(double* out, double t_eval) const {\n        const double t_new = t_eval; (void)t_new; (void)out;\n" + obsBody.str() + "    }\n"
         + "    const ohq::TimeSeries& observationSeries(int i) const { return obs_[i]; }\n"
         + "    void clearObservations() { for (auto& s : obs_) { s.t.clear(); s.c.clear(); } }\n"
-        + "    void recordObservations() {\n        double v[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1]; computeObservations(v);\n"
-          "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(solver_.time(), v[i]);\n    }\n";
+        + "    // System::FinalizeOutputs: resample the recorded observations onto the\n"
+          "    // uniform initial_time_step grid. The step stayed adaptive; this only\n"
+          "    // changes the sample times the caller sees, so a kernel objective compares\n"
+          "    // on the same grid Objective_Function uses (make_uniform(dt0)).\n"
+        + "    void uniformizeObservations() { for (auto& s : obs_) s = s.makeUniform(dt0_); }\n"
+        + "    void recordObservations(double t_eval) {\n        double v[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1]; computeObservations(v, t_eval);\n"
+          "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(t_eval, v[i]);\n    }\n";
     // G4/G5 API: named series injection; state values in/out.
     std::ostringstream ioApi;
     {
@@ -978,6 +1190,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     std::string tHooks = T ? (
         std::string("    // ---- transport hooks ----\n")
         + "    int nMass() const { return N_MASS; }\n"
+        + "    int lastTransportIterations() const { return transport_.lastIterations(); }\n"
         + "    int nConst() const { return " + std::to_string(nC) + "; }\n"
         + "    int nLinksT() const { return N_LINKS; }\n"
         + "    int linkSrcT(int l) const { return linkSrc(l); }\n"
@@ -992,7 +1205,14 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
              + "    double flowFlow_[N_LINKS>0?N_LINKS:1] = {0};\n" : std::string())
         + (T ? "    ohq::TransportSolver<" + cls + "> transport_;\n" : std::string())
         + "    double params_[N_PARAMETERS > 0 ? N_PARAMETERS : 1] = {" + (nP ? paramInitArr.str() : std::string("0.0")) + "};\n"
-        + "    ohq::TimeSeries obs_[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1];\n";
+        + "    ohq::TimeSeries obs_[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1];\n"
+        + "    double dt0_ = 0;\n"
+        + "    // oscillation-control state (see oscillationControl())\n"
+        + "    RestorePoint rp_;\n"
+        + "    std::vector<std::vector<double>> osc_history_;\n"
+        + "    long stepCounter_ = 0, osc_last_counter_ = -1;\n"
+        + "    int  clean_steps_ = 0, osc_reductions_ = 0, osc_events_ = 0, osc_relaxations_ = 0;\n"
+        + "    bool osc_gave_up_ = false;\n";
 
     // Emit the interpreter's solver settings so the generated solver adapts dt,
     // tolerances and iteration limits identically (not codegen's own defaults).
@@ -1011,7 +1231,19 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
           << "          S.dt_max_factor = " << fmt(ss.timestepmaxfactor)
           << "; S.dt_min_factor = " << fmt(ss.minimum_timestep / dt0v) << ";\n"
           << "          S.dt_floor_factor = " << fmt(1.0 / (ss.timestepminfactor > 0 ? ss.timestepminfactor : 1e5))
-          << "; S.dt_abs_min = " << fmt(ss.minimum_timestep) << "; }\n";
+          << "; S.dt_abs_min = " << fmt(ss.minimum_timestep) << ";\n"
+          << "          // Newton iterate path -- see SolverSettings::interpreter_newton\n"
+          << "          S.interpreter_newton = true; S.optimize_lambda = " << (ss.optimize_lambda ? "true" : "false")
+          << "; S.nr_coeff_reduction = " << fmt(ss.NR_coeff_reduction_factor)
+          << ";\n          S.update_jacobian_every_iteration = " << (ss.update_jacobian_every_iteration ? "true" : "false")
+          << "; S.jac_refresh_every = 50;\n"
+          << "          S.oscillation_control = " << (ss.oscillation_control ? "true" : "false")
+          << "; S.oscillation_tolerance = " << fmt(ss.oscillation_tolerance)
+          << "; S.oscillation_rewind = " << (ss.oscillation_rewind ? "true" : "false") << ";\n"
+          << "          S.oscillation_relax_after = " << ss.oscillation_relax_after
+          << "; S.oscillation_max_reductions = " << ss.oscillation_max_reductions
+          << "; S.restore_interval = " << system.RestoreInterval()
+          << "; S.restore_point_max_uses = " << system.RestorePointMaxUses() << "; }\n";
         return b.str();
     };
     std::string settingsInit = settingsFor("solver_")
@@ -1032,16 +1264,19 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << seriesSetters.str() << srcFns.str() << "\n"
       << "    void initialize(double tstart = " << fmt(system.tstart()) << ", double dt0 = "
       << fmt(system.dt0()) << ") {\n        loadSeries();\n        buildConstants();\n" << settingsInit
+      << "        dt0_ = dt0;   // output grid: System::FinalizeOutputs uniformizes with dt0\n"
       << "        solver_.initialize(tstart, dt0);\n"
       << [&]{ std::ostringstream b; for (const std::string& hh : clampHandles) b << "        solver_.addClampSeries(&" << hh << ");   // dt clamp (precipitation series, interpol_D)\n"; return b.str(); }()
       << (T ? "        transport_.initialize();\n" : "")
       << (L ? "        for (int b=0;b<N_STATES;++b) flowStorage_[b]=solver_.storage(b);\n"
               "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
-      << (O ? "        clearObservations(); recordObservations();   // the interpreter records t0 too\n" : "")
+      << (O ? "        clearObservations();   // System::Solve records no observation before the loop\n" : "")
       << "    }\n"
       << tStep
       << "    bool runTo(double t_end) { solver_.setStop(t_end); while (time() < t_end - 1e-30) { if (!step()) return false; } return true; }\n"
       << paramApi << ioApi.str()
+      << "    // the interpreter writes outputs on a uniform grid of initial_time_step\n"
+      << "    double outputInterval() const { return dt0_; }\n"
       << "    double time() const      { return solver_.time(); }\n"
       << "    int lastIterations() const { return solver_.lastIterations(); }\n"
       << "    double state(int i) const { return solver_.storage(i); }\n"
@@ -1074,6 +1309,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << resBody.str() << "    }\n\n"
       << localsFn
       << tHooks << "\n"
+      << oscApi << "\n"
       << "private:\n"
       << "    void loadSeries() {\n" << seriesInit.str() << "    }\n"
       << "    void buildConstants() {\n" << initBody.str() << "    }\n"
@@ -1118,7 +1354,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
               << "// Standalone forward model: runs " << cls << " from the model's start time to\n"
                  "// its end time (or a given t_end) and writes every accepted step to a CSV.\n"
                  "//\n//   usage: " << cls << "_solver [output.csv] [t_end]\n"
-                 "#include <cstdio>\n#include <cstdlib>\n#include <chrono>\n#include <string>\n"
+                 "#include <cstdio>\n#include <cstdlib>\n#include <chrono>\n#include <string>\n#include <vector>\n"
                  "#include \"" << cls << ".h\"\n\n"
                  "int main(int argc, char** argv)\n{\n"
                  "    const char*  outPath = argc > 1 ? argv[1] : \"output.csv\";\n"
@@ -1131,21 +1367,58 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
               << (T ? "    for (int b = 0; b < m.nBlocks(); ++b)\n"
                       "        for (int j = 0; j < m.nConst(); ++j) std::fprintf(f, \",%s:%s:mass\", m.stateName(b), m.constituentName(j));\n" : "")
               << "    std::fprintf(f, \"\\n\");\n"
+                 "    // The interpreter records every accepted step and then resamples onto a\n"
+                 "    // uniform initial_time_step grid before writing (its \"Uniformizing outputs\"\n"
+                 "    // pass). Do the same: the step stays adaptive, only the OUTPUT is uniform,\n"
+                 "    // so a generated run is directly comparable with an interpreter run.\n"
+                 "    std::vector<double> rec_t; std::vector<std::vector<double>> rec_y;\n"
                  "    auto record = [&]() {\n"
-                 "        std::fprintf(f, \"%.10g\", m.time());\n"
-                 "        for (int i = 0; i < m.nBlocks(); ++i) std::fprintf(f, \",%.10g\", m.state(i));\n"
-              << (T ? "        for (int i = 0; i < m.nMass(); ++i) std::fprintf(f, \",%.10g\", m.constMass(i));\n" : "")
-              << "        std::fprintf(f, \"\\n\");\n    };\n\n"
+                 "        rec_t.push_back(m.time());\n"
+                 "        std::vector<double> row;\n"
+                 "        for (int i = 0; i < m.nBlocks(); ++i) row.push_back(m.state(i));\n"
+              << (T ? "        for (int i = 0; i < m.nMass(); ++i) row.push_back(m.constMass(i));\n" : "")
+              << "        rec_y.push_back(std::move(row));\n    };\n\n"
                  "    const auto t0 = std::chrono::steady_clock::now();\n"
                  "    record();\n    bool ok = true;\n"
-                 "    while (m.time() < tEnd - 1e-30) {\n"
-                 "        if (!m.stepTo(tEnd)) { ok = false; break; }\n"
+                 "    // System::Solve runs `while (t < tend)` and does NOT clamp the last\n"
+                 "    // step to tend, so the run overshoots by up to one dt. Clamping here\n"
+                 "    // instead would make the final step -- and only it -- differ.\n"
+                 "    while (m.time() < tEnd) {\n"
+                 "        if (!m.step()) { ok = false; break; }\n"
                  "        record();\n    }\n"
                  "    const double sec = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();\n"
+                 "    // TimeSeries<double>::make_uniform (aquifolium/src/TimeSeries.hpp:1533):\n"
+                 "    // grid anchored at t[0] and advanced by repeated addition of dt0, bracket\n"
+                 "    // advanced while t[i+1] < t_grid but never past last-1, every point emitted.\n"
+                 "    // The times depend only on rec_t, so all columns share one grid.\n"
+                 "    {\n"
+                 "        const double dtOut = m.outputInterval();\n"
+                 "        const size_t ncol = rec_y.empty() ? 0 : rec_y[0].size();\n"
+                 "        if (rec_t.size() > 1 && dtOut > 0) {\n"
+                 "            const size_t last = rec_t.size() - 1;\n"
+                 "            size_t i = 0;\n"
+                 "            for (double cur = rec_t[0]; cur <= rec_t[last]; cur += dtOut) {\n"
+                 "                while (i + 1 < last && rec_t[i + 1] < cur) ++i;\n"
+                 "                const double dt = rec_t[i + 1] - rec_t[i];\n"
+                 "                const double r = (dt == 0.0) ? 0.5 : (cur - rec_t[i]) / dt;\n"
+                 "                std::fprintf(f, \"%.10g\", cur);\n"
+                 "                for (size_t c = 0; c < ncol; ++c)\n"
+                 "                    std::fprintf(f, \",%.10g\", rec_y[i][c] + r * (rec_y[i + 1][c] - rec_y[i][c]));\n"
+                 "                std::fprintf(f, \"\\n\");\n"
+                 "            }\n"
+                 "        } else {\n"
+                 "            for (size_t k = 0; k < rec_t.size(); ++k) {\n"
+                 "                std::fprintf(f, \"%.10g\", rec_t[k]);\n"
+                 "                for (size_t c = 0; c < ncol; ++c) std::fprintf(f, \",%.10g\", rec_y[k][c]);\n"
+                 "                std::fprintf(f, \"\\n\");\n"
+                 "            }\n"
+                 "        }\n"
+                 "    }\n"
                  "    std::fclose(f);\n"
                  "    if (" << cls << "::N_OBSERVATIONS > 0) {   // observations.csv next to the output\n"
                  "        std::string op = outPath; const size_t dot = op.rfind('.'); op = op.substr(0, dot == std::string::npos ? op.size() : dot) + \"_observations.csv\";\n"
                  "        if (std::FILE* g = std::fopen(op.c_str(), \"w\")) {\n"
+                 "            m.uniformizeObservations();   // System::FinalizeOutputs: ObservedOutputs.make_uniform(dt0)\n"
                  "            std::fprintf(g, \"time\"); for (int i = 0; i < " << cls << "::N_OBSERVATIONS; ++i) std::fprintf(g, \",%s\", m.observationName(i)); std::fprintf(g, \"\\n\");\n"
                  "            const ohq::TimeSeries& s0 = m.observationSeries(0);\n"
                  "            for (size_t k = 0; k < s0.size(); ++k) { std::fprintf(g, \"%.10g\", s0.t[k]);\n"
