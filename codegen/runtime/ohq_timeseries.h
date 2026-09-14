@@ -35,6 +35,42 @@ public:
 
     void push(double ti, double ci) { t.push_back(ti); c.push_back(ci); }
 
+    // ---- interpreter parity: TimeSeries::assign_D / interpol_D --------------
+    // d[i] = time from sample i until the series next CHANGES value (at least one
+    // sample spacing). System::GetMinimumNextTimeStepSize takes the minimum of
+    // interpol_D over the precipitation series so dt is only clamped where the
+    // forcing actually changes (dry spells are stepped over in big steps).
+    mutable std::vector<double> d;
+    void assignD() const
+    {
+        const size_t n = t.size();
+        d.assign(n, 0.0);
+        for (size_t i = 0; i < n; ++i) {
+            double counter = 0.0;
+            for (size_t j = i + 1; j < n; ++j) {
+                counter += t[j] - t[j - 1];
+                if (c[j] != c[i]) break;
+            }
+            if (i + 1 == n && n > 1) counter = t[n - 1] - t[n - 2];
+            else if (n == 1)         counter = 100.0;
+            if (counter == 0.0)      counter = (i > 0) ? t[i] - t[i - 1] : t[0];
+            d[i] = std::fabs(counter);
+        }
+    }
+    double interpolD(double x) const
+    {
+        const int n = static_cast<int>(t.size());
+        if (n == 0) return 0.0;
+        if (d.size() != t.size()) assignD();          // lazily, also after a setter replaced the data
+        if (x <= t.front()) return d.front();
+        if (x >= t.back())  return d.back();
+        int i = idxAt(x);
+        if (i >= n - 1) return d.back();
+        const double dt = t[i + 1] - t[i];
+        const double interp = d[i] + (d[i + 1] - d[i]) * (x - t[i]) / dt;
+        return std::max(interp, dt);
+    }
+
     // Index of the last sample with t[i] <= x (clamped into [0, size-1]).
     // Mirrors CTimeSeries::GetElementNumberAt semantics closely enough for the
     // kernels, which only use it to bound the integration window.

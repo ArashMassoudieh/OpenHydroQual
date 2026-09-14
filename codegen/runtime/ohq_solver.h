@@ -41,6 +41,10 @@ struct SolverSettings {
     double dt_grow            = 1.5;
     double dt_min_factor      = 1e-6;   // dt floor = dt0 * dt_min_factor
     double dt_max_factor      = 100.0;  // dt ceil  = dt0 * dt_max_factor
+    // Interpreter Solve-loop floors: the APPLIED step is >= dt0/timestepminfactor
+    // and dt_base after a shrink is >= minimum_timestep (System.cpp ~1142/1594).
+    double dt_floor_factor    = 1e-5;   // applied dt floor = dt0 * dt_floor_factor  (1/timestepminfactor)
+    double dt_abs_min         = 1e-6;   // minimum_timestep
     double nr_coefficient     = 1.0;    // Newton damping (line-search scale)
     int    max_step_failures  = 20;
 };

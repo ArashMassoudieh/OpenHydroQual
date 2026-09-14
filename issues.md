@@ -201,3 +201,87 @@ terminal/TOpenHydroQual/OpenHydroQual-Console <model.ohq> -r resources -o out.tx
 `/home/arash/Projects/OHQ_codegen_results/` — test models (`models/`), parity
 outputs and the grid comparison (`out/`). The codegen lives in
 `OpenHydroQual/codegen/` (see its `README.md`).
+
+---
+
+## ISSUE 6 — `addtemplate` resolves file names relative to the process CWD first
+
+**Status:** open (interpreter), 2026-09-13. Not changed per "do not touch the interpreter".
+
+`Command.cpp:203-211` (`addtemplate`, same for `loadtemplate` at 185-191): it
+tries `AppendQuanTemplate(assignments["filename"])` with the bare name — i.e.
+relative to the **current working directory of the process** — and only if that
+fails falls back to `DefaultTemplatePath() + filename`. A stale
+`mass_transfer.json` (Jul 2025) sitting at the repo root therefore silently
+replaced `resources/mass_transfer.json` whenever a tool was launched from the
+repo root: older `AgeTracker` (`inflow_loading = inflow_concentration*inflow`,
+guard `1e-05`) instead of the current one (`+Evapotranspiration*concentration`,
+guard `1e-4`). Cost half a day of "parity" debugging. Proposed fix: resolve
+relative to the model's working folder, then resources — never the process cwd;
+or at least log which file was loaded. Meanwhile: run tools from the model's
+folder; delete/rename the root `mass_transfer.json`.
+
+## ISSUE 7 — Transport Newton fails repeatedly at large dt (Wetland)
+
+**Status:** open (interpreter), 2026-09-13.
+
+On the Wetland forward model with hourly forcing and the deployment settings
+(`max_timestep_increase_factor=50` → dt up to 0.5 d) the interpreter logs 365
+`Number of iterations exceeded the maximum threshold, state_variable: 1` events
+(the constituent/AgeTracker solve), each followed by a dt cut. The generated
+solver, same equations, never fails. Capping dt at 0.02 d removes all events and
+the two solvers then agree to 0.13% RMS on storages / 0.2% on tracer mass. Worth
+a look at the transport Newton (Jacobian/line search) — it costs the interpreter
+~30% of its run time here and makes its trajectory step-path dependent.
+
+## ISSUE 8 — dt clamp follows precipitation only; hourly ET inputs are stepped over on dry days
+
+**Status:** open (interpreter), 2026-09-13. Affects every deployment that uses a
+Penman-type ET source with sub-daily inputs.
+
+`System::Solve` sets `alltimeseries = GetTimeSeries(true)` (onlyprecip = true,
+System.cpp:1315), so `GetMinimumNextTimeStepSize` (interpol_D over those series)
+limits dt only around precipitation changes. Between rain events dt grows to
+`dt0 * max_timestep_increase_factor` (0.5 d in the Wetland deployments) and the
+hourly `Temperature / R_h / wind_speed / solar_radiation` series of the
+`Evapotranspiration_Penmam (S)` source are sampled **twice a day** (at the step
+times, 00:00 and 12:00 UTC here). On a dry day the interpreter's ET is then a
+straight line between two night/evening values (~2 m³/day) where the resolved
+Penman rate peaks at ~20 m³/day at 13:00 local (see
+`OpenHydroTwin/deployments/Wetland_truth_codegen/benchmark/results_obs60/`,
+"Evaporation" observation: rms error 0.16 vs 3e-3 once dt is capped at 0.02 d).
+The interpreter usually *does* resolve the forcing in practice — not by design,
+but because its Newton rarely converges below `NR_niteration_lower`, so
+`dt_base` seldom grows; a faster solver exposes the gap immediately.
+
+Proposed fix: register every loaded time series in `alltimeseries`
+(`GetTimeSeries(false)`), or at least the sources' inputs. The codegen runtime
+already clamps on all forcing series (`addClampSeries`, `interpol_D` port).
+
+## Codegen fixes landed 2026-09-13 (baseline update to ISSUE 4/5)
+
+- **G1 parameters as runtime inputs** and **G2 observation emission** (roadmap
+  Phase 1): `setasparameter` bindings become `params_[i]` assigned inside
+  `buildConstants()` (blocks, links and source values such as
+  `solar_scale_fact`), `setParameter(i,v)` + `applyParameters()` recompute every
+  derived constant; each Observation's expression is emitted in its object's
+  context, evaluated at the accepted state and recorded every step
+  (`observationSeries(i)`), initial point included. Gate:
+  `codegen/tests/run_parity_obs.sh` (perturbs all parameters, MCMC-style on both
+  sides). On the 60-day Wetland model with dt capped: every observation agrees
+  to <= 3e-3 rms, final storages 7e-5, 78x faster in-process.
+- **dt policy** now mirrors the interpreter's Solve loop (applied step =
+  max(min(dt_base, interpol_D), dt0/timestepminfactor); dt_base adapts/shrinks
+  separately; `assign_D`/`interpol_D` ported) — but clamping on ALL forcing
+  series (ISSUE 8). Deployment-settings Wetland: 17.5k steps, 0.99 s (31x).
+
+- **Transport integrated over the grown dt** (root cause of the 2.7% Decay_Test
+  gap in ISSUE 4 — now 2.9e-3): generated `step()` now passes `t_new - t_prev`
+  to the transport phase.
+- Division and `^` now mirror `Expression::oprt` exactly (`a/(b+1e-23)`,
+  `pow(Pos(a),b)`) — `ohq::div`, `ohq::powr`.
+- Penman-ET-type sources (internal expression graph), flow-phase geometry in the
+  transport phase, sources referenced inside constituent expressions; series
+  baked as static tables (compile time 10 min → 2 s).
+- Wetland benchmark:
+  `OpenHydroTwin/deployments/Wetland_truth_codegen/benchmark/README.md`.

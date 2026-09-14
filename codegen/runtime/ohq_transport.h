@@ -54,6 +54,8 @@ public:
     }
 
     double mass(int i) const { return mass_[i]; }
+    // G5: restart the constituent masses from state values
+    void setMass(const double* m) { for (int i = 0; i < n_; ++i) { mass_[i] = m[i]; past_[i] = m[i]; } }
 
     // Advance one step of size dt at time t, using the model's cached flow-phase
     // storages/flows.

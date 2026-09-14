@@ -205,6 +205,35 @@ n >= 100 blocks.
 - **Dead-code elimination** — emit only per-iteration quantities reachable from
   the residual.
 
+### Wetland benchmark (2026-09-13) — real forcing, ET source, age tracer
+`OpenHydroTwin/deployments/Wetland_truth_codegen/benchmark/` (10 blocks, 13
+links, Penman ET source, AgeTracker constituent + `aging` reaction, two years of
+hourly Open-Meteo forcing): generated **6.2 s** vs interpreter **31 s** (5.0×) at
+the deployment's settings; **7.2×** with dt capped at 0.02 d, where the outputs
+agree to **0.13% RMS (storages) / 0.2% RMS (tracer mass)**. Fixes that came out
+of it (all validated there and on the earlier models):
+- **transport dt** — `step()` passed the runtime's already-grown `dt()` to the
+  transport phase (33% too much tracer per step; also the old 2.7% Decay_Test
+  gap, now 2.9e-3). Uses `t_new − t_prev`.
+- **operator parity** — `/` → `ohq::div(a,b) = a/(b+1e-23)` and `^` →
+  `pow(max(a,0),b)`, exactly `Expression::oprt` (a 0/0 that is 0 in the
+  interpreter was NaN in C++).
+- **sources with an internal expression graph** (Penman ET: `B, e_as, Ea, l_v,
+  Er, Delta, rate`) are emitted as `src_<name>__<q>_fn(t)` member functions in
+  the source's own context; no `timeseries` quantity → factor 1.
+- **flow-phase quantities in transport** — `computeFlowLocals()` caches the
+  per-iteration flow locals as members after each accepted step (link `area`
+  for diffusion, `area`/`depth` for source coefficients).
+- **sources inside constituent expressions** (`inflow_loading`) are expanded in
+  the transport context.
+- **series baked as static tables** (one `push()` per point made GCC take >10
+  min on 88k points; now 2 s).
+- Beware: `addtemplate` resolves template file names relative to the process
+  **cwd** before `resources/` (issues.md ISSUE 6) — run `ohq_generate` from the
+  model's folder.
+- `OHQCG_DEBUG=1 ohq_generate …` traces the transport emission (expression text
+  → C++) per quantity.
+
 ## Build & test
 
 ```bash
@@ -250,6 +279,54 @@ header, so a model can be compiled on a machine with no OpenHydroQual at all:
   clamped) for drivers and embedding.
 
 Options live in `GenOptions` (`emitProject`, `asLibrary`, `sharedLibrary`).
+
+### Parameters & observations (roadmap G1/G2, 2026-09-13)
+The generated class is now *assimilable*:
+- **Parameters** — every `setasparameter` binding (block/link/source `value`
+  quantities, e.g. `Runoff_coeff`, `alpha`, `hydraulic_conductivity`,
+  `solar_scale_fact`) is assigned from `params_[i]` inside `buildConstants()`
+  (series loading was split into `loadSeries()` so constants can be rebuilt).
+  API: `N_PARAMETERS`, `parameterName(i)`, `parameter(i)`, `setParameter(i,v)`,
+  `setParameters(v)`, `applyParameters()` (= `System::ApplyParameters` + all
+  derived constants). Index = the model's parameter order, i.e. what
+  `CMCMC/CGA` pass to `SetParameterValue(i, ·)`. Bindings the kernel cannot
+  own (an observation's `error_standard_deviation`) are listed as `// NOTE`
+  lines in the header for the host to apply.
+- **Observations** — each `Observation`'s `expression` is emitted in its
+  `object`'s context (block or link; constituent expressions such as
+  `AgeTracker_1:concentration` are inlined; link `flow` is the limited flow) and
+  evaluated at the accepted state after every step, initial point included:
+  `N_OBSERVATIONS`, `observationName(i)`, `computeObservations(out)`,
+  `observationSeries(i)` (`ohq::TimeSeries`), `clearObservations()`. The exported
+  executable also writes `<output>_observations.csv`; the C API gained
+  `_n_parameters/_parameter_name/_set_parameter/_apply_parameters` and
+  `_n_observations/_observation_name/_observation_count/_observation_at`.
+- **Gate:** `tests/run_parity_obs.sh <model.ohq> <Class> [perturbation]` —
+  perturbs every parameter, drives the interpreter MCMC-style
+  (`SetParameterValue → ApplyParameters → Solve`) and the kernel
+  (`setParameter → applyParameters → stepTo`), compares every observation
+  series (rms/max, scaled) and final storages. Wetland 60 d, dt capped: all
+  observations ≤ 3e-3 rms, storages 7e-5, PASS.
+- **Runtime forcing (G4)** — every baked series is addressable by
+  `(object, quantity)` name: `N_SERIES`, `seriesObject(k)`, `seriesQuantity(k)`,
+  `series(o,q)`, `setSeries(o, q, t[], v[], n)`, and
+  `setPrecipitation(o, q, start[], end[], depth[], n)` which converts
+  CPrecipitation bins to midpoint intensities exactly as the interpreter does
+  (the twin's `injectPrecipitation` / `injectWeather` map 1:1). Empty series are
+  addressable too and become dt-clamp series once filled. Test:
+  `tests/kernel_api_test.cpp` — injecting the file's own bins reproduces the
+  baked trajectory bit-for-bit.
+- **State values in/out (G5)** — `exportState(storage, mass, limited, limitFactor)`
+  / `importState(t, …)`: state *values* only (the full-model JSON snapshot stays
+  with `System`); `importState` restarts `dt_base` from `dt0` like
+  `System::Solve`. Restart at t_mid then run on matches a straight run to
+  1.6e-12. Both G4/G5 are in the C API (`_set_series`, `_set_precipitation`,
+  `_export_state`, `_import_state`).
+- **dt policy** mirrors the interpreter's Solve loop (`assign_D`/`interpol_D`
+  port; applied step vs adaptive `dt_base`), but clamps on **all** forcing
+  series — the interpreter registers only precipitation series and therefore
+  samples hourly ET twice a day on dry days (issues.md ISSUE 8). Run the gate
+  with the interpreter's dt capped (`max_timestep_increase_factor` ≈ 2).
 
 ## Next phase
 

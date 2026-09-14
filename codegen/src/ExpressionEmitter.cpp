@@ -73,6 +73,10 @@ bool ExpressionEmitter::rightAssoc(const std::string& op) { return op == "^"; }
 std::string ExpressionEmitter::apply(const std::string& op, const std::string& l, const std::string& r)
 {
     if (op == "^") return "ohq::powr(" + l + ", " + r + ")";
+    // Expression::oprt regularizes EVERY division as val1/(val2+1e-23), so a
+    // 0/0 (e.g. diffusion*area/length on a link lacking length -> all 0)
+    // evaluates to 0 in the interpreter instead of NaN. Mirror it exactly.
+    if (op == "/") return "ohq::div(" + l + ", " + r + ")";
     return "(" + l + " " + op + " " + r + ")";
 }
 

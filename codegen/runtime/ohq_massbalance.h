@@ -35,6 +35,7 @@
 #include "ohq_linalg.h"
 #include "ohq_sparse.h"
 #include "ohq_solver.h"   // SolverSettings
+#include "ohq_timeseries.h"   // dt clamp series (interpol_D)
 
 namespace ohq {
 
@@ -52,6 +53,21 @@ public:
     // so spiky forcing (e.g. a rainfall pulse) is never stepped over.
     std::vector<double> breakpoints;
     void setBreakpoints(const double* a, int n) { breakpoints.assign(a, a + n); }
+    // Interpreter dt policy (System::Solve loop + GetMinimumNextTimeStepSize):
+    // the APPLIED step is max(min(dt_base, min_series interpol_D(t)), dt0/timestepminfactor)
+    // over the registered series -- GetTimeSeries(true): PRECIPITATION series only --
+    // while dt_base (dt_) is the adaptive quantity that grows/shrinks on its own.
+    std::vector<const TimeSeries*> clampSeries_;
+    void addClampSeries(const TimeSeries* ts) { clampSeries_.push_back(ts); }
+    double minNextDt() const
+    {
+        double x = 1e12;
+        // empty series (not loaded / not injected yet) are not registered by the
+        // interpreter at all; an injected one becomes an active clamp automatically
+        for (const TimeSeries* s : clampSeries_) if (!s->empty()) x = std::min(x, s->interpolD(t_));
+        return std::max(x, 0.001);
+    }
+    double lastDt() const { return lastDt_; }   // size of the last ACCEPTED step
     // Hard stop time: dt is clamped so a step never crosses it (used by the
     // two-phase transport runTo so both phases land exactly on t_end).
     double stopTime_ = 1e300;
@@ -118,22 +134,40 @@ public:
     // Committed link flow (raw flow * outflow-limit factor) from the last step;
     // consumed by the transport phase.
     double linkFlow(int l) const { return committedFlow_.empty() ? 0.0 : committedFlow_[l]; }
+    double limitFactor(int b) const { return factor_[b]; }
+
+    // G5: restart from state VALUES (a snapshot's storages and outflow-limiting
+    // state) at time t. dt_base restarts from dt0, as System::Solve does at the
+    // start of every solve. limited / factor may be null (none / 1.0).
+    void setState(double t, const double* storage, const int* limited, const double* factor)
+    {
+        t_ = t; dt_ = dt0_; lastDt_ = 0.0; last_iters_ = 0;
+        for (int b = 0; b < n_; ++b) {
+            storage_[b] = storage[b]; past_[b] = storage[b];
+            limited_[b] = limited ? (limited[b] ? 1 : 0) : 0;
+            factor_[b]  = factor ? factor[b] : 1.0;
+            allow_[b]   = 1;
+        }
+        committedFlow_.assign(nl_ > 0 ? nl_ : 1, 0.0);
+    }
 
     bool step()
     {
-        const double dt_min = dt0_ * s_.dt_min_factor;
-        // Clamp dt so the step lands on/before the next forcing breakpoint.
-        if (!breakpoints.empty()) {
-            auto it = std::upper_bound(breakpoints.begin(), breakpoints.end(), t_ + 1e-12);
-            if (it != breakpoints.end() && t_ + dt_ > *it) dt_ = *it - t_;
-        }
-        if (stopTime_ - t_ > 1e-30 && t_ + dt_ > stopTime_) dt_ = stopTime_ - t_;
         int stepFails = 0;
         for (;;) {
+            // applied step (see clampSeries_ comment); dt_ stays the adaptive base
+            double dta = std::min(dt_, minNextDt());
+            dta = std::max(dta, dt0_ * s_.dt_floor_factor);
+            if (!breakpoints.empty()) {   // optional hard breakpoints (not emitted by the generator)
+                auto it = std::upper_bound(breakpoints.begin(), breakpoints.end(), t_ + 1e-12);
+                if (it != breakpoints.end() && t_ + dta > *it) dta = *it - t_;
+            }
+            if (stopTime_ - t_ > 1e-30 && t_ + dta > stopTime_) dta = stopTime_ - t_;
+            dtApplied_ = dta;
             for (int b = 0; b < n_; ++b) past_[b] = storage_[b];
             std::vector<char> limitedAtStart = limited_;
             std::vector<double> factorAtStart = factor_;
-            tnew_ = t_ + dt_;
+            tnew_ = t_ + dta;
             m_.precomputeStep(tnew_);
             for (int b = 0; b < n_; ++b) allow_[b] = 1;
 
@@ -176,26 +210,28 @@ public:
                     if (limited_[b]) { factor_[b] = X_[b]; storage_[b] = past_[b] * landtozero; }
                     else             { storage_[b] = X_[b]; }
                 }
-                t_ += dt_;
-                if (iters_last_ > s_.iter_upper)      dt_ *= s_.dt_reduce;
-                else if (iters_last_ < s_.iter_lower) dt_ *= s_.dt_grow;
-                if (dt_ > dt0_ * s_.dt_max_factor) dt_ = dt0_ * s_.dt_max_factor;
+                t_ += dta; lastDt_ = dta;
+                // post-success adaptation of dt_base (System.cpp ~1591-1605): shrink from the
+                // APPLIED dt (floored at minimum_timestep), grow the base (capped)
+                if (iters_last_ > s_.iter_upper)      dt_ = std::max(dta * s_.dt_reduce, s_.dt_abs_min);
+                else if (iters_last_ < s_.iter_lower) dt_ = std::min(dt_ * s_.dt_grow, dt0_ * s_.dt_max_factor);
                 return true;
             }
-            // failed: restore limited state, shrink dt, retry
+            // failed (HandleSolveFailure): restore limited state, shrink dt_base, floor, retry
             limited_ = limitedAtStart; factor_ = factorAtStart;
             if (++stepFails > s_.max_step_failures) return false;
-            dt_ *= s_.dt_reduce_fail;
-            if (dt_ < dt_min) return false;
+            dt_ = std::max(dt_ * s_.dt_reduce_fail, 0.5 * dt0_ * s_.dt_floor_factor);
         }
     }
 
     bool runTo(double t_target)
     {
+        const double prevStop = stopTime_;
+        stopTime_ = t_target;
         while (t_ < t_target - 1e-30) {
-            if (t_ + dt_ > t_target) dt_ = t_target - t_;
-            if (!step()) return false;
+            if (!step()) { stopTime_ = prevStop; return false; }
         }
+        stopTime_ = prevStop;
         return true;
     }
 
@@ -212,9 +248,9 @@ private:
             } else if (limited_[b]) {
                 double inflow = inflowOwn_[b];
                 if (inflow < 0) inflow *= X[b];
-                F[b] = -past_[b] * (1.0 - landtozero) / dt_ - inflow;
+                F[b] = -past_[b] * (1.0 - landtozero) / dtApplied_ - inflow;
             } else {
-                F[b] = (X[b] - past_[b]) / dt_ - inflowOwn_[b];
+                F[b] = (X[b] - past_[b]) / dtApplied_ - inflowOwn_[b];
             }
         }
         for (int l = 0; l < nl_; ++l) {
@@ -330,6 +366,7 @@ private:
     SolverSettings s_;
     int n_ = 0, nl_ = 0, last_iters_ = 0, iters_last_ = 0;
     double t_ = 0, dt_ = 0, dt0_ = 0, tnew_ = 0;
+    double dtApplied_ = 0, lastDt_ = 0;   // applied step of the current / last accepted step
     std::vector<double> storage_, past_, factor_, X_, F_, eff_, flowRaw_, inflowOwn_;
     std::vector<double> committedFlow_;
     std::vector<char> limited_, allow_;

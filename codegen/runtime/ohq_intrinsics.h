@@ -49,7 +49,13 @@ inline double ups(double cond, double a, double b){ return cond >= 0.0 ? a : b; 
 inline double bkw(double cond, double a, double b){ return cond >= 0.0 ? a : b; } // _bkw
 
 // ---- operator '^' ------------------------------------------------------------
-inline double powr(double a, double b){ return std::pow(a, b); }
+// Expression::oprt: pow(aquiutils::Pos(val1), val2) -- the base is clamped at 0.
+inline double powr(double a, double b){ return std::pow(a > 0.0 ? a : 0.0, b); }
+
+// ---- operator '/' ------------------------------------------------------------
+// Expression::oprt: val1 / (val2 + 1e-23). The regularizer makes 0/0 -> 0
+// (a missing quantity is 0 in the interpreter), which models rely on.
+inline double div(double a, double b){ return a / (b + 1e-23); }
 
 } // namespace ohq
 

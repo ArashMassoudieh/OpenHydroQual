@@ -19,6 +19,8 @@
 #include "EmbeddedRuntime.h"
 
 #include <cctype>
+#include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 
 #include "System.h"
@@ -31,6 +33,8 @@
 #include "Source.h"
 #include "reaction.h"
 #include "RxnParameter.h"
+#include "Parameter.h"
+#include "observation.h"
 
 #include <fstream>
 #include <sstream>
@@ -111,6 +115,19 @@ static std::string srcFn(const std::string& sourceName, const std::string& q)
 {
     return "src_" + sanitize(sourceName) + "__" + sanitize(q) + "_fn";
 }
+// A source's value/constant quantities are members (not folded literals) so a
+// parameter bound to one (e.g. Evap_Coefficient -> solar_scale_fact) can change.
+static std::string srcSym(const std::string& sourceName, const std::string& q)
+{
+    return "src_" + sanitize(sourceName) + "__" + sanitize(q) + "_";
+}
+// C string literal for a model name.
+static std::string cstr(const std::string& s)
+{
+    std::string o = "\"";
+    for (char c : s) { if (c == '\\' || c == '"') o += '\\'; o += c; }
+    return o + "\"";
+}
 
 // ---- generator -------------------------------------------------------------
 
@@ -128,6 +145,42 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     if (!bal0 || bal0->GetType() != Quan::_type::balance)
         throw std::runtime_error("CodeGenerator: block 0 has no balance quantity '" + stateVar + "'");
     const std::string flowVar = bal0->GetCorrespondingFlowVar();
+
+    // ---- G1: parameters -> runtime inputs -----------------------------------
+    // Every quantity bound by `setasparameter` (Parameter::GetLocations/GetQuans)
+    // is assigned from params_[i] inside buildConstants() instead of a literal,
+    // so setParameter(i, v) + applyParameters() recomputes every derived constant
+    // exactly like System::ApplyParameters followed by a solve. Index i is the
+    // model's parameter order -- what CMCMC/CGA pass to SetParameterValue(i, .).
+    struct ParamInfo { std::string name; double value; };
+    std::vector<ParamInfo> params;
+    std::map<std::string, int> paramBound;   // "<object>::<quan>" -> parameter index
+    std::vector<std::string> paramNotes;     // bindings the kernel cannot own (observation sigma, ...)
+    for (unsigned i = 0; i < system.ParametersCount(); ++i) {
+        Parameter* p = system.GetParameter(i);
+        params.push_back({p->GetName(), p->GetValue()});
+        const std::vector<std::string> locs = p->GetLocations(), qs = p->GetQuans();
+        for (size_t k = 0; k < locs.size() && k < qs.size(); ++k) {
+            Object* o = system.object(locs[k]);
+            if (!o) { paramNotes.push_back(p->GetName() + " -> '" + locs[k] + "': object not found"); continue; }
+            const object_type ot = o->ObjectType();
+            if (ot == object_type::block || ot == object_type::link || ot == object_type::source) {
+                Quan* q = o->Variable(qs[k]);
+                if (q && (q->GetType() == Quan::_type::value || q->GetType() == Quan::_type::constant))
+                    paramBound[o->GetName() + "::" + qs[k]] = static_cast<int>(i);
+                else
+                    paramNotes.push_back(p->GetName() + " -> " + locs[k] + "." + qs[k] + ": not a value quantity, left as generated");
+            } else {
+                paramNotes.push_back(p->GetName() + " -> " + locs[k] + "." + qs[k]
+                                     + ": not a model quantity (e.g. an observation's sigma); the host applies it");
+            }
+        }
+    }
+    const unsigned nP = static_cast<unsigned>(params.size());
+    auto paramRef = [&](const std::string& obj, const std::string& q) -> std::string {   // "" if unbound
+        auto it = paramBound.find(obj + "::" + q);
+        return it == paramBound.end() ? std::string() : "params_[" + std::to_string(it->second) + "]";
+    };
 
     // A resolver factory bound to the current object / time symbol.
     // (std::function so resolveValue can call makeCtx recursively for Source
@@ -165,12 +218,12 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     if (cq->GetType() == Quan::_type::expression) {
                         ExpressionEmitter em(makeCtx(t, tIsLink, timeVar));
                         coeff = "(" + em.translate(*cq->GetExpression()) + ")";
-                    } else coeff = fmt(std::atof(cq->GetProperty(true).c_str()));
+                    } else coeff = srcSym(s->GetName(), "coefficient");
                 }
                 if (Quan* rq = s->Variable("rate")) {
                     if (rq->GetType() == Quan::_type::expression)
                         rate = srcFn(s->GetName(), "rate") + "(" + timeVar + ")";
-                    else rate = fmt(std::atof(rq->GetProperty(true).c_str()));
+                    else rate = srcSym(s->GetName(), "rate");
                 }
                 const std::string tsFactor = s->Variable("timeseries")
                     ? srcHandle(s->GetName()) + ".interpol(" + timeVar + ")" : std::string("1.0");
@@ -195,8 +248,48 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     // ---- collect declarations ---------------------------------------------
     std::ostringstream decls, seriesDecls, seriesSetters, initBody, stepBody, resBody;
     std::ostringstream srcFns;          // source-context member functions (G8a)
+    std::ostringstream seriesInit;      // baked series tables -> loadSeries(), run once (buildConstants may re-run)
     std::ostringstream flowLocalsBody;  // flow per-iteration quantities cached as members for transport (G8b)
-    std::set<double> breakpointSet;   // forcing sample times (dt clamped to these)
+    std::set<double> breakpointSet;   // (unused: dt is clamped via interpol_D, see clampHandles)
+    // Series that clamp dt (runtime addClampSeries -> interpol_D = time until the
+    // series next changes value). The interpreter registers only PRECIPITATION
+    // series (GetTimeSeries(true)); its hourly ET inputs are resolved anyway only
+    // because its Newton rarely converges below NR_niteration_lower, so dt_base
+    // never grows. A fast solver must clamp to EVERY forcing series or it steps
+    // over the diurnal ET cycle at 0.5 d (issues.md ISSUE 8).
+    std::vector<std::string> clampHandles;
+    // G4: every baked series by (object, quantity) so the host can replace it at
+    // runtime by name (DTRunner::injectPrecipitation / DTWeather::injectWeather).
+    struct SeriesEntry { std::string obj, q, handle; };
+    std::vector<SeriesEntry> seriesTable;
+
+    // Bake a loaded series as a static data table + fill loop. (One push() per
+    // point in straight-line code sent GCC's optimizer superlinear: >10 min for
+    // 88k hourly points; a brace-initialized table compiles in seconds.)
+    auto bakeSeries = [&](const std::string& obj, const std::string& q, const std::string& handle,
+                          TimeSeries<timeseriesprecision>* ts, size_t maxPoints, bool clampDt) {
+        seriesTable.push_back({obj, q, handle});          // addressable even when empty now
+        if (clampDt) clampHandles.push_back(handle);      // (an injected series must clamp too)
+        if (!ts || ts->size() == 0) return;
+        if (ts->size() > maxPoints) {
+            seriesInit << "        // " << handle << ": " << ts->size()
+                       << " points not baked (large); use set_" << handle << "().\n";
+            return;
+        }
+        std::ostringstream tbl; size_t n = 0; double tprev = -1e300;
+        for (size_t k = 0; k < ts->size(); ++k) {
+            double tv = ts->getTime(k), cv = ts->getValue(k);
+            if (!std::isfinite(tv) || !std::isfinite(cv)) continue;   // skip NaN header points
+            if (tv <= tprev) continue;                                // strictly increasing
+            tprev = tv;
+            tbl << (n ? "," : "") << (n % 4 == 0 ? "\n            " : " ") << fmt(tv) << ", " << fmt(cv);
+            ++n;
+        }
+        if (n == 0) return;
+        seriesInit << "        { static const double D[] = {" << tbl.str() << " };\n"
+                   << "          for (size_t k = 0; k < " << n << "; ++k) " << handle
+                   << ".push(D[2*k], D[2*k+1]); }\n";
+    };
 
     // state enum
     std::ostringstream stateEnumBody;
@@ -241,7 +334,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         } else if (q->GetType() == Quan::_type::value ||
                    q->GetType() == Quan::_type::constant ||
                    q->GetType() == Quan::_type::boolean) {
-            out << lhs << " = " << fmt(std::atof(q->GetProperty(true).c_str())) << ";\n";
+            const std::string pr = paramRef(o->GetName(), qname);   // G1: bound -> params_[i]
+            out << lhs << " = " << (pr.empty() ? fmt(std::atof(q->GetProperty(true).c_str())) : pr) << ";\n";
         }
     };
 
@@ -271,21 +365,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 seriesDecls  << "    ohq::TimeSeries " << h << ";\n";
                 seriesSetters << "    void set_" << h << "(const ohq::TimeSeries& ts) { "
                               << h << " = ts; }\n";
-                TimeSeries<timeseriesprecision>* ts = q->GetTimeSeries();
-                if (ts && ts->size() > 0 && ts->size() <= 50000) {
-                    double tprev = -1e300;
-                    for (size_t k = 0; k < ts->size(); ++k) {
-                        double tv = ts->getTime(k), cv = ts->getValue(k);
-                        if (!std::isfinite(tv) || !std::isfinite(cv)) continue;
-                        if (tv <= tprev) continue;
-                        tprev = tv;
-                        initBody << "        " << h << ".push(" << fmt(tv) << ", " << fmt(cv) << ");\n";
-                        breakpointSet.insert(tv);
-                    }
-                } else if (ts && ts->size() > 50000) {
-                    initBody << "        // " << h << ": " << ts->size()
-                             << " points not baked (large); use set_" << h << "().\n";
-                }
+                bakeSeries(o->GetName(), qn, h, q->GetTimeSeries(), 200000, /*clampDt=*/true);
                 continue;
             }
             if (qi->tier == Tier::Constant) {
@@ -317,18 +397,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 seriesDecls  << "    ohq::TimeSeries " << h << ";\n";
                 seriesSetters << "    void set_" << h << "(const ohq::TimeSeries& ts) { " << h << " = ts; }\n";
                 Quan* tq = s->Variable("timeseries");
-                TimeSeries<timeseriesprecision>* ts = tq ? tq->GetTimeSeries() : nullptr;
-                if (ts && ts->size() > 0 && ts->size() <= 200000) {
-                    double tprev = -1e300;
-                    for (size_t k = 0; k < ts->size(); ++k) {
-                        double tv = ts->getTime(k), cv = ts->getValue(k);
-                        if (!std::isfinite(tv) || !std::isfinite(cv)) continue;  // skip NaN header points
-                        if (tv <= tprev) continue;                               // strictly increasing
-                        tprev = tv;
-                        initBody << "        " << h << ".push(" << fmt(tv) << ", " << fmt(cv) << ");\n";
-                        breakpointSet.insert(tv);
-                    }
-                }
+                bakeSeries(s->GetName(), "timeseries", h, tq ? tq->GetTimeSeries() : nullptr, 200000, /*clampDt=*/true);
 
                 // The source's own graph: every other time series becomes a
                 // member (+ setter, baked data) and every expression quantity a
@@ -342,7 +411,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                         if (!sq) return "0.0";
                         if (isSeriesType(sq->GetType())) return srcTs(src->GetName(), name) + ".interpol(t)";
                         if (sq->GetType() == Quan::_type::expression) return srcFn(src->GetName(), name) + "(t)";
-                        return fmt(std::atof(sq->GetProperty(true).c_str()));   // value / constant / boolean
+                        return srcSym(src->GetName(), name);   // value / constant / boolean: a member (may be a parameter)
                     };
                     ctx.resolveSeries = [&, src](const std::string& name, Loc) -> std::string {
                         return name == "timeseries" ? srcHandle(src->GetName()) : srcTs(src->GetName(), name);
@@ -358,22 +427,19 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                         const std::string hh = srcTs(s->GetName(), sqn);
                         seriesDecls  << "    ohq::TimeSeries " << hh << ";\n";
                         seriesSetters << "    void set_" << hh << "(const ohq::TimeSeries& ts) { " << hh << " = ts; }\n";
-                        TimeSeries<timeseriesprecision>* sts = sq.GetTimeSeries();
-                        if (sts && sts->size() > 0 && sts->size() <= 200000) {
-                            double tprev = -1e300;
-                            for (size_t k = 0; k < sts->size(); ++k) {
-                                double tv = sts->getTime(k), cv = sts->getValue(k);
-                                if (!std::isfinite(tv) || !std::isfinite(cv)) continue;
-                                if (tv <= tprev) continue;
-                                tprev = tv;
-                                initBody << "        " << hh << ".push(" << fmt(tv) << ", " << fmt(cv) << ");\n";
-                                breakpointSet.insert(tv);   // interpreter clamps dt to ALL series
-                            }
-                        }
+                        // clamps dt where the ET input changes (the interpreter only registers
+                        // precipitation series here -- see clampHandles comment)
+                        bakeSeries(s->GetName(), sqn, hh, sq.GetTimeSeries(), 200000, /*clampDt=*/true);
                     } else if (sq.GetType() == Quan::_type::expression && sqn != "coefficient") {
                         ExpressionEmitter em(makeCtxSrc(s));
                         srcFns << "    double " << srcFn(s->GetName(), sqn) << "(double t) const { (void)t; return "
                                << em.translate(*sq.GetExpression()) << "; }\n";
+                    } else if (sq.GetType() == Quan::_type::value || sq.GetType() == Quan::_type::constant ||
+                               sq.GetType() == Quan::_type::boolean) {
+                        const std::string ms = srcSym(s->GetName(), sqn), pr = paramRef(s->GetName(), sqn);
+                        decls    << "    double " << ms << " = 0.0;\n";
+                        initBody << "        " << ms << " = "
+                                 << (pr.empty() ? fmt(std::atof(sq.GetProperty(true).c_str())) : pr) << ";\n";
                     }
                 }
             }
@@ -412,7 +478,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         // computeFluxes. Emit the same ordered computations a second time into
         // computeFlowLocals(), assigning to members (same symbols; the locals in
         // computeFluxes shadow them), called once per accepted flow step.
-        const bool needFlowLocals = system.ConstituentsCount() > 0;
+        const bool needFlowLocals = system.ConstituentsCount() > 0 || system.ObservationsCount() > 0;
         auto emitGroupF = [&](bool wantLink) {
             std::map<std::string, int> indeg;
             std::map<std::string, std::vector<std::string>> radj;
@@ -512,7 +578,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
 
         // transport resolver: Storage->fixed flow storage, flow->fixed flow,
         // <const>:mass->transport state, else member/local.
-        auto makeCtxT = [&](Object* cur, bool isLink, int curLinkIdx) {
+        std::function<EmitContext(Object*, bool, int)> makeCtxT;   // recursive: source coefficients
+        makeCtxT = [&](Object* cur, bool isLink, int curLinkIdx) -> EmitContext {
             EmitContext ctx; ctx.timeVar = "t_new";
             auto target = [&, cur, isLink](Loc loc) -> Object* {
                 if (!isLink || loc == Loc::self) return cur;
@@ -533,6 +600,30 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     return "mass[" + massEnum(t->GetName(), constPrefix(name)) + "]";
                 if (isLink && loc == Loc::self && name == flowVar)  // flow-phase flow (fixed)
                     return "flowFlow_[" + std::to_string(curLinkIdx) + "]";
+                if (q->GetType() == Quan::_type::source) {
+                    // A Source (Precipitation / Evapotranspiration) referenced from a
+                    // constituent expression, e.g. AgeTracker's
+                    //   inflow_loading = c_in*(inflow+Precipitation) + Evapotranspiration*concentration
+                    // Same expansion as the flow phase (coefficient * timeseries * rate);
+                    // the coefficient is translated in this block's TRANSPORT context,
+                    // where its area/depth are the cached flow-phase members.
+                    Source* s = q->GetSource();
+                    if (!s) return std::string("0.0");
+                    const bool tIsLink = (t->ObjectType() == object_type::link);
+                    std::string coeff = "1.0", rate = "1.0";
+                    if (Quan* cq = s->Variable("coefficient")) {
+                        if (cq->GetType() == Quan::_type::expression)
+                            coeff = "(" + ExpressionEmitter(makeCtxT(t, tIsLink, curLinkIdx)).translate(*cq->GetExpression()) + ")";
+                        else coeff = srcSym(s->GetName(), "coefficient");
+                    }
+                    if (Quan* rq = s->Variable("rate")) {
+                        if (rq->GetType() == Quan::_type::expression) rate = srcFn(s->GetName(), "rate") + "(t_new)";
+                        else rate = srcSym(s->GetName(), "rate");
+                    }
+                    const std::string tsFactor = s->Variable("timeseries")
+                        ? srcHandle(s->GetName()) + ".interpol(t_new)" : std::string("1.0");
+                    return "(" + coeff + " * " + tsFactor + " * " + rate + ")";
+                }
                 if (isSeriesType(q->GetType()))
                     return tsHandle(t->GetName(), name) + ".interpol(t_new)";
                 return sym(t->GetName(), name);
@@ -554,18 +645,15 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 if (constPrefix(qn).empty()) continue;              // constituent-scoped only
                 if (q.GetType() == Quan::_type::value || q.GetType() == Quan::_type::constant ||
                     q.GetType() == Quan::_type::boolean) {
+                    const std::string pr = paramRef(o->GetName(), qn);
                     decls << "    double " << sym(o->GetName(), qn) << " = 0.0;\n";
                     initBody << "        " << sym(o->GetName(), qn) << " = "
-                             << fmt(std::atof(q.GetProperty(true).c_str())) << ";\n";
+                             << (pr.empty() ? fmt(std::atof(q.GetProperty(true).c_str())) : pr) << ";\n";
                 } else if (isSeriesType(q.GetType())) {
                     const std::string hh = tsHandle(o->GetName(), qn);
                     seriesDecls  << "    ohq::TimeSeries " << hh << ";\n";
                     seriesSetters << "    void set_" << hh << "(const ohq::TimeSeries& ts) { " << hh << " = ts; }\n";
-                    TimeSeries<timeseriesprecision>* ts = q.GetTimeSeries();
-                    if (ts && ts->size() > 0 && ts->size() <= 50000)
-                        for (size_t k = 0; k < ts->size(); ++k)
-                            initBody << "        " << hh << ".push(" << fmt(ts->getTime(k))
-                                     << ", " << fmt(ts->getValue(k)) << ");\n";
+                    bakeSeries(o->GetName(), qn, hh, q.GetTimeSeries(), 200000, /*clampDt=*/true);
                 }
             }
         }
@@ -608,8 +696,12 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             for (const std::string& key : ordered) {
                 const TNode& nd = tnodes[key];
                 ExpressionEmitter em(makeCtxT(nd.o, nd.isLink, nd.linkIdx));
-                transBody << "        const double " << sym(nd.o->GetName(), nd.qn) << " = "
-                          << em.translate(*nd.o->Variable(nd.qn)->GetExpression()) << ";\n";
+                const Expression* ex = nd.o->Variable(nd.qn)->GetExpression();
+                const std::string code = em.translate(*ex);
+                if (std::getenv("OHQCG_DEBUG"))   // OHQCG_DEBUG=1 ohq_generate ... : trace transport emission
+                    std::fprintf(stderr, "[transport] %s  terms=%zu  text=%s\n   -> %s\n",
+                                 key.c_str(), ex->terms.size(), ex->ToString().c_str(), code.c_str());
+                transBody << "        const double " << sym(nd.o->GetName(), nd.qn) << " = " << code << ";\n";
             }
         };
         emitGroup(false);   // blocks (concentration, inflow_loading, ...)
@@ -639,6 +731,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     return "flowStorage_[" + stateEnum(blk->GetName(), stateVar) + "]";
                 Quan* q = blk->Variable(name);
                 if (q) {
+                    if (q->GetType() == Quan::_type::source)   // same expansion as the transport ctx
+                        return makeCtxT(blk, false, -1).resolveValue(name, Loc::self);
                     if (isSeriesType(q->GetType())) return tsHandle(blk->GetName(), name) + ".interpol(t_new)";
                     return sym(blk->GetName(), name);
                 }
@@ -697,6 +791,86 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             }
     }
 
+    // ======================================================================
+    //  G2: OBSERVATIONS -- each Observation's `expression` evaluated on its
+    //  `object` at the ACCEPTED state after a step (Observation::GetValue with
+    //  timing::present), recorded after every step like UpdateObservations().
+    // ======================================================================
+    const unsigned nObs = system.ObservationsCount();
+    std::ostringstream obsBody, obsNameArr, paramNameArr, paramInitArr;
+    {
+        std::function<EmitContext(Object*, bool, int)> makeCtxObs;
+        makeCtxObs = [&](Object* cur, bool isLink, int linkIdx) -> EmitContext {
+            EmitContext ctx; ctx.timeVar = "t_new";
+            auto target = [&, cur, isLink](Loc loc) -> Object* {
+                if (!isLink || loc == Loc::self) return cur;
+                if (loc == Loc::source)      return (Object*)system.block(cur->s_Block_No());
+                if (loc == Loc::destination) return (Object*)system.block(cur->e_Block_No());
+                return cur;
+            };
+            ctx.resolveValue = [&, target, isLink, linkIdx](const std::string& name, Loc loc) -> std::string {
+                Object* t = target(loc);
+                Quan* q = t->Variable(name);
+                if (!q) return "0.0";
+                if (name == stateVar) return "solver_.storage(" + stateEnum(t->GetName(), stateVar) + ")";
+                if (q->GetType() == Quan::_type::balance)
+                    return nC ? "transport_.mass(" + massEnum(t->GetName(), constPrefix(name)) + ")" : std::string("0.0");
+                if (isLink && loc == Loc::self && name == flowVar)      // limited flow (calc(link, ., limit=true))
+                    return "solver_.linkFlow(" + std::to_string(linkIdx) + ")";
+                if (q->GetType() == Quan::_type::source) {
+                    Source* s = q->GetSource();
+                    if (!s) return std::string("0.0");
+                    const bool tIsLink = (t->ObjectType() == object_type::link);
+                    std::string coeff = "1.0", rate = "1.0";
+                    if (Quan* cq = s->Variable("coefficient")) {
+                        if (cq->GetType() == Quan::_type::expression)
+                            coeff = "(" + ExpressionEmitter(makeCtxObs(t, tIsLink, linkIdx)).translate(*cq->GetExpression()) + ")";
+                        else coeff = srcSym(s->GetName(), "coefficient");
+                    }
+                    if (Quan* rq = s->Variable("rate")) {
+                        if (rq->GetType() == Quan::_type::expression) rate = srcFn(s->GetName(), "rate") + "(t_new)";
+                        else rate = srcSym(s->GetName(), "rate");
+                    }
+                    const std::string tsFactor = s->Variable("timeseries")
+                        ? srcHandle(s->GetName()) + ".interpol(t_new)" : std::string("1.0");
+                    return "(" + coeff + " * " + tsFactor + " * " + rate + ")";
+                }
+                if (isSeriesType(q->GetType())) return tsHandle(t->GetName(), name) + ".interpol(t_new)";
+                if (!constPrefix(name).empty() && q->GetType() == Quan::_type::expression) {
+                    // constituent-scoped expression (AgeTracker_1:concentration): a transport-phase
+                    // local, not a member -> inline it here
+                    const bool tIsLink = (t->ObjectType() == object_type::link);
+                    int li = -1; if (tIsLink) for (unsigned l = 0; l < nL; ++l) if ((Object*)system.link(l) == t) li = (int)l;
+                    return "(" + ExpressionEmitter(makeCtxObs(t, tIsLink, li)).translate(*q->GetExpression()) + ")";
+                }
+                return sym(t->GetName(), name);   // constant / per-step / cached per-iteration member
+            };
+            ctx.resolveSeries = [&, target](const std::string& name, Loc loc) -> std::string {
+                return tsHandle(target(loc)->GetName(), name);
+            };
+            return ctx;
+        };
+        for (unsigned i = 0; i < nObs; ++i) {
+            Observation* ob = system.observation(i);
+            obsNameArr << (i ? ", " : "") << cstr(ob->GetName());
+            const std::string loc = ob->GetLocation();
+            const std::string exprText = ob->Variable("expression") ? ob->Variable("expression")->GetProperty() : "";
+            Object* o = system.object(loc);
+            const bool ok = o && !exprText.empty() &&
+                            (o->ObjectType() == object_type::block || o->ObjectType() == object_type::link);
+            if (!ok) { obsBody << "        out[" << i << "] = 0.0;   // '" << ob->GetName() << "': unresolved object/expression\n"; continue; }
+            const bool isLink = (o->ObjectType() == object_type::link);
+            int li = -1; if (isLink) for (unsigned l = 0; l < nL; ++l) if ((Object*)system.link(l) == o) li = (int)l;
+            Expression ex(exprText);
+            obsBody << "        out[" << i << "] = " << ExpressionEmitter(makeCtxObs(o, isLink, li)).translate(ex)
+                    << ";   // " << ob->GetName() << " @ " << loc << "\n";
+        }
+        for (unsigned i = 0; i < nP; ++i) {
+            paramNameArr << (i ? ", " : "") << cstr(params[i].name);
+            paramInitArr << (i ? ", " : "") << fmt(params[i].value);
+        }
+    }
+
     // ---- topology arrays (link endpoints + rigid flags) -------------------
     std::ostringstream srcArr, dstArr, rigidArr;
     for (unsigned i = 0; i < nL; ++i) {
@@ -721,21 +895,88 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                              "        N_MASS = " + std::to_string(nB * nC) + "\n    };\n") : "";
     std::string tCtor = T ? ", transport_(*this)" : "";
     std::string tInit = T ? " transport_.initialize();" : "";
-    std::string tStep = T
-        ? ("    bool step() {\n"
-           "        if (!solver_.step()) return false;\n"
-           "        for (int b=0;b<N_STATES;++b) flowStorage_[b]=solver_.storage(b);\n"
-           "        for (int l=0;l<N_LINKS;++l) flowFlow_[l]=solver_.linkFlow(l);\n"
-           "        computeFlowLocals(flowStorage_, solver_.time());\n"
-           "        return transport_.step(solver_.time(), solver_.dt());\n"
-           "    }\n")
-        : "    bool step()              { return solver_.step(); }\n";
+    const bool L = T || nObs > 0;           // cached flow-phase locals needed
+    const bool O = nObs > 0;
+    // step(): flow phase, then (optionally) cache locals, transport, observations.
+    std::string tStep =
+        std::string("    bool step() {\n"
+                    "        const double t_prev = solver_.time(); (void)t_prev;\n"
+                    "        if (!solver_.step()) return false;\n")
+        + (L ? "        for (int b=0;b<N_STATES;++b) flowStorage_[b]=solver_.storage(b);\n"
+               "        for (int l=0;l<N_LINKS;++l) flowFlow_[l]=solver_.linkFlow(l);\n"
+               "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
+        + (T ? "        // integrate transport over the ACCEPTED step: after a successful flow\n"
+               "        // step solver_.dt() already holds the grown proposal for the next one\n"
+               "        if (!transport_.step(solver_.time(), solver_.time() - t_prev)) return false;\n" : "")
+        + (O ? "        recordObservations();\n" : "")
+        + "        return true;\n    }\n";
+    std::string localsFn = L ? (
+        std::string("    // flow-phase per-iteration quantities, recomputed once per accepted step\n")
+        + "    // from the committed storages (transport expressions and observations read them)\n"
+        + "    void computeFlowLocals(const double* eff, double t_new) {\n"
+        + "        (void)eff; (void)t_new;\n" + flowLocalsBody.str() + "    }\n") : "";
+    // G1/G2 API: parameters as runtime inputs, observations recorded per step.
+    std::string paramApi =
+        std::string("    // ---- parameters (setasparameter bindings; index = model parameter order) ----\n")
+        + "    static const char* parameterName(int i) { static const char* a[] = {" + (nP ? paramNameArr.str() : std::string("\"\"")) + "}; return a[i]; }\n"
+        + "    double parameter(int i) const { return params_[i]; }\n"
+        + "    void setParameter(int i, double v) { params_[i] = v; }        // then applyParameters()\n"
+        + "    void setParameters(const double* v) { for (int i = 0; i < N_PARAMETERS; ++i) params_[i] = v[i]; }\n"
+        + "    void applyParameters() { buildConstants(); }                   // == System::ApplyParameters + derived constants\n"
+        + [&]{ std::string s; for (const std::string& n : paramNotes) s += "    // NOTE parameter binding not owned by the kernel: " + n + "\n"; return s; }()
+        + "    // ---- observations (expression on object, at the accepted state, every step) ----\n"
+        + "    static const char* observationName(int i) { static const char* a[] = {" + (O ? obsNameArr.str() : std::string("\"\"")) + "}; return a[i]; }\n"
+        + "    void computeObservations(double* out) const {\n        const double t_new = solver_.time(); (void)t_new; (void)out;\n" + obsBody.str() + "    }\n"
+        + "    const ohq::TimeSeries& observationSeries(int i) const { return obs_[i]; }\n"
+        + "    void clearObservations() { for (auto& s : obs_) { s.t.clear(); s.c.clear(); } }\n"
+        + "    void recordObservations() {\n        double v[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1]; computeObservations(v);\n"
+          "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(solver_.time(), v[i]);\n    }\n";
+    // G4/G5 API: named series injection; state values in/out.
+    std::ostringstream ioApi;
+    {
+        std::ostringstream so, sq, sp;
+        for (size_t k = 0; k < seriesTable.size(); ++k) {
+            so << (k ? ", " : "") << cstr(seriesTable[k].obj);
+            sq << (k ? ", " : "") << cstr(seriesTable[k].q);
+            sp << (k ? ", " : "") << "&" << seriesTable[k].handle;
+        }
+        const size_t nS = seriesTable.size();
+        ioApi << "    // ---- runtime forcing (G4): replace a baked series by (object, quantity) name ----\n"
+              << "    enum { N_SERIES = " << nS << " };\n"
+              << "    static const char* seriesObject(int k)   { static const char* a[] = {" << (nS ? so.str() : std::string("\"\"")) << "}; return a[k]; }\n"
+              << "    static const char* seriesQuantity(int k) { static const char* a[] = {" << (nS ? sq.str() : std::string("\"\"")) << "}; return a[k]; }\n"
+              << "    ohq::TimeSeries* series(const char* object, const char* quantity) {\n"
+              << "        ohq::TimeSeries* p[] = {" << (nS ? sp.str() : std::string("nullptr")) << "};\n"
+              << "        for (int k = 0; k < N_SERIES; ++k) if (std::strcmp(seriesObject(k), object) == 0 && std::strcmp(seriesQuantity(k), quantity) == 0) return p[k];\n"
+              << "        return nullptr;\n    }\n"
+              << "    // (t, value) samples, in the quantity's SI unit; the dt clamp's D is recomputed lazily\n"
+              << "    bool setSeries(const char* object, const char* quantity, const double* t, const double* v, int n) {\n"
+              << "        ohq::TimeSeries* s = series(object, quantity); if (!s) return false;\n"
+              << "        s->t.assign(t, t + n); s->c.assign(v, v + n); s->d.clear(); return true;\n    }\n"
+              << "    // precipitation bins (CPrecipitation: start, end, depth) -> midpoint samples of depth/(end-start),\n"
+              << "    // exactly how the interpreter converts a precipitation file / injection\n"
+              << "    bool setPrecipitation(const char* object, const char* quantity, const double* start, const double* end, const double* depth, int n) {\n"
+              << "        ohq::TimeSeries* s = series(object, quantity); if (!s) return false;\n"
+              << "        s->t.clear(); s->c.clear(); s->d.clear();\n"
+              << "        for (int k = 0; k < n; ++k) { const double w = end[k] - start[k]; if (w > 0) s->push(0.5 * (start[k] + end[k]), depth[k] / w); }\n"
+              << "        return true;\n    }\n"
+              << "    // ---- state values in/out (G5): what a hot restart needs -- never model structure ----\n"
+              << "    // mass (N_MASS) / limited / limitFactor (N_STATES) may be null.\n"
+              << "    void exportState(double* storage, double* mass, int* limited, double* limitFactor) const {\n"
+              << "        for (int b = 0; b < N_STATES; ++b) { storage[b] = solver_.storage(b);\n"
+              << "            if (limited) limited[b] = solver_.isLimited(b) ? 1 : 0; if (limitFactor) limitFactor[b] = solver_.limitFactor(b); }\n"
+              << (T ? "        if (mass) for (int i = 0; i < N_MASS; ++i) mass[i] = transport_.mass(i);\n" : "        (void)mass;\n")
+              << "    }\n"
+              << "    // t: restart time; mass null = keep, limited null = none, limitFactor null = 1. dt restarts from dt0 as System::Solve does.\n"
+              << "    void importState(double t, const double* storage, const double* mass, const int* limited, const double* limitFactor) {\n"
+              << "        solver_.setState(t, storage, limited, limitFactor);\n"
+              << (T ? "        if (mass) transport_.setMass(mass);\n" : "        (void)mass;\n")
+              << (L ? "        for (int b = 0; b < N_STATES; ++b) flowStorage_[b] = solver_.storage(b);\n"
+                      "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
+              << "    }\n";
+    }
     std::string tHooks = T ? (
         std::string("    // ---- transport hooks ----\n")
-        + "    // flow-phase per-iteration quantities, recomputed once per accepted step\n"
-        + "    // from the committed storages so transport expressions can read them\n"
-        + "    void computeFlowLocals(const double* eff, double t_new) {\n"
-        + "        (void)eff; (void)t_new;\n" + flowLocalsBody.str() + "    }\n"
         + "    int nMass() const { return N_MASS; }\n"
         + "    int nConst() const { return " + std::to_string(nC) + "; }\n"
         + "    int nLinksT() const { return N_LINKS; }\n"
@@ -746,10 +987,12 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + "    void computeTransportFluxes(const double* mass, double t_new, double* massTransfer, double* inflowOwn) const {\n"
         + "        (void)mass; (void)t_new; (void)massTransfer; (void)inflowOwn;\n"
         + transBody.str() + "    }\n") : "";
-    std::string tMembers = T ? (
-        std::string("    double flowStorage_[N_STATES] = {0};\n")
-        + "    double flowFlow_[N_LINKS>0?N_LINKS:1] = {0};\n"
-        + "    ohq::TransportSolver<" + cls + "> transport_;\n") : "";
+    std::string tMembers =
+        (L ? std::string("    double flowStorage_[N_STATES] = {0};\n")
+             + "    double flowFlow_[N_LINKS>0?N_LINKS:1] = {0};\n" : std::string())
+        + (T ? "    ohq::TransportSolver<" + cls + "> transport_;\n" : std::string())
+        + "    double params_[N_PARAMETERS > 0 ? N_PARAMETERS : 1] = {" + (nP ? paramInitArr.str() : std::string("0.0")) + "};\n"
+        + "    ohq::TimeSeries obs_[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1];\n";
 
     // Emit the interpreter's solver settings so the generated solver adapts dt,
     // tolerances and iteration limits identically (not codegen's own defaults).
@@ -766,7 +1009,9 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
           << "; S.dt_grow = " << fmt(1.0 / ss.NR_timestep_reduction_factor)
           << "; S.dt_reduce_fail = " << fmt(ss.NR_timestep_reduction_factor_fail) << ";\n"
           << "          S.dt_max_factor = " << fmt(ss.timestepmaxfactor)
-          << "; S.dt_min_factor = " << fmt(ss.minimum_timestep / dt0v) << "; }\n";
+          << "; S.dt_min_factor = " << fmt(ss.minimum_timestep / dt0v) << ";\n"
+          << "          S.dt_floor_factor = " << fmt(1.0 / (ss.timestepminfactor > 0 ? ss.timestepminfactor : 1e5))
+          << "; S.dt_abs_min = " << fmt(ss.minimum_timestep) << "; }\n";
         return b.str();
     };
     std::string settingsInit = settingsFor("solver_")
@@ -776,23 +1021,27 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     std::ostringstream h;
     h << "// Auto-generated by OpenHydroQual model compiler. Do not edit.\n"
       << "#ifndef OHQ_GEN_" << sanitize(cls) << "_H\n#define OHQ_GEN_" << sanitize(cls) << "_H\n\n"
+      << "#include <cstring>\n"
       << "#include \"ohq_intrinsics.h\"\n#include \"ohq_timeseries.h\"\n#include \"ohq_massbalance.h\"\n"
       << tInclude << "\n"
       << "class " << cls << " {\npublic:\n"
       << "    enum State {\n" << stateEnumBody.str() << "        N_STATES = " << nB << "\n    };\n"
-      << "    enum { N_LINKS = " << nL << " };\n"
+      << "    enum { N_LINKS = " << nL << ", N_PARAMETERS = " << nP << ", N_OBSERVATIONS = " << nObs << " };\n"
       << tEnum << "\n"
       << "    " << cls << "() : solver_(*this)" << tCtor << " {}\n\n"
       << seriesSetters.str() << srcFns.str() << "\n"
       << "    void initialize(double tstart = " << fmt(system.tstart()) << ", double dt0 = "
-      << fmt(system.dt0()) << ") {\n        buildConstants();\n" << settingsInit
+      << fmt(system.dt0()) << ") {\n        loadSeries();\n        buildConstants();\n" << settingsInit
       << "        solver_.initialize(tstart, dt0);\n"
-      << [&]{ std::ostringstream b; if(!breakpointSet.empty()){ b << "        { static const double BP[] = {"; bool first=true; for(double t:breakpointSet){ b<<(first?"":", ")<<fmt(t); first=false;} b << "}; solver_.setBreakpoints(BP, " << breakpointSet.size() << "); }\n"; } return b.str(); }()
+      << [&]{ std::ostringstream b; for (const std::string& hh : clampHandles) b << "        solver_.addClampSeries(&" << hh << ");   // dt clamp (precipitation series, interpol_D)\n"; return b.str(); }()
       << (T ? "        transport_.initialize();\n" : "")
+      << (L ? "        for (int b=0;b<N_STATES;++b) flowStorage_[b]=solver_.storage(b);\n"
+              "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
+      << (O ? "        clearObservations(); recordObservations();   // the interpreter records t0 too\n" : "")
       << "    }\n"
       << tStep
-      << (T ? "    bool runTo(double t_end) { solver_.setStop(t_end); while (time() < t_end - 1e-30) { if (!step()) return false; } return true; }\n"
-            : "    bool runTo(double t_end) { return solver_.runTo(t_end); }\n")
+      << "    bool runTo(double t_end) { solver_.setStop(t_end); while (time() < t_end - 1e-30) { if (!step()) return false; } return true; }\n"
+      << paramApi << ioApi.str()
       << "    double time() const      { return solver_.time(); }\n"
       << "    int lastIterations() const { return solver_.lastIterations(); }\n"
       << "    double state(int i) const { return solver_.storage(i); }\n"
@@ -823,8 +1072,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << "    void computeFluxes(const double* eff, double t_new, double* flowRaw, double* inflowOwn) const {\n"
       << "        (void)eff; (void)t_new; (void)flowRaw; (void)inflowOwn;\n"
       << resBody.str() << "    }\n\n"
+      << localsFn
       << tHooks << "\n"
       << "private:\n"
+      << "    void loadSeries() {\n" << seriesInit.str() << "    }\n"
       << "    void buildConstants() {\n" << initBody.str() << "    }\n"
       << decls.str()
       << seriesDecls.str()
@@ -867,7 +1118,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
               << "// Standalone forward model: runs " << cls << " from the model's start time to\n"
                  "// its end time (or a given t_end) and writes every accepted step to a CSV.\n"
                  "//\n//   usage: " << cls << "_solver [output.csv] [t_end]\n"
-                 "#include <cstdio>\n#include <cstdlib>\n#include <chrono>\n"
+                 "#include <cstdio>\n#include <cstdlib>\n#include <chrono>\n#include <string>\n"
                  "#include \"" << cls << ".h\"\n\n"
                  "int main(int argc, char** argv)\n{\n"
                  "    const char*  outPath = argc > 1 ? argv[1] : \"output.csv\";\n"
@@ -892,6 +1143,14 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                  "        record();\n    }\n"
                  "    const double sec = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();\n"
                  "    std::fclose(f);\n"
+                 "    if (" << cls << "::N_OBSERVATIONS > 0) {   // observations.csv next to the output\n"
+                 "        std::string op = outPath; const size_t dot = op.rfind('.'); op = op.substr(0, dot == std::string::npos ? op.size() : dot) + \"_observations.csv\";\n"
+                 "        if (std::FILE* g = std::fopen(op.c_str(), \"w\")) {\n"
+                 "            std::fprintf(g, \"time\"); for (int i = 0; i < " << cls << "::N_OBSERVATIONS; ++i) std::fprintf(g, \",%s\", m.observationName(i)); std::fprintf(g, \"\\n\");\n"
+                 "            const ohq::TimeSeries& s0 = m.observationSeries(0);\n"
+                 "            for (size_t k = 0; k < s0.size(); ++k) { std::fprintf(g, \"%.10g\", s0.t[k]);\n"
+                 "                for (int i = 0; i < " << cls << "::N_OBSERVATIONS; ++i) std::fprintf(g, \",%.10g\", m.observationSeries(i).c[k]); std::fprintf(g, \"\\n\"); }\n"
+                 "            std::fclose(g);\n        }\n    }\n"
                  "    std::printf(\"" << cls << ": t=%.6g  %s  wall=%.3f s  -> %s\\n\", m.time(), ok ? \"OK\" : \"SOLVE FAILED\", sec, outPath);\n"
                  "    return ok ? 0 : 2;\n}\n";
             writeText(opt.outputDir + "/main.cpp", m.str());
@@ -924,6 +1183,26 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                << CLS << "_API const char* " << cls << "_state_name(int i);\n"
                << CLS << "_API double " << cls << "_simulation_start(void);\n"
                << CLS << "_API double " << cls << "_simulation_end(void);\n"
+                  "/* parameters (setasparameter bindings, model order) and observations (per accepted step) */\n"
+               << CLS << "_API int    " << cls << "_n_parameters(void);\n"
+               << CLS << "_API const char* " << cls << "_parameter_name(int i);\n"
+               << CLS << "_API double " << cls << "_parameter(const " << cls << "_handle* h, int i);\n"
+               << CLS << "_API void   " << cls << "_set_parameter(" << cls << "_handle* h, int i, double v);\n"
+               << CLS << "_API void   " << cls << "_apply_parameters(" << cls << "_handle* h);\n"
+               << CLS << "_API int    " << cls << "_n_observations(void);\n"
+               << CLS << "_API const char* " << cls << "_observation_name(int i);\n"
+               << CLS << "_API int    " << cls << "_observation_count(const " << cls << "_handle* h, int i);\n"
+               << CLS << "_API int    " << cls << "_observation_at(const " << cls << "_handle* h, int i, int k, double* t, double* v);\n"
+               << CLS << "_API void   " << cls << "_clear_observations(" << cls << "_handle* h);\n"
+                  "/* runtime forcing: replace a baked series by (object, quantity) name */\n"
+               << CLS << "_API int    " << cls << "_n_series(void);\n"
+               << CLS << "_API const char* " << cls << "_series_object(int k);\n"
+               << CLS << "_API const char* " << cls << "_series_quantity(int k);\n"
+               << CLS << "_API int    " << cls << "_set_series(" << cls << "_handle* h, const char* object, const char* quantity, const double* t, const double* v, int n);\n"
+               << CLS << "_API int    " << cls << "_set_precipitation(" << cls << "_handle* h, const char* object, const char* quantity, const double* start, const double* end, const double* depth, int n);\n"
+                  "/* state values in/out (hot restart); mass/limited/limitFactor may be NULL */\n"
+               << CLS << "_API void   " << cls << "_export_state(const " << cls << "_handle* h, double* storage, double* mass, int* limited, double* limitFactor);\n"
+               << CLS << "_API void   " << cls << "_import_state(" << cls << "_handle* h, double t, const double* storage, const double* mass, const int* limited, const double* limitFactor);\n"
                << (T ? CLS + "_API int    " + cls + "_n_mass(void);\n"
                      + CLS + "_API double " + cls + "_mass(const " + cls + "_handle* h, int i);  /* constituent mass, index block*nConst+j */\n"
                      : std::string())
@@ -945,6 +1224,24 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                   "const char* " << cls << "_state_name(int i) { return " << cls << "::stateName(i); }\n"
                   "double " << cls << "_simulation_start(void) { return " << cls << "::simulationStart(); }\n"
                   "double " << cls << "_simulation_end(void) { return " << cls << "::simulationEnd(); }\n"
+                  "int    " << cls << "_n_parameters(void) { return " << cls << "::N_PARAMETERS; }\n"
+                  "const char* " << cls << "_parameter_name(int i) { return " << cls << "::parameterName(i); }\n"
+                  "double " << cls << "_parameter(const " << cls << "_handle* h, int i) { return h->m.parameter(i); }\n"
+                  "void   " << cls << "_set_parameter(" << cls << "_handle* h, int i, double v) { h->m.setParameter(i, v); }\n"
+                  "void   " << cls << "_apply_parameters(" << cls << "_handle* h) { h->m.applyParameters(); }\n"
+                  "int    " << cls << "_n_observations(void) { return " << cls << "::N_OBSERVATIONS; }\n"
+                  "const char* " << cls << "_observation_name(int i) { return " << cls << "::observationName(i); }\n"
+                  "int    " << cls << "_observation_count(const " << cls << "_handle* h, int i) { return (int)h->m.observationSeries(i).size(); }\n"
+                  "int    " << cls << "_observation_at(const " << cls << "_handle* h, int i, int k, double* t, double* v) {\n"
+                  "    const ohq::TimeSeries& s = h->m.observationSeries(i); if (k < 0 || k >= (int)s.size()) return 0; *t = s.t[k]; *v = s.c[k]; return 1; }\n"
+                  "void   " << cls << "_clear_observations(" << cls << "_handle* h) { h->m.clearObservations(); }\n"
+                  "int    " << cls << "_n_series(void) { return " << cls << "::N_SERIES; }\n"
+                  "const char* " << cls << "_series_object(int k) { return " << cls << "::seriesObject(k); }\n"
+                  "const char* " << cls << "_series_quantity(int k) { return " << cls << "::seriesQuantity(k); }\n"
+                  "int    " << cls << "_set_series(" << cls << "_handle* h, const char* o, const char* q, const double* t, const double* v, int n) { return h->m.setSeries(o, q, t, v, n) ? 1 : 0; }\n"
+                  "int    " << cls << "_set_precipitation(" << cls << "_handle* h, const char* o, const char* q, const double* s, const double* e, const double* d, int n) { return h->m.setPrecipitation(o, q, s, e, d, n) ? 1 : 0; }\n"
+                  "void   " << cls << "_export_state(const " << cls << "_handle* h, double* st, double* ma, int* li, double* lf) { h->m.exportState(st, ma, li, lf); }\n"
+                  "void   " << cls << "_import_state(" << cls << "_handle* h, double t, const double* st, const double* ma, const int* li, const double* lf) { h->m.importState(t, st, ma, li, lf); }\n"
                << (T ? "int    " + cls + "_n_mass(void) { return " + cls + "::N_MASS; }\n"
                        "double " + cls + "_mass(const " + cls + "_handle* h, int i) { return h->m.constMass(i); }\n"
                      : std::string())
