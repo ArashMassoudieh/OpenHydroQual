@@ -292,13 +292,28 @@ void MainWindow::onexporttocpp()
         };
 
         QString buildLog;
-        const QString buildDir = QDir(outDir).filePath("build");
+        // Validation owns this build tree. Recreate it on every run so an
+        // exported project that was moved, renamed, or generated inside an
+        // existing folder can never reuse a CMakeCache.txt pointing elsewhere.
+        const QString buildFolderName = ".ohq_build";
+        const QString buildDir = QDir(outDir).filePath(buildFolderName);
+        QDir oldBuild(buildDir);
+        if (oldBuild.exists() && !oldBuild.removeRecursively()) {
+            progressDialog.close();
+            QMessageBox::critical(this, tr("C++ build failed"),
+                                  tr("Could not clear the validation build folder:\n%1")
+                                      .arg(buildDir));
+            return;
+        }
+        details->appendPlainText(tr("Clean validation build folder: %1").arg(buildDir));
         setStage(tr("Configuring the generated project with CMake"));
-        bool built = runProcess("cmake", {"-S", ".", "-B", "build", "-DCMAKE_BUILD_TYPE=Release"}, outDir, &buildLog);
+        bool built = runProcess("cmake", {"-S", ".", "-B", buildFolderName,
+                                           "-DCMAKE_BUILD_TYPE=Release"}, outDir, &buildLog);
         if (built) {
             setStage(tr("Compiling the generated solver in Release mode"));
             QString compileLog;
-            built = runProcess("cmake", {"--build", "build", "--config", "Release"}, outDir, &compileLog);
+            built = runProcess("cmake", {"--build", buildFolderName,
+                                           "--config", "Release"}, outDir, &compileLog);
             buildLog += compileLog;
         }
         if (!built) {
