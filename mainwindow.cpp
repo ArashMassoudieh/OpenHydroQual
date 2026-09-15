@@ -67,6 +67,28 @@
 #include "CodeGenerator.h"
 #include <QMessageBox>
 #include <QDir>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QDateTime>
+#include <QDoubleSpinBox>
+#include <QElapsedTimer>
+#include <QFile>
+#include <QFormLayout>
+#include <QFuture>
+#include <QLabel>
+#include <QPlainTextEdit>
+#include <QProcess>
+#include <QProgressBar>
+#include <QRegularExpression>
+#include <QTextStream>
+#include <QThread>
+#include <QVector>
+#include <QVBoxLayout>
+#include <QtConcurrent/QtConcurrent>
+#include <algorithm>
+#include <cmath>
 
 using namespace std;
 
@@ -115,25 +137,77 @@ void MainWindow::onexporttocpp()
         return;
     }
 
-    // 2. Library or executable (and static vs shared for a library).
-    QMessageBox typeBox(this);
-    typeBox.setWindowTitle(tr("Export to C++"));
-    typeBox.setText(tr("Build the generated model as a library or a standalone executable?"));
-    typeBox.setInformativeText(tr(
-        "Library: a C API (.a/.lib, or shared .so/.dll) to embed in other programs, "
-        "e.g. the OpenHydroTwin assimilation loop.\n"
-        "Executable: runs the forward model and writes a CSV of the results."));
-    QPushButton* libBtn = typeBox.addButton(tr("Library"), QMessageBox::AcceptRole);
-    QPushButton* exeBtn = typeBox.addButton(tr("Executable"), QMessageBox::AcceptRole);
-    typeBox.addButton(QMessageBox::Cancel);
-    typeBox.exec();
-    if (typeBox.clickedButton() != libBtn && typeBox.clickedButton() != exeBtn) return;
-    const bool asLibrary = (typeBox.clickedButton() == libBtn);
-    bool shared = false;
-    if (asLibrary)
-        shared = (QMessageBox::question(this, tr("Export to C++"),
-                    tr("Build as a SHARED library (.so / .dll)?\nChoose No for a static library."),
-                    QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes);
+    // 2. Export, build and validation options.  Validation is intentionally
+    // model-independent: it uses the currently loaded System and the generic
+    // CSV/observation interfaces emitted by CodeGenerator.
+    QDialog options(this);
+    options.setWindowTitle(tr("Export to C++"));
+    auto *layout = new QFormLayout(&options);
+    auto *targetBox = new QComboBox(&options);
+    targetBox->addItems({tr("Executable"), tr("Static library"), tr("Shared library")});
+    auto *buildBox = new QCheckBox(tr("Build generated project (Release)"), &options);
+    auto *runBox = new QCheckBox(tr("Run after build"), &options);
+    auto *compareBox = new QCheckBox(tr("Compare with the current OpenHydroQual model"), &options);
+    auto *durationBox = new QComboBox(&options);
+    durationBox->addItems({tr("Short test (10% of simulation)"), tr("Full simulation"), tr("Custom end time")});
+    auto *customEnd = new QDoubleSpinBox(&options);
+    customEnd->setDecimals(10);
+    customEnd->setRange(-1e100, 1e100);
+    customEnd->setValue(system.tstart() + 0.1 * (system.tend() - system.tstart()));
+    customEnd->setEnabled(false);
+    auto *relTol = new QDoubleSpinBox(&options);
+    relTol->setDecimals(6); relTol->setRange(0.0, 1.0); relTol->setValue(0.02);
+    relTol->setToolTip(tr("Allowed fractional difference (0.02 = 2%). Generated and interpreted solvers use independent adaptive time-step paths."));
+    auto *absTol = new QDoubleSpinBox(&options);
+    absTol->setDecimals(10); absTol->setRange(0.0, 1e100); absTol->setValue(1e-4);
+    absTol->setToolTip(tr("Absolute allowance for values close to zero, in the state variable's model units."));
+    layout->addRow(tr("Target:"), targetBox);
+    layout->addRow(QString(), buildBox);
+    layout->addRow(QString(), runBox);
+    layout->addRow(QString(), compareBox);
+    layout->addRow(tr("Validation duration:"), durationBox);
+    layout->addRow(tr("Custom end time (model units):"), customEnd);
+    layout->addRow(tr("Relative tolerance:"), relTol);
+    layout->addRow(tr("Absolute tolerance:"), absTol);
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &options);
+    layout->addRow(buttons);
+    connect(buttons, &QDialogButtonBox::accepted, &options, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &options, &QDialog::reject);
+    connect(durationBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            customEnd, [customEnd](int i) { customEnd->setEnabled(i == 2); });
+    auto updateOptions = [=]() {
+        const bool executable = targetBox->currentIndex() == 0;
+        runBox->setEnabled(executable);
+        compareBox->setEnabled(executable);
+        durationBox->setEnabled(executable && compareBox->isChecked());
+        customEnd->setEnabled(executable && compareBox->isChecked() && durationBox->currentIndex() == 2);
+        relTol->setEnabled(executable && compareBox->isChecked());
+        absTol->setEnabled(executable && compareBox->isChecked());
+        if (!executable) { runBox->setChecked(false); compareBox->setChecked(false); }
+        if (runBox->isChecked() || compareBox->isChecked()) buildBox->setChecked(true);
+        if (compareBox->isChecked()) runBox->setChecked(true);
+    };
+    connect(targetBox, QOverload<int>::of(&QComboBox::currentIndexChanged), &options, [=](int){ updateOptions(); });
+    connect(runBox, &QCheckBox::toggled, &options, [=](bool){ updateOptions(); });
+    connect(compareBox, &QCheckBox::toggled, &options, [=](bool){ updateOptions(); });
+    updateOptions();
+    if (options.exec() != QDialog::Accepted) return;
+
+    const bool asLibrary = targetBox->currentIndex() != 0;
+    const bool shared = targetBox->currentIndex() == 2;
+    const bool buildAfterExport = buildBox->isChecked();
+    const bool runAfterBuild = runBox->isChecked();
+    const bool compare = compareBox->isChecked();
+    double testEnd = system.tend();
+    if (durationBox->currentIndex() == 0)
+        testEnd = system.tstart() + 0.1 * (system.tend() - system.tstart());
+    else if (durationBox->currentIndex() == 2)
+        testEnd = customEnd->value();
+    if (testEnd <= system.tstart() || testEnd > system.tend()) {
+        QMessageBox::warning(this, tr("Export to C++"),
+                             tr("The validation end time must be after the start and no later than the model end."));
+        return;
+    }
 
     // 3. Class name: a C++ identifier derived from the folder name.
     QString cls;
@@ -141,7 +215,39 @@ void MainWindow::onexporttocpp()
         cls += (ch.isLetterOrNumber() || ch == QChar('_')) ? ch : QChar('_');
     if (cls.isEmpty() || cls[0].isDigit()) cls.prepend("Model_");
 
-    // 4. Generate.
+    // 4. Generate. Keep a visible, live progress surface: generation, CMake
+    // and both solver runs can otherwise make the application appear frozen.
+    QDialog progressDialog(this);
+    progressDialog.setWindowTitle(tr("C++ export and validation"));
+    progressDialog.setMinimumSize(720, 430);
+    progressDialog.setModal(true);
+    auto *progressLayout = new QVBoxLayout(&progressDialog);
+    auto *stageLabel = new QLabel(&progressDialog);
+    auto *progressBar = new QProgressBar(&progressDialog);
+    const int totalSteps = 1 + (buildAfterExport ? 2 : 0)
+                             + (runAfterBuild ? 1 : 0) + (compare ? 2 : 0);
+    int currentStage = 0;
+    progressBar->setRange(0, totalSteps);
+    auto *elapsedLabel = new QLabel(&progressDialog);
+    auto *details = new QPlainTextEdit(&progressDialog);
+    details->setReadOnly(true);
+    details->setPlaceholderText(tr("Build and solver output will appear here."));
+    progressLayout->addWidget(stageLabel);
+    progressLayout->addWidget(progressBar);
+    progressLayout->addWidget(elapsedLabel);
+    progressLayout->addWidget(details, 1);
+    QElapsedTimer totalTimer; totalTimer.start();
+    auto setStage = [&](const QString& text) {
+        ++currentStage;
+        stageLabel->setText(tr("Step %1 of %2: %3").arg(currentStage).arg(totalSteps).arg(text));
+        progressBar->setValue(currentStage - 1);
+        elapsedLabel->setText(tr("Elapsed: %1 s").arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+        details->appendPlainText("\n[" + QString::number(totalTimer.elapsed() / 1000.0, 'f', 1) + " s] " + text);
+        QCoreApplication::processEvents();
+    };
+    progressDialog.show();
+    setStage(tr("Generating the standalone C++ project"));
+
     ohqcg::GenOptions opt;
     opt.className     = cls.toStdString();
     opt.outputDir     = outDir.toStdString();
@@ -154,21 +260,347 @@ void MainWindow::onexporttocpp()
     }
     catch (const std::exception& e)
     {
+        progressDialog.close();
         QMessageBox::critical(this, tr("Export to C++"),
                               tr("Code generation failed:\n%1").arg(e.what()));
         Log(QString("Export to C++ failed: ") + e.what());
         return;
     }
 
+    QString report;
+    if (buildAfterExport)
+    {
+        auto runProcess = [&](const QString& program, const QStringList& arguments,
+                              const QString& cwd, QString *captured) -> bool {
+            QProcess process;
+            process.setWorkingDirectory(cwd);
+            process.setProcessChannelMode(QProcess::MergedChannels);
+            process.start(program, arguments);
+            if (!process.waitForStarted()) {
+                if (captured) *captured = process.errorString();
+                details->appendPlainText(process.errorString());
+                return false;
+            }
+            QString allOutput;
+            while (!process.waitForFinished(100)) {
+                const QString chunk = QString::fromLocal8Bit(process.readAll());
+                if (!chunk.isEmpty()) { allOutput += chunk; details->appendPlainText(chunk.trimmed()); }
+                elapsedLabel->setText(tr("Elapsed: %1 s").arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+                QCoreApplication::processEvents();
+            }
+            const QString tail = QString::fromLocal8Bit(process.readAll());
+            if (!tail.isEmpty()) { allOutput += tail; details->appendPlainText(tail.trimmed()); }
+            if (captured) *captured = allOutput;
+            return process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0;
+        };
+
+        QString buildLog;
+        // Validation owns this build tree. Recreate it on every run so an
+        // exported project that was moved, renamed, or generated inside an
+        // existing folder can never reuse a CMakeCache.txt pointing elsewhere.
+        const QString buildFolderName = ".ohq_build";
+        const QString buildDir = QDir(outDir).filePath(buildFolderName);
+        QDir oldBuild(buildDir);
+        if (oldBuild.exists() && !oldBuild.removeRecursively()) {
+            progressDialog.close();
+            QMessageBox::critical(this, tr("C++ build failed"),
+                                  tr("Could not clear the validation build folder:\n%1")
+                                      .arg(buildDir));
+            return;
+        }
+        details->appendPlainText(tr("Clean validation build folder: %1").arg(buildDir));
+        setStage(tr("Configuring the generated project with CMake"));
+        bool built = runProcess("cmake", {"-S", ".", "-B", buildFolderName,
+                                           "-DCMAKE_BUILD_TYPE=Release"}, outDir, &buildLog);
+        if (built) {
+            setStage(tr("Compiling the generated solver in Release mode"));
+            QString compileLog;
+            built = runProcess("cmake", {"--build", buildFolderName,
+                                           "--config", "Release"}, outDir, &compileLog);
+            buildLog += compileLog;
+        }
+        if (!built) {
+            progressDialog.close();
+            QMessageBox::critical(this, tr("C++ build failed"),
+                                  tr("The project was generated, but its Release build failed.\n\n%1")
+                                      .arg(buildLog.right(6000)));
+            return;
+        }
+        report += tr("Release build: PASS\n");
+
+        if (runAfterBuild && !asLibrary)
+        {
+            const QString validationDir = QDir(outDir).filePath(
+                "validation/" + QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
+            if (!QDir().mkpath(validationDir)) {
+                progressDialog.close();
+                QMessageBox::critical(this, tr("C++ validation"),
+                                      tr("Could not create the validation-results folder:\n%1")
+                                          .arg(validationDir));
+                return;
+            }
+#ifdef _WIN32
+            QString solver = QDir(buildDir).filePath("Release/" + cls + "_solver.exe");
+            if (!QFileInfo::exists(solver)) solver = QDir(buildDir).filePath(cls + "_solver.exe");
+#else
+            QString solver = QDir(buildDir).filePath(cls + "_solver");
+#endif
+            const QString generatedCsv = QDir(validationDir).filePath("generated.csv");
+            details->appendPlainText(tr("Validation results: %1").arg(validationDir));
+            setStage(tr("Running the generated C++ solver"));
+            QElapsedTimer generatedTimer; generatedTimer.start();
+            QString runLog;
+            const double endForRun = compare ? testEnd : system.tend();
+            const bool generatedOk = runProcess(solver,
+                {generatedCsv, QString::number(endForRun, 'g', 17)}, outDir, &runLog);
+            const double generatedWallSeconds = generatedTimer.nsecsElapsed() / 1e9;
+            if (!generatedOk) {
+                progressDialog.close();
+                QMessageBox::critical(this, tr("Generated solver failed"), runLog.right(6000));
+                return;
+            }
+            double generatedSeconds = generatedWallSeconds;
+            const QRegularExpression solveTime("solve=([0-9]+(?:\\.[0-9]+)?)\\s*s");
+            const QRegularExpressionMatch solveMatch = solveTime.match(runLog);
+            if (solveMatch.hasMatch()) generatedSeconds = solveMatch.captured(1).toDouble();
+            report += tr("Generated run: PASS (solve %1 s; process wall %2 s)\n")
+                          .arg(generatedSeconds, 0, 'f', 3).arg(generatedWallSeconds, 0, 'f', 3);
+            report += tr("Validation files: %1\n").arg(validationDir);
+
+            if (compare)
+            {
+                setStage(tr("Running the interpreted reference model"));
+                System interpreted(system);
+                interpreted.SetSystemSettings();
+                // SetSystemSettings reloads simulation_end_time from the model's
+                // settings object, so the benchmark override must be applied
+                // afterwards. Otherwise a short generated run is accidentally
+                // compared with a full interpreted run.
+                interpreted.tend() = testEnd;
+                interpreted.SetSilent(true);
+                interpreted.SetRecordResults(false);
+                interpreted.SetNumThreads(1);
+                QElapsedTimer interpretedTimer; interpretedTimer.start();
+                const bool applyParameters = interpreted.ParametersCount() > 0;
+                QFuture<bool> interpretedFuture = QtConcurrent::run(
+                    [&interpreted, applyParameters]() { return interpreted.Solve(applyParameters); });
+                while (!interpretedFuture.isFinished()) {
+                    elapsedLabel->setText(tr("Elapsed: %1 s — interpreted model is running")
+                                              .arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+                    QCoreApplication::processEvents();
+                    QThread::msleep(100);
+                }
+                const bool interpretedOk = interpretedFuture.result();
+                const double interpretedSeconds = interpretedTimer.nsecsElapsed() / 1e9;
+                if (!interpretedOk) {
+                    progressDialog.close();
+                    QMessageBox::critical(this, tr("C++ validation"),
+                                          tr("The interpreted reference run failed; comparison was stopped."));
+                    return;
+                }
+
+                setStage(tr("Comparing states, masses, and observations"));
+                auto readCsv = [](const QString& path, QStringList& headers,
+                                  QVector<QVector<double>>& rows) -> bool {
+                    QFile f(path);
+                    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return false;
+                    QTextStream in(&f);
+                    if (in.atEnd()) return false;
+                    headers = in.readLine().trimmed().split(',');
+                    while (!in.atEnd()) {
+                        const QString line = in.readLine().trimmed();
+                        if (line.isEmpty()) continue;
+                        const QStringList fields = line.split(',');
+                        if (fields.size() != headers.size()) continue;
+                        QVector<double> row; row.reserve(fields.size());
+                        bool ok = true;
+                        for (const QString& field : fields) {
+                            bool numberOk = false; const double value = field.toDouble(&numberOk);
+                            ok = ok && numberOk; row.push_back(value);
+                        }
+                        if (ok) rows.push_back(row);
+                    }
+                    return !rows.isEmpty();
+                };
+
+                const QString finalStatePath = generatedCsv.left(generatedCsv.lastIndexOf('.')) + "_final.csv";
+                QStringList stateHeaders; QVector<QVector<double>> stateRows;
+                if (!readCsv(finalStatePath, stateHeaders, stateRows)) {
+                    progressDialog.close();
+                    QMessageBox::critical(this, tr("C++ validation"), tr("Generated final-state CSV could not be read."));
+                    return;
+                }
+                const QVector<double>& finalRow = stateRows.last();
+                const double generatedEndTime = finalRow.isEmpty() ? 0.0 : finalRow[0];
+                const double terminalTimeGap = std::fabs(interpreted.GetTime() - generatedEndTime);
+                const double terminalTimeAllowance = std::max(1e-9, 2.0 * std::fabs(interpreted.dt0()));
+                const bool terminalTimesMatch = terminalTimeGap <= terminalTimeAllowance;
+                auto csvName = [](QString value) {
+                    value.replace('"', "\"\"");
+                    return "\"" + value + "\"";
+                };
+                QStringList comparisonRows;
+                comparisonRows << "category,name,interpreter,generated,absolute_error,allowed_error,tolerance_ratio";
+                double worstRatio = 0.0; QString worstName;
+                double largestAbsoluteError = 0.0, largestRelativeError = 0.0;
+                QString largestAbsoluteName, largestRelativeName;
+                int comparedStates = 0, comparisonsWithinTolerance = 0;
+                for (unsigned int b = 0; b < interpreted.BlockCount(); ++b) {
+                    const QString name = QString::fromStdString(interpreted.block(b)->GetName()) + ":Storage";
+                    const int col = stateHeaders.indexOf(name);
+                    if (col < 0 || col >= finalRow.size()) continue;
+                    const double expected = interpreted.block(b)->GetVal("Storage", Expression::timing::past);
+                    const double actual = finalRow[col];
+                    const double allowed = absTol->value() + relTol->value() * std::max(std::fabs(expected), std::fabs(actual));
+                    const double absoluteError = std::fabs(expected - actual);
+                    const double ratio = absoluteError / std::max(allowed, 1e-300);
+                    const double relativeError = absoluteError /
+                        std::max({std::fabs(expected), std::fabs(actual), absTol->value()});
+                    if (ratio > worstRatio) { worstRatio = ratio; worstName = name; }
+                    if (absoluteError > largestAbsoluteError) {
+                        largestAbsoluteError = absoluteError; largestAbsoluteName = name;
+                    }
+                    if (relativeError > largestRelativeError) {
+                        largestRelativeError = relativeError; largestRelativeName = name;
+                    }
+                    if (ratio <= 1.0) ++comparisonsWithinTolerance;
+                    comparisonRows << QString("final_state,%1,%2,%3,%4,%5,%6")
+                        .arg(csvName(name))
+                        .arg(expected, 0, 'g', 17).arg(actual, 0, 'g', 17)
+                        .arg(absoluteError, 0, 'g', 17)
+                        .arg(allowed, 0, 'g', 17).arg(ratio, 0, 'g', 17);
+                    ++comparedStates;
+                }
+
+                int comparedMasses = 0;
+                for (unsigned int b = 0; b < interpreted.BlockCount(); ++b) {
+                    for (unsigned int j = 0; j < interpreted.ConstituentsCount(); ++j) {
+                        const std::string constituentName = interpreted.constituent(j)->GetName();
+                        const QString name = QString::fromStdString(interpreted.block(b)->GetName()) + ":"
+                                           + QString::fromStdString(constituentName) + ":mass";
+                        const int col = stateHeaders.indexOf(name);
+                        if (col < 0 || col >= finalRow.size()) continue;
+                        const double expected = interpreted.block(b)->GetVal(
+                            "mass", constituentName, Expression::timing::past);
+                        const double actual = finalRow[col];
+                        const double allowed = absTol->value() + relTol->value()
+                                             * std::max(std::fabs(expected), std::fabs(actual));
+                        const double absoluteError = std::fabs(expected - actual);
+                        const double ratio = absoluteError / std::max(allowed, 1e-300);
+                        const double relativeError = absoluteError /
+                            std::max({std::fabs(expected), std::fabs(actual), absTol->value()});
+                        if (ratio > worstRatio) { worstRatio = ratio; worstName = name; }
+                        if (absoluteError > largestAbsoluteError) {
+                            largestAbsoluteError = absoluteError; largestAbsoluteName = name;
+                        }
+                        if (relativeError > largestRelativeError) {
+                            largestRelativeError = relativeError; largestRelativeName = name;
+                        }
+                        if (ratio <= 1.0) ++comparisonsWithinTolerance;
+                        comparisonRows << QString("constituent_mass,%1,%2,%3,%4,%5,%6")
+                            .arg(csvName(name))
+                            .arg(expected, 0, 'g', 17).arg(actual, 0, 'g', 17)
+                            .arg(std::fabs(expected - actual), 0, 'g', 17)
+                            .arg(allowed, 0, 'g', 17).arg(ratio, 0, 'g', 17);
+                        ++comparedMasses;
+                    }
+                }
+
+                int comparedObs = 0;
+                const QString obsPath = generatedCsv.left(generatedCsv.lastIndexOf('.')) + "_observations.csv";
+                QStringList obsHeaders; QVector<QVector<double>> obsRows;
+                if (readCsv(obsPath, obsHeaders, obsRows)) {
+                    for (unsigned int i = 0; i < interpreted.ObservationsCount(); ++i) {
+                        const QString name = QString::fromStdString(interpreted.observation(i)->GetName());
+                        const int col = obsHeaders.indexOf(name);
+                        if (col < 0) continue;
+                        auto *series = interpreted.observation(i)->GetModeledTimeSeries();
+                        double obsWorstRatio = 0.0, obsExpected = 0.0, obsActual = 0.0, obsAllowed = 0.0;
+                        for (const QVector<double>& row : obsRows) {
+                            if (row.size() <= col || row.isEmpty()) continue;
+                            const double expected = series->interpol(row[0]);
+                            const double actual = row[col];
+                            const double allowed = absTol->value() + relTol->value() * std::max(std::fabs(expected), std::fabs(actual));
+                            const double ratio = std::fabs(expected - actual) / std::max(allowed, 1e-300);
+                            if (ratio > worstRatio) { worstRatio = ratio; worstName = name; }
+                            if (ratio > obsWorstRatio) {
+                                obsWorstRatio = ratio; obsExpected = expected;
+                                obsActual = actual; obsAllowed = allowed;
+                            }
+                        }
+                        comparisonRows << QString("observation_series,%1,%2,%3,%4,%5,%6")
+                            .arg(csvName(name))
+                            .arg(obsExpected, 0, 'g', 17).arg(obsActual, 0, 'g', 17)
+                            .arg(std::fabs(obsExpected - obsActual), 0, 'g', 17)
+                            .arg(obsAllowed, 0, 'g', 17).arg(obsWorstRatio, 0, 'g', 17);
+                        const double obsAbsoluteError = std::fabs(obsExpected - obsActual);
+                        const double obsRelativeError = obsAbsoluteError /
+                            std::max({std::fabs(obsExpected), std::fabs(obsActual), absTol->value()});
+                        if (obsAbsoluteError > largestAbsoluteError) {
+                            largestAbsoluteError = obsAbsoluteError; largestAbsoluteName = name;
+                        }
+                        if (obsRelativeError > largestRelativeError) {
+                            largestRelativeError = obsRelativeError; largestRelativeName = name;
+                        }
+                        if (obsWorstRatio <= 1.0) ++comparisonsWithinTolerance;
+                        ++comparedObs;
+                    }
+                }
+
+                const bool parity = terminalTimesMatch && comparedStates > 0 && worstRatio <= 1.0;
+                report += tr("Interpreted run: PASS (%1 s)\n").arg(interpretedSeconds, 0, 'f', 3);
+                report += tr("Terminal times: interpreted=%1, generated=%2\n")
+                              .arg(interpreted.GetTime(), 0, 'g', 17)
+                              .arg(generatedEndTime, 0, 'g', 17);
+                report += tr("Terminal-time check: %1 (gap=%2; allowance=%3)\n")
+                              .arg(terminalTimesMatch ? tr("PASS") : tr("FAIL"))
+                              .arg(terminalTimeGap, 0, 'g', 8)
+                              .arg(terminalTimeAllowance, 0, 'g', 8);
+                report += tr("Speedup: %1x\n").arg(interpretedSeconds / std::max(generatedSeconds, 1e-12), 0, 'f', 2);
+                report += tr("Compared: %1 final states, %2 constituent masses, %3 observation series\n")
+                              .arg(comparedStates).arg(comparedMasses).arg(comparedObs);
+                const int totalComparisons = comparedStates + comparedMasses + comparedObs;
+                report += tr("Selected tolerances: relative=%1% and absolute=%2\n")
+                              .arg(100.0 * relTol->value(), 0, 'g', 6)
+                              .arg(absTol->value(), 0, 'g', 10);
+                report += tr("Comparisons within tolerance: %1 of %2\n")
+                              .arg(comparisonsWithinTolerance).arg(totalComparisons);
+                report += tr("Largest absolute difference: %1 (%2)\n")
+                              .arg(largestAbsoluteError, 0, 'g', 8).arg(largestAbsoluteName);
+                report += tr("Largest relative difference: %1% (%2)\n")
+                              .arg(100.0 * largestRelativeError, 0, 'g', 6).arg(largestRelativeName);
+                report += tr("Numerical agreement: %1\n").arg(parity ? tr("PASS") : tr("FAIL"));
+                report += tr("Worst tolerance ratio: %1 (%2)\n")
+                              .arg(worstRatio, 0, 'g', 6).arg(worstName);
+                if (comparedObs == 0)
+                    report += tr("Warning: no matching observation series were available; agreement is based on final states.\n");
+
+                QFile detailsFile(QDir(validationDir).filePath("comparison_details.csv"));
+                if (detailsFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                    QTextStream detailsStream(&detailsFile);
+                    detailsStream << comparisonRows.join('\n') << '\n';
+                }
+            }
+            QFile reportFile(QDir(validationDir).filePath("comparison_report.txt"));
+            if (reportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                QTextStream reportStream(&reportFile);
+                reportStream << report << "\nGenerated solver output:\n" << runLog;
+            }
+        }
+    }
+    progressBar->setValue(totalSteps);
+    elapsedLabel->setText(tr("Completed in %1 s").arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+    QCoreApplication::processEvents();
+    progressDialog.close();
     const QString target = asLibrary ? (shared ? tr("shared library") : tr("static library"))
                                      : tr("executable");
     QMessageBox::information(this, tr("Export to C++"),
-        tr("Generated a standalone C++ %1 project in:\n%2\n\n"
+        tr("Generated a standalone C++ %1 project in:\n%2\n\n%3"
            "Build it with CMake:\n"
            "  Linux/macOS:  cmake -S . -B build && cmake --build build\n"
            "  Windows:      cmake -S . -B build -G \"Visual Studio 17 2022\" -A x64\n"
            "                cmake --build build --config Release\n\n"
-           "See README.md in the folder for the API.").arg(target, outDir));
+           "See README.md in the folder for the API.").arg(target, outDir, report.isEmpty() ? QString() : report + "\n"));
     Log("Exported model to C++ (" + target + "): " + outDir);
 }
 
