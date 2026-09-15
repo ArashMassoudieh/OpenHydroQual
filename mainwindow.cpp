@@ -409,6 +409,12 @@ void MainWindow::onexporttocpp()
                     return;
                 }
                 const QVector<double>& finalRow = stateRows.last();
+                auto csvName = [](QString value) {
+                    value.replace('"', "\"\"");
+                    return "\"" + value + "\"";
+                };
+                QStringList comparisonRows;
+                comparisonRows << "category,name,interpreter,generated,absolute_error,allowed_error,tolerance_ratio";
                 double worstRatio = 0.0; QString worstName; int comparedStates = 0;
                 for (unsigned int b = 0; b < interpreted.BlockCount(); ++b) {
                     const QString name = QString::fromStdString(interpreted.block(b)->GetName()) + ":Storage";
@@ -419,6 +425,11 @@ void MainWindow::onexporttocpp()
                     const double allowed = absTol->value() + relTol->value() * std::max(std::fabs(expected), std::fabs(actual));
                     const double ratio = std::fabs(expected - actual) / std::max(allowed, 1e-300);
                     if (ratio > worstRatio) { worstRatio = ratio; worstName = name; }
+                    comparisonRows << QString("final_state,%1,%2,%3,%4,%5,%6")
+                        .arg(csvName(name))
+                        .arg(expected, 0, 'g', 17).arg(actual, 0, 'g', 17)
+                        .arg(std::fabs(expected - actual), 0, 'g', 17)
+                        .arg(allowed, 0, 'g', 17).arg(ratio, 0, 'g', 17);
                     ++comparedStates;
                 }
 
@@ -437,6 +448,11 @@ void MainWindow::onexporttocpp()
                                              * std::max(std::fabs(expected), std::fabs(actual));
                         const double ratio = std::fabs(expected - actual) / std::max(allowed, 1e-300);
                         if (ratio > worstRatio) { worstRatio = ratio; worstName = name; }
+                        comparisonRows << QString("constituent_mass,%1,%2,%3,%4,%5,%6")
+                            .arg(csvName(name))
+                            .arg(expected, 0, 'g', 17).arg(actual, 0, 'g', 17)
+                            .arg(std::fabs(expected - actual), 0, 'g', 17)
+                            .arg(allowed, 0, 'g', 17).arg(ratio, 0, 'g', 17);
                         ++comparedMasses;
                     }
                 }
@@ -450,6 +466,7 @@ void MainWindow::onexporttocpp()
                         const int col = obsHeaders.indexOf(name);
                         if (col < 0) continue;
                         auto *series = interpreted.observation(i)->GetModeledTimeSeries();
+                        double obsWorstRatio = 0.0, obsExpected = 0.0, obsActual = 0.0, obsAllowed = 0.0;
                         for (const QVector<double>& row : obsRows) {
                             if (row.size() <= col || row.isEmpty()) continue;
                             const double expected = series->interpol(row[0]);
@@ -457,13 +474,25 @@ void MainWindow::onexporttocpp()
                             const double allowed = absTol->value() + relTol->value() * std::max(std::fabs(expected), std::fabs(actual));
                             const double ratio = std::fabs(expected - actual) / std::max(allowed, 1e-300);
                             if (ratio > worstRatio) { worstRatio = ratio; worstName = name; }
+                            if (ratio > obsWorstRatio) {
+                                obsWorstRatio = ratio; obsExpected = expected;
+                                obsActual = actual; obsAllowed = allowed;
+                            }
                         }
+                        comparisonRows << QString("observation_series,%1,%2,%3,%4,%5,%6")
+                            .arg(csvName(name))
+                            .arg(obsExpected, 0, 'g', 17).arg(obsActual, 0, 'g', 17)
+                            .arg(std::fabs(obsExpected - obsActual), 0, 'g', 17)
+                            .arg(obsAllowed, 0, 'g', 17).arg(obsWorstRatio, 0, 'g', 17);
                         ++comparedObs;
                     }
                 }
 
                 const bool parity = comparedStates > 0 && worstRatio <= 1.0;
                 report += tr("Interpreted run: PASS (%1 s)\n").arg(interpretedSeconds, 0, 'f', 3);
+                report += tr("Terminal times: interpreted=%1, generated=%2\n")
+                              .arg(interpreted.GetTime(), 0, 'g', 17)
+                              .arg(finalRow.isEmpty() ? 0.0 : finalRow[0], 0, 'g', 17);
                 report += tr("Speedup: %1x\n").arg(interpretedSeconds / std::max(generatedSeconds, 1e-12), 0, 'f', 2);
                 report += tr("Compared: %1 final states, %2 constituent masses, %3 observation series\n")
                               .arg(comparedStates).arg(comparedMasses).arg(comparedObs);
@@ -472,6 +501,12 @@ void MainWindow::onexporttocpp()
                               .arg(worstRatio, 0, 'g', 6).arg(worstName);
                 if (comparedObs == 0)
                     report += tr("Warning: no matching observation series were available; parity is based on final states.\n");
+
+                QFile detailsFile(QDir(validationDir).filePath("comparison_details.csv"));
+                if (detailsFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                    QTextStream detailsStream(&detailsFile);
+                    detailsStream << comparisonRows.join('\n') << '\n';
+                }
             }
             QFile reportFile(QDir(validationDir).filePath("comparison_report.txt"));
             if (reportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
