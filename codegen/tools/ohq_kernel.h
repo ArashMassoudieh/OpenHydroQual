@@ -62,7 +62,11 @@
 #ifndef OHQ_KERNEL_H
 #define OHQ_KERNEL_H
 
-#define OHQ_KERNEL_ABI_VERSION 1
+/* v1 -> v2 (2026-09-14): added G4 forcing injection (set_series/set_precipitation),
+   G5 state values in/out, solver status, and state/mass readback. A v1 library
+   reports 1 here and lacks those symbols, so the loader rejects it rather than
+   letting a host call a null pointer. Regenerate the kernel. */
+#define OHQ_KERNEL_ABI_VERSION 2
 
 #ifdef __cplusplus
 extern "C" {
@@ -235,6 +239,8 @@ public:
         if (lib_) { dlclose(lib_); lib_ = nullptr; }
     }
     bool loaded() const { return lib_ != nullptr; }
+    /* every entry point is bound by load(), so loaded() implies usable */
+    bool valid() const { return lib_ != nullptr && create && run_to && observation_at; }
     const std::string& error() const { return err_; }
 
     /* Read every observation i back as (t, value) pairs. */

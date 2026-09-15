@@ -27,6 +27,17 @@ set(OHQLIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../OHQLib/build" CACHE PATH "dir wit
 add_library(ohq_runtime INTERFACE)
 target_include_directories(ohq_runtime INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/runtime)
 
+# --- kernel ABI: the model-independent loader + its test ---------------------
+# tools/ohq_kernel.h declares the fixed `ohq_kernel_*` names every generated
+# library exports, and provides a dlopen loader so ONE host can drive ANY model.
+# The test needs no OHQ core and no model at compile time -- point it at a .so:
+#     ./kernel_abi_test /path/to/libWetland.so
+add_library(ohq_kernel_abi INTERFACE)
+target_include_directories(ohq_kernel_abi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+
+add_executable(kernel_abi_test tests/kernel_abi_test.cpp)
+target_link_libraries(kernel_abi_test PRIVATE ohq_kernel_abi ${CMAKE_DL_LIBS})
+
 # --- demo: proves the runtime compiles and solves (no core, no Qt) -----------
 add_executable(two_pond_demo demo/main_two_pond.cpp)
 target_link_libraries(two_pond_demo PRIVATE ohq_runtime)

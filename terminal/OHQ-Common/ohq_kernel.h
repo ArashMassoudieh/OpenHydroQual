@@ -45,7 +45,7 @@
 #pragma once
 
 #include "System.h"
-#include <dlfcn.h>
+#include "codegen/tools/ohq_kernel.h"   // the ABI: declarations + loader + self-test
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -53,85 +53,30 @@
 
 namespace ohq {
 
-// ---- the fixed-name ABI emitted by CodeGenerator (keep the two in sync) -----
-struct KernelABI
-{
-    void*  lib = nullptr;
-    int    (*abi_version)()                                   = nullptr;
-    const char* (*class_name)()                               = nullptr;
-    void*  (*create)()                                        = nullptr;
-    void   (*destroy)(void*)                                  = nullptr;
-    void   (*initialize)(void*)                               = nullptr;
-    int    (*run_to)(void*, double)                           = nullptr;
-    int    (*step_to)(void*, double)                          = nullptr;
-    double (*time)(const void*)                               = nullptr;
-    double (*simulation_end)()                                = nullptr;
-    int    (*n_parameters)()                                  = nullptr;
-    const char* (*parameter_name)(int)                        = nullptr;
-    void   (*set_parameter)(void*, int, double)               = nullptr;
-    void   (*apply_parameters)(void*)                         = nullptr;
-    int    (*n_observations)()                                = nullptr;
-    const char* (*observation_name)(int)                      = nullptr;
-    int    (*observation_count)(const void*, int)             = nullptr;
-    int    (*observation_at)(const void*, int, int, double*, double*) = nullptr;
-    void   (*clear_observations)(void*)                       = nullptr;
-    void   (*uniformize_observations)(void*)                  = nullptr;
-
-    bool valid() const { return lib && create && run_to && observation_at; }
-};
+// ---- the ABI ---------------------------------------------------------------
+// Declared once, in codegen/tools/ohq_kernel.h, next to the generator that
+// emits it (that header also carries the dlopen loader and the parameter
+// self-test, and needs no OHQ core -- so a host that does not link System, such
+// as the twin's DTRunner, can use it on its own). This file adds only what
+// needs System: KernelSystem, which swaps the solve into GA/MCMC.
+using KernelABI = Kernel;
 
 // One process-wide kernel library; every KernelSystem copy makes its own handle
 // so parallel GA individuals never share solver state.
-inline KernelABI& TheKernel()
+inline Kernel& TheKernel()
 {
-    static KernelABI k;
+    static Kernel k;
     return k;
 }
 
 inline bool LoadKernel(const std::string& path)
 {
-    KernelABI& k = TheKernel();
-    k.lib = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
-    if (!k.lib)
+    if (!TheKernel().load(path))
     {
-        std::cout << "Cannot load kernel '" << path << "': " << dlerror() << std::endl;
-        return false;
-    }
-    auto sym = [&](const char* n) -> void* {
-        void* p = dlsym(k.lib, n);
-        if (!p) std::cout << "  kernel is missing symbol '" << n << "'" << std::endl;
-        return p;
-    };
-    k.abi_version       = (int (*)())sym("ohq_kernel_abi_version");
-    k.class_name        = (const char* (*)())sym("ohq_kernel_class_name");
-    k.create            = (void* (*)())sym("ohq_kernel_create");
-    k.destroy           = (void (*)(void*))sym("ohq_kernel_destroy");
-    k.initialize        = (void (*)(void*))sym("ohq_kernel_initialize");
-    k.run_to            = (int (*)(void*, double))sym("ohq_kernel_run_to");
-    k.step_to           = (int (*)(void*, double))sym("ohq_kernel_step_to");
-    k.time              = (double (*)(const void*))sym("ohq_kernel_time");
-    k.simulation_end    = (double (*)())sym("ohq_kernel_simulation_end");
-    k.n_parameters      = (int (*)())sym("ohq_kernel_n_parameters");
-    k.parameter_name    = (const char* (*)(int))sym("ohq_kernel_parameter_name");
-    k.set_parameter     = (void (*)(void*, int, double))sym("ohq_kernel_set_parameter");
-    k.apply_parameters  = (void (*)(void*))sym("ohq_kernel_apply_parameters");
-    k.n_observations    = (int (*)())sym("ohq_kernel_n_observations");
-    k.observation_name  = (const char* (*)(int))sym("ohq_kernel_observation_name");
-    k.observation_count = (int (*)(const void*, int))sym("ohq_kernel_observation_count");
-    k.observation_at    = (int (*)(const void*, int, int, double*, double*))sym("ohq_kernel_observation_at");
-    k.clear_observations= (void (*)(void*))sym("ohq_kernel_clear_observations");
-    k.uniformize_observations = (void (*)(void*))sym("ohq_kernel_uniformize_observations");
-
-    if (!k.valid())
-    {
-        std::cout << "'" << path << "' does not export the ohq_kernel ABI. Generate it with\n"
+        std::cout << TheKernel().error() << std::endl;
+        std::cout << "Generate the library with\n"
                   << "  ohq_generate <model.ohq> <resources> <out> <Class> Storage --project shared"
                   << std::endl;
-        return false;
-    }
-    if (k.abi_version && k.abi_version() != 1)
-    {
-        std::cout << "Kernel ABI version " << k.abi_version() << ", expected 1." << std::endl;
         return false;
     }
     return true;
@@ -182,8 +127,37 @@ inline bool VerifyKernelMatches(System& system)
             return false;
         }
     }
+    // Names and counts matching is NOT enough (issues.md ISSUE 17): a kernel can
+    // advertise a parameter it silently ignores, and a GA then "converges" on an
+    // optimum that does not reproduce. Perturb each one and confirm the model
+    // actually moves. Parameters the kernel legitimately does not own (an
+    // observation's error_standard_deviation -- applied by System::ApplyParameters
+    // instead, see G9) are skipped by name.
+    std::vector<std::string> host_owned;
+    for (int i = 0; i < np; i++)
+    {
+        Parameter* p = system.GetParameter(i);
+        if (!p) continue;
+        for (unsigned j = 0; j < p->GetLocations().size(); j++)
+        {
+            Object* o = system.object(p->GetLocations()[j]);
+            if (o && (o->ObjectType() == object_type::observation
+                   || o->ObjectType() == object_type::objective_function))
+            { host_owned.push_back(p->GetName()); break; }
+        }
+    }
+    const int dead = k.self_test(0.05, 0.0, host_owned);
+    if (dead >= 0)
+    {
+        std::cout << "Parameter " << dead << " '" << k.parameter_name(dead)
+                  << "' is advertised by the kernel but does NOT change its output."
+                     " Refusing to calibrate against it (issues.md ISSUE 17)." << std::endl;
+        return false;
+    }
     std::cout << "Kernel verified : " << np << " parameters, " << no
-              << " observations, names match the model." << std::endl;
+              << " observations, names match the model; all "
+              << (np - (int)host_owned.size()) << " kernel-owned parameters move it"
+              << (host_owned.empty() ? "" : " (host-owned skipped)") << "." << std::endl;
     return true;
 }
 

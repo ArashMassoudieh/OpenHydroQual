@@ -161,9 +161,15 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         params.push_back({p->GetName(), p->GetValue()});
         const std::vector<std::string> locs = p->GetLocations(), qs = p->GetQuans();
         bool anyLive = false, hostOwnedOnly = true;   // see the ISSUE 17 guard below
+        int nBindings = 0, nMissingObjects = 0;
         for (size_t k = 0; k < locs.size() && k < qs.size(); ++k) {
+            ++nBindings;
             Object* o = system.object(locs[k]);
-            if (!o) { paramNotes.push_back(p->GetName() + " -> '" + locs[k] + "': object not found"); continue; }
+            if (!o) {
+                ++nMissingObjects;
+                paramNotes.push_back(p->GetName() + " -> '" + locs[k] + "': object not found");
+                continue;
+            }
             const object_type ot = o->ObjectType();
             // A bound parameter MUST become a live params_[i] in the generated
             // code, whatever kind of object carries it. The old code allow-listed
@@ -233,13 +239,36 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                         "emitted code. Refusing to emit a kernel that would silently ignore it.");
             }
         }
-        // ISSUE 17's guarantee: a parameter a calibration cannot drive at all is
-        // still fatal. Inert/host-owned bindings are fine ONLY alongside a live one.
-        if (!anyLive && !hostOwnedOnly)
+        // Classify what could not be bound. ISSUE 17's guarantee is that the kernel
+        // is never emitted for a calibration it cannot drive -- but "cannot drive"
+        // has to mean the KERNEL is the problem. Where the interpreter is equally
+        // powerless, ignoring the binding preserves parity and must not be fatal.
+        if (nBindings == 0) {
+            // `create parameter` with no `setasparameter` anywhere: it moves nothing,
+            // in either code. The model is estimating a parameter that does nothing --
+            // worth saying out loud, not worth refusing over.
+            paramNotes.push_back(p->GetName() + ": no `setasparameter` binding in the model; it "
+                                 "affects neither the interpreter nor the kernel");
+            std::fprintf(stderr, "warning: estimated parameter '%s' has no setasparameter binding; "
+                                 "it affects nothing in this model\n", p->GetName().c_str());
+        } else if (nMissingObjects == nBindings) {
+            // Every target names an object that is not in the loaded model -- the
+            // model itself is broken, and the interpreter fails here too
+            // ("Location '<x>' does not exist" from System::ApplyParameters).
+            std::string where;
+            for (size_t k = 0; k < locs.size(); ++k) where += (k ? ", " : "") + locs[k];
+            throw std::runtime_error(
+                "CodeGenerator: estimated parameter '" + p->GetName() + "' is bound only to objects "
+                "that are not in the loaded model (" + where + "). Those objects failed to be "
+                "created -- check the model's templates (a second `loadtemplate` RESETS the "
+                "template set, so a type defined only in an earlier block goes missing). The "
+                "interpreter reports 'Location ... does not exist' for the same bindings.");
+        } else if (!anyLive && !hostOwnedOnly) {
             throw std::runtime_error(
                 "CodeGenerator: estimated parameter '" + p->GetName() + "' has no binding the "
                 "kernel can drive (all of its targets are derived quantities). Refusing to emit "
                 "a kernel a calibration cannot drive.");
+        }
     }
     const unsigned nP = static_cast<unsigned>(params.size());
     auto paramRef = [&](const std::string& obj, const std::string& q) -> std::string {   // "" if unbound
@@ -1447,9 +1476,13 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             // host-owned parameters legitimately never appear; identify them by
             // the note recorded when the binding was skipped.
             bool excused = false;
-            for (const std::string& n : paramNotes)
+            for (const std::string& n : paramNotes) {
                 if (n.rfind(params[i].name + " ->", 0) == 0 &&
                     n.find("applied by the host") != std::string::npos) excused = true;
+                // a parameter bound to nothing at all is inert in the interpreter too
+                if (n.rfind(params[i].name + ":", 0) == 0 &&
+                    n.find("no `setasparameter` binding") != std::string::npos) excused = true;
+            }
             if (!excused)
                 msg += "  parameter " + std::to_string(i) + " '" + params[i].name
                      + "' never appears in the generated code\n";
@@ -1677,7 +1710,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                   "   library would have to know it. These fixed names let a generic host\n"
                   "   (OHQ-GA / OHQ-MCMC --kernel) drive ANY generated model. Keep in sync\n"
                   "   with tools/ohq_kernel.h. ohq_kernel_abi_version() guards changes. */\n"
-                  "int    ohq_kernel_abi_version(void) { return 1; }\n"
+                  "int    ohq_kernel_abi_version(void) { return 2; }   /* v2: + G4 forcing, G5 state, status, state/mass readback */\n"
                   "const char* ohq_kernel_class_name(void) { return \"" << cls << "\"; }\n"
                   "void*  ohq_kernel_create(void) { return (void*)" << cls << "_create(); }\n"
                   "void   ohq_kernel_destroy(void* h) { " << cls << "_destroy((" << cls << "_handle*)h); }\n"

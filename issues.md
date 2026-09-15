@@ -641,11 +641,29 @@ The rule is now:
 On the 8-column model this yields 10 live parameters + `error_std` (host-owned),
 with 160 inert `moisture_content` notes.
 
-### Lesson for the runners
+### Lesson for the runners — DONE 2026-09-14 (tasks C3/C4)
 Name/count verification is not enough. Before trusting a kernel for a
-calibration, perturb each parameter and confirm the output moves. A standalone
-check doing exactly that lives in the session notes; folding it into
-`--kernel` startup as a cheap self-test is worth doing (tasks C3/C4).
+calibration, perturb each parameter and confirm the output moves.
+
+`ohq::Kernel::self_test()` (`codegen/tools/ohq_kernel.h`) now does this, and
+`VerifyKernelMatches` calls it, so **every `--kernel` run checks it at startup**:
+
+```
+Kernel verified : 11 parameters, 16 observations, names match the model;
+                  all 10 kernel-owned parameters move it (host-owned skipped).
+```
+
+Parameters the kernel legitimately does not own (an observation's
+`error_standard_deviation` -- G9, applied by `System::ApplyParameters`) are
+skipped by object type, not by a name heuristic.
+
+The check is **bitwise**, deliberately: the kernel is deterministic, so a
+parameter it reads changes some bit of the output, while one it ignores
+reproduces the baseline exactly. A magnitude threshold is the wrong tool here --
+in this very model a live sorption parameter moves the answer by 5e-4 against a
+state vector dominated by ~1e9 of constant bulk-density mass, i.e. 1e-12
+relative, which any sane threshold would call dead. (That mistake was made and
+caught while writing the test.)
 
 
 ## ISSUE 18 — codegen: Newton skipped whenever the state norm was zero (FIXED 2026-09-14)
@@ -759,3 +777,36 @@ Reproduced 2026-09-14 running OHQ-GA against `Two-site s13-GA/kernel3/build/libS
 Fix: either add `step_to` to `valid()` and refuse to load without it, or gate on
 `ohq_kernel_abi_version()` and reject kernels below the version that introduced
 it. The version symbol is already loaded and currently unused for anything.
+
+---
+
+## ISSUE 20 — kernel ABI v1 -> v2, and the duplicate `ohq_kernel.h` (2026-09-14)
+
+**Status:** resolved same day. Recorded because a stale `.so` is otherwise a
+silent-wrong-answer risk.
+
+### What happened
+`codegen/tools/ohq_kernel.h` was written as the canonical ABI declaration, and
+while doing so the generator's alias ABI was extended from 25 to 40 entry points
+(it was missing G4 forcing injection, G5 state in/out, solver status and
+state/mass readback -- everything the twin needs beyond a plain GA run).
+
+That extension was made **without bumping `ohq_kernel_abi_version()`**, so a
+library built earlier still reported v1 while lacking the new symbols: a host
+that bound them would have called a null pointer.
+
+### Fix
+- ABI bumped to **v2** in the generator and in `OHQ_KERNEL_ABI_VERSION`.
+  `Kernel::load()` refuses a mismatched library up front:
+  `libCol8.so: kernel ABI v1, host expects v2` -- verified against a stale build.
+- `terminal/OHQ-Common/ohq_kernel.h` (the host-side G3/G9 integration) had its
+  own copy of the ABI struct and dlsym loader. It now `#include`s the canonical
+  header and keeps only what needs the OHQ core: `KernelSystem`, plus
+  `VerifyKernelMatches`. One declaration list instead of three (generator,
+  codegen header, host header).
+
+### Rule going forward
+The generator emits the ABI; `codegen/tools/ohq_kernel.h` declares it. Changing
+one means changing both **and** bumping the version in both. Anything that links
+the OHQ core gets the ABI through the canonical header, never its own copy.
+

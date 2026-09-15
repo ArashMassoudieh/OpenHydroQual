@@ -328,6 +328,43 @@ The generated class is now *assimilable*:
   samples hourly ET twice a day on dry days (issues.md ISSUE 8). Run the gate
   with the interpreter's dt capped (`max_timestep_increase_factor` ≈ 2).
 
+### The kernel ABI — `tools/ohq_kernel.h` (2026-09-14)
+A generated library exports its C API under the **class name**
+(`Wetland_run_to`, `Col8_run_to`, …), which only a host that already knows the
+model can call. Alongside it the generator emits a **fixed** alias set,
+`ohq_kernel_*` (40 symbols), so one generic host — OHQ-GA / OHQ-MCMC `--kernel`,
+or the twin's `DTRunner` — can drive **any** generated model.
+
+`tools/ohq_kernel.h` is that contract:
+- `extern "C"` declarations of all 40 entry points, grouped by roadmap gap
+  (lifetime, solving, G1 parameters, G2 observations, G4 forcing, G5 state
+  values, G6 status, results).
+- an `ohq::Kernel` **dlopen loader** (C++, `-ldl`; `OHQ_KERNEL_NO_LOADER` to
+  omit) that binds every symbol and refuses a library whose
+  `ohq_kernel_abi_version()` does not match `OHQ_KERNEL_ABI_VERSION`.
+- `Kernel::self_test()` — perturbs every advertised parameter and checks the
+  output actually moves. **Matching names and counts is not enough** (issues.md
+  ISSUE 17: a GA once "converged" on parameters the kernel silently ignored).
+  The check is deliberately **bitwise**: the kernel is deterministic, so a
+  parameter it reads changes some bit, while one it ignores reproduces the
+  baseline exactly. A magnitude threshold is the wrong tool here — in the
+  8-column model a live sorption parameter moves the answer by 5e-4 against a
+  state vector dominated by ~1e9 of constant bulk-density mass, i.e. 1e-12
+  relative, which any sane threshold would call dead.
+
+Keep the header in sync with the alias-ABI block in `src/CodeGenerator.cpp`;
+bump `OHQ_KERNEL_ABI_VERSION` on both sides together.
+
+```bash
+cmake --build codegen/build --target kernel_abi_test
+codegen/build/ohq_generate model.ohq resources out Cls --project shared
+cmake -S out -B out/build -DCMAKE_BUILD_TYPE=Release && cmake --build out/build -j
+codegen/build/kernel_abi_test out/build/libCls.so
+```
+Validated on two very different models: Wetland (10 states, 1 constituent, 5
+parameters, 44 series) and the 8-column study (152 states, 1368 masses, 11
+parameters incl. one host-owned sigma, 3176 series) — both PASS.
+
 ## Next phase
 
 The purpose of all this is to run **OpenHydroTwin**'s GA / streaming-MCMC data
