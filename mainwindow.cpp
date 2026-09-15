@@ -75,11 +75,18 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFormLayout>
+#include <QFuture>
+#include <QLabel>
+#include <QPlainTextEdit>
 #include <QProcess>
+#include <QProgressBar>
 #include <QRegularExpression>
 #include <QTemporaryDir>
 #include <QTextStream>
+#include <QThread>
 #include <QVector>
+#include <QVBoxLayout>
+#include <QtConcurrent/QtConcurrent>
 #include <cmath>
 
 using namespace std;
@@ -205,7 +212,39 @@ void MainWindow::onexporttocpp()
         cls += (ch.isLetterOrNumber() || ch == QChar('_')) ? ch : QChar('_');
     if (cls.isEmpty() || cls[0].isDigit()) cls.prepend("Model_");
 
-    // 4. Generate.
+    // 4. Generate. Keep a visible, live progress surface: generation, CMake
+    // and both solver runs can otherwise make the application appear frozen.
+    QDialog progressDialog(this);
+    progressDialog.setWindowTitle(tr("C++ export and validation"));
+    progressDialog.setMinimumSize(720, 430);
+    progressDialog.setModal(true);
+    auto *progressLayout = new QVBoxLayout(&progressDialog);
+    auto *stageLabel = new QLabel(&progressDialog);
+    auto *progressBar = new QProgressBar(&progressDialog);
+    const int totalSteps = 1 + (buildAfterExport ? 2 : 0)
+                             + (runAfterBuild ? 1 : 0) + (compare ? 2 : 0);
+    int currentStage = 0;
+    progressBar->setRange(0, totalSteps);
+    auto *elapsedLabel = new QLabel(&progressDialog);
+    auto *details = new QPlainTextEdit(&progressDialog);
+    details->setReadOnly(true);
+    details->setPlaceholderText(tr("Build and solver output will appear here."));
+    progressLayout->addWidget(stageLabel);
+    progressLayout->addWidget(progressBar);
+    progressLayout->addWidget(elapsedLabel);
+    progressLayout->addWidget(details, 1);
+    QElapsedTimer totalTimer; totalTimer.start();
+    auto setStage = [&](const QString& text) {
+        ++currentStage;
+        stageLabel->setText(tr("Step %1 of %2: %3").arg(currentStage).arg(totalSteps).arg(text));
+        progressBar->setValue(currentStage - 1);
+        elapsedLabel->setText(tr("Elapsed: %1 s").arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+        details->appendPlainText("\n[" + QString::number(totalTimer.elapsed() / 1000.0, 'f', 1) + " s] " + text);
+        QCoreApplication::processEvents();
+    };
+    progressDialog.show();
+    setStage(tr("Generating the standalone C++ project"));
+
     ohqcg::GenOptions opt;
     opt.className     = cls.toStdString();
     opt.outputDir     = outDir.toStdString();
@@ -218,6 +257,7 @@ void MainWindow::onexporttocpp()
     }
     catch (const std::exception& e)
     {
+        progressDialog.close();
         QMessageBox::critical(this, tr("Export to C++"),
                               tr("Code generation failed:\n%1").arg(e.what()));
         Log(QString("Export to C++ failed: ") + e.what());
@@ -235,18 +275,34 @@ void MainWindow::onexporttocpp()
             process.start(program, arguments);
             if (!process.waitForStarted()) {
                 if (captured) *captured = process.errorString();
+                details->appendPlainText(process.errorString());
                 return false;
             }
-            while (!process.waitForFinished(100)) QCoreApplication::processEvents();
-            if (captured) *captured = QString::fromLocal8Bit(process.readAll());
+            QString allOutput;
+            while (!process.waitForFinished(100)) {
+                const QString chunk = QString::fromLocal8Bit(process.readAll());
+                if (!chunk.isEmpty()) { allOutput += chunk; details->appendPlainText(chunk.trimmed()); }
+                elapsedLabel->setText(tr("Elapsed: %1 s").arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+                QCoreApplication::processEvents();
+            }
+            const QString tail = QString::fromLocal8Bit(process.readAll());
+            if (!tail.isEmpty()) { allOutput += tail; details->appendPlainText(tail.trimmed()); }
+            if (captured) *captured = allOutput;
             return process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0;
         };
 
         QString buildLog;
         const QString buildDir = QDir(outDir).filePath("build");
-        bool built = runProcess("cmake", {"-S", ".", "-B", "build", "-DCMAKE_BUILD_TYPE=Release"}, outDir, &buildLog)
-                  && runProcess("cmake", {"--build", "build", "--config", "Release"}, outDir, &buildLog);
+        setStage(tr("Configuring the generated project with CMake"));
+        bool built = runProcess("cmake", {"-S", ".", "-B", "build", "-DCMAKE_BUILD_TYPE=Release"}, outDir, &buildLog);
+        if (built) {
+            setStage(tr("Compiling the generated solver in Release mode"));
+            QString compileLog;
+            built = runProcess("cmake", {"--build", "build", "--config", "Release"}, outDir, &compileLog);
+            buildLog += compileLog;
+        }
         if (!built) {
+            progressDialog.close();
             QMessageBox::critical(this, tr("C++ build failed"),
                                   tr("The project was generated, but its Release build failed.\n\n%1")
                                       .arg(buildLog.right(6000)));
@@ -258,6 +314,7 @@ void MainWindow::onexporttocpp()
         {
             QTemporaryDir temp;
             if (!temp.isValid()) {
+                progressDialog.close();
                 QMessageBox::critical(this, tr("C++ validation"), tr("Could not create a temporary validation folder."));
                 return;
             }
@@ -268,6 +325,7 @@ void MainWindow::onexporttocpp()
             QString solver = QDir(buildDir).filePath(cls + "_solver");
 #endif
             const QString generatedCsv = QDir(temp.path()).filePath("generated.csv");
+            setStage(tr("Running the generated C++ solver"));
             QElapsedTimer generatedTimer; generatedTimer.start();
             QString runLog;
             const double endForRun = compare ? testEnd : system.tend();
@@ -275,6 +333,7 @@ void MainWindow::onexporttocpp()
                 {generatedCsv, QString::number(endForRun, 'g', 17)}, outDir, &runLog);
             const double generatedWallSeconds = generatedTimer.nsecsElapsed() / 1e9;
             if (!generatedOk) {
+                progressDialog.close();
                 QMessageBox::critical(this, tr("Generated solver failed"), runLog.right(6000));
                 return;
             }
@@ -287,6 +346,7 @@ void MainWindow::onexporttocpp()
 
             if (compare)
             {
+                setStage(tr("Running the interpreted reference model"));
                 System interpreted(system);
                 interpreted.tend() = testEnd;
                 interpreted.SetSystemSettings();
@@ -294,14 +354,25 @@ void MainWindow::onexporttocpp()
                 interpreted.SetRecordResults(false);
                 interpreted.SetNumThreads(1);
                 QElapsedTimer interpretedTimer; interpretedTimer.start();
-                const bool interpretedOk = interpreted.Solve(interpreted.ParametersCount() > 0);
+                const bool applyParameters = interpreted.ParametersCount() > 0;
+                QFuture<bool> interpretedFuture = QtConcurrent::run(
+                    [&interpreted, applyParameters]() { return interpreted.Solve(applyParameters); });
+                while (!interpretedFuture.isFinished()) {
+                    elapsedLabel->setText(tr("Elapsed: %1 s — interpreted model is running")
+                                              .arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+                    QCoreApplication::processEvents();
+                    QThread::msleep(100);
+                }
+                const bool interpretedOk = interpretedFuture.result();
                 const double interpretedSeconds = interpretedTimer.nsecsElapsed() / 1e9;
                 if (!interpretedOk) {
+                    progressDialog.close();
                     QMessageBox::critical(this, tr("C++ validation"),
                                           tr("The interpreted reference run failed; comparison was stopped."));
                     return;
                 }
 
+                setStage(tr("Comparing states, masses, and observations"));
                 auto readCsv = [](const QString& path, QStringList& headers,
                                   QVector<QVector<double>>& rows) -> bool {
                     QFile f(path);
@@ -328,6 +399,7 @@ void MainWindow::onexporttocpp()
                 const QString finalStatePath = generatedCsv.left(generatedCsv.lastIndexOf('.')) + "_final.csv";
                 QStringList stateHeaders; QVector<QVector<double>> stateRows;
                 if (!readCsv(finalStatePath, stateHeaders, stateRows)) {
+                    progressDialog.close();
                     QMessageBox::critical(this, tr("C++ validation"), tr("Generated final-state CSV could not be read."));
                     return;
                 }
@@ -398,6 +470,10 @@ void MainWindow::onexporttocpp()
             }
         }
     }
+    progressBar->setValue(totalSteps);
+    elapsedLabel->setText(tr("Completed in %1 s").arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+    QCoreApplication::processEvents();
+    progressDialog.close();
     const QString target = asLibrary ? (shared ? tr("shared library") : tr("static library"))
                                      : tr("executable");
     QMessageBox::information(this, tr("Export to C++"),
