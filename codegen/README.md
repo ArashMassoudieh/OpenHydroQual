@@ -257,7 +257,7 @@ header, so a model can be compiled on a machine with no OpenHydroQual at all:
   runtime/*.h          header-only runtime (an embedded copy, see below)
   CMakeLists.txt       Linux/macOS: cmake -S . -B build && cmake --build build
                        Windows:     cmake -S . -B build -G "Visual Studio 17 2022" -A x64
-  main.cpp             [executable]  runs tstart->tend, CSV of every step, wall time
+  main.cpp             [executable]  runs tstart->tend, CSV output, exact final-state snapshot, wall time
   <Class>_api.h/.cpp   [library]     C ABI: create/initialize/step/step_to/run_to/
                                      time/state/state_name/(n_mass/mass)/destroy
   example.cpp          [library]     minimal client (also a link check)
