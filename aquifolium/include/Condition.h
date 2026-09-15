@@ -35,6 +35,10 @@ class Condition
         string GetLastError() {return last_error;}
         string ToString(int _tabs = 0) const;
         unsigned int Count() const { return exr.size();  }
+        /// i-th comparison operand (0..Count()-1); enables code generation.
+        const Expression& Expr(unsigned int i) const { return exr[i]; }
+        /// true if the i-th operator (0..Count()-2) is '<' (else '>').
+        bool IsLessThan(unsigned int i) const { return oprtr[i] == _oprtr::lessthan; }
     protected:
 
     private:

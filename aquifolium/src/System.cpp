@@ -14,6 +14,8 @@
  */
 
 
+#include <cstdio>
+#include <cstdlib>
 #include "System.h"
 #include <chrono>
 #include <algorithm>
@@ -1443,6 +1445,21 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
 
         QCoreApplication::processEvents();
     }
+#else
+    // Terminal build: progress above is reported through rtw, which does not
+    // exist here, so a console run printed nothing at all between "Running from
+    // time" and the final line -- on a multi-hour model that is indistinguishable
+    // from a hang. Emit the same t/dt the GUI Details pane shows, once per whole
+    // percent of the run, whenever the system is not silent (-q, or
+    // "setvalue; object=system, quantity=silent, value=1").
+    if (!silent && int(progress / 0.01) > int(progress_p / 0.01))
+    {
+        cout << "  " << int(progress * 100 + 0.5) << "%   t = " << SolverTempVars.t
+             << " / " << SimulationParameters.tend
+             << "   dt = " << SolverTempVars.dt
+             << "   iterations = " << SolverTempVars.MaxNumberOfIterations()
+             << endl;
+    }
 #endif
 
     // Restore point � independent of GUI
@@ -1473,6 +1490,41 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
     Update();
     UpdateObjectiveFunctions(SolverTempVars.t);
     UpdateObservations(SolverTempVars.t);
+    // OHQ_OBSLOG=1 : what UpdateObservations just appended, with the time it was
+    // stamped with, for codegen parity work.
+    if (std::getenv("OHQ_OBSLOG") && ObservationsCount() > 0)
+    {
+        static int _n = 0;
+        static int _once = 0;
+        if (!_once) { _once = 1;
+            if (Link* _lk = link("Flow1-1")) {
+                std::fprintf(stderr, "LINKQ Flow1-1 quantities containing 'disp' or 'diff':\n");
+                QuanSet* _qs = _lk->GetVars();
+                for (auto _it = _qs->begin(); _it != _qs->end(); ++_it)
+                    if (true)
+                        std::fprintf(stderr, "   '%s' type=%d val=%.17g\n", _it->first.c_str(),
+                                     int(_it->second.GetType()),
+                                     double(_it->second.GetVal(Expression::timing::present)));
+                std::fprintf(stderr, "   GetVal(\"dispersivity\")=%.17g  currentconst='%s'\n",
+                             double(_lk->GetVal("dispersivity", Expression::timing::present)),
+                             _lk->GetCurrentCorrespondingConstituent().c_str());
+            }
+            if (Object* _c = object("Cu_aq"))
+                std::fprintf(stderr, "   constituent Cu_aq dispersivity=%.17g\n",
+                             double(_c->GetVal("dispersivity", Expression::timing::present)));
+        }
+        Block* _b = block("Col1-Top");
+        const double _m = _b ? _b->GetVal("Cu_aq:mass",  Expression::timing::present) : -1;
+        const double _S = _b ? _b->GetVal("Storage",     Expression::timing::present) : -1;
+        const double _c = _b ? _b->GetVal("Cu_aq:concentration", Expression::timing::present) : -1;
+        if (_n++ < 12)
+            std::fprintf(stderr, "OBSLOG t=%.17g dt=%.17g obs0_n=%d obs0_last_t=%.17g obs0_last_v=%.17g | Col1-Top mass=%.17g S=%.17g conc=%.17g\n",
+                         double(SolverTempVars.t), double(SolverTempVars.dt),
+                         int((*observations[0].GetModeledTimeSeries()).size()),
+                         (*observations[0].GetModeledTimeSeries()).size() ? double((*observations[0].GetModeledTimeSeries()).back().t) : 0.0,
+                         (*observations[0].GetModeledTimeSeries()).size() ? double((*observations[0].GetModeledTimeSeries()).back().c) : 0.0,
+                         _m, _S, _c);
+    }
     PopulateOutputs();
     SolverTempVars.t += SolverTempVars.dt;
 
@@ -1574,6 +1626,27 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
         }
     }
 
+    // OHQ_ITERLOG=1 : one line per accepted step, for codegen dt-policy parity work.
+    // Emits the per-state-variable Newton iteration counts that drive the dt
+    // adaptation immediately below, so the interpreter's dt trajectory can be
+    // reproduced exactly. Off unless the variable is set.
+    if (std::getenv("OHQ_ITERLOG"))
+    {
+        std::string per;
+        for (unsigned int i = 0; i < SolverTempVars.numiterations.size(); i++)
+            per += (i ? "," : "") + aquiutils::numbertostring(int(SolverTempVars.numiterations[i]));
+        std::fprintf(stderr, "ITERLOG t=%.9g dt=%.9g dt_base=%.9g maxiter=%d n=%d per=[%s] minnext=%.9g nseries=%d belowfloor=%d updjac=%d\n",
+                     double(SolverTempVars.t), double(SolverTempVars.dt),
+                     double(SolverTempVars.dt_base),
+                     SolverTempVars.MaxNumberOfIterations(),
+                     int(SolverTempVars.numiterations.size()),
+                     per.c_str(),
+                     double(GetMinimumNextTimeStepSize()),
+                     int(alltimeseries.size()),
+                     int(SolverTempVars.nr_below_absolute_floor),
+                     int(SolverSettings.update_jacobian_every_iteration));
+    }
+
     if (SolverTempVars.MaxNumberOfIterations() > SolverSettings.NR_niteration_upper)
     {
         SolverTempVars.dt_base = max(
@@ -1619,6 +1692,25 @@ void System::FinalizeOutputs(bool uniformizeoutput)
 {
     LogMessage("Adjusting outputs ...");
     Outputs.AllOutputs.unif = false;
+    // OHQ_RAWOBS=<file> : the observed outputs BEFORE make_uniform, for codegen
+    // parity work (raw one-sample-per-accepted-step series).
+    if (const char* _f = std::getenv("OHQ_RAWOBS"))
+    {
+        if (std::FILE* _fp = std::fopen(_f, "w"))
+        {
+            for (int _c = 0; _c < int(Outputs.ObservedOutputs.size()); _c++)
+            {
+                std::fprintf(_fp, "# series %d %s n=%d\n", _c,
+                             Outputs.ObservedOutputs[_c].name().c_str(),
+                             int(Outputs.ObservedOutputs[_c].size()));
+                for (int _k = 0; _k < int(Outputs.ObservedOutputs[_c].size()); _k++)
+                    std::fprintf(_fp, "%d %.17g %.17g\n", _c,
+                                 double(Outputs.ObservedOutputs[_c][_k].t),
+                                 double(Outputs.ObservedOutputs[_c][_k].c));
+            }
+            std::fclose(_fp);
+        }
+    }
 
     if (uniformizeoutput)
     {
@@ -1754,6 +1846,13 @@ bool System::SetProperty(const string &s, const string &val)
     if (s=="verify_jacobian")
     {
         SolverSettings.verify_jacobian = aquiutils::atoi(val);
+        return true;
+    }
+    if (s=="update_jacobian_every_iteration")
+    {
+        SolverSettings.update_jacobian_every_iteration =
+            (aquiutils::trim(aquiutils::tolower(val))=="yes"
+             || aquiutils::trim(val)=="1" || aquiutils::trim(aquiutils::tolower(val))=="true");
         return true;
     }
     if (s=="jacobian_method")
@@ -2333,6 +2432,11 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
         {
             SolverTempVars.numiterations[statevarno]++;
 
+            // Optional true-Newton mode: refresh the Jacobian every iteration
+            // rather than reusing the one from the start of the step.
+            if (SolverSettings.update_jacobian_every_iteration)
+                SolverTempVars.updatejacobian[statevarno] = true;
+
             if (SolverTempVars.updatejacobian[statevarno])
             {
                 CMatrix_arma J;
@@ -2401,6 +2505,27 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 else
                     SolverTempVars.Inverse_Jacobian[statevarno] = J;
                 SolverTempVars.updatejacobian[statevarno] = false;
+                // OHQ_JACDUMP=<prefix> : write each assembled Jacobian once, as
+                // "i j value" for the nonzeros, for codegen parity work.
+                if (const char* _pfx = std::getenv("OHQ_JACDUMP"))
+                {
+                    static int _dumped[8] = {0,0,0,0,0,0,0,0};
+                    if (statevarno < 8 && !_dumped[statevarno])
+                    {
+                        _dumped[statevarno] = 1;
+                        char _fn[512];
+                        std::snprintf(_fn, sizeof(_fn), "%s_sv%d.txt", _pfx, int(statevarno));
+                        if (std::FILE* _f = std::fopen(_fn, "w"))
+                        {
+                            std::fprintf(_f, "# n=%d t=%.17g dt=%.17g\n",
+                                         J.getnumrows(), double(SolverTempVars.t), double(SolverTempVars.dt));
+                            for (int _a = 0; _a < J.getnumrows(); _a++)
+                                for (int _b = 0; _b < J.getnumcols(); _b++)
+                                    if (J(_a,_b) != 0) std::fprintf(_f, "%d %d %.17g\n", _a, _b, double(J(_a,_b)));
+                            std::fclose(_f);
+                        }
+                    }
+                }
 
             }
             CVector_arma X1;
@@ -2437,10 +2562,66 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             err_p = err;
             err = F.norm2();
 
+            // OHQ_NRLOG=1 : one line per Newton iteration, for codegen parity work.
+            // Same spirit as OHQ_ITERLOG above; off unless the variable is set.
+            if (std::getenv("OHQ_NRVEC"))
+            {
+                std::fprintf(stderr, "NRVEC t=%.9g sv=%d it=%d n=%d", double(SolverTempVars.t),
+                             int(statevarno), int(SolverTempVars.numiterations[statevarno]), int(F.getsize()));
+                int _im = 0, _id = 0;
+                for (int _k = 0; _k < F.getsize(); _k++) {
+                    if (fabs(double(F[_k]))  > fabs(double(F[_im])))  _im = _k;
+                    if (fabs(double(dx[_k])) > fabs(double(dx[_id]))) _id = _k;
+                }
+                std::fprintf(stderr, " argmaxF=%d F=%.12g X=%.12g | argmaxdx=%d dx=%.12g F@=%.12g",
+                             _im, double(F[_im]), double(X[_im]), _id, double(dx[_id]), double(F[_id]));
+                // the STORED Jacobian actually used for this step (direct mode:
+                // Inverse_Jacobian holds J itself), plus the dt it sees
+                {
+                    const CMatrix_arma &_J = SolverTempVars.Inverse_Jacobian[statevarno];
+                    if (_J.getnumrows() > 18 && _J.getnumcols() > 19)
+                        std::fprintf(stderr, " J[18][18]=%.12g J[18][17]=%.12g J[18][19]=%.12g dt=%.12g njac=%d",
+                                     double(_J(18,18)), double(_J(18,17)), double(_J(18,19)),
+                                     double(SolverTempVars.dt), int(SolverTempVars.epoch_count));
+                }
+                std::fprintf(stderr, "\n");
+            }
+            if (std::getenv("OHQ_NRLOG"))
+                std::fprintf(stderr, "NRLOG t=%.9g sv=%d it=%d err_ini=%.9g err=%.9g err_p=%.9g err1=%.9g lam=%.9g dxn=%.9g Xn=%.9g rel=%.9g njac=%d\n",
+                             double(SolverTempVars.t), int(statevarno),
+                             int(SolverTempVars.numiterations[statevarno]),
+                             double(err_ini), double(err), double(err_p),
+                             double(SolverSettings.optimize_lambda ? F1.norm2() : 0.0),
+                             double(SolverTempVars.NR_coefficient[statevarno]),
+                             double(dx_norm), double(X_norm),
+                             double(err/(err_ini+1e-8*X_norm)),
+                             int(SolverTempVars.epoch_count));
+
             if (AdjustNRCoefficient(X, X_past, X1, F, F1, err, err_p,
                                     statevarno, transport, ini_max_error_block,
                                     error_increase_counter, outflowlimitstatus_old) == NRAdjustResult::failed)
                 return false;
+        }
+        // OHQ_XDUMP=<prefix> : the state vector right after the Newton loop, once
+        // per state variable, for codegen parity work.
+        if (const char* _pfx = std::getenv("OHQ_XDUMP"))
+        {
+            static int _xd[8] = {0,0,0,0,0,0,0,0};
+            if (statevarno < 8 && !_xd[statevarno] && SolverTempVars.numiterations[statevarno] > 0)
+            {
+                _xd[statevarno] = 1;
+                char _fn[512];
+                std::snprintf(_fn, sizeof(_fn), "%s_sv%d.txt", _pfx, int(statevarno));
+                if (std::FILE* _f = std::fopen(_fn, "w"))
+                {
+                    std::fprintf(_f, "# n=%d t=%.17g dt=%.17g iters=%d\n", X.getsize(),
+                                 double(SolverTempVars.t), double(SolverTempVars.dt),
+                                 int(SolverTempVars.numiterations[statevarno]));
+                    for (int _k = 0; _k < X.getsize(); _k++)
+                        std::fprintf(_f, "%d %.17g\n", _k, double(X[_k]));
+                    std::fclose(_f);
+                }
+            }
         }
         switchvartonegpos = false;
 
@@ -5082,38 +5263,59 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
     CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Expression::timing::present,transport);
     SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma_sp jacobian_sp(BlockCount());
-#ifndef NO_OPENMP
-#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
-#endif
+
+    // Triplet assembly, and the loops below are deliberately SERIAL.
+    //
+    // They used to carry `#pragma omp parallel for ... if (n_threads>1)`. That was
+    // unsafe twice over. First, links share block indices, and
+    // CMatrix_arma_sp::operator() hands back a reference into an arma::sp_mat,
+    // which INSERTS the entry when it is absent and reallocates the CSC arrays --
+    // so concurrent iterations were restructuring the matrix, not merely racing on
+    // a value. Second, and fatal on its own: Gradient() takes its derivative by
+    // perturbing the state of `wrt`, reading, then restoring it. Two threads on
+    // links that share a block perturb and restore the SAME block, so the
+    // derivative itself comes out wrong. No assembly scheme fixes that; the loop
+    // cannot be parallel while Gradient mutates shared state. The dense twin in
+    // JacobianDirect() was commented out for the same reason; this copy was missed.
+    //
+    // Going serial costs little, because the insertion pattern it replaces was the
+    // real expense: every jacobian_sp(i,j) += ... walked the CSC structure, O(nnz)
+    // per write. Values are now collected as (row, col, value) triplets and the
+    // matrix is built once, add_values=true summing the duplicates that sharing
+    // produces.
+    std::vector<arma::uword> jac_r, jac_c;
+    std::vector<double> jac_v;
+    const size_t jac_guess = 8 * size_t(LinksCount()) + 2 * size_t(BlockCount());
+    jac_r.reserve(jac_guess); jac_c.reserve(jac_guess); jac_v.reserve(jac_guess);
+    auto jac_add = [&](int r, int c, double v)
+    {   jac_r.push_back(arma::uword(r)); jac_c.push_back(arma::uword(c)); jac_v.push_back(v); };
+
     for (int i=0; i<LinksCount(); i++)
     {
         if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
-        {   jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
-            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+        {   jac_add(link(i)->s_Block_No(),link(i)->s_Block_No(),(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
+            jac_add(link(i)->e_Block_No(),link(i)->s_Block_No(),-(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
         }
         else
         {
-            jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
-            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jac_add(link(i)->s_Block_No(),link(i)->s_Block_No(),(aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
+            jac_add(link(i)->e_Block_No(),link(i)->s_Block_No(),-(aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
         }
         if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
         {
-            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
-            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jac_add(link(i)->s_Block_No(),link(i)->e_Block_No(),(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
+            jac_add(link(i)->e_Block_No(),link(i)->e_Block_No(),-(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
         }
         else
         {
-            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) -= aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
-            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jac_add(link(i)->s_Block_No(),link(i)->e_Block_No(),-(aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
+            jac_add(link(i)->e_Block_No(),link(i)->e_Block_No(),(aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
         }
     }
-#ifndef NO_OPENMP
-#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
-#endif
     for (int i=0; i<BlockCount(); i++)
     {
         if (!block(i)->GetLimitedOutflow() && !block(i)->isrigid(variable))
-            jacobian_sp(i,i) += 1/SolverTempVars.dt;
+            jac_add(i,i,(1/SolverTempVars.dt));
         for (unsigned int j=0; j<block(i)->Variable(variable)->GetCorrespondingInflowVar().size(); j++)
         {
             if (block(i)->Variable(variable)->GetCorrespondingInflowVar()[j] != "")
@@ -5121,14 +5323,28 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
                 if (Variable(block(i)->Variable(variable)->GetCorrespondingInflowVar()[j]))
                 {
                     if (!block(i)->GetLimitedOutflow())
-                        jacobian_sp(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
+                        jac_add(i,i,-(Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable)));
                     else
                     {   double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
-                        if (inflow<0) jacobian_sp(i,i) -= inflow;
+                        if (inflow<0) jac_add(i,i,-(inflow));
                     }
                 }
             }
         }
+    }
+
+    // One construction from the triplets. add_values=true sums entries that repeat,
+    // which is exactly what several links sharing a block produces, so the result is
+    // identical to the accumulated += it replaces.
+    if (!jac_v.empty())
+    {
+        arma::umat jac_loc(2, jac_v.size());
+        for (size_t k = 0; k < jac_v.size(); k++)
+        {   jac_loc(0, k) = jac_r[k];
+            jac_loc(1, k) = jac_c[k]; }
+        arma::vec jac_vals(jac_v);
+        jacobian_sp.matr = arma::sp_mat(true, jac_loc, jac_vals,
+                                        arma::uword(BlockCount()), arma::uword(BlockCount()));
     }
 
     for (unsigned int i = 0; i < blocks.size(); i++)

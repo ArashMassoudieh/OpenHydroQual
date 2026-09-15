@@ -37,6 +37,24 @@
    "delegate": "ValueBox",
    "code": "nr_tolerance"
   },
+  "nr_niteration_lower": {
+   "type": "value",
+   "default": "20",
+   "description": "Newton iteration count below which the time step grows",
+   "helptext": "After an accepted step the solver compares the largest Newton iteration count over all state variables with this value; below it the base time step is multiplied by 1/nr_timestep_reduction_factor. Raise it for models whose Newton legitimately needs many iterations (the Jacobian is assembled once per step and reused, so a stiff transport phase can need 20-30 chord iterations) -- otherwise the step is throttled for no accuracy benefit.",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "nr_niteration_lower"
+  },
+  "nr_niteration_upper": {
+   "type": "value",
+   "default": "40",
+   "description": "Newton iteration count above which the time step shrinks",
+   "helptext": "Counterpart to nr_niteration_lower: above this the base time step is multiplied by nr_timestep_reduction_factor. Keep it comfortably above nr_niteration_lower.",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "nr_niteration_upper"
+  },
   "nr_timestep_reduction_factor": {
    "type": "value",
    "default": "0.75",
@@ -108,6 +126,15 @@
    "ask_user": "true",
    "delegate": "ComboBox, items: Direct, Inverse Jacobian, Sparse",
    "code": "jacobian_method"
+  },
+  "update_jacobian_every_iteration": {
+   "type": "string",
+   "default": "No",
+   "description": "Reassemble the Jacobian at every Newton iteration",
+   "helptext": "Off (the default) uses the classic chord scheme: the Jacobian is assembled once at the start of a step and reused, refreshed only when the step stops improving. That is cheap per iteration but converges linearly, so a stiff phase can need 20-30 iterations. On, the Jacobian is rebuilt every iteration, giving true Newton convergence -- typically 1-2 iterations on systems that are linear in the state. Because the iteration count also drives the time-step adaptation, turning this on usually raises the time step as well.",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: Yes, No",
+   "code": "update_jacobian_every_iteration"
   },
   "write_intermittently": {
    "type": "string",

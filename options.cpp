@@ -31,6 +31,8 @@ OptionsDialog::OptionsDialog(MainWindow *_parent) :
     ui->doubleSpinBox->setValue(parent->GetDiagramView()->fontfactor);
     ui->LineThickness->setValue(parent->GetDiagramView()->linkthickness);
     ui->radioButton->setChecked(parent->GetDiagramView()->showlinkicons);
+    ui->ToolbarIconSize->setCurrentIndex(
+        parent->GetToolbarIconSize() == MainWindow::ToolbarIconSize::Large ? 1 : 0);
 }
 
 OptionsDialog::~OptionsDialog()
@@ -45,6 +47,9 @@ void OptionsDialog::on_ok_clicked()
         parent->GetDiagramView()->fontfactor = ui->doubleSpinBox->value();
         parent->GetDiagramView()->linkthickness = ui->LineThickness->value();
         parent->GetDiagramView()->showlinkicons = ui->radioButton->isChecked();
+        parent->SetToolbarIconSize(ui->ToolbarIconSize->currentIndex() == 1
+                                       ? MainWindow::ToolbarIconSize::Large
+                                       : MainWindow::ToolbarIconSize::Small);
         parent->GetDiagramView()->update();
         parent->GetDiagramView()->scene()->update(parent->GetDiagramView()->sceneRect());
         for (int i=0; i<parent->GetDiagramView()->Nodes().size(); i++)

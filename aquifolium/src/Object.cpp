@@ -622,6 +622,14 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
     }
     if (var[prop].GetType() == Quan::_type::value || var[prop].GetType() == Quan::_type::balance || var[prop].GetType() == Quan::_type::constant || (var[prop].GetType() == Quan::_type::expression && (var[prop].Delegate()=="UnitBox"||var[prop].Delegate()=="ValueBox" )))
     {
+        // The result of SetVal is the criteria check: on failure it restores the
+        // previous value and logs error 8012. Returning an unconditional true
+        // here discarded that, so a caller could not tell a rejected value from
+        // an accepted one. The plain branch below also used to omit the
+        // check_criteria argument altogether, and SetVal defaults it to false --
+        // so for any value-type property without a delegate (which is most of
+        // them: length, base_width, bottom_elevation ...) criteria were skipped
+        // even when the caller explicitly asked for them.
 #ifdef Q_GUI_SUPPORT
         if (var[prop].Delegate()=="UnitBox")
         {
@@ -629,16 +637,17 @@ bool Object::SetProperty(const string &prop, const string &value, bool force_val
             {   string unit = aquiutils::split(aquiutils::split(value,'[')[1],']')[0];
                 double coefficient = XString::coefficient(QString::fromStdString(unit));
                 double _value = atof(value.c_str())*coefficient;
-                var[prop].SetVal(_value,Expression::timing::both, check_criteria);
+                if (!var[prop].SetVal(_value,Expression::timing::both, check_criteria))
+                    return false;
                 var[prop].Unit() = unit;
+                return true;
             }
             else
-                var[prop].SetVal(aquiutils::atof(value),Expression::timing::both, check_criteria);
+                return var[prop].SetVal(aquiutils::atof(value),Expression::timing::both, check_criteria);
         }
         else
 #endif
-        var[prop].SetVal(aquiutils::atof(value),Expression::timing::both);
-        return true;
+        return var[prop].SetVal(aquiutils::atof(value),Expression::timing::both, check_criteria);
     }
     if (var[prop].GetType() == Quan::_type::expression)
     {

@@ -67,6 +67,13 @@ struct solversettings
     double NRtolerance = 1e-6; //Newton Raphson Tolerance
     int n_threads = 16; //Number of threads
     double NR_coeff_reduction_factor = 0.8; //The coefficient to reduce the Newton-Raphson coefficient
+    /// Reassemble the Jacobian at every Newton iteration instead of reusing the
+    /// one assembled at the start of the step. The default (false) is the
+    /// classic chord scheme: assemble once, reuse, refresh only when the step
+    /// stops improving. Reassembling costs one Jacobian per iteration but gives
+    /// true Newton convergence, so far fewer iterations -- and because the
+    /// iteration count drives the time-step adaptation, a larger dt as well.
+    bool update_jacobian_every_iteration = false;
     double NR_timestep_reduction_factor = 0.75;
     double NR_timestep_reduction_factor_fail = 0.3;
     double minimum_timestep = 1e-7;
@@ -549,6 +556,9 @@ public:
     double dt0() const { return SimulationParameters.dt0; }
     int EpochCount() const { return SolverTempVars.epoch_count; }
     bool GetSolutionFailed() const { return SolverTempVars.SolutionFailed; }
+    // Lets an alternative forward-model back end (the codegen kernel used by
+    // OHQ-GA/OHQ-MCMC --kernel) report a failed solve; SolverTempVars is private.
+    void SetSolutionFailed(bool f) { SolverTempVars.SolutionFailed = f; }
     const solversettings& GetSolverSettings() const { return SolverSettings; }
     //   [CHANGE] Add const
     time_t GetSimulationDuration() const { return SolverTempVars.simulation_duration; }
@@ -560,6 +570,10 @@ public:
     void SetRecordResults(bool recresults) { SolverSettings.RecordAllOutputs = recresults; }
     //   [CHANGE] Add const
     bool RecordResults() const { return SolverSettings.RecordAllOutputs; }
+    // read-only accessors for the restore-point settings (private members), so
+    // the codegen can emit them; no behaviour change.
+    unsigned int RestoreInterval() const { return restore_interval; }
+    unsigned int RestorePointMaxUses() const { return restore_point_max_uses; }
     void SetParameterEstimationMode(parameter_estimation_options mode = parameter_estimation_options::none);
     bool stop_triggered = false;
 

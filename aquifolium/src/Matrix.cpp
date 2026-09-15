@@ -40,6 +40,7 @@ using namespace arma;
 CVector& CMatrix::operator[](int i) { return matr[i]; }
 const CVector& CMatrix::operator[](int i) const { return matr[i]; }
 double& CMatrix::operator()(int i, int j) { return matr[i][j]; }
+const double& CMatrix::operator()(int i, int j) const { return matr[i][j]; }
 int CMatrix::getnumrows() const { return numrows(); }
 int CMatrix::getnumcols() const { return numcols(); }
 

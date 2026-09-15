@@ -15,6 +15,8 @@
 
 
 #include "Expression.h"
+#include <cstdlib>
+#include <cstdio>
 #include <cmath>
 #include <iostream>
 #include <Block.h>
@@ -499,6 +501,14 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 	if (param_constant_expression == "parameter")
 	{
        double out=0;
+       if (std::getenv("OHQ_TERMLOG") && parameter.find("dispersivity") != std::string::npos)
+       {
+           static int _n = 0;
+           if (_n++ < 3)
+               std::fprintf(stderr, "TERMLOG-ENTRY parameter='dispersivity' W='%s' type=%d location=%d quan=%p\n",
+                            W ? W->GetName().c_str() : "(null)", W ? int(W->ObjectType()) : -1,
+                            int(location), (void*)quan);
+       }
 
        if (location == loc::self)
         {
@@ -506,6 +516,16 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
                 out = W->GetVal(quan, tmg,limit);
             else
                 out = W->GetVal(parameter, tmg,limit);
+            if (std::getenv("OHQ_TERMLOG") && parameter.find("dispersivity") != std::string::npos)
+            {
+                static int _n = 0;
+                if (_n++ < 3)
+                    std::fprintf(stderr, "TERMLOG parameter='%s' W='%s' (type=%d) quan=%p quanParent=%s out=%.17g\n",
+                                 parameter.c_str(), W->GetName().c_str(), int(W->ObjectType()),
+                                 (void*)quan,
+                                 (quan && quan->GetParent()) ? quan->GetParent()->GetName().c_str() : "(none)",
+                                 out);
+            }
         }
         else if (location!=loc::average_of_links)
         {
