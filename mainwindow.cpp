@@ -71,6 +71,7 @@
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QDateTime>
 #include <QDoubleSpinBox>
 #include <QElapsedTimer>
 #include <QFile>
@@ -81,7 +82,6 @@
 #include <QProcess>
 #include <QProgressBar>
 #include <QRegularExpression>
-#include <QTemporaryDir>
 #include <QTextStream>
 #include <QThread>
 #include <QVector>
@@ -312,10 +312,13 @@ void MainWindow::onexporttocpp()
 
         if (runAfterBuild && !asLibrary)
         {
-            QTemporaryDir temp;
-            if (!temp.isValid()) {
+            const QString validationDir = QDir(outDir).filePath(
+                "validation/" + QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
+            if (!QDir().mkpath(validationDir)) {
                 progressDialog.close();
-                QMessageBox::critical(this, tr("C++ validation"), tr("Could not create a temporary validation folder."));
+                QMessageBox::critical(this, tr("C++ validation"),
+                                      tr("Could not create the validation-results folder:\n%1")
+                                          .arg(validationDir));
                 return;
             }
 #ifdef _WIN32
@@ -324,7 +327,8 @@ void MainWindow::onexporttocpp()
 #else
             QString solver = QDir(buildDir).filePath(cls + "_solver");
 #endif
-            const QString generatedCsv = QDir(temp.path()).filePath("generated.csv");
+            const QString generatedCsv = QDir(validationDir).filePath("generated.csv");
+            details->appendPlainText(tr("Validation results: %1").arg(validationDir));
             setStage(tr("Running the generated C++ solver"));
             QElapsedTimer generatedTimer; generatedTimer.start();
             QString runLog;
@@ -343,6 +347,7 @@ void MainWindow::onexporttocpp()
             if (solveMatch.hasMatch()) generatedSeconds = solveMatch.captured(1).toDouble();
             report += tr("Generated run: PASS (solve %1 s; process wall %2 s)\n")
                           .arg(generatedSeconds, 0, 'f', 3).arg(generatedWallSeconds, 0, 'f', 3);
+            report += tr("Validation files: %1\n").arg(validationDir);
 
             if (compare)
             {
@@ -467,6 +472,11 @@ void MainWindow::onexporttocpp()
                               .arg(worstRatio, 0, 'g', 6).arg(worstName);
                 if (comparedObs == 0)
                     report += tr("Warning: no matching observation series were available; parity is based on final states.\n");
+            }
+            QFile reportFile(QDir(validationDir).filePath("comparison_report.txt"));
+            if (reportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                QTextStream reportStream(&reportFile);
+                reportStream << report << "\nGenerated solver output:\n" << runLog;
             }
         }
     }
