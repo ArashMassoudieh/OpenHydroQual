@@ -740,3 +740,22 @@ under 0.1%. Sharing the immutable forcing (shared_ptr + copy-on-write in
 `setSeries`) is therefore NOT worth the complexity; correctness was the real
 issue. Revisit only if a model appears whose forcing dwarfs its solve time.
 
+
+## ISSUE 18 — a stale kernel missing `ohq_kernel_step_to` loads and silently degrades
+
+`KernelABI::valid()` (terminal/OHQ-Common/ohq_kernel.h:80) checks only
+`lib && create && run_to && observation_at`. A kernel generated before
+`ohq_kernel_step_to` was added therefore loads successfully; the missing symbol
+is reported to stdout but is not an error, and `VerifyKernelMatches` passes
+because parameter and observation names still match.
+
+The call site guards correctly (`if (budget > 0 && k.step_to)`, line 240), so
+the runner falls back to `run_to` — which has no wall-clock deadline. That is
+exactly the MCMC hang fixed earlier: a stiff proposal runs forever instead of
+being rejected on `maximum_simulation_time`.
+
+Reproduced 2026-09-14 running OHQ-GA against `Two-site s13-GA/kernel3/build/libS13.so`.
+
+Fix: either add `step_to` to `valid()` and refuse to load without it, or gate on
+`ohq_kernel_abi_version()` and reject kernels below the version that introduced
+it. The version symbol is already loaded and currently unused for anything.
