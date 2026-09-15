@@ -450,7 +450,16 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         }
     };
 
-    // per-object walk, honoring QuantitOrder and tiers
+    // Constant expressions must be initialized after the constants they read.
+    // QuantitOrder is a UI/property ordering and is not guaranteed to be a
+    // dependency order (for example K_sat can precede K_sat_original, and m can
+    // precede n).  Collect constant nodes here and emit them with a global
+    // topological order after every block/link has been visited.
+    struct ConstantNode { Object* o; bool isLink; std::string qn; };
+    std::map<std::string, ConstantNode> constantNodes;
+    std::vector<std::string> constantDiscoveryOrder;
+
+    // per-object walk, honoring QuantitOrder for discovery/declarations
     auto walk = [&](Object* o, bool isLink) {
         QuanSet* qs = o->GetVars();
         std::vector<std::string> order = o->QuantitOrder();
@@ -481,7 +490,9 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             }
             if (qi->tier == Tier::Constant) {
                 decls << "    double " << sym(o->GetName(), qn) << " = 0.0;\n";
-                emitQuantity(o, isLink, qn, "0.0", initBody, /*asLocal=*/false);
+                const std::string key = o->GetName() + "::" + qn;
+                constantNodes[key] = {o, isLink, qn};
+                constantDiscoveryOrder.push_back(key);
             } else if (qi->tier == Tier::PerStep) {
                 decls << "    double " << sym(o->GetName(), qn) << " = 0.0;\n";
                 emitQuantity(o, isLink, qn, "t_new", stepBody, /*asLocal=*/false);
@@ -559,6 +570,51 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
 
     for (unsigned i = 0; i < nB; ++i) walk(system.block(i), false);
     for (unsigned i = 0; i < nL; ++i) walk(system.link(i), true);
+
+    // buildConstants() is also called by applyParameters(), so dependency
+    // ordering is required both at startup and after every parameter update.
+    // Sort across all blocks and links: link constants commonly depend on
+    // endpoint block constants, and those edges must be respected as well.
+    {
+        std::map<std::string, int> indeg;
+        std::map<std::string, std::vector<std::string>> reverseEdges;
+        for (const auto& kv : constantNodes) indeg[kv.first] = 0;
+        for (const auto& kv : constantNodes) {
+            const auto ti = tiers.find(kv.first);
+            if (ti == tiers.end()) continue;
+            std::set<std::string> uniqueDependencies;
+            for (const std::string& dep : ti->second.dependencies) {
+                if (dep == kv.first || !constantNodes.count(dep) ||
+                    !uniqueDependencies.insert(dep).second) continue;
+                ++indeg[kv.first];
+                reverseEdges[dep].push_back(kv.first);
+            }
+        }
+
+        std::vector<std::string> ready;
+        for (const std::string& key : constantDiscoveryOrder)
+            if (indeg[key] == 0) ready.push_back(key);
+        std::vector<std::string> ordered;
+        for (size_t cursor = 0; cursor < ready.size(); ++cursor) {
+            const std::string key = ready[cursor];
+            ordered.push_back(key);
+            for (const std::string& dependent : reverseEdges[key])
+                if (--indeg[dependent] == 0) ready.push_back(dependent);
+        }
+
+        // A constant dependency cycle cannot be evaluated exactly in one pass,
+        // but retain the historical deterministic order for such nodes.  The
+        // analyzer/generator can report cycles separately in a future change.
+        std::set<std::string> emitted(ordered.begin(), ordered.end());
+        for (const std::string& key : constantDiscoveryOrder)
+            if (!emitted.count(key)) ordered.push_back(key);
+
+        for (const std::string& key : ordered) {
+            const ConstantNode& node = constantNodes.at(key);
+            emitQuantity(node.o, node.isLink, node.qn, "0.0", initBody,
+                         /*asLocal=*/false);
+        }
+    }
 
     // ---- residual: per-iteration locals (topologically ordered) -----------
     // Map node key -> the object/quantity so we can sort by dependency and emit
