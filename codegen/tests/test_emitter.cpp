@@ -51,7 +51,7 @@ int main()
     check("(a+b)*c", "((a_ + b_) * c_)");
     // power maps to ohq::powr; division
     check("3.1415*(diameter^2)/4",
-          "((3.1415 * ohq::powr(diameter_, 2.0)) / 4.0)");
+          "ohq::div((3.1415 * ohq::powr(diameter_, 2.0)), 4.0)");
     // intrinsics + source/destination endpoints
     check("_pos(head.s-head.e)", "ohq::pos((src.head_ - dst.head_))");
     // exponential kernel: series handle + time + rate
@@ -66,7 +66,7 @@ int main()
           "((flow_) > 0.0 ? (flow_) * (src.concentration_) : (flow_) * (dst.concentration_))");
     // nested intrinsics + orifice max_flow
     check("86400*_sqr(2*9.81*_pos(head.s-head.e)/valve_K)*area",
-          "((86400.0 * ohq::f_sqr((((2.0 * 9.81) * ohq::pos((src.head_ - dst.head_))) / valve_K_))) * area_)");
+          "((86400.0 * ohq::f_sqr(ohq::div(((2.0 * 9.81) * ohq::pos((src.head_ - dst.head_))), valve_K_))) * area_)");
 
     std::printf("\n%s (%d failure%s)\n", failures ? "TESTS FAILED" : "ALL TESTS PASSED",
                 failures, failures == 1 ? "" : "s");

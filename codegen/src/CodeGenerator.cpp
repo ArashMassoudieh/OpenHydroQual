@@ -160,43 +160,108 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         Parameter* p = system.GetParameter(i);
         params.push_back({p->GetName(), p->GetValue()});
         const std::vector<std::string> locs = p->GetLocations(), qs = p->GetQuans();
+        bool anyLive = false, hostOwnedOnly = true;   // see the ISSUE 17 guard below
         for (size_t k = 0; k < locs.size() && k < qs.size(); ++k) {
             Object* o = system.object(locs[k]);
             if (!o) { paramNotes.push_back(p->GetName() + " -> '" + locs[k] + "': object not found"); continue; }
             const object_type ot = o->ObjectType();
-            if (ot == object_type::block || ot == object_type::link || ot == object_type::source) {
-                Quan* q = o->Variable(qs[k]);
-                if (q && (q->GetType() == Quan::_type::value || q->GetType() == Quan::_type::constant))
+            // A bound parameter MUST become a live params_[i] in the generated
+            // code, whatever kind of object carries it. The old code allow-listed
+            // block/link/source and let everything else fall through to a comment
+            // saying "the host applies it" -- so a ReactionParameter driving every
+            // sorption rate was baked as a literal, and a GA driving the kernel
+            // optimised a model whose rate constants never moved. Resolve
+            // generically instead, and fail loudly on anything left unbound.
+            // Host-owned first: an observation's sigma and an objective-function
+            // weight are likelihood parameters, not part of the forward model.
+            // They DO exist as quantities on their objects, so resolving them
+            // generically would "bind" something the kernel never emits.
+            if (ot == object_type::observation || ot == object_type::objective_function) {
+                paramNotes.push_back(p->GetName() + " -> " + locs[k] + "." + qs[k]
+                                     + ": likelihood parameter, applied by the host (not part of the forward model)");
+                continue;   // host-owned: leaves hostOwnedOnly intact
+            }
+            hostOwnedOnly = false;   // a forward-model target: it must end up live
+            bool bound = false;
+            if (Quan* q = o->Variable(qs[k])) {
+                if (q->GetType() == Quan::_type::value || q->GetType() == Quan::_type::constant) {
                     paramBound[o->GetName() + "::" + qs[k]] = static_cast<int>(i);
-                else
-                    paramNotes.push_back(p->GetName() + " -> " + locs[k] + "." + qs[k] + ": not a value quantity, left as generated");
-            } else if (ot == object_type::constituent) {
+                    bound = true;
+                }
+            }
+            if (ot == object_type::constituent) {
                 // A constituent property (dispersivity, diffusion_coefficient, ...)
-                // is copied onto every block/link as "<constituent>:<quan>", and
-                // Object::GetVal resolves a bare `dispersivity` inside a link
-                // expression through that copy (Object.cpp:127). Bind the
-                // parameter to the constituent AND to every copy, or
-                // applyParameters() would leave the copies at their baked value.
-                int bound = 0;
-                paramBound[o->GetName() + "::" + qs[k]] = static_cast<int>(i);
+                // is ALSO reachable as "<constituent>:<quan>" from every block and
+                // link (Object::GetVal, Object.cpp:127/138), so bind those copies
+                // too or applyParameters() leaves them at the baked value.
                 const std::string cq = o->GetName() + ":" + qs[k];
                 for (unsigned b = 0; b < system.BlockCount(); ++b)
-                    if (system.block(b)->Variable(cq)) { paramBound[system.block(b)->GetName() + "::" + cq] = static_cast<int>(i); ++bound; }
+                    if (system.block(b)->Variable(cq)) { paramBound[system.block(b)->GetName() + "::" + cq] = static_cast<int>(i); bound = true; }
                 for (unsigned l = 0; l < system.LinksCount(); ++l)
-                    if (system.link(l)->Variable(cq)) { paramBound[system.link(l)->GetName() + "::" + cq] = static_cast<int>(i); ++bound; }
-                if (!bound)
+                    if (system.link(l)->Variable(cq)) { paramBound[system.link(l)->GetName() + "::" + cq] = static_cast<int>(i); bound = true; }
+                if (o->Variable(qs[k])) bound = true;   // reached via the constituent object itself
+            }
+            if (bound) anyLive = true;
+            if (!bound) {
+                // Two legitimate cases where the kernel does NOT bind, and must not:
+                //  1. a likelihood parameter (an observation's sigma) -- host-owned;
+                //  2. a target the INTERPRETER cannot meaningfully set either.
+                //     ApplyParameters does SetVal(quan, v), which writes a Quan's
+                //     `past` value; an expression/balance quantity is recomputed
+                //     from its expression on every `present` read (Quan::GetVal),
+                //     so the write has no lasting effect there. Ignoring such a
+                //     binding therefore PRESERVES parity rather than breaking it.
+                //     (Real case: `porosity_all -> Col1-1.moisture_content`, where
+                //     moisture_content is the expression Storage/(depth*area).)
+                const bool host_owned = (ot == object_type::observation
+                                      || ot == object_type::objective_function);
+                Quan* tq = o->Variable(qs[k]);
+                const bool inert = tq && (tq->GetType() == Quan::_type::expression
+                                       || tq->GetType() == Quan::_type::balance
+                                       || tq->GetType() == Quan::_type::rule);
+                if (host_owned)
                     paramNotes.push_back(p->GetName() + " -> " + locs[k] + "." + qs[k]
-                                         + ": constituent property not copied onto any block or link");
-            } else {
-                paramNotes.push_back(p->GetName() + " -> " + locs[k] + "." + qs[k]
-                                     + ": not a model quantity (e.g. an observation's sigma); the host applies it");
+                                         + ": likelihood parameter, applied by the host (not part of the forward model)");
+                else if (inert)
+                    paramNotes.push_back(p->GetName() + " -> " + locs[k] + "." + qs[k]
+                                         + ": target is a derived (expression/balance/rule) quantity; setting it is"
+                                           " inert in the interpreter too, so it is deliberately not bound here");
+                else
+                    throw std::runtime_error(
+                        "CodeGenerator: estimated parameter '" + p->GetName() + "' is bound to "
+                        + locs[k] + "." + qs[k] + ", which the generator cannot make live in the "
+                        "emitted code. Refusing to emit a kernel that would silently ignore it.");
             }
         }
+        // ISSUE 17's guarantee: a parameter a calibration cannot drive at all is
+        // still fatal. Inert/host-owned bindings are fine ONLY alongside a live one.
+        if (!anyLive && !hostOwnedOnly)
+            throw std::runtime_error(
+                "CodeGenerator: estimated parameter '" + p->GetName() + "' has no binding the "
+                "kernel can drive (all of its targets are derived quantities). Refusing to emit "
+                "a kernel a calibration cannot drive.");
     }
     const unsigned nP = static_cast<unsigned>(params.size());
     auto paramRef = [&](const std::string& obj, const std::string& q) -> std::string {   // "" if unbound
         auto it = paramBound.find(obj + "::" + q);
         return it == paramBound.end() ? std::string() : "params_[" + std::to_string(it->second) + "]";
+    };
+    // A ReactionParameter's effective value is CalcVal("value"), which is
+    // base_value corrected for temperature (Arrhenius). When base_value is the
+    // estimated parameter we must emit params_[i] so applyParameters() moves it;
+    // we only do that when the Arrhenius correction is the identity, otherwise
+    // the correction would be silently dropped and the literal is kept.
+    auto reactionParamRef = [&](const std::string& name) -> std::string {
+        Object* rp = (Object*)system.reactionparameter(name);
+        const double v = rp->CalcVal("value", Expression::timing::present);
+        const std::string pb = paramRef(name, "base_value");
+        if (!pb.empty()) {
+            const double b = rp->GetVal("base_value", Expression::timing::present);
+            if (b != 0 && std::fabs(v - b) <= 1e-12 * std::fabs(b)) return pb;
+            paramNotes.push_back(name + ".base_value is estimated but value != base_value "
+                                 "(temperature correction); left as a literal");
+        }
+        return fmt(v);
     };
 
     // A resolver factory bound to the current object / time symbol.
@@ -772,12 +837,22 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         auto makeCtxRxn = [&](Object* blk) {
             EmitContext ctx; ctx.timeVar = "t_new";
             ctx.resolveValue = [&, blk](const std::string& name, Loc) -> std::string {
-                if (system.constituent(name) && blk->Variable(name + ":concentration"))
-                    return "ohq::pos(" + sym(blk->GetName(), name + ":concentration") + ")";
-                if (system.reactionparameter(name))
-                    return fmt(system.reactionparameter(name)->CalcVal("value", Expression::timing::present));
-                if (name == stateVar)
+                // Object::GetVal (Object.cpp:99) looks at the object's OWN quantity
+                // first and only then falls back to a constituent or a reaction
+                // parameter. Checking the reaction parameter first -- as this did --
+                // silently diverges whenever a name exists in both places, e.g. a
+                // `porosity` ReactionParameter alongside each block's own porosity:
+                // the interpreter reads the block's value, codegen read the global.
+                // Invisible while the two are bound to the same parameter, wrong the
+                // moment they differ (per-column porosity).
+                if (name == stateVar)          // flow-phase storage, not the block quan
                     return "flowStorage_[" + stateEnum(blk->GetName(), stateVar) + "]";
+                if (!blk->Variable(name)) {
+                    if (system.constituent(name) && blk->Variable(name + ":concentration"))
+                        return "ohq::pos(" + sym(blk->GetName(), name + ":concentration") + ")";
+                    if (system.reactionparameter(name))
+                        return reactionParamRef(name);
+                }
                 Quan* q = blk->Variable(name);
                 if (q) {
                     if (q->GetType() == Quan::_type::source)   // same expansion as the transport ctx
@@ -882,7 +957,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     }
                     if (system.reactionparameter(name)) {
                         if (t->Variable(name + ":value")) return sym(t->GetName(), name + ":value");
-                        return fmt(system.reactionparameter(name)->CalcVal("value", Expression::timing::present));
+                        return reactionParamRef(name);
                     }
                     return "0.0";
                 }
@@ -973,7 +1048,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     const bool O = nObs > 0;
     // step(): flow phase, then (optionally) cache locals, transport, observations.
     std::string tStep =
-        std::string("    bool step() {\n"
+        std::string("    bool stepImpl() {\n"
                     "        const double t_prev = solver_.time(); (void)t_prev;\n"
                     "        ++stepCounter_;   // 1-based, as System::Solve's `counter`\n"
                     "        if (solver_.settings().oscillation_control\n"
@@ -1212,7 +1287,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + "    std::vector<std::vector<double>> osc_history_;\n"
         + "    long stepCounter_ = 0, osc_last_counter_ = -1;\n"
         + "    int  clean_steps_ = 0, osc_reductions_ = 0, osc_events_ = 0, osc_relaxations_ = 0;\n"
-        + "    bool osc_gave_up_ = false;\n";
+        + "    bool osc_gave_up_ = false;\n"
+        + "    // G6 solver status\n"
+        + "    bool solutionFailed_ = false;\n"
+        + "    double duration_ = 0.0;\n";
 
     // Emit the interpreter's solver settings so the generated solver adapts dt,
     // tolerances and iteration limits identically (not codegen's own defaults).
@@ -1254,6 +1332,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     h << "// Auto-generated by OpenHydroQual model compiler. Do not edit.\n"
       << "#ifndef OHQ_GEN_" << sanitize(cls) << "_H\n#define OHQ_GEN_" << sanitize(cls) << "_H\n\n"
       << "#include <cstring>\n"
+      << "#include <chrono>\n"
       << "#include \"ohq_intrinsics.h\"\n#include \"ohq_timeseries.h\"\n#include \"ohq_massbalance.h\"\n"
       << tInclude << "\n"
       << "class " << cls << " {\npublic:\n"
@@ -1266,14 +1345,45 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << fmt(system.dt0()) << ") {\n        loadSeries();\n        buildConstants();\n" << settingsInit
       << "        dt0_ = dt0;   // output grid: System::FinalizeOutputs uniformizes with dt0\n"
       << "        solver_.initialize(tstart, dt0);\n"
-      << [&]{ std::ostringstream b; for (const std::string& hh : clampHandles) b << "        solver_.addClampSeries(&" << hh << ");   // dt clamp (precipitation series, interpol_D)\n"; return b.str(); }()
+      << "        bindSelf();\n"
       << (T ? "        transport_.initialize();\n" : "")
       << (L ? "        for (int b=0;b<N_STATES;++b) flowStorage_[b]=solver_.storage(b);\n"
               "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
       << (O ? "        clearObservations();   // System::Solve records no observation before the loop\n" : "")
+      << "        resetStatus();   // a re-initialize starts a fresh solve (new GA/MCMC sample)\n"
       << "    }\n"
       << tStep
-      << "    bool runTo(double t_end) { solver_.setStop(t_end); while (time() < t_end - 1e-30) { if (!step()) return false; } return true; }\n"
+      // ---- G6: solver status (what GetObjectiveFunctionValue and the MCMC
+      // detail log read). step() is the public entry: it latches the failure
+      // flag so a host that drives stepTo() sees it too.
+      << "    bool step() {\n"
+         "        if (solver_.model() != this) bindSelf();   // a copied kernel re-binds on first use\n"
+         "        const auto _t0 = std::chrono::steady_clock::now();\n"
+         "        const bool ok = stepImpl();\n"
+         "        duration_ += std::chrono::duration<double>(std::chrono::steady_clock::now() - _t0).count();\n"
+         "        if (!ok) solutionFailed_ = true;\n"
+         "        return ok;\n    }\n"
+      << "    bool runTo(double t_end) {   // duration_ accumulates inside step()\n"
+         "        solver_.setStop(t_end);\n"
+         "        while (time() < t_end - 1e-30) { if (!step()) return false; }\n"
+         "        return true;\n    }\n"
+      << "    // true if ANY step failed since initialize()/resetStatus()\n"
+      << "    bool solutionFailed() const   { return solutionFailed_; }\n"
+      << "    // wall seconds accumulated inside runTo() (System::GetSimulationDuration)\n"
+      << "    double simulationDuration() const { return duration_; }\n"
+      << "    long stepCount() const        { return stepCounter_; }\n"
+      << "    void resetStatus() { solutionFailed_ = false; duration_ = 0.0; }\n"
+      // ---- G7: copy safety -------------------------------------------------
+      // The solvers hold a POINTER to their model and the dt clamp holds pointers
+      // to this object's series members. A copy (one kernel per MCMC chain) must
+      // re-point all of them at ITSELF, or it would solve using the ORIGINAL's
+      // parameters and forcing. step() self-heals, so a plain copy is safe.
+      << "    void bindSelf() {\n"
+         "        solver_.rebind(*this);\n"
+      << (T ? "        transport_.rebind(*this);\n" : "")
+      << "        solver_.clearClampSeries();\n"
+      << [&]{ std::ostringstream b; for (const std::string& hh : clampHandles) b << "        solver_.addClampSeries(&" << hh << ");   // dt clamp (interpol_D)\n"; return b.str(); }()
+      << "    }\n"
       << paramApi << ioApi.str()
       << "    // the interpreter writes outputs on a uniform grid of initial_time_step\n"
       << "    double outputInterval() const { return dt0_; }\n"
@@ -1318,6 +1428,37 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << "    ohq::MassBalanceSolver<" << cls << "> solver_;\n"
       << tMembers
       << "};\n\n#endif\n";
+
+    // ---- generation-time guard -------------------------------------------
+    // Every estimated parameter must actually appear as params_[i] in the emitted
+    // code. If it does not, setParameter()/applyParameters() cannot move it and a
+    // calibration driving this kernel would silently optimise a frozen model --
+    // which is exactly what happened before the binding was made generic. The
+    // only exceptions are the host-owned likelihood parameters recorded above.
+    {
+        const std::string src = h.str();
+        std::vector<int> dead;
+        for (unsigned i = 0; i < nP; ++i) {
+            const std::string tok = "params_[" + std::to_string(i) + "]";
+            if (src.find(tok) == std::string::npos) dead.push_back(int(i));
+        }
+        std::string msg;
+        for (int i : dead) {
+            // host-owned parameters legitimately never appear; identify them by
+            // the note recorded when the binding was skipped.
+            bool excused = false;
+            for (const std::string& n : paramNotes)
+                if (n.rfind(params[i].name + " ->", 0) == 0 &&
+                    n.find("applied by the host") != std::string::npos) excused = true;
+            if (!excused)
+                msg += "  parameter " + std::to_string(i) + " '" + params[i].name
+                     + "' never appears in the generated code\n";
+        }
+        if (!msg.empty())
+            throw std::runtime_error("CodeGenerator: the emitted kernel would ignore these "
+                                     "estimated parameters:\n" + msg +
+                                     "Refusing to emit a kernel a calibration cannot drive.");
+    }
 
     // write files
     std::filesystem::create_directories(opt.outputDir);
@@ -1424,7 +1565,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                  "            for (size_t k = 0; k < s0.size(); ++k) { std::fprintf(g, \"%.10g\", s0.t[k]);\n"
                  "                for (int i = 0; i < " << cls << "::N_OBSERVATIONS; ++i) std::fprintf(g, \",%.10g\", m.observationSeries(i).c[k]); std::fprintf(g, \"\\n\"); }\n"
                  "            std::fclose(g);\n        }\n    }\n"
-                 "    std::printf(\"" << cls << ": t=%.6g  %s  wall=%.3f s  -> %s\\n\", m.time(), ok ? \"OK\" : \"SOLVE FAILED\", sec, outPath);\n"
+                 "    std::printf(\"" << cls << ": t=%.6g  %s  steps=%ld  solve=%.3f s  wall=%.3f s  -> %s\\n\",\n"
+                 "                m.time(), ok ? \"OK\" : \"SOLVE FAILED\", m.stepCount(), m.simulationDuration(), sec, outPath);\n"
                  "    return ok ? 0 : 2;\n}\n";
             writeText(opt.outputDir + "/main.cpp", m.str());
         } else {
@@ -1467,6 +1609,12 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                << CLS << "_API int    " << cls << "_observation_count(const " << cls << "_handle* h, int i);\n"
                << CLS << "_API int    " << cls << "_observation_at(const " << cls << "_handle* h, int i, int k, double* t, double* v);\n"
                << CLS << "_API void   " << cls << "_clear_observations(" << cls << "_handle* h);\n"
+                  "/* solver status: a failed solve must not be scored as a good fit */\n"
+               << CLS << "_API int    " << cls << "_solution_failed(const " << cls << "_handle* h);\n"
+               << CLS << "_API double " << cls << "_simulation_duration(const " << cls << "_handle* h);\n"
+               << CLS << "_API long   " << cls << "_step_count(const " << cls << "_handle* h);\n"
+               << CLS << "_API int    " << cls << "_last_iterations(const " << cls << "_handle* h);\n"
+               << CLS << "_API void   " << cls << "_reset_status(" << cls << "_handle* h);\n"
                   "/* runtime forcing: replace a baked series by (object, quantity) name */\n"
                << CLS << "_API int    " << cls << "_n_series(void);\n"
                << CLS << "_API const char* " << cls << "_series_object(int k);\n"
@@ -1508,6 +1656,11 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                   "int    " << cls << "_observation_at(const " << cls << "_handle* h, int i, int k, double* t, double* v) {\n"
                   "    const ohq::TimeSeries& s = h->m.observationSeries(i); if (k < 0 || k >= (int)s.size()) return 0; *t = s.t[k]; *v = s.c[k]; return 1; }\n"
                   "void   " << cls << "_clear_observations(" << cls << "_handle* h) { h->m.clearObservations(); }\n"
+                  "int    " << cls << "_solution_failed(const " << cls << "_handle* h) { return h->m.solutionFailed() ? 1 : 0; }\n"
+                  "double " << cls << "_simulation_duration(const " << cls << "_handle* h) { return h->m.simulationDuration(); }\n"
+                  "long   " << cls << "_step_count(const " << cls << "_handle* h) { return h->m.stepCount(); }\n"
+                  "int    " << cls << "_last_iterations(const " << cls << "_handle* h) { return h->m.lastIterations(); }\n"
+                  "void   " << cls << "_reset_status(" << cls << "_handle* h) { h->m.resetStatus(); }\n"
                   "int    " << cls << "_n_series(void) { return " << cls << "::N_SERIES; }\n"
                   "const char* " << cls << "_series_object(int k) { return " << cls << "::seriesObject(k); }\n"
                   "const char* " << cls << "_series_quantity(int k) { return " << cls << "::seriesQuantity(k); }\n"
@@ -1518,6 +1671,45 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                << (T ? "int    " + cls + "_n_mass(void) { return " + cls + "::N_MASS; }\n"
                        "double " + cls + "_mass(const " + cls + "_handle* h, int i) { return h->m.constMass(i); }\n"
                      : std::string())
+               << "\n"
+                  "/* ---- model-independent alias ABI -------------------------------------\n"
+                  "   The names above carry the class name, so a host that dlopen()s the\n"
+                  "   library would have to know it. These fixed names let a generic host\n"
+                  "   (OHQ-GA / OHQ-MCMC --kernel) drive ANY generated model. Keep in sync\n"
+                  "   with tools/ohq_kernel.h. ohq_kernel_abi_version() guards changes. */\n"
+                  "int    ohq_kernel_abi_version(void) { return 1; }\n"
+                  "const char* ohq_kernel_class_name(void) { return \"" << cls << "\"; }\n"
+                  "void*  ohq_kernel_create(void) { return (void*)" << cls << "_create(); }\n"
+                  "void   ohq_kernel_destroy(void* h) { " << cls << "_destroy((" << cls << "_handle*)h); }\n"
+                  "void   ohq_kernel_initialize(void* h) { " << cls << "_initialize((" << cls << "_handle*)h); }\n"
+                  "int    ohq_kernel_run_to(void* h, double t) { return " << cls << "_run_to((" << cls << "_handle*)h, t); }\n"
+                  "/* One accepted step, dt clamped so it never crosses t_end. A host that\n"
+                  "   must honour a wall-clock budget (System::Solve aborts at\n"
+                  "   maximum_time_allowed) steps with this instead of run_to, which has no\n"
+                  "   cancellation: a parameter set that collapses dt to the floor would\n"
+                  "   otherwise run for millions of steps with no way out. */\n"
+                  "int    ohq_kernel_step_to(void* h, double t) { return " << cls << "_step_to((" << cls << "_handle*)h, t); }\n"
+                  "double ohq_kernel_time(const void* h) { return " << cls << "_time((const " << cls << "_handle*)h); }\n"
+                  "double ohq_kernel_simulation_start(void) { return " << cls << "_simulation_start(); }\n"
+                  "double ohq_kernel_simulation_end(void) { return " << cls << "_simulation_end(); }\n"
+                  "int    ohq_kernel_n_parameters(void) { return " << cls << "_n_parameters(); }\n"
+                  "const char* ohq_kernel_parameter_name(int i) { return " << cls << "_parameter_name(i); }\n"
+                  "void   ohq_kernel_set_parameter(void* h, int i, double v) { " << cls << "_set_parameter((" << cls << "_handle*)h, i, v); }\n"
+                  "void   ohq_kernel_apply_parameters(void* h) { " << cls << "_apply_parameters((" << cls << "_handle*)h); }\n"
+                  "int    ohq_kernel_n_observations(void) { return " << cls << "_n_observations(); }\n"
+                  "const char* ohq_kernel_observation_name(int i) { return " << cls << "_observation_name(i); }\n"
+                  "int    ohq_kernel_observation_count(const void* h, int i) { return " << cls << "_observation_count((const " << cls << "_handle*)h, i); }\n"
+                  "int    ohq_kernel_observation_at(const void* h, int i, int k, double* t, double* v) { return " << cls << "_observation_at((const " << cls << "_handle*)h, i, k, t, v); }\n"
+                  "void   ohq_kernel_clear_observations(void* h) { " << cls << "_clear_observations((" << cls << "_handle*)h); }\n"
+                  "int    ohq_kernel_solution_failed(const void* h) { return " << cls << "_solution_failed((const " << cls << "_handle*)h); }\n"
+                  "double ohq_kernel_simulation_duration(const void* h) { return " << cls << "_simulation_duration((const " << cls << "_handle*)h); }\n"
+                  "long   ohq_kernel_step_count(const void* h) { return " << cls << "_step_count((const " << cls << "_handle*)h); }\n"
+                  "int    ohq_kernel_last_iterations(const void* h) { return " << cls << "_last_iterations((const " << cls << "_handle*)h); }\n"
+                  "void   ohq_kernel_reset_status(void* h) { " << cls << "_reset_status((" << cls << "_handle*)h); }\n"
+                  "/* System::FinalizeOutputs uniformizes ObservedOutputs with dt0 before the\n"
+                  "   objective is computed (Objective_Function.cpp:133); a host scoring the\n"
+                  "   kernel must do the same or it compares on a different grid. */\n"
+                  "void   ohq_kernel_uniformize_observations(void* h) { ((" << cls << "_handle*)h)->m.uniformizeObservations(); }\n"
                << "}\n";
             ex << "// Example client of the " << cls << " C API (also a link check for the library).\n"
                   "#include <cstdio>\n#include \"" << cls << "_api.h\"\n\n"

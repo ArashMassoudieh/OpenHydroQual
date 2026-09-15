@@ -100,9 +100,12 @@ int main(int argc, char** argv)
     // observations recorded only after the restart
     if (GEN_CLASS::N_OBSERVATIONS > 0) {
         const ohq::TimeSeries& o = C.observationSeries(0);
+        // observations are stamped with the START of the step (System.cpp:1492),
+        // so the first one after a restart at tmid carries exactly tmid.
+        const bool obs_ok = o.size() && o.t[0] >= tmid - 1e-9;
         std::printf("G5 observations after restart: %zu points, first t=%.3f %s\n", o.size(), o.size() ? o.t[0] : -1.0,
-                    (o.size() && o.t[0] > tmid) ? "OK" : "FAIL");
-        if (!(o.size() && o.t[0] > tmid)) ++fails;
+                    obs_ok ? "OK" : "FAIL");
+        if (!obs_ok) ++fails;
     }
     std::printf("%s\n", fails ? "FAIL" : "PASS");
     return fails ? 3 : 0;

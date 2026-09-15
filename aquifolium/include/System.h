@@ -556,6 +556,9 @@ public:
     double dt0() const { return SimulationParameters.dt0; }
     int EpochCount() const { return SolverTempVars.epoch_count; }
     bool GetSolutionFailed() const { return SolverTempVars.SolutionFailed; }
+    // Lets an alternative forward-model back end (the codegen kernel used by
+    // OHQ-GA/OHQ-MCMC --kernel) report a failed solve; SolverTempVars is private.
+    void SetSolutionFailed(bool f) { SolverTempVars.SolutionFailed = f; }
     const solversettings& GetSolverSettings() const { return SolverSettings; }
     //   [CHANGE] Add const
     time_t GetSimulationDuration() const { return SolverTempVars.simulation_duration; }

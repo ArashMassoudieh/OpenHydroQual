@@ -219,7 +219,10 @@ template <class Model>
 class MassBalanceSolver {
 public:
     explicit MassBalanceSolver(Model& m, SolverSettings s = SolverSettings{})
-        : m_(m), s_(s) {}
+        : m_(&m), s_(s) {}
+    // re-point at the owning model (after a copy); see the m_ comment
+    void rebind(Model& m) { m_ = &m; }
+    const Model* model() const { return m_; }
 
     SolverSettings& settings() { return s_; }
     double landtozero = 0.0;   // matches settings.json default
@@ -235,6 +238,7 @@ public:
     // while dt_base (dt_) is the adaptive quantity that grows/shrinks on its own.
     std::vector<const TimeSeries*> clampSeries_;
     void addClampSeries(const TimeSeries* ts) { clampSeries_.push_back(ts); }
+    void clearClampSeries() { clampSeries_.clear(); }   // re-bound after a copy
     double minNextDt() const
     {
         double x = 1e12;
@@ -251,8 +255,8 @@ public:
 
     void initialize(double tstart, double dt0)
     {
-        n_ = m_.nBlocks();
-        nl_ = m_.nLinks();
+        n_ = m_->nBlocks();
+        nl_ = m_->nLinks();
         t_ = tstart; dt0_ = dt0; dt_ = dt0;
         storage_.assign(n_, 0.0); past_.assign(n_, 0.0);
         factor_.assign(n_, 1.0); limited_.assign(n_, 0); allow_.assign(n_, 1);
@@ -262,10 +266,10 @@ public:
         // adjacency for OutFlowCanOccur / propagation
         linksFrom_.assign(n_, {}); linksTo_.assign(n_, {});
         for (int l = 0; l < nl_; ++l) {
-            linksFrom_[m_.linkSrc(l)].push_back(l);
-            linksTo_[m_.linkDst(l)].push_back(l);
+            linksFrom_[m_->linkSrc(l)].push_back(l);
+            linksTo_[m_->linkDst(l)].push_back(l);
         }
-        m_.initialStorage(storage_.data());
+        m_->initialStorage(storage_.data());
         last_iters_ = 0;
 
         // sparse Jacobian pattern: block adjacency (self + link-connected blocks)
@@ -273,8 +277,8 @@ public:
         std::vector<std::vector<int>> pattern(n_);
         for (int b = 0; b < n_; ++b) {
             std::vector<int> cols{b};
-            for (int l : linksFrom_[b]) cols.push_back(m_.linkDst(l));
-            for (int l : linksTo_[b])   cols.push_back(m_.linkSrc(l));
+            for (int l : linksFrom_[b]) cols.push_back(m_->linkDst(l));
+            for (int l : linksTo_[b])   cols.push_back(m_->linkSrc(l));
             std::sort(cols.begin(), cols.end());
             cols.erase(std::unique(cols.begin(), cols.end()), cols.end());
             pattern[b] = cols;
@@ -366,7 +370,7 @@ public:
             // Evaluating at t_n+1 instead shifts the whole residual sequence by one
             // step, which is what put the two codes' Jacobians on different dt.
             tnew_ = s_.forcing_at_step_start ? t_ : t_ + dta;
-            m_.precomputeStep(tnew_);
+            m_->precomputeStep(tnew_);
             for (int b = 0; b < n_; ++b) allow_[b] = 1;
 
             bool ok = true, switched = true;
@@ -399,7 +403,7 @@ public:
                 assemble(X_.data(), F_.data());
                 committedFlow_.assign(nl_ > 0 ? nl_ : 1, 0.0);
                 for (int l = 0; l < nl_; ++l) {
-                    const int s = m_.linkSrc(l), e = m_.linkDst(l);
+                    const int s = m_->linkSrc(l), e = m_->linkDst(l);
                     const double q = flowRaw_[l];
                     double factor = 1.0;
                     if (limited_[s] && q > 0)      factor = X_[s];
@@ -445,10 +449,10 @@ private:
     {
         for (int b = 0; b < n_; ++b)
             eff_[b] = limited_[b] ? past_[b] * landtozero : X[b];
-        m_.computeFluxes(eff_.data(), tnew_, flowRaw_.data(), inflowOwn_.data());
+        m_->computeFluxes(eff_.data(), tnew_, flowRaw_.data(), inflowOwn_.data());
 
         for (int b = 0; b < n_; ++b) {
-            if (m_.rigid(b)) {
+            if (m_->rigid(b)) {
                 F[b] = -inflowOwn_[b];
             } else if (limited_[b]) {
                 double inflow = inflowOwn_[b];
@@ -459,7 +463,7 @@ private:
             }
         }
         for (int l = 0; l < nl_; ++l) {
-            const int s = m_.linkSrc(l), e = m_.linkDst(l);
+            const int s = m_->linkSrc(l), e = m_->linkDst(l);
             const double q = flowRaw_[l];
             double factor = 1.0;
             if (limited_[s] && q > 0)      factor = X[s];
@@ -475,14 +479,14 @@ private:
     {
         const double tol = 0.0;
         if (inflowOwn_[b] < -tol) return true;         // negative own inflow = outflow
-        for (int l : linksFrom_[b]) if (flowRaw_[l] > tol) return true;  // leaves b forward
+        for (int l : linksFrom_[b]) if (flowRaw_[l] > tol) return true;  // leaves)OHQRT"
+R"OHQRT( b forward
         for (int l : linksTo_[b])   if (flowRaw_[l] < -tol) return true; // leaves b in reverse
         return false;
     }
 
     // Flag block b limited and propagate through rigid neighbours reached by an
-    // outflow, mirroring System::S)OHQRT"
-R"OHQRT(etLimitedOutFlow.
+    // outflow, mirroring System::SetLimitedOutFlow.
     void setLimited(int b, bool on)
     {
         std::vector<char> visited(n_, 0);
@@ -495,12 +499,12 @@ R"OHQRT(etLimitedOutFlow.
         factor_[b] = on ? 0.9999 : 1.0;
         if (!on) return;
         for (int l : linksFrom_[b]) {
-            int nb = m_.linkDst(l);
-            if (m_.rigid(nb) && flowRaw_[l] > 0 && allow_[nb]) setLimitedRec(nb, on, visited);
+            int nb = m_->linkDst(l);
+            if (m_->rigid(nb) && flowRaw_[l] > 0 && allow_[nb]) setLimitedRec(nb, on, visited);
         }
         for (int l : linksTo_[b]) {
-            int nb = m_.linkSrc(l);
-            if (m_.rigid(nb) && flowRaw_[l] < 0 && allow_[nb]) setLimitedRec(nb, on, visited);
+            int nb = m_->linkSrc(l);
+            if (m_->rigid(nb) && flowRaw_[l] < 0 && allow_[nb]) setLimitedRec(nb, on, visited);
         }
     }
 
@@ -540,7 +544,12 @@ R"OHQRT(etLimitedOutFlow.
         double error_increase_counter = 0;
         nrCoeff_ = 1.0;                       // System.cpp:2375, reset per attempt
         iters = 0;
-        if (X_norm <= 0.0) { iters_last_ = 0; return true; }
+        // NOTE: do NOT skip the solve when X_norm == 0. The interpreter has no
+        // such guard (System.cpp:2431): with X_norm == 0 the loop's
+        // dx_norm/X_norm is 1/0 = +inf > 1e-10, so it iterates normally. A state
+        // that legitimately starts at zero -- an age tracer, or a dry catchment
+        // at t=0 -- would otherwise never be solved at all, and since it then
+        // stays zero the guard latches for the whole run.
         std::vector<double> dx(n_), X1(n_), F1(n_);
         while (err / (err_ini + 1e-8 * X_norm) > s_.tolerance && err > 1e-12
                && dx_norm / X_norm > 1e-10)
@@ -692,7 +701,10 @@ R"OHQRT(etLimitedOutFlow.
     static double norm(const std::vector<double>& v)
     { double s = 0; for (double x : v) s += x*x; return std::sqrt(s); }
 
-    Model& m_;
+    // A POINTER, not a reference: the generated kernel is copied per MCMC
+    // chain, and a copy must re-bind this to ITSELF (rebind()). A reference
+    // also deletes copy-assignment, which the hosts need.
+    Model* m_;
     SolverSettings s_;
     int n_ = 0, nl_ = 0, last_iters_ = 0, iters_last_ = 0;
     double t_ = 0, dt_ = 0, dt0_ = 0, tnew_ = 0;
@@ -1331,20 +1343,23 @@ template <class Model>
 class TransportSolver {
 public:
     explicit TransportSolver(Model& m, SolverSettings s = SolverSettings{})
-        : m_(m), s_(s) {}
+        : m_(&m), s_(s) {}
+    // re-point at the owning model (after a copy); see the m_ comment
+    void rebind(Model& m) { m_ = &m; }
+    const Model* model() const { return m_; }
 
     SolverSettings& settings() { return s_; }
 
     void initialize()
     {
-        n_  = m_.nMass();
-        nc_ = m_.nConst();
-        nl_ = m_.nLinksT();
+        n_  = m_->nMass();
+        nc_ = m_->nConst();
+        nl_ = m_->nLinksT();
         mass_.assign(n_, 0.0); past_.assign(n_, 0.0);
         F_.assign(n_, 0.0);
         mt_.assign(nl_ * nc_ > 0 ? nl_ * nc_ : 1, 0.0);
         inflow_.assign(n_, 0.0);
-        m_.initialMass(mass_.data());
+        m_->initialMass(mass_.data());
     }
 
     double mass(int i) const { return mass_[i]; }
@@ -1366,10 +1381,10 @@ public:
 private:
     void assemble(const double* X, double* F)
     {
-        m_.computeTransportFluxes(X, t_, mt_.data(), inflow_.data());
+        m_->computeTransportFluxes(X, t_, mt_.data(), inflow_.data());
         for (int i = 0; i < n_; ++i) F[i] = (X[i] - past_[i]) / dt_ - inflow_[i];
         for (int l = 0; l < nl_; ++l) {
-            const int s = m_.linkSrcT(l), e = m_.linkDstT(l);
+            const int s = m_->linkSrcT(l), e = m_->linkDstT(l);
             for (int j = 0; j < nc_; ++j) {
                 const double q = mt_[l * nc_ + j];
                 F[s * nc_ + j] += q;
@@ -1435,7 +1450,12 @@ private:
         double error_increase_counter = 0;
         nrCoeff_ = 1.0;
         last_iters_ = 0;
-        if (X_norm <= 0.0) return true;
+        // NOTE: do NOT skip the solve when X_norm == 0. The interpreter has no
+        // such guard (System.cpp:2431): with X_norm == 0 the loop's
+        // dx_norm/X_norm is 1/0 = +inf > 1e-10, so it iterates normally. A state
+        // that legitimately starts at zero -- an age tracer, or a dry catchment
+        // at t=0 -- would otherwise never be solved at all, and since it then
+        // stays zero the guard latches for the whole run.
         std::vector<double> dx(n_), X1(n_), F1(n_);
         while (err / (err_ini + 1e-8 * X_norm) > s_.tolerance && err > 1e-12
                && dx_norm / X_norm > 1e-10)
@@ -1546,7 +1566,10 @@ private:
     static double norm(const std::vector<double>& v)
     { double s = 0; for (double x : v) s += x*x; return std::sqrt(s); }
 
-    Model& m_;
+    // A POINTER, not a reference: the generated kernel is copied per MCMC
+    // chain, and a copy must re-bind this to ITSELF (rebind()). A reference
+    // also deletes copy-assignment, which the hosts need.
+    Model* m_;
     SolverSettings s_;
     int last_iters_ = 0;
     int n_ = 0, nc_ = 0, nl_ = 0;

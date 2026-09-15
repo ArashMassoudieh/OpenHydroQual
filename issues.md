@@ -362,3 +362,381 @@ loop exits. Worth a decision either way; it changes results.
 Because that escape is scale-dependent, `nr_tolerance` has **no effect** on the
 transport phase of a sorption-dominated model — it always takes exactly one
 iteration. That is worth knowing when tuning accuracy.
+
+---
+
+## ISSUE 11 — Oscillation control is a discrete decision, so the two codes can diverge by one event
+
+**Status:** open, revisit later (logged 2026-09-14 when oscillation control was
+ported to the codegen).
+**Affects:** codegen↔interpreter parity, not correctness of either.
+
+### Context
+The codegen now implements the interpreter's oscillation control:
+`CountOscillatingStates` (System.cpp:1012) over the gathered state
+(flow states then transport masses, `GatherSolvedState`), the rewind path
+(`ResetBasedOnRestorePoint`, 5130) including the output knockout, the
+`reduce`-only path, the `dt_ceiling` hold, the relax-after-N-clean-steps
+doubling, the reduction budget and the 4-step cooldown. With
+`oscillation_control = No` the generated code is **bit-identical** to before the
+port, so the machinery is genuinely inert when off.
+
+### Symptom
+On the 8-column model (`ColumnStudy/CodegenBench8/attrib/osc.ohq`,
+remedy = `reduce`, 50x dt ceiling) with control ON:
+
+| | steps | oscillation events | ceiling relaxations |
+|---|---|---|---|
+| interpreter | ~2070 | 3 | — |
+| codegen | 1869 | 2 | 4 |
+
+Breakthrough agreement loosens from **-0.010%** median (control off) to
+**-0.116%** median, range -1.66%..+0.25%, worst |diff|/scale 3.9e-2.
+
+### Why
+The detector fires on a threshold test over a four-deep state history. The two
+codes agree to ~1e-7 per step, but that is enough to put one of them on the
+other side of the threshold at a marginal step. One extra (or missing) event
+changes dt for the following hundreds of steps, so the trajectories separate —
+the disagreement is not in the physics but in *when* the control triggers.
+
+### Re-measured 2026-09-14 (afternoon), current code
+Re-run end-to-end with today's fixes in place (ISSUE 14 reaction-parameter
+precedence, ISSUE 17 parameter binding, ISSUE 18 X_norm, ISSUE 19 copy safety,
+`/` and `^` parity). Interpreter re-run too; note it must be given `-w .` or the
+model's relative `observed_outputfile` resolves under `attrib/attrib/` and the
+run produces nothing (same doubled-path class as ISSUE 15).
+
+| | interpreter | codegen | speed-up | steps (interp / codegen) |
+|---|---:|---:|---:|---|
+| control OFF (`def`) | 23.5 s | 0.45 s | **52.6x** | 142 / **141** |
+| control ON (`osc`)  | 202.7 s | 4.86 s | **41.8x** | **2069** / **1869** |
+
+Median signed relative difference over t>3 d across the 8 bottom ports
+(`analyze.py`): **-0.05%** control off, **-0.51%** control on.
+
+### Accuracy against the converged reference — the more useful framing
+`analyze.py osc def ref` (reference = `ref.ohq`, `max_timestep_increase_factor=1`):
+
+| variant | codegen - interp | interp - ref | codegen - ref |
+|---|---:|---:|---:|
+| `ref`  (ceiling 1)             | **-0.00%** | +0.00% | -0.00% |
+| `def`  (ceiling 50, control off) | -0.05% | **-23.90%** | -24.11% |
+| `osc`  (ceiling 50, control on)  | -0.51% | **-7.93%**  | -8.47%  |
+
+Two things follow, and they matter more than the parity percentages above:
+
+1. **At the converged dt the two codes are the same code**: codegen vs
+   interpreter is **-0.00%** on `ref`. So the -0.05% / -0.51% at ceiling 50 are
+   dt-path artefacts of two adaptive controllers, not a physics difference.
+2. **Oscillation control is buying real accuracy, not just stability.** At the
+   same ceiling it moves the breakthrough from **-23.9%** to **-7.9%** of the
+   converged answer, on BOTH sides. The earlier note here ("at a restrained dt
+   ceiling the oscillations do not occur at all, which is the cheaper remedy")
+   understates the cost of the restrained ceiling: ceiling 50 without control is
+   24% wrong.
+
+So the real trade is accuracy vs time, and the kernel changes it: the converged
+`ref` run costs the interpreter **>1200 s** -- it actually aborted on this
+model's own `maximum_time_allowed = 1200` (exit 5) when re-run under load --
+against **61 s** for the generated solver. The kernel can afford the converged
+solution the interpreter cannot. (The `ref` interpreter series used above is
+therefore the earlier successful run; the interpreter is behaviourally unchanged
+today, only env-gated logging was added, so the comparison is valid.)
+
+**The qualitative conclusion stands**: oscillation control loosens
+codegen-interpreter agreement by roughly an order of magnitude (-0.05% ->
+-0.51%) and costs ~9-11x runtime on both sides, for a model where a restrained
+dt ceiling avoids the oscillations entirely.
+
+Two cross-checks worth keeping:
+- BOTH step counts with control on reproduce the original entry exactly --
+  interpreter **2069** (logged as ~2070) and codegen **1869** -- so nothing in
+  today's fixes moved this model's trajectory on either side, and the original
+  table is reproducible. (Interpreter steps counted with `OHQ_ITERLOG=1`.)
+- With control off the two codes now agree to **one step out of 142**, which is
+  the strongest parity evidence yet for the ported dt policy and Newton.
+
+The absolute percentages are looser than the original entry (-0.010% / -0.116%).
+The original `def` artifacts on disk turned out to predate the ISSUE 14/17 fixes
+(the codegen side was from 10:34), so the two sets are not directly comparable;
+these numbers are the ones measured with a single, current code state on both
+sides. Timings vary +-30% with machine load (parallel builds were running).
+
+Also confirmed: **ISSUE 18 (the X_norm==0 guard) never applied to this model** —
+`rho_*` bulk densities start at 1402.5-1650, so the transport state norm was
+never zero. And ISSUE 17's binding fix does not move a *forward* run at fixed
+parameter values; it matters when a GA/MCMC drives them.
+
+### What to decide later
+Whether bit-parity under oscillation control is worth pursuing at all. Options:
+make the detector hysteretic (require N consecutive detections), or accept that
+control-on runs agree only to ~0.1% and document it. Note the control is
+expensive on both sides — ~9x the runtime (see below) — and at a restrained dt
+ceiling (`max_timestep_increase_factor` <= 10) the oscillations it exists to
+suppress do not occur at all, which is the cheaper remedy for this model.
+
+### Cost measured (8 columns, 4.5 d)
+| | control OFF | control ON | ratio |
+|---|---|---|---|
+| interpreter | 12.7 s | 113.8 s | 9.0x |
+| codegen | 0.25 s | 2.15 s | 8.6x |
+| codegen speed-up | 51x | 53x | |
+
+---
+
+## ISSUE 12 — `System::CalcMisfit` writes into `fit_measures` without checking its size
+
+**Status:** open, low priority (found 2026-09-14 while adding the `--kernel`
+back end to OHQ-GA / OHQ-MCMC).
+**Affects:** the interpreter, but only reachable from a host that scores a model
+without going through `System::Solve`.
+
+### Symptom
+Segfault inside `System::CalcMisfit()`.
+
+### Cause
+`CalcMisfit` (System.cpp:3684) writes `fit_measures[3i]`, `[3i+1]`, `[3i+2]` for
+every observation, but the vector is sized only in `System::InitializeSolver`
+(1306), which `Solve()` calls. Any path that computes the objective without
+having solved through `Solve()` — such as an alternative forward-model back end
+— writes past the end of an empty `std::vector`.
+
+### Workaround in place
+`ohq::KernelSystem::Solve` resizes `fit_measures` itself before handing control
+to the objective. Nothing in the library was changed.
+
+### Suggested fix
+Either resize defensively at the top of `CalcMisfit`, or make it use
+`.at()`/`resize()` rather than assuming a prior `InitializeSolver`.
+
+---
+
+## ISSUE 13 — Three small additions to `System.h` for the codegen kernel back end
+
+**Status:** informational (2026-09-14). No behaviour change; recorded so they
+are not mistaken for accidental edits.
+
+- `SetSolutionFailed(bool)` — the getter existed but `SolverTempVars` is
+  private, so an external back end could not report a failed solve.
+- `RestoreInterval()`, `RestorePointMaxUses()` — const getters for two private
+  members the codegen needs to emit into generated solver settings.
+
+All three are one-line const/trivial accessors next to the existing ones.
+
+---
+
+## ISSUE 14 — Codegen resolved reaction parameters before an object's own quantity
+
+**Status:** FIXED 2026-09-14 (codegen side).
+
+`Object::GetVal` (Object.cpp:99) checks the object's own quantity first and only
+then falls back to a constituent or a reaction parameter. The codegen reaction
+resolver checked `system.reactionparameter(name)` first. For a name that exists
+in both places the two diverge silently.
+
+Found while giving each column its measured porosity: the model has a
+`porosity` ReactionParameter *and* a `porosity` quantity on every block. While
+both were bound to one estimated parameter the values agreed and the bug was
+invisible; with per-column porosity the interpreter would read each block's
+value and codegen the single global one. Fixed by reordering to match
+`Object::GetVal`; the 8-column regression is bit-identical.
+
+---
+
+## ISSUE 15 — OHQ-MCMC `--continue` built a doubled path, silently restarting
+
+**Status:** FIXED 2026-09-14 (runner side, `tools/OHQ-MCMC/main.cpp`).
+
+`CMCMC::SetParameters` already resolves `samples_filename` against the output
+path (MCMC.hpp:151-153), so `FileInformation.outputfilename` carries the folder.
+The runner prepended the working folder again, producing
+`<wf>/<wf>/mcmc.txt`. That path never exists, so `--continue` reported
+"no chain file ... starting a fresh run" and **overwrote the chain** -- the exact
+failure mode the flag exists to prevent, and silent apart from one line of
+output. Now the folder is prepended only when `outputfilename` carries no path.
+
+## ISSUE 16 — MCMC resume segfaults on a chain with too few recorded samples
+
+**Status:** open, low priority (found 2026-09-14).
+
+After fixing ISSUE 15, resuming from a chain of 205 samples works correctly
+(appends, 205 -> 209). Resuming from a 2-line chain -- produced by a 40-sample
+run at `record_interval = 7`, i.e. essentially no usable samples -- segfaults
+inside the resume path. Not a concern for production runs (20,000 samples), but
+a short smoke-test run cannot be resumed, and the failure is a crash rather than
+a diagnostic. Worth a guard on the recorded-sample count before restarting.
+
+---
+
+## ISSUE 17 — Codegen baked estimated parameters as literals unless the target was a block, link or source
+
+**Status:** FIXED 2026-09-14. This one produced a wrong scientific result before
+it was caught, so the detail is worth keeping.
+
+### Symptom
+A GA driven through `--kernel` reported a converged optimum over 10 parameters
+whose fit was 2x worse than the run it started from, and worse on all 16
+observations. The GA's reported best (nll -870.8) did not reproduce when the
+same parameters were run forward in the interpreter (-621.3).
+
+### Cause
+`CodeGenerator.cpp` resolved `setasparameter` bindings with an allow-list:
+
+```cpp
+if (ot == object_type::block || ot == object_type::link || ot == object_type::source) { ...bind... }
+else  paramNotes.push_back("... not a model quantity; the host applies it");
+```
+
+Anything else was baked into the emitted code as a **literal**. In the column
+model every sorption parameter is a `ReactionParameter` (`alpha_*`, `Kd_*`), so
+all eight were frozen at their start values:
+
+```cpp
+Col1_1__rxn_ads_sand_ = div((1.04983 * pos(rho_sand)) * 0.121749, porosity) * pos(Cu_aq);
+//                            ^ alpha_sand literal      ^ Kd_sand literal
+```
+
+`setParameter()` / `applyParameters()` could not move them. The GA was in effect
+optimising two parameters (dispersivity, and the host-applied sigma) while
+believing it had ten, and it drove dispersivity to 1.93e-4 m -- grid Peclet 132,
+which is what produced the violent oscillation at the amended lower ports.
+
+The failure was silent in three separate ways: the skipped binding was recorded
+only as a **comment** in the generated header, the console note looked benign,
+and the runner's `--kernel` verification checked parameter **names and counts**,
+not whether the kernel responds to them.
+
+### Fix
+1. Binding is now resolved generically for any object type whose target is a
+   `value`/`constant` quantity; a constituent property additionally binds the
+   per-block/link copies. Observation sigma and objective-function weights are
+   the only host-owned exceptions, and are recognised explicitly.
+2. Anything still unbound raises, rather than emitting a note.
+3. **Generation-time guard:** after the code is assembled, every estimated
+   parameter must appear as `params_[i]` somewhere in it, or generation fails:
+   *"Refusing to emit a kernel a calibration cannot drive."*
+
+### Refinement 2026-09-14 — inert bindings are allowed, undrivable parameters are not
+The first version of the guard refused ANY unbound forward-model target, which
+blocked the 8-column model: `porosity_all` is bound to three things —
+`porosity.base_value`, `Col1-1.porosity` (both live `value` quantities) and
+`Col1-1.moisture_content`, which on a *Groundwater cell* is the **expression**
+`Storage/(depth*area)`.
+
+Setting an expression quantity is inert in the interpreter too:
+`ApplyParameters` calls `SetVal`, which writes the Quan's `past` value, while
+every `present` read recomputes it from the expression (`Quan::GetVal`). So the
+kernel NOT binding it preserves parity rather than breaking it.
+
+The rule is now:
+- `value`/`constant` target -> bound live (`params_[i]`).
+- `expression`/`balance`/`rule` target -> recorded as an explicit `// NOTE ...
+  deliberately not bound` line in the generated header, not silently dropped.
+- observation sigma / objective-function weight -> host-owned, as before.
+- **A parameter whose bindings are ALL inert still raises** ("has no binding the
+  kernel can drive"), so ISSUE 17's guarantee is intact: the kernel is never
+  emitted for a calibration it cannot drive.
+
+On the 8-column model this yields 10 live parameters + `error_std` (host-owned),
+with 160 inert `moisture_content` notes.
+
+### Lesson for the runners
+Name/count verification is not enough. Before trusting a kernel for a
+calibration, perturb each parameter and confirm the output moves. A standalone
+check doing exactly that lives in the session notes; folding it into
+`--kernel` startup as a cheap self-test is worth doing (tasks C3/C4).
+
+
+## ISSUE 18 — codegen: Newton skipped whenever the state norm was zero (FIXED 2026-09-14)
+
+**Status:** fixed the day it was found. Recorded because it silently produced
+zeros rather than failing, and because it invalidates measurements taken while
+it was present.
+
+### Symptom
+Every constituent mass in the Wetland model was identically zero for the whole
+run — `HRT` (an observation reading `AgeTracker_1:concentration`) was 0 at all
+5999 output rows, while storages were correct to 6e-5. No error, no failed step:
+`runTo` reported success.
+
+### Cause
+`newtonInterp()` in BOTH `codegen/runtime/ohq_transport.h` and
+`ohq_massbalance.h` opened with
+
+```cpp
+const double X_norm = norm(state);
+...
+if (X_norm <= 0.0) return true;      // "nothing to solve"
+```
+
+The interpreter has no such guard (System.cpp:2431): with `X_norm == 0` its loop
+condition `dx_norm / X_norm > 1e-10` is `1/0 = +inf`, so it iterates normally.
+The guard was meant to avoid a division by zero, but it bails out of the solve
+entirely — and it **latches**: a state that starts at zero is never advanced, so
+it stays zero, so the guard fires again on every subsequent step.
+
+Anything that legitimately starts at zero is affected: an age tracer, a tracer
+breakthrough experiment (concentration 0 before the front arrives), or a flow
+model whose blocks all start dry (a rainfall-runoff grid at t=0).
+
+### Fix
+Removed both guards; the loop now mirrors the interpreter exactly. `1/0` is
+`+inf` in IEEE, not UB, and the iteration is bounded by `max_iterations`.
+Verified: Wetland Cell 6 tracer mass 0 -> 402, HRT matches the interpreter to
+1.5e-3 rms, and the G1/G2 gate passes again.
+
+### Scope — which models are affected
+Only a model whose ENTIRE transport state starts at zero. `norm()` is taken over
+the whole constituent vector, so one non-zero constituent keeps the guard shut.
+
+- **Wetland: hit.** A single constituent (`AgeTracker`) starting at 0 *is* the
+  whole vector.
+- **8-column study (ISSUE 11): NOT hit — verified.** `Cu_aq` and `Cu_s_*` start
+  at 0, but the `rho_*` bulk densities start at 1402.5-1650, so `X_norm` was
+  never 0 and the solve always ran. The ISSUE 11 figures do not need re-measuring
+  on account of this bug. (They were re-measured anyway on 2026-09-14 because
+  ISSUE 14 and ISSUE 17 do touch that model.)
+- Watch for: a rainfall-runoff grid whose blocks all start dry — that is the
+  flow-phase equivalent and would be hit.
+
+---
+
+## ISSUE 19 — codegen: a copied kernel solved the ORIGINAL's model (FIXED 2026-09-14, G7)
+
+**Status:** fixed. Never observed in a result because nothing copied a kernel
+yet — but the whole point of G7 is that MCMC copies one per chain.
+
+### Symptom (by construction)
+`MassBalanceSolver` / `TransportSolver` stored `Model& m_`, and the dt clamp
+stored raw `const TimeSeries*` into the model's own members. Therefore, for
+`Kernel chain = base;`
+
+- `chain.solver_.m_` still referenced **base**, so every `computeFluxes` /
+  `precomputeStep` / `computeTransportFluxes` read base's `params_`, cached
+  flow locals and series while writing chain's state. `chain.setParameter(...)`
+  would have had no effect on the solve.
+- `chain.solver_.clampSeries_[k]` still pointed at **base's** series, so the dt
+  clamp read another object's forcing — and dangled if base died first.
+- A `Model&` member also makes the class **non-copy-assignable**, so
+  `chains[k] = base;` did not compile at all.
+
+### Fix
+`Model& m_` -> `Model* m_` plus `rebind()` / `model()` in both solvers, a
+`clearClampSeries()`, and a generated `bindSelf()` that re-points the solvers and
+re-registers the clamp series at `*this`. `initialize()` calls it, and the public
+`step()` self-heals (`if (solver_.model() != this) bindSelf();`) so a plain copy
+is safe with no host cooperation.
+
+### Verified
+`copy_assignable` 0 -> 1; a copy's solver and clamp series point at itself;
+copy-then-perturb is **bit-identical** to a freshly-initialised kernel with the
+same parameter; the source kernel is untouched.
+
+### Note on cost (the original G7 premise)
+The roadmap assumed copying was expensive. Measured: 1.34 MB of baked forcing,
+**121 us per copy** on Wetland, against a ~0.25-2 s solve per sample — i.e. well
+under 0.1%. Sharing the immutable forcing (shared_ptr + copy-on-write in
+`setSeries`) is therefore NOT worth the complexity; correctness was the real
+issue. Revisit only if a model appears whose forcing dwarfs its solve time.
+

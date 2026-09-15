@@ -37,20 +37,23 @@ template <class Model>
 class TransportSolver {
 public:
     explicit TransportSolver(Model& m, SolverSettings s = SolverSettings{})
-        : m_(m), s_(s) {}
+        : m_(&m), s_(s) {}
+    // re-point at the owning model (after a copy); see the m_ comment
+    void rebind(Model& m) { m_ = &m; }
+    const Model* model() const { return m_; }
 
     SolverSettings& settings() { return s_; }
 
     void initialize()
     {
-        n_  = m_.nMass();
-        nc_ = m_.nConst();
-        nl_ = m_.nLinksT();
+        n_  = m_->nMass();
+        nc_ = m_->nConst();
+        nl_ = m_->nLinksT();
         mass_.assign(n_, 0.0); past_.assign(n_, 0.0);
         F_.assign(n_, 0.0);
         mt_.assign(nl_ * nc_ > 0 ? nl_ * nc_ : 1, 0.0);
         inflow_.assign(n_, 0.0);
-        m_.initialMass(mass_.data());
+        m_->initialMass(mass_.data());
     }
 
     double mass(int i) const { return mass_[i]; }
@@ -72,10 +75,10 @@ public:
 private:
     void assemble(const double* X, double* F)
     {
-        m_.computeTransportFluxes(X, t_, mt_.data(), inflow_.data());
+        m_->computeTransportFluxes(X, t_, mt_.data(), inflow_.data());
         for (int i = 0; i < n_; ++i) F[i] = (X[i] - past_[i]) / dt_ - inflow_[i];
         for (int l = 0; l < nl_; ++l) {
-            const int s = m_.linkSrcT(l), e = m_.linkDstT(l);
+            const int s = m_->linkSrcT(l), e = m_->linkDstT(l);
             for (int j = 0; j < nc_; ++j) {
                 const double q = mt_[l * nc_ + j];
                 F[s * nc_ + j] += q;
@@ -141,7 +144,12 @@ private:
         double error_increase_counter = 0;
         nrCoeff_ = 1.0;
         last_iters_ = 0;
-        if (X_norm <= 0.0) return true;
+        // NOTE: do NOT skip the solve when X_norm == 0. The interpreter has no
+        // such guard (System.cpp:2431): with X_norm == 0 the loop's
+        // dx_norm/X_norm is 1/0 = +inf > 1e-10, so it iterates normally. A state
+        // that legitimately starts at zero -- an age tracer, or a dry catchment
+        // at t=0 -- would otherwise never be solved at all, and since it then
+        // stays zero the guard latches for the whole run.
         std::vector<double> dx(n_), X1(n_), F1(n_);
         while (err / (err_ini + 1e-8 * X_norm) > s_.tolerance && err > 1e-12
                && dx_norm / X_norm > 1e-10)
@@ -252,7 +260,10 @@ private:
     static double norm(const std::vector<double>& v)
     { double s = 0; for (double x : v) s += x*x; return std::sqrt(s); }
 
-    Model& m_;
+    // A POINTER, not a reference: the generated kernel is copied per MCMC
+    // chain, and a copy must re-bind this to ITSELF (rebind()). A reference
+    // also deletes copy-assignment, which the hosts need.
+    Model* m_;
     SolverSettings s_;
     int last_iters_ = 0;
     int n_ = 0, nc_ = 0, nl_ = 0;
