@@ -8,7 +8,7 @@
 
 CONFIG += c++17
 
-QT += core gui opengl printsupport widgets
+QT += core gui opengl printsupport widgets concurrent
 
 # For Qt5
 lessThan(QT_MAJOR_VERSION, 6): {
@@ -343,4 +343,3 @@ linux {
      LIBS += -larmadillo -llapack -lblas -lgsl -lsuperlu -lopenblas
 
 }
-

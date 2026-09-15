@@ -2579,7 +2579,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 // Inverse_Jacobian holds J itself), plus the dt it sees
                 {
                     const CMatrix_arma &_J = SolverTempVars.Inverse_Jacobian[statevarno];
-                    if (_J.getnumrows() > 18 && _J.getnumcols() > 18)
+                    if (_J.getnumrows() > 18 && _J.getnumcols() > 19)
                         std::fprintf(stderr, " J[18][18]=%.12g J[18][17]=%.12g J[18][19]=%.12g dt=%.12g njac=%d",
                                      double(_J(18,18)), double(_J(18,17)), double(_J(18,19)),
                                      double(SolverTempVars.dt), int(SolverTempVars.epoch_count));
