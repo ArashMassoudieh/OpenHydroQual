@@ -216,6 +216,13 @@ void MainWindow::onexporttocpp()
     {
         ohqcg::CodeGenerator().generate(system, opt);
     }
+    catch (const std::exception& e)
+    {
+        QMessageBox::critical(this, tr("Export to C++"),
+                              tr("Code generation failed:\n%1").arg(e.what()));
+        Log(QString("Export to C++ failed: ") + e.what());
+        return;
+    }
 
     QString report;
     if (buildAfterExport)
@@ -391,14 +398,6 @@ void MainWindow::onexporttocpp()
             }
         }
     }
-    catch (const std::exception& e)
-    {
-        QMessageBox::critical(this, tr("Export to C++"),
-                              tr("Code generation failed:\n%1").arg(e.what()));
-        Log(QString("Export to C++ failed: ") + e.what());
-        return;
-    }
-
     const QString target = asLibrary ? (shared ? tr("shared library") : tr("static library"))
                                      : tr("executable");
     QMessageBox::information(this, tr("Export to C++"),
