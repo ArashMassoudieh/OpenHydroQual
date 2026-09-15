@@ -93,6 +93,19 @@ int main(int argc, char* argv[])
     std::printf("interpreter: solved to t=%.6g in %.3f s, failed=%d, objective=%.6g\n",
                 tend, interp_sec, (int)sys.GetSolutionFailed(), sys.GetObjectiveFunctionValue());
 
+    // A comparison over a run that never advanced proves nothing, and would
+    // otherwise report a glowing PASS (every series empty, every storage still at
+    // its initial value). Refuse it: either the window is degenerate, or the
+    // interpreter failed on the perturbed parameters and stopped at tstart.
+    const double tstart = sys.tstart();
+    if (!(tend > tstart + 1e-12) || sys.GetSolutionFailed()) {
+        std::printf("INCONCLUSIVE: the interpreter did not advance (tstart=%.6g, tend=%.6g, failed=%d).\n"
+                    "  Nothing was compared. Give the model a usable simulation window, or\n"
+                    "  reduce the parameter perturbation so the interpreter still solves.\n",
+                    tstart, tend, (int)sys.GetSolutionFailed());
+        return 4;
+    }
+
     // ---- generated, driven like the kernel will be ---------------------------
     GEN_CLASS m;
     m.initialize();

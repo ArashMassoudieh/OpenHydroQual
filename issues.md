@@ -810,3 +810,100 @@ The generator emits the ABI; `codegen/tools/ohq_kernel.h` declares it. Changing
 one means changing both **and** bumping the version in both. Anything that links
 the OHQ core gets the ABI through the canonical header, never its own copy.
 
+---
+
+## ISSUE 21 — G8 model-coverage survey across the deployments (2026-09-14)
+
+Every deployment family was put through the generator, and where a usable
+simulation window exists, through the interpreter-vs-kernel parity gate.
+
+### Coverage
+All 15 models generate. The large ones compile:
+
+| model | size | compile | parity (final storages) | speed-up |
+|---|---|---|---|---|
+| Bioretention | 11 blk / 10 lnk | OK | **4.99e-10** | 443x |
+| Reservoir | 2 / 1 | OK | **4.55e-16** | 545x |
+| StormwaterPond | 5 / 3 | OK | 1.14e-03 (loosest) | 61x |
+| JM | 26 / 34 | OK | **5.57e-06** | 1082x |
+| R_simple | 36 / 34 | OK | **8.27e-11** | 318x |
+| R_LF | 192 / 366 | OK | **1.27e-11** (1% perturbation) | 397x |
+| R | 532 / 1026 | OK (235 s, 64k-line header) | not run | -- |
+| HQ | 391 / 1064 | OK (133 s) | not run | -- |
+| VN | 450 / 881 | OK (180 s) | not run | -- |
+| Wetland, 8-column | -- | OK | see ISSUE 11 and the Wetland benchmark | 31-52x |
+
+### Three real defects found and fixed
+1. **Unresolvable bare quantity emitted as an undeclared symbol.** HQ and VN
+   drywell-to-soil links read a bare `pressure_head` that lives on the soil
+   *block*, not on the link. `Object::GetVal` (Object.cpp:99) has **no** fallback
+   to a link's endpoints: it logs error 1002 and returns **0**. The generator was
+   emitting `pressure_head_ /*UNRESOLVED*/`, which does not compile. It now emits
+   `0.0` -- the parity-preserving answer -- and warns once per (object, quantity)
+   so the case cannot hide. 20 such terms in HQ, 15 in VN. Same family as ISSUE 9.
+2. **Dangling capture in the resolver** (introduced while fixing 1, caught by HQ):
+   `makeCtx`'s `cur` parameter is captured by reference and dangles after it
+   returns; using it in the emitted-warning path gave `std::bad_alloc` on HQ while
+   the *larger* R model was fine. Use `t` (the resolved target). This is the
+   second time this exact trap has been hit in this file -- there is now a comment
+   at the site.
+3. **The parity harness passed runs that never happened.** `R_LF` and a
+   mis-windowed `R_simple` reported a glowing PASS with 0 steps: every observation
+   empty, every storage still at its initial value. `parity_obs` now reports
+   **INCONCLUSIVE** (exit 4) when `tend <= tstart` or the interpreter failed.
+   R_LF's interpreter fails at a 10% parameter perturbation but solves at 1%.
+
+### Two broken model files found (not codegen defects)
+- **`Wetland_BSh_AM.ohq`** loads with **7 of its 13 links**. It carries template
+  blocks from two machines, and the second `loadtemplate` RESETS the template set
+  while its block omits `groundwater.json` -- so `surface2groundwater_link` is
+  undefined, the six soil links are never created, and
+  `Soil_Hydraulic_Conductivity` calibrates nothing. The interpreter reports this
+  and runs anyway.
+- **`HQ.ohq`** declares `Ks_12` and `new_Van_alpha` as estimated parameters with
+  **no `setasparameter` binding at all** -- they affect neither code.
+
+The generator now prints the model's own build errors before generating, since a
+kernel built from a half-loaded model is a kernel for a different model.
+
+### Parameter-binding rule, final form
+`value`/`constant` target -> live `params_[i]`. Derived (expression/balance/rule)
+target, or no usable binding at all -> recorded as a `// NOTE` in the header plus
+a stderr warning, because the interpreter cannot drive it either, so ignoring it
+preserves parity. A parameter whose bindings are ALL to objects that failed to
+load is fatal. ISSUE 17's guarantee is intact: the kernel is never emitted for a
+calibration it could silently ignore.
+
+
+## ISSUE 19 — `CMCMC::readfromfile` assumes the chain file holds every sample; it does not
+
+`readfromfile` (MCMC.hpp:845) packs rows sequentially, `Params[jj]` with `jj++`,
+so it requires row *j* of `mcmc.txt` to be global sample *j*. Chain identity is
+`k mod number_of_chains` (every step derives `Params[k]` from
+`Params[k-nchains]`), so that assumption is load-bearing.
+
+The file written by the s13 run is subsampled: sample numbers run
+21, 28, 35, ... — a stride of 7, all 2744 gaps identical, 2745 rows spanning
+20000 samples. Resuming from it therefore assigns row *j* to chain `j mod 16`
+when its true chain is `(21+7j) mod 16`. **All 2745 rows are mis-assigned.** A
+`--continue` would splice 16 chains together arbitrarily and silently, and would
+also resume the counter at 2745 rather than 20000, re-running most of the range.
+
+Reproduced 2026-09-15 on `Two-site s13-GA/mcmc2/mcmc.txt`.
+
+Two things to fix, and they are independent:
+1. `readfromfile` should key off the `no.` column rather than row order, and
+   should refuse a file whose sample numbers are not contiguous from 0.
+2. The stride is deliberate: `record_interval` (MCMC.hpp:119 ->
+   `MCMC_Settings.save_interval`), set to 7 in this model. So the writer and the
+   reader simply disagree — the writer honours `record_interval`, the reader
+   assumes it is 1. Either `readfromfile` must divide by it, or the resume path
+   must refuse a file written with `record_interval > 1`.
+
+Note also that a thinned file silently breaks R-hat for anyone who treats
+consecutive rows as consecutive samples of one chain; chain identity is
+`sample number mod nchains`, which with a stride coprime to `nchains` scatters
+each chain uniformly through the rows.
+
+Until both are fixed, extend a chain by re-running with a larger
+`number_of_samples`, not by `--continue`.

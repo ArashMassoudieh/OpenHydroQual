@@ -35,6 +35,7 @@
 #include "RxnParameter.h"
 #include "Parameter.h"
 #include "observation.h"
+#include "ErrorHandler.h"
 
 #include <fstream>
 #include <sstream>
@@ -133,6 +134,22 @@ static std::string cstr(const std::string& s)
 
 bool CodeGenerator::generate(System& system, const GenOptions& opt)
 {
+    // A model that did not build cleanly produces a kernel for a DIFFERENT model
+    // than the user thinks: `Wetland_BSh_AM.ohq` loads with 7 of its 13 links
+    // because a second `loadtemplate` resets the template set and its block omits
+    // groundwater.json, so `surface2groundwater_link` is undefined. Nothing
+    // downstream can tell; say it here.
+    if (ErrorHandler* eh = system.GetErrorHandler()) {
+        const int ne = eh->Count();
+        if (ne > 0) {
+            std::fprintf(stderr, "warning: the model reported %d error(s) while building; the "
+                                 "kernel is generated from what actually loaded:\n", ne);
+            for (int i = 0; i < ne && i < 12; ++i)
+                if (_error* e = (*eh)[i])
+                    std::fprintf(stderr, "  %s\n", e->description.c_str());
+            if (ne > 12) std::fprintf(stderr, "  ... and %d more\n", ne - 12);
+        }
+    }
     const AnalysisResult tiers = DependencyAnalyzer().analyze(system);
 
     const unsigned nB = system.BlockCount();
@@ -247,10 +264,16 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             // `create parameter` with no `setasparameter` anywhere: it moves nothing,
             // in either code. The model is estimating a parameter that does nothing --
             // worth saying out loud, not worth refusing over.
-            paramNotes.push_back(p->GetName() + ": no `setasparameter` binding in the model; it "
-                                 "affects neither the interpreter nor the kernel");
-            std::fprintf(stderr, "warning: estimated parameter '%s' has no setasparameter binding; "
-                                 "it affects nothing in this model\n", p->GetName().c_str());
+            // Either the model never bound it, or its `setasparameter` lines named
+            // objects that failed to load -- a failed binding is not recorded at
+            // all, so the two are indistinguishable here. Both mean the same
+            // thing for the kernel, and for the interpreter.
+            paramNotes.push_back(p->GetName() + ": no usable `setasparameter` binding; it affects "
+                                 "neither the interpreter nor the kernel");
+            std::fprintf(stderr, "warning: estimated parameter '%s' has no usable setasparameter "
+                                 "binding (none in the model, or they named objects that failed to "
+                                 "load -- see the build errors above); it affects nothing\n",
+                         p->GetName().c_str());
         } else if (nMissingObjects == nBindings) {
             // Every target names an object that is not in the loaded model -- the
             // model itself is broken, and the interpreter fails here too
@@ -309,7 +332,29 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         ctx.resolveValue = [&, target, timeVar](const std::string& name, Loc loc) -> std::string {
             Object* t = target(loc);
             Quan* q = t->Variable(name);
-            if (!q) return sanitize(name) + "_ /*UNRESOLVED*/";
+            if (!q) {
+                // The interpreter does NOT fall back to a link's endpoint blocks:
+                // Object::GetVal (Object.cpp:99) tries the object's own quantity,
+                // then constituent / reaction-parameter / source / reaction names,
+                // and if all miss it logs error 1002 ("property '<s>' does not
+                // exist in '<obj>'") and returns 0. Emitting 0.0 is therefore the
+                // PARITY-preserving choice -- but it is also how a genuine codegen
+                // gap would hide, so say it out loud once per (object, quantity).
+                // Real case: HQ/VN drywell-to-soil links whose flow reads a bare
+                // `pressure_head` that lives on the soil block, not on the link;
+                // the interpreter scores that term as 0 and logs an error per step.
+                // NB: use `t` (the resolved target), never `cur` -- makeCtx's
+                // parameters are captured by reference and dangle once it returns.
+                static std::set<std::string> warned;
+                const std::string key = t->GetName() + "::" + name;
+                if (warned.insert(key).second)
+                    std::fprintf(stderr, "warning: '%s' has no quantity '%s'; the interpreter "
+                                 "evaluates it as 0 (Object::GetVal error 1002) and the kernel "
+                                 "matches that\n", t->GetName().c_str(), name.c_str());
+                return "0.0";   // the comment is intentionally NOT inlined: on HQ/VN this
+                                // resolver fires ~2000 times inside deeply nested
+                                // expressions, and the extra text blew the generator up
+            }
             if (q->GetType() == Quan::_type::balance)
                 return "eff[" + stateEnum(t->GetName(), name) + "]";
             if (q->GetType() == Quan::_type::source) {
@@ -1481,7 +1526,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     n.find("applied by the host") != std::string::npos) excused = true;
                 // a parameter bound to nothing at all is inert in the interpreter too
                 if (n.rfind(params[i].name + ":", 0) == 0 &&
-                    n.find("no `setasparameter` binding") != std::string::npos) excused = true;
+                    n.find("no usable `setasparameter` binding") != std::string::npos) excused = true;
             }
             if (!excused)
                 msg += "  parameter " + std::to_string(i) + " '" + params[i].name
