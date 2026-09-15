@@ -353,8 +353,12 @@ void MainWindow::onexporttocpp()
             {
                 setStage(tr("Running the interpreted reference model"));
                 System interpreted(system);
-                interpreted.tend() = testEnd;
                 interpreted.SetSystemSettings();
+                // SetSystemSettings reloads simulation_end_time from the model's
+                // settings object, so the benchmark override must be applied
+                // afterwards. Otherwise a short generated run is accidentally
+                // compared with a full interpreted run.
+                interpreted.tend() = testEnd;
                 interpreted.SetSilent(true);
                 interpreted.SetRecordResults(false);
                 interpreted.SetNumThreads(1);
@@ -409,6 +413,10 @@ void MainWindow::onexporttocpp()
                     return;
                 }
                 const QVector<double>& finalRow = stateRows.last();
+                const double generatedEndTime = finalRow.isEmpty() ? 0.0 : finalRow[0];
+                const double terminalTimeGap = std::fabs(interpreted.GetTime() - generatedEndTime);
+                const double terminalTimeAllowance = std::max(1e-9, 2.0 * std::fabs(interpreted.dt0()));
+                const bool terminalTimesMatch = terminalTimeGap <= terminalTimeAllowance;
                 auto csvName = [](QString value) {
                     value.replace('"', "\"\"");
                     return "\"" + value + "\"";
@@ -488,11 +496,15 @@ void MainWindow::onexporttocpp()
                     }
                 }
 
-                const bool parity = comparedStates > 0 && worstRatio <= 1.0;
+                const bool parity = terminalTimesMatch && comparedStates > 0 && worstRatio <= 1.0;
                 report += tr("Interpreted run: PASS (%1 s)\n").arg(interpretedSeconds, 0, 'f', 3);
                 report += tr("Terminal times: interpreted=%1, generated=%2\n")
                               .arg(interpreted.GetTime(), 0, 'g', 17)
-                              .arg(finalRow.isEmpty() ? 0.0 : finalRow[0], 0, 'g', 17);
+                              .arg(generatedEndTime, 0, 'g', 17);
+                report += tr("Terminal-time check: %1 (gap=%2; allowance=%3)\n")
+                              .arg(terminalTimesMatch ? tr("PASS") : tr("FAIL"))
+                              .arg(terminalTimeGap, 0, 'g', 8)
+                              .arg(terminalTimeAllowance, 0, 'g', 8);
                 report += tr("Speedup: %1x\n").arg(interpretedSeconds / std::max(generatedSeconds, 1e-12), 0, 'f', 2);
                 report += tr("Compared: %1 final states, %2 constituent masses, %3 observation series\n")
                               .arg(comparedStates).arg(comparedMasses).arg(comparedObs);
