@@ -124,7 +124,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow rate",
-      "expression": "K_sat.e*(_pos(hydraulic_gradient)*interface_area - _pos(pressure_head.e)/length*interface_area_reverse)*depth.s/(depth.s+0.01)",
+      "expression": "K_sat.e*(_pos(hydraulic_gradient)*interface_area - _pos(head.e-depth.e-bottom_elevation.e)/length*interface_area_reverse)*depth.s/(depth.s+0.01)",
       "includeinoutput": "true",
       "applylimit": "true"
     },

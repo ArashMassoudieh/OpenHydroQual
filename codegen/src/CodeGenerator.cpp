@@ -306,10 +306,17 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             if (loc == Loc::destination) return (Object*)system.block(cur->e_Block_No());
             return cur;
         };
-        ctx.resolveValue = [&, target, timeVar](const std::string& name, Loc loc) -> std::string {
+        ctx.resolveValue = [&, target, timeVar, cur](const std::string& name, Loc loc) -> std::string {
             Object* t = target(loc);
-            Quan* q = t->Variable(name);
-            if (!q) return sanitize(name) + "_ /*UNRESOLVED*/";
+            Quan* q = t ? t->Variable(name) : nullptr;
+            if (!q) {
+                const char* scope = loc == Loc::source ? "source" :
+                                    loc == Loc::destination ? "destination" : "current";
+                throw std::runtime_error(
+                    "CodeGenerator: quantity '" + name + "' referenced by '" +
+                    cur->GetName() + "' was not found on " + scope + " object '" +
+                    (t ? t->GetName() : std::string("<missing>")) + "'");
+            }
             if (q->GetType() == Quan::_type::balance)
                 return "eff[" + stateEnum(t->GetName(), name) + "]";
             if (q->GetType() == Quan::_type::source) {
