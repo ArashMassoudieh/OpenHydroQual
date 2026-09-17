@@ -581,6 +581,10 @@ bool CGA<T>::SetProperty(const string &varname, const string &value)
 	if (aquiutils::tolower(varname) == "shakescalered") {GA_params.shakescalered = aquiutils::atof(value); return true;}
 	if (aquiutils::tolower(varname) == "outputfile") {filenames.outputfilename = value; return true;}
 	if (aquiutils::tolower(varname) == "getfromfilename") {filenames.getfromfilename = value.c_str(); return true;}
+    // GUI-facing name for the same thing, matching the MCMC setting. An empty
+    // value means "start fresh", so a blank box in the dialog is not a resume.
+    if (aquiutils::tolower(varname) == "continue_based_on_filename")
+    {   filenames.getfromfilename = aquiutils::trim(value); return true; }
 	if (aquiutils::tolower(varname) == "initial_population") {filenames.initialpopfilemame = value; return true;}
 	if (aquiutils::tolower(varname) == "numthreads") {numberOfThreads = aquiutils::atoi(value.c_str()); return true;}
     last_error = "Property '" + varname + "' was not found!";
@@ -639,14 +643,31 @@ int CGA<T>::optimize()
     // "resumed" run started from a random population. Read it here, BEFORE the
     // fopen(...,"w") below truncates the very file we are reading, since
     // --continue points getfromfilename at GA_output.txt itself.
-    if (!filenames.getfromfilename.empty())
-        getinitialpop(filenames.getfromfilename);
+    const bool continuing = !filenames.getfromfilename.empty();
+    if (continuing && !getinitialpop(filenames.getfromfilename))
+    {
+        // Hard stop. last_error already explains why (unreadable file,
+        // parameters that do not match the model, or no complete generation).
+        // Returning here leaves the existing output file untouched, which
+        // matters because it is usually the very file we were asked to read.
+        // -1 is an unambiguous failure sentinel: on success optimize() returns
+        // maxfitness(), which is an INDEX into the population and therefore
+        // always >= 0.
+        std::cerr << "[GA] Cannot continue the previous run:\n"
+                  << last_error << "\n";
+#ifdef Q_GUI_SUPPORT
+        if (rtw) rtw->AppendLog("Cannot continue the previous run: " + last_error);
+#endif
+        return -1;
+    }
 
     // ---- GA_output.txt preamble -------------------------------------------
     // Every line here starts with '#'. It sits above the first "Generation:"
     // line, so getinitialpop() -- which only reads inside a generation block --
     // skips it, and --continue keeps working.
-    FileOut = fopen(RunFileName.c_str(),"w");
+    // Continuing appends, so the generations already in the file are kept and
+    // the run reads as one continuous history. A fresh run truncates as before.
+    FileOut = fopen(RunFileName.c_str(), continuing ? "a" : "w");
     if (!FileOut)
     {
         qDebug()<< QString::fromStdString("Unable to open '" + RunFileName + "'");
@@ -655,8 +676,11 @@ int CGA<T>::optimize()
     {
         const time_t now = time(nullptr);
         char stamp[64]; strftime(stamp, sizeof(stamp), "%Y-%m-%d %H:%M:%S", localtime(&now));
+        if (continuing)
+            fprintf(FileOut, "\n# ---- continued from %s ----\n",
+                    filenames.getfromfilename.c_str());
         fprintf(FileOut, "# OpenHydroQual -- genetic algorithm population log\n");
-        fprintf(FileOut, "# started            : %s\n", stamp);
+        fprintf(FileOut, "# %-18s: %s\n", continuing ? "continued" : "started", stamp);
         fprintf(FileOut, "# population         : %d individuals\n", GA_params.maxpop);
         fprintf(FileOut, "# generations        : %d\n", GA_params.nGen);
         fprintf(FileOut, "# crossover / mutation prob : %g / %g\n", GA_params.pcross, GA_params.pmute);
@@ -1208,9 +1232,10 @@ void CGA<T>::getinifromoutput(string filename)
 // which corrupted the population. The fix pushes once per row.
 // ---------------------------------------------------------------------------
 template<class T>
-void CGA<T>::getinitialpop(string filename)
+bool CGA<T>::getinitialpop(string filename)
 {
     initial_pop.clear();
+    last_error.clear();
     GA_DBG("[GA-DBG] getinitialpop() ENTER, filename=" << filename
               << " nParam=" << GA_params.nParam
               << " maxpop=" << GA_params.maxpop << "\n");
@@ -1218,11 +1243,15 @@ void CGA<T>::getinitialpop(string filename)
     ifstream file(filename);
     if (!file.is_open())
     {
+        last_error = "Unable to open the file to continue from:\n  " + filename +
+                     "\n\nCheck that the path is correct and the file is readable.";
         GA_DBG("[GA-DBG] getinitialpop: file failed to open\n");
-        return;
+        return false;
     }
 
     vector<string> s;
+    vector<string> fileParams;          // names read from the "ID, ..." header
+    bool headerSeen      = false;
     bool inDataBlock     = false;
     int  lastGenSeen     = -1;
     vector<vector<double>> rowsForLastGen;
@@ -1235,6 +1264,11 @@ void CGA<T>::getinitialpop(string filename)
         s = aquiutils::getline(file);
         lineNum++;
         if (s.empty()) continue;
+
+        // Preamble lines start with '#'. They matter here because a continued
+        // run appends a fresh preamble to the existing file, so these can
+        // appear *after* a generation block rather than only at the top.
+        if (!s[0].empty() && s[0][0] == '#') continue;
 
 #ifdef GA_VERBOSE_RESUME
         // First 30 lines: trace what tokenization is producing
@@ -1271,12 +1305,34 @@ void CGA<T>::getinitialpop(string filename)
             continue;
         }
 
-        // Column header line: "ID, EngineeredSoilKsat, ..." — comma-separated,
-        // s[0] is exactly "ID".
-        if (s[0] == "ID") continue;
+        // Column header line: "ID, <param names...>, neg_log_likelihood,
+        // Fitness, Rank, <obs metrics...>" — comma-separated, s[0] == "ID".
+        // The names are what makes verification possible; the previous version
+        // discarded this line and then read the data columns positionally.
+        if (s[0] == "ID")
+        {
+            if (!headerSeen)
+            {
+                // Parameter names occupy columns 1..nParam, between the ID
+                // column and the neg_log_likelihood column.
+                for (int i = 1;
+                     i < static_cast<int>(s.size()) && i <= GA_params.nParam;
+                     i++)
+                    fileParams.push_back(aquiutils::trim(s[i]));
+                headerSeen = true;
+            }
+            continue;
+        }
 
-        // Terminator: "Final Enhancements" — no commas, one token.
-        if (s[0].size() >= 5 && s[0].substr(0, 5) == "Final") break;
+        // Terminator written at the end of each completed run. Do NOT stop
+        // here: a continued run appends its generations after this line, and
+        // breaking would resume from the *first* run's final generation while
+        // appearing to succeed. Just leave the data block.
+        if (s[0].size() >= 5 && s[0].substr(0, 5) == "Final")
+        {
+            inDataBlock = false;
+            continue;
+        }
 
         // Data row: comma-separated, columns are
         //   [ID, EngKsat, NatAlpha, NatKsat, likelihood, Fitness, Rank, ...obs metrics...]
@@ -1315,13 +1371,45 @@ void CGA<T>::getinitialpop(string filename)
     }
     file.close();
 
-    // Kept unconditional: when resuming, the one thing worth seeing is whether a
-    // full generation was actually recovered from the file.
     std::cout << "Resume: read " << dataRowsSeen << " individuals across "
               << genHeadersSeen << " generation(s) from " << filename
               << "; seeding " << initial_pop.size() << " of "
               << GA_params.maxpop << ".\n";
-    if (initial_pop.empty() && dataRowsSeen > 0)
-        std::cout << "Resume: no COMPLETE generation found -- starting from a "
-                     "random population instead.\n";
+
+    // ---- Verification -----------------------------------------------------
+    // Every failure below is fatal. Seeding a population from a file whose
+    // columns do not correspond to the model's parameters produces a run that
+    // looks entirely normal and is meaningless, so there is no safe fallback.
+    if (!headerSeen)
+    {
+        last_error = "No column header was found in:\n  " + filename +
+                     "\n\nThe file does not look like a GA output file, or it "
+                     "was truncated before the first generation was written.";
+        initial_pop.clear();
+        return false;
+    }
+
+    std::string mismatch;
+    if (!aquiutils::VerifyResumeParameters(fileParams, paramname, mismatch))
+    {
+        last_error = mismatch;
+        initial_pop.clear();
+        return false;
+    }
+
+    if (initial_pop.empty())
+    {
+        last_error = "No complete generation was found in:\n  " + filename +
+                     "\n\nThe file records " + aquiutils::numbertostring(dataRowsSeen) +
+                     " individual(s), but a population of " +
+                     aquiutils::numbertostring(GA_params.maxpop) +
+                     " is required to continue. The previous run may have been "
+                     "interrupted before finishing its first generation, or it "
+                     "used a different population size.";
+        return false;
+    }
+
+    std::cout << "Resume: parameter names verified against the model ("
+              << fileParams.size() << " parameter(s)).\n";
+    return true;
 }

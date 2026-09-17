@@ -3410,7 +3410,19 @@ void MainWindow::onoptimize()
     system.SetProgressWindow(nullptr);
     optimizer->SetProgressWindow(rtw);
     system.SetParameterEstimationMode(parameter_estimation_options::optimize);
-    optimizer->optimize();
+    if (optimizer->optimize() < 0)
+    {
+        // optimize() refuses to start when "continue_based_on_filename" points
+        // at a file that cannot be read, or whose parameters do not match the
+        // model exactly. Nothing has been run and no results exist, so report
+        // it and stop rather than falling through to the result handling below.
+        system.SetParameterEstimationMode();
+        rtw->AppendLog(optimizer->last_error);
+        rtw->SetStatus("Optimization aborted.");
+        QMessageBox::critical(this, "Cannot continue the previous optimization",
+                              QString::fromStdString(optimizer->last_error));
+        return;
+    }
     optimizer->Model_out.GetOutputs().write(workingfolder.toStdString() + "/outputs.txt");
     optimizer->Model_out.GetObservedOutputs().write(workingfolder.toStdString() + "/observedoutputs.txt");
     optimizer->Model_out.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");

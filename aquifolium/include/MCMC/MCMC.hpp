@@ -844,9 +844,40 @@ CVector CMCMC<T>::sensitivity_ln(double d, vector<double> par)
 template<class T>
 int CMCMC<T>::readfromfile(string filename)
 {
+    last_error.clear();
     ifstream file(filename);
+    if (!file.is_open())
+    {
+        last_error = "Unable to open the file to continue from:\n  " + filename +
+                     "\n\nCheck that the path is correct and the file is readable.";
+        return -1;
+    }
+
 	vector<string> s;
+    // Header: "no., <param names...>, logp, logp_1, stuck_counter, purt_coeff_0..."
+    // written by the sampler itself. The samples below are read POSITIONALLY
+    // (Params[jj][i] = column i+1), so unless these names are checked against
+    // the model, a file from a different parameter set loads every value onto
+    // the wrong parameter and the chain continues looking perfectly healthy.
     s = aquiutils::getline(file);
+    vector<string> fileParams;
+    for (int i = 1;
+         i < int(s.size()) && i <= int(MCMC_Settings.number_of_parameters);
+         i++)
+        fileParams.push_back(aquiutils::trim(s[i]));
+
+    vector<string> modelParams;
+    for (unsigned int i = 0; i < parameters->size(); i++)
+        modelParams.push_back(parameter(i)->GetName());
+
+    std::string mismatch;
+    if (!aquiutils::VerifyResumeParameters(fileParams, modelParams, mismatch))
+    {
+        last_error = mismatch;
+        file.close();
+        return -1;
+    }
+
 	int jj=0;
 	while (file.eof() == false)
 	{
@@ -864,6 +895,15 @@ int CMCMC<T>::readfromfile(string filename)
 		}
 	}
 	file.close();
+
+    if (jj == 0)
+    {
+        last_error = "No usable samples were found in:\n  " + filename +
+                     "\n\nThe parameter names match, but no row carried the "
+                     "expected number of columns. The file may have been "
+                     "truncated while the previous run was writing it.";
+        return -1;
+    }
 	return jj;
 }
 
@@ -999,6 +1039,17 @@ void CMCMC<T>::Perform()
     cout << ("Reading samples from ... " + MCMC_Settings.continue_filename) << endl;
 #endif
         mcmcstart = readfromfile(MCMC_Settings.continue_filename);
+        if (mcmcstart < 0)
+        {
+            // Hard stop, as for the GA: continuing from samples that do not
+            // correspond to this model's parameters yields a chain that looks
+            // fine and means nothing.
+#ifdef Q_GUI_SUPPORT
+            if (rtw) rtw->AppendLog("Cannot continue the previous run: " + last_error);
+#endif
+            cout << "Cannot continue the previous run:\n" << last_error << endl;
+            return;
+        }
     }
 #ifdef Q_GUI_SUPPORT
     if (rtw) rtw->AppendLog(string("Generating samples ... "));
