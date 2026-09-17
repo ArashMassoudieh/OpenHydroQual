@@ -18,7 +18,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation,Evapotranspiration,inflow",
+      "inflow": "Precipitation,Evapotranspiration",
       "ask_user": "true",
       "unit": "m~^3;ft~^3",
       "delegate": "UnitBox",
@@ -71,15 +71,6 @@
       "ask_user": "true",
       "delegate": "ComboBox;Sources",
       "helptext": "Evapotranspiration"
-    },
-    "inflow": {
-      "type": "timeseries",
-      "includeinoutput": "true",
-      "description": "Inflow",
-      "ask_user": "true",
-      "delegate": "Browser",
-      "unit": "m^3/day;m^3/s;ft^3/s",
-      "helptext": "User-supplied inflow time series to the pond. This could represent runoff, pipe inflow, or any other external water source."
     },
     "bottom_elevation": {
       "type": "value",

@@ -68,23 +68,6 @@ struct _MCMC_settings
     unsigned int numberOfThreads = 8;
     double acceptance_rate;
     double purt_change_scale = 0.75;
-    // --- covariance-adapted proposal (opt-in) -------------------------------
-    // The default proposal is diagonal: each parameter is perturbed
-    // independently by pertcoeff[i].  Where the posterior has a correlated
-    // ridge -- for the two-site sorption model, corr(ln alpha, ln Kd) = -0.81
-    // within a medium, because a faster grain holding less reproduces the same
-    // breakthrough curve as a slower grain holding more -- a diagonal proposal
-    // cannot step along it.  The step must suit the narrowest direction while
-    // the chain needs ~cond(Sigma) steps to cross the widest, and the chains
-    // drift apart instead of mixing.
-    // With covariance_proposal = true the sampler accumulates the empirical
-    // covariance of the post-burn-in samples in log space and proposes from it
-    // (Haario et al. 2001 adaptive Metropolis), which removes that factor.
-    bool covariance_proposal = false;
-    unsigned int covariance_update_interval = 1000;   // samples between refreshes
-    unsigned int covariance_min_samples = 500;        // before the first refresh
-    double covariance_scale = 2.38;                   // /sqrt(d), Roberts & Rosenthal
-    double covariance_ridge = 1e-8;                   // added to the diagonal
 
 };
 
@@ -114,11 +97,6 @@ public:
     //vector<Param> MCMCParam;
 	vector<vector<double>> Params;
 	vector<double> pertcoeff;
-    // Cholesky factor of the adapted proposal covariance (log space), empty
-    // until the first refresh; see _MCMC_settings::covariance_proposal.
-    vector<vector<double>> proposal_chol;
-    unsigned int last_covariance_update = 0;
-    void UpdateProposalCovariance(int upto);
 	vector<double> logp;
 	vector<double> logp1;
 	vector<double> u;

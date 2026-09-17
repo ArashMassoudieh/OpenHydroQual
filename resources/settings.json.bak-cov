@@ -532,47 +532,6 @@
    "criteria": "purturbation_change_scale<1",
    "warningmessage": "Purturbation change factor must be smaller than 1"
   },
-  "covariance_proposal": {
-   "default": "No",
-   "description": "Covariance-adapted proposal",
-   "helptext": "Propose correlated steps drawn from the empirical covariance of the samples so far, instead of perturbing each parameter independently. Use this when parameters trade off against one another -- a rate and a capacity that reproduce the same curve, for example. A diagonal proposal cannot move along such a ridge and the chains drift apart instead of mixing.",
-   "ask_user": "true",
-   "delegate": "ComboBox, items: Yes, No",
-   "code": "covariance_proposal"
-  },
-  "covariance_update_interval": {
-   "default": "1000",
-   "description": "Covariance refresh interval",
-   "helptext": "Samples between recomputing the proposal covariance. Only used when the covariance-adapted proposal is on.",
-   "ask_user": "true",
-   "type": "value",
-   "delegate": "ValueBox",
-   "code": "covariance_update_interval",
-   "criteria": "covariance_update_interval>0",
-   "warningmessage": "Covariance refresh interval must be greater than zero"
-  },
-  "covariance_min_samples": {
-   "default": "500",
-   "description": "Samples before first covariance",
-   "helptext": "How many post-burn-in samples to accumulate before the first covariance is formed. Until then the diagonal proposal is used.",
-   "ask_user": "true",
-   "type": "value",
-   "delegate": "ValueBox",
-   "code": "covariance_min_samples",
-   "criteria": "covariance_min_samples>0",
-   "warningmessage": "Must be greater than zero"
-  },
-  "covariance_scale": {
-   "default": "2.38",
-   "description": "Covariance proposal scale",
-   "helptext": "Step size multiplier, divided by sqrt(number of parameters). 2.38 is the optimal value for a Gaussian target (Roberts & Rosenthal 2001) and rarely needs changing.",
-   "ask_user": "true",
-   "type": "value",
-   "delegate": "ValueBox",
-   "code": "covariance_scale",
-   "criteria": "covariance_scale>0",
-   "warningmessage": "Covariance proposal scale must be greater than zero"
-  },
   "samples_filename": {
    "default": "mcmc.txt",
    "description": "MCMC Output file",

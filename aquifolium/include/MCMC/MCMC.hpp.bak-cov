@@ -184,15 +184,6 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
         MCMC_Settings.acceptance_rate = aquiutils::atof(value);
         return true;
     }
-    if (aquiutils::tolower(varname) == "covariance_proposal")
-    {   MCMC_Settings.covariance_proposal = aquiutils::tolower(value)=="yes"
-            || aquiutils::tolower(value)=="true" || value=="1"; return true;}
-    if (aquiutils::tolower(varname) == "covariance_update_interval")
-    {   MCMC_Settings.covariance_update_interval = aquiutils::atoi(value); return true;}
-    if (aquiutils::tolower(varname) == "covariance_min_samples")
-    {   MCMC_Settings.covariance_min_samples = aquiutils::atoi(value); return true;}
-    if (aquiutils::tolower(varname) == "covariance_scale")
-    {   MCMC_Settings.covariance_scale = aquiutils::atof(value); return true;}
     if (aquiutils::tolower(varname) == "purturbation_change_scale")
     {
         MCMC_Settings.purt_change_scale = aquiutils::atof(value);
@@ -482,115 +473,11 @@ bool CMCMC<T>::step(int k)
 }
 
 template<class T>
-void CMCMC<T>::UpdateProposalCovariance(int upto)
-{
-    // Empirical covariance of the post-burn-in samples, in the space the
-    // proposal works in: log for log-normal priors, linear otherwise.  Stored
-    // as its Cholesky factor so purturb() only has to multiply.
-    const int d = MCMC_Settings.number_of_parameters;
-    const int start = max<int>(MCMC_Settings.burnout_samples,
-                               MCMC_Settings.number_of_chains);
-    if (upto - start < (int)MCMC_Settings.covariance_min_samples) return;
-
-    vector<char> logged(d);
-    for (int i = 0; i < d; i++)
-        logged[i] = (parameter(i)->GetPriorDistribution() == "log-normal");
-
-    vector<double> mean(d, 0.0);
-    int n = 0;
-    for (int k = start; k < upto; k++)
-    {
-        if ((int)Params[k].size() != d) continue;
-        bool ok = true;
-        for (int i = 0; i < d && ok; i++)
-            if (logged[i] && !(Params[k][i] > 0)) ok = false;
-        if (!ok) continue;
-        for (int i = 0; i < d; i++)
-            mean[i] += logged[i] ? log(Params[k][i]) : Params[k][i];
-        n++;
-    }
-    if (n < (int)MCMC_Settings.covariance_min_samples) return;
-    for (int i = 0; i < d; i++) mean[i] /= n;
-
-    vector<vector<double>> C(d, vector<double>(d, 0.0));
-    for (int k = start; k < upto; k++)
-    {
-        if ((int)Params[k].size() != d) continue;
-        bool ok = true;
-        for (int i = 0; i < d && ok; i++)
-            if (logged[i] && !(Params[k][i] > 0)) ok = false;
-        if (!ok) continue;
-        vector<double> z(d);
-        for (int i = 0; i < d; i++)
-            z[i] = (logged[i] ? log(Params[k][i]) : Params[k][i]) - mean[i];
-        for (int i = 0; i < d; i++)
-            for (int j = 0; j <= i; j++) C[i][j] += z[i] * z[j];
-    }
-    for (int i = 0; i < d; i++)
-        for (int j = 0; j <= i; j++) { C[i][j] /= (n - 1); C[j][i] = C[i][j]; }
-
-    // ridge, then Cholesky; abandon the update rather than propose from a
-    // matrix that is not positive definite
-    double tr = 0.0; for (int i = 0; i < d; i++) tr += C[i][i];
-    const double eps = MCMC_Settings.covariance_ridge * max(tr / d, 1e-300);
-    for (int i = 0; i < d; i++) C[i][i] += eps;
-
-    vector<vector<double>> L(d, vector<double>(d, 0.0));
-    for (int i = 0; i < d; i++)
-    {
-        for (int j = 0; j <= i; j++)
-        {
-            double sum = C[i][j];
-            for (int m = 0; m < j; m++) sum -= L[i][m] * L[j][m];
-            if (i == j)
-            {
-                if (sum <= 0.0) return;          // not positive definite: keep the old factor
-                L[i][j] = sqrt(sum);
-            }
-            else L[i][j] = sum / L[j][j];
-        }
-    }
-    proposal_chol = L;
-    last_covariance_update = upto;
-#ifndef Q_GUI_SUPPORT
-    cout << "  [covariance proposal refreshed at sample " << upto
-         << " from " << n << " states]" << endl;
-#endif
-}
-
-template<class T>
 vector<double> CMCMC<T>::purturb(int k)
 {
 	vector<double> X;
-    const int d = MCMC_Settings.number_of_parameters;
-    X.resize(d);
-
-    if (MCMC_Settings.covariance_proposal && (int)proposal_chol.size() == d)
-    {
-        // Correlated step: X = mu + s * L z,  z ~ N(0, I), taken in log space
-        // for log-normal priors.  s = covariance_scale / sqrt(d) is the optimal
-        // scaling for a Gaussian target (Roberts & Rosenthal 2001); pertcoeff[0]
-        // relative to its initial value carries the acceptance-rate adaptation
-        // so the two mechanisms compose rather than fight.
-        vector<double> z(d);
-        for (int i = 0; i < d; i++) z[i] = ND.getstdnormalrand();
-        const double adapt = (MCMC_Settings.ini_purt_fact > 0)
-                           ? pertcoeff[0] / MCMC_Settings.ini_purt_fact : 1.0;
-        const double sc = MCMC_Settings.covariance_scale / sqrt(double(d)) * adapt;
-        for (int i = 0; i < d; i++)
-        {
-            double step = 0.0;
-            for (int j = 0; j <= i; j++) step += proposal_chol[i][j] * z[j];
-            step *= sc;
-            if (parameter(i)->GetPriorDistribution() == "log-normal")
-                X[i] = Params[k][i] * exp(step);
-            else
-                X[i] = Params[k][i] + step;
-        }
-        return X;
-    }
-
-    for (int i=0; i<d; i++)
+    X.resize(MCMC_Settings.number_of_parameters);
+    for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
 	{
         if (parameter(i)->GetPriorDistribution() == "log-normal")
             X[i] = Params[k][i]*exp(pertcoeff[i]*ND.getstdnormalrand());
@@ -744,11 +631,6 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 			}
 			fclose(file);
 		}
-
-        if (MCMC_Settings.covariance_proposal &&
-            kk > MCMC_Settings.burnout_samples &&
-            kk - last_covariance_update >= MCMC_Settings.covariance_update_interval)
-            UpdateProposalCovariance(kk);
 
         if ((kk-k_0) % (50*MCMC_Settings.number_of_chains) == 0)
 		{

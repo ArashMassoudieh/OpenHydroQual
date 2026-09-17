@@ -907,3 +907,43 @@ each chain uniformly through the rows.
 
 Until both are fixed, extend a chain by re-running with a larger
 `number_of_samples`, not by `--continue`.
+
+---
+
+## ISSUE 20 -- `setvalue; object=system` without a prior `loadtemplate` fails with an empty error message
+
+A script that uses only `addtemplate` builds every block and link correctly, but
+each `setvalue; object=system, quantity=..., value=...` line is rejected.  The
+console then prints
+
+```
+*** 1 error(s) while building the model:
+Error:
+*** refusing to solve.
+```
+
+-- one error, no text.  The count is right and the message is empty, so there is
+nothing to search for and nothing to act on.  Bisecting the script down to a
+single line is the only way to find it; a two-line script consisting of
+
+```
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=simulation_end_time, value=20
+```
+
+reproduces it, and prefixing `loadtemplate; filename = <resources>/main_components.json`
+fixes it.  `loadtemplate` installs the system template; `addtemplate` only
+appends to it, so with `addtemplate` alone the system object has no quantities
+and every assignment to it misses.
+
+Two separate defects:
+
+1. the error carries no message.  Whatever raises it should say which quantity
+   it could not set, on which object.
+2. assigning to `object=system` when no system template is loaded is a
+   configuration mistake that should be reported as such, once, rather than as
+   N anonymous errors.
+
+Every example under `Examples/` happens to start with a `loadtemplate` line, so
+the failure never shows up there.  Scripts written by hand or emitted by a
+generator routinely start with `addtemplate`.
