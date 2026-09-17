@@ -947,3 +947,51 @@ Two separate defects:
 Every example under `Examples/` happens to start with a `loadtemplate` line, so
 the failure never shows up there.  Scripts written by hand or emitted by a
 generator routinely start with `addtemplate`.
+
+---
+
+## ISSUE 21 -- `initial_time_step` silently sets the resampling resolution of every time series
+
+`System::InitializeSolver` calls `MakeTimeSeriesUniform(SimulationParameters.dt0)`
+(System.cpp:1333), which replaces every time series on every block, link and
+source with `make_uniform(dt0)`.  The number of points materialised is therefore
+`record_span / dt0`, and `dt0` is a *solver* setting that a user picks for
+stability, with no reason to think it controls memory.
+
+A 155-day inflow record at the `dt0 = 1e-5` d that the transport models in this
+project use expands a 141-point file to 1.6e7 points.  The run then hangs in
+`TimeSeries::assign_D` before the first step: no output, no error, no progress
+line, and `maximum_time_allowed` never fires because the solve has not started.
+Bisecting the model does not find it either -- removing blocks does not help,
+because the cost is per time series, not per block.
+
+Measured on `flow_PA1.txt` (141 points, 155.08 d, 0.875967 m^3):
+
+| dt0    | points     | volume   | error  |
+|--------|------------|----------|--------|
+| 1e-2   | 15,510     | 0.916330 | +4.61% |
+| 1e-3   | 155,083    | 0.879775 | +0.43% |
+| 1e-4   | 1,550,814  | 0.876319 | +0.04% |
+| 1e-5   | 15,508,128 | 0.875972 | +0.00% |
+
+So the resampling is also lossy, and one-sided: linear interpolation across a
+step smears each edge into a wider trapezoid, which *adds* volume.  The user
+pays memory and startup time for an operation that degrades the input.
+
+What it buys is the fast path in `interpol` (TimeSeries.hpp:644): a uniform
+series indexes by arithmetic, an unstructured one falls through to a **linear
+scan** (TimeSeries.hpp:657) -- not a bisection.  That is worth having for a
+large series, but it does not justify tying the resolution to `dt0`.
+
+Suggested fixes, in order of preference:
+
+1. give time-series resampling its own setting, defaulted to something sane, and
+   leave `dt0` to the solver;
+2. cap the point count (`make_uniform` could refuse to expand a series beyond,
+   say, 1e6 points and raise instead of hanging);
+3. replace the unstructured `interpol` fallback with a binary search, so an
+   unmodified series costs `O(log n)` and resampling becomes optional.
+
+Workaround: keep `dt0` no smaller than ~1e-3 d when any time series is attached,
+and place the series' breakpoints on multiples of `dt0` -- then resampling
+reproduces the file exactly (verified: 0.000% volume change).

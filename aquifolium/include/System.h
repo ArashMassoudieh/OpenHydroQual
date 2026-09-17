@@ -104,6 +104,17 @@ struct solversettings
     bool dependency_jacobian = true;
     /// Assemble both ways and report max|difference|. Diagnostic only; slow.
     bool verify_jacobian = false;
+    /// Resample every time series onto a uniform grid of spacing dt0 at the
+    /// start of the solve, so interpol() can index by arithmetic instead of
+    /// scanning. The resampling is lossy and its cost is set by dt0, a solver
+    /// setting with no other bearing on memory: a 155-day, 141-point inflow
+    /// record at dt0=1e-5 d expands to 1.6e7 points and the run appears to hang
+    /// before the first step. It is also one-sided -- linear interpolation
+    /// across a step widens each edge, which adds volume (+4.6% at dt0=1e-2,
+    /// +0.43% at 1e-3 on that record). On by default, since that is the
+    /// long-standing behaviour and the fast path matters for large series; set
+    /// make_timeseries_uniform = No to use the series exactly as supplied.
+    bool make_timeseries_uniform = true;
     bool write_solution_details = false;
     double maximum_simulation_time = 86400; //maximum simulation time allows in seconds
     int maximum_number_of_matrix_inversions = 200000; //maximum number of matrix inversions allowed

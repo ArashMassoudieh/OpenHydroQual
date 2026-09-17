@@ -1330,7 +1330,9 @@ void System::InitializeSolver(bool applyparameters)
     QCoreApplication::processEvents();
 #endif
 
-    MakeTimeSeriesUniform(SimulationParameters.dt0);
+    // Opt-out: the resampling is lossy and its point count is record_span/dt0.
+    if (SolverSettings.make_timeseries_uniform)
+        MakeTimeSeriesUniform(SimulationParameters.dt0);
 
     SolverTempVars.dt_base = SimulationParameters.dt0;
     SolverTempVars.dt = SolverTempVars.dt_base;
@@ -1893,6 +1895,12 @@ bool System::SetProperty(const string &s, const string &val)
             SolverSettings.write_solution_details = true;
         else
             SolverSettings.write_solution_details = false;
+        return true;
+    }
+    if (s=="make_timeseries_uniform")
+    {
+        SolverSettings.make_timeseries_uniform =
+            (aquiutils::trim(aquiutils::tolower(val))!="no");
         return true;
     }
     if (s=="oscillation_control")

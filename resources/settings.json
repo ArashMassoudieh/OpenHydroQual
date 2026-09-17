@@ -109,6 +109,15 @@
    "delegate": "ValueBox",
    "code": "maximum_number_of_matrix_inverstions"
   },
+  "make_timeseries_uniform": {
+   "type": "string",
+   "default": "Yes",
+   "description": "Make time series uniform",
+   "helptext": "Resamples every time series onto a uniform grid whose spacing is the initial time step, so lookups index by arithmetic instead of scanning. Leave on unless a model carries long or finely-resolved time series: the number of points created is the record length divided by the initial time step, so a small initial time step can expand a short file into millions of points and the run will appear to hang before the first step. The resampling also smears steep edges, which adds a little volume. Set to No to use each series exactly as supplied.",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: Yes, No",
+   "code": "make_timeseries_uniform"
+  },
   "write_solution_details": {
    "type": "string",
    "default": "No",
