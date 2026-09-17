@@ -53,7 +53,7 @@ These control how the equations are solved. The defaults are appropriate for ord
 \toprule \textrm{Field} & \textrm{Default} \\ \midrule \endhead
 Crank-Nicholson Time Weight & \texttt{\small 1} \\
 Number of threads to be used & \texttt{\small 8} \\
-Newton-Raphson Tolerance & \texttt{\small 0.\allowbreak{}001} \\
+Newton-Raphson convergence tolerance (relative) & \texttt{\small 0.\allowbreak{}001} \\
 Newton-Raphson Time-step reduction factor & \texttt{\small 0.\allowbreak{}75} \\
 Newton-Raphson Time-step reduction factor when fail & \texttt{\small 0.\allowbreak{}2} \\
 Minimum time-step & \texttt{\small 1e-6} \\
@@ -85,10 +85,10 @@ Time-weighting factor for the Crank-Nicholson scheme (0.5 for implicit midpoint 
 {\small \textbf{Default:} \texttt{8} \quad\textbullet\quad \textbf{Name in file:} \texttt{n\_\allowbreak{}threads}}
 
 Number of processor threads to use for parallel computation during simulation.
-\subsection{Newton-Raphson Tolerance}
+\subsection{Newton-Raphson convergence tolerance (relative)}
 {\small \textbf{Default:} \texttt{0.\allowbreak{}001} \quad\textbullet\quad \textbf{Name in file:} \texttt{nr\_\allowbreak{}tolerance}}
 
-Tolerance for Newton-Raphson convergence. A smaller value results in more precise but potentially slower convergence.
+Convergence criterion for the Newton iteration at each time step. It is a RELATIVE measure, not an absolute residual: the iteration stops once the residual has fallen to this fraction of its value at the start of the step, so 0.001 means the residual is reduced by three orders of magnitude and no further. Two other conditions also end the iteration -- an absolute residual floor of 1e-12, and an update that has become negligible against the solution norm. Because the criterion is relative and per step, the error left behind accumulates over a long run: on a model whose outputs are compared against measurements of similar magnitude, the default can leave a numerical error that is an appreciable fraction of the model-measurement residual, and it is worth tightening until the results stop changing. A smaller value does not necessarily cost time. A better converged step is a more stable one, so the solver can often take larger steps afterwards and finish sooner; measure rather than assume.
 \subsection{Newton-Raphson Time-step reduction factor}
 {\small \textbf{Default:} \texttt{0.\allowbreak{}75} \quad\textbullet\quad \textbf{Name in file:} \texttt{nr\_\allowbreak{}timestep\_\allowbreak{}reduction\_\allowbreak{}factor}}
 

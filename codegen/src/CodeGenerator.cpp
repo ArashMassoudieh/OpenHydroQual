@@ -329,7 +329,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             if (loc == Loc::destination) return (Object*)system.block(cur->e_Block_No());
             return cur;
         };
-        ctx.resolveValue = [&, target, timeVar](const std::string& name, Loc loc) -> std::string {
+        ctx.resolveValue = [&, target, timeVar, cur](const std::string& name, Loc loc) -> std::string {
             Object* t = target(loc);
             Quan* q = t->Variable(name);
             if (!q) {
