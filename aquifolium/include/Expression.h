@@ -77,6 +77,14 @@ class Expression
         int lookup_operators(const string &s) const;
         int count_operators(const string &s) const;
         enum loc {self, source, destination, average_of_links};
+
+        // The parsed .s/.e/.v suffix of this node. Codegen needs it: it used to
+        // re-derive the location by parsing the trailing ".s" off `text`, which
+        // silently returns `self` for any node whose text does not carry the
+        // suffix -- e.g. pressure_head.s in soil_free_outflow's flow -- and the
+        // generated model then read the quantity off the link instead of the
+        // upstream block.
+        loc GetLocation() const { return location; }
         string ToString() const;
 		vector<string> GetAllRequieredStartingBlockProperties();
 		vector<string> GetAllRequieredEndingBlockProperties();

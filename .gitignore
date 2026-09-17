@@ -435,3 +435,5 @@ codegen/build-local/
 OHQLib/build-fresh/
 
 terminal/TOpenHydroQual/build-fresh/
+
+*.bak-paramfn

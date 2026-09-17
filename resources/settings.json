@@ -400,6 +400,14 @@
    "type": "string",
    "delegate": "Browser_Save",
    "code": "outputfile"
+  },
+  "continue_based_on_filename": {
+   "description": "Continue optimization using pre-created GA output file",
+   "helptext": "Resumes a previous optimization from the last complete generation in its GA output file, instead of starting from a random population. The parameters recorded in the file must match the model's parameters exactly - same names, same order - or the run is refused. New generations are appended to the output file. Leave empty to start a new optimization.",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "Browser",
+   "code": "continue_based_on_filename"
   }
  },
  "MCMC": {

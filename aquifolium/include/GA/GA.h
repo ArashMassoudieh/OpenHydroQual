@@ -127,7 +127,11 @@ public:
     void initialize();
     double getfromoutput(string filename);
     void getinifromoutput(string filename);
-    void getinitialpop(string filename);
+    // Seeds initial_pop from a previous run's output file. Returns false and
+    // sets last_error if the file cannot be read, carries parameters that do
+    // not match the model exactly, or holds no complete generation. Callers
+    // must abort on false: a partial or mismatched resume is not recoverable.
+    bool getinitialpop(string filename);
     int optimize();
     bool SetProperty(const string &varname, const string &value);
     string last_error;
