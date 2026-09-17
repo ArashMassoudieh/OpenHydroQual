@@ -82,7 +82,19 @@ std::string ExpressionEmitter::apply(const std::string& op, const std::string& l
 
 Loc ExpressionEmitter::locationOf(const Expression& leaf)
 {
-    // Parse suffix from the raw token (Expression::location is private).
+    // Ask the node itself. This used to re-parse the trailing ".s" off
+    // `leaf.text`, which silently yields `self` whenever the text does not
+    // carry the suffix -- `pressure_head.s` in soil_free_outflow's flow is one
+    // such node -- and the emitter then looked the quantity up on the link
+    // rather than on the upstream block.
+    switch (leaf.GetLocation()) {
+        case Expression::loc::source:            return Loc::source;
+        case Expression::loc::destination:       return Loc::destination;
+        case Expression::loc::average_of_links:  return Loc::average_of_links;
+        default: break;
+    }
+    // Fall back to the text suffix: a node built by hand rather than parsed
+    // carries the suffix but not the flag.
     const std::string& t = leaf.text;
     auto dot = t.find_last_of('.');
     if (dot == std::string::npos || dot + 2 != t.size()) return Loc::self;
@@ -108,7 +120,22 @@ std::string ExpressionEmitter::emitNode(const Expression& e) const
         if (selfOverride_ && loc == Loc::self) loc = selfAs_;   // _ups/_bkw remap
         if (!ctx_.resolveValue)
             throw std::runtime_error("ExpressionEmitter: no value resolver");
-        return ctx_.resolveValue(e.parameter, loc);
+        const std::string v = ctx_.resolveValue(e.parameter, loc);
+        // A parameter node may carry a function: the parser folds `_pos(x)`
+        // into the leaf for x rather than building a separate function node,
+        // and Expression::calc ends its parameter branch with
+        //     if (function.empty()) return out; else return func(function,out);
+        // Ignoring it here silently dropped the clamp from expressions such as
+        // soil_free_outflow's flow, `_pos(pressure_head.s)*K_eff/length*area`,
+        // which would then let the free-drainage outlet draw water back up the
+        // column whenever the soil was under suction.
+        if (e.function.empty())
+            return v;
+        const std::string mapped = mapUnaryOrNary(e.function);
+        if (mapped.empty())
+            throw std::runtime_error("ExpressionEmitter: unsupported function _"
+                                     + e.function + " on parameter '" + e.parameter + "'");
+        return mapped + "(" + v + ")";
     }
 
     // expression node
