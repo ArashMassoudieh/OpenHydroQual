@@ -188,6 +188,15 @@ private:
      */
     ProgressWindow *CreateProgressWindow();
     void closeEvent (QCloseEvent *event) override;
+    /**
+     * @brief True while "Export to C++" is driving an external build or solver run.
+     *
+     * onexporttocpp() pumps the event loop so its progress dialog stays live, which
+     * would otherwise let a close event destroy this window while that function is
+     * still on the stack holding `this` and stack-allocated widgets. closeEvent()
+     * refuses to close while this is set.
+     */
+    bool cppExportInProgress = false;
     QString workingfolder = ".";
     bool modelModified = false;
     void UpdateWindowTitle();

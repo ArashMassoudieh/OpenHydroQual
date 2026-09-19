@@ -130,6 +130,7 @@ SOURCES += \
     codegen/src/EmbeddedRuntime.cpp \
     ProgressWindow.cpp \
     TimeSeriesTextBox.cpp \
+    toolchainprobe.cpp \
     VisualizationDialog.cpp \
     VisualizationGraphicsView.cpp \
     chartview.cpp \
@@ -203,6 +204,7 @@ SOURCES += \
 HEADERS += \
     ProgressWindow.h \
     TimeSeriesTextBox.h \
+    toolchainprobe.h \
     VisualizationDialog.h \
     VisualizationGraphicsView.h \
     aquifolium/include/TimeSeries.h \

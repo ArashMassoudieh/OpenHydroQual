@@ -99,7 +99,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="QtSettings">
-    <QtInstall>6.7</QtInstall>
+    <QtInstall>Qt 6.8</QtInstall>
     <QtModules>core;gui;widgets;opengl;printsupport;svg;svgwidgets;charts</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
@@ -183,7 +183,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>jsoncpp\include;..\vcpkg\packages\gsl_x64-windows\include;aquifolium\include\MCMC;aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;C:\Projects\armadillo-15.2.3\include;C:\Projects\OpenBLAS-0.3.31-x64\win64\include;release;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\codegen\include;jsoncpp\include;..\vcpkg\packages\gsl_x64-windows\include;aquifolium\include\MCMC;aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;C:\Projects\armadillo-15.2.3\include;C:\Projects\OpenBLAS-0.3.31-x64\win64\include;release;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>release\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -301,7 +301,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>jsoncpp\include;..\vcpkg\packages\gsl_x64-windows\include;aquifolium\include\MCMC;aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;C:\Projects\armadillo-15.2.3\include;C:\Projects\OpenBLAS-0.3.31-x64\win64\include;release;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\codegen\include;jsoncpp\include;..\vcpkg\packages\gsl_x64-windows\include;aquifolium\include\MCMC;aquifolium\src;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;aquifolium\include;aquifolium\include\GA;C:\Projects\armadillo-15.2.3\include;C:\Projects\OpenBLAS-0.3.31-x64\win64\include;release;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>debug\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -404,6 +404,10 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClCompile Include="aquifolium\src\Vector_arma.cpp" />
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="chartview.cpp" />
+    <ClCompile Include="codegen\src\CodeGenerator.cpp" />
+    <ClCompile Include="codegen\src\DependencyAnalyzer.cpp" />
+    <ClCompile Include="codegen\src\EmbeddedRuntime.cpp" />
+    <ClCompile Include="codegen\src\ExpressionEmitter.cpp" />
     <ClCompile Include="delegate.cpp" />
     <ClCompile Include="diagramview.cpp" />
     <ClCompile Include="edge.cpp" />
@@ -429,6 +433,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClCompile Include="TimeSeriesTextBox.cpp" />
     <ClCompile Include="undodata.cpp" />
     <ClCompile Include="UnitTextBox3.cpp" />
+    <ClCompile Include="toolchainprobe.cpp" />
     <ClCompile Include="utilityfuncs.cpp" />
     <ClCompile Include="VisualizationDialog.cpp" />
     <ClCompile Include="VisualizationGraphicsView.cpp" />
@@ -478,6 +483,10 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClInclude Include="aquifolium\include\TimeSeriesSet.h" />
     <ClInclude Include="aquifolium\include\Vector.h" />
     <ClInclude Include="aquifolium\include\Vector_arma.h" />
+    <ClInclude Include="codegen\include\CodeGenerator.h" />
+    <ClInclude Include="codegen\include\DependencyAnalyzer.h" />
+    <ClInclude Include="codegen\include\EmbeddedRuntime.h" />
+    <ClInclude Include="codegen\include\ExpressionEmitter.h" />
     <ClInclude Include="jsoncpp\include\json\allocator.h" />
     <ClInclude Include="jsoncpp\include\json\assertions.h" />
     <ClInclude Include="jsoncpp\include\json\autolink.h" />
@@ -520,6 +529,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <QtMoc Include="TimeSeriesTextBox.h" />
     <ClInclude Include="undodata.h" />
     <QtMoc Include="UnitTextBox3.h" />
+    <ClInclude Include="toolchainprobe.h" />
     <ClInclude Include="utilityfuncs.h" />
     <ClInclude Include="jsoncpp\include\json\value.h" />
     <ClInclude Include="jsoncpp\include\json\version.h" />

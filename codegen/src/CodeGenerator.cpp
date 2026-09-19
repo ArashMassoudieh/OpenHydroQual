@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <system_error>
 
 #include "System.h"
 #include "Block.h"
@@ -1595,12 +1596,33 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     }
 
     // write files
-    std::filesystem::create_directories(opt.outputDir);
+    {
+        // create_directories throws filesystem_error on a read-only or otherwise
+        // unusable location; restate it as something a user can act on.
+        std::error_code ec;
+        std::filesystem::create_directories(opt.outputDir, ec);
+        if (ec && !std::filesystem::is_directory(opt.outputDir))
+            throw std::runtime_error("CodeGenerator: cannot create output folder " +
+                                     opt.outputDir + " (" + ec.message() + ")");
+    }
     const std::string base = opt.outputDir + "/" + cls;
+    // Checking only that the stream opened is not enough: a full disk, a quota,
+    // or a file locked by antivirus or a sync client fails during the write or
+    // the flush, and would otherwise leave a truncated header behind that fails
+    // much later as a baffling compile error.
     auto writeText = [](const std::string& path, const std::string& text) {
-        std::ofstream f(path);
+        std::ofstream f(path, std::ios::binary | std::ios::trunc);
         if (!f) throw std::runtime_error("CodeGenerator: cannot write " + path);
         f << text;
+        f.flush();
+        if (!f.good())
+            throw std::runtime_error("CodeGenerator: failed while writing " + path +
+                                     " (the disk may be full, or the file may be locked "
+                                     "by another program)");
+        f.close();
+        if (f.fail())
+            throw std::runtime_error("CodeGenerator: failed to close " + path +
+                                     " (the file may be incomplete)");
     };
     writeText(base + ".h", h.str());
     if (!opt.emitProject) return true;
@@ -1611,7 +1633,11 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     //  folder builds on a machine with no OpenHydroQual checkout at all.
     // ======================================================================
     {
-        std::filesystem::create_directories(opt.outputDir + "/runtime");
+        std::error_code rtec;
+        std::filesystem::create_directories(opt.outputDir + "/runtime", rtec);
+        if (rtec && !std::filesystem::is_directory(opt.outputDir + "/runtime"))
+            throw std::runtime_error("CodeGenerator: cannot create runtime folder in " +
+                                     opt.outputDir + " (" + rtec.message() + ")");
         int nrt = 0;
         const RuntimeFile* rt = runtimeFiles(nrt);
         for (int i = 0; i < nrt; ++i)

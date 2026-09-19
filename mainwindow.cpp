@@ -14,8 +14,8 @@
  */
 
 
-#define openhydroqual_version "2.0.7"
-#define last_modified "September, 6, 2026"
+#define openhydroqual_version "2.0.8"
+#define last_modified "September, 19, 2026"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -65,7 +65,12 @@
 #include "metamodelhelpdialog.h"
 #include "VisualizationDialog.h"
 #include "CodeGenerator.h"
+#include "toolchainprobe.h"
 #include <QMessageBox>
+#include <QCloseEvent>
+#include <QPushButton>
+#include <QStandardPaths>
+#include <QDirIterator>
 #include <QDir>
 #include <QCheckBox>
 #include <QComboBox>
@@ -85,6 +90,7 @@
 #include <QTextStream>
 #include <QThread>
 #include <QVector>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrent>
 #include <algorithm>
@@ -137,7 +143,17 @@ void MainWindow::onexporttocpp()
         return;
     }
 
-    // 2. Export, build and validation options.  Validation is intentionally
+    // 2. Preflight the host toolchain.  Generating the project needs nothing but
+    // a writable folder; building it needs CMake and a C++17 compiler, which many
+    // machines running OpenHydroQual do not have.  Probing here -- before the user
+    // configures anything -- turns "no toolchain" into a greyed-out checkbox with
+    // an explanation, instead of a wall of CMake output after a long wait.
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    const QString cmakeExe = ToolchainProbe::cmakePath();
+    QApplication::restoreOverrideCursor();
+    const bool canBuildHere = !cmakeExe.isEmpty();
+
+    // 3. Export, build and validation options.  Validation is intentionally
     // model-independent: it uses the currently loaded System and the generic
     // CSV/observation interfaces emitted by CodeGenerator.
     QDialog options(this);
@@ -169,6 +185,29 @@ void MainWindow::onexporttocpp()
     layout->addRow(tr("Custom end time (model units):"), customEnd);
     layout->addRow(tr("Relative tolerance:"), relTol);
     layout->addRow(tr("Absolute tolerance:"), absTol);
+
+    // Toolchain status: always shown, so the absence of a compiler is visible
+    // before the export rather than discovered after it.
+    auto *toolchainLabel = new QLabel(&options);
+    toolchainLabel->setWordWrap(true);
+    if (canBuildHere) {
+        const QString v = ToolchainProbe::cmakeVersion();
+        toolchainLabel->setText(tr("Build toolchain: CMake %1 found.").arg(v.isEmpty() ? tr("(unknown version)") : v));
+        toolchainLabel->setToolTip(cmakeExe);
+        toolchainLabel->setStyleSheet("color: #2e7d32;");
+    } else {
+        toolchainLabel->setText(ToolchainProbe::unavailableReason());
+        toolchainLabel->setToolTip(ToolchainProbe::installHint());
+        toolchainLabel->setStyleSheet("color: #b26a00;");
+        const QString reason = ToolchainProbe::unavailableReason();
+        for (QCheckBox* box : {buildBox, runBox, compareBox}) {
+            box->setChecked(false);
+            box->setEnabled(false);
+            box->setToolTip(reason);
+        }
+    }
+    layout->addRow(QString(), toolchainLabel);
+
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &options);
     layout->addRow(buttons);
     connect(buttons, &QDialogButtonBox::accepted, &options, &QDialog::accept);
@@ -176,13 +215,17 @@ void MainWindow::onexporttocpp()
     connect(durationBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             customEnd, [customEnd](int i) { customEnd->setEnabled(i == 2); });
     auto updateOptions = [=]() {
-        const bool executable = targetBox->currentIndex() == 0;
+        // Without a toolchain every build-dependent option stays off; the export
+        // itself is unaffected.
+        const bool executable = targetBox->currentIndex() == 0 && canBuildHere;
+        buildBox->setEnabled(canBuildHere);
         runBox->setEnabled(executable);
         compareBox->setEnabled(executable);
         durationBox->setEnabled(executable && compareBox->isChecked());
         customEnd->setEnabled(executable && compareBox->isChecked() && durationBox->currentIndex() == 2);
         relTol->setEnabled(executable && compareBox->isChecked());
         absTol->setEnabled(executable && compareBox->isChecked());
+        if (!canBuildHere) buildBox->setChecked(false);
         if (!executable) { runBox->setChecked(false); compareBox->setChecked(false); }
         if (runBox->isChecked() || compareBox->isChecked()) buildBox->setChecked(true);
         if (compareBox->isChecked()) runBox->setChecked(true);
@@ -217,6 +260,16 @@ void MainWindow::onexporttocpp()
 
     // 4. Generate. Keep a visible, live progress surface: generation, CMake
     // and both solver runs can otherwise make the application appear frozen.
+    //
+    // This function pumps the event loop from here on, so guard the window
+    // against being destroyed underneath us, and make sure the guard is cleared
+    // on every exit path including an exception.
+    struct ExportGuard {
+        bool* flag;
+        explicit ExportGuard(bool* f) : flag(f) { *flag = true; }
+        ~ExportGuard() { *flag = false; }
+    } exportGuard(&cppExportInProgress);
+
     QDialog progressDialog(this);
     progressDialog.setWindowTitle(tr("C++ export and validation"));
     progressDialog.setMinimumSize(720, 430);
@@ -236,6 +289,25 @@ void MainWindow::onexporttocpp()
     progressLayout->addWidget(progressBar);
     progressLayout->addWidget(elapsedLabel);
     progressLayout->addWidget(details, 1);
+
+    // Cancel: an external compiler or a generated solver that will not converge
+    // must never leave the user with Task Manager as the only way out.  The flag
+    // is polled by the process loop below, which kills the child process.
+    bool cancelRequested = false;
+    auto *cancelButton = new QPushButton(tr("Cancel"), &progressDialog);
+    auto *cancelRow = new QHBoxLayout();
+    cancelRow->addStretch();
+    cancelRow->addWidget(cancelButton);
+    progressLayout->addLayout(cancelRow);
+    connect(cancelButton, &QPushButton::clicked, &progressDialog, [&]() {
+        cancelRequested = true;
+        cancelButton->setEnabled(false);
+        cancelButton->setText(tr("Cancelling..."));
+    });
+    // Closing the dialog (Esc or the title-bar X) means the same thing as Cancel;
+    // it must not let the loop below keep running invisibly.
+    connect(&progressDialog, &QDialog::rejected, &progressDialog, [&]() { cancelRequested = true; });
+
     QElapsedTimer totalTimer; totalTimer.start();
     auto setStage = [&](const QString& text) {
         ++currentStage;
@@ -266,64 +338,208 @@ void MainWindow::onexporttocpp()
         Log(QString("Export to C++ failed: ") + e.what());
         return;
     }
+    catch (...)
+    {
+        // Nothing here is expected to throw a non-std exception, but the whole
+        // point of this pass is that an unfamiliar machine never takes the
+        // application down with it.
+        progressDialog.close();
+        QMessageBox::critical(this, tr("Export to C++"),
+                              tr("Code generation failed with an unrecognized error."));
+        Log("Export to C++ failed with an unrecognized error.");
+        return;
+    }
+
+    // Everything past this point is optional. The project itself is now on disk
+    // and buildable elsewhere, so a failure here is reported as a partial
+    // success -- never as a lost export.
+    auto reportPartialSuccess = [&](const QString& title, const QString& summary,
+                                    const QString& detail) {
+        progressDialog.close();
+        QMessageBox box(this);
+        box.setIcon(QMessageBox::Warning);
+        box.setWindowTitle(title);
+        box.setText(summary);
+        box.setInformativeText(
+            tr("The generated project was written to:\n%1\n\nIt is self-contained and can "
+               "be built on any machine with CMake and a C++17 compiler.").arg(outDir));
+        if (!detail.isEmpty()) box.setDetailedText(detail);
+        box.setStandardButtons(QMessageBox::Ok);
+        box.exec();
+        Log(title + ": " + summary);
+    };
 
     QString report;
     if (buildAfterExport)
     {
+        // How a child process ended.  The caller needs to tell these apart: a
+        // non-zero exit is a build or model problem worth showing the log for,
+        // while NotStarted, TimedOut and Cancelled are environment problems that
+        // deserve their own plain-language message.
+        enum class RunResult { Ok, NotStarted, Failed, TimedOut, Cancelled };
+
+        // Runs `program` to completion while keeping the progress dialog live.
+        // Honours the Cancel button and a per-stage wall-clock cap; a child that
+        // will not die politely is killed.  timeoutMs <= 0 means no cap.
         auto runProcess = [&](const QString& program, const QStringList& arguments,
-                              const QString& cwd, QString *captured) -> bool {
+                              const QString& cwd, QString *captured,
+                              qint64 timeoutMs) -> RunResult {
             QProcess process;
             process.setWorkingDirectory(cwd);
             process.setProcessChannelMode(QProcess::MergedChannels);
             process.start(program, arguments);
-            if (!process.waitForStarted()) {
-                if (captured) *captured = process.errorString();
-                details->appendPlainText(process.errorString());
-                return false;
+
+            // Short start timeout: a missing or unrunnable binary should be
+            // diagnosed in a moment, not after the default 30 s freeze.
+            if (!process.waitForStarted(5000)) {
+                const QString why = process.errorString();
+                if (captured) *captured = why;
+                details->appendPlainText(tr("Could not start '%1': %2").arg(program, why));
+                return RunResult::NotStarted;
             }
+
+            QElapsedTimer stageTimer; stageTimer.start();
             QString allOutput;
-            while (!process.waitForFinished(100)) {
+            auto drain = [&]() {
                 const QString chunk = QString::fromLocal8Bit(process.readAll());
                 if (!chunk.isEmpty()) { allOutput += chunk; details->appendPlainText(chunk.trimmed()); }
+            };
+
+            RunResult verdict = RunResult::Ok;
+            while (!process.waitForFinished(100)) {
+                drain();
+                if (cancelRequested) {
+                    details->appendPlainText(tr("Cancelled by user; stopping '%1'.").arg(program));
+                    verdict = RunResult::Cancelled;
+                    break;
+                }
+                if (timeoutMs > 0 && stageTimer.elapsed() > timeoutMs) {
+                    details->appendPlainText(
+                        tr("'%1' exceeded its %2 s time limit and was stopped.")
+                            .arg(program).arg(timeoutMs / 1000));
+                    verdict = RunResult::TimedOut;
+                    break;
+                }
                 elapsedLabel->setText(tr("Elapsed: %1 s").arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
                 QCoreApplication::processEvents();
             }
-            const QString tail = QString::fromLocal8Bit(process.readAll());
-            if (!tail.isEmpty()) { allOutput += tail; details->appendPlainText(tail.trimmed()); }
+
+            if (verdict != RunResult::Ok) {
+                // terminate() first so MSBuild/ninja can clean up their own
+                // children; kill() is the fallback for one that ignores it.
+                process.terminate();
+                if (!process.waitForFinished(3000)) {
+                    process.kill();
+                    process.waitForFinished(2000);
+                }
+                drain();
+                if (captured) *captured = allOutput;
+                return verdict;
+            }
+
+            drain();
             if (captured) *captured = allOutput;
-            return process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0;
+            const bool clean = process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0;
+            return clean ? RunResult::Ok : RunResult::Failed;
         };
+
+        // Wall-clock caps. Generous enough that a slow machine compiling a large
+        // model is never cut off, tight enough that a wedged process cannot hold
+        // the application forever.
+        const qint64 configureTimeoutMs = 5  * 60 * 1000;
+        const qint64 compileTimeoutMs   = 30 * 60 * 1000;
+        const qint64 solverTimeoutMs    = 60 * 60 * 1000;
 
         QString buildLog;
         // Validation owns this build tree. Recreate it on every run so an
         // exported project that was moved, renamed, or generated inside an
         // existing folder can never reuse a CMakeCache.txt pointing elsewhere.
-        const QString buildFolderName = ".ohq_build";
-        const QString buildDir = QDir(outDir).filePath(buildFolderName);
-        QDir oldBuild(buildDir);
+        //
+        // A stale tree that will not delete (a file handle held by a previous
+        // MSBuild, an indexer, or antivirus) used to abort the whole export.
+        // Fall back to a fresh, uniquely named tree instead: a leftover folder
+        // is a far smaller problem than discarding a successful generation.
+        QString buildFolderName = ".ohq_build";
+        QDir oldBuild(QDir(outDir).filePath(buildFolderName));
         if (oldBuild.exists() && !oldBuild.removeRecursively()) {
-            progressDialog.close();
-            QMessageBox::critical(this, tr("C++ build failed"),
-                                  tr("Could not clear the validation build folder:\n%1")
-                                      .arg(buildDir));
+            buildFolderName = ".ohq_build_" + QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+            details->appendPlainText(
+                tr("The previous build folder is locked and could not be removed; "
+                   "using a fresh one instead: %1").arg(buildFolderName));
+        }
+        const QString buildDir = QDir(outDir).filePath(buildFolderName);
+        details->appendPlainText(tr("Clean validation build folder: %1").arg(buildDir));
+        details->appendPlainText(tr("Using CMake: %1").arg(cmakeExe));
+
+        setStage(tr("Configuring the generated project with CMake"));
+        RunResult status = runProcess(cmakeExe, {"-S", ".", "-B", buildFolderName,
+                                                 "-DCMAKE_BUILD_TYPE=Release"},
+                                      outDir, &buildLog, configureTimeoutMs);
+
+        if (status == RunResult::Cancelled) {
+            reportPartialSuccess(tr("Export to C++"),
+                tr("The build was cancelled."), buildLog.right(20000));
             return;
         }
-        details->appendPlainText(tr("Clean validation build folder: %1").arg(buildDir));
-        setStage(tr("Configuring the generated project with CMake"));
-        bool built = runProcess("cmake", {"-S", ".", "-B", buildFolderName,
-                                           "-DCMAKE_BUILD_TYPE=Release"}, outDir, &buildLog);
-        if (built) {
-            setStage(tr("Compiling the generated solver in Release mode"));
-            QString compileLog;
-            built = runProcess("cmake", {"--build", buildFolderName,
-                                           "--config", "Release"}, outDir, &compileLog);
-            buildLog += compileLog;
+        if (status == RunResult::NotStarted) {
+            // CMake was present at preflight but cannot be launched now: it was
+            // uninstalled, moved, or is blocked by policy. Re-probe so a later
+            // export sees the truth.
+            ToolchainProbe::cmakePath(true);
+            reportPartialSuccess(tr("Export to C++"),
+                tr("CMake could not be started, so the generated project was not built."),
+                buildLog + "\n\n" + ToolchainProbe::installHint());
+            return;
         }
-        if (!built) {
-            progressDialog.close();
-            QMessageBox::critical(this, tr("C++ build failed"),
-                                  tr("The project was generated, but its Release build failed.\n\n%1")
-                                      .arg(buildLog.right(6000)));
+        if (status == RunResult::TimedOut) {
+            reportPartialSuccess(tr("Export to C++"),
+                tr("CMake did not finish configuring within %1 minutes and was stopped.")
+                    .arg(configureTimeoutMs / 60000),
+                buildLog.right(20000));
+            return;
+        }
+        if (status == RunResult::Failed) {
+            // A missing compiler looks like an ordinary non-zero exit, so the
+            // known "this machine is missing a tool" signatures are translated
+            // into plain language; anything else is shown as-is.
+            const QString explained = ToolchainProbe::explainConfigureFailure(buildLog);
+            if (!explained.isEmpty()) {
+                reportPartialSuccess(tr("Export to C++"), explained,
+                                     ToolchainProbe::installHint() + "\n\n"
+                                         + tr("CMake output:\n") + buildLog.right(20000));
+            } else {
+                reportPartialSuccess(tr("C++ build failed"),
+                    tr("The project was generated, but CMake could not configure it."),
+                    buildLog.right(20000));
+            }
+            return;
+        }
+
+        setStage(tr("Compiling the generated solver in Release mode"));
+        QString compileLog;
+        status = runProcess(cmakeExe, {"--build", buildFolderName, "--config", "Release"},
+                            outDir, &compileLog, compileTimeoutMs);
+        buildLog += compileLog;
+
+        if (status == RunResult::Cancelled) {
+            reportPartialSuccess(tr("Export to C++"),
+                tr("The build was cancelled."), buildLog.right(20000));
+            return;
+        }
+        if (status == RunResult::TimedOut) {
+            reportPartialSuccess(tr("Export to C++"),
+                tr("The compiler did not finish within %1 minutes and was stopped.")
+                    .arg(compileTimeoutMs / 60000),
+                buildLog.right(20000));
+            return;
+        }
+        if (status != RunResult::Ok) {
+            const QString explained = ToolchainProbe::explainConfigureFailure(compileLog);
+            reportPartialSuccess(tr("C++ build failed"),
+                explained.isEmpty()
+                    ? tr("The project was generated, but its Release build failed.")
+                    : explained,
+                buildLog.right(20000));
             return;
         }
         report += tr("Release build: PASS\n");
@@ -333,30 +549,75 @@ void MainWindow::onexporttocpp()
             const QString validationDir = QDir(outDir).filePath(
                 "validation/" + QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
             if (!QDir().mkpath(validationDir)) {
-                progressDialog.close();
-                QMessageBox::critical(this, tr("C++ validation"),
-                                      tr("Could not create the validation-results folder:\n%1")
-                                          .arg(validationDir));
+                reportPartialSuccess(tr("C++ validation"),
+                    tr("The project was built, but the validation-results folder could "
+                       "not be created:\n%1").arg(validationDir),
+                    QString());
                 return;
             }
+
+            // Locate the solver the build just produced.  The single-config and
+            // multi-config generators put it in different places, and Ninja or
+            // MinGW put it somewhere else again -- so probe the likely paths and
+            // then search the build tree, rather than launching a guess and
+            // reporting a successful build as "process failed to start".
 #ifdef _WIN32
-            QString solver = QDir(buildDir).filePath("Release/" + cls + "_solver.exe");
-            if (!QFileInfo::exists(solver)) solver = QDir(buildDir).filePath(cls + "_solver.exe");
+            const QString exeName = cls + "_solver.exe";
 #else
-            QString solver = QDir(buildDir).filePath(cls + "_solver");
+            const QString exeName = cls + "_solver";
 #endif
+            QString solver;
+            const QStringList candidates = {
+                QDir(buildDir).filePath("Release/" + exeName),
+                QDir(buildDir).filePath(exeName),
+                QDir(buildDir).filePath("bin/" + exeName),
+                QDir(buildDir).filePath("bin/Release/" + exeName)
+            };
+            for (const QString& candidate : candidates)
+                if (QFileInfo(candidate).isFile()) { solver = candidate; break; }
+            if (solver.isEmpty()) {
+                QDirIterator it(buildDir, QStringList() << exeName, QDir::Files,
+                                QDirIterator::Subdirectories);
+                if (it.hasNext()) solver = it.next();
+            }
+            if (solver.isEmpty()) {
+                reportPartialSuccess(tr("C++ validation"),
+                    tr("The build reported success, but '%1' could not be found in the "
+                       "build folder, so it was not run.").arg(exeName),
+                    tr("Searched under:\n%1").arg(buildDir));
+                return;
+            }
+
             const QString generatedCsv = QDir(validationDir).filePath("generated.csv");
             details->appendPlainText(tr("Validation results: %1").arg(validationDir));
+            details->appendPlainText(tr("Generated solver: %1").arg(solver));
             setStage(tr("Running the generated C++ solver"));
             QElapsedTimer generatedTimer; generatedTimer.start();
             QString runLog;
             const double endForRun = compare ? testEnd : system.tend();
-            const bool generatedOk = runProcess(solver,
-                {generatedCsv, QString::number(endForRun, 'g', 17)}, outDir, &runLog);
+            const RunResult runStatus = runProcess(solver,
+                {generatedCsv, QString::number(endForRun, 'g', 17)}, outDir, &runLog,
+                solverTimeoutMs);
             const double generatedWallSeconds = generatedTimer.nsecsElapsed() / 1e9;
-            if (!generatedOk) {
-                progressDialog.close();
-                QMessageBox::critical(this, tr("Generated solver failed"), runLog.right(6000));
+            if (runStatus == RunResult::Cancelled) {
+                reportPartialSuccess(tr("Export to C++"),
+                    tr("The build succeeded; the validation run was cancelled."),
+                    runLog.right(20000));
+                return;
+            }
+            if (runStatus == RunResult::TimedOut) {
+                reportPartialSuccess(tr("Export to C++"),
+                    tr("The build succeeded, but the generated solver did not finish "
+                       "within %1 minutes and was stopped. The model may not be "
+                       "converging at this end time.").arg(solverTimeoutMs / 60000),
+                    runLog.right(20000));
+                return;
+            }
+            if (runStatus != RunResult::Ok) {
+                reportPartialSuccess(tr("Generated solver failed"),
+                    tr("The build succeeded, but the generated solver did not run to "
+                       "completion."),
+                    runLog.right(20000));
                 return;
             }
             double generatedSeconds = generatedWallSeconds;
@@ -384,18 +645,32 @@ void MainWindow::onexporttocpp()
                 const bool applyParameters = interpreted.ParametersCount() > 0;
                 QFuture<bool> interpretedFuture = QtConcurrent::run(
                     [&interpreted, applyParameters]() { return interpreted.Solve(applyParameters); });
+                bool interpretedCancelled = false;
                 while (!interpretedFuture.isFinished()) {
                     elapsedLabel->setText(tr("Elapsed: %1 s — interpreted model is running")
                                               .arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+                    if (cancelRequested && !interpretedCancelled) {
+                        // The interpreted solver polls this flag; the future is
+                        // still waited on below so the thread is never abandoned.
+                        interpreted.stop_triggered = true;
+                        interpretedCancelled = true;
+                        details->appendPlainText(tr("Cancelled by user; stopping the interpreted run."));
+                    }
                     QCoreApplication::processEvents();
                     QThread::msleep(100);
                 }
                 const bool interpretedOk = interpretedFuture.result();
                 const double interpretedSeconds = interpretedTimer.nsecsElapsed() / 1e9;
+                if (interpretedCancelled) {
+                    reportPartialSuccess(tr("Export to C++"),
+                        tr("The build and the generated run succeeded; the comparison was "
+                           "cancelled."), report);
+                    return;
+                }
                 if (!interpretedOk) {
-                    progressDialog.close();
-                    QMessageBox::critical(this, tr("C++ validation"),
-                                          tr("The interpreted reference run failed; comparison was stopped."));
+                    reportPartialSuccess(tr("C++ validation"),
+                        tr("The build and the generated run succeeded, but the interpreted "
+                           "reference run failed, so the comparison was stopped."), report);
                     return;
                 }
 
@@ -426,8 +701,10 @@ void MainWindow::onexporttocpp()
                 const QString finalStatePath = generatedCsv.left(generatedCsv.lastIndexOf('.')) + "_final.csv";
                 QStringList stateHeaders; QVector<QVector<double>> stateRows;
                 if (!readCsv(finalStatePath, stateHeaders, stateRows)) {
-                    progressDialog.close();
-                    QMessageBox::critical(this, tr("C++ validation"), tr("Generated final-state CSV could not be read."));
+                    reportPartialSuccess(tr("C++ validation"),
+                        tr("The build and both runs completed, but the generated "
+                           "final-state CSV could not be read, so no comparison was made."),
+                        tr("Expected file:\n%1").arg(finalStatePath));
                     return;
                 }
                 const QVector<double>& finalRow = stateRows.last();
@@ -594,6 +871,8 @@ void MainWindow::onexporttocpp()
     progressDialog.close();
     const QString target = asLibrary ? (shared ? tr("shared library") : tr("static library"))
                                      : tr("executable");
+    if (!canBuildHere)
+        report += tr("Not built here: no CMake was found on this machine.\n");
     QMessageBox::information(this, tr("Export to C++"),
         tr("Generated a standalone C++ %1 project in:\n%2\n\n%3"
            "Build it with CMake:\n"
@@ -3364,6 +3643,17 @@ void MainWindow::onrunmodel()
 
 void MainWindow::closeEvent (QCloseEvent *event)
 {
+    // onexporttocpp() pumps the event loop while an external compiler or solver
+    // runs. Letting the close through there would destroy this window while that
+    // function is still executing on the stack.
+    if (cppExportInProgress) {
+        QMessageBox::information(this, tr("Export to C++"),
+            tr("A C++ export is still building or running. Cancel it from the progress "
+               "window before closing OpenHydroQual."));
+        event->ignore();
+        return;
+    }
+
     if (!MaybeSaveChanges()) {
         event->ignore();
         return;
