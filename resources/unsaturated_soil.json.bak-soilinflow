@@ -10,7 +10,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Evapotranspiration,inflow",
+      "inflow": "Evapotranspiration",
       "includeinoutput": "true",
       "description": "Storage",
       "ask_user": "false",
@@ -26,15 +26,6 @@
       "delegate": "ComboBox;Sources",
       "helptext": "Evapotranspiration",
       "unit": "m^3/day;ft^3/day;ft^3/s"
-    },
-    "inflow": {
-      "type": "timeseries",
-      "includeinoutput": "true",
-      "description": "Inflow",
-      "ask_user": "true",
-      "delegate": "Browser",
-      "unit": "m^3/day;m^3/s;ft^3/s",
-      "helptext": "User-supplied inflow time series delivered directly to this cell. Use it to feed a column at its surface without a separate ponding block: water arriving faster than the cell can transmit raises theta above theta_sat, and the excess_pressure term then supplies the head that drives it downward, so the cell behaves as its own reservoir."
     },
     "depth": {
       "type": "value",

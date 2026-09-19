@@ -365,24 +365,18 @@
       "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
     },
     "length": {
-      "type": "value",
-      "default": "1",
-      "description": "Separation between the connected blocks",
-      "helptext": "Distance between the centres of the two connected blocks. It divides the diffusive/dispersive exchange in Constituent::diffusive_masstransfer, so it must be the real separation or dispersion is scaled wrongly: a chain of 0.0254 m cells left at the default 1 m disperses 39x too weakly, and a dispersivity calibrated that way absorbs the error. The default of 1 m is kept only so existing models are unchanged -- set it for any model where dispersion or diffusion matters.",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m;ft",
-      "includeinoutput": "true"
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
     },
     "area": {
-      "type": "value",
-      "default": "0.000000001",
-      "description": "Cross-sectional area of the connection",
-      "helptext": "Flow area shared by the two blocks. It multiplies the molecular-diffusion term in Constituent::diffusive_masstransfer, so the default of 1e-9 m^2 suppresses diffusion entirely no matter what diffusion_coefficient is set on the constituent. Set it to the real interface area for any model where molecular diffusion matters. The tiny default is kept so existing models are unchanged.",
-      "ask_user": "true",
-      "delegate": "UnitBox",
-      "unit": "m~^2;ft~^2",
-      "includeinoutput": "true"
+      "type": "expression",
+      "expression": "0.000000001",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
     },
     "color": {
       "type": "string",

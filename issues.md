@@ -995,3 +995,66 @@ Suggested fixes, in order of preference:
 Workaround: keep `dt0` no smaller than ~1e-3 d when any time series is attached,
 and place the series' breakpoints on multiples of `dt0` -- then resampling
 reproduces the file exactly (verified: 0.000% volume change).
+
+---
+
+## ISSUE 22 -- `Time-Dependent flow` hardcodes link length = 1 m and area = 1e-9, breaking dispersion and disabling diffusion entirely
+
+`Constituent::diffusive_masstransfer` (main_components.json) is
+
+```
+(diffusion_coefficient*area + dispersivity*flow)/length * (concentration.s - concentration.e)
+```
+
+so both transverse terms are divided by the LINK's `length` and the diffusive
+one is scaled by the LINK's `area`. The `Time-Dependent flow` link
+(mass_transfer.json) defines both as fixed expressions the user cannot set:
+
+```
+length : {"type": "expression", "expression": "1",           "ask_user": "false"}
+area   : {"type": "expression", "expression": "0.000000001", "ask_user": "false"}
+```
+
+Two independent consequences.
+
+**1. Molecular diffusion can never contribute.** The diffusive term is
+multiplied by 1e-9 m^2 regardless of the `diffusion_coefficient` the user sets
+on the constituent. Setting a physically correct D changes nothing, silently.
+A `soil_to_soil_link` carries the real area (0.00811 m^2 for the column study),
+so the same constituent diffuses in one link type and not in the other.
+
+**2. Dispersion is divided by 1 m instead of the real cell spacing.** For the
+column study the cells are 0.0254 m apart, so the dispersive exchange in a
+`Time-Dependent flow` chain is **39.4x too weak**. The parameter is still live
+-- it is bound correctly (`setasparameter; object= Cu_aq, parametername=
+dispersivity_all, quantity= dispersivity`) -- it just barely moves the answer.
+
+Measured on the 8-column study (18 cells, 0.0254 m, PA1 lower port at 400 pore
+volumes), varying dispersivity over 5e8:
+
+| dispersivity | `Time-Dependent flow` | `soil_to_soil_link` |
+|--------------|----------------------|---------------------|
+| ~0           | 0.01976              | 0.01667             |
+| 0.0485       | 0.01968  (-0.4%)     | 0.00457  (-73%)     |
+| 0.5          | 0.01771  (-10%)      | 0.00099  (-94%)     |
+
+The same nominal parameter has ~100x more leverage in the soil chain. Rebuilding
+the identical column on `Soil` blocks and rescaling the calibrated dispersivity
+by the length ratio (0.0485256 x 0.0254 = 0.00123) reproduces the
+`Time-Dependent flow` result to within 6% at 800 PV -- confirming the length is
+the whole discrepancy.
+
+**Why this matters beyond one model.** A dispersivity calibrated against a
+`Time-Dependent flow` chain absorbs the wrong length: the fitted 0.0485 m is
+1.9x the cell spacing and 39x the physical value it stands for. Carrying that
+number into any correctly-dimensioned model over-disperses by the same factor.
+Any GA/MCMC estimate of dispersivity on such a chain is also weakly identified,
+because the likelihood is nearly flat in it.
+
+Suggested fix: make `length` and `area` real, user-settable properties of
+`Time-Dependent flow` as they are on every other transport link, defaulting to
+the connected blocks' geometry rather than to 1 and 1e-9. Existing models that
+relied on the old behaviour will need their dispersivity rescaled by the link
+length; that is a breaking change and should be called out, but leaving it is
+worse -- the current defaults silently mean "no diffusion, and dispersion in
+units of per-metre".

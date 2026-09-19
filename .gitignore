@@ -437,3 +437,7 @@ OHQLib/build-fresh/
 terminal/TOpenHydroQual/build-fresh/
 
 *.bak-paramfn
+
+terminal/OHQ-GA/OHQ-GA
+
+terminal/OHQ-MCMC/OHQ-MCMC
