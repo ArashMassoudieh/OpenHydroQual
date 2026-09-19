@@ -99,7 +99,7 @@
     <QtModules>core;opengl;gui;widgets;printsupport</QtModules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="QtSettings">
-    <QtInstall>Qt 6.8</QtInstall>
+    <QtInstall>6.7</QtInstall>
     <QtModules>core;gui;widgets;opengl;printsupport;svg;svgwidgets;charts</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
