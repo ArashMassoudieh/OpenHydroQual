@@ -1148,31 +1148,6 @@ template<class T>
 void CMCMC<T>::Perform()
 {
     initialize(false);
-
-    // Announce the sampler's actual configuration before it runs.  A setting
-    // that fails to arrive -- because the quantity is missing from the
-    // resources, or a setvalue silently did nothing -- otherwise produces a run
-    // that looks exactly like the one that was asked for and is not.  A
-    // 20,000-sample run was lost that way (issues.md, ISSUE 23).
-#ifndef Q_GUI_SUPPORT
-    cout << "MCMC configuration:" << endl;
-    cout << "  chains            : " << MCMC_Settings.number_of_chains << endl;
-    cout << "  samples           : " << MCMC_Settings.total_number_of_samples << endl;
-    cout << "  burn-in           : " << MCMC_Settings.burnout_samples << endl;
-    cout << "  proposal          : "
-         << (MCMC_Settings.covariance_proposal
-             ? "COVARIANCE-ADAPTED (correlated)" : "DIAGONAL (independent)") << endl;
-    if (MCMC_Settings.covariance_proposal)
-    {
-        cout << "    scale           : " << MCMC_Settings.covariance_scale
-             << " / sqrt(" << MCMC_Settings.number_of_parameters << ")" << endl;
-        cout << "    update interval : " << MCMC_Settings.covariance_update_interval << endl;
-        cout << "    min samples     : " << MCMC_Settings.covariance_min_samples << endl;
-    }
-    cout << "  initial perturb   : " << (MCMC_Settings.noinipurt ? "No" : "Yes") << endl;
-    cout << flush;
-#endif
-
     int mcmcstart = MCMC_Settings.number_of_chains;
     if (MCMC_Settings.continue_mcmc)
     {

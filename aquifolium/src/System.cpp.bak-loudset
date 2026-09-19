@@ -1776,16 +1776,7 @@ bool System::SetSystemSettingsObjectProperties(const string &s, const string &va
         }
     }
     if (!out)
-    {
-        // Loud, not silent.  A setvalue that quietly does nothing produces a run
-        // that looks like the one the script asked for and is not; a 20,000
-        // sample MCMC was lost to exactly this (issues.md, ISSUE 23).
         errorhandler.Append("","System","SetSystemSettingsObjectProperties","Property '" + s + "' was not found!", 631);
-#ifndef Q_GUI_SUPPORT
-        cout << "*** setvalue ignored: system has no property '" << s
-             << "' (value '" << val << "' discarded)" << endl << flush;
-#endif
-    }
     return false;
 
 }

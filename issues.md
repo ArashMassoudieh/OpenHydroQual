@@ -1058,3 +1058,65 @@ relied on the old behaviour will need their dispersivity rescaled by the link
 length; that is a breaking change and should be called out, but leaving it is
 worse -- the current defaults silently mean "no diffusion, and dispersion in
 units of per-metre".
+
+---
+
+## ISSUE 23: a `setvalue` naming an unknown system property is silently discarded
+
+`setvalue; object=system, quantity=covariance_proposal, value=Yes` had no
+effect. The run proceeded with the covariance-adapted proposal switched off and
+reported nothing -- no warning, no error, and the samples file looked normal.
+The cost was a 20,000-sample MCMC whose whole purpose was to measure what that
+setting does, and an A/B comparison that looked valid and was not: it compared
+the diagonal sampler against itself.
+
+**Cause.** The binary in use predated the setting. `covariance_proposal` was
+added 2026-09-17 11:54; the study was driven by an `OHQ-MCMC` built 2026-09-14,
+which has no such property. `System::SetSystemSettingsObjectProperties` did not
+find it in any settings object, appended error 631 to a log nobody reads, and
+returned false. The quantity was left empty -- not even its declared default of
+"No" -- and `CMCMC<T>::SetProperty` never saw it.
+
+| binary | knows `covariance_proposal` |
+|---|---|
+| `tools/OHQ-MCMC/build-release/OHQ-MCMC` (09-14) | no |
+| `tools/OHQ-MCMC/build-quiet/OHQ-MCMC` (09-05)   | no |
+| `terminal/OHQ-MCMC/OHQ-MCMC` (09-17 and later)  | yes |
+
+Confirmed from the samples alone, independently of `state.json`:
+
+- Proposal step sizes tracked `pertcoeff`, not the posterior standard deviation
+  (CV of jump/pertcoeff 0.16 against CV of jump/posterior-sd 0.86) -- the
+  signature of the diagonal branch. The known-diagonal run gave 0.14 / 0.84.
+- Mean absolute cross-parameter correlation of accepted jumps was 0.033, against
+  0.032 for the diagonal run, although the posterior carries a strong ridge
+  (`p_alpha_sand` x `p_Kd_sand`, r = -0.88; covariance condition number ~3900).
+- Both runs followed an identical acceptance-rate adaptation schedule
+  (pertcoeff 0.27607 -> 0.08735 = 0.75^4 in each).
+
+Note what is NOT wrong here, because two plausible explanations were checked and
+rejected. The parser (MCMC.hpp:187) and `UpdateProposalCovariance` are both
+correct. And the fault is not specific to `type: string` quantities: the
+Yes/No setting `initial_purturbation`, declared identically, arrives intact.
+
+**Fixed** in this tree:
+
+1. `System::SetSystemSettingsObjectProperties` now prints
+   `*** setvalue ignored: system has no property '<name>' (value '<v>' discarded)`
+   on stdout instead of only appending to the error handler. Same class of
+   defect as ISSUE 20 -- a `setvalue` that fails should never be silent.
+2. `CMCMC<T>::Perform()` now echoes the sampler's actual configuration before
+   sampling starts -- chains, samples, burn-in, and whether the proposal is
+   COVARIANCE-ADAPTED or DIAGONAL. A run can no longer silently be something
+   other than what the script asked for. The pre-existing
+   `[covariance proposal refreshed at sample N]` message only appears once the
+   feature is already working, so it could not have caught this.
+
+Verified after rebuilding: the echo reports COVARIANCE-ADAPTED, no `setvalue
+ignored` lines appear, and the covariance refreshes on schedule.
+
+**Wider point.** The GA and MCMC drivers are separate executables from
+`OpenHydroQual-Console`, and the console does not even link the MCMC objects.
+Rebuilding one does not rebuild the others, and a stale copy of any of them
+accepts a current script while quietly ignoring whatever is newer than itself.
+A version or build stamp in each driver's banner would make that visible.
