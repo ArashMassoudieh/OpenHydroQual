@@ -65,6 +65,7 @@ public:
     CVector& operator[](int row);
     const CVector& operator[](int row) const;
     double& operator()(int i, int j);
+    const double& operator()(int i, int j) const;
     int getnumrows() const;
     int getnumcols() const;
 

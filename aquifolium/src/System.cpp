@@ -14,6 +14,8 @@
  */
 
 
+#include <cstdio>
+#include <cstdlib>
 #include "System.h"
 #include <chrono>
 #include <algorithm>
@@ -976,6 +978,72 @@ void System::CopyQuansToMembers()
 
 }
 
+void System::TransportMassAndLoading(double &mass, double &loading)
+{
+    mass = 0; loading = 0;
+    if (ConstituentsCount() == 0) return;
+    CVector_arma M = GetStateVariables("mass", Expression::timing::past, true);
+    for (int k = 0; k < M.getsize(); k++) mass += fabs(M[k]);
+    CVector_arma L = GetStateVariables("inflow_loading", Expression::timing::past, true);
+    for (int k = 0; k < L.getsize(); k++) loading += fabs(L[k]);
+}
+
+std::vector<double> System::GatherSolvedState(const Expression::timing &tmg)
+{
+    // Solution order: the variables in solvevariableorder (Storage and friends),
+    // then the transport unknowns (constituent masses) if there are any.
+    std::vector<double> out;
+    for (unsigned int i = 0; i < solvevariableorder.size(); i++)
+    {
+        CVector_arma X = GetStateVariables(solvevariableorder[i], tmg, false);
+        for (int k = 0; k < X.getsize(); k++) out.push_back(X[k]);
+    }
+    if (ConstituentsCount() > 0)
+    {
+        // The transport unknowns are addressed by quantity name "mass", exactly
+        // as OneStepSolve does; passing a solvevariableorder entry here asks for
+        // "<constituent>:Storage", which does not exist.
+        CVector_arma X = GetStateVariables("mass", tmg, true);
+        for (int k = 0; k < X.getsize(); k++) out.push_back(X[k]);
+    }
+    return out;
+}
+
+int System::CountOscillatingStates(double tol)
+{
+    // Push the state just accepted onto a three-deep history.
+    std::vector<double> x = GatherSolvedState(Expression::timing::past);
+    SolverTempVars.osc_history.push_back(x);
+    if (SolverTempVars.osc_history.size() > 4)
+        SolverTempVars.osc_history.erase(SolverTempVars.osc_history.begin());
+    if (SolverTempVars.osc_history.size() < 4) return 0;
+
+    const std::vector<double> &c4 = SolverTempVars.osc_history[0];
+    const std::vector<double> &c3 = SolverTempVars.osc_history[1];
+    const std::vector<double> &c2 = SolverTempVars.osc_history[2];
+    const std::vector<double> &c1 = SolverTempVars.osc_history[3];
+    const size_t n = c1.size();
+    if (c2.size() != n || c3.size() != n || c4.size() != n) return 0;
+
+    int count = 0;
+    for (size_t i = 0; i < n; i++)
+    {
+        // Same test as TimeSeries::wiggle_sl: increments that alternate in sign
+        // and are not all negligible against the local magnitude. Steps are
+        // equal here, so the increments stand in for slopes.
+        const double scale = (fabs(c1[i]) + fabs(c2[i]) + fabs(c3[i]) + fabs(c4[i])) / 4.0
+                           + tol / 100.0;
+        if (scale <= 0) continue;
+        const double d1 = (c1[i] - c2[i]) / scale;
+        const double d2 = (c2[i] - c3[i]) / scale;
+        const double d3 = (c3[i] - c4[i]) / scale;
+        const bool all_small = fabs(d1) < tol && fabs(d2) < tol && fabs(d3) < tol;
+        const bool alternating = (d1 * d2 < 0) && (d2 * d3 < 0);
+        if (!all_small && alternating) count++;
+    }
+    return count;
+}
+
 vector<bool> System::OneStepSolve()
 {
     int transport = 0;
@@ -1069,6 +1137,9 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         if (counter % 50 == 0)
             SolverTempVars.SetUpdateJacobian(true);
 
+        if (SolverTempVars.dt_ceiling > 0)
+            SolverTempVars.dt_base = min(SolverTempVars.dt_base,
+                                         SolverTempVars.dt_ceiling);
         SolverTempVars.dt = min(SolverTempVars.dt_base, GetMinimumNextTimeStepSize());
         SolverTempVars.dt = max(SolverTempVars.dt,
             SimulationParameters.dt0 / SolverSettings.timestepminfactor);
@@ -1079,6 +1150,51 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
             HandleSolveFailure(fail_counter, restorepoint);
         else
             HandleSolveSuccess(counter, fail_counter, restorepoint, progress, progress_p);
+
+        // Newton can stop solving without failing: when the residual starts
+        // below the hard-coded 1e-12 floor the iteration is skipped entirely and
+        // the step is accepted unchanged. Harmless for a system genuinely at
+        // rest, fatal when mass is crossing the boundary -- the run then reports
+        // success and returns an identically zero field. Trigger on the
+        // mechanism (Newton not iterating) qualified by the forcing, not on the
+        // zero field, which only appears much later.
+        if (ConstituentsCount() > 0)
+        {
+            const bool not_iterating = SolverTempVars.nr_below_absolute_floor
+                                     > SolverTempVars.nr_floor_seen_at;
+            SolverTempVars.nr_floor_seen_at = SolverTempVars.nr_below_absolute_floor;
+            if (not_iterating && counter % 5 == 0)
+            {
+                double mass = 0, loading = 0;
+                TransportMassAndLoading(mass, loading);
+                if (loading > 0)
+                    SolverTempVars.null_solution_steps++;
+                else
+                    SolverTempVars.null_solution_steps = 0;
+            }
+            else if (!not_iterating)
+                SolverTempVars.null_solution_steps = 0;
+
+            if (SolverTempVars.null_solution_steps >= 20)
+            {
+                const string msg = "at " + aquiutils::numbertostring(SolverTempVars.t)
+                    + ": the Newton iteration is being skipped -- the initial residual"
+                      " is below the absolute floor (1e-12) while mass is entering the"
+                      " domain, so every step is accepted unchanged and the solution"
+                      " will stay identically zero. The time step is too small for the"
+                      " scale of this problem: raise initial_time_step, or rescale the"
+                      " state variables.";
+                SolverTempVars.fail_reason.push_back(msg);
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString(msg);
+                    GetSolutionLogger()->Flush();
+                }
+                LogMessage(msg, true);
+                SolverTempVars.SolutionFailed = true;
+                stop_triggered = true;
+            }
+        }
 
         if (CheckTerminationConditions())
             stop_triggered = true;
@@ -1122,6 +1238,11 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         lg->KeyValue("residual evaluations", aquiutils::numbertostring(int(SolverTempVars.residual_evaluations)));
         lg->KeyValue("Jacobian assemblies",  aquiutils::numbertostring(int(SolverTempVars.jacobian_assemblies)));
         lg->KeyValue("linear solves",        aquiutils::numbertostring(int(SolverTempVars.linear_solves)));
+        if (SolverSettings.oscillation_control)
+            lg->KeyValue("oscillation interventions",
+                aquiutils::numbertostring(SolverTempVars.osc_events));
+            lg->KeyValue("oscillation relaxations",
+                aquiutils::numbertostring(SolverTempVars.osc_relaxations));
         lg->KeyValue("seconds in residual evaluation", aquiutils::numbertostring(SolverTempVars.seconds_in_residuals));
         lg->KeyValue("seconds in Jacobian assembly",   aquiutils::numbertostring(SolverTempVars.seconds_in_assembly));
         lg->KeyValue("seconds in linear solve",        aquiutils::numbertostring(SolverTempVars.seconds_in_linearsolve));
@@ -1135,6 +1256,15 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         lg->WriteSummary(SolverTempVars.t, SimulationParameters.tend,
                          SolverTempVars.SolutionFailed);
     }
+
+    if (SolverSettings.oscillation_control && SolverTempVars.osc_events > 0)
+        LogMessage("oscillation control: "
+            + aquiutils::numbertostring(SolverTempVars.osc_events)
+            + " intervention(s) ("
+            + string(SolverSettings.oscillation_rewind ? "rewind" : "reduce")
+            + "), " + aquiutils::numbertostring(SolverTempVars.osc_relaxations)
+            + " relaxation(s); final dt = " + aquiutils::numbertostring(SolverTempVars.dt_base)
+            + (SolverTempVars.osc_gave_up ? " (gave up before it was clean)" : ""));
 
     FinalizeOutputs(uniformizeoutput);
     SetSimulationDuration(time(nullptr) - SolverTempVars.time_start);
@@ -1200,7 +1330,9 @@ void System::InitializeSolver(bool applyparameters)
     QCoreApplication::processEvents();
 #endif
 
-    MakeTimeSeriesUniform(SimulationParameters.dt0);
+    // Opt-out: the resampling is lossy and its point count is record_span/dt0.
+    if (SolverSettings.make_timeseries_uniform)
+        MakeTimeSeriesUniform(SimulationParameters.dt0);
 
     SolverTempVars.dt_base = SimulationParameters.dt0;
     SolverTempVars.dt = SolverTempVars.dt_base;
@@ -1315,6 +1447,21 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
 
         QCoreApplication::processEvents();
     }
+#else
+    // Terminal build: progress above is reported through rtw, which does not
+    // exist here, so a console run printed nothing at all between "Running from
+    // time" and the final line -- on a multi-hour model that is indistinguishable
+    // from a hang. Emit the same t/dt the GUI Details pane shows, once per whole
+    // percent of the run, whenever the system is not silent (-q, or
+    // "setvalue; object=system, quantity=silent, value=1").
+    if (!silent && int(progress / 0.01) > int(progress_p / 0.01))
+    {
+        cout << "  " << int(progress * 100 + 0.5) << "%   t = " << SolverTempVars.t
+             << " / " << SimulationParameters.tend
+             << "   dt = " << SolverTempVars.dt
+             << "   iterations = " << SolverTempVars.MaxNumberOfIterations()
+             << endl;
+    }
 #endif
 
     // Restore point � independent of GUI
@@ -1345,8 +1492,162 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
     Update();
     UpdateObjectiveFunctions(SolverTempVars.t);
     UpdateObservations(SolverTempVars.t);
+    // OHQ_OBSLOG=1 : what UpdateObservations just appended, with the time it was
+    // stamped with, for codegen parity work.
+    if (std::getenv("OHQ_OBSLOG") && ObservationsCount() > 0)
+    {
+        static int _n = 0;
+        static int _once = 0;
+        if (!_once) { _once = 1;
+            if (Link* _lk = link("Flow1-1")) {
+                std::fprintf(stderr, "LINKQ Flow1-1 quantities containing 'disp' or 'diff':\n");
+                QuanSet* _qs = _lk->GetVars();
+                for (auto _it = _qs->begin(); _it != _qs->end(); ++_it)
+                    if (true)
+                        std::fprintf(stderr, "   '%s' type=%d val=%.17g\n", _it->first.c_str(),
+                                     int(_it->second.GetType()),
+                                     double(_it->second.GetVal(Expression::timing::present)));
+                std::fprintf(stderr, "   GetVal(\"dispersivity\")=%.17g  currentconst='%s'\n",
+                             double(_lk->GetVal("dispersivity", Expression::timing::present)),
+                             _lk->GetCurrentCorrespondingConstituent().c_str());
+            }
+            if (Object* _c = object("Cu_aq"))
+                std::fprintf(stderr, "   constituent Cu_aq dispersivity=%.17g\n",
+                             double(_c->GetVal("dispersivity", Expression::timing::present)));
+        }
+        Block* _b = block("Col1-Top");
+        const double _m = _b ? _b->GetVal("Cu_aq:mass",  Expression::timing::present) : -1;
+        const double _S = _b ? _b->GetVal("Storage",     Expression::timing::present) : -1;
+        const double _c = _b ? _b->GetVal("Cu_aq:concentration", Expression::timing::present) : -1;
+        if (_n++ < 12)
+            std::fprintf(stderr, "OBSLOG t=%.17g dt=%.17g obs0_n=%d obs0_last_t=%.17g obs0_last_v=%.17g | Col1-Top mass=%.17g S=%.17g conc=%.17g\n",
+                         double(SolverTempVars.t), double(SolverTempVars.dt),
+                         int((*observations[0].GetModeledTimeSeries()).size()),
+                         (*observations[0].GetModeledTimeSeries()).size() ? double((*observations[0].GetModeledTimeSeries()).back().t) : 0.0,
+                         (*observations[0].GetModeledTimeSeries()).size() ? double((*observations[0].GetModeledTimeSeries()).back().c) : 0.0,
+                         _m, _S, _c);
+    }
     PopulateOutputs();
     SolverTempVars.t += SolverTempVars.dt;
+
+    // Relax a ceiling imposed by any rewind once the solution has been well
+    // behaved for a while: the episode that forced it is usually transient, and
+    // holding the step down for the rest of a long run costs far more than the
+    // episode itself. A recurrence simply re-imposes the ceiling.
+    if (SolverTempVars.dt_ceiling > 0 && SolverSettings.oscillation_relax_after > 0)
+    {
+        if (++SolverTempVars.clean_steps >= SolverSettings.oscillation_relax_after)
+        {
+            SolverTempVars.clean_steps = 0;
+            SolverTempVars.dt_ceiling *= 2.0;
+            SolverTempVars.osc_relaxations++;
+            if (SolverTempVars.osc_reductions > 0) SolverTempVars.osc_reductions--;
+            if (SolverTempVars.dt_ceiling
+                >= SimulationParameters.dt0 * SolverSettings.timestepmaxfactor)
+            {
+                SolverTempVars.dt_ceiling = 0;
+                LogDetails("@ t = " + aquiutils::numbertostring(SolverTempVars.t)
+                    + ": sustained clean stepping; time-step ceiling released");
+            }
+        }
+    }
+
+    // A converged step can still be wrong: when the step is coarse relative to
+    // the fastest reaction the scheme oscillates and the run finishes with a
+    // non-monotone solution and no error at all. The remedy is the restore
+    // point: rewind to the last saved state, restart at a fifth of the step,
+    // and knock the oscillating samples out of the recorded output. Merely
+    // slowing down from here would leave that wobble in the delivered results.
+    if (SolverSettings.oscillation_control
+        && counter > 4
+        && counter - SolverTempVars.osc_last_counter > 4)   // cooldown
+    {
+        const int nosc = CountOscillatingStates(SolverSettings.oscillation_tolerance);
+        if (nosc > 0)
+        {
+            SolverTempVars.clean_steps = 0;
+            const bool budget_left =
+                SolverTempVars.osc_reductions < SolverSettings.oscillation_max_reductions;
+            bool acted = false;
+            if (budget_left && SolverSettings.oscillation_rewind)
+                acted = ResetBasedOnRestorePoint(&restorepoint);
+            else if (budget_left)
+            {
+                // Carry on from here with a smaller step. Same factor as the
+                // rewind path so the two are comparable; the difference is only
+                // that the already-recorded oscillation is not discarded.
+                SolverTempVars.dt_base /= 5.0;
+                SolverTempVars.dt = SolverTempVars.dt_base;
+                // Hold it there. The rewind path gets this from
+                // ResetBasedOnRestorePoint; without it here, dt_base recovers by
+                // ~1/0.75 per successful step, is back at its ceiling within ten,
+                // and the oscillation returns -- so the reduction buys nothing.
+                SolverTempVars.dt_ceiling = SolverTempVars.dt_base;
+                SolverTempVars.clean_steps = 0;
+                acted = true;
+            }
+            if (acted)
+            {
+                SolverTempVars.osc_reductions++;
+                SolverTempVars.osc_events++;
+                SolverTempVars.osc_last_counter = counter;
+                SolverTempVars.osc_history.clear();   // the state jumped backwards
+                SolverTempVars.SetUpdateJacobian(true);
+                // Hold the step there. dt_base otherwise recovers by ~1/0.75 per
+                // successful step and is back at the ceiling within ten steps,
+                // at which point the oscillation returns and the rewind is wasted.
+                LogDetails("@ t = " + aquiutils::numbertostring(SolverTempVars.t)
+                    + ": oscillation in " + aquiutils::numbertostring(nosc)
+                    + (SolverSettings.oscillation_rewind
+                        ? " state variable(s); rewound to the restore point, restarting at dt = "
+                        : " state variable(s); continuing at reduced dt = ")
+                    + aquiutils::numbertostring(SolverTempVars.dt_base));
+            }
+            else if (!SolverTempVars.osc_gave_up)
+            {
+                // Either the restore point is spent (two uses before a new one is
+                // saved) or the attempt budget is exhausted. Do not grind the step
+                // down further: past a point that stops Newton iterating at all.
+                SolverTempVars.osc_gave_up = true;
+                const string msg = "at " + aquiutils::numbertostring(SolverTempVars.t)
+                    + ": oscillation in " + aquiutils::numbertostring(nosc)
+                    + " state variable(s) could not be removed by rewinding and"
+                      " refining (" + aquiutils::numbertostring(SolverTempVars.osc_reductions)
+                    + " attempts, dt now "
+                    + aquiutils::numbertostring(SolverTempVars.dt_base)
+                    + ", budget " + aquiutils::numbertostring(SolverSettings.oscillation_max_reductions)
+                    + ", restore point used " + aquiutils::numbertostring(int(restorepoint.used_counter))
+                    + " time(s)). The results contain oscillation; treat them with caution.";
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString(msg);
+                    GetSolutionLogger()->Flush();
+                }
+                LogMessage(msg, true);
+            }
+        }
+    }
+
+    // OHQ_ITERLOG=1 : one line per accepted step, for codegen dt-policy parity work.
+    // Emits the per-state-variable Newton iteration counts that drive the dt
+    // adaptation immediately below, so the interpreter's dt trajectory can be
+    // reproduced exactly. Off unless the variable is set.
+    if (std::getenv("OHQ_ITERLOG"))
+    {
+        std::string per;
+        for (unsigned int i = 0; i < SolverTempVars.numiterations.size(); i++)
+            per += (i ? "," : "") + aquiutils::numbertostring(int(SolverTempVars.numiterations[i]));
+        std::fprintf(stderr, "ITERLOG t=%.9g dt=%.9g dt_base=%.9g maxiter=%d n=%d per=[%s] minnext=%.9g nseries=%d belowfloor=%d updjac=%d\n",
+                     double(SolverTempVars.t), double(SolverTempVars.dt),
+                     double(SolverTempVars.dt_base),
+                     SolverTempVars.MaxNumberOfIterations(),
+                     int(SolverTempVars.numiterations.size()),
+                     per.c_str(),
+                     double(GetMinimumNextTimeStepSize()),
+                     int(alltimeseries.size()),
+                     int(SolverTempVars.nr_below_absolute_floor),
+                     int(SolverSettings.update_jacobian_every_iteration));
+    }
 
     if (SolverTempVars.MaxNumberOfIterations() > SolverSettings.NR_niteration_upper)
     {
@@ -1393,6 +1694,25 @@ void System::FinalizeOutputs(bool uniformizeoutput)
 {
     LogMessage("Adjusting outputs ...");
     Outputs.AllOutputs.unif = false;
+    // OHQ_RAWOBS=<file> : the observed outputs BEFORE make_uniform, for codegen
+    // parity work (raw one-sample-per-accepted-step series).
+    if (const char* _f = std::getenv("OHQ_RAWOBS"))
+    {
+        if (std::FILE* _fp = std::fopen(_f, "w"))
+        {
+            for (int _c = 0; _c < int(Outputs.ObservedOutputs.size()); _c++)
+            {
+                std::fprintf(_fp, "# series %d %s n=%d\n", _c,
+                             Outputs.ObservedOutputs[_c].name().c_str(),
+                             int(Outputs.ObservedOutputs[_c].size()));
+                for (int _k = 0; _k < int(Outputs.ObservedOutputs[_c].size()); _k++)
+                    std::fprintf(_fp, "%d %.17g %.17g\n", _c,
+                                 double(Outputs.ObservedOutputs[_c][_k].t),
+                                 double(Outputs.ObservedOutputs[_c][_k].c));
+            }
+            std::fclose(_fp);
+        }
+    }
 
     if (uniformizeoutput)
     {
@@ -1456,7 +1776,16 @@ bool System::SetSystemSettingsObjectProperties(const string &s, const string &va
         }
     }
     if (!out)
+    {
+        // Loud, not silent.  A setvalue that quietly does nothing produces a run
+        // that looks like the one the script asked for and is not; a 20,000
+        // sample MCMC was lost to exactly this (issues.md, ISSUE 23).
         errorhandler.Append("","System","SetSystemSettingsObjectProperties","Property '" + s + "' was not found!", 631);
+#ifndef Q_GUI_SUPPORT
+        cout << "*** setvalue ignored: system has no property '" << s
+             << "' (value '" << val << "' discarded)" << endl << flush;
+#endif
+    }
     return false;
 
 }
@@ -1530,6 +1859,13 @@ bool System::SetProperty(const string &s, const string &val)
         SolverSettings.verify_jacobian = aquiutils::atoi(val);
         return true;
     }
+    if (s=="update_jacobian_every_iteration")
+    {
+        SolverSettings.update_jacobian_every_iteration =
+            (aquiutils::trim(aquiutils::tolower(val))=="yes"
+             || aquiutils::trim(val)=="1" || aquiutils::trim(aquiutils::tolower(val))=="true");
+        return true;
+    }
     if (s=="jacobian_method")
     {
         if (val=="Inverse Jacobian")
@@ -1568,6 +1904,68 @@ bool System::SetProperty(const string &s, const string &val)
             SolverSettings.write_solution_details = true;
         else
             SolverSettings.write_solution_details = false;
+        return true;
+    }
+    if (s=="make_timeseries_uniform")
+    {
+        SolverSettings.make_timeseries_uniform =
+            (aquiutils::trim(aquiutils::tolower(val))!="no");
+        return true;
+    }
+    if (s=="oscillation_control")
+    {
+        SolverSettings.oscillation_control = (aquiutils::trim(aquiutils::tolower(val))=="yes");
+        return true;
+    }
+    if (s=="restore_point_max_uses")
+    {
+        if (!aquiutils::trim(val).empty())
+        {
+            const int v = int(aquiutils::atof(val));
+            if (v > 0) restore_point_max_uses = (unsigned int)v;
+        }
+        return true;
+    }
+    if (s=="restore_interval")
+    {
+        if (!aquiutils::trim(val).empty())
+        {
+            const int v = int(aquiutils::atof(val));
+            if (v > 0) restore_interval = (unsigned int)v;
+        }
+        return true;
+    }
+    if (s=="oscillation_relax_after")
+    {
+        if (!aquiutils::trim(val).empty())
+            SolverSettings.oscillation_relax_after = int(aquiutils::atof(val));
+        return true;
+    }
+    if (s=="oscillation_remedy")
+    {
+        const string v = aquiutils::trim(aquiutils::tolower(val));
+        if (!v.empty()) SolverSettings.oscillation_rewind = (v != "reduce");
+        return true;
+    }
+    if (s=="oscillation_tolerance")
+    {
+        // SetSystemSettings() replays every registered setting, including ones
+        // the model never mentions, whose stored value is the empty string.
+        // atof("") is 0, which would silently destroy the default -- and a zero
+        // tolerance makes every sign alternation count as oscillation.
+        if (!aquiutils::trim(val).empty())
+            SolverSettings.oscillation_tolerance = aquiutils::atof(val);
+        return true;
+    }
+    if (s=="oscillation_max_reductions")
+    {
+        if (!aquiutils::trim(val).empty())
+            SolverSettings.oscillation_max_reductions = int(aquiutils::atof(val));
+        return true;
+    }
+    if (s=="record_results")
+    {
+        SetRecordResults(aquiutils::trim(aquiutils::tolower(val))!="no");
         return true;
     }
     if (s=="write_intermittently")
@@ -1926,14 +2324,19 @@ void System::PopulateOutputs(bool dolinks)
         }
 
 
+    }
+
+    // Observations are recorded regardless of RecordResults(): they are the lean,
+    // user-selected output, and switching off bulk recording must not silence them.
+    {
         for (unsigned int i = 0; i < observations.size(); i++)
         {
-            Outputs.AllOutputs["Obs_" + observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
+            if (RecordResults())
+                Outputs.AllOutputs["Obs_" + observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
             Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
             for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
-                if (it->second.IncludeInOutput())
+                if (it->second.IncludeInOutput() && RecordResults())
                 {
-                    //sources[i].CalcExpressions(Expression::timing::present);
                     Object* location;
                     if (it->second.GetType() == Quan::_type::expression)
                     {   location = object(observations[i].GetLocation());
@@ -1948,10 +2351,6 @@ void System::PopulateOutputs(bool dolinks)
                     }
                 }
         }
-    }
-    else
-    {
-
     }
 }
 
@@ -2036,11 +2435,24 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
         double err;
         double err_p = err = err_ini;
 
+        // The loop below is guarded by `err > 1e-12`, an absolute floor. If the
+        // residual starts under it the body never runs and the step is accepted
+        // with the solution unchanged -- silently, and for every subsequent step
+        // too. Record that this happened; the caller decides whether it is a
+        // system genuinely at rest or a solver that has stopped solving.
+        if (err_ini <= 1e-12)
+            SolverTempVars.nr_below_absolute_floor++;
+
 		//if (SolverTempVars.NR_coefficient[statevarno]==0)
             SolverTempVars.NR_coefficient[statevarno] = 1;
         while ((err/(err_ini+1e-8*X_norm)>SolverSettings.NRtolerance && err>1e-12 && dx_norm/X_norm>1e-10))
         {
             SolverTempVars.numiterations[statevarno]++;
+
+            // Optional true-Newton mode: refresh the Jacobian every iteration
+            // rather than reusing the one from the start of the step.
+            if (SolverSettings.update_jacobian_every_iteration)
+                SolverTempVars.updatejacobian[statevarno] = true;
 
             if (SolverTempVars.updatejacobian[statevarno])
             {
@@ -2110,6 +2522,27 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 else
                     SolverTempVars.Inverse_Jacobian[statevarno] = J;
                 SolverTempVars.updatejacobian[statevarno] = false;
+                // OHQ_JACDUMP=<prefix> : write each assembled Jacobian once, as
+                // "i j value" for the nonzeros, for codegen parity work.
+                if (const char* _pfx = std::getenv("OHQ_JACDUMP"))
+                {
+                    static int _dumped[8] = {0,0,0,0,0,0,0,0};
+                    if (statevarno < 8 && !_dumped[statevarno])
+                    {
+                        _dumped[statevarno] = 1;
+                        char _fn[512];
+                        std::snprintf(_fn, sizeof(_fn), "%s_sv%d.txt", _pfx, int(statevarno));
+                        if (std::FILE* _f = std::fopen(_fn, "w"))
+                        {
+                            std::fprintf(_f, "# n=%d t=%.17g dt=%.17g\n",
+                                         J.getnumrows(), double(SolverTempVars.t), double(SolverTempVars.dt));
+                            for (int _a = 0; _a < J.getnumrows(); _a++)
+                                for (int _b = 0; _b < J.getnumcols(); _b++)
+                                    if (J(_a,_b) != 0) std::fprintf(_f, "%d %d %.17g\n", _a, _b, double(J(_a,_b)));
+                            std::fclose(_f);
+                        }
+                    }
+                }
 
             }
             CVector_arma X1;
@@ -2146,10 +2579,66 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
             err_p = err;
             err = F.norm2();
 
+            // OHQ_NRLOG=1 : one line per Newton iteration, for codegen parity work.
+            // Same spirit as OHQ_ITERLOG above; off unless the variable is set.
+            if (std::getenv("OHQ_NRVEC"))
+            {
+                std::fprintf(stderr, "NRVEC t=%.9g sv=%d it=%d n=%d", double(SolverTempVars.t),
+                             int(statevarno), int(SolverTempVars.numiterations[statevarno]), int(F.getsize()));
+                int _im = 0, _id = 0;
+                for (int _k = 0; _k < F.getsize(); _k++) {
+                    if (fabs(double(F[_k]))  > fabs(double(F[_im])))  _im = _k;
+                    if (fabs(double(dx[_k])) > fabs(double(dx[_id]))) _id = _k;
+                }
+                std::fprintf(stderr, " argmaxF=%d F=%.12g X=%.12g | argmaxdx=%d dx=%.12g F@=%.12g",
+                             _im, double(F[_im]), double(X[_im]), _id, double(dx[_id]), double(F[_id]));
+                // the STORED Jacobian actually used for this step (direct mode:
+                // Inverse_Jacobian holds J itself), plus the dt it sees
+                {
+                    const CMatrix_arma &_J = SolverTempVars.Inverse_Jacobian[statevarno];
+                    if (_J.getnumrows() > 18 && _J.getnumcols() > 19)
+                        std::fprintf(stderr, " J[18][18]=%.12g J[18][17]=%.12g J[18][19]=%.12g dt=%.12g njac=%d",
+                                     double(_J(18,18)), double(_J(18,17)), double(_J(18,19)),
+                                     double(SolverTempVars.dt), int(SolverTempVars.epoch_count));
+                }
+                std::fprintf(stderr, "\n");
+            }
+            if (std::getenv("OHQ_NRLOG"))
+                std::fprintf(stderr, "NRLOG t=%.9g sv=%d it=%d err_ini=%.9g err=%.9g err_p=%.9g err1=%.9g lam=%.9g dxn=%.9g Xn=%.9g rel=%.9g njac=%d\n",
+                             double(SolverTempVars.t), int(statevarno),
+                             int(SolverTempVars.numiterations[statevarno]),
+                             double(err_ini), double(err), double(err_p),
+                             double(SolverSettings.optimize_lambda ? F1.norm2() : 0.0),
+                             double(SolverTempVars.NR_coefficient[statevarno]),
+                             double(dx_norm), double(X_norm),
+                             double(err/(err_ini+1e-8*X_norm)),
+                             int(SolverTempVars.epoch_count));
+
             if (AdjustNRCoefficient(X, X_past, X1, F, F1, err, err_p,
                                     statevarno, transport, ini_max_error_block,
                                     error_increase_counter, outflowlimitstatus_old) == NRAdjustResult::failed)
                 return false;
+        }
+        // OHQ_XDUMP=<prefix> : the state vector right after the Newton loop, once
+        // per state variable, for codegen parity work.
+        if (const char* _pfx = std::getenv("OHQ_XDUMP"))
+        {
+            static int _xd[8] = {0,0,0,0,0,0,0,0};
+            if (statevarno < 8 && !_xd[statevarno] && SolverTempVars.numiterations[statevarno] > 0)
+            {
+                _xd[statevarno] = 1;
+                char _fn[512];
+                std::snprintf(_fn, sizeof(_fn), "%s_sv%d.txt", _pfx, int(statevarno));
+                if (std::FILE* _f = std::fopen(_fn, "w"))
+                {
+                    std::fprintf(_f, "# n=%d t=%.17g dt=%.17g iters=%d\n", X.getsize(),
+                                 double(SolverTempVars.t), double(SolverTempVars.dt),
+                                 int(SolverTempVars.numiterations[statevarno]));
+                    for (int _k = 0; _k < X.getsize(); _k++)
+                        std::fprintf(_f, "%d %.17g\n", _k, double(X[_k]));
+                    std::fclose(_f);
+                }
+            }
         }
         switchvartonegpos = false;
 
@@ -4657,12 +5146,17 @@ bool System::CopyStateVariablesFrom(System *sys)
 
 bool System::ResetBasedOnRestorePoint(RestorePoint *rp)
 {
-    if (rp->used_counter>1) return false;
+    if (rp->used_counter >= restore_point_max_uses) return false;
     CopyStateVariablesFrom(rp->GetSystem());
     rp->used_counter++;
     SolverTempVars.t = rp->t;
     SolverTempVars.dt_base = rp->dt/5;
     SolverTempVars.dt = rp->dt/5;
+    // Hold the step there. Whatever forced this rewind -- oscillation or
+    // repeated Newton failure -- recurs if dt_base is allowed to climb straight
+    // back to its ceiling over the next few successful steps.
+    SolverTempVars.dt_ceiling = SolverTempVars.dt_base;
+    SolverTempVars.clean_steps = 0;
     Outputs.AllOutputs.knockout(SolverTempVars.t);
     Outputs.ObservedOutputs.knockout(SolverTempVars.t);
     rp->dt = SolverTempVars.dt;
@@ -4786,38 +5280,59 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
     CVector_arma current_state = GetStateVariables_for_direct_Jacobian(variable,Expression::timing::present,transport);
     SetStateVariables_for_direct_Jacobian(variable,X,Expression::timing::present,transport);
     CMatrix_arma_sp jacobian_sp(BlockCount());
-#ifndef NO_OPENMP
-#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
-#endif
+
+    // Triplet assembly, and the loops below are deliberately SERIAL.
+    //
+    // They used to carry `#pragma omp parallel for ... if (n_threads>1)`. That was
+    // unsafe twice over. First, links share block indices, and
+    // CMatrix_arma_sp::operator() hands back a reference into an arma::sp_mat,
+    // which INSERTS the entry when it is absent and reallocates the CSC arrays --
+    // so concurrent iterations were restructuring the matrix, not merely racing on
+    // a value. Second, and fatal on its own: Gradient() takes its derivative by
+    // perturbing the state of `wrt`, reading, then restoring it. Two threads on
+    // links that share a block perturb and restore the SAME block, so the
+    // derivative itself comes out wrong. No assembly scheme fixes that; the loop
+    // cannot be parallel while Gradient mutates shared state. The dense twin in
+    // JacobianDirect() was commented out for the same reason; this copy was missed.
+    //
+    // Going serial costs little, because the insertion pattern it replaces was the
+    // real expense: every jacobian_sp(i,j) += ... walked the CSC structure, O(nnz)
+    // per write. Values are now collected as (row, col, value) triplets and the
+    // matrix is built once, add_values=true summing the duplicates that sharing
+    // produces.
+    std::vector<arma::uword> jac_r, jac_c;
+    std::vector<double> jac_v;
+    const size_t jac_guess = 8 * size_t(LinksCount()) + 2 * size_t(BlockCount());
+    jac_r.reserve(jac_guess); jac_c.reserve(jac_guess); jac_v.reserve(jac_guess);
+    auto jac_add = [&](int r, int c, double v)
+    {   jac_r.push_back(arma::uword(r)); jac_c.push_back(arma::uword(c)); jac_v.push_back(v); };
+
     for (int i=0; i<LinksCount(); i++)
     {
         if (!link(i)->GetConnectedBlock(Expression::loc::source)->GetLimitedOutflow())
-        {   jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
-            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+        {   jac_add(link(i)->s_Block_No(),link(i)->s_Block_No(),(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
+            jac_add(link(i)->e_Block_No(),link(i)->s_Block_No(),-(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::source),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
         }
         else
         {
-            jacobian_sp(link(i)->s_Block_No(),link(i)->s_Block_No()) += aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
-            jacobian_sp(link(i)->e_Block_No(),link(i)->s_Block_No()) -= aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jac_add(link(i)->s_Block_No(),link(i)->s_Block_No(),(aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
+            jac_add(link(i)->e_Block_No(),link(i)->s_Block_No(),-(aquiutils::Pos(link(i)->GetVal(blocks[link(i)->s_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
         }
         if (!link(i)->GetConnectedBlock(Expression::loc::destination)->GetLimitedOutflow())
         {
-            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) += Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
-            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) -= Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present);
+            jac_add(link(i)->s_Block_No(),link(i)->e_Block_No(),(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
+            jac_add(link(i)->e_Block_No(),link(i)->e_Block_No(),-(Gradient(link(i),link(i)->GetConnectedBlock(Expression::loc::destination),Variable(variable)->GetCorrespondingFlowVar(),variable)*links[i].GetOutflowLimitFactor(Expression::timing::present)));
         }
         else
         {
-            jacobian_sp(link(i)->s_Block_No(),link(i)->e_Block_No()) -= aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
-            jacobian_sp(link(i)->e_Block_No(),link(i)->e_Block_No()) += aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present));
+            jac_add(link(i)->s_Block_No(),link(i)->e_Block_No(),-(aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
+            jac_add(link(i)->e_Block_No(),link(i)->e_Block_No(),(aquiutils::Pos(-link(i)->GetVal(blocks[link(i)->e_Block_No()].Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present))));
         }
     }
-#ifndef NO_OPENMP
-#pragma omp parallel for schedule(static) if (SolverSettings.n_threads>1)
-#endif
     for (int i=0; i<BlockCount(); i++)
     {
         if (!block(i)->GetLimitedOutflow() && !block(i)->isrigid(variable))
-            jacobian_sp(i,i) += 1/SolverTempVars.dt;
+            jac_add(i,i,(1/SolverTempVars.dt));
         for (unsigned int j=0; j<block(i)->Variable(variable)->GetCorrespondingInflowVar().size(); j++)
         {
             if (block(i)->Variable(variable)->GetCorrespondingInflowVar()[j] != "")
@@ -4825,14 +5340,28 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
                 if (Variable(block(i)->Variable(variable)->GetCorrespondingInflowVar()[j]))
                 {
                     if (!block(i)->GetLimitedOutflow())
-                        jacobian_sp(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
+                        jac_add(i,i,-(Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable)));
                     else
                     {   double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
-                        if (inflow<0) jacobian_sp(i,i) -= inflow;
+                        if (inflow<0) jac_add(i,i,-(inflow));
                     }
                 }
             }
         }
+    }
+
+    // One construction from the triplets. add_values=true sums entries that repeat,
+    // which is exactly what several links sharing a block produces, so the result is
+    // identical to the accumulated += it replaces.
+    if (!jac_v.empty())
+    {
+        arma::umat jac_loc(2, jac_v.size());
+        for (size_t k = 0; k < jac_v.size(); k++)
+        {   jac_loc(0, k) = jac_r[k];
+            jac_loc(1, k) = jac_c[k]; }
+        arma::vec jac_vals(jac_v);
+        jacobian_sp.matr = arma::sp_mat(true, jac_loc, jac_vals,
+                                        arma::uword(BlockCount()), arma::uword(BlockCount()));
     }
 
     for (unsigned int i = 0; i < blocks.size(); i++)

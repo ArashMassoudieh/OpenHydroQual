@@ -108,6 +108,25 @@ namespace aquiutils
     std::string extract_path(const std::string& filepath);
     double mod(double x, double y);
 
+    // -----------------------------------------------------------------------
+    // VerifyResumeParameters
+    // -----------------------------------------------------------------------
+    // Compares the parameter names recorded in a GA / MCMC results file against
+    // the parameters currently defined in the model, for a "continue a previous
+    // run" operation.
+    //
+    // Both readers seed their populations POSITIONALLY (params[i] = column
+    // i+1), so a file whose columns no longer line up with the model does not
+    // fail — it silently loads every value onto the wrong parameter and the run
+    // proceeds looking perfectly normal. The comparison is therefore exact:
+    // same count, same names, same order. Anything else is refused.
+    //
+    // Returns true on an exact match. On mismatch returns false and fills
+    // errorMessage with a description naming the offending parameters.
+    bool VerifyResumeParameters(const std::vector<std::string> &fileParams,
+                                const std::vector<std::string> &modelParams,
+                                std::string &errorMessage);
+
 
 }
 

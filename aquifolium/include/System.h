@@ -67,6 +67,13 @@ struct solversettings
     double NRtolerance = 1e-6; //Newton Raphson Tolerance
     int n_threads = 16; //Number of threads
     double NR_coeff_reduction_factor = 0.8; //The coefficient to reduce the Newton-Raphson coefficient
+    /// Reassemble the Jacobian at every Newton iteration instead of reusing the
+    /// one assembled at the start of the step. The default (false) is the
+    /// classic chord scheme: assemble once, reuse, refresh only when the step
+    /// stops improving. Reassembling costs one Jacobian per iteration but gives
+    /// true Newton convergence, so far fewer iterations -- and because the
+    /// iteration count drives the time-step adaptation, a larger dt as well.
+    bool update_jacobian_every_iteration = false;
     double NR_timestep_reduction_factor = 0.75;
     double NR_timestep_reduction_factor_fail = 0.3;
     double minimum_timestep = 1e-7;
@@ -97,12 +104,51 @@ struct solversettings
     bool dependency_jacobian = true;
     /// Assemble both ways and report max|difference|. Diagnostic only; slow.
     bool verify_jacobian = false;
+    /// Resample every time series onto a uniform grid of spacing dt0 at the
+    /// start of the solve, so interpol() can index by arithmetic instead of
+    /// scanning. The resampling is lossy and its cost is set by dt0, a solver
+    /// setting with no other bearing on memory: a 155-day, 141-point inflow
+    /// record at dt0=1e-5 d expands to 1.6e7 points and the run appears to hang
+    /// before the first step. It is also one-sided -- linear interpolation
+    /// across a step widens each edge, which adds volume (+4.6% at dt0=1e-2,
+    /// +0.43% at 1e-3 on that record). On by default, since that is the
+    /// long-standing behaviour and the fast path matters for large series; set
+    /// make_timeseries_uniform = No to use the series exactly as supplied.
+    bool make_timeseries_uniform = true;
     bool write_solution_details = false;
     double maximum_simulation_time = 86400; //maximum simulation time allows in seconds
     int maximum_number_of_matrix_inversions = 200000; //maximum number of matrix inversions allowed
     bool RecordAllOutputs = true; //whether the results will be all recorded on not
     double timestepminfactor = 100000; // the maximum the timestep can decrease by
     double timestepmaxfactor = 50; // the maximum the timestep can increase by
+
+    /// Reject a converged step whose solution reverses direction.
+    /// A step can satisfy the Newton tolerance and still be wrong: with a
+    /// timestep coarse relative to a fast reaction the scheme oscillates, and
+    /// the run completes with a plausible-looking but non-monotone solution.
+    /// Off by default -- genuinely oscillatory problems exist, and only the user
+    /// knows whether a reversal is physical.
+    bool oscillation_control = false;
+    /// Reversal size, relative to the variable's own scale, that counts as
+    /// oscillation rather than round-off.
+    double oscillation_tolerance = 0.01;
+    /// How to respond. `true` rewinds to the last restore point, which also
+    /// discards the samples already spoiled; `false` simply continues from the
+    /// current state with a smaller step, which is cheaper but leaves the
+    /// oscillation that has already been recorded in the output.
+    bool oscillation_rewind = true;
+    /// Relax the ceiling imposed by a rewind after this many consecutive clean
+    /// steps, doubling it each time. Applies to every rewind, whatever caused
+    /// it. The trouble is usually transient --
+    /// tied to a front passing through -- so holding the step down for the
+    /// remainder of a long run costs far more than the episode itself.
+    /// 0 disables relaxation and the ceiling stays for good.
+    int oscillation_relax_after = 40;
+    /// Give up after this many rewind-and-refine attempts. Each one restarts at
+    /// a fifth of the step (ResetBasedOnRestorePoint), so the budget spans a
+    /// factor of 5^n; refining past that only drives the residual under the
+    /// Newton floor, which stops the solve entirely.
+    int oscillation_max_reductions = 4;
 
 };
 
@@ -147,6 +193,26 @@ struct solvertemporaryvars
     int numiteration_tr;
     int epoch_count = 0;
     std::vector<std::string> fail_reason;
+    int osc_reductions = 0;      ///< budget counter: refunded when the ceiling relaxes
+    int osc_events = 0;          ///< total interventions, never refunded (reporting)
+    int osc_relaxations = 0;     ///< times the ceiling was eased back
+    bool osc_gave_up = false;    ///< reported that reduction is not helping
+    /// Ceiling imposed whenever the solver rewinds to a restore point, for any
+    /// reason -- oscillation or repeated Newton failure. Without it dt_base
+    /// grows back to dt0*timestepmaxfactor within a few successful steps and
+    /// whatever forced the rewind simply recurs, so the rewind buys nothing.
+    double dt_ceiling = 0;       ///< 0 = none imposed
+    int clean_steps = 0;         ///< consecutive good steps since the last rewind
+    int osc_last_counter = -1;   ///< step index of the last cut, for cooldown
+    /// Times Newton exited before iterating because the initial residual was
+    /// under the hard-coded absolute floor -- the mechanism that produces a
+    /// silently unchanging solution.
+    long nr_below_absolute_floor = 0;
+    long nr_floor_seen_at = 0;
+    int null_solution_steps = 0; ///< consecutive such steps while mass is entering
+    /// Last three accepted state vectors, oldest first; the oscillation test
+    /// needs three increments and therefore four levels including the current.
+    std::vector<std::vector<double>> osc_history;
     double t;
     double dt;
     double dt_base;
@@ -501,6 +567,9 @@ public:
     double dt0() const { return SimulationParameters.dt0; }
     int EpochCount() const { return SolverTempVars.epoch_count; }
     bool GetSolutionFailed() const { return SolverTempVars.SolutionFailed; }
+    // Lets an alternative forward-model back end (the codegen kernel used by
+    // OHQ-GA/OHQ-MCMC --kernel) report a failed solve; SolverTempVars is private.
+    void SetSolutionFailed(bool f) { SolverTempVars.SolutionFailed = f; }
     const solversettings& GetSolverSettings() const { return SolverSettings; }
     //   [CHANGE] Add const
     time_t GetSimulationDuration() const { return SolverTempVars.simulation_duration; }
@@ -512,6 +581,10 @@ public:
     void SetRecordResults(bool recresults) { SolverSettings.RecordAllOutputs = recresults; }
     //   [CHANGE] Add const
     bool RecordResults() const { return SolverSettings.RecordAllOutputs; }
+    // read-only accessors for the restore-point settings (private members), so
+    // the codegen can emit them; no behaviour change.
+    unsigned int RestoreInterval() const { return restore_interval; }
+    unsigned int RestorePointMaxUses() const { return restore_point_max_uses; }
     void SetParameterEstimationMode(parameter_estimation_options mode = parameter_estimation_options::none);
     bool stop_triggered = false;
 
@@ -712,6 +785,19 @@ public:
     void WriteBlocksStates(const std::string& variable, const Expression::timing& tmg);   
     void WriteLinksStates(const std::string& variable, const Expression::timing& tmg);    
     bool CopyStateVariablesFrom(System* sys);
+    /// Sum of |x| over the transport state (constituent masses), and over the
+    /// inflow loadings. Used to catch a solution that is identically zero while
+    /// mass is crossing the boundary.
+    void TransportMassAndLoading(double& mass, double& loading);
+    /// Concatenated state vector at `tmg`, in solution order (the solved
+    /// variables -- Storage and the constituent masses).
+    std::vector<double> GatherSolvedState(const Expression::timing& tmg);
+    /// Components of the solved state whose last three increments alternate in
+    /// sign by more than `tol` relative to their own magnitude. Same criterion
+    /// as TimeSeries::wiggle_sl, applied to the state rather than to the
+    /// recorded outputs: far fewer values to test, and independent of whether
+    /// outputs are being recorded at all.
+    int CountOscillatingStates(double tol);
     bool ResetBasedOnRestorePoint(RestorePoint* rp);
     SafeVector<TimeSeries<timeseriesprecision>*> GetTimeSeries(bool onlyprecip);
     double GetMinimumNextTimeStepSize();
@@ -973,6 +1059,15 @@ private:
     bool silent = false;   // was uninitialised: a fresh System had an indeterminate verbosity
     _directories paths;
     std::vector<TimeSeries<timeseriesprecision>*> alltimeseries;
+    /// How many times a single restore point may be reused before the solver
+    /// refuses to rewind to it again. Guards against rewinding forever to a
+    /// state the solver cannot get past; raise it together with a shorter
+    /// restore_interval to let oscillation control work harder.
+    unsigned int restore_point_max_uses = 2;
+    /// Steps between restore points. A rewind returns to the last one, so this
+    /// sets how much work an oscillation rewind discards (up to this many
+    /// steps) and how often the state is copied. Smaller = cheaper, better
+    /// targeted rewinds, at the cost of more frequent copying.
     unsigned int restore_interval = 200;
 
 #ifndef NO_OPENMP

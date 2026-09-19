@@ -8,7 +8,7 @@
 
 CONFIG += c++17
 
-QT += core gui opengl printsupport widgets
+QT += core gui opengl printsupport widgets concurrent
 
 # For Qt5
 lessThan(QT_MAJOR_VERSION, 6): {
@@ -28,6 +28,10 @@ INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
 INCLUDEPATH += ./aquifolium/include/MCMC
 INCLUDEPATH += jsoncpp/include/
+# Model -> C++ compiler (Model > Export to C++). Generator only; the generated
+# code links the header-only codegen/runtime, which is embedded in
+# codegen/src/EmbeddedRuntime.cpp (regenerate with codegen/tools/embed_runtime.py).
+INCLUDEPATH += ./codegen/include
 # NOTE: ./include holds nothing but a vendored Armadillo 6.100.0, bundled for
 # Windows builds that have no system copy. It used to be added here, without a
 # platform guard, which put it ahead of /usr/include and silently forced the
@@ -85,7 +89,7 @@ macx {
     DEFINES += mac_version ARMA_USE_LAPACK ARMA_USE_BLAS
 
     # Armadillo and GSL (adjust versions if needed)
-    INCLUDEPATH += $$PWD/../Armadillo
+    INCLUDEPATH += $$PWD/../Armadillo/include
     DEPENDPATH  += $$PWD/../Armadillo
     LIBS += -L$$PWD/../Armadillo -larmadillo.11.2.3 -llapack.3.10.1 -lblas.3.10.1
 
@@ -120,6 +124,10 @@ CONFIG(debug, debug|release) {
 
 
 SOURCES += \
+    codegen/src/ExpressionEmitter.cpp \
+    codegen/src/DependencyAnalyzer.cpp \
+    codegen/src/CodeGenerator.cpp \
+    codegen/src/EmbeddedRuntime.cpp \
     ProgressWindow.cpp \
     TimeSeriesTextBox.cpp \
     VisualizationDialog.cpp \
@@ -335,4 +343,3 @@ linux {
      LIBS += -larmadillo -llapack -lblas -lgsl -lsuperlu -lopenblas
 
 }
-

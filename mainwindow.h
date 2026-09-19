@@ -139,6 +139,15 @@ public:
     void ShowSelectedNode(Node *node);
     /** @brief Unchecks every link tool and drops the armed link type */
     void ClearLinkMode();
+    /**
+     * @brief Toolbar icon size choice, offered as Small/Large in the Options dialog
+     *
+     * Not persisted - every session starts on Small, which is the size the toolbars
+     * have always used.
+     */
+    enum class ToolbarIconSize { Small, Large };
+    ToolbarIconSize GetToolbarIconSize() const { return toolbarIconSize; }
+    void SetToolbarIconSize(ToolbarIconSize size);
     QString* GetWorkingFolder()
     {
         return &workingfolder;
@@ -210,6 +219,13 @@ private:
     void SetupObjectBrowserSplitter();
     void SaveObjectBrowserSplitterState();
     QMap<QString, QToolBar*> categoryToolbars_;
+    ToolbarIconSize toolbarIconSize = ToolbarIconSize::Small;
+    /** @brief Edge length in pixels for the object toolbars (Blocks, Links, categories) */
+    int ObjectToolbarIconExtent() const;
+    /** @brief Edge length in pixels for the vertical File/View toolbar */
+    int GeneralToolbarIconExtent() const;
+    /** @brief Pushes the current choice onto every toolbar that exists right now */
+    void ApplyToolbarIconSize();
     /**
      * @brief The object-creation actions rebuilt whenever the template set changes
      *
@@ -253,6 +269,7 @@ private slots:
     void onabout();
     void onpantriggered();
     void onzoomwindowtriggered();
+    void onexporttocpp();
     void onsave();
     void onnormalmode();
     void onsaveas();

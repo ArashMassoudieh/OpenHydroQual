@@ -184,6 +184,15 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
         MCMC_Settings.acceptance_rate = aquiutils::atof(value);
         return true;
     }
+    if (aquiutils::tolower(varname) == "covariance_proposal")
+    {   MCMC_Settings.covariance_proposal = aquiutils::tolower(value)=="yes"
+            || aquiutils::tolower(value)=="true" || value=="1"; return true;}
+    if (aquiutils::tolower(varname) == "covariance_update_interval")
+    {   MCMC_Settings.covariance_update_interval = aquiutils::atoi(value); return true;}
+    if (aquiutils::tolower(varname) == "covariance_min_samples")
+    {   MCMC_Settings.covariance_min_samples = aquiutils::atoi(value); return true;}
+    if (aquiutils::tolower(varname) == "covariance_scale")
+    {   MCMC_Settings.covariance_scale = aquiutils::atof(value); return true;}
     if (aquiutils::tolower(varname) == "purturbation_change_scale")
     {
         MCMC_Settings.purt_change_scale = aquiutils::atof(value);
@@ -473,11 +482,115 @@ bool CMCMC<T>::step(int k)
 }
 
 template<class T>
+void CMCMC<T>::UpdateProposalCovariance(int upto)
+{
+    // Empirical covariance of the post-burn-in samples, in the space the
+    // proposal works in: log for log-normal priors, linear otherwise.  Stored
+    // as its Cholesky factor so purturb() only has to multiply.
+    const int d = MCMC_Settings.number_of_parameters;
+    const int start = max<int>(MCMC_Settings.burnout_samples,
+                               MCMC_Settings.number_of_chains);
+    if (upto - start < (int)MCMC_Settings.covariance_min_samples) return;
+
+    vector<char> logged(d);
+    for (int i = 0; i < d; i++)
+        logged[i] = (parameter(i)->GetPriorDistribution() == "log-normal");
+
+    vector<double> mean(d, 0.0);
+    int n = 0;
+    for (int k = start; k < upto; k++)
+    {
+        if ((int)Params[k].size() != d) continue;
+        bool ok = true;
+        for (int i = 0; i < d && ok; i++)
+            if (logged[i] && !(Params[k][i] > 0)) ok = false;
+        if (!ok) continue;
+        for (int i = 0; i < d; i++)
+            mean[i] += logged[i] ? log(Params[k][i]) : Params[k][i];
+        n++;
+    }
+    if (n < (int)MCMC_Settings.covariance_min_samples) return;
+    for (int i = 0; i < d; i++) mean[i] /= n;
+
+    vector<vector<double>> C(d, vector<double>(d, 0.0));
+    for (int k = start; k < upto; k++)
+    {
+        if ((int)Params[k].size() != d) continue;
+        bool ok = true;
+        for (int i = 0; i < d && ok; i++)
+            if (logged[i] && !(Params[k][i] > 0)) ok = false;
+        if (!ok) continue;
+        vector<double> z(d);
+        for (int i = 0; i < d; i++)
+            z[i] = (logged[i] ? log(Params[k][i]) : Params[k][i]) - mean[i];
+        for (int i = 0; i < d; i++)
+            for (int j = 0; j <= i; j++) C[i][j] += z[i] * z[j];
+    }
+    for (int i = 0; i < d; i++)
+        for (int j = 0; j <= i; j++) { C[i][j] /= (n - 1); C[j][i] = C[i][j]; }
+
+    // ridge, then Cholesky; abandon the update rather than propose from a
+    // matrix that is not positive definite
+    double tr = 0.0; for (int i = 0; i < d; i++) tr += C[i][i];
+    const double eps = MCMC_Settings.covariance_ridge * max(tr / d, 1e-300);
+    for (int i = 0; i < d; i++) C[i][i] += eps;
+
+    vector<vector<double>> L(d, vector<double>(d, 0.0));
+    for (int i = 0; i < d; i++)
+    {
+        for (int j = 0; j <= i; j++)
+        {
+            double sum = C[i][j];
+            for (int m = 0; m < j; m++) sum -= L[i][m] * L[j][m];
+            if (i == j)
+            {
+                if (sum <= 0.0) return;          // not positive definite: keep the old factor
+                L[i][j] = sqrt(sum);
+            }
+            else L[i][j] = sum / L[j][j];
+        }
+    }
+    proposal_chol = L;
+    last_covariance_update = upto;
+#ifndef Q_GUI_SUPPORT
+    cout << "  [covariance proposal refreshed at sample " << upto
+         << " from " << n << " states]" << endl;
+#endif
+}
+
+template<class T>
 vector<double> CMCMC<T>::purturb(int k)
 {
 	vector<double> X;
-    X.resize(MCMC_Settings.number_of_parameters);
-    for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
+    const int d = MCMC_Settings.number_of_parameters;
+    X.resize(d);
+
+    if (MCMC_Settings.covariance_proposal && (int)proposal_chol.size() == d)
+    {
+        // Correlated step: X = mu + s * L z,  z ~ N(0, I), taken in log space
+        // for log-normal priors.  s = covariance_scale / sqrt(d) is the optimal
+        // scaling for a Gaussian target (Roberts & Rosenthal 2001); pertcoeff[0]
+        // relative to its initial value carries the acceptance-rate adaptation
+        // so the two mechanisms compose rather than fight.
+        vector<double> z(d);
+        for (int i = 0; i < d; i++) z[i] = ND.getstdnormalrand();
+        const double adapt = (MCMC_Settings.ini_purt_fact > 0)
+                           ? pertcoeff[0] / MCMC_Settings.ini_purt_fact : 1.0;
+        const double sc = MCMC_Settings.covariance_scale / sqrt(double(d)) * adapt;
+        for (int i = 0; i < d; i++)
+        {
+            double step = 0.0;
+            for (int j = 0; j <= i; j++) step += proposal_chol[i][j] * z[j];
+            step *= sc;
+            if (parameter(i)->GetPriorDistribution() == "log-normal")
+                X[i] = Params[k][i] * exp(step);
+            else
+                X[i] = Params[k][i] + step;
+        }
+        return X;
+    }
+
+    for (int i=0; i<d; i++)
 	{
         if (parameter(i)->GetPriorDistribution() == "log-normal")
             X[i] = Params[k][i]*exp(pertcoeff[i]*ND.getstdnormalrand());
@@ -631,6 +744,11 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 			}
 			fclose(file);
 		}
+
+        if (MCMC_Settings.covariance_proposal &&
+            kk > MCMC_Settings.burnout_samples &&
+            kk - last_covariance_update >= MCMC_Settings.covariance_update_interval)
+            UpdateProposalCovariance(kk);
 
         if ((kk-k_0) % (50*MCMC_Settings.number_of_chains) == 0)
 		{
@@ -844,9 +962,40 @@ CVector CMCMC<T>::sensitivity_ln(double d, vector<double> par)
 template<class T>
 int CMCMC<T>::readfromfile(string filename)
 {
+    last_error.clear();
     ifstream file(filename);
+    if (!file.is_open())
+    {
+        last_error = "Unable to open the file to continue from:\n  " + filename +
+                     "\n\nCheck that the path is correct and the file is readable.";
+        return -1;
+    }
+
 	vector<string> s;
+    // Header: "no., <param names...>, logp, logp_1, stuck_counter, purt_coeff_0..."
+    // written by the sampler itself. The samples below are read POSITIONALLY
+    // (Params[jj][i] = column i+1), so unless these names are checked against
+    // the model, a file from a different parameter set loads every value onto
+    // the wrong parameter and the chain continues looking perfectly healthy.
     s = aquiutils::getline(file);
+    vector<string> fileParams;
+    for (int i = 1;
+         i < int(s.size()) && i <= int(MCMC_Settings.number_of_parameters);
+         i++)
+        fileParams.push_back(aquiutils::trim(s[i]));
+
+    vector<string> modelParams;
+    for (unsigned int i = 0; i < parameters->size(); i++)
+        modelParams.push_back(parameter(i)->GetName());
+
+    std::string mismatch;
+    if (!aquiutils::VerifyResumeParameters(fileParams, modelParams, mismatch))
+    {
+        last_error = mismatch;
+        file.close();
+        return -1;
+    }
+
 	int jj=0;
 	while (file.eof() == false)
 	{
@@ -864,6 +1013,15 @@ int CMCMC<T>::readfromfile(string filename)
 		}
 	}
 	file.close();
+
+    if (jj == 0)
+    {
+        last_error = "No usable samples were found in:\n  " + filename +
+                     "\n\nThe parameter names match, but no row carried the "
+                     "expected number of columns. The file may have been "
+                     "truncated while the previous run was writing it.";
+        return -1;
+    }
 	return jj;
 }
 
@@ -990,6 +1148,31 @@ template<class T>
 void CMCMC<T>::Perform()
 {
     initialize(false);
+
+    // Announce the sampler's actual configuration before it runs.  A setting
+    // that fails to arrive -- because the quantity is missing from the
+    // resources, or a setvalue silently did nothing -- otherwise produces a run
+    // that looks exactly like the one that was asked for and is not.  A
+    // 20,000-sample run was lost that way (issues.md, ISSUE 23).
+#ifndef Q_GUI_SUPPORT
+    cout << "MCMC configuration:" << endl;
+    cout << "  chains            : " << MCMC_Settings.number_of_chains << endl;
+    cout << "  samples           : " << MCMC_Settings.total_number_of_samples << endl;
+    cout << "  burn-in           : " << MCMC_Settings.burnout_samples << endl;
+    cout << "  proposal          : "
+         << (MCMC_Settings.covariance_proposal
+             ? "COVARIANCE-ADAPTED (correlated)" : "DIAGONAL (independent)") << endl;
+    if (MCMC_Settings.covariance_proposal)
+    {
+        cout << "    scale           : " << MCMC_Settings.covariance_scale
+             << " / sqrt(" << MCMC_Settings.number_of_parameters << ")" << endl;
+        cout << "    update interval : " << MCMC_Settings.covariance_update_interval << endl;
+        cout << "    min samples     : " << MCMC_Settings.covariance_min_samples << endl;
+    }
+    cout << "  initial perturb   : " << (MCMC_Settings.noinipurt ? "No" : "Yes") << endl;
+    cout << flush;
+#endif
+
     int mcmcstart = MCMC_Settings.number_of_chains;
     if (MCMC_Settings.continue_mcmc)
     {
@@ -999,6 +1182,17 @@ void CMCMC<T>::Perform()
     cout << ("Reading samples from ... " + MCMC_Settings.continue_filename) << endl;
 #endif
         mcmcstart = readfromfile(MCMC_Settings.continue_filename);
+        if (mcmcstart < 0)
+        {
+            // Hard stop, as for the GA: continuing from samples that do not
+            // correspond to this model's parameters yields a chain that looks
+            // fine and means nothing.
+#ifdef Q_GUI_SUPPORT
+            if (rtw) rtw->AppendLog("Cannot continue the previous run: " + last_error);
+#endif
+            cout << "Cannot continue the previous run:\n" << last_error << endl;
+            return;
+        }
     }
 #ifdef Q_GUI_SUPPORT
     if (rtw) rtw->AppendLog(string("Generating samples ... "));

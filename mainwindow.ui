@@ -85,6 +85,8 @@
     <addaction name="actionRun"/>
     <addaction name="actionOpen_Results"/>
     <addaction name="actionVisualize"/>
+    <addaction name="separator"/>
+    <addaction name="actionExport_to_Cpp"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -327,6 +329,14 @@
   <action name="actionExport_to_SVG">
    <property name="text">
     <string>Export to SVG</string>
+   </property>
+  </action>
+  <action name="actionExport_to_Cpp">
+   <property name="text">
+    <string>Export to C++...</string>
+   </property>
+   <property name="toolTip">
+    <string>Compile this model into a standalone C++ solver project (library or executable)</string>
    </property>
   </action>
   <action name="actionOptions">

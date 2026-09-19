@@ -683,6 +683,73 @@ namespace aquiutils
         return x - int(x/y)*y;
     }
 
+    // -----------------------------------------------------------------------
+    // VerifyResumeParameters   (declared in Utilities.h -- see the note there)
+    // -----------------------------------------------------------------------
+    bool VerifyResumeParameters(const std::vector<std::string> &fileParams,
+                                const std::vector<std::string> &modelParams,
+                                std::string &errorMessage)
+    {
+        errorMessage.clear();
+
+        if (fileParams.empty())
+        {
+            errorMessage = "The results file contains no parameter names. It is "
+                           "either empty, truncated, or not an OpenHydroQual "
+                           "results file.";
+            return false;
+        }
+
+        if (fileParams.size() != modelParams.size())
+        {
+            errorMessage = "The file was produced with " +
+                           numbertostring(int(fileParams.size())) +
+                           " calibrated parameter(s) but the model now defines " +
+                           numbertostring(int(modelParams.size())) + ".";
+        }
+
+        // Report every disagreement at once: fixing them one error at a time is
+        // miserable when a model has a dozen parameters.
+        std::string positional, missing, extra;
+        const size_t n = std::min(fileParams.size(), modelParams.size());
+        for (size_t i = 0; i < n; i++)
+            if (fileParams[i] != modelParams[i])
+                positional += "\n    position " + numbertostring(int(i + 1)) +
+                              ": file has '" + fileParams[i] +
+                              "', model has '" + modelParams[i] + "'";
+
+        for (size_t i = 0; i < modelParams.size(); i++)
+            if (lookup(fileParams, modelParams[i]) == -1)
+                missing += (missing.empty() ? "" : ", ") + modelParams[i];
+
+        for (size_t i = 0; i < fileParams.size(); i++)
+            if (lookup(modelParams, fileParams[i]) == -1)
+                extra += (extra.empty() ? "" : ", ") + fileParams[i];
+
+        if (!missing.empty())
+            errorMessage += std::string(errorMessage.empty() ? "" : "\n") +
+                            "Parameters in the model but not in the file: " + missing + ".";
+        if (!extra.empty())
+            errorMessage += std::string(errorMessage.empty() ? "" : "\n") +
+                            "Parameters in the file but not in the model: " + extra + ".";
+        if (!positional.empty())
+            errorMessage += std::string(errorMessage.empty() ? "" : "\n") +
+                            "Parameters do not appear in the same order:" + positional;
+
+        if (!errorMessage.empty())
+        {
+            errorMessage = "The parameters in the results file do not match the "
+                           "model's parameters, so the previous run cannot be "
+                           "continued.\n\n" + errorMessage +
+                           "\n\nContinuing requires an exact match: the same "
+                           "parameters, in the same order. Either restore the "
+                           "model's parameters to match the file, or start a "
+                           "new optimization.";
+            return false;
+        }
+        return true;
+    }
+
 }
 
 

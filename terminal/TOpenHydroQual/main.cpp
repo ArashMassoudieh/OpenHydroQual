@@ -27,7 +27,8 @@ enum ExitCode {
     EXIT_OK          = 0,
     EXIT_USAGE       = 2,   // no input file, or --help
     EXIT_NO_INPUT    = 3,   // the .ohq does not exist or is unreadable
-    EXIT_MODEL_ERROR = 4,   // model built, but the error handler logged problems
+    EXIT_MODEL_ERROR = 4,   // model built, but the error handler logged problems,
+                            // or a property violates its declared criteria
     EXIT_SOLVE_FAIL  = 5    // Solve() returned false
 };
 
@@ -43,6 +44,8 @@ static void usage(const char *prog)
          << "                           (default: <exe>/../../resources/,\n"
          << "                            or $OHQ_RESOURCES if set)\n"
          << "  -q, --quiet              suppress per-step solver output\n"
+         << "      --skip-verify        do not check property criteria before\n"
+         << "                           solving (not recommended)\n"
          << "  -h, --help               this message\n\n"
          << "Exit codes: 0 ok, 2 usage, 3 input not found, 4 model errors,\n"
          << "            5 solve failed.\n";
@@ -53,7 +56,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     string input, outfile, workdir, resources;
-    bool quiet = false;
+    bool quiet = false, skipverify = false;
     for (int i = 1; i < argc; ++i) {
         const char *s = argv[i];
         if (!std::strcmp(s, "-h") || !std::strcmp(s, "--help")) {
@@ -66,6 +69,8 @@ int main(int argc, char *argv[])
             resources = argv[++i];
         } else if (!std::strcmp(s, "-q") || !std::strcmp(s, "--quiet")) {
             quiet = true;
+        } else if (!std::strcmp(s, "--skip-verify")) {
+            skipverify = true;
         } else if (s[0] != '-' && input.empty()) {
             input = s;                       // the original argv[1]=="" test was a
                                              // pointer comparison and never fired
@@ -125,6 +130,39 @@ int main(int argc, char *argv[])
         return EXIT_MODEL_ERROR;
     }
 
+    // Check every property against the "criteria" declared for it in the
+    // template JSON -- length>0, side_slope>0, ManningCoeff>0 and the rest.
+    // The GUI does this before every run (MainWindow::onrunmodel); the console
+    // did not, and the two are not equivalent: `create block` assigns each
+    // property with check_criteria=false (Command.cpp), deliberately, because
+    // properties arrive one at a time and a criterion referring to a sibling
+    // would fire on a half-built object. The whole-model sweep afterwards is
+    // what makes that safe, and it was missing here. A Trapezoidal Channel
+    // Segment with length = -4.75 m therefore loaded and solved: depth came out
+    // negative for positive storage, the segment became a sink with no outlet,
+    // and it absorbed 94% of the inflow over a 3.8-hour run that reported
+    // success. Verify before the run, not after the results are believed.
+    if (!skipverify) {
+        ErrorHandler verrs = system->VerifyAllQuantities();
+        if (verrs.Count() > 0) {
+            cout << "\n*** " << verrs.Count()
+                 << " property value(s) violate the criteria declared in the"
+                    " templates:" << endl;
+            for (int i = 0; i < verrs.Count(); ++i)
+                cout << "  " << verrs[i]->description << endl;
+            cout << "*** refusing to solve. Fix the above, or pass --skip-verify"
+                    " to run anyway." << endl;
+            delete system;
+            return EXIT_MODEL_ERROR;
+        }
+    }
+
+    // The solver settings parsed from the .ohq (initial_time_step, tolerances,
+    // write_interval, jacobian method) only reach the solver through this call.
+    // Without it they stay at their default-constructed values and Solve()
+    // aborts in Armadillo while sizing its work vectors.
+    system->SetSystemSettings();
+
     system->SetSilent(quiet);
 
     // Honour write_solution_details from the model file, as the GUI does.
@@ -136,8 +174,18 @@ int main(int argc, char *argv[])
         system->SetSolutionLogger(logfile);
         if (!quiet) cout << "Solution details: " << logfile << endl;
     }
+    // A model carrying calibrated parameters keeps the fitted values in the
+    // Parameter objects, not in the blocks and constituents themselves; the
+    // objects still hold whatever the builder wrote. Solve() only pushes them
+    // across when asked, so a forward run of a calibrated model would otherwise
+    // silently use the construction-time values (for the column models, a
+    // dispersivity of 1e-4 instead of the fitted 5e-2). Apply them whenever the
+    // model defines any.
+    const size_t npar = system->Parameters().size();
+    if (npar > 0)
+        cout << "Applying " << npar << " calibrated parameter(s)" << endl;
     cout << "Solving ..." << endl;
-    const bool ok = system->Solve();
+    const bool ok = system->Solve(npar > 0);
 
     const int nerr_after = system->GetErrorHandler()->Count();
     if (nerr_after > 0) {
@@ -150,10 +198,25 @@ int main(int argc, char *argv[])
         return EXIT_SOLVE_FAIL;
     }
 
-    const string out = system->GetWorkingFolder()
-                     + (outfile.empty() ? system->OutputFileName() : outfile);
-    cout << "Writing outputs in '" << out << "'" << endl;
-    system->GetOutputs().write(out);
+    // Match System::WriteOutPuts(): an empty file name means "do not write this
+    // file". Observations are written independently of the bulk output, so a model
+    // can emit only the quantities it declared as Observations.
+    if (!system->ObservedOutputFileName().empty()) {
+        const string obs = system->GetWorkingFolder() + system->ObservedOutputFileName();
+        cout << "Writing observed outputs in '" << obs << "'" << endl;
+        system->GetObservedOutputs().write(obs);
+    }
+
+    const string outname = outfile.empty() ? system->OutputFileName() : outfile;
+    if (outname.empty()) {
+        cout << "No output file name given; bulk outputs not written." << endl;
+    } else if (!system->RecordResults()) {
+        cout << "record_results=No; bulk outputs not recorded." << endl;
+    } else {
+        const string out = system->GetWorkingFolder() + outname;
+        cout << "Writing outputs in '" << out << "'" << endl;
+        system->GetOutputs().write(out);
+    }
     delete system;
     return nerr_after > 0 ? EXIT_MODEL_ERROR : EXIT_OK;
 }

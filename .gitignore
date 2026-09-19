@@ -428,3 +428,16 @@ Examples/Crop_Root_Uptake/errors.txt
 Examples/*/output*.txt
 
 Examples/Sedimentation_Basin_Particle_Classes/state.json
+
+codegen/build-debug/
+
+codegen/build-local/
+OHQLib/build-fresh/
+
+terminal/TOpenHydroQual/build-fresh/
+
+*.bak-paramfn
+
+terminal/OHQ-GA/OHQ-GA
+
+terminal/OHQ-MCMC/OHQ-MCMC

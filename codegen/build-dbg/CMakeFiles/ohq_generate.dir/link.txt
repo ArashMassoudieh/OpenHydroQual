@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/ohq_generate.dir/src/ohq_generate.cpp.o -o ohq_generate  -Wl,-rpath,/home/arash/Projects/OpenHydroQual/codegen/../OHQLib/build libohq_codegen.a /usr/lib/x86_64-linux-gnu/libQt6Core.so.6.4.2 /home/arash/Projects/OpenHydroQual/codegen/../OHQLib/build/libOHQLib.so 
