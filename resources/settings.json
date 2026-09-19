@@ -550,7 +550,7 @@
    "warningmessage": "Purturbation change factor must be smaller than 1"
   },
   "covariance_proposal": {
-   "default": "No",
+   "default": "Yes",
    "type": "string",
    "description": "Covariance-adapted proposal",
    "helptext": "Propose correlated steps drawn from the empirical covariance of the samples so far, instead of perturbing each parameter independently. Use this when parameters trade off against one another -- a rate and a capacity that reproduce the same curve, for example. A diagonal proposal cannot move along such a ridge and the chains drift apart instead of mixing.",
