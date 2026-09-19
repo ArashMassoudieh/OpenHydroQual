@@ -27,10 +27,10 @@
     <ROW Property="ARPURLUPDATEINFO" Value="www.OpenHydroQual.com"/>
     <ROW Property="AppLogoIcon" Value="applogoicon" MultiBuildValue="DefaultBuild:Aquifolium.jpg_1" Type="1" MsiKey="AppLogoIcon"/>
     <ROW Property="Manufacturer" Value="EnviroInformatics, LLC"/>
-    <ROW Property="ProductCode" Value="1033:{683EE896-953E-4B20-8A81-472813EE12E9} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{24E30B1A-C79C-497B-B671-DF3857DA9570} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="OpenHydroQual"/>
-    <ROW Property="ProductVersion" Value="2.0.6" Type="32"/>
+    <ROW Property="ProductVersion" Value="2.0.7" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{22A5F0D0-785C-400D-99C4-4FBF0A322AB6}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -61,7 +61,7 @@
     <ROW Directory="resources_Dir" Directory_Parent="APPDIR" DefaultDir="RESOUR~1|resources"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
-    <ROW Component="AI_CustomARPName" ComponentId="{3D165A95-DF58-4503-AC21-6BACA66A92CD}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
+    <ROW Component="AI_CustomARPName" ComponentId="{58B9925F-B7D7-463C-81F3-CEDB46026585}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
     <ROW Component="AI_ExePath" ComponentId="{E9233AF7-0339-4898-BA7A-0EA6DCB0522F}" Directory_="APPDIR" Attributes="4" KeyPath="AI_ExePath"/>
     <ROW Component="AI_IA_ENABLE" ComponentId="{9961D3AC-A7F7-45C8-9F93-9695250B97F1}" Directory_="APPDIR" Attributes="4" KeyPath="AI_IA_ENABLE" Options="1"/>
     <ROW Component="Bioretention.png" ComponentId="{F01F4FC1-0721-4F89-8CAF-F9B6A4F658CD}" Directory_="Wizard_Icons_Dir" Attributes="0" KeyPath="Bioretention.png_1" Type="0"/>
@@ -123,6 +123,7 @@
     <ROW File="Chemical_Source_exchange.png" Component_="pd.nfo" FileName="CHEMIC~2.PNG|Chemical_Source_exchange.png" Attributes="0" SourcePath="..\resources\Icons\Chemical_Source_exchange.png" SelfReg="false" NextFile="Chemical_Source_timeseries.png"/>
     <ROW File="Chemical_Source_timeseries.png" Component_="pd.nfo" FileName="CHEMIC~3.PNG|Chemical_Source_timeseries.png" Attributes="0" SourcePath="..\resources\Icons\Chemical_Source_timeseries.png" SelfReg="false" NextFile="city.png"/>
     <ROW File="Chemical_source_constant.png" Component_="pd.nfo" FileName="CHEMIC~1.PNG|Chemical_source_constant.png" Attributes="0" SourcePath="..\resources\Icons\Chemical_source_constant.png" SelfReg="false" NextFile="Chemical_Source_exchange.png"/>
+    <ROW File="Composites.json" Component_="mass_transfer.json" FileName="COMPOS~1.JSO|Composites.json" Attributes="0" SourcePath="..\resources\Composites.json" SelfReg="false" NextFile="plug_flow_reactor.png"/>
     <ROW File="Control.png" Component_="pd.nfo" FileName="Control.png" Attributes="0" SourcePath="..\resources\Icons\Control.png" SelfReg="false" NextFile="control_valve.png"/>
     <ROW File="Curve.png" Component_="pd.nfo" FileName="Curve.png" Attributes="0" SourcePath="..\resources\Icons\Curve.png" SelfReg="false" NextFile="cuticon.png"/>
     <ROW File="D_Soil.json" Component_="D_Soil.json" FileName="2D_SOI~1.JSO|2D_Soil.json" Attributes="0" SourcePath="..\resources\Wizard_Scripts\2D_Soil.json" SelfReg="false" NextFile="Bioretention.json"/>
@@ -265,10 +266,11 @@
     <ROW File="channel2fixed.png" Component_="pd.nfo" FileName="CHANNE~1.PNG|channel2fixed.png" Attributes="0" SourcePath="..\resources\Icons\channel2fixed.png" SelfReg="false" NextFile="Chemical_source_constant.png"/>
     <ROW File="city.png" Component_="pd.nfo" FileName="city.png" Attributes="0" SourcePath="..\resources\Icons\city.png" SelfReg="false" NextFile="cloud.jpg"/>
     <ROW File="clarifier.png" Component_="pd.nfo" FileName="CLARIF~1.PNG|clarifier.png" Attributes="0" SourcePath="..\resources\Icons\clarifier.png" SelfReg="false" NextFile="cn_cascade_link.png"/>
+    <ROW File="clarifier_4layer.png" Component_="pd.nfo" FileName="CLARIF~2.PNG|clarifier_4layer.png" Attributes="0" SourcePath="..\resources\Icons\clarifier_4layer.png" SelfReg="false"/>
     <ROW File="cloud.jpg" Component_="pd.nfo" FileName="cloud.jpg" Attributes="0" SourcePath="..\resources\Icons\cloud.jpg" SelfReg="false" NextFile="cloud.png"/>
     <ROW File="cloud.png" Component_="pd.nfo" FileName="cloud.png" Attributes="0" SourcePath="..\resources\Icons\cloud.png" SelfReg="false" NextFile="cloud_rain.png"/>
     <ROW File="cloud_rain.png" Component_="pd.nfo" FileName="CLOUD_~1.PNG|cloud_rain.png" Attributes="0" SourcePath="..\resources\Icons\cloud_rain.png" SelfReg="false" NextFile="commad.png"/>
-    <ROW File="cn_cascade_link.png" Component_="pd.nfo" FileName="CN_CAS~1.PNG|cn_cascade_link.png" Attributes="0" SourcePath="..\resources\Icons\cn_cascade_link.png" SelfReg="false"/>
+    <ROW File="cn_cascade_link.png" Component_="pd.nfo" FileName="CN_CAS~1.PNG|cn_cascade_link.png" Attributes="0" SourcePath="..\resources\Icons\cn_cascade_link.png" SelfReg="false" NextFile="mixed_hydrologic_response_unit.json"/>
     <ROW File="cn_catchment.json" Component_="mass_transfer.json" FileName="CN_CAT~1.JSO|cn_catchment.json" Attributes="0" SourcePath="..\resources\cn_catchment.json" SelfReg="false" NextFile="hydrologic_response_unit.json"/>
     <ROW File="cn_catchment.png" Component_="pd.nfo" FileName="CN_CAT~1.PNG|cn_catchment.png" Attributes="0" SourcePath="..\resources\Icons\cn_catchment.png" SelfReg="false" NextFile="cn_catchment_3.png"/>
     <ROW File="cn_catchment_3.png" Component_="pd.nfo" FileName="CN_CAT~2.PNG|cn_catchment_3.png" Attributes="0" SourcePath="..\resources\Icons\cn_catchment_3.png" SelfReg="false" NextFile="clarifier.png"/>
@@ -345,6 +347,8 @@
     <ROW File="main_components.json" Component_="mass_transfer.json" FileName="MAIN_C~1.JSO|main_components.json" Attributes="0" SourcePath="..\resources\main_components.json" SelfReg="false" NextFile="open_channel.json"/>
     <ROW File="mass_transfer.json" Component_="mass_transfer.json" FileName="MASS_T~1.JSO|mass_transfer.json" Attributes="0" SourcePath="..\resources\mass_transfer.json" SelfReg="false" NextFile="buildup_washoff.json"/>
     <ROW File="mass_transfer_template.png" Component_="pd.nfo" FileName="MASS_T~1.PNG|mass_transfer_template.png" Attributes="0" SourcePath="..\resources\Icons\mass_transfer_template.png" SelfReg="false" NextFile="MCMC.png"/>
+    <ROW File="mixed_hydrologic_response_unit.json" Component_="mass_transfer.json" FileName="MIXED_~1.JSO|mixed_hydrologic_response_unit.json" Attributes="0" SourcePath="..\resources\mixed_hydrologic_response_unit.json" SelfReg="false" NextFile="Composites.json"/>
+    <ROW File="mixed_hydrologic_response_unit.png" Component_="pd.nfo" FileName="MIXED_~1.PNG|mixed_hydrologic_response_unit.png" Attributes="0" SourcePath="..\resources\Icons\mixed_hydrologic_response_unit.png" SelfReg="false" NextFile="clarifier_4layer.png"/>
     <ROW File="objective.png" Component_="pd.nfo" FileName="OBJECT~1.PNG|objective.png" Attributes="0" SourcePath="..\resources\Icons\objective.png" SelfReg="false" NextFile="observation.png"/>
     <ROW File="observation.png" Component_="pd.nfo" FileName="OBSERV~1.PNG|observation.png" Attributes="0" SourcePath="..\resources\Icons\observation.png" SelfReg="false" NextFile="OHQ.png"/>
     <ROW File="open.ico" Component_="pd.nfo" FileName="open.ico" Attributes="0" SourcePath="..\resources\Icons\open.ico" SelfReg="false" NextFile="open.jpg"/>
@@ -369,6 +373,7 @@
     <ROW File="plant.png" Component_="pd.nfo" FileName="plant.png" Attributes="0" SourcePath="..\resources\Icons\plant.png" SelfReg="false" NextFile="plant_template.png"/>
     <ROW File="plant_template.png" Component_="pd.nfo" FileName="PLANT_~1.PNG|plant_template.png" Attributes="0" SourcePath="..\resources\Icons\plant_template.png" SelfReg="false" NextFile="png_pond_by_paradise234d5g6gky.png"/>
     <ROW File="plants.json" Component_="mass_transfer.json" FileName="PLANTS~1.JSO|plants.json" Attributes="0" SourcePath="..\resources\plants.json" SelfReg="false" NextFile="Pond_Plugin.json"/>
+    <ROW File="plug_flow_reactor.png" Component_="pd.nfo" FileName="PLUG_F~1.PNG|plug_flow_reactor.png" Attributes="0" SourcePath="..\resources\Icons\plug_flow_reactor.png" SelfReg="false" NextFile="mixed_hydrologic_response_unit.png"/>
     <ROW File="png_pond_by_paradise234d5g6gky.png" Component_="pd.nfo" FileName="PNG_PO~1.PNG|png_pond_by_paradise234-d5g6gky.png" Attributes="0" SourcePath="..\resources\Icons\png_pond_by_paradise234-d5g6gky.png" SelfReg="false" NextFile="Pond.png"/>
     <ROW File="pond.svg" Component_="Bioswale.png" FileName="pond.svg" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Diagrams\pond.svg" SelfReg="false" NextFile="Bioretention.png_1"/>
     <ROW File="pond_template.png" Component_="pd.nfo" FileName="POND_T~1.PNG|pond_template.png" Attributes="0" SourcePath="..\resources\Icons\pond_template.png" SelfReg="false" NextFile="Pondicon.png"/>
@@ -859,7 +864,7 @@
     <ROW XmlAttribute="xsischemaLocation" XmlElement="swidsoftware_identification_tag" Name="xsi:schemaLocation" Flags="14" Order="3" Value="http://standards.iso.org/iso/19770/-2/2008/schema.xsd software_identification_tag.xsd"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
-    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="6"/>
+    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="7"/>
     <ROW XmlElement="swidentitlement_required_indicator" ParentElement="swidsoftware_identification_tag" Name="swid:entitlement_required_indicator" Condition="1" Order="0" Flags="14" Text="false"/>
     <ROW XmlElement="swidmajor" ParentElement="swidnumeric" Name="swid:major" Condition="1" Order="0" Flags="14" Text="2"/>
     <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="0"/>

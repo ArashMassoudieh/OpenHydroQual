@@ -156,6 +156,7 @@
     <ClCompile Include="..\..\aquifolium\src\GA\Binary.cpp" />
     <ClCompile Include="..\..\aquifolium\src\Block.cpp" />
     <ClCompile Include="..\..\aquifolium\src\Command.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Composite.cpp" />
     <ClCompile Include="..\..\aquifolium\src\Condition.cpp" />
     <ClCompile Include="..\..\aquifolium\src\GA\Distribution.cpp" />
     <ClCompile Include="..\..\aquifolium\src\GA\DistributionNUnif.cpp" />

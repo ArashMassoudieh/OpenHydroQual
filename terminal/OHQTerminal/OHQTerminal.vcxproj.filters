@@ -32,6 +32,9 @@
     <ClCompile Include="..\..\aquifolium\src\Command.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\aquifolium\src\Composite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\aquifolium\src\Condition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

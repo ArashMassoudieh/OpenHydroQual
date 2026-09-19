@@ -1,0 +1,3 @@
+C:\Projects\OpenHydroQual\terminal\OHQTerminal\x64\gsl.dll
+C:\Projects\OpenHydroQual\terminal\OHQTerminal\x64\gslcblas.dll
+C:\Projects\OpenHydroQual\terminal\OHQTerminal\OHQTerminal\x64\Release\OHQTermi.D8B43E82.Up2Date
