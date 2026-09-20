@@ -68,19 +68,29 @@ struct _MCMC_settings
     unsigned int numberOfThreads = 8;
     double acceptance_rate;
     double purt_change_scale = 0.75;
-    // --- covariance-adapted proposal (opt-in) -------------------------------
-    // The default proposal is diagonal: each parameter is perturbed
-    // independently by pertcoeff[i].  Where the posterior has a correlated
-    // ridge -- for the two-site sorption model, corr(ln alpha, ln Kd) = -0.81
-    // within a medium, because a faster grain holding less reproduces the same
-    // breakthrough curve as a slower grain holding more -- a diagonal proposal
-    // cannot step along it.  The step must suit the narrowest direction while
-    // the chain needs ~cond(Sigma) steps to cross the widest, and the chains
-    // drift apart instead of mixing.
+    // --- covariance-adapted proposal (ON by default) ------------------------
+    // A diagonal proposal perturbs each parameter independently by
+    // pertcoeff[i].  Where the posterior has a correlated ridge -- for the
+    // two-site sorption model, corr(ln alpha, ln Kd) = -0.81 within a medium,
+    // because a faster grain holding less reproduces the same breakthrough
+    // curve as a slower grain holding more -- it cannot step along that ridge.
+    // The step must suit the narrowest direction while the chain needs
+    // ~cond(Sigma) steps to cross the widest, and the chains drift apart
+    // instead of mixing.
     // With covariance_proposal = true the sampler accumulates the empirical
     // covariance of the post-burn-in samples in log space and proposes from it
     // (Haario et al. 2001 adaptive Metropolis), which removes that factor.
-    bool covariance_proposal = false;
+    //
+    // Default changed false -> true on 2026-09-19.  Measured on the 8-column
+    // copper study, 16 chains, at equal cost (19,216 samples): worst split
+    // R-hat 1.16 against 3.50, smallest ESS 53 against 9, 7 of 10 parameters
+    // below R-hat 1.1 against 1 of 10, median ESS gain 6.0x.  The same 20,000
+    // correlated samples also beat 60,000 diagonal ones on every diagnostic,
+    // i.e. at a third of the cost.  The one parameter that does worse is the
+    // error standard deviation (0.39x), which is nearly independent of the
+    // rest; a proposal tuned to the joint covariance is less efficient in that
+    // single direction.  Set it to No to recover the old behaviour.
+    bool covariance_proposal = true;
     unsigned int covariance_update_interval = 1000;   // samples between refreshes
     unsigned int covariance_min_samples = 500;        // before the first refresh
     double covariance_scale = 2.38;                   // /sqrt(d), Roberts & Rosenthal
