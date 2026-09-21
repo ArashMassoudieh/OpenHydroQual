@@ -430,6 +430,16 @@
     "color": {
       "type": "string",
       "default": "0,0,200"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
     }
   },
   "Settling element interface (time variable)": {
@@ -458,6 +468,16 @@
     "color": {
       "type": "string",
       "default": "0,0,200"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
     }
   },
   "Sorbed_Constituent": {

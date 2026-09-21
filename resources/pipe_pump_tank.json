@@ -129,6 +129,15 @@
     "color": {
       "type": "string",
       "default": "0,0,200"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "valve": {
@@ -191,6 +200,15 @@
     "color": {
       "type": "string",
       "default": "0,0,200"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "pipe_1w": {
@@ -256,6 +274,15 @@
     "color": {
       "type": "string",
       "default": "0,0,200"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "junction_elastic": {
@@ -416,6 +443,23 @@
     "color": {
       "type": "string",
       "default": "0,0,0"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "pump_with_timeseries_control": {
@@ -483,6 +527,23 @@
     "color": {
       "type": "string",
       "default": "0,0,0"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "residential_user": {
@@ -546,6 +607,23 @@
       "description": "Flow rate",
       "applylimit": "true",
       "unit": "m^3/day;ft^3/s"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   }
 }

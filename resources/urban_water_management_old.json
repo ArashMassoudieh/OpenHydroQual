@@ -321,6 +321,23 @@
       "description": "Flow",
       "applylimit": "true",
       "description": "Flow rate"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "Water Storage": {
@@ -383,6 +400,23 @@
     "color": {
       "type": "string",
       "default": "0,0,200"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
     "Aquifer_recharge": {
@@ -410,6 +444,23 @@
     "color": {
       "type": "string",
       "default": "150,0,200"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
    "Water Transfer (constant max flow)": {
@@ -438,6 +489,23 @@
     "color": {
       "type": "string",
       "default": "0,0,200"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   }, 
   "Transfer to groundwater": {
@@ -473,6 +541,23 @@
     "color": {
       "type": "string",
       "default": "0,0,200"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   }
 }

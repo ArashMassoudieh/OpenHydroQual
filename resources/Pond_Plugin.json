@@ -235,6 +235,23 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "unit": "m^3/day;ft^3/s"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "orifice": {
@@ -282,6 +299,23 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "unit": "m^3/day;ft^3/s"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "darcy_connector": {
@@ -319,6 +353,23 @@
       "includeinoutput": "true",
       "applylimit": "true",
       "unit": "m^3/day;ft^3/s"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "wide_channel": {
@@ -663,6 +714,15 @@
     "color": {
       "type": "string",
       "default": "130,20,220"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   }
 }

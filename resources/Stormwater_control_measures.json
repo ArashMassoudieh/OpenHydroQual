@@ -178,7 +178,24 @@
       "includeinoutput": "true",
       "applylimit": "true"
     },
-    "helptext": "V-notch weir based on a power-law rating curve"
+    "helptext": "V-notch weir based on a power-law rating curve",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "drain_pipe": {
     "type": "link",
@@ -236,7 +253,24 @@
       "includeinoutput": "true",
       "applylimit": "true"
     },
-    "helptext": "Drain pipe"
+    "helptext": "Drain pipe",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "wide_channel": {
     "type": "link",

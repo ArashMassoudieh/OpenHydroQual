@@ -561,7 +561,24 @@
       "description": "Deficit",
       "applylimit": "true"
     },
-    "helptext": "Flow link to user"
+    "helptext": "Flow link to user",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "Wastewater_flow": {
     "type": "link",
@@ -599,7 +616,24 @@
       "default": "0.95",
       "helptext": "Treatment Plant Efficiency"
     },
-    "helptext": "Flow to water recycling plant"
+    "helptext": "Flow to water recycling plant",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "Infiltration_and_inflow": {
     "type": "link",
@@ -625,7 +659,24 @@
       "default": "0.1",
       "helptext": "Fraction infiltration and inflow"
     },
-    "helptext": "Infiltration and inflow"
+    "helptext": "Infiltration and inflow",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "Recycled_flow": {
     "type": "link",
@@ -655,7 +706,24 @@
       "description": "Maximum flow available",
       "applylimit": "true"
     },
-    "helptext": "Flow of recycled water"
+    "helptext": "Flow of recycled water",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "Flow_to_user_low_priority": {
     "type": "link",
@@ -687,7 +755,24 @@
       "delegate": "UnitBox",
       "helptext": "Minimum Storage Threshold"
     },
-    "helptext": "Flow link to user (Low priority)"
+    "helptext": "Flow link to user (Low priority)",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "Water Storage": {
     "type": "block",
@@ -754,7 +839,24 @@
       "type": "string",
       "default": "0,0,200"
     },
-    "helptext": "Water Transfer"
+    "helptext": "Water Transfer",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "Aquifer_recharge": {
     "type": "link",
@@ -783,7 +885,24 @@
       "type": "string",
       "default": "150,0,200"
     },
-    "helptext": "Aquifer recharge"
+    "helptext": "Aquifer recharge",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "Water Transfer (constant max flow)": {
     "type": "link",
@@ -813,7 +932,24 @@
       "type": "string",
       "default": "0,0,200"
     },
-    "helptext": "Water Transfer (constant max flow)"
+    "helptext": "Water Transfer (constant max flow)",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "Transfer to groundwater": {
     "type": "link",
@@ -851,6 +987,23 @@
       "type": "string",
       "default": "0,0,200"
     },
-    "helptext": "Transfer to groundwater"
+    "helptext": "Transfer to groundwater",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   }
 }

@@ -151,6 +151,23 @@
                         "expression" : "alpha*_pos(head.s-crest_elevation)^beta",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
+		},
+		"length": {
+			"type": "value",
+			"description": "Length",
+			"default": "1",
+			"includeinoutput": "false",
+			"ask_user": "false",
+			"helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+		},
+		"area": {
+			"type": "value",
+			"description": "Area",
+			"default": "0",
+			"includeinoutput": "false",
+			"ask_user": "false",
+			"unit": "m^2;ft^2",
+			"helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
 		}  	
 	},
 	"drain_pipe":{
@@ -204,6 +221,23 @@
                         "expression" : "86400*3.47*_pos(head.s-crest_elevation)^(0.5)/((head_loss_coefficient+1)^0.5)*(pipe_diameter^2)",
 			"includeinoutput" : "true",
 			"applylimit": "true"	
+		},
+		"length": {
+			"type": "value",
+			"description": "Length",
+			"default": "1",
+			"includeinoutput": "false",
+			"ask_user": "false",
+			"helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+		},
+		"area": {
+			"type": "value",
+			"description": "Area",
+			"default": "0",
+			"includeinoutput": "false",
+			"ask_user": "false",
+			"unit": "m^2;ft^2",
+			"helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
 		}  	
 	},
 	"wide_channel":{

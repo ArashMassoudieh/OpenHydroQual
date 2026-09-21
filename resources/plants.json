@@ -227,6 +227,15 @@
     "color": {
       "type": "string",
       "default": "120,120,0"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "Transpiration_Time_Series (Soil)": {

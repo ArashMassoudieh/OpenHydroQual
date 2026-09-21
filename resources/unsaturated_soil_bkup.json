@@ -670,6 +670,14 @@
     "color": {
       "type": "string",
       "default": "20,220,120"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
     }
   },
   "soil_free_outflow": {

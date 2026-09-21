@@ -178,7 +178,16 @@
       "ask_user": "false",
       "unit": "m/day;ft/day;ft/s"
     },
-    "helptext": "Unconfined Aquifer link"
+    "helptext": "Unconfined Aquifer link",
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "unconfined_groundwater_to_fixedhead": {
     "type": "link",
@@ -234,7 +243,16 @@
       "ask_user": "false",
       "unit": "m/day;ft/day;ft/s"
     },
-    "helptext": "Unconfined Groundwater to fixed head"
+    "helptext": "Unconfined Groundwater to fixed head",
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "surface2UCgroundwater_link": {
     "type": "link",
@@ -383,7 +401,24 @@
       "ask_user": "false",
       "unit": "m^3/day;ft^3/day;ft^3/s;m^3/s"
     },
-    "helptext": "Unconfined Aquifer to Well connector for (fixed withdrawal)"
+    "helptext": "Unconfined Aquifer to Well connector for (fixed withdrawal)",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "aquifer2well_link_pump": {
     "type": "link",
@@ -401,6 +436,23 @@
       "ask_user": "false",
       "unit": "m^3/day;ft^3/day;ft^3/s"
     },
-    "helptext": "Unconfined Aquifer to Well connector (pumped withdrawal)"
+    "helptext": "Unconfined Aquifer to Well connector (pumped withdrawal)",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   }
 }

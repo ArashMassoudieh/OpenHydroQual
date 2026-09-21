@@ -131,6 +131,23 @@
       "unit": "m/day",
       "ask_user": "true",
       "estimate": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
     "Flow_control_device_(Gaussian_Kernel)": {
@@ -238,6 +255,23 @@
       "unit": "m/day",
       "ask_user": "true",
       "estimate": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
   "Flow_control_device (function)": {
@@ -351,6 +385,14 @@
       "unit": "m/day",
       "ask_user": "true",
       "estimate": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
     }
   },
   "Flow_control_device (binary)": {
@@ -461,6 +503,14 @@
       "unit": "m/day",
       "ask_user": "true",
       "estimate": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
     }
   },
   "Flow_control_device (function, uncertain)": {
@@ -608,6 +658,14 @@
       "unit": "m/day",
       "ask_user": "true",
       "estimate": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
     }
   }
 

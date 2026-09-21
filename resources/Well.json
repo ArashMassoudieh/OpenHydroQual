@@ -222,7 +222,16 @@
       "applylimit": "true",
       "ask_user": "false"
     },
-    "helptext": "Surface water to well link"
+    "helptext": "Surface water to well link",
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
   },
   "Well_aggregate": {
     "type": "block",
