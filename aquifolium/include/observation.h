@@ -76,6 +76,21 @@ class Observation: public Object
         void SetLikelihoodScale(double s) { likelihood_scale = (s > 0.0 ? s : 1.0); }
         double GetLikelihoodScale() const { return likelihood_scale; }
 
+        // Event Mean Concentration (comparison_method == "EMC").
+        // Each step records expression*weight and weight (weight = the
+        // 'emc_weighting_expression' evaluated on 'emc_weighting_object',
+        // typically a flow). For every event window [t_start, t_end] listed in
+        // 'emc_events' (a two-column file: t_start, t_end) the modeled EMC is
+        // int(C*Q dt)/int(Q dt); it is compared with the observed_data value(s)
+        // time-stamped inside that window.
+        bool IsEMC();
+        void ClearModeled(); // clears every per-run modeled series
+        TimeSeries<timeseriesprecision>* GetModeledEMC() {return &modeled_emc;}
+        TimeSeries<timeseriesprecision>* GetObservedEMC() {return &observed_emc;}
+        // Modeled values at the observed data points: the EMCs for "EMC",
+        // the modeled series interpolated at the observed times otherwise.
+        TimeSeries<timeseriesprecision> MappedModeledSeries();
+
     protected:
 
     private:
@@ -90,6 +105,13 @@ class Observation: public Object
         string outputitem="";
         TimeSeriesSet<double> realizations;
         TimeSeriesSet<double> percentile95;
+        double GetWeightingValue(const Expression::timing &tmg = Expression::timing::present);
+        bool CalcEMCs(); // fills modeled_emc / observed_emc, one point per event with data
+        Expression weighting_expression;
+        TimeSeries<timeseriesprecision> emc_flux_series;   // expression*weight at every step
+        TimeSeries<timeseriesprecision> emc_weight_series; // weight at every step
+        TimeSeries<timeseriesprecision> modeled_emc;
+        TimeSeries<timeseriesprecision> observed_emc;
 
 };
 #endif // OBSERVATION_H

@@ -1,0 +1,14 @@
+\contentsline {section}{\numberline {1}Overview}{1}{section.1}%
+\contentsline {section}{\numberline {2}What is computed}{1}{section.2}%
+\contentsline {section}{\numberline {3}Input files}{2}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Events file (\texttt {\small emc\_events})}{2}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Observed data (\texttt {\small observed\_data})}{3}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Observation properties}{3}{section.4}%
+\contentsline {section}{\numberline {5}Using EMC in the GUI}{4}{section.5}%
+\contentsline {section}{\numberline {6}Using EMC from the console}{4}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Script syntax}{4}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Forward run: \texttt {\small TOpenHydroQual}}{4}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Calibration: \texttt {\small OHQ-GA} and \texttt {\small OHQ-MCMC}}{5}{subsection.6.3}%
+\contentsline {paragraph}{\texttt {\small -{}-kernel} (codegen).}{5}{section*.3}%
+\contentsline {section}{\numberline {7}Worked example}{5}{section.7}%
+\contentsline {section}{\numberline {8}Practical notes}{6}{section.8}%

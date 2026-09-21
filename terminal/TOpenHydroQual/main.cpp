@@ -19,6 +19,7 @@
 #include <QDir>
 #include "qfileinfo.h"
 #include <cstring>
+#include <fstream>
 
 // Exit codes. A command-line tool that always returns 0 cannot be used in a
 // pipeline: the caller has no way to tell a converged run from a model that
@@ -205,6 +206,35 @@ int main(int argc, char *argv[])
         const string obs = system->GetWorkingFolder() + system->ObservedOutputFileName();
         cout << "Writing observed outputs in '" << obs << "'" << endl;
         system->GetObservedOutputs().write(obs);
+    }
+
+    // Score every observation that has observed data, as the GUI does after a
+    // run, so a forward run reports how well it fits. EMC observations also get
+    // a per-event table: the only place their modeled EMCs are visible, since the
+    // bulk output holds the observation's continuous series, not the EMCs.
+    for (unsigned int i = 0; i < system->ObservationsCount(); i++) {
+        Observation *ob = system->observation(i);
+        TimeSeries<timeseriesprecision> *od = ob->Variable("observed_data")->GetTimeSeries();
+        if (od == nullptr || od->size() == 0) continue;
+        const double nll = ob->CalcMisfit();
+        cout << "Observation '" << ob->GetName() << "' ("
+             << ob->Variable("comparison_method")->GetProperty() << "): ";
+        if (ob->fit_measures.size() == 3)
+            cout << "MSE=" << ob->fit_measures[0] << " R2=" << ob->fit_measures[1]
+                 << " NSE=" << ob->fit_measures[2] << " -logL=" << nll << endl;
+        else
+            cout << "no fit measures" << endl;
+        if (!ob->GetLastError().empty())
+            cout << "  warning: " << ob->GetLastError() << endl;
+        if (ob->IsEMC()) {
+            const string emcfile = system->GetWorkingFolder() + ob->GetName() + "_EMC.txt";
+            std::ofstream f(emcfile);
+            f << "t, observed_EMC, modeled_EMC" << endl;
+            for (size_t k = 0; k < ob->GetObservedEMC()->size(); k++)
+                f << ob->GetObservedEMC()->getTime(k) << ", " << ob->GetObservedEMC()->getValue(k)
+                  << ", " << ob->GetModeledEMC()->getValue(k) << endl;
+            cout << "  " << ob->GetObservedEMC()->size() << " event(s) written to '" << emcfile << "'" << endl;
+        }
     }
 
     const string outname = outfile.empty() ? system->OutputFileName() : outfile;

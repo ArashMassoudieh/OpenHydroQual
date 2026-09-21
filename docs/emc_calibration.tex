@@ -1,0 +1,306 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{warnbg}{RGB}{255,248,235}
+\definecolor{warnrule}{RGB}{200,140,40}
+
+\lstdefinestyle{plain}{
+  basicstyle=\ttfamily\footnotesize, backgroundcolor=\color{codebg},
+  breaklines=true, columns=fullflexible, keepspaces=true,
+  showstringspaces=false, frame=single, framerule=0pt, framesep=6pt, xleftmargin=6pt,
+}
+\lstset{style=plain}
+
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\file}[1]{\texttt{\small #1}}
+
+\newenvironment{caution}
+  {\par\medskip\noindent\begin{tikzpicture}\node[draw=warnrule,fill=warnbg,line width=0.8pt,
+   rounded corners=2pt,inner sep=8pt,text width=\dimexpr\textwidth-20pt\relax,align=left]\bgroup}
+  {\egroup;\end{tikzpicture}\par\medskip}
+
+\title{\textbf{Calibrating against Event Mean Concentrations}\\[0.3em]
+       \large The EMC comparison method for Observations in OpenHydroQual}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Overview}
+
+Stormwater and BMP monitoring programs often report water quality as
+\emph{event mean concentrations} (EMCs): one flow-weighted composite
+concentration per storm, rather than a concentration time series. An
+\code{Observation} with \code{comparison\_method = EMC} computes the modeled EMC
+of every monitored event and compares it with the measured one. The likelihood it
+returns is used by \textbf{Optimize} (genetic algorithm) and \textbf{Inverse Run}
+(MCMC), and by the headless runners \code{OHQ-GA} and \code{OHQ-MCMC}, the same
+way as any other observation. Nothing else in the model or in the estimation
+settings has to change.
+
+\section{What is computed}
+
+For every event $k$ with window $[t_{s,k},\,t_{e,k}]$, the modeled EMC is the
+flow-weighted mean of the observation's expression:
+\begin{equation}
+  \mathrm{EMC}_k \;=\; \frac{\displaystyle\int_{t_{s,k}}^{t_{e,k}} C(t)\,Q(t)\,dt}
+                           {\displaystyle\int_{t_{s,k}}^{t_{e,k}} Q(t)\,dt}.
+\end{equation}
+\begin{itemize}[leftmargin=1.4em]
+  \item $C(t)$ is the observation's \code{expression} evaluated on its
+        \code{object}, e.g.\ \code{Cu:concentration} on the outlet block.
+  \item $Q(t)$ is the weighting: \code{emc\_weighting\_expression}
+        (e.g.\ \code{flow}) evaluated on \code{emc\_weighting\_object}
+        (e.g.\ the underdrain link).
+  \item Both are recorded at every accepted solver step. The integrals are
+        trapezoidal over those steps and clipped exactly at the window edges.
+        With $Q=$ \code{flow}, the numerator is the event's mass load, the
+        denominator its runoff volume, and the ratio is a true flow-weighted EMC.
+\end{itemize}
+
+The \textbf{observed EMC} of event $k$ is the value in \code{observed\_data} whose
+time stamp lies inside the event window. If several values fall inside, their mean
+is used.
+
+The \textbf{likelihood} is the Gaussian form used by \code{Least Squared}, applied
+to the $N$ events that have both a modeled and an observed EMC (constant terms
+dropped):
+\begin{equation}
+  -\log L \;=\; N\left[\frac{\mathrm{MSE}}{2\sigma^2} + \log\sigma\right].
+\end{equation}
+\begin{itemize}[leftmargin=1.4em]
+  \item \code{error\_structure = normal}: the residuals are
+        $\mathrm{EMC}^{obs}_k-\mathrm{EMC}^{mod}_k$, and $\sigma$
+        (\code{error\_standard\_deviation}) is in concentration units.
+  \item \code{error\_structure = log-normal}: the residuals are
+        $\log\mathrm{EMC}^{obs}_k-\log\mathrm{EMC}^{mod}_k$, and $\sigma$ is the
+        standard deviation of the log ratio ($\sigma=0.3$ is roughly a
+        $\pm35\%$ scatter). Recommended for concentrations.
+\end{itemize}
+The fit measures reported per observation (MSE, $R^2$, NSE) are computed on the
+EMCs, in log space when the error structure is log-normal.
+
+\subsection*{Rules the calculation follows}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.42\textwidth}>{\raggedright\arraybackslash}p{0.5\textwidth}}
+\toprule
+Situation & What happens \\
+\midrule
+An event has no observed value inside its window & The event is ignored. It adds nothing to $N$ or to the likelihood. \\
+An event window lies completely outside the simulated period & The event is ignored. \\
+An event window partly overlaps the simulation & The integrals cover only the overlapping part. \\
+The modeled weighting integrates to zero over an event & The EMC is undefined. The time-averaged value of the expression is used instead, and a warning is set on the observation. \\
+No events file, or no weighting values recorded & The observation contributes zero to the likelihood and sets an error message. Check for this with a forward run (Section~\ref{sec:console}). \\
+\bottomrule
+\end{longtable}
+
+\section{Input files}
+
+\subsection{Events file (\code{emc\_events})}
+Plain text with two columns per line, \code{t\_start, t\_end}, in \emph{model
+time}: the same time base as \code{simulation\_start\_time},
+\code{simulation\_end\_time} and the observed data. Commas, tabs or spaces all
+work as separators. Lines that do not start with a number (comments, headers) are
+skipped.
+\begin{lstlisting}
+// t_start, t_end   (days)
+45728.10, 45728.72
+45741.30, 45742.05
+45760.00, 45760.40
+\end{lstlisting}
+\begin{itemize}[leftmargin=1.4em]
+  \item Rows must be sorted by \code{t\_start}; the file is rejected otherwise.
+        \code{t\_end} must be greater than \code{t\_start}.
+  \item Use the \textbf{sampling window} of the composite (first to last
+        aliquot) when it is known: that is the period the measured EMC actually
+        represents. Otherwise use the start and end of runoff at the monitoring
+        point.
+  \item Windows should not overlap. If they do, an observed value inside both
+        windows is used for both events.
+\end{itemize}
+
+\subsection{Observed data (\code{observed\_data})}
+The usual two-column time series. Each row is one measured EMC, time-stamped at
+\emph{any time inside its event window} (e.g.\ the event midpoint or the start of
+sampling):
+\begin{lstlisting}
+45728.40, 18.5
+45741.60, 11.2
+\end{lstlisting}
+The third event in the events file above has no observed value and is simply
+skipped. That lets you keep one events file for several analytes that were not
+all measured in every storm.
+
+\section{Observation properties}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.3\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.49\textwidth}}
+\toprule
+Property & Used by & Meaning \\
+\midrule
+\code{object} & all & Block or link on which \code{expression} is evaluated. For an effluent EMC, the block drained by the outlet, or the outlet link itself. \\
+\code{expression} & all & The concentration being averaged, e.g.\ \code{Cu:concentration}. \\
+\code{observed\_data} & all & Measured EMCs, one per event, time-stamped inside the event window. \\
+\code{comparison\_method} & all & Set to \textbf{\code{EMC}}. \\
+\code{emc\_weighting\_object} & EMC & Block or link on which the weighting expression is evaluated, typically the outlet or underdrain link. Leave empty to use \code{object}. \\
+\code{emc\_weighting\_expression} & EMC & The weight; default \code{flow}. Use \code{\_pos(flow)} if the link can reverse, so that backflow does not subtract from the event volume. \\
+\code{emc\_events} & EMC & The events file. \\
+\code{error\_structure} & all & \code{normal} or \code{log-normal}. \\
+\code{error\_standard\_deviation} & all & $\sigma$ of the residual. It can be assigned to a parameter and estimated. \\
+\bottomrule
+\end{longtable}
+
+\section{Using EMC in the GUI}
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{Build the model} so that the monitored outlet exists as a block
+        and/or link, and the forcing (inflow hydrograph, influent concentration)
+        covers every monitored event. Continuous simulation across the monitoring
+        period is best, because antecedent moisture and accumulated sorbed mass
+        carry over between storms.
+  \item \textbf{Add an Observation} and set, in the property panel:
+    \begin{itemize}
+      \item \emph{Object}: the effluent block or outlet link;
+      \item \emph{Expression}: the concentration, e.g.\ \code{Cu:concentration};
+      \item \emph{Observed data time series}: the observed-EMC file;
+      \item \emph{Comparison Method}: \code{EMC};
+      \item \emph{EMC weighting object}: the outlet or underdrain link (or leave empty);
+      \item \emph{EMC weighting expression}: \code{flow};
+      \item \emph{EMC events file}: the events file;
+      \item \emph{Error probability distribution}: \code{log-normal} for concentrations;
+      \item \emph{Error standard deviation}: an initial guess (e.g.\ 0.3 for
+            log-normal), or assign a parameter to estimate it.
+    \end{itemize}
+  \item \textbf{Run the model} once. The observation's plot shows the
+        \emph{continuous} modeled concentration, not the EMCs; the EMCs are scored
+        after the run. Check that the modeled flow on the weighting object is
+        non-zero during every event.
+  \item \textbf{Calibrate} with \emph{Optimize} (GA) or \emph{Inverse Run} (MCMC)
+        exactly as for any other observation. When they finish, the working
+        folder contains:
+    \begin{itemize}
+      \item \file{fit\_measures.txt}: MSE, $R^2$ and NSE on the EMCs;
+      \item \file{mapped\_modeled\_results.txt}: for EMC observations, the
+            \textbf{modeled EMC of each event}, time-stamped like the observed
+            data;
+      \item the usual GA and MCMC outputs.
+    \end{itemize}
+\end{enumerate}
+Several EMC observations (e.g.\ dissolved Cu, total Zn and TSS at the same outlet)
+can share one events file; their negative log-likelihoods add up.
+
+\section{Using EMC from the console}\label{sec:console}
+
+\subsection{Script syntax}
+\begin{lstlisting}
+create observation;type=Observation,name=Eff_Cu_EMC,object=Outlet_cell,expression=Cu:concentration,observed_data=eff_Cu_emc.txt,comparison_method=EMC,emc_weighting_object=Underdrain,emc_weighting_expression=flow,emc_events=events.txt,error_structure=log-normal,error_standard_deviation=0.3
+\end{lstlisting}
+Relative file names are resolved against the model's folder.
+
+\subsection{Forward run: \code{TOpenHydroQual}}
+\begin{lstlisting}
+OpenHydroQual-Console model.ohq -q -r /path/to/OpenHydroQual/resources
+\end{lstlisting}
+After the solve, the console scores every observation that has observed data and
+prints one line per observation:
+\begin{lstlisting}
+Observation 'Eff_Cu_EMC' (EMC): MSE=0.2192 R2=1 NSE=-12.88 -logL=17.31
+  2 event(s) written to '<workdir>/Eff_Cu_EMC_EMC.txt'
+\end{lstlisting}
+For each EMC observation it also writes \file{<name>\_EMC.txt}, with the observed
+and modeled EMC of every scored event:
+\begin{lstlisting}
+t, observed_EMC, modeled_EMC
+1.5, 9, 6.22253
+5, 7, 4.03986
+\end{lstlisting}
+\begin{caution}
+\textbf{Always do this forward run before calibrating.} It confirms that the
+number of scored events is what you expect (too few usually means time stamps
+outside their windows, or windows outside the simulation), that no
+\code{warning:} line appears (zero flow during an event, missing events file,
+unknown weighting object), and that the modeled EMCs are in a plausible range.
+\end{caution}
+
+\subsection{Calibration: \code{OHQ-GA} and \code{OHQ-MCMC}}
+\begin{lstlisting}
+OHQ-GA   model.ohq [working_folder]
+OHQ-MCMC model.ohq [working_folder]
+\end{lstlisting}
+The model's \code{parameter} entries define what is estimated, and its
+observations, including EMC ones, define the likelihood. Both runners write
+\file{fit\_measures.txt} and \file{mapped\_modeled\_results.txt} (modeled EMCs per
+event) in addition to their usual outputs. See
+\file{terminal/OHQ-Common/README.md} for all options.
+
+\paragraph{\code{-{}-kernel} (codegen).} A generated kernel records only each
+observation's expression, not the weighting series. If any observation uses EMC,
+the runners fall back to the interpreter for the forward solve automatically, so
+results stay correct but you do not get the kernel speed-up.
+
+\section{Worked example}
+A tank receives two storms whose inflow carries a tracer with a first-flush
+pollutograph. A time-varying outlet link supplies the weighting flow. One
+parameter, a constant background inflow concentration \code{p\_Cbase}, is
+calibrated against two observed EMCs. A third event in the events file has no
+observation and is correctly ignored.
+\begin{lstlisting}
+create block;type=Reactor,Storage=10,...,name=Tank,time_variable_inflow=Qin.txt,Tracer:time_variable_inflow_concentration=Cin.txt,...
+create block;type=Reactor,Storage=1000000,...,name=Sink
+create link;from=Tank,to=Sink,type=User_flow,flow=Qin.txt,name=Outlet
+create parameter;type=Parameter,high=20,low=0.1,name=p_Cbase,prior_distribution=log-normal,value=1
+setasparameter; object= Tank, parametername= p_Cbase, quantity= Tracer:constant_inflow_concentration
+create observation;type=Observation,comparison_method=EMC,error_standard_deviation=0.1,error_structure=log-normal,expression=Tracer:concentration,name=Effluent_EMC,object=Tank,observed_data=emc_obs.txt,emc_weighting_object=Outlet,emc_weighting_expression=flow,emc_events=events.txt
+\end{lstlisting}
+\noindent\file{events.txt}: \code{1.0, 2.5} / \code{4.0, 6.0} / \code{6.5, 6.8};
+\quad \file{emc\_obs.txt}: \code{1.5, 9.0} / \code{5.0, 7.0}.
+
+\medskip
+\noindent Results:
+\begin{itemize}[leftmargin=1.4em]
+  \item The modeled EMCs agree to within about 1\% with an independent calculation
+        of $\int CQ\,dt/\int Q\,dt$ from the model's output file.
+  \item \textbf{GA} converged to $p_{Cbase}=3.97$ (NSE on log-EMCs 0.97).
+  \item \textbf{MCMC} gave a posterior median of 3.72, with a 95\% interval of
+        $[3.14,\,5.40]$.
+\end{itemize}
+
+\section{Practical notes}
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Which object is the effluent?} For a BMP whose only outlet is an
+        underdrain, weight by the underdrain link's flow and take the
+        concentration in the block that link drains. If an overflow or bypass is
+        \emph{included} in the monitored effluent, the EMC must be computed on
+        the combined outflow: route both paths into one outlet link or node and
+        observe that.
+  \item \textbf{Influent EMCs} can be used the same way, e.g.\ to check a load
+        model: weight by the inflow and observe the inflow concentration.
+  \item \textbf{Event definition matters.} A window that is too long dilutes the
+        modeled EMC with baseflow; one that is too short drops the tail of the
+        hydrograph. Match the window to how the composite was actually sampled.
+  \item \textbf{Few events, many parameters.} Each event gives one data point. Do
+        not calibrate more parameters than the EMCs can constrain: hold hydraulic
+        parameters from a flow calibration, or share reaction parameters across
+        sites.
+  \item \textbf{$\sigma$ and $N$.} The weight of an EMC observation in a joint
+        likelihood grows with the number of events $N$. When it is combined with
+        a densely sampled time-series observation, estimate each observation's
+        $\sigma$ rather than fixing them, so that neither data set dominates by
+        sample count alone.
+\end{itemize}
+
+\end{document}

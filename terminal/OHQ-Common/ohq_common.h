@@ -176,8 +176,7 @@ inline void WriteForwardRunOutputs(System &sys, const std::string &folder,
         if (sys.observation(i)->GetModeledTimeSeries() != nullptr &&
             sys.observation(i)->Variable("observed_data")->GetTimeSeries() != nullptr)
             mapped_modeled_results.append(
-                sys.observation(i)->GetModeledTimeSeries()->interpol(
-                    sys.observation(i)->Variable("observed_data")->GetTimeSeries()),
+                sys.observation(i)->MappedModeledSeries(),
                 sys.observation(i)->GetName());
     }
     fitfile.close();

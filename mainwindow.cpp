@@ -3614,7 +3614,7 @@ void MainWindow::onrunmodel()
                 FitMeasures[i*3+j] = copiedsystem.observation(i)->fit_measures[j];
         if (copiedsystem.observation(i)->GetModeledTimeSeries()!=nullptr)
             if (copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()!=nullptr)
-                mapped_modeled_results.append(copiedsystem.observation(i)->GetModeledTimeSeries()->interpol(copiedsystem.observation(i)->Variable("observed_data")->GetTimeSeries()),copiedsystem.observation(i)->GetName());
+                mapped_modeled_results.append(copiedsystem.observation(i)->MappedModeledSeries(),copiedsystem.observation(i)->GetName());
     }
     ObjectiveFunctionValues.writetofile(workingfolder.toStdString() + "/" + "objective_function_values.txt");
 

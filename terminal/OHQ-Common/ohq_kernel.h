@@ -182,6 +182,11 @@ public:
         (void)uniformize_outputs;
         KernelABI& k = TheKernel();
         if (!k.valid()) return System::Solve(ApplyParams, uniformize_outputs);
+        // The kernel records only each observation's expression; an EMC
+        // observation also needs its weighting (flow) series, which only the
+        // interpreter records.
+        for (unsigned int i = 0; i < ObservationsCount(); i++)
+            if (observation(i)->IsEMC()) return System::Solve(ApplyParams, uniformize_outputs);
         if (ApplyParams) ApplyParameters();
         if (!h_) h_ = k.create();
         if (!h_) return false;

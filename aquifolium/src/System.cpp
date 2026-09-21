@@ -1347,7 +1347,7 @@ void System::InitializeSolver(bool applyparameters)
         ObjectiveFunctions()[i]->GetTimeSeries()->clear();
 
     for (unsigned int i = 0; i < ObservationsCount(); i++)
-        observation(i)->GetTimeSeries()->clear();
+        observation(i)->ClearModeled();
 
 #ifdef Q_GUI_SUPPORT
     if (rtw)

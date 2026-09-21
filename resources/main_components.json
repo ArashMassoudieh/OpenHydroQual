@@ -485,12 +485,37 @@
 	  },
 	  "comparison_method": {
 	    "type": "string",
-	    "delegate": "ComboBox;items:Least Squared,Similarity,Weighted Least Squared",
+	    "delegate": "ComboBox;items:Least Squared,Similarity,Weighted Least Squared,EMC",
 	    "description": "Comparison Method",
 	    "default": "Least Squared",
 	    "includeinoutput": "false",
 	    "ask_user": "true",
-	    "helptext": "How modeled and observed series are compared. 'Least Squared' uses standard sum of squared residuals (negative log-likelihood for normal/log-normal errors). 'Similarity' compares autocorrelation structure and value distribution (Kolmogorov-Smirnov), useful when point-by-point matching is not meaningful. 'Weighted Least Squared' applies a temporal kernel that downweights older observations, suited for streaming data assimilation where recent measurements should dominate."
+	    "helptext": "How modeled and observed series are compared. 'Least Squared' uses standard sum of squared residuals (negative log-likelihood for normal/log-normal errors). 'Similarity' compares autocorrelation structure and value distribution (Kolmogorov-Smirnov), useful when point-by-point matching is not meaningful. 'Weighted Least Squared' applies a temporal kernel that downweights older observations, suited for streaming data assimilation where recent measurements should dominate. 'EMC' compares event mean concentrations: for each event window in the EMC events file the modeled expression is weighted by the EMC weighting expression (e.g. flow) and averaged over the event, then compared with the observed value time-stamped within that window."
+	  },
+	  "emc_weighting_object": {
+	    "delegate": "ComboBox;BlockLinks",
+	    "type": "string",
+	    "includeinoutput": "false",
+	    "description": "EMC weighting object",
+	    "ask_user": "true",
+	    "helptext": "Block or link on which the EMC weighting expression is evaluated (e.g. the outlet link whose flow weights the concentration). Leave empty to use the observation's object. Used only when the comparison method is 'EMC'."
+	  },
+	  "emc_weighting_expression": {
+	    "type": "string",
+	    "delegate": "String",
+	    "description": "EMC weighting expression",
+	    "default": "flow",
+	    "includeinoutput": "false",
+	    "ask_user": "true",
+	    "helptext": "Expression evaluated on the EMC weighting object at every time step and used as the weight when averaging the observation expression over an event (flow for a flow-weighted EMC). Used only when the comparison method is 'EMC'."
+	  },
+	  "emc_events": {
+	    "type": "timeseries",
+	    "includeinoutput": "false",
+	    "description": "EMC events file",
+	    "ask_user": "true",
+	    "delegate": "Browser",
+	    "helptext": "Text file defining the events, one per line: 't_start, t_end' in model time. The observed EMC for an event is the observed_data value time-stamped within [t_start, t_end]; events with no observed value inside them are ignored. Used only when the comparison method is 'EMC'."
 	  },
 	  "error_standard_deviation": {
 	    "type": "value",

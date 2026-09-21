@@ -57,6 +57,11 @@ Observation::Observation(const Observation& other)
     observed_time_series = other.observed_time_series;
     likelihood_scale = other.likelihood_scale;   // must survive System copies:
                                                  // every MCMC chain works on a copy
+    weighting_expression = other.weighting_expression;
+    emc_flux_series = other.emc_flux_series;
+    emc_weight_series = other.emc_weight_series;
+    modeled_emc = other.modeled_emc;
+    observed_emc = other.observed_emc;
 }
 
 Observation& Observation::operator=(const Observation& rhs)
@@ -67,7 +72,8 @@ Observation& Observation::operator=(const Observation& rhs)
     location = rhs.location;
     observed_time_series = rhs.observed_time_series;
     likelihood_scale = rhs.likelihood_scale;
-    modeled_time_series.clear();
+    weighting_expression = rhs.weighting_expression;
+    ClearModeled();
     return *this;
 }
 
@@ -82,6 +88,10 @@ bool Observation::SetProperty(const string &prop, const string &val)
     {
         location = val;
 
+    }
+    if (aquiutils::tolower(prop)=="emc_weighting_expression")
+    {
+        weighting_expression = Expression(val);
     }
 
     return Object::SetProperty(prop,val);
@@ -148,6 +158,52 @@ double Observation::CalcMisfit()
             }
             else
                 return 0;
+        }
+        // -----------------------------------------------------------------
+        // EMC: one flow-weighted event mean concentration per event window,
+        // compared with the observed EMC through the same Gaussian NLL as
+        // Least Squared (N = number of events with data).
+        // -----------------------------------------------------------------
+        else if (IsEMC())
+        {
+            fit_measures.clear();
+            if (!CalcEMCs() || observed_emc.size() == 0)
+            {
+                fit_measures.resize(3);
+                return 0;
+            }
+            const bool lognormal = (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal");
+            const size_t n = observed_emc.size();
+            vector<double> m(n), o(n);
+            for (size_t i=0; i<n; i++)
+            {
+                m[i] = modeled_emc.getValue(i);
+                o[i] = observed_emc.getValue(i);
+                if (lognormal)
+                {
+                    m[i] = log(max(m[i],1e-8));
+                    o[i] = log(max(o[i],1e-8));
+                }
+            }
+            double mean_o = 0, mean_m = 0;
+            for (size_t i=0; i<n; i++) { mean_o += o[i]; mean_m += m[i]; }
+            mean_o /= n; mean_m /= n;
+            double ss_res = 0, ss_tot = 0, s_mo = 0, s_mm = 0;
+            for (size_t i=0; i<n; i++)
+            {
+                ss_res += pow(o[i]-m[i],2);
+                ss_tot += pow(o[i]-mean_o,2);
+                s_mo += (m[i]-mean_m)*(o[i]-mean_o);
+                s_mm += pow(m[i]-mean_m,2);
+            }
+            const double fit_mse = ss_res/n;
+            const double _R2 = (ss_tot>0 && s_mm>0) ? s_mo*s_mo/(ss_tot*s_mm) : 0;
+            const double Nash_Sutcliffe_efficiency = (ss_tot>0) ? 1.0 - ss_res/ss_tot : 0;
+            fit_measures.push_back(fit_mse);
+            fit_measures.push_back(_R2);
+            fit_measures.push_back(Nash_Sutcliffe_efficiency);
+            const double sigma = Variable("error_standard_deviation")->GetVal();
+            return (n/likelihood_scale)*(fit_mse/(2.0*pow(sigma,2))+log(sigma));
         }
         // -----------------------------------------------------------------
         // Weighted Least Squared:
@@ -258,7 +314,132 @@ void Observation::append_value(double t)
 {
     current_value = GetValue(Expression::timing::present);
     modeled_time_series.append(t,current_value);
+    if (IsEMC())
+    {
+        const double w = GetWeightingValue(Expression::timing::present);
+        emc_flux_series.append(t,current_value*w);
+        emc_weight_series.append(t,w);
+    }
     return;
+}
+
+bool Observation::IsEMC()
+{
+    return Variable("comparison_method")!=nullptr && Variable("comparison_method")->GetProperty()=="EMC";
+}
+
+void Observation::ClearModeled()
+{
+    modeled_time_series.clear();
+    emc_flux_series.clear();
+    emc_weight_series.clear();
+    modeled_emc.clear();
+    observed_emc.clear();
+}
+
+double Observation::GetWeightingValue(const Expression::timing &tmg)
+{
+    if (Variable("emc_weighting_expression")==nullptr)
+    {
+        lasterror = "Observation '" + GetName() + "' has no 'emc_weighting_expression' property";
+        return 0;
+    }
+    if (weighting_expression.param_constant_expression == "")
+        weighting_expression = Expression(Variable("emc_weighting_expression")->GetProperty());
+
+    string wloc = GetLocation();
+    if (Variable("emc_weighting_object")!=nullptr && aquiutils::trim(Variable("emc_weighting_object")->GetProperty())!="")
+        wloc = Variable("emc_weighting_object")->GetProperty();
+
+    if (system->block(wloc) != nullptr)
+        return weighting_expression.calc(system->block(wloc),tmg);
+    if (system->link(wloc) != nullptr)
+        return weighting_expression.calc(system->link(wloc),tmg,true);
+    lasterror = "Weighting object " + wloc + " was not found in the system!";
+    return 0;
+}
+
+// Trapezoidal integral of a piecewise-linear series over [a,b], one pass.
+static double window_integral(const TimeSeries<timeseriesprecision> &ts, double a, double b)
+{
+    double sum = 0;
+    for (size_t i=1; i<ts.size(); i++)
+    {
+        const double t0 = ts.getTime(i-1), t1 = ts.getTime(i);
+        if (t1 <= a) continue;
+        if (t0 >= b) break;
+        if (t1 <= t0) continue;
+        const double c0 = ts.getValue(i-1), c1 = ts.getValue(i);
+        const double lo = max(t0,a), hi = min(t1,b);
+        const double v_lo = c0 + (c1-c0)*(lo-t0)/(t1-t0);
+        const double v_hi = c0 + (c1-c0)*(hi-t0)/(t1-t0);
+        sum += 0.5*(v_lo+v_hi)*(hi-lo);
+    }
+    return sum;
+}
+
+bool Observation::CalcEMCs()
+{
+    modeled_emc.clear();
+    observed_emc.clear();
+    TimeSeries<timeseriesprecision> *obs = Variable("observed_data")->GetTimeSeries();
+    TimeSeries<timeseriesprecision> *events = (Variable("emc_events")!=nullptr) ? Variable("emc_events")->GetTimeSeries() : nullptr;
+    if (obs == nullptr || events == nullptr || events->size() == 0)
+    {
+        lasterror = "Observation '" + GetName() + "': EMC comparison requires an event file (emc_events) with rows 't_start, t_end'";
+        return false;
+    }
+    if (emc_weight_series.size() < 2)
+    {
+        lasterror = "Observation '" + GetName() + "': no weighting (flow) values were recorded for the EMC calculation";
+        return false;
+    }
+    const double t_first = emc_weight_series.getTime(0);
+    const double t_last = emc_weight_series.getTime(emc_weight_series.size()-1);
+    for (size_t k=0; k<events->size(); k++)
+    {
+        const double a = events->getTime(k);
+        const double b = events->getValue(k);
+        if (b <= a || b <= t_first || a >= t_last) continue; // empty or outside the simulated period
+
+        // observed EMC: the observed value(s) time-stamped within the window
+        double obs_sum = 0, t_obs = 0;
+        int obs_n = 0;
+        for (size_t j=0; j<obs->size(); j++)
+            if (obs->getTime(j) >= a && obs->getTime(j) <= b)
+            {
+                if (obs_n == 0) t_obs = obs->getTime(j);
+                obs_sum += obs->getValue(j);
+                obs_n++;
+            }
+        if (obs_n == 0) continue;
+
+        const double volume = window_integral(emc_weight_series, a, b);
+        double emc;
+        if (fabs(volume) > 1e-30)
+            emc = window_integral(emc_flux_series, a, b)/volume;
+        else
+        {   // no modeled flow during the event: EMC undefined, use the time-averaged value
+            const double lo = max(a,t_first), hi = min(b,t_last);
+            emc = window_integral(modeled_time_series, lo, hi)/(hi-lo);
+            lasterror = "Observation '" + GetName() + "': zero weighting (flow) during an event; time-averaged value used";
+        }
+        modeled_emc.append(t_obs, emc);
+        observed_emc.append(t_obs, obs_sum/obs_n);
+    }
+    return true;
+}
+
+TimeSeries<timeseriesprecision> Observation::MappedModeledSeries()
+{
+    if (IsEMC())
+    {
+        CalcEMCs();
+        return modeled_emc;
+    }
+    if (Variable("observed_data")->GetTimeSeries()==nullptr)
+        return TimeSeries<timeseriesprecision>();
+    return modeled_time_series.interpol(Variable("observed_data")->GetTimeSeries());
 }
 
 vector<string> Observation::ItemswithOutput()
