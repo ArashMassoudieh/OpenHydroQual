@@ -1084,7 +1084,10 @@ void CMCMC<T>::ProduceRealizations(TimeSeriesSet<double> &MCMCout)
         for (int j = 0; j < min(MCMC_Settings.numberOfThreads, MCMC_Settings.number_of_post_estimate_realizations - jj*MCMC_Settings.numberOfThreads); j++)
 		{
             Sys1[j] = *Model;
-            vector<double> sampled_parameters = MCMCout.getrandom(MCMC_Settings.burnout_samples);
+            // MCMCout (parameter_samples) already holds post-burn-in states only,
+            // so draw from all of it; skipping burnout_samples rows again dropped
+            // the first chains and threw once burn-in exceeded the rows left.
+            vector<double> sampled_parameters = MCMCout.getrandom(0);
             model(&Sys1[j],sampled_parameters);
         }
 
@@ -1236,9 +1239,10 @@ void CMCMC<T>::Perform()
         parameter_samples.append(all_samples);
         CVector posterior_percentiles_for_this_param;
         col_labels.push_back(chain_values.name);
-        posterior_percentiles_for_this_param.append(all_samples.percentile(0.025,MCMC_Settings.burnout_samples));
-        posterior_percentiles_for_this_param.append(all_samples.percentile(0.5, MCMC_Settings.burnout_samples));
-        posterior_percentiles_for_this_param.append(all_samples.percentile(0.975, MCMC_Settings.burnout_samples));
+        // all_samples is post-burn-in already (built from j >= burnout_samples above)
+        posterior_percentiles_for_this_param.append(all_samples.percentile(0.025, 0));
+        posterior_percentiles_for_this_param.append(all_samples.percentile(0.5, 0));
+        posterior_percentiles_for_this_param.append(all_samples.percentile(0.975, 0));
         posterior_percentiles_for_this_param.append(all_samples.mean());
         posterior_percentiles.push_back(posterior_percentiles_for_this_param);
 
