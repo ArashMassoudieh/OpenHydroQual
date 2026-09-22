@@ -174,7 +174,11 @@ void CPrecipitation::getfromfile(string _filename)
 			n++;
 		}
 	}
-	dt = e[1] - s[1];
+	// A missing/empty/single-row file (e.g. a stale filename reference from a
+	// JSON config, reached via fromJsonObject() with no validity check ahead
+	// of it) used to read e[1]/s[1] out of bounds here - undefined behavior.
+	// n<2 means there is no interval to derive a timestep from.
+	dt = (n >= 2) ? e[1] - s[1] : 0.0;
 }
 
 
@@ -284,6 +288,13 @@ bool CPrecipitation::fromJsonObject(const QJsonObject &obj)
         const QString fn = obj.value("filename").toString();
         if (!fn.isEmpty())
         {
+            // Mirror the guard Quan::SetTimeSeries already uses before calling
+            // getfromfile(): a missing/invalid file should report failure to
+            // the caller here, not silently succeed with an empty series.
+            if (!isFileValid(fn.toStdString()))
+            {
+                return false;
+            }
             getfromfile(fn.toStdString());   // existing method, populates s/e/i/n
             return true;
         }

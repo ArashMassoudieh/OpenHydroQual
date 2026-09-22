@@ -5,6 +5,138 @@
     "groundwater.json",
     "open_channel.json"
   ],
+  "Reach_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Mixed HRU pervious-surface reach outlet",
+    "icon": {
+      "filename": "Trapezoidal_Channel_Link.png"
+    },
+    "helptext": "Outlet of the Mixed_Hydrologic_Response_Unit's Reach member (pervious-surface routing). Identical Manning's-equation physics to Trapezoidal_Channel_link; a distinct type name is required only so Reach and Impervious_Reach can be resolved as separate external exits of the same composite - see Impervious_Reach_link.",
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(_bkw(head;area);0)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "(perimeter.s+perimeter.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Velocity",
+      "expression": "flow/area/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    }
+  },
+
+  "Impervious_Reach_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Mixed HRU impervious-surface reach outlet",
+    "icon": {
+      "filename": "Trapezoidal_Channel_Link.png"
+    },
+    "helptext": "Outlet of the Mixed_Hydrologic_Response_Unit's Impervious_Reach member (impervious-surface routing). Identical Manning's-equation physics to Trapezoidal_Channel_link; see Reach_link for why a separate type name is required.",
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(_bkw(head;area);0)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "(perimeter.s+perimeter.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Velocity",
+      "expression": "flow/area/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    }
+  },
+
   "Mixed_Hydrologic_Response_Unit": {
     "type": "composite",
     "typecategory": "Blocks",
