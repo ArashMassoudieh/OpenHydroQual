@@ -218,6 +218,29 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}{Every component's equations, in the application}
+  \begin{columns}[c,onlytextwidth]
+    \begin{column}{0.62\textwidth}
+      \figslotmini{S17}{S17_component_help.png}{0.99\columnwidth}{%
+        Screenshot: Help, Component Description, showing the object type
+        reference with governing equations.}
+    \end{column}
+    \begin{column}{0.35\textwidth}
+      {\footnotesize \alert{Help $\rightarrow$ Component Description} lists
+      every object type and, for each one, every property: its kind, its
+      description, and \alert{the expression that governs it}.
+
+      \vspace{0.6em}
+      Nothing is hidden in compiled code. A leaky dam's flow is
+      \texttt{under\_flow + over\_flow}, and both are there to read.}
+      \vspace{0.6em}
+
+      {\scriptsize Generated from the same JSON that defines the components, so
+      the reference cannot drift out of step with the model.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
 % =====================================================================
 \section{Breadth: The Domain Sweep}
 % =====================================================================
@@ -406,23 +429,26 @@
 
 \begin{frame}{Water quality and reactive transport}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.52\textwidth}
-      \figslotmini{S11}{S11_constituents_reactions.png}{0.95\columnwidth}{%
-        Screenshot: constituent and reaction-network setup showing
-        constituents, reactions, and an ASM configuration.}
-    \end{column}
-    \begin{column}{0.44\textwidth}
-      \begin{itemize}\setlength\itemsep{3pt}
+    \begin{column}{0.47\textwidth}
+      \begin{itemize}\setlength\itemsep{5pt}
         \item \alert{Unlimited} user-defined constituents
         \item User-defined reaction networks with symbolic rate expressions
-        \item Full ASM1 / ASM implementations shipped as templates
+        \item Full ASM1 and ASM implementations shipped as templates
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \begin{itemize}\setlength\itemsep{5pt}
         \item Particle-size classes and sedimentation
         \item Age tracers and residence-time analysis
-        \item Transport is solved on the same network as flow: one model,
-              not a coupled pair
+        \item Sorption, desorption and immobile phases
       \end{itemize}
     \end{column}
   \end{columns}
+  \vspace{1.0em}
+  {\footnotesize Transport is solved on the \alert{same network as flow}: one
+  model, not a flow model handing results to a quality model. A reaction's rate
+  expression is written in the property box like any other expression, as on
+  the earlier slide.}
 \end{frame}
 
 \begin{frame}{Running and interpreting}
@@ -621,43 +647,52 @@ system.solve()
 \end{frame}
 
 \begin{frame}{Genetic-algorithm calibration}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.60\textwidth}
-      \fitimg[\columnwidth]{F10_fitness_history.png}
+  \begin{columns}[c,onlytextwidth]
+    \begin{column}{0.47\textwidth}
+      \figslotmini{S19}{S19_column_agreement.png}{0.92\columnwidth}{%
+        Figure: modelled against measured Cu for the column study.}
     \end{column}
-    \begin{column}{0.36\textwidth}
-      \begin{itemize}\setlength\itemsep{3pt}
-        \item Population-based global search, with no gradient and no
+    \begin{column}{0.50\textwidth}
+      \textbf{\small A static calibration case}\\[3pt]
+      {\footnotesize Copper sorption in stormwater biofiltration columns: sand
+      against three amendments, biochar, activated carbon and zeolite, sampled
+      at an upper and a lower port.}
+      \vspace{0.5em}
+      \begin{itemize}\setlength\itemsep{2pt}
+        \item \alert{11 parameters} fitted at once: a sorption rate and a
+              partition coefficient for each medium, plus porosity,
+              dispersivity and the residual error term
+        \item \alert{190 observations} across the columns
+        \item Population-based global search, so no gradient and no
               differentiability requirement
-        \item Handles the non-smooth switching behaviour real hydrologic models
-              exhibit (overflow, drying, limited outflow)
-        \item Multi-objective via weighted objective-function sets
-        \item Restartable: \texttt{-{}-continue} re-seeds from a previous
-              population
       \end{itemize}
+      \vspace{0.3em}
+      {\footnotesize Pooled fit: \keyfact{$R^2 = 0.870$},
+      RMSE $5.8\times10^{-3}$\,mg/L.}
     \end{column}
   \end{columns}
 \end{frame}
 
 \begin{frame}{Bayesian parameter estimation}
+  \centering
+  \figslot{S18}{S18_column_posteriors.png}{\textwidth}{%
+    Figure: marginal posterior densities against the priors, with the GA
+    optimum marked.}
+  \vspace{0.2em}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.60\textwidth}
-      \fitimg[\columnwidth]{F8_physical_parameters.png}
+    \begin{column}{0.48\textwidth}
+      {\scriptsize Marginal posteriors (filled) against the log-normal
+      \alert{priors} they started from (dashed), with the \alert{GA optimum} as
+      the gold diamond. 60{,}000 samples, 5{,}000 burn-in, split
+      $\hat{R}$ 1.01--1.09.}
     \end{column}
-    \begin{column}{0.36\textwidth}
-      \begin{itemize}\setlength\itemsep{3pt}
-        \item MCMC over the full parameter vector, with log-normal or normal
-              priors per parameter
-        \item Measurement-error terms ($\sigma$) estimated \alert{jointly} with
-              the physical parameters
-        \item Output is a posterior sample, not a single best fit, giving
-              credible intervals for every parameter
-        \item Realizations propagate parameter uncertainty into predictions
-      \end{itemize}
+    \begin{column}{0.48\textwidth}
+      {\scriptsize Far narrower than the prior means the data
+      \alert{identified} it: both sand terms, $K_d$ for biochar, and $\sigma$.
+      Still prior-shaped means they did not: both \alert{zeolite} parameters
+      are unconstrained here, which no best-fit number would reveal.}
     \end{column}
   \end{columns}
-  \vspace{0.2em}
-  {\tiny\color{ohqgrey} Note: confirm which deployment run these panels should come from.}
 \end{frame}
 
 % =====================================================================
@@ -903,14 +938,6 @@ $ OHQ-MCMC model.ohq work_dir --kernel gen_model/build/libS13.so
   \end{columns}
 \end{frame}
 
-\begin{frame}{Where this is going}
-  \figslot{N7}{N7_roadmap.pdf}{0.72\textwidth}{%
-    New graphic: roadmap timeline covering real-time control and optimisation,
-    machine-learning integration, web-based model setup and visualisation,
-    auto-generated plugin documentation, analytical Jacobian in codegen.
-    (I can draw this in TikZ.)}
-\end{frame}
-
 \begin{frame}[standout]
   Questions
   \vspace{0.8em}
@@ -919,19 +946,6 @@ $ OHQ-MCMC model.ohq work_dir --kernel gen_model/build/libS13.so
   Arash Massoudieh\\
   \texttt{massoudieh@cua.edu}\\
   \url{www.OpenHydroQual.com}}
-\end{frame}
-
-% =====================================================================
-\appendix
-% =====================================================================
-
-\begin{frame}[allowframebreaks]{Figure checklist \hfill {\small\normalfont\figurestats}}
-  {\footnotesize Each item below is an empty \texttt{\textbackslash figslot}.
-  Drop the file into \texttt{figures/} under the exact name shown and rebuild.
-  No edits to the source are needed. (14 figures already supplied from the
-  \ohq{} and \ohtwin{} repositories are in place and not listed here.)}
-  \vspace{0.4em}
-  \printfigurechecklist
 \end{frame}
 
 \end{document}

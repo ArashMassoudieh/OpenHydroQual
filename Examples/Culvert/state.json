@@ -5,7 +5,7 @@
             "Number_of_barrels": "1",
             "_height": "200",
             "_width": "200",
-            "depth": "0",
+            "depth": "1",
             "diameter": "1",
             "inflow": "",
             "inlet_crest_width_factor": "0.65",
@@ -15,8 +15,8 @@
             "outlet_invert": "0.3",
             "slot_width_ratio": "0.05",
             "type": "Culvert Barrel (Circular)",
-            "x": "300",
-            "y": "0"
+            "x": "293.365",
+            "y": "29.0267"
         },
         "DS_Channel": {
             "ManningCoeff": "0.035",
@@ -27,7 +27,7 @@
             "base_width": "3",
             "bottom_elevation": "0.3",
             "dam_height": "0",
-            "depth": "0.00115444",
+            "depth": "0.0808408",
             "inflow": "",
             "length": "100",
             "name": "DS_Channel",
@@ -39,10 +39,10 @@
             "y": "0"
         },
         "Outfall": {
-            "Storage": "131480",
+            "Storage": "310445",
             "_height": "200",
             "_width": "200",
-            "head": "0.3",
+            "head": "0.35",
             "name": "Outfall",
             "type": "fixed_head",
             "x": "900",
@@ -57,7 +57,7 @@
             "base_width": "3",
             "bottom_elevation": "0.5",
             "dam_height": "0",
-            "depth": "-1.26589e-08",
+            "depth": "1.80987",
             "inflow": "",
             "length": "100",
             "name": "US_Channel",
@@ -85,12 +85,15 @@
             "to": "Barrel",
             "type": "Channel_to_culvert (Circular)"
         },
-        "Outlet": {
-            "exit_loss_coeff": "1",
-            "from": "Barrel",
-            "name": "Outlet",
+        "Road": {
+            "from": "US_Channel",
+            "name": "Road",
+            "road_crest_elevation": "2.3",
+            "road_submergence_factor": "1",
+            "road_weir_coeff": "1.7",
+            "road_width": "12",
             "to": "DS_Channel",
-            "type": "Culvert_to_channel"
+            "type": "Roadway_Overtopping"
         },
         "Tailwater": {
             "from": "DS_Channel",
@@ -114,14 +117,20 @@
     "Settings": {
         "acceptance_rate": "0.15",
         "add_noise_to_realizations": "No",
-        "alloutputfile": "T8_dry_to_dry_out.txt",
+        "alloutputfile": "T4_roadway_overtopping_out.txt",
         "c_n_weight": "1",
         "continue_based_on_file_name": "",
+        "continue_based_on_filename": "",
+        "covariance_min_samples": "500",
+        "covariance_proposal": "Yes",
+        "covariance_scale": "2.38",
+        "covariance_update_interval": "1000",
         "initial_purturbation": "No",
         "initial_time_step": "0.0005",
         "initual_purturbation_factor": "0.05",
         "jacobian_assembly": "Dependency",
         "jacobian_method": "Direct",
+        "make_timeseries_uniform": "Yes",
         "max_timestep_decrease_factor": "100000",
         "max_timestep_increase_factor": "50",
         "maximum_number_of_matrix_inverstions": "200000",
@@ -130,6 +139,8 @@
         "minimum_timestep": "1e-07",
         "n_threads": "8",
         "ngen": "40",
+        "nr_niteration_lower": "20",
+        "nr_niteration_upper": "40",
         "nr_timestep_reduction_factor": "0.75",
         "nr_timestep_reduction_factor_fail": "0.2",
         "nr_tolerance": "0.001",
@@ -149,8 +160,9 @@
         "samples_filename": "mcmc.txt",
         "shakescale": "0.05",
         "shakescalered": "0.75",
-        "simulation_end_time": "3",
-        "simulation_start_time": "3.02916",
+        "simulation_end_time": "2",
+        "simulation_start_time": "2.04296",
+        "update_jacobian_every_iteration": "No",
         "verify_jacobian": "",
         "write_interval": "20",
         "write_solution_details": "No"
@@ -158,6 +170,7 @@
     "Sources": {
     },
     "Templates": [
+        "/home/arash/Projects/OpenHydroQual/build/Desktop_Qt_6_8_2-Release/../../resources/main_components.json",
         "main_components.json",
         "open_channel.json",
         "culvert.json"
