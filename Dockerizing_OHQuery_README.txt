@@ -30,12 +30,70 @@ sudo docker build -t ohquery-app .
 
 ## 🚀 Step 3: Run the Docker Container
 
-Run the container with exposed ports (adjust if ports are in use):
+Run the container, publishing the port the configured server actually listens on
+(adjust if ports are in use):
 
 ```bash
 sudo docker run -d -p 12345:12345 --name ohquery-container ohquery-app
+```
+
+### Which ports to publish
+
+The `Dockerfile` declares `EXPOSE 8080` and `EXPOSE 12345`, but `EXPOSE` only
+documents a port. It publishes nothing. Only the ports named with `-p` are
+reachable from outside the container.
+
+Which port matters depends on `config.json`:
+
+| `"Config"` value | Server started | Port to publish |
+|---|---|---|
+| `"WebSockets"` (current default) | Qt WebSocket server | `-p 12345:12345` |
+| `"FlaskType"` | crow HTTP server | `-p 8080:8080` |
+
+`main.cpp` starts exactly one of the two, so publishing `8080` alongside
+`12345` accomplishes nothing while `config.json` says `"WebSockets"`: nothing
+inside the container is listening there. The single `-p 12345:12345` above is
+correct for the default config. Switch `config.json` to `"FlaskType"` and you
+need `-p 8080:8080` instead.
+
+### If you build with HTTPS enabled
+
+`DEFINES += HTTPS` is commented out in `OHQuery.pro`, so the default build
+serves plain `ws://` and needs no certificate. If you uncomment it, the binary
+reads its certificate from paths on the host filesystem:
 
 ```
+/etc/letsencrypt/live/greeninfraiq.com/fullchain.pem
+/etc/letsencrypt/live/greeninfraiq.com/privkey.pem
+```
+
+Those paths do not exist inside the container, so mount them read-only and
+restart the container after every certificate renewal (the binary reads the
+files once at startup):
+
+```bash
+sudo docker run -d -p 12345:12345 \
+  -v /etc/letsencrypt:/etc/letsencrypt:ro \
+  --name ohquery-container ohquery-app
+```
+
+### How it is actually deployed on the server
+
+The production instance does not use the names in this document. `systemd`
+runs it as `ohquery.service`, with the container named `ohquery_container`
+(underscore) from the Docker Hub image `enviroinformatics/ohquery-app:latest`,
+and it mounts the temporary folder:
+
+```bash
+docker run --name ohquery_container \
+  -e OHQUERY_TEMP_PATH=/home/ubuntu/OHQueryTemporaryFolder \
+  -v /home/ubuntu/OHQueryTemporaryFolder:/home/ubuntu/OHQueryTemporaryFolder \
+  -p 12345:12345 enviroinformatics/ohquery-app:latest
+```
+
+Use `sudo systemctl restart ohquery` there, not a bare `docker run`.
+
+---
 
 ## 📁 Notes
 
