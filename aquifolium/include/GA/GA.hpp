@@ -93,7 +93,9 @@ CGA<T>::CGA(string filename, const T &model)
 	{
         GA_params.nParam++;
         params.push_back(i);
-        if (Model->Parameters()[i]->GetPriorDistribution() == "lognormal")
+        // Search log-scaled for log-normal priors. Models (and MCMC) spell it
+        // "log-normal"; matching only "lognormal" searched every parameter linearly.
+        if ((Model->Parameters()[i]->GetPriorDistribution() == "lognormal" || Model->Parameters()[i]->GetPriorDistribution() == "log-normal"))
         {	minval.push_back(log10(Model->Parameters()[i]->GetVal("low")));
             maxval.push_back(log10(Model->Parameters()[i]->GetVal("high")));
 
@@ -104,7 +106,7 @@ CGA<T>::CGA(string filename, const T &model)
             maxval.push_back(Model->Parameters()[i]->GetVal("high"));
         }
         apply_to_all.push_back(false);
-        if (Model->Parameters()[i]->GetPriorDistribution() == "lognormal")
+        if ((Model->Parameters()[i]->GetPriorDistribution() == "lognormal" || Model->Parameters()[i]->GetPriorDistribution() == "log-normal"))
             loged.push_back(1);
         else
             loged.push_back(0);
@@ -149,7 +151,7 @@ CGA<T>::CGA(T *model)
 	{
         GA_params.nParam++;
         params.push_back(i);
-        if (Model->Parameters()[i]->GetPriorDistribution() == "lognormal")
+        if ((Model->Parameters()[i]->GetPriorDistribution() == "lognormal" || Model->Parameters()[i]->GetPriorDistribution() == "log-normal"))
         {	minval.push_back(log10(Model->Parameters()[i]->GetVal("low")));
             maxval.push_back(log10(Model->Parameters()[i]->GetVal("high")));
 
@@ -160,7 +162,7 @@ CGA<T>::CGA(T *model)
             maxval.push_back(Model->Parameters()[i]->GetVal("high"));
         }
         apply_to_all.push_back(false);
-        if (Model->Parameters()[i]->GetPriorDistribution() == "lognormal")
+        if ((Model->Parameters()[i]->GetPriorDistribution() == "lognormal" || Model->Parameters()[i]->GetPriorDistribution() == "log-normal"))
             loged.push_back(1);
         else
             loged.push_back(0);
