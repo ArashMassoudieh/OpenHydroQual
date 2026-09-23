@@ -24,18 +24,62 @@
 #include "SetValEntity.h"
 #include "WizConnector.h"
 #include <QMap>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <string>
 
-#ifdef windows_version
-#define wizardsfolder qApp->applicationDirPath().toStdString()+"/../../resources/Wizard_Scripts/"
-#endif
+// Locate resources/Wizard_Scripts.
+//
+// This used to be a hard-coded "<appdir>/../../resources/Wizard_Scripts/",
+// which only resolves when the executable sits exactly two levels below the
+// repository root -- the bin-Wizard/release layout. Qt Creator's default
+// shadow build puts it three levels down (ModelWizard/build/<kit>/), so the
+// path landed in ModelWizard/resources, that folder does not exist, and the
+// model catalog came up silently empty.
+//
+// Search order:
+//   1. $OHQ_WIZARD_SCRIPTS, if set (deployment and testing override)
+//   2. <appdir>/resources/Wizard_Scripts   (deployed / AppImage layout)
+//   3. walk up from <appdir> looking for resources/Wizard_Scripts
+//   4. the old <appdir>/../../resources/Wizard_Scripts, so a layout that
+//      worked before still works even if nothing above matched
+inline std::string OHQWizardScriptsFolder()
+{
+    static std::string cached;
+    if (!cached.empty())
+        return cached;
 
-#ifdef ubuntu_version
-#define wizardsfolder qApp->applicationDirPath().toStdString()+"/../../resources/Wizard_Scripts/"
-#endif
+    const QString appDir = QCoreApplication::applicationDirPath();
 
-#ifdef mac_version
-#define wizardsfolder "/Users/arash/Projects/OpenHydroQual/resources/Wizard_Scripts/"
-#endif
+    auto accept = [&](const QString &dir) -> bool {
+        if (dir.isEmpty() || !QFileInfo(dir).isDir())
+            return false;
+        cached = (QDir::cleanPath(dir) + "/").toStdString();
+        return true;
+    };
+
+    const QByteArray fromEnv = qgetenv("OHQ_WIZARD_SCRIPTS");
+    if (!fromEnv.isEmpty() && accept(QString::fromLocal8Bit(fromEnv)))
+        return cached;
+
+    if (accept(appDir + "/resources/Wizard_Scripts"))
+        return cached;
+
+    QDir up(appDir);
+    for (int level = 0; level < 6; ++level)
+    {
+        if (accept(up.absolutePath() + "/resources/Wizard_Scripts"))
+            return cached;
+        if (!up.cdUp())
+            break;
+    }
+
+    cached = (appDir + "/../../resources/Wizard_Scripts/").toStdString();
+    return cached;
+}
+
+#define wizardsfolder OHQWizardScriptsFolder()
 
 class WizardScript
 {

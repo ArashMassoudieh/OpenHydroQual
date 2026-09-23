@@ -54,9 +54,19 @@ void MainWindow::PopulateListOfWizards()
 {
 
     QDir directory(QString::fromStdString(wizardsfolder));
-    qDebug() << directory.absolutePath(); 
-    qDebug() << directory.exists();
+    if (!directory.exists())
+    {
+        // Say so instead of presenting an empty catalog as if there were no
+        // wizards installed.
+        qWarning() << "Model wizard: script folder not found at"
+                   << directory.absolutePath()
+                   << "- the catalog will be empty. Set OHQ_WIZARD_SCRIPTS to"
+                   << "the resources/Wizard_Scripts folder to override.";
+        return;
+    }
     QStringList wizardfiles = directory.entryList(QStringList() << "*.json" << "*.JSON",QDir::Files);
+    qDebug() << "Model wizard: loaded" << wizardfiles.size() << "scripts from"
+             << directory.absolutePath();
 
     foreach(QString filename, wizardfiles) {
         WizardScript wiz(QString::fromStdString(wizardsfolder)+filename);
