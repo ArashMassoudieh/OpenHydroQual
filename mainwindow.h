@@ -30,6 +30,7 @@
 #endif
 #include "GA.h"
 #include "MCMC.h"
+#include "LM/LM.h"
 #include "logwindow.h"
 #include "aboutdialog.h"
 #include "undodata.h"
@@ -210,6 +211,7 @@ private:
     std::unique_ptr<QMenu> menu;
     CGA<System> *optimizer;
     CMCMC<System> *mcmc;
+    CLM<System> *lmoptimizer = nullptr;
     QString timeseriestobeshown;
     QString filename="";
     void SetFileName(const QString &_filename);
@@ -291,6 +293,7 @@ private slots:
     void onoptimize();
     void oninverserun();
     void onmcmc();
+    void onlevenbergmarquardt();
     void onAddItemThroughTreeViewRightClick();
     void tablePropShowContextMenu(const QPoint&);
     void addParameter(QAction* item);

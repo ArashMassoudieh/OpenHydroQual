@@ -117,192 +117,299 @@ double Observation::GetValue(const Expression::timing &tmg)
     return 0;
 }
 
+// ---------------------------------------------------------------------------
+// Residuals (observed - modeled) at the observed points that lie within the
+// modeled series' time span. An observation timestamped outside the simulated
+// window has no modeled counterpart -- interpol() would return the first or
+// last modeled value, which is an extrapolation dressed up as data -- so it is
+// skipped and does not enter the mean.
+//
+// The bounds are INCLUSIVE. diff2(), which this replaced, tested them strictly,
+// so an observation timestamped exactly at the simulation start was always
+// discarded. At t == mint() interpol() returns the first modeled value, which
+// is a genuine model output, not an extrapolation, and that point is often the
+// most informative one in the series: it is where an initial condition is
+// measured directly. The same holds at t == maxt().
+//
+// The caller must supply both series already in the comparison space (raw for
+// "normal", logs for "log-normal"), because the test is applied to the series
+// actually being compared.
+// ---------------------------------------------------------------------------
+static vector<double> in_range_residuals(const TimeSeries<timeseriesprecision> &modeled,
+                                         const TimeSeries<timeseriesprecision> &observed)
+{
+    vector<double> d;
+    if (modeled.empty() || observed.empty()) return d;
+    const double t_min = modeled.mint();
+    const double t_max = modeled.maxt();
+    d.reserve(observed.size());
+    for (const auto &pt : observed)
+        if (pt.t >= t_min && pt.t <= t_max)
+            d.push_back(pt.c - modeled.interpol(pt.t));
+    return d;
+}
+
 double Observation::CalcMisfit()
 {
     //qDebug()<<"Inside the misfit function";
-    if (Variable("observed_data")->GetTimeSeries()!=nullptr)
-    {
-        fit_measures.clear();
-        if (Variable("comparison_method")->GetProperty()=="Least Squared")
-        {
-            double fit_mse = 0;
-            double _R2 = 0;
-            double Nash_Sutcliffe_efficiency = 0;
-            if (Variable("error_structure")->GetProperty()=="normal")
-            {
-                fit_mse = diff2(modeled_time_series,Variable("observed_data")->GetTimeSeries());
-                _R2 = R2(&modeled_time_series,Variable("observed_data")->GetTimeSeries());
-                Nash_Sutcliffe_efficiency = NSE(&modeled_time_series,Variable("observed_data")->GetTimeSeries());
-                fit_measures.push_back(fit_mse);
-                fit_measures.push_back(_R2);
-                fit_measures.push_back(Nash_Sutcliffe_efficiency);
-                // Gaussian negative log-likelihood, constants dropped:
-                //   -log L = N*log(sigma) + sum_i r_i^2 / (2 sigma^2)
-                // diff2() returns the MEAN squared error, so sum_i r_i^2 =
-                // N * fit_mse and the whole thing is N*(MSE/(2 sigma^2) +
-                // log sigma). The factor 2 is what makes sigma's MAP the
-                // RMS residual; without it sigma is inflated by sqrt(2).
-                return (Variable("observed_data")->GetTimeSeries()->size()/likelihood_scale)*(fit_mse/(2.0*pow(Variable("error_standard_deviation")->GetVal(),2))+log(Variable("error_standard_deviation")->GetVal()));
-
-            }
-            else if (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal")
-            {
-                fit_mse = diff2(modeled_time_series.log(1e-8),Variable("observed_data")->GetTimeSeries()->log(1e-8));
-                _R2 = R2(modeled_time_series.log(1e-8),Variable("observed_data")->GetTimeSeries()->log(1e-8));
-                Nash_Sutcliffe_efficiency = NSE(modeled_time_series.log(1e-8),Variable("observed_data")->GetTimeSeries()->log(1e-8));
-                fit_measures.push_back(fit_mse);
-                fit_measures.push_back(_R2);
-                fit_measures.push_back(Nash_Sutcliffe_efficiency);
-                // Same Gaussian NLL as the normal branch, in log space.
-                return (Variable("observed_data")->GetTimeSeries()->size()/likelihood_scale)*(fit_mse/(2.0*pow(Variable("error_standard_deviation")->GetVal(),2))+log(Variable("error_standard_deviation")->GetVal()));
-            }
-            else
-                return 0;
-        }
-        // -----------------------------------------------------------------
-        // EMC: one flow-weighted event mean concentration per event window,
-        // compared with the observed EMC through the same Gaussian NLL as
-        // Least Squared (N = number of events with data).
-        // -----------------------------------------------------------------
-        else if (IsEMC())
-        {
-            fit_measures.clear();
-            if (!CalcEMCs() || observed_emc.size() == 0)
-            {
-                fit_measures.resize(3);
-                return 0;
-            }
-            const bool lognormal = (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal");
-            const size_t n = observed_emc.size();
-            vector<double> m(n), o(n);
-            for (size_t i=0; i<n; i++)
-            {
-                m[i] = modeled_emc.getValue(i);
-                o[i] = observed_emc.getValue(i);
-                if (lognormal)
-                {
-                    m[i] = log(max(m[i],1e-8));
-                    o[i] = log(max(o[i],1e-8));
-                }
-            }
-            double mean_o = 0, mean_m = 0;
-            for (size_t i=0; i<n; i++) { mean_o += o[i]; mean_m += m[i]; }
-            mean_o /= n; mean_m /= n;
-            double ss_res = 0, ss_tot = 0, s_mo = 0, s_mm = 0;
-            for (size_t i=0; i<n; i++)
-            {
-                ss_res += pow(o[i]-m[i],2);
-                ss_tot += pow(o[i]-mean_o,2);
-                s_mo += (m[i]-mean_m)*(o[i]-mean_o);
-                s_mm += pow(m[i]-mean_m,2);
-            }
-            const double fit_mse = ss_res/n;
-            const double _R2 = (ss_tot>0 && s_mm>0) ? s_mo*s_mo/(ss_tot*s_mm) : 0;
-            const double Nash_Sutcliffe_efficiency = (ss_tot>0) ? 1.0 - ss_res/ss_tot : 0;
-            fit_measures.push_back(fit_mse);
-            fit_measures.push_back(_R2);
-            fit_measures.push_back(Nash_Sutcliffe_efficiency);
-            const double sigma = Variable("error_standard_deviation")->GetVal();
-            return (n/likelihood_scale)*(fit_mse/(2.0*pow(sigma,2))+log(sigma));
-        }
-        // -----------------------------------------------------------------
-        // Weighted Least Squared:
-        // Same Gaussian negative-log-likelihood form as Least Squared, but
-        // residuals are summed under a temporal kernel that downweights
-        // older observations relative to the most recent one. The kernel
-        // is anchored at t_now = last observed time, so the freshest
-        // observation gets weight 1 and older observations are downweighted
-        // by a log-power tail past Delta0. The effective sample size
-        // sum_w (returned via weighted_mse's out-param) replaces N in the
-        // likelihood, and the standard deviation enters as in the LS case
-        // so that sigma remains identifiable when calibrated jointly.
-        // R2/NSE are reported unweighted as diagnostics.
-        // -----------------------------------------------------------------
-        else if (Variable("comparison_method")->GetProperty()=="Weighted Least Squared")
-        {
-            TimeSeries<double>* obs = Variable("observed_data")->GetTimeSeries();
-            if (obs->size() == 0)
-            {
-                fit_measures.resize(3);
-                return 0;
-            }
-
-            const double t_now  = obs->getTime(obs->size() - 1);
-            const double Delta0 = Variable("kernel_Delta0")->GetVal();
-            const double tau    = Variable("kernel_tau")->GetVal();
-            const double alpha  = Variable("kernel_alpha")->GetVal();
-            const double sigma  = Variable("error_standard_deviation")->GetVal();
-
-            double fit_mse = 0;
-            double sum_w   = 0;
-            double _R2     = 0;
-            double Nash_Sutcliffe_efficiency = 0;
-
-            if (Variable("error_structure")->GetProperty()=="normal")
-            {
-                fit_mse = weighted_mse(*obs, modeled_time_series, t_now, Delta0, tau, alpha, &sum_w);
-                _R2 = R2(&modeled_time_series, obs);
-                Nash_Sutcliffe_efficiency = NSE(&modeled_time_series, obs);
-            }
-            else if (Variable("error_structure")->GetProperty()=="log-normal" || Variable("error_structure")->GetProperty()=="lognormal")
-            {
-                TimeSeries<double> obs_log = obs->log(1e-8);
-                TimeSeries<double> mod_log = modeled_time_series.log(1e-8);
-                fit_mse = weighted_mse(obs_log, mod_log, t_now, Delta0, tau, alpha, &sum_w);
-                _R2 = R2(mod_log, obs_log);
-                Nash_Sutcliffe_efficiency = NSE(mod_log, obs_log);
-            }
-            else
-            {
-                fit_measures.resize(3);
-                return 0;
-            }
-
-            fit_measures.push_back(fit_mse);
-            fit_measures.push_back(_R2);
-            fit_measures.push_back(Nash_Sutcliffe_efficiency);
-
-            // Kernel-weighted Gaussian NLL, constants dropped:
-            //   -log L = sum_w*log(sigma) + sum_i w_i r_i^2 / (2 sigma^2)
-            // weighted_mse() returns the WEIGHTED MEAN squared error, so
-            // sum_i w_i r_i^2 = sum_w * fit_mse. sum_w is the kernel
-            // effective sample size, replacing N.
-            return (sum_w / likelihood_scale) * (fit_mse / (2.0 * pow(sigma, 2)) + log(sigma));
-        }
-        else
-        {
-            double auto_correlation_diff = 0;
-            double CDF_diff = 0;
-            double time_span = Variable("autocorrelation_time-span")->GetVal();
-            double increment = time_span/20.0;
-            TimeSeries<double> autocorr_measured = Variable("observed_data")->GetTimeSeries()->ConvertToNormalScore().AutoCorrelation(time_span,increment);
-            TimeSeries<double> autocorr_modeled = modeled_time_series.ConvertToNormalScore().AutoCorrelation(time_span,increment);
-            auto_correlation_diff =  diff2(autocorr_measured, autocorr_modeled);
-            if (Variable("error_structure")->GetProperty()=="normal")
-            {
-
-                //qDebug()<<"Calculating Misfit Normal";
-                CDF_diff = KolmogorovSmirnov(Variable("observed_data")->GetTimeSeries(),&modeled_time_series);
-
-            }
-            else
-            {
-                //qDebug()<<"Calculating Misfit Log-Normal";
-                CDF_diff = KolmogorovSmirnov(Variable("observed_data")->GetTimeSeries()->log(1e-8),modeled_time_series.log(1e-8));
-                //qDebug()<<"CDF diff calculated";
-            }
-            fit_measures.push_back(auto_correlation_diff + CDF_diff);
-            fit_measures.push_back(auto_correlation_diff);
-            fit_measures.push_back(CDF_diff);
-            //qDebug()<<"Misfit vector populated";
-            return auto_correlation_diff + CDF_diff;
-        }
-    }
-    else
+    if (Variable("observed_data")==nullptr || Variable("observed_data")->GetTimeSeries()==nullptr)
     {
         fit_measures.resize(3);
         return 0;
     }
+
+    // The three sum-of-squares methods share one implementation with the
+    // Levenberg-Marquardt residual vector, so the misfit the GA minimises and
+    // the residuals LM differentiates are by construction the same quantity.
+    // ResidualVector() fills fit_measures on the way through.
+    const string method = Variable("comparison_method")->GetProperty();
+    if (method=="Least Squared" || method=="Weighted Least Squared" || IsEMC())
+        return ResidualVector().NegLogLikelihood();
+
+    // -----------------------------------------------------------------
+    // Similarity: an autocorrelation distance plus a Kolmogorov-Smirnov
+    // distance between the modeled and observed distributions. This is not a
+    // sum of squares over per-point residuals and has no Gauss-Newton form,
+    // which is why ResidualVector() reports it as not_decomposable and LM
+    // refuses to run on a model that uses it.
+    // -----------------------------------------------------------------
+    double auto_correlation_diff = 0;
+    double CDF_diff = 0;
+    double time_span = Variable("autocorrelation_time-span")->GetVal();
+    double increment = time_span/20.0;
+    TimeSeries<double> autocorr_measured = Variable("observed_data")->GetTimeSeries()->ConvertToNormalScore().AutoCorrelation(time_span,increment);
+    TimeSeries<double> autocorr_modeled = modeled_time_series.ConvertToNormalScore().AutoCorrelation(time_span,increment);
+    auto_correlation_diff =  diff2(autocorr_measured, autocorr_modeled);
+    if (Variable("error_structure")->GetProperty()=="normal")
+    {
+        //qDebug()<<"Calculating Misfit Normal";
+        CDF_diff = KolmogorovSmirnov(Variable("observed_data")->GetTimeSeries(),&modeled_time_series);
+    }
+    else
+    {
+        //qDebug()<<"Calculating Misfit Log-Normal";
+        CDF_diff = KolmogorovSmirnov(Variable("observed_data")->GetTimeSeries()->log(1e-8),modeled_time_series.log(1e-8));
+        //qDebug()<<"CDF diff calculated";
+    }
+    fit_measures.clear();
+    fit_measures.push_back(auto_correlation_diff + CDF_diff);
+    fit_measures.push_back(auto_correlation_diff);
+    fit_measures.push_back(CDF_diff);
+    //qDebug()<<"Misfit vector populated";
+    return auto_correlation_diff + CDF_diff;
+}
+
+// ---------------------------------------------------------------------------
+// Residual decomposition of this observation's negative log-likelihood; see
+// the ResidualBlock comment in observation.h. Every branch below reproduces
+// the corresponding CalcMisfit() branch term by term:
+//
+//   -log L = (Neff/tau)*( MSE/(2 sigma^2) + log sigma )
+//          =  0.5 * sum_i r_i^2  +  (Neff/tau) * log sigma
+//
+// so the residual scaling is whatever makes sum_i r_i^2 equal
+// (Neff/tau)*MSE/sigma^2.
+// ---------------------------------------------------------------------------
+ResidualBlock Observation::ResidualVector()
+{
+    ResidualBlock block;
+    fit_measures.clear();
+
+    if (Variable("observed_data")==nullptr || Variable("observed_data")->GetTimeSeries()==nullptr)
+    {
+        fit_measures.resize(3);
+        return block; // kind == empty
+    }
+
+    TimeSeries<timeseriesprecision>* obs = Variable("observed_data")->GetTimeSeries();
+    const string method    = Variable("comparison_method")->GetProperty();
+    const string structure = Variable("error_structure")->GetProperty();
+    const bool lognormal   = (structure=="log-normal" || structure=="lognormal");
+    const bool normal      = (structure=="normal");
+    const double tau       = likelihood_scale;
+
+    if (method=="Least Squared")
+    {
+        if (!normal && !lognormal)
+        {
+            // CalcMisfit scored an unrecognised error structure as 0 and still
+            // does: no residuals, no log-sigma term.
+            fit_measures.resize(3);
+            return block;
+        }
+
+        vector<double> d;
+        double fit_mse = 0, _R2 = 0, nse = 0;
+        if (normal)
+        {
+            d   = in_range_residuals(modeled_time_series, *obs);
+            _R2 = R2(&modeled_time_series, obs);
+            nse = NSE(&modeled_time_series, obs);
+        }
+        else
+        {
+            const TimeSeries<timeseriesprecision> mod_log = modeled_time_series.log(1e-8);
+            const TimeSeries<timeseriesprecision> obs_log = obs->log(1e-8);
+            d   = in_range_residuals(mod_log, obs_log);
+            _R2 = R2(mod_log, obs_log);
+            nse = NSE(mod_log, obs_log);
+        }
+
+        double ss = 0;
+        for (double v : d) ss += pow(v,2);
+        const size_t count = d.size();
+        fit_mse = count ? ss/double(count) : 0.0;
+        fit_measures.push_back(fit_mse);
+        fit_measures.push_back(_R2);
+        fit_measures.push_back(nse);
+
+        // Gaussian negative log-likelihood, constants dropped:
+        //   -log L = (n/tau) * ( MSE/(2 sigma^2) + log sigma )
+        // The factor 2 is what makes sigma's MAP the RMS residual; without it
+        // sigma is inflated by sqrt(2).
+        //
+        // n is the number of points actually COMPARED, which is what MSE is
+        // averaged over. Before this was fixed the prefactor used the full
+        // observed count while the mean was taken over the compared subset, so
+        // the whole likelihood was inflated by N/count. That left the point
+        // estimate alone -- scaling an objective does not move its minimum --
+        // but it over-weighted observations whose data extends past the
+        // simulated window against those fully inside it, and it scaled the
+        // Gauss-Newton curvature by the same factor, so parameter standard
+        // errors came out too narrow by sqrt(count/N), in LM and in MCMC alike.
+        const double sigma = Variable("error_standard_deviation")->GetVal();
+        block.sigma = sigma;
+        block.log_sigma_coeff = double(count)/tau;
+        block.mse = fit_mse;
+        block.kind = ResidualBlock::Kind::sum_of_squares;
+        if (count)
+        {
+            const double scale = 1.0/(sigma*sqrt(tau));
+            block.r.reserve(count);
+            for (double v : d) block.r.push_back(v*scale);
+        }
+        return block;
+    }
+
+    // -----------------------------------------------------------------
+    // EMC: one flow-weighted event mean concentration per event window,
+    // compared with the observed EMC through the same Gaussian NLL as
+    // Least Squared (N = number of events with data).
+    // -----------------------------------------------------------------
+    if (IsEMC())
+    {
+        if (!CalcEMCs() || observed_emc.size() == 0)
+        {
+            fit_measures.resize(3);
+            return block;
+        }
+        const size_t n = observed_emc.size();
+        vector<double> m(n), o(n);
+        for (size_t i=0; i<n; i++)
+        {
+            m[i] = modeled_emc.getValue(i);
+            o[i] = observed_emc.getValue(i);
+            if (lognormal)
+            {
+                m[i] = log(max(m[i],1e-8));
+                o[i] = log(max(o[i],1e-8));
+            }
+        }
+        double mean_o = 0, mean_m = 0;
+        for (size_t i=0; i<n; i++) { mean_o += o[i]; mean_m += m[i]; }
+        mean_o /= n; mean_m /= n;
+        double ss_res = 0, ss_tot = 0, s_mo = 0, s_mm = 0;
+        for (size_t i=0; i<n; i++)
+        {
+            ss_res += pow(o[i]-m[i],2);
+            ss_tot += pow(o[i]-mean_o,2);
+            s_mo += (m[i]-mean_m)*(o[i]-mean_o);
+            s_mm += pow(m[i]-mean_m,2);
+        }
+        const double fit_mse = ss_res/n;
+        const double _R2 = (ss_tot>0 && s_mm>0) ? s_mo*s_mo/(ss_tot*s_mm) : 0;
+        const double Nash_Sutcliffe_efficiency = (ss_tot>0) ? 1.0 - ss_res/ss_tot : 0;
+        fit_measures.push_back(fit_mse);
+        fit_measures.push_back(_R2);
+        fit_measures.push_back(Nash_Sutcliffe_efficiency);
+
+        // (n/tau)*(ss_res/n)/(2 sigma^2) = ss_res/(2 tau sigma^2), so the MSE's
+        // 1/n cancels the prefactor's n and each residual is simply scaled by
+        // 1/(sigma*sqrt(tau)).
+        const double sigma = Variable("error_standard_deviation")->GetVal();
+        block.sigma = sigma;
+        block.log_sigma_coeff = double(n)/tau;
+        block.mse = fit_mse;
+        block.kind = ResidualBlock::Kind::sum_of_squares;
+        const double scale = 1.0/(sigma*sqrt(tau));
+        block.r.reserve(n);
+        for (size_t i=0; i<n; i++) block.r.push_back((o[i]-m[i])*scale);
+        return block;
+    }
+
+    // -----------------------------------------------------------------
+    // Weighted Least Squared:
+    // Same Gaussian negative-log-likelihood form as Least Squared, but
+    // residuals are summed under a temporal kernel that downweights
+    // older observations relative to the most recent one. The kernel
+    // is anchored at t_now = last observed time, so the freshest
+    // observation gets weight 1 and older observations are downweighted
+    // by a log-power tail past Delta0. The effective sample size
+    // sum_w replaces N in the likelihood, and the standard deviation
+    // enters as in the LS case so that sigma remains identifiable when
+    // calibrated jointly. R2/NSE are reported unweighted as diagnostics.
+    // -----------------------------------------------------------------
+    if (method=="Weighted Least Squared")
+    {
+        if (obs->size() == 0 || (!normal && !lognormal))
+        {
+            fit_measures.resize(3);
+            return block;
+        }
+
+        const double t_now  = obs->getTime(obs->size() - 1);
+        const double Delta0 = Variable("kernel_Delta0")->GetVal();
+        const double ktau   = Variable("kernel_tau")->GetVal();
+        const double alpha  = Variable("kernel_alpha")->GetVal();
+        const double sigma  = Variable("error_standard_deviation")->GetVal();
+
+        const TimeSeries<timeseriesprecision> obs_c = normal ? *obs : obs->log(1e-8);
+        const TimeSeries<timeseriesprecision> mod_c = normal ? modeled_time_series : modeled_time_series.log(1e-8);
+
+        double sum_w = 0;
+        const double fit_mse = weighted_mse(obs_c, mod_c, t_now, Delta0, ktau, alpha, &sum_w);
+        const double _R2 = normal ? R2(&modeled_time_series, obs) : R2(mod_c, obs_c);
+        const double nse = normal ? NSE(&modeled_time_series, obs) : NSE(mod_c, obs_c);
+
+        fit_measures.push_back(fit_mse);
+        fit_measures.push_back(_R2);
+        fit_measures.push_back(nse);
+
+        // Kernel-weighted Gaussian NLL, constants dropped:
+        //   -log L = sum_w*log(sigma) + sum_i w_i r_i^2 / (2 sigma^2)
+        // sum_w is the kernel effective sample size, replacing N. Unlike the
+        // Least Squared branch, weighted_mse compares at EVERY observed time
+        // (interpolating the modeled series), so there is no in-range subset
+        // and no N/count correction.
+        block.sigma = sigma;
+        block.log_sigma_coeff = sum_w/tau;
+        block.mse = fit_mse;
+        block.kind = ResidualBlock::Kind::sum_of_squares;
+        block.r.reserve(obs_c.size());
+        for (size_t i=0; i<obs_c.size(); i++)
+        {
+            const double t_i = obs_c.getTime(i);
+            const double d   = obs_c.getValue(i) - mod_c.interpol(t_i);
+            const double w   = recency_kernel_weight(t_now - t_i, Delta0, ktau, alpha);
+            block.r.push_back(d*sqrt(w/tau)/sigma);
+        }
+        return block;
+    }
+
+    // "Similarity" and anything unrecognised.
+    fit_measures.resize(3);
+    block.kind = ResidualBlock::Kind::not_decomposable;
+    return block;
 }
 void Observation::append_value(double t, double val)
 {

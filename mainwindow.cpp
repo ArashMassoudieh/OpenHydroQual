@@ -3089,6 +3089,26 @@ void MainWindow::Populate_General_ToolBar()
     actionmcmc->setToolTip("MCMC parameter estimation");
     connect(actionmcmc, SIGNAL(triggered()), this, SLOT(onmcmc()));
 
+    // Levenberg-Marquardt. A gradient method, so it starts from the parameters'
+    // current values and running it after an Inverse Run automatically continues
+    // from that result. The icon shows a descent path stepping into a contour
+    // basin, which is what separates it at a glance from the gear (GA) and the
+    // dice (MCMC) sitting beside it in this toolbar.
+    // A missing icon file leaves an icon-only toolbar button blank, so fall back
+    // to the inverse-run icon rather than showing nothing at all.
+    QIcon iconlm;
+    QString lmiconpath = QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/LM.png");
+    if (!QFileInfo::exists(lmiconpath))
+        lmiconpath = QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/inverserun.png");
+    iconlm.addFile(lmiconpath, QSize(), QIcon::Normal, QIcon::Off);
+
+    QAction* actionlm = new QAction(this);
+    actionlm->setIcon(iconlm);
+    ui->GeneraltoolBar->addAction(actionlm);
+    actionlm->setText("Levenberg-Marquardt calibration");
+    actionlm->setToolTip("Levenberg-Marquardt calibration (local; refines the current parameter values and reports their uncertainty)");
+    connect(actionlm, SIGNAL(triggered()), this, SLOT(onlevenbergmarquardt()));
+
     QIcon iconviz;
     iconviz.addFile(QString::fromStdString(RESOURCE_DIRECTORY+"/Icons/Visualize.png"), QSize(), QIcon::Normal, QIcon::Off);
 
@@ -3764,6 +3784,105 @@ void MainWindow::oninverserun()
     system.SetParameterEstimationMode();
     system.SetOutputItems();
     rtw->AppendLog(std::string("Parameter Estimation Finished!"));
+    rtw->SetStatus("Finished!");
+}
+
+// ---------------------------------------------------------------------------
+// Levenberg-Marquardt calibration.
+//
+// Minimises the same negative log-likelihood the GA minimises, but by
+// Gauss-Newton steps on the residual vector, so it needs roughly one model run
+// per parameter per iteration instead of a whole population per generation, and
+// it can report the parameter covariance the GA cannot.
+//
+// It is LOCAL: it starts from each parameter's current value. onoptimize()
+// writes the GA's estimates back into system.Parameters(), so running this
+// straight after an Inverse Run refines that result with no coupling between
+// the two classes. From a cold start on a multimodal problem it will find whichever
+// optimum is nearest, which is why the GA remains the right first pass.
+// ---------------------------------------------------------------------------
+void MainWindow::onlevenbergmarquardt()
+{
+    ErrorHandler errs = system.VerifyAllQuantities();
+    if (system.ParametersCount()==0)
+    {
+        LogAllSystemErrors(&errs);
+        QMessageBox::question(this, "Errors!", "No parameters have been defined!", QMessageBox::Ok);
+        return;
+    }
+    if (system.ObservationsCount()==0)
+    {
+        LogAllSystemErrors(&errs);
+        QMessageBox::question(this, "Errors!",
+            "Levenberg-Marquardt calibrates against observations, and this model defines none. "
+            "Add observations with observed data. Optimize is the action that scores a design "
+            "objective-function set instead.", QMessageBox::Ok);
+        return;
+    }
+    if (errs.Count()!=0)
+    {
+        LogAllSystemErrors(&errs);
+        QMessageBox::question(this, "Errors!", "There are errors in the values assigned to some of the variables. Check the log window for more details.", QMessageBox::Ok);
+        return;
+    }
+
+    system.SetSystemSettings();
+    if (lmoptimizer != nullptr) delete lmoptimizer;
+    lmoptimizer = new CLM<System>(&system);
+    // The settings object is optional: a model saved before LM existed has no
+    // "LM" object, and the compiled-in defaults are usable as they stand.
+    if (system.object("LM") != nullptr)
+        lmoptimizer->SetParameters(system.object("LM"));
+    lmoptimizer->filenames.pathname = workingfolder.toStdString() + "/";
+    system.SetAllParents();
+
+    CreateProgressWindow();
+    rtw->SetSecondaryProgressVisible(true);
+    rtw->SetPrimaryChartXAxisTitle("Iteration");
+    rtw->SetPrimaryChartYAxisTitle("-Log Likelihood");
+    rtw->SetPrimaryChartTitle("-LL vs Iteration");
+    rtw->SetStatus("Levenberg-Marquardt");
+    rtw->SetPrimaryChartXRange(0, lmoptimizer->LM_params.max_iterations);
+    rtw->show();
+    rtw->AppendLog(std::string("Levenberg-Marquardt calibration started ..."));
+    system.SetProgressWindow(nullptr);
+    lmoptimizer->SetProgressWindow(rtw);
+    system.SetParameterEstimationMode(parameter_estimation_options::inverse_model);
+
+    const int iterations = lmoptimizer->optimize();
+
+    if (iterations < 0)
+    {
+        // optimize() refuses before running when the model has no usable
+        // residuals, fails to solve at the starting point, or uses a comparison
+        // method with no sum-of-squares form. Nothing has been run, so report it
+        // and stop; harvesting results that do not exist would be worse.
+        system.SetParameterEstimationMode();
+        rtw->AppendLog(lmoptimizer->last_error);
+        rtw->SetStatus("Calibration aborted.");
+        QMessageBox::critical(this, "Cannot run Levenberg-Marquardt",
+                              QString::fromStdString(lmoptimizer->last_error));
+        return;
+    }
+
+    lmoptimizer->Model_out.GetOutputs().write(workingfolder.toStdString() + "/outputs.txt");
+    lmoptimizer->Model_out.GetObservedOutputs().write(workingfolder.toStdString() + "/observedoutputs.txt");
+    lmoptimizer->Model_out.errorhandler.Write(workingfolder.toStdString() + "/errors.txt");
+
+    system.TransferResultsFrom(&lmoptimizer->Model_out);
+    system.Parameters() = lmoptimizer->Model_out.Parameters();
+    system.SetOutputItems();
+    system.SetParameterEstimationMode();
+
+    rtw->AppendLog("Finished after " + std::to_string(iterations) + " iteration(s) and " +
+                   std::to_string(lmoptimizer->model_solves) + " model runs.");
+    if (lmoptimizer->covariance_valid)
+        rtw->AppendLog("Parameter standard errors and correlations were written to " +
+                       lmoptimizer->filenames.covariancefilename + ".");
+    else
+        rtw->AppendLog(std::string("No parameter covariance was produced: the curvature at the "
+                       "solution is singular, so at least one parameter, or one combination of "
+                       "them, the data cannot resolve."));
     rtw->SetStatus("Finished!");
 }
 

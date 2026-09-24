@@ -27,6 +27,7 @@ INCLUDEPATH += ./aquifolium/include
 INCLUDEPATH += ./aquifolium/src
 INCLUDEPATH += ./aquifolium/include/GA
 INCLUDEPATH += ./aquifolium/include/MCMC
+INCLUDEPATH += ./aquifolium/include/LM
 INCLUDEPATH += jsoncpp/include/
 # Model -> C++ compiler (Model > Export to C++). Generator only; the generated
 # code links the header-only codegen/runtime, which is embedded in
@@ -188,6 +189,7 @@ SOURCES += \
     utilityfuncs.cpp \
     ./aquifolium/src/Command.cpp \
     ./aquifolium/src/Script.cpp \
+    ./aquifolium/src/LM/LM_impl.cpp \
     ./aquifolium/src/GA/Binary.cpp \
     ./aquifolium/src/GA/Individual.cpp \
     ./aquifolium/src/GA/DistributionNUnif.cpp \
@@ -230,6 +232,8 @@ HEADERS += \
     XString.h \
     aboutdialog.h \
     aquifolium/include/GA/GA.h \
+    aquifolium/include/LM/LM.h \
+    aquifolium/include/LM/LM.hpp \
     aquifolium/include/MCMC/MCMC.h \
     aquifolium/include/MCMC/MCMC.hpp \
     aquifolium/include/Utilities.h \

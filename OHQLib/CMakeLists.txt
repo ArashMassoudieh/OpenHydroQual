@@ -159,6 +159,7 @@ set(OHQ_SOURCES
     ${AQUIFOLIUM_ROOT}/src/restorepoint.cpp
     ${AQUIFOLIUM_ROOT}/src/solutionlogger.cpp
     # GA
+    ${AQUIFOLIUM_ROOT}/src/LM/LM_impl.cpp
     ${AQUIFOLIUM_ROOT}/src/GA/Binary.cpp
     ${AQUIFOLIUM_ROOT}/src/GA/Individual.cpp
     ${AQUIFOLIUM_ROOT}/src/GA/DistributionNUnif.cpp
@@ -180,6 +181,8 @@ set(OHQ_HEADERS
     ${AQUIFOLIUM_ROOT}/include/precalculatedfunction.h
     ${AQUIFOLIUM_ROOT}/include/solutionlogger.h
     ${AQUIFOLIUM_ROOT}/include/GA/GA.h
+    ${AQUIFOLIUM_ROOT}/include/LM/LM.h
+    ${AQUIFOLIUM_ROOT}/include/LM/LM.hpp
     ${AQUIFOLIUM_ROOT}/include/MCMC/MCMC.h
     ${AQUIFOLIUM_ROOT}/include/MCMC/MCMC.hpp
     ${AQUIFOLIUM_ROOT}/include/Utilities.h
@@ -217,6 +220,7 @@ target_include_directories(OHQLib
     PUBLIC
         $<BUILD_INTERFACE:${AQUIFOLIUM_ROOT}/include>
         $<BUILD_INTERFACE:${AQUIFOLIUM_ROOT}/include/GA>
+        $<BUILD_INTERFACE:${AQUIFOLIUM_ROOT}/include/LM>
         $<BUILD_INTERFACE:${AQUIFOLIUM_ROOT}/include/MCMC>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
         $<INSTALL_INTERFACE:include/openhydroqual>

@@ -1,0 +1,24 @@
+\contentsline {section}{\numberline {1}Overview}{1}{section.1}%
+\contentsline {section}{\numberline {2}What is computed}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}The objective}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}The residual vector}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}The step}{2}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Convergence}{3}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Parameter uncertainty}{3}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Error standard deviations}{3}{subsection.2.6}%
+\contentsline {section}{\numberline {3}Requirements and limitations}{4}{section.3}%
+\contentsline {section}{\numberline {4}Settings}{4}{section.4}%
+\contentsline {section}{\numberline {5}Using LM in the GUI}{5}{section.5}%
+\contentsline {section}{\numberline {6}Using LM from the console}{5}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Script syntax}{5}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Headless runner: \texttt {\small OHQ-LM}}{6}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Checking the likelihood decomposes}{6}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Output files}{6}{section.7}%
+\contentsline {subsection}{\numberline {7.1}\texttt {\small LM\_output.txt}}{6}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}\texttt {\small LM\_covariance.txt}}{6}{subsection.7.2}%
+\contentsline {section}{\numberline {8}Worked example}{7}{section.8}%
+\contentsline {section}{\numberline {9}Practical notes}{8}{section.9}%
+\contentsline {subsection}{\numberline {9.1}The finite-difference step}{8}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Parameters that sit on a bound}{8}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Parameters the data cannot see}{8}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}Comparing objective values between runs}{8}{subsection.9.4}%

@@ -22,6 +22,7 @@
 #include <vector>
 #include "ErrorHandler.h"
 #include "GA.h"
+#include "LM/LM.h"
 
 class System;
 
@@ -47,6 +48,8 @@ class Script
         void Append(const Command &c);
         void SetGA(CGA<System> *G) {GA = G;}
         CGA<System> *GetGA() {return GA;}
+        void SetLM(CLM<System> *L) {LM = L;}
+        CLM<System> *GetLM() {return LM;}
         int CommandsCount() {return commands.size();}
         vector<string> &Errors() {return errors;}
     protected:
@@ -58,6 +61,7 @@ class Script
         map<string, map<string, vector<string>>> mustbespecifiedatcreation;
         ErrorHandler errorhandler;
         CGA<System> *GA = nullptr;
+        CLM<System> *LM = nullptr;
         bool systemwascreated = false;
 };
 

@@ -1,0 +1,509 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{warnbg}{RGB}{255,248,235}
+\definecolor{warnrule}{RGB}{200,140,40}
+
+\lstdefinestyle{plain}{
+  basicstyle=\ttfamily\footnotesize, backgroundcolor=\color{codebg},
+  breaklines=true, columns=fullflexible, keepspaces=true,
+  showstringspaces=false, frame=single, framerule=0pt, framesep=6pt, xleftmargin=6pt,
+}
+\lstset{style=plain}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\file}[1]{\texttt{\small #1}}
+
+\newenvironment{caution}
+  {\par\medskip\noindent\begin{tikzpicture}\node[draw=warnrule,fill=warnbg,line width=0.8pt,
+   rounded corners=2pt,inner sep=8pt,text width=\dimexpr\textwidth-20pt\relax,align=left]\bgroup}
+  {\egroup;\end{tikzpicture}\par\medskip}
+
+\title{\textbf{Levenberg-Marquardt Calibration}\\[0.3em]
+       \large Gradient-based parameter estimation with uncertainty in OpenHydroQual}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Overview}
+
+Levenberg-Marquardt (LM) estimates model parameters by walking downhill from a
+starting guess to the best-fitting values, using the slope of the fit error to
+choose each step. It minimises exactly the same negative log-likelihood that
+\textbf{Inverse Run} (genetic algorithm) and \textbf{MCMC parameter estimation}
+minimise, so the three methods are directly comparable and can be used in sequence on the
+same model without changing anything about the model itself.
+
+What distinguishes LM from its two siblings:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{It is cheap.} One iteration costs roughly one model run per
+        calibrated parameter. A genetic algorithm costs population $\times$
+        generations, typically 1600 runs at the default settings.
+  \item \textbf{It reports uncertainty.} At the solution it produces a standard
+        error and a 95\,\% interval for every parameter, plus the correlation
+        matrix between them. The GA reports a point estimate and nothing else;
+        MCMC reports uncertainty but needs thousands of runs to do it.
+  \item \textbf{It is local.} It finds the optimum nearest its starting point.
+        On a model with several distinct optima it will not search for the
+        global one.
+\end{itemize}
+
+That last point defines the intended workflow. LM starts from each parameter's
+\emph{current value}, and \textbf{Inverse Run} writes its estimates back into
+the model's parameters when it finishes. Running LM immediately after it
+therefore continues from the GA's answer with no configuration at all:
+
+\begin{quote}
+\textbf{Inverse Run} finds the basin. \textbf{Levenberg-Marquardt} converges
+inside it and quantifies the uncertainty.
+\end{quote}
+
+Used alone from a good starting guess, LM is often all that is needed. Used
+alone from a poor one on a multi-modal problem, it will return a confident
+answer about the wrong optimum, which is the one failure mode to keep in mind.
+
+\section{What is computed}
+
+\subsection{The objective}
+
+Every \code{Observation} with observed data contributes a Gaussian negative
+log-likelihood. For an observation compared at $n$ points,
+\begin{equation}
+  -\log L \;=\; \frac{n}{\tau}\left(\frac{\mathrm{MSE}}{2\sigma^{2}}
+                                    + \log \sigma\right),
+  \qquad
+  \mathrm{MSE} \;=\; \frac{1}{n}\sum_{i=1}^{n}\left(o_i - m_i\right)^{2},
+\end{equation}
+where $o_i$ and $m_i$ are the observed and modeled values, $\sigma$ is the
+observation's \code{error\_standard\_deviation}, and $\tau$ is its
+effective-information scale. For a \code{log-normal} error structure the
+residuals are taken in log space. The total objective is the sum over all
+observations. This is the same quantity \code{System::CalcMisfit()} returns to
+the GA and to MCMC.
+
+\subsection{The residual vector}
+
+LM does not minimise that scalar directly. It decomposes it into a vector of
+weighted residuals
+\begin{equation}
+  r_i \;=\; \frac{o_i - m_i}{\sigma\sqrt{\tau}},
+  \qquad\text{so that}\qquad
+  -\log L \;=\; \tfrac{1}{2}\lVert \mathbf{r}\rVert^{2} + n\,\log\sigma ,
+\end{equation}
+with an extra factor $\sqrt{w_i}$ per point under the
+\code{Weighted Least Squared} kernel. Every scaling the misfit applies is folded
+into $\mathbf{r}$, so the residual vector LM differentiates and the misfit the
+GA minimises are two views of one quantity, computed by one piece of code.
+
+\subsection{The step}
+
+With $J_{ij} = \partial r_i / \partial \theta_j$ estimated by finite
+differences, each iteration solves the damped normal equations
+\begin{equation}
+  \left(J^{\!\top}\! J + \lambda\,\mathrm{diag}(J^{\!\top}\! J)\right)\,
+  \boldsymbol{\delta} \;=\; -J^{\!\top}\mathbf{r},
+\end{equation}
+and tries the point $\boldsymbol{\theta} + \boldsymbol{\delta}$. Small $\lambda$
+gives the full Gauss-Newton step, which converges quickly near the solution;
+large $\lambda$ gives a short step down the steepest-descent direction, which is
+safer far from it. The damping adapts automatically: it is reduced after a step
+that improves the fit and raised after one that does not. Scaling by
+$\mathrm{diag}(J^{\!\top}\! J)$ instead of by the identity makes the damping
+insensitive to how the parameters are scaled, which matters when conductivities
+and porosities are calibrated together.
+
+Parameters are searched in the same space the GA uses: $\log_{10}$ for a
+parameter whose \code{prior\_distribution} is \code{log-normal}, linear
+otherwise, bounded by its \code{low} and \code{high}. Steps that would leave the
+box are projected back onto it.
+
+\subsection{Convergence}
+
+The run stops at the first of these:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item the fit improves by less than \code{tol\_objective} (relative);
+  \item the step is shorter than \code{tol\_step} (relative);
+  \item the largest gradient component is below \code{tol\_gradient};
+  \item no step improves the fit in \code{max\_rejections} attempts at heavier
+        damping, which means a minimum has been reached to within the
+        resolution the finite-difference gradient can see;
+  \item \code{max\_iterations} is reached.
+\end{itemize}
+
+The stop reason is written in plain words at the end of \file{LM\_output.txt}.
+Read it: ``reached the iteration limit'' means the run was cut short and should
+be continued, while the others mean it converged.
+
+\subsection{Parameter uncertainty}
+
+At the solution $J^{\!\top}\! J$ is the Gauss-Newton approximation of the
+likelihood's Hessian, so its inverse is the parameter covariance. Because the
+residuals already carry $1/\sigma$, this is a covariance and not merely a
+curvature. LM recomputes the Jacobian at the converged point (rather than
+reusing the last iteration's, which was taken one step away) and reports:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item the standard error of each parameter, in the space it was searched in,
+        so a \code{log-normal} parameter's error refers to $\log_{10}$ of its
+        value;
+  \item a 95\,\% interval, converted back to model units;
+  \item the correlation matrix between parameters.
+\end{itemize}
+
+\begin{caution}
+\textbf{Read the correlation matrix.} A pair of parameters correlated near
+$+1$ or $-1$ cannot be told apart by the available data: the fit can trade one
+against the other with no penalty. The individual standard errors will look
+reasonable while the pair is jointly unidentified. Fix one of them, or add an
+observation that constrains one alone.
+\end{caution}
+
+\subsection{Error standard deviations}
+
+When a parameter drives an observation's \code{error\_standard\_deviation}, the
+objective is no longer a pure sum of squares and $\sigma$ would have to be
+searched for like any other parameter. LM avoids this: $\sigma$ has a closed
+form at any point,
+\begin{equation}
+  \hat{\sigma}^{2} \;=\; \mathrm{MSE},
+\end{equation}
+so LM sets it to that value at every iteration and drops it from the search.
+This is exact, costs nothing, removes a parameter from the problem, and is the
+same value the GA converges to. It is on by default (\code{profile\_sigma});
+the estimate reported at the end is the profiled one.
+
+\section{Requirements and limitations}
+
+LM refuses to start, with an explanatory message, unless all of the following
+hold. Nothing is run and no output is overwritten when it refuses.
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{The model defines observations with observed data.} LM needs
+        residuals. It cannot score a design objective-function set, which is
+        what \textbf{Optimize} is for; LM's counterpart is \textbf{Inverse
+        Run}, the genetic algorithm scoring the same likelihood.
+  \item \textbf{Every observation uses a comparison method with a
+        sum-of-squares form.} \code{Least Squared}, \code{Weighted Least
+        Squared} and \code{EMC} all qualify. \code{Similarity} does not: it is
+        an autocorrelation and Kolmogorov-Smirnov distance with no
+        Gauss-Newton form. Use \textbf{Inverse Run} for such a model.
+  \item \textbf{The model solves at the starting parameter values.} LM has no
+        population to fall back on. If the starting point fails, run
+        \textbf{Inverse Run} first to reach a feasible region.
+  \item \textbf{There are at least as many residuals as free parameters.}
+        Otherwise the problem is underdetermined and the covariance is
+        singular by construction.
+  \item \textbf{The number of residuals does not change when a parameter is
+        perturbed.} If it does, the comparison points themselves are moving
+        with the parameters and a Jacobian is not defined. LM detects this and
+        stops rather than differentiating nonsense.
+\end{itemize}
+
+\section{Settings}
+
+The \textbf{LM} settings object holds the configuration. Every entry has a
+usable default, so a model that has never been configured for LM will run.
+
+\begin{longtable}{@{}L{0.25\textwidth}L{0.19\textwidth}L{0.50\textwidth}@{}}
+\toprule
+\textbf{Property} & \textbf{Default} & \textbf{Meaning} \\
+\midrule
+\endhead
+\code{max\_iterations} & 50 &
+  Most Gauss-Newton steps attempted. Each costs about one model run per
+  parameter. A well-behaved problem stops well inside 50 on its own. \\
+\code{lambda0} & 0.01 &
+  Initial damping. Small takes the full Gauss-Newton step, good when already
+  close; large takes short downhill steps, safer from a poor start. It adapts
+  after the first step, so this mostly affects the opening moves. \\
+\code{fd\_step} & 0.001 &
+  How far each parameter is nudged to measure its effect, as a fraction of that
+  parameter's range. See \S\ref{sec:fdstep}. \\
+\code{central\_differences} & No &
+  Nudge each parameter both up and down. Twice the model runs per iteration,
+  for a more accurate gradient. \\
+\code{profile\_sigma} & Yes &
+  Set a calibrated \code{error\_standard\_deviation} to its analytic best value
+  each iteration instead of searching for it. \\
+\code{lm\_numthreads} & 8 &
+  Perturbed models solved at once while measuring the gradient. Nothing is
+  gained from more threads than parameters, or than the machine has cores. \\
+\code{tol\_objective} & 1e-8 &
+  Stop when an iteration improves the fit by less than this fraction. \\
+\code{max\_rejections} & 10 &
+  How many times a failed step is retried with heavier damping before the run
+  concludes it has reached a minimum. Each retry is a full model run. \\
+\code{lm\_outputfile} & \texttt{\scriptsize LM\_output.txt} &
+  Iteration log. \\
+\code{covariancefile} & \texttt{\scriptsize LM\_covariance.txt} &
+  Standard errors, intervals and the correlation matrix. \\
+\bottomrule
+\end{longtable}
+
+
+\noindent Further properties are settable from a script or the command
+line but are not exposed in the dialog, because the defaults are almost always
+right: \code{lambda\_up} and \code{lambda\_down} (both 3, the factors by which
+damping is raised after a rejected step and lowered after an accepted one),
+\code{lambda\_max} (1e12), \code{tol\_step} and \code{tol\_gradient} (both
+1e-8), and \code{write\_covariance} (Yes).
+
+\section{Using LM in the GUI}
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item Define the parameters to calibrate, with a \code{low}, a \code{high} and
+        a \code{prior\_distribution}, and assign each to the model quantity it
+        drives.
+  \item Define at least one \code{Observation} with observed data.
+  \item Set the parameters' \code{value} fields to your starting guess. This is
+        where LM begins. If you have just run \textbf{Inverse Run}, they already
+        hold the GA's estimates and there is nothing to do.
+  \item Adjust the \textbf{LM} settings object if needed.
+  \item Press the \textbf{Levenberg-Marquardt calibration} button in the general
+        toolbar.
+\end{enumerate}
+
+The progress window plots the negative log-likelihood against iteration number.
+The secondary progress bar tracks the perturbed model runs within the current
+Jacobian. When the run finishes, the calibrated values are written back into the
+model's parameters and the results are transferred in, so the plots show the
+calibrated model. The log reports the iteration count, the number of model runs
+consumed, and where the covariance file was written.
+
+If LM refuses to start, a dialog explains which of the conditions in
+\S3 was not met. Nothing has been run at that point.
+
+\section{Using LM from the console}\label{sec:console}
+
+\subsection{Script syntax}
+
+LM settings are set like any other settings object, and the calibration is run
+with the \code{lmoptimize} command:
+
+\begin{lstlisting}
+setvalue; object=LM, quantity=max_iterations, value=30
+setvalue; object=LM, quantity=central_differences, value=Yes
+setvalue; object=LM, quantity=numthreads, value=4
+lmoptimize
+\end{lstlisting}
+
+\noindent Because LM starts from the parameters' current values and
+\code{optimize} writes its result back into them, the hybrid is simply the two
+commands in order:
+
+\begin{lstlisting}
+optimize
+lmoptimize
+\end{lstlisting}
+
+\subsection{Headless runner: \code{OHQ-LM}}
+
+\begin{lstlisting}
+cd terminal/OHQ-LM && mkdir -p build && cd build
+qmake6 ../OHQ-LM.pro && make -j$(nproc)
+
+./OHQ-LM model.ohq output_folder/
+\end{lstlisting}
+
+\noindent Options, each overriding the model's \textbf{LM} settings when given
+and leaving them alone when not:
+
+\begin{longtable}{@{}L{0.34\textwidth}L{0.62\textwidth}@{}}
+\toprule
+\textbf{Option} & \textbf{Effect} \\
+\midrule
+\endhead
+\code{-{}-verify-residuals} & Check the likelihood decomposition and exit. See
+  \S\ref{sec:verify}. \\
+\code{-{}-iterations <n>}   & Maximum iterations. \\
+\code{-{}-lambda0 <x>}      & Initial damping. \\
+\code{-{}-fd-step <x>}      & Finite-difference step, as a fraction of range. \\
+\code{-{}-central}          & Central differences. \\
+\code{-{}-no-profile-sigma} & Keep a calibrated $\sigma$ in the search. \\
+\code{-{}-threads <n>}      & Parallel model runs per Jacobian. \\
+\code{-{}-kernel <lib.so>}  & Run the forward model from a codegen-generated
+  shared library instead of the interpreter. \\
+\bottomrule
+\end{longtable}
+
+\subsection{Checking the likelihood decomposes}\label{sec:verify}
+
+\begin{lstlisting}
+./OHQ-LM model.ohq output_folder/ --verify-residuals
+\end{lstlisting}
+
+This costs one forward solve and confirms that
+$\tfrac{1}{2}\lVert\mathbf{r}\rVert^{2} + \sum_k n_k\log\sigma_k$ equals
+\code{CalcMisfit()} on this model, which is the identity the whole method rests
+on. It also reports, per observation, how many points were actually compared,
+the $\sigma$ in force, and that observation's contribution to the objective.
+
+It is worth running once on any new model. A comparison count well below the
+number of observed points means data lie outside the simulated time window and
+are not contributing at all.
+
+\section{Output files}
+
+\subsection{\file{LM\_output.txt}}
+
+A commented header records the settings, which parameters were optimised and in
+which space, and which error standard deviations were profiled out. Then one row
+per attempted step:
+
+\begin{lstlisting}
+iter , neg_log_lik   , lambda     , status , k_decay, C0, sigma_obs
+0    , -2.0052167e+01,  1.0000e-02, start  , 2, 3.5, 0.40935204
+1    , -5.3282375e+01,  3.3333e-03, accept , 0.92588741, 1.7318153, 0.21336468
+2    , -1.4003940e+02,  1.1111e-03, accept , 0.63504485, 1.9755143, 0.038934657
+3    , -2.4437852e+02,  3.7037e-04, accept , 0.69347977, 2.0090912, 0.0050330171
+\end{lstlisting}
+
+\code{status} is \code{accept} when the step reduced the objective and
+\code{reject} when the damping had to be raised and the step retried. Parameter
+columns are in model units, not search units. The file ends with the stop
+reason, the final objective and the final estimates, with profiled parameters
+marked as such.
+
+\subsection{\file{LM\_covariance.txt}}
+
+\begin{lstlisting}
+parameter    , space  , estimate   , std_error   , ci95_low  , ci95_high
+k_decay      , log10  , 0.6941473  , 0.0008034   , 0.691635  , 0.6966687
+C0           , linear , 2.01154    , 0.0025069   , 2.006626  , 2.016453
+
+# correlation matrix
+             , k_decay  , C0
+k_decay      ,  1.0000  ,  0.6908
+C0           ,  0.6908  ,  1.0000
+\end{lstlisting}
+
+The \code{space} column matters: for a \code{log-normal} parameter the standard
+error is that of $\log_{10}$ of the value, while the interval columns are
+converted back to model units.
+
+This file is not written when the curvature at the solution is singular. That is
+itself a result: it means at least one parameter, or one combination of them,
+the data cannot resolve.
+
+\section{Worked example}
+
+A first-order decay in a batch reactor, $C(t) = C_0 e^{-kt}$, run to $t=5$ with
+51 observed points taken from the analytic solution. Two parameters are
+calibrated against their true values of $k=0.7$ and $C_0=2.0$, plus the error
+standard deviation:
+
+\begin{lstlisting}
+create parameter;type=Parameter,name=k_decay,low=0.05,high=5,value=2.0,
+       prior_distribution=log-normal
+setasparameter; object=decay_coefficient, quantity=base_value,
+       parametername=k_decay
+
+create parameter;type=Parameter,name=C0,low=0.5,high=6,value=3.5,
+       prior_distribution=normal
+setasparameter; object=Reactor (1), quantity=A:concentration, parametername=C0
+
+create parameter;type=Parameter,name=sigma_obs,low=1e-4,high=10,value=1.0,
+       prior_distribution=log-normal
+setasparameter; object=exact_solution, quantity=error_standard_deviation,
+       parametername=sigma_obs
+\end{lstlisting}
+
+\noindent Both parameters start far from the truth, at $k=2.0$ and $C_0=3.5$.
+Running the genetic algorithm and LM separately on this model:
+
+\begin{center}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & \textbf{Inverse Run (GA)} & \textbf{Levenberg-Marquardt} \\
+\midrule
+Settings          & 40 population, 40 generations & 50 iterations allowed \\
+Model runs        & 1643 & \textbf{42} \\
+$-\log L$         & $-242.168$ & $\mathbf{-244.879}$ \\
+$k$ (truth 0.7)   & 0.6962 & 0.6941 \\
+$C_0$ (truth 2.0) & 2.0170 & 2.0115 \\
+$\sigma$          & 0.004759 & profiled \\
+Standard errors   & none & yes \\
+Correlation       & none & $\rho(k,C_0) = 0.69$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+LM reached a slightly better optimum in roughly one fortieth of the model runs,
+and additionally reported that $k$ and $C_0$ are 69\,\% correlated. That
+correlation is real and expected: in $C_0 e^{-kt}$ a larger $C_0$ can be partly
+compensated by a faster $k$. It is the kind of thing a point estimate alone
+will never tell you.
+
+The residual gap between the estimates and the exact values of 0.7 and 2.0 is
+the forward solver's discretisation error against the analytic solution, not a
+failure of the calibration: LM has found the best fit of the \emph{discretised}
+model, which is the right answer to the question actually posed.
+
+\section{Practical notes}
+
+\subsection{The finite-difference step}\label{sec:fdstep}
+
+The forward model is solved with an adaptive time step, so the objective is only
+piecewise smooth. A perturbation smaller than the solver's own error measures
+numerical noise rather than a gradient. The default \code{fd\_step} of 0.001 of
+each parameter's range clears this on typical settings.
+
+If LM stalls at the first iteration with no step accepted, suspect the gradient
+before concluding the model is at an optimum. In order of what to try:
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item Increase \code{fd\_step} to \code{0.01}.
+  \item Tighten the solver tolerance (\code{nr\_tolerance}, \code{minimum\_timestep}).
+  \item Turn on \code{central\_differences}.
+\end{enumerate}
+
+Conversely, if the calibration lands on a slightly different answer each time it
+is run from the same starting point, the gradient is being contaminated by
+solver noise and \code{central\_differences} is the remedy.
+
+\subsection{Parameters that sit on a bound}
+
+A parameter driven against its \code{low} or \code{high} is held there by the
+projection, and its reported standard error is not meaningful: the likelihood is
+not locally quadratic at a boundary. Widen the range and re-run. If it returns to
+the same bound, the data are telling you the parameter wants to go outside the
+range you allowed.
+
+\subsection{Parameters the data cannot see}
+
+A parameter the residuals do not respond to produces a zero column in the
+Jacobian. LM holds such a parameter still rather than failing, and the singular
+curvature at the end suppresses the covariance file. Check that the parameter is
+actually assigned to a quantity that affects a modeled observation.
+
+\subsection{Comparing objective values between runs}
+
+The objective is a negative log-likelihood, so \emph{lower is better} and the
+values are routinely negative once $\sigma$ is profiled to a small value. Values
+are comparable between the GA, MCMC and LM on the same model, which is what
+makes the table in the worked example meaningful. They are not comparable across
+models with different observations or a different number of compared points.
+
+\end{document}

@@ -586,6 +586,7 @@ public:
     unsigned int RestoreInterval() const { return restore_interval; }
     unsigned int RestorePointMaxUses() const { return restore_point_max_uses; }
     void SetParameterEstimationMode(parameter_estimation_options mode = parameter_estimation_options::none);
+    parameter_estimation_options GetParameterEstimationMode() const { return ParameterEstimationMode; }
     bool stop_triggered = false;
 
     // =====================================================================
@@ -644,6 +645,25 @@ public:
     TimeSeries<timeseriesprecision>* GetObjectiveFunctionTimeSeries(const std::string& name) { return ObjectiveFunction(name)->GetTimeSeries(); }
     TimeSeriesSet<timeseriesprecision> GetModeledObjectiveFunctions();
     double CalcMisfit();
+
+    // -----------------------------------------------------------------
+    // Residual decomposition of CalcMisfit(), concatenated over every
+    // observation, for Levenberg-Marquardt. On return:
+    //
+    //   0.5*||r||^2 + sum_k log_sigma_coeff_k*log(sigma_k)  ==  CalcMisfit()
+    //
+    // and the per-observation blocks are handed back alongside so a caller can
+    // profile each sigma out analytically. Populates fit_measures exactly as
+    // CalcMisfit() does.
+    //
+    // Returns false when some observation uses a comparison method with no
+    // sum-of-squares form ("Similarity"); `residuals` is then meaningless and
+    // the caller must fall back to a derivative-free method. `offender` names
+    // the first such observation.
+    // -----------------------------------------------------------------
+    bool ResidualVector(std::vector<double> &residuals,
+                        std::vector<ResidualBlock> &blocks,
+                        std::string *offender = nullptr);
     std::vector<double> fit_measures;
 
     // =====================================================================

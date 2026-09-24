@@ -18,6 +18,7 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include <cmath>
 #include <map>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
@@ -596,6 +597,28 @@ TimeSeries<T> operator>(const TimeSeries<T>& ts1, const TimeSeries<T>& ts2);
 
 template<typename T>
 T sum_interpolate(const std::vector<TimeSeries<T>>& series_list, T time);
+
+/**
+    * @brief Recency weight applied to an observation `delta` time units old.
+    *
+    * w(delta) = 1                                   if delta < Delta0
+    * w(delta) = (1 + ln(delta/Delta0)/tau)^{-alpha}  otherwise
+    *
+    * Factored out of weighted_mse() so that callers which need the individual
+    * weights, not their aggregate -- the Levenberg-Marquardt residual
+    * vector, which must reproduce the weighted likelihood term by term -- use
+    * the same kernel as the misfit itself and cannot drift from it.
+    *
+    * Delta0 <= 0 or tau <= 0 disables the kernel (w = 1), and a negative delta
+    * (an observation later than t_now) sits on the plateau, matching
+    * weighted_mse()'s defensive behaviour.
+    */
+inline double recency_kernel_weight(double delta, double Delta0, double tau, double alpha)
+{
+    if (Delta0 <= 0.0 || tau <= 0.0) return 1.0;
+    if (delta < Delta0) return 1.0;
+    return std::pow(1.0 + std::log(delta / Delta0) / tau, -alpha);
+}
 
 template<class T>
 double weighted_mse(const TimeSeries<T>& obs,

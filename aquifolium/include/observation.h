@@ -24,6 +24,63 @@
 
 class System;
 
+// ---------------------------------------------------------------------------
+// Decomposition of an observation's negative log-likelihood into a weighted
+// residual vector, for gradient-based calibration (Levenberg-Marquardt).
+//
+//     -log L  =  0.5 * sum_i r_i^2  +  log_sigma_coeff * log(sigma)
+//
+// Every scaling that CalcMisfit() applies -- the error standard deviation, the
+// effective-information factor tau_int, the recency kernel -- is already folded
+// into r, so 0.5*||r||^2 IS the data term of the very misfit the GA minimises.
+// CalcMisfit() is implemented on top of this, so the two cannot drift apart.
+//
+// log_sigma_coeff is the effective sample size (N/tau_int, or sum_w/tau_int
+// under the recency kernel). It is constant while sigma is, and it is what lets
+// a calibrated sigma be profiled out analytically:
+//     sigma_hat^2 = sigma^2 * ||r||^2 / log_sigma_coeff
+// ---------------------------------------------------------------------------
+struct ResidualBlock
+{
+    enum class Kind
+    {
+        sum_of_squares,   // usable by LM
+        empty,            // no data, or an error structure that scores 0
+        not_decomposable  // "Similarity": an autocorrelation/KS distance
+    };
+
+    std::vector<double> r;
+    // The effective sample size: the number of points actually compared,
+    // divided by tau_int. This is what MSE is averaged over, so the two agree
+    // and the likelihood is not inflated by points the simulation never covered.
+    double log_sigma_coeff = 0.0;
+    double mse = 0.0;               // the mean squared error the misfit is built from
+    double sigma = 1.0;
+    Kind kind = Kind::empty;
+
+    double SumOfSquares() const
+    {
+        double s = 0;
+        for (double v : r) s += v*v;
+        return s;
+    }
+
+    // The observation's contribution to the negative log-likelihood.
+    //
+    // Deliberately evaluated from mse and the effective sample size, not
+    // from 0.5*||r||^2, even though the two are equal in exact arithmetic. This
+    // is the SAME sequence of floating-point operations the misfit used before
+    // the residual vector existed, so refactoring CalcMisfit() onto this path
+    // left the objective the GA minimises bit-for-bit unchanged. Scaling each
+    // residual and re-squaring would shift it by an ulp or two -- harmless, but
+    // there is no reason to spend it.
+    double NegLogLikelihood() const
+    {
+        if (kind != Kind::sum_of_squares) return 0;
+        return log_sigma_coeff*(mse/(2.0*pow(sigma,2)) + log(sigma));
+    }
+};
+
 class Observation: public Object
 {
     public:
@@ -56,6 +113,9 @@ class Observation: public Object
         string GetOutputItem() { return outputitem; }
         vector<string> ItemswithOutput();
         double CalcMisfit();
+        // Residual decomposition of CalcMisfit(). Populates fit_measures
+        // exactly as CalcMisfit() does, so callers need only one of the two.
+        ResidualBlock ResidualVector();
         void SetModeledTimeSeries(const TimeSeries<timeseriesprecision> &X) {modeled_time_series = X;}
         TimeSeries<timeseriesprecision>* GetModeledTimeSeries() {return &modeled_time_series;}
         void SetRealizations(const TimeSeriesSet<double>& rlztions) {realizations = rlztions;}

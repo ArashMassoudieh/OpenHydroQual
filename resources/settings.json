@@ -410,6 +410,108 @@
    "code": "continue_based_on_filename"
   }
  },
+ "LM": {
+  "type": "setting",
+  "typecategory": "Settings",
+  "name": {
+   "description": "Name",
+   "setvalue": "LM",
+   "type": "string",
+   "ask_user": "false",
+   "delegate": "String"
+  },
+  "description": "Levenberg-Marquardt Parameters",
+  "max_iterations": {
+   "default": "50",
+   "description": "Maximum number of iterations",
+   "helptext": "How many Gauss-Newton steps are attempted at most. Each step costs roughly one model run per calibrated parameter, so this is the main control on how long the calibration takes. A well-behaved problem usually converges well inside 50 and stops on its own.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "max_iterations"
+  },
+  "lambda0": {
+   "default": "0.01",
+   "description": "Initial damping (lambda)",
+   "helptext": "How cautious the first step is. Small values take the full Gauss-Newton step, which converges fastest when the starting point is already close; large values take short downhill steps, which is safer from a poor starting point. The damping adapts automatically after the first step, so this mostly affects the opening moves.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "lambda0"
+  },
+  "fd_step": {
+   "default": "0.001",
+   "description": "Finite-difference step (fraction of range)",
+   "helptext": "How far each parameter is nudged to measure its effect on the fit, as a fraction of that parameter's range. The model is solved with an adaptive time step, so a nudge smaller than the solver's own error measures numerical noise instead of a gradient. Increase this if the calibration stalls immediately; decrease it only if the parameters are strongly nonlinear.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "fd_step"
+  },
+  "central_differences": {
+   "default": "No",
+   "description": "Use central differences",
+   "helptext": "Nudges each parameter both up and down instead of only up. Twice as many model runs per iteration, in exchange for a more accurate gradient. Worth turning on when the calibration converges to a slightly different answer each time it is run.",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "ComboBox;items:No,Yes",
+   "code": "central_differences"
+  },
+  "profile_sigma": {
+   "default": "Yes",
+   "description": "Estimate error standard deviations analytically",
+   "helptext": "When an observation's error standard deviation is itself being calibrated, set it directly to the value that best fits the residuals at every iteration instead of searching for it. This is exact, costs nothing, and removes a parameter from the search. Turn it off only to compare against the genetic algorithm's treatment.",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "ComboBox;items:Yes,No",
+   "code": "profile_sigma"
+  },
+  "lm_numthreads": {
+   "default": "8",
+   "description": "Number of threads to be used",
+   "helptext": "How many perturbed models are solved at once while measuring the gradient. Nothing is gained from more threads than calibrated parameters, or than the machine has cores.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "lm_numthreads"
+  },
+  "tol_objective": {
+   "default": "1e-8",
+   "description": "Convergence tolerance on the fit",
+   "helptext": "The run stops when an iteration improves the fit by less than this fraction. Below the resolution the finite-difference gradient can see, further iterations only churn.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "tol_objective"
+  },
+  "max_rejections": {
+   "default": "10",
+   "description": "Maximum retries per iteration",
+   "helptext": "How many times a failed step is retried with heavier damping before the run concludes it has reached a minimum. Each retry is a full model run, so a large value mostly buys waiting.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "max_rejections"
+  },
+  "lm_outputfile": {
+   "default": "LM_output.txt",
+   "description": "LM Output File Name",
+   "helptext": "Records every iteration with its fit, damping and parameter values: the file to open to see whether and how the calibration converged.",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "Browser_Save",
+   "code": "lm_outputfile"
+  },
+  "covariancefile": {
+   "default": "LM_covariance.txt",
+   "description": "Parameter Covariance File Name",
+   "helptext": "Receives the standard error and 95% interval of every calibrated parameter and the correlation matrix between them, computed from the curvature of the likelihood at the solution. A pair of parameters correlated near 1 or -1 cannot be told apart by the data and one of them is better fixed.",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "Browser_Save",
+   "code": "covariancefile"
+  }
+ },
  "MCMC": {
   "type": "setting",
   "typecategory": "Settings",

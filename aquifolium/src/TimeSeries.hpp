@@ -2763,7 +2763,6 @@ double weighted_mse(const TimeSeries<T>& observed,
         if (sum_w_out) *sum_w_out = 0.0;
         return 0.0;
     }
-    const bool kernel_active = (Delta0 > 0.0) && (tau > 0.0);
     double sum_w  = 0.0;
     double sum_we = 0.0;   // sum of w_i * residual_i^2
     for (size_t i = 0; i < observed.size(); ++i)
@@ -2772,24 +2771,9 @@ double weighted_mse(const TimeSeries<T>& observed,
         const double y_i = static_cast<double>(observed.getValue(i));
         const double m_i = static_cast<double>(model.interpol(t_i));
         const double r   = y_i - m_i;
-        double w;
-        if (!kernel_active)
-        {
-            w = 1.0;
-        }
-        else
-        {
-            const double delta = t_now - t_i;
-            if (delta < Delta0)
-            {
-                w = 1.0;
-            }
-            else
-            {
-                const double arg = 1.0 + std::log(delta / Delta0) / tau;
-                w = std::pow(arg, -alpha);
-            }
-        }
+        // Shared with Observation::ResidualVector(), which needs the weights
+        // one at a time to build the Levenberg-Marquardt residual vector.
+        const double w = recency_kernel_weight(t_now - t_i, Delta0, tau, alpha);
         sum_w  += w;
         sum_we += w * r * r;
     }

@@ -3712,6 +3712,36 @@ double System::CalcMisfit()
     return out;
 }
 
+bool System::ResidualVector(vector<double> &residuals,
+                            vector<ResidualBlock> &blocks,
+                            string *offender)
+{
+    residuals.clear();
+    blocks.clear();
+    blocks.reserve(ObservationsCount());
+
+    bool ok = true;
+    for (unsigned int i=0; i<ObservationsCount(); i++)
+    {
+        ResidualBlock b = observation(i)->ResidualVector();
+        // fit_measures are filled by ResidualVector() exactly as CalcMisfit()
+        // fills them, so the diagnostics a caller reports are the same numbers
+        // either path produces.
+        fit_measures[i*3]   = observation(i)->fit_measures[0];
+        fit_measures[i*3+1] = observation(i)->fit_measures[1];
+        fit_measures[i*3+2] = observation(i)->fit_measures[2];
+
+        if (b.kind == ResidualBlock::Kind::not_decomposable)
+        {
+            if (ok && offender) *offender = observation(i)->GetName();
+            ok = false;
+        }
+        residuals.insert(residuals.end(), b.r.begin(), b.r.end());
+        blocks.push_back(std::move(b));
+    }
+    return ok;
+}
+
 void System::SetParameterEstimationMode(parameter_estimation_options mode)
 {
     ParameterEstimationMode = mode;

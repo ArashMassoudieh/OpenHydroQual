@@ -19,6 +19,7 @@
 #include <iostream>
 #include "System.h"
 #include "GA.h"
+#include "LM/LM.h"
 
 using namespace std;
 
@@ -45,7 +46,7 @@ Command::Command(const string &s, Script *parnt)
         }
     }
     vector<string> maincommand = aquiutils::split(firstlevelbreakup[0],' ');
-    if (aquiutils::tolower(maincommand[0])=="loadtemplate" || aquiutils::tolower(maincommand[0])=="addtemplate" || aquiutils::tolower(maincommand[0])=="setasparameter" || aquiutils::tolower(maincommand[0])=="setvalue" || aquiutils::tolower(maincommand[0])=="solve" || aquiutils::tolower(maincommand[0])=="optimize")
+    if (aquiutils::tolower(maincommand[0])=="loadtemplate" || aquiutils::tolower(maincommand[0])=="addtemplate" || aquiutils::tolower(maincommand[0])=="setasparameter" || aquiutils::tolower(maincommand[0])=="setvalue" || aquiutils::tolower(maincommand[0])=="solve" || aquiutils::tolower(maincommand[0])=="optimize" || aquiutils::tolower(maincommand[0])=="lmoptimize" || aquiutils::tolower(maincommand[0])=="initializelm")
     {
         if (maincommand.size()!=1)
             {
@@ -347,6 +348,58 @@ bool Command::Execute(System *_sys)
     }
 
 
+    // Levenberg-Marquardt. Local and gradient-based, so it starts from each
+    // parameter's CURRENT value: placing "lmoptimize" after "optimize" in a
+    // script polishes the GA's estimate and adds a covariance, with no state
+    // passed between the two beyond the parameters themselves.
+    if (aquiutils::tolower(keyword)=="lmoptimize")
+    {
+        if (!Validate()) return false;
+
+        sys->SetAllParents();
+        if (parent->GetLM()==nullptr)
+            parent->SetLM(new CLM<System>(sys));
+
+        const parameter_estimation_options previous_mode = sys->GetParameterEstimationMode();
+        sys->SetParameterEstimationMode(parameter_estimation_options::inverse_model);
+        const int iterations = parent->GetLM()->optimize();
+        sys->SetParameterEstimationMode(previous_mode);
+
+        if (iterations < 0)
+        {
+            sys->errorhandler.Append("", "Command", "Execute", parent->GetLM()->last_error, 7022);
+            return false;
+        }
+
+        // Same harvest as the GUI does after a GA: the calibrated values become
+        // the system's, so anything downstream in the script -- another solve,
+        // a write, a second calibration -- sees them.
+        sys->TransferResultsFrom(&parent->GetLM()->Model_out);
+        sys->Parameters() = parent->GetLM()->Model_out.Parameters();
+        sys->SetOutputItems();
+        return true;
+    }
+
+    if (aquiutils::tolower(keyword)=="initializelm")
+    {
+        if (!Validate()) return false;
+
+        cout<<"Initializing Levenberg-Marquardt optimizer...."<<std::endl;
+        if (parent->GetLM() != nullptr)
+            delete parent->GetLM();
+        parent->SetLM(new CLM<System>(sys));
+        bool success = true;
+        for (map<string,string>::iterator it=assignments.begin(); it!=assignments.end(); it++)
+        {
+            if (!parent->GetLM()->SetProperty(it->first,it->second))
+            {
+                sys->errorhandler.Append("", "Command", "Execute", parent->GetLM()->last_error, 7023);
+                success = false;
+            }
+        }
+        return success;
+    }
+
     if (aquiutils::tolower(keyword)=="initializeoptimizer")
     {
         if (Validate())
@@ -402,6 +455,27 @@ bool Command::Execute(System *_sys)
                 parent->SetGA(new CGA<System>(sys));
             }
             parent->GetGA()->SetProperty(assignments["quantity"],assignments["value"]);
+        }
+
+        if (aquiutils::tolower(assignments["object"])=="lm")
+        {
+            if (parent->GetLM()==nullptr)
+            {
+                cout<<"Initializing Levenberg-Marquardt optimizer...."<<std::endl;
+                parent->SetLM(new CLM<System>(sys));
+            }
+            if (!parent->GetLM()->SetProperty(assignments["quantity"],assignments["value"]))
+            {
+                sys->errorhandler.Append("", "Command", "Execute", parent->GetLM()->last_error, 7023);
+                return false;
+            }
+            // Keep the "LM" settings object in step, so a model written by a
+            // script and reopened in the GUI shows the values the script used.
+            // Models saved before the LM settings existed have no such object,
+            // which is not an error: the optimizer above already has the value.
+            if (sys->object("LM")!=nullptr && sys->object("LM")->HasQuantity(assignments["quantity"]))
+                sys->object("LM")->Variable(assignments["quantity"])->SetProperty(assignments["value"]);
+            return true;
         }
 
         if (sys->object(assignments["object"])==nullptr && sys->parameter(assignments["object"])==nullptr)
