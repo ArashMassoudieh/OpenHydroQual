@@ -45,7 +45,9 @@ int main(int argc, char *argv[])
     cout<<"Solving ..."<<endl;
     system->Solve();
     cout<<"Writing outputs ..."<<endl;
-    system->GetOutputs().writetofile(system->OutputFileName());
+    // TimeSeriesSet's write method is write(filename, delimiter), not
+    // writetofile() -- API drift from when this file was last touched.
+    system->GetOutputs().write(system->OutputFileName());
     return 0;
 
 }
