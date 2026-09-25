@@ -204,6 +204,165 @@
 			"default": "1",
 			"includeinoutput" : "false"
 		}  	
-	}
-}
+	},
+		"imposed_gate_control_weir": {
+  "type": "link",
+  "typecategory": "Connectors",
+  "description": "S26 Imposed Gate Control Weir - Submerged Orifice",
 
+  "icon": {
+    "filename": "controlable_weir.png"
+  },
+
+  "color": {
+    "type": "string",
+    "default": "0,150,250"
+  },
+
+  "observed_gate_opening_01": {
+    "type": "timeseries",
+    "description": "Observed Gate Opening - Gate 1",
+    "delegate": "Browser",
+    "unit": "m;ft",
+    "ask_user": "true",
+    "estimate": "true",
+    "includeinoutput": "true",
+    "is_timeseries": "true"
+  },
+
+  "observed_gate_opening_02": {
+    "type": "timeseries",
+    "description": "Observed Gate Opening - Gate 2",
+    "delegate": "Browser",
+    "unit": "m;ft",
+    "ask_user": "true",
+    "estimate": "true",
+    "includeinoutput": "true",
+    "is_timeseries": "true"
+  },
+
+  "discharge_coefficient": {
+    "type": "value",
+    "description": "Submerged Orifice Discharge Coefficient Cd",
+    "delegate": "ValueBox",
+    "ask_user": "true",
+    "estimate": "true",
+    "default": "0.70",
+    "criteria": "discharge_coefficient>0",
+    "warningmessage": "Discharge coefficient must be positive"
+  },
+
+  "width": {
+    "type": "value",
+    "description": "Width of Each Gate",
+    "delegate": "UnitBox",
+    "unit": "m;ft",
+    "ask_user": "true",
+    "estimate": "false",
+    "default": "7.9248"
+  },
+
+  "area_gate_01": {
+    "type": "expression",
+    "description": "Flow Area - Gate 1",
+    "expression": "_pos(observed_gate_opening_01)*width",
+    "includeinoutput": "true",
+    "unit": "m^2"
+  },
+
+  "area_gate_02": {
+    "type": "expression",
+    "description": "Flow Area - Gate 2",
+    "expression": "_pos(observed_gate_opening_02)*width",
+    "includeinoutput": "true",
+    "unit": "m^2"
+  },
+
+  "flow_gate_01": {
+    "type": "expression",
+    "description": "Submerged Orifice Forward Flow - Gate 1",
+    "expression": "discharge_coefficient*area_gate_01*(2*9.81*_pos(head.s-head.e))^(1/2)",
+    "includeinoutput": "true",
+    "unit": "m^3/s"
+  },
+
+  "flow_gate_02": {
+    "type": "expression",
+    "description": "Submerged Orifice Forward Flow - Gate 2",
+    "expression": "discharge_coefficient*area_gate_02*(2*9.81*_pos(head.s-head.e))^(1/2)",
+    "includeinoutput": "true",
+    "unit": "m^3/s"
+  },
+
+  "leakage_area": {
+    "type": "value",
+    "description": "Equivalent leakage area when the gates are closed",
+    "delegate": "UnitBox",
+    "unit": "m~^2;ft~^2",
+    "ask_user": "true",
+    "estimate": "true",
+    "default": "0",
+    "criteria": "leakage_area>-0.0000001",
+    "warningmessage": "Leakage area cannot be negative",
+    "helptext": "Flow area that passes water regardless of the observed gate openings (seal leakage, partially seated gates). Flow = discharge_coefficient * leakage_area * sqrt(2 g dh). Zero reproduces the closed-gate behaviour."
+  },
+
+  "flow_leakage": {
+    "type": "expression",
+    "description": "Leakage flow through the closed structure (m3/s)",
+    "expression": "discharge_coefficient*leakage_area*(2*9.81*_pos(head.s-head.e))^(1/2)",
+    "includeinoutput": "true",
+    "unit": "m^3/s"
+  },
+
+  "flow_m3_sec": {
+    "type": "expression",
+    "description": "Total S26 Submerged Orifice Flow including leakage (m3/s)",
+    "expression": "flow_gate_01+flow_gate_02+flow_leakage",
+    "includeinoutput": "true",
+    "unit": "m^3/s"
+  },
+
+  "flow": {
+    "type": "expression",
+    "description": "Total S26 Submerged Orifice Flow (m3/day)",
+    "expression": "flow_m3_sec*86400",
+    "includeinoutput": "true",
+    "applylimit": "true",
+    "unit": "m^3/day"
+  },
+
+  "flow_ft3_sec": {
+    "type": "expression",
+    "description": "Total S26 Submerged Orifice Flow (ft3/s)",
+    "expression": "flow_m3_sec*35.3147",
+    "includeinoutput": "true",
+    "unit": "ft^3/s"
+  },
+
+  "flow_ft3_day": {
+    "type": "expression",
+    "description": "Total S26 Submerged Orifice Flow (ft3/day)",
+    "expression": "flow*35.3147",
+    "includeinoutput": "true",
+    "unit": "ft^3/day"
+  },
+
+  "length": {
+    "type": "value",
+    "description": "length",
+    "default": "1",
+    "includeinoutput": "false"
+  },
+
+  "area": {
+    "type": "value",
+    "description": "Area",
+    "default": "0",
+    "includeinoutput": "false",
+    "ask_user": "false",
+    "unit": "m^2;ft^2",
+    "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+  }
+}
+}

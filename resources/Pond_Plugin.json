@@ -724,5 +724,128 @@
       "unit": "m^2;ft^2",
       "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
+  },
+  "partially_submerged_trench_Link": {
+  "type": "link",
+  "typecategory": "Connectors",
+
+  "icon": {
+    "filename": "aggregate2aggregate_H.png"
+  },
+
+  "description": "Partially Submerged Exfiltration Trench",
+
+  "trench_hydraulic_conductivity": {
+    "type": "value",
+    "description": "Trench Hydraulic Conductivity Kt",
+    "delegate": "UnitBox",
+    "unit": "1/day;1/s",
+    "includeinoutput": "false",
+    "ask_user": "true",
+    "estimate": "true"
+  },
+
+  "trench_top_elevation": {
+    "type": "value",
+    "description": "Trench Top Elevation",
+    "delegate": "UnitBox",
+    "unit": "m;ft",
+    "includeinoutput": "false",
+    "ask_user": "true"
+  },
+
+  "trench_bottom_elevation": {
+    "type": "value",
+    "description": "Trench Bottom Elevation",
+    "delegate": "UnitBox",
+    "unit": "m;ft",
+    "includeinoutput": "false",
+    "ask_user": "true"
+  },
+
+  "width": {
+    "type": "value",
+    "description": "Trench Width W",
+    "delegate": "UnitBox",
+    "unit": "m;ft",
+    "includeinoutput": "false",
+    "ask_user": "true"
+  },
+
+  "length": {
+    "type": "value",
+    "description": "Trench Length L",
+    "delegate": "UnitBox",
+    "unit": "m;ft",
+    "includeinoutput": "false",
+    "ask_user": "true"
+  },
+
+  "trench_depth": {
+    "type": "expression",
+    "description": "Total Trench Depth",
+    "expression": "_pos(trench_top_elevation-trench_bottom_elevation)",
+    "includeinoutput": "false"
+  },
+
+  "Ds": {
+    "type": "expression",
+    "description": "Saturated Trench Height (Ds)",
+    "expression": "(trench_depth-trench_top_elevation+head.e)",
+    "includeinoutput": "true"
+  },
+
+  "Du": {
+    "type": "expression",
+    "description": "Unsaturated Trench Height (Du)",
+    "expression": "(trench_depth-Ds)",
+    "includeinoutput": "true"
+  },
+
+  "H2": {
+    "type": "expression",
+    "description": "Groundwater level",
+    "expression": "head.s - head.e",
+    "includeinoutput": "true"
+  },
+
+  "side_flow": {
+    "type": "expression",
+    "description": "Side Flow",
+    "expression": "2 * (trench_hydraulic_conductivity*Du*length*_pos(H2-0.5*Du) + trench_hydraulic_conductivity*Ds*length*H2)",
+    "includeinoutput": "true"
+  },
+
+  "bottom_flow": {
+    "type": "expression",
+    "description": "Bottom Exfiltration Flow",
+    "expression": "trench_hydraulic_conductivity*width*length*H2",
+    "includeinoutput": "true"
+  },
+
+  "flow": {
+    "type": "expression",
+    "description": "Total Flow from Partially Submerged Trench",
+    "expression": "side_flow + bottom_flow",
+    "includeinoutput": "true",
+    "applylimit": "true",
+    "ask_user": "false",
+    "unit": "m^3/day;m^3/s;ft^3/s"
+  },
+
+  "color": {
+    "type": "string",
+    "default": "130,20,220"
+  },
+
+  "area": {
+    "type": "value",
+    "description": "Area",
+    "default": "0",
+    "includeinoutput": "false",
+    "ask_user": "false",
+    "unit": "m^2;ft^2",
+    "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
   }
+}
 }
