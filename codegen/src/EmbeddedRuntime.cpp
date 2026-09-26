@@ -420,6 +420,26 @@ public:
                     if (limited_[b]) { factor_[b] = X_[b]; storage_[b] = past_[b] * landtozero; }
                     else             { storage_[b] = X_[b]; }
                 }
+                // issues.md ISSUE 1. A Newton solve at tolerance 1e-5 can leave a
+                // block a round-off sliver below zero. The interpreter tolerates
+                // that; the limiter here cannot -- and for a block whose
+                // outflowCanOccur() is false (a dry catchment with nothing left to
+                // drain) it can never clear it either. The sliver then persists into
+                // past_ and poisons every later residual for that block until Newton
+                // stalls (dx/X ~ 1e-9, err/err_ini above tolerance, blocksBalanced
+                // false) and the step aborts -- with dt already at its floor, so
+                // shrinking dt cannot recover. A storage negative by less than 1e-9
+                // of the largest storage in the system is solver round-off, not
+                // physics: the block is empty. Snap it to zero so it cannot
+                // accumulate. Blocks genuinely driven negative (beyond round-off)
+                // are untouched and still go through the limiter as before.
+                {
+                    double smax = 0.0;
+                    for (int b = 0; b < n_; ++b) smax = std::max(smax, std::fabs(storage_[b]));
+                    const double negTol = 1e-9 * std::max(1.0, smax);
+                    for (int b = 0; b < n_; ++b)
+                        if (storage_[b] < 0.0 && storage_[b] > -negTol) storage_[b] = 0.0;
+                }
                 t_ += dta; lastDt_ = dta;
                 // post-success adaptation of dt_base (System.cpp ~1591-1605): shrink from the
                 // APPLIED dt (floored at minimum_timestep), grow the base (capped)
@@ -435,7 +455,8 @@ public:
             limited_ = limitedAtStart; factor_ = factorAtStart;
             updateJac_ = true;                      // System.cpp:1399 (HandleSolveFailure)
             if (++stepFails > s_.max_step_failures) return false;
-            dt_ = std::max(dt_ * s_.dt_reduce_fail, 0.5 * dt0_ * s_.dt_floor_factor);
+            dt_ = std::max(dt_ * s_.dt_redu)OHQRT"
+R"OHQRT(ce_fail, 0.5 * dt0_ * s_.dt_floor_factor);
         }
     }
 
@@ -473,8 +494,7 @@ private:
                 const double storageRate = (X[b] - past_[b]) / dtApplied_;
                 F[b] = storageRate - inflowOwn_[b];
                 Q_[b] = std::fabs(storageRate) + std::fabs(inflowOwn_[b]);
-            })OHQRT"
-R"OHQRT(
+            }
         }
         for (int l = 0; l < nl_; ++l) {
             const int s = m_->linkSrc(l), e = m_->linkDst(l);
@@ -763,7 +783,8 @@ R"OHQRT(
     double nrCoeff_ = 1.0;
     long stepCounter_ = 0;
     double dtCeiling_ = 0;
-    double jacDt_ = 0;   // dt the stored Jacobian was assembled with (0 = none)
+    double jacDt_ = 0;  )OHQRT"
+R"OHQRT( // dt the stored Jacobian was assembled with (0 = none)
 };
 
 } // namespace ohq
