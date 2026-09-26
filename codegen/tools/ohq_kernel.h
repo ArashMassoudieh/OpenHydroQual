@@ -65,8 +65,12 @@
 /* v1 -> v2 (2026-09-14): added G4 forcing injection (set_series/set_precipitation),
    G5 state values in/out, solver status, and state/mass readback. A v1 library
    reports 1 here and lacks those symbols, so the loader rejects it rather than
-   letting a host call a null pointer. Regenerate the kernel. */
-#define OHQ_KERNEL_ABI_VERSION 2
+   letting a host call a null pointer. Regenerate the kernel.
+   v2 -> v3 (2026-09-26): added G2b objective functions (n/name/count/at/clear/
+   uniformize). An Objective_Function scores its own stored_time_series, which
+   System::Solve fills and a kernel host shadows, so before this a kernel-driven
+   GA on an objective-only model scored every individual at exactly 0. */
+#define OHQ_KERNEL_ABI_VERSION 3
 
 #ifdef __cplusplus
 extern "C" {
@@ -107,6 +111,19 @@ void        ohq_kernel_clear_observations(void* h);
 /* resample every observation onto the dt0 grid, as System::FinalizeOutputs does
    before the objective is computed. Call before scoring. */
 void        ohq_kernel_uniformize_observations(void* h);
+
+/* ---- G2b: objective functions -------------------------------------------- */
+/* Same (object, expression) shape as an observation, but scored by
+   Objective_Function rather than compared to data. The host feeds these into
+   Objective_Function::SetTimeSeries so GetObjective() sees exactly what
+   System::Solve would have appended. Hand over the RAW per-step series:
+   GetObjective() does its own make_uniform(dt0). */
+int         ohq_kernel_n_objectives(void);
+const char* ohq_kernel_objective_name(int i);
+int         ohq_kernel_objective_count(const void* h, int i);
+int         ohq_kernel_objective_at(const void* h, int i, int k, double* t, double* v);
+void        ohq_kernel_clear_objectives(void* h);
+void        ohq_kernel_uniformize_objectives(void* h);
 
 /* ---- G4: runtime forcing, addressed by (object, quantity) name ----------- */
 int         ohq_kernel_n_series(void);
@@ -208,6 +225,12 @@ public:
         ok &= bind(set_parameter, "ohq_kernel_set_parameter");
         ok &= bind(apply_parameters, "ohq_kernel_apply_parameters");
         ok &= bind(n_observations, "ohq_kernel_n_observations");
+        ok &= bind(n_objectives, "ohq_kernel_n_objectives");
+        ok &= bind(objective_name, "ohq_kernel_objective_name");
+        ok &= bind(objective_count, "ohq_kernel_objective_count");
+        ok &= bind(objective_at, "ohq_kernel_objective_at");
+        ok &= bind(clear_objectives, "ohq_kernel_clear_objectives");
+        ok &= bind(uniformize_objectives, "ohq_kernel_uniformize_objectives");
         ok &= bind(observation_name, "ohq_kernel_observation_name");
         ok &= bind(observation_count, "ohq_kernel_observation_count");
         ok &= bind(observation_at, "ohq_kernel_observation_at");
@@ -328,6 +351,12 @@ public:
     void        (*set_parameter)(void*, int, double) = nullptr;
     void        (*apply_parameters)(void*) = nullptr;
     int         (*n_observations)(void) = nullptr;
+    int         (*n_objectives)(void) = nullptr;
+    const char* (*objective_name)(int) = nullptr;
+    int         (*objective_count)(const void*, int) = nullptr;
+    int         (*objective_at)(const void*, int, int, double*, double*) = nullptr;
+    void        (*clear_objectives)(void*) = nullptr;
+    void        (*uniformize_objectives)(void*) = nullptr;
     const char* (*observation_name)(int) = nullptr;
     int         (*observation_count)(const void*, int) = nullptr;
     int         (*observation_at)(const void*, int, int, double*, double*) = nullptr;

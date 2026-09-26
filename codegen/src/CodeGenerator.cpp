@@ -1076,7 +1076,13 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     //  timing::present), recorded after every step like UpdateObservations().
     // ======================================================================
     const unsigned nObs = system.ObservationsCount();
-    std::ostringstream obsBody, obsNameArr, paramNameArr, paramInitArr;
+    // G2b: objective functions are (object, expression) pairs exactly like
+    // observations, but Objective_Function scores its OWN stored_time_series --
+    // filled by append_value() inside System::Solve, which KernelSystem::Solve
+    // shadows. Emit them alongside the observations so a kernel-driven GA has
+    // something to score.
+    const unsigned nObj = system.ObjectiveFunctionsCount();
+    std::ostringstream obsBody, obsNameArr, paramNameArr, paramInitArr, objBody, objNameArr;
     {
         std::function<EmitContext(Object*, bool, int)> makeCtxObs;
         makeCtxObs = [&](Object* cur, bool isLink, int linkIdx) -> EmitContext {
@@ -1169,6 +1175,21 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             obsBody << "        out[" << i << "] = " << ExpressionEmitter(makeCtxObs(o, isLink, li)).translate(ex)
                     << ";   // " << ob->GetName() << " @ " << loc << "\n";
         }
+        for (unsigned i = 0; i < nObj; ++i) {
+            Objective_Function* of = system.objectivefunction(i);
+            objNameArr << (i ? ", " : "") << cstr(of->GetName());
+            const std::string loc = of->GetLocation();
+            const std::string exprText = of->Variable("expression") ? of->Variable("expression")->GetProperty() : "";
+            Object* o = system.object(loc);
+            const bool ok = o && !exprText.empty() &&
+                            (o->ObjectType() == object_type::block || o->ObjectType() == object_type::link);
+            if (!ok) { objBody << "        out[" << i << "] = 0.0;   // '" << of->GetName() << "': unresolved object/expression\n"; continue; }
+            const bool isLink = (o->ObjectType() == object_type::link);
+            int li = -1; if (isLink) for (unsigned l = 0; l < nL; ++l) if ((Object*)system.link(l) == o) li = (int)l;
+            Expression ex(exprText);
+            objBody << "        out[" << i << "] = " << ExpressionEmitter(makeCtxObs(o, isLink, li)).translate(ex)
+                    << ";   // objective " << of->GetName() << " @ " << loc << "\n";
+        }
         for (unsigned i = 0; i < nP; ++i) {
             paramNameArr << (i ? ", " : "") << cstr(params[i].name);
             paramInitArr << (i ? ", " : "") << fmt(params[i].value);
@@ -1201,6 +1222,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     std::string tInit = T ? " transport_.initialize();" : "";
     const bool L = T || nObs > 0;           // cached flow-phase locals needed
     const bool O = nObs > 0;
+    const bool OJ = nObj > 0;
     // step(): flow phase, then (optionally) cache locals, transport, observations.
     std::string tStep =
         std::string("    bool stepImpl() {\n"
@@ -1217,6 +1239,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                "        // step's START, as in the interpreter (see forcing_at_step_start).\n"
                "        if (!transport_.step(t_prev, solver_.time() - t_prev)) return false;\n" : "")
         + (O ? "        recordObservations(t_prev);   // System.cpp:1492, stamped before t advances\n" : "")
+        + (OJ ? "        recordObjectives(t_prev);     // Objective_Function::append_value, same stamping\n" : "")
         + "        oscillationControl();   // inert unless the setting is on\n"
         + "        return true;\n    }\n";
     // ---- oscillation control (System.cpp:1531-1610, CountOscillatingStates
@@ -1372,7 +1395,17 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
           "    // on the same grid Objective_Function uses (make_uniform(dt0)).\n"
         + "    void uniformizeObservations() { for (auto& s : obs_) s = s.makeUniform(dt0_); }\n"
         + "    void recordObservations(double t_eval) {\n        double v[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1]; computeObservations(v, t_eval);\n"
-          "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(t_eval, v[i]);\n    }\n";
+          "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(t_eval, v[i]);\n    }\n"
+        + "    // ---- objective functions (same shape as observations; the host feeds\n"
+          "    //      these back into Objective_Function::SetTimeSeries so GetObjective()\n"
+          "    //      integrates/scores exactly what System::Solve would have given it) ----\n"
+        + "    static const char* objectiveName(int i) { static const char* a[] = {" + (OJ ? objNameArr.str() : std::string("\"\"")) + "}; return a[i]; }\n"
+        + "    void computeObjectives(double* out, double t_eval) const {\n        const double t_new = t_eval; (void)t_new; (void)out;\n" + objBody.str() + "    }\n"
+        + "    const ohq::TimeSeries& objectiveSeries(int i) const { return obj_[i]; }\n"
+        + "    void clearObjectives() { for (auto& s : obj_) { s.t.clear(); s.c.clear(); } }\n"
+        + "    void uniformizeObjectives() { for (auto& s : obj_) s = s.makeUniform(dt0_); }\n"
+        + "    void recordObjectives(double t_eval) {\n        double v[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1]; computeObjectives(v, t_eval);\n"
+          "        for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i].push(t_eval, v[i]);\n    }\n";
     // G4/G5 API: named series injection; state values in/out.
     std::ostringstream ioApi;
     {
@@ -1436,6 +1469,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + (T ? "    ohq::TransportSolver<" + cls + "> transport_;\n" : std::string())
         + "    double params_[N_PARAMETERS > 0 ? N_PARAMETERS : 1] = {" + (nP ? paramInitArr.str() : std::string("0.0")) + "};\n"
         + "    ohq::TimeSeries obs_[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1];\n"
+        + "    ohq::TimeSeries obj_[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1];\n"
         + "    double dt0_ = 0;\n"
         + "    // oscillation-control state (see oscillationControl())\n"
         + "    RestorePoint rp_;\n"
@@ -1493,7 +1527,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << tInclude << "\n"
       << "class " << cls << " {\npublic:\n"
       << "    enum State {\n" << stateEnumBody.str() << "        N_STATES = " << nB << "\n    };\n"
-      << "    enum { N_LINKS = " << nL << ", N_PARAMETERS = " << nP << ", N_OBSERVATIONS = " << nObs << " };\n"
+      << "    enum { N_LINKS = " << nL << ", N_PARAMETERS = " << nP << ", N_OBSERVATIONS = " << nObs << ", N_OBJECTIVES = " << nObj << " };\n"
       << tEnum << "\n"
       << "    " << cls << "() : solver_(*this)" << tCtor << " {}\n\n"
       << seriesSetters.str() << srcFns.str() << "\n"
@@ -1506,6 +1540,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << (L ? "        for (int b=0;b<N_STATES;++b) flowStorage_[b]=solver_.storage(b);\n"
               "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
       << (O ? "        clearObservations();   // System::Solve records no observation before the loop\n" : "")
+      << (OJ ? "        clearObjectives();\n" : "")
       << "        resetStatus();   // a re-initialize starts a fresh solve (new GA/MCMC sample)\n"
       << "    }\n"
       << tStep
@@ -1803,6 +1838,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                << CLS << "_API void   " << cls << "_set_parameter(" << cls << "_handle* h, int i, double v);\n"
                << CLS << "_API void   " << cls << "_apply_parameters(" << cls << "_handle* h);\n"
                << CLS << "_API int    " << cls << "_n_observations(void);\n"
+               << CLS << "_API int    " << cls << "_n_objectives(void);\n"
                << CLS << "_API const char* " << cls << "_observation_name(int i);\n"
                << CLS << "_API int    " << cls << "_observation_count(const " << cls << "_handle* h, int i);\n"
                << CLS << "_API int    " << cls << "_observation_at(const " << cls << "_handle* h, int i, int k, double* t, double* v);\n"
@@ -1854,6 +1890,12 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                   "int    " << cls << "_observation_at(const " << cls << "_handle* h, int i, int k, double* t, double* v) {\n"
                   "    const ohq::TimeSeries& s = h->m.observationSeries(i); if (k < 0 || k >= (int)s.size()) return 0; *t = s.t[k]; *v = s.c[k]; return 1; }\n"
                   "void   " << cls << "_clear_observations(" << cls << "_handle* h) { h->m.clearObservations(); }\n"
+                  "int    " << cls << "_n_objectives(void) { return " << cls << "::N_OBJECTIVES; }\n"
+                  "const char* " << cls << "_objective_name(int i) { return " << cls << "::objectiveName(i); }\n"
+                  "int    " << cls << "_objective_count(const " << cls << "_handle* h, int i) { return (int)h->m.objectiveSeries(i).size(); }\n"
+                  "int    " << cls << "_objective_at(const " << cls << "_handle* h, int i, int k, double* t, double* v) {\n"
+                  "    const ohq::TimeSeries& s = h->m.objectiveSeries(i); if (k < 0 || k >= (int)s.size()) return 0; *t = s.t[k]; *v = s.c[k]; return 1; }\n"
+                  "void   " << cls << "_clear_objectives(" << cls << "_handle* h) { h->m.clearObjectives(); }\n"
                   "int    " << cls << "_solution_failed(const " << cls << "_handle* h) { return h->m.solutionFailed() ? 1 : 0; }\n"
                   "double " << cls << "_simulation_duration(const " << cls << "_handle* h) { return h->m.simulationDuration(); }\n"
                   "long   " << cls << "_step_count(const " << cls << "_handle* h) { return h->m.stepCount(); }\n"
@@ -1875,7 +1917,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                   "   library would have to know it. These fixed names let a generic host\n"
                   "   (OHQ-GA / OHQ-MCMC --kernel) drive ANY generated model. Keep in sync\n"
                   "   with tools/ohq_kernel.h. ohq_kernel_abi_version() guards changes. */\n"
-                  "int    ohq_kernel_abi_version(void) { return 2; }   /* v2: + G4 forcing, G5 state, status, state/mass readback */\n"
+                  "int    ohq_kernel_abi_version(void) { return 3; }   /* v3: + G2b objective functions (n/name/count/at/clear/uniformize) */\n"
                   "const char* ohq_kernel_class_name(void) { return \"" << cls << "\"; }\n"
                   "void*  ohq_kernel_create(void) { return (void*)" << cls << "_create(); }\n"
                   "void   ohq_kernel_destroy(void* h) { " << cls << "_destroy((" << cls << "_handle*)h); }\n"
@@ -1899,6 +1941,13 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                   "int    ohq_kernel_observation_count(const void* h, int i) { return " << cls << "_observation_count((const " << cls << "_handle*)h, i); }\n"
                   "int    ohq_kernel_observation_at(const void* h, int i, int k, double* t, double* v) { return " << cls << "_observation_at((const " << cls << "_handle*)h, i, k, t, v); }\n"
                   "void   ohq_kernel_clear_observations(void* h) { " << cls << "_clear_observations((" << cls << "_handle*)h); }\n"
+                  "/* G2b objective functions: same (object, expression) shape as an observation,\n"
+                  "   but scored by Objective_Function rather than compared to data. */\n"
+                  "int    ohq_kernel_n_objectives(void) { return " << cls << "_n_objectives(); }\n"
+                  "const char* ohq_kernel_objective_name(int i) { return " << cls << "_objective_name(i); }\n"
+                  "int    ohq_kernel_objective_count(const void* h, int i) { return " << cls << "_objective_count((const " << cls << "_handle*)h, i); }\n"
+                  "int    ohq_kernel_objective_at(const void* h, int i, int k, double* t, double* v) { return " << cls << "_objective_at((const " << cls << "_handle*)h, i, k, t, v); }\n"
+                  "void   ohq_kernel_clear_objectives(void* h) { " << cls << "_clear_objectives((" << cls << "_handle*)h); }\n"
                   "int    ohq_kernel_solution_failed(const void* h) { return " << cls << "_solution_failed((const " << cls << "_handle*)h); }\n"
                   "double ohq_kernel_simulation_duration(const void* h) { return " << cls << "_simulation_duration((const " << cls << "_handle*)h); }\n"
                   "long   ohq_kernel_step_count(const void* h) { return " << cls << "_step_count((const " << cls << "_handle*)h); }\n"
@@ -1908,6 +1957,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                   "   objective is computed (Objective_Function.cpp:133); a host scoring the\n"
                   "   kernel must do the same or it compares on a different grid. */\n"
                   "void   ohq_kernel_uniformize_observations(void* h) { ((" << cls << "_handle*)h)->m.uniformizeObservations(); }\n"
+                  "void   ohq_kernel_uniformize_objectives(void* h) { ((" << cls << "_handle*)h)->m.uniformizeObjectives(); }\n"
                   "/* state vector (read results / drive an export) */\n"
                   "int    ohq_kernel_n_states(void) { return " << cls << "_n_states(); }\n"
                   "double ohq_kernel_state(const void* h, int i) { return " << cls << "_state((const " << cls << "_handle*)h, i); }\n"

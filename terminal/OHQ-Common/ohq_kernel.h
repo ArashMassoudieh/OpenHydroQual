@@ -288,6 +288,32 @@ public:
                 if (k.observation_at(h_, i, s, &t, &v)) ts.addPoint(t, v);
             observation(i)->SetModeledTimeSeries(ts);
         }
+        // G2b. Objective functions score their OWN stored_time_series, which
+        // System::Solve fills via Objective_Function::append_value each step --
+        // and this method shadows System::Solve, so without this the series stays
+        // empty and every objective comes back exactly 0. (That is what made a
+        // kernel-driven GA on an objective-only model report
+        // "best objective 0.000000e+00" while the interpreter scored 1.55e+01.)
+        // The kernel records the same expression on the same object; hand it over.
+        if (k.n_objectives)
+        {
+            // NB: hand over the RAW per-step series. System::Solve appends raw
+            // values with Objective_Function::append_value(t) and GetObjective()
+            // does the make_uniform(dt0) itself (Objective_Function.cpp:133), so
+            // uniformizing here too would resample twice and score a different
+            // curve than the interpreter. (Observations differ: there the
+            // interpreter's FinalizeOutputs really does uniformize first.)
+            const int nk = k.n_objectives();
+            for (int i = 0; i < (int)ObjectiveFunctionsCount() && i < nk; i++)
+            {
+                const int n = k.objective_count(h_, i);
+                TimeSeries<timeseriesprecision> ts;
+                double t = 0, v = 0;
+                for (int s = 0; s < n; s++)
+                    if (k.objective_at(h_, i, s, &t, &v)) ts.addPoint(t, v);
+                objectivefunction(i)->SetTimeSeries(ts);
+            }
+        }
         // the interpreter records this in Solve(); without it the MCMC detail log
         // reports simulation_duration: 0 for every sample
         SetSimulationDuration(time_t(std::chrono::duration<double>(
