@@ -247,8 +247,9 @@ search). Dropping that floor as well would stop on every sample of a changing
 stretch, but offset grids (rain/gates at :07:30, ET on the hour) then cut the
 steps into slivers: +41% kernel steps for the same S-26 fit, so the floor stays.
 S-26 (interpreter, cap 0.52): hourly flow NSE 0.44 -> 0.92, kernel 0.93.
-Solver setting `timestep_clamp_series` = "All time series" (default) /
-"Precipitation only" (the old behaviour; read by the kernel generator too).
+Solver setting `timestep_clamp_series` = "Precipitation only" (default since
+2026-09-26, the old behaviour) / "All time series" (read by the kernel
+generator too). S-26 needs "All time series" (imposed 15-min gate openings).
 Precipitation only on S-26: kernel 1753 steps, hourly flow NSE 0.46; on
 Examples/Wet_pond (2-min inflow series) it restores the ~1 min run time.
 Opened 2026-09-13. Affects every deployment that uses a

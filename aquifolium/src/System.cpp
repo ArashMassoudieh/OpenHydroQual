@@ -1314,11 +1314,10 @@ void System::InitializeSolver(bool applyparameters)
         SetNumberOfStateVariables(solvevariableorder.size());
 
     SolverTempVars.SetUpdateJacobian(true);
-    // dt is clamped (GetMinimumNextTimeStepSize) to EVERY loaded time series --
-    // precipitation, but also imposed gate openings, fixed heads, inflows and
-    // the ET inputs -- as the codegen kernel does (issues.md ISSUE 8). A series
-    // that never changes value costs nothing: its D spans the whole record.
-    // timestep_clamp_series = "Precipitation only" restores the old behaviour.
+    // dt is clamped (GetMinimumNextTimeStepSize) to the precipitation series
+    // (default) or, with timestep_clamp_series = "All time series", to EVERY
+    // loaded series -- gate openings, fixed heads, inflows, ET inputs (issues.md
+    // ISSUE 8). The codegen kernel follows the same setting.
     alltimeseries = GetTimeSeries(!SolverSettings.clamp_dt_to_all_timeseries);
 
 #ifdef Q_GUI_SUPPORT

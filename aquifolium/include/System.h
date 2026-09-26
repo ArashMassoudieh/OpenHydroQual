@@ -74,13 +74,14 @@ struct solversettings
     /// true Newton convergence, so far fewer iterations -- and because the
     /// iteration count drives the time-step adaptation, a larger dt as well.
     bool update_jacobian_every_iteration = false;
-    /// Which time series limit the step (GetMinimumNextTimeStepSize): every
-    /// loaded series (default -- gate openings, imposed heads, inflows, ET
-    /// inputs and precipitation), or precipitation series only (the behaviour
-    /// before 2026-09-26: fewer, larger steps, but forcing that changes between
-    /// steps is sampled only at the step ends). The codegen kernel reads the
-    /// same setting.
-    bool clamp_dt_to_all_timeseries = true;
+    /// Which time series limit the step (GetMinimumNextTimeStepSize):
+    /// precipitation series only (default: fewer, larger steps, but other
+    /// forcing is sampled only at the step ends), or every loaded series --
+    /// gate openings, imposed heads, inflows, ET inputs and precipitation
+    /// (timestep_clamp_series = "All time series"; needed where fast non-rain
+    /// forcing matters, e.g. imposed gate operations). The codegen kernel reads
+    /// the same setting.
+    bool clamp_dt_to_all_timeseries = false;
     double NR_timestep_reduction_factor = 0.75;
     double NR_timestep_reduction_factor_fail = 0.3;
     double minimum_timestep = 1e-7;
