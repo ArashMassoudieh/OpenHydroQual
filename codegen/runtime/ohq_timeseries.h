@@ -36,24 +36,27 @@ public:
     void push(double ti, double ci) { t.push_back(ti); c.push_back(ci); }
 
     // ---- interpreter parity: TimeSeries::assign_D / interpol_D --------------
-    // d[i] = time from sample i until the series next CHANGES value (at least one
-    // sample spacing). System::GetMinimumNextTimeStepSize takes the minimum of
-    // interpol_D over the precipitation series so dt is only clamped where the
-    // forcing actually changes (dry spells are stepped over in big steps).
+    // d[i] = time from sample i to the LAST sample of the constant run that
+    // starts at i (one sample spacing where the value changes right away), so a
+    // step from inside a dry spell stops on its last dry sample rather than on
+    // the first wet one. interpolD interpolates d, floored at the local spacing.
+    // The solver clamps dt to the minimum over every forcing series, as does
+    // System::GetMinimumNextTimeStepSize.
     mutable std::vector<double> d;
     void assignD() const
     {
         const size_t n = t.size();
         d.assign(n, 0.0);
+        if (n == 0) return;
+        std::vector<size_t> runEnd(n, n - 1);   // last sample of i's constant run
+        for (size_t i = n - 1; i-- > 0; )
+            runEnd[i] = (c[i + 1] == c[i]) ? runEnd[i + 1] : i;
         for (size_t i = 0; i < n; ++i) {
             double counter = 0.0;
-            for (size_t j = i + 1; j < n; ++j) {
-                counter += t[j] - t[j - 1];
-                if (c[j] != c[i]) break;
-            }
-            if (i + 1 == n && n > 1) counter = t[n - 1] - t[n - 2];
-            else if (n == 1)         counter = 100.0;
-            if (counter == 0.0)      counter = (i > 0) ? t[i] - t[i - 1] : t[0];
+            if (n == 1)          counter = 100.0;
+            else if (i + 1 == n) counter = t[n - 1] - t[n - 2];
+            else counter = (runEnd[i] > i) ? t[runEnd[i]] - t[i] : t[i + 1] - t[i];
+            if (counter == 0.0)  counter = (i > 0) ? t[i] - t[i - 1] : t[0];
             d[i] = std::fabs(counter);
         }
     }

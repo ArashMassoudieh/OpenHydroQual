@@ -51,15 +51,14 @@ public:
     SolverSettings& settings() { return s_; }
     double landtozero = 0.0;   // matches settings.json default
 
-    // Forcing breakpoints (sorted): time-series sample times. dt is clamped so a
-    // step never crosses one, matching the interpreter's GetMinimumNextTimeStepSize
-    // so spiky forcing (e.g. a rainfall pulse) is never stepped over.
+    // Forcing breakpoints (sorted): time-series sample times (unused; dt is
+    // clamped through clampSeries_ below).
     std::vector<double> breakpoints;
     void setBreakpoints(const double* a, int n) { breakpoints.assign(a, a + n); }
     // Interpreter dt policy (System::Solve loop + GetMinimumNextTimeStepSize):
     // the APPLIED step is max(min(dt_base, min_series interpol_D(t)), dt0/timestepminfactor)
-    // over the registered series -- GetTimeSeries(true): PRECIPITATION series only --
-    // while dt_base (dt_) is the adaptive quantity that grows/shrinks on its own.
+    // over the registered series -- every forcing series, in both codes -- while
+    // dt_base (dt_) is the adaptive quantity that grows/shrinks on its own.
     std::vector<const TimeSeries*> clampSeries_;
     void addClampSeries(const TimeSeries* ts) { clampSeries_.push_back(ts); }
     void clearClampSeries() { clampSeries_.clear(); }   // re-bound after a copy

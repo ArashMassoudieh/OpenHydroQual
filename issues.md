@@ -206,7 +206,13 @@ outputs and the grid comparison (`out/`). The codegen lives in
 
 ## ISSUE 6 — `addtemplate` resolves file names relative to the process CWD first
 
-**Status:** open (interpreter), 2026-09-13. Not changed per "do not touch the interpreter".
+**Status:** fixed 2026-09-25 — `alltimeseries = GetTimeSeries(false)`; also
+`System::GetTimeSeries` assigned D to the wrong series under `onlyprecip`, and
+`assign_D`/`interpol_D` (interpreter and kernel alike) measured the distance to
+the first sample of the NEXT value, floored at one spacing, so a step from a dry
+spell landed on the first wet sample and applied its rate over the whole step.
+D is now the time to the next sample at which the series starts to change.
+Opened 2026-09-13. Not changed per "do not touch the interpreter".
 
 `Command.cpp:203-211` (`addtemplate`, same for `loadtemplate` at 185-191): it
 tries `AppendQuanTemplate(assignments["filename"])` with the bare name — i.e.
@@ -223,7 +229,13 @@ folder; delete/rename the root `mass_transfer.json`.
 
 ## ISSUE 7 — Transport Newton fails repeatedly at large dt (Wetland)
 
-**Status:** open (interpreter), 2026-09-13.
+**Status:** fixed 2026-09-25 — `alltimeseries = GetTimeSeries(false)`; also
+`System::GetTimeSeries` assigned D to the wrong series under `onlyprecip`, and
+`assign_D`/`interpol_D` (interpreter and kernel alike) measured the distance to
+the first sample of the NEXT value, floored at one spacing, so a step from a dry
+spell landed on the first wet sample and applied its rate over the whole step.
+D is now the time to the next sample at which the series starts to change.
+Opened 2026-09-13.
 
 On the Wetland forward model with hourly forcing and the deployment settings
 (`max_timestep_increase_factor=50` → dt up to 0.5 d) the interpreter logs 365
@@ -236,7 +248,13 @@ a look at the transport Newton (Jacobian/line search) — it costs the interpret
 
 ## ISSUE 8 — dt clamp follows precipitation only; hourly ET inputs are stepped over on dry days
 
-**Status:** open (interpreter), 2026-09-13. Affects every deployment that uses a
+**Status:** fixed 2026-09-25 — `alltimeseries = GetTimeSeries(false)`; also
+`System::GetTimeSeries` assigned D to the wrong series under `onlyprecip`, and
+`assign_D`/`interpol_D` (interpreter and kernel alike) measured the distance to
+the first sample of the NEXT value, floored at one spacing, so a step from a dry
+spell landed on the first wet sample and applied its rate over the whole step.
+D is now the time to the next sample at which the series starts to change.
+Opened 2026-09-13. Affects every deployment that uses a
 Penman-type ET source with sub-daily inputs.
 
 `System::Solve` sets `alltimeseries = GetTimeSeries(true)` (onlyprecip = true,

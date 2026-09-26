@@ -409,11 +409,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     std::ostringstream flowLocalsBody;  // flow per-iteration quantities cached as members for transport (G8b)
     std::set<double> breakpointSet;   // (unused: dt is clamped via interpol_D, see clampHandles)
     // Series that clamp dt (runtime addClampSeries -> interpol_D = time until the
-    // series next changes value). The interpreter registers only PRECIPITATION
-    // series (GetTimeSeries(true)); its hourly ET inputs are resolved anyway only
-    // because its Newton rarely converges below NR_niteration_lower, so dt_base
-    // never grows. A fast solver must clamp to EVERY forcing series or it steps
-    // over the diurnal ET cycle at 0.5 d (issues.md ISSUE 8).
+    // series starts to change). EVERY forcing series clamps, as in the
+    // interpreter's System::GetMinimumNextTimeStepSize (GetTimeSeries(false));
+    // otherwise the diurnal ET cycle or a 15-min gate operation is stepped over
+    // at 0.5 d (issues.md ISSUE 8).
     std::vector<std::string> clampHandles;
     // G4: every baked series by (object, quantity) so the host can replace it at
     // runtime by name (DTRunner::injectPrecipitation / DTWeather::injectWeather).
@@ -595,8 +594,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                         const std::string hh = srcTs(s->GetName(), sqn);
                         seriesDecls  << "    ohq::TimeSeries " << hh << ";\n";
                         seriesSetters << "    void set_" << hh << "(const ohq::TimeSeries& ts) { " << hh << " = ts; }\n";
-                        // clamps dt where the ET input changes (the interpreter only registers
-                        // precipitation series here -- see clampHandles comment)
+                        // clamps dt where the ET input changes (see clampHandles comment)
                         bakeSeries(s->GetName(), sqn, hh, sq.GetTimeSeries(), 200000, /*clampDt=*/true);
                     } else if (sq.GetType() == Quan::_type::expression && sqn != "coefficient") {
                         ExpressionEmitter em(makeCtxSrc(s));

@@ -227,15 +227,14 @@ public:
     SolverSettings& settings() { return s_; }
     double landtozero = 0.0;   // matches settings.json default
 
-    // Forcing breakpoints (sorted): time-series sample times. dt is clamped so a
-    // step never crosses one, matching the interpreter's GetMinimumNextTimeStepSize
-    // so spiky forcing (e.g. a rainfall pulse) is never stepped over.
+    // Forcing breakpoints (sorted): time-series sample times (unused; dt is
+    // clamped through clampSeries_ below).
     std::vector<double> breakpoints;
     void setBreakpoints(const double* a, int n) { breakpoints.assign(a, a + n); }
     // Interpreter dt policy (System::Solve loop + GetMinimumNextTimeStepSize):
     // the APPLIED step is max(min(dt_base, min_series interpol_D(t)), dt0/timestepminfactor)
-    // over the registered series -- GetTimeSeries(true): PRECIPITATION series only --
-    // while dt_base (dt_) is the adaptive quantity that grows/shrinks on its own.
+    // over the registered series -- every forcing series, in both codes -- while
+    // dt_base (dt_) is the adaptive quantity that grows/shrinks on its own.
     std::vector<const TimeSeries*> clampSeries_;
     void addClampSeries(const TimeSeries* ts) { clampSeries_.push_back(ts); }
     void clearClampSeries() { clampSeries_.clear(); }   // re-bound after a copy
@@ -479,10 +478,10 @@ private:
     {
         const double tol = 0.0;
         if (inflowOwn_[b] < -tol) return true;         // negative own inflow = outflow
-        for (int l : linksFrom_[b]) if (flowRaw_[l] > tol) return true;  // leaves)OHQRT"
-R"OHQRT( b forward
+        for (int l : linksFrom_[b]) if (flowRaw_[l] > tol) return true;  // leaves b forward
         for (int l : linksTo_[b])   if (flowRaw_[l] < -tol) return true; // leaves b in reverse
-        return false;
+        return false;)OHQRT"
+R"OHQRT(
     }
 
     // Flag block b limited and propagate through rigid neighbours reached by an
@@ -1134,24 +1133,27 @@ public:
     void push(double ti, double ci) { t.push_back(ti); c.push_back(ci); }
 
     // ---- interpreter parity: TimeSeries::assign_D / interpol_D --------------
-    // d[i] = time from sample i until the series next CHANGES value (at least one
-    // sample spacing). System::GetMinimumNextTimeStepSize takes the minimum of
-    // interpol_D over the precipitation series so dt is only clamped where the
-    // forcing actually changes (dry spells are stepped over in big steps).
+    // d[i] = time from sample i to the LAST sample of the constant run that
+    // starts at i (one sample spacing where the value changes right away), so a
+    // step from inside a dry spell stops on its last dry sample rather than on
+    // the first wet one. interpolD interpolates d, floored at the local spacing.
+    // The solver clamps dt to the minimum over every forcing series, as does
+    // System::GetMinimumNextTimeStepSize.
     mutable std::vector<double> d;
     void assignD() const
     {
         const size_t n = t.size();
         d.assign(n, 0.0);
+        if (n == 0) return;
+        std::vector<size_t> runEnd(n, n - 1);   // last sample of i's constant run
+        for (size_t i = n - 1; i-- > 0; )
+            runEnd[i] = (c[i + 1] == c[i]) ? runEnd[i + 1] : i;
         for (size_t i = 0; i < n; ++i) {
             double counter = 0.0;
-            for (size_t j = i + 1; j < n; ++j) {
-                counter += t[j] - t[j - 1];
-                if (c[j] != c[i]) break;
-            }
-            if (i + 1 == n && n > 1) counter = t[n - 1] - t[n - 2];
-            else if (n == 1)         counter = 100.0;
-            if (counter == 0.0)      counter = (i > 0) ? t[i] - t[i - 1] : t[0];
+            if (n == 1)          counter = 100.0;
+            else if (i + 1 == n) counter = t[n - 1] - t[n - 2];
+            else counter = (runEnd[i] > i) ? t[runEnd[i]] - t[i] : t[i + 1] - t[i];
+            if (counter == 0.0)  counter = (i > 0) ? t[i] - t[i - 1] : t[0];
             d[i] = std::fabs(counter);
         }
     }

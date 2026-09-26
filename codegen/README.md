@@ -176,9 +176,12 @@ precision.
   now valued as `coefficient * timeseries * rate` (per `Source::GetValue`), with
   each unique source's series baked once and shared across all objects that use
   it (one rain gauge → 1024 cells). Non-finite series points are skipped.
-- The solver clamps `dt` to the forcing time-series sample times (breakpoints),
-  matching the interpreter's `GetMinimumNextTimeStepSize`, so a sharp rainfall
-  pulse is never stepped over (this alone fixed a ~45% runoff-volume error).
+- The solver clamps `dt` to every forcing time series (`interpolD`: time to the
+  next sample at which the series starts to change), exactly as the
+  interpreter's `GetMinimumNextTimeStepSize` does since 2026-09-25 -- before
+  that the interpreter clamped to precipitation series only (ISSUE 8). A sharp
+  rainfall pulse or an imposed 15-min gate operation is never stepped over
+  (clamping alone fixed a ~45% runoff-volume error).
 
 ### Sparse Jacobian — large models are now fast
 `runtime/ohq_sparse.h`: CSR + ILU(0)-preconditioned BiCGSTAB (dense fallback).
@@ -323,10 +326,9 @@ The generated class is now *assimilable*:
   1.6e-12. Both G4/G5 are in the C API (`_set_series`, `_set_precipitation`,
   `_export_state`, `_import_state`).
 - **dt policy** mirrors the interpreter's Solve loop (`assign_D`/`interpol_D`
-  port; applied step vs adaptive `dt_base`), but clamps on **all** forcing
-  series — the interpreter registers only precipitation series and therefore
-  samples hourly ET twice a day on dry days (issues.md ISSUE 8). Run the gate
-  with the interpreter's dt capped (`max_timestep_increase_factor` ≈ 2).
+  port; applied step vs adaptive `dt_base`), and both codes clamp on **all**
+  forcing series (the interpreter registered only precipitation series until
+  2026-09-25, issues.md ISSUE 8).
 
 ### The kernel ABI — `tools/ohq_kernel.h` (2026-09-14)
 A generated library exports its C API under the **class name**

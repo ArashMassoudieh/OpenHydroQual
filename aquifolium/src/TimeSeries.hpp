@@ -22,6 +22,7 @@
 #include "math.h"
 #include "string.h"
 #include <iostream>
+#include <algorithm>
 #include <fstream>
 //#include "StringOP.h"
 #include "Utilities.h"
@@ -914,6 +915,9 @@ TimeSeries<T> TimeSeries<T>::movingAverageSmooth(int span) const {
     return out;
 }
 
+// d interpolated at x, floored at the local sample spacing (assign_D gives the
+// meaning of d). The bracketing interval is found by binary search -- every
+// forcing series is now scanned on every step, see System::InitializeSolver.
 template<typename T>
 T TimeSeries<T>::interpol_D(const T& x) const {
     if (this->empty())
@@ -925,38 +929,22 @@ T TimeSeries<T>::interpol_D(const T& x) const {
     if (x >= this->back().t)
         return this->back().d.value_or(T{});
 
-    if (structured_ && this->size() >= 2) {
-        int i = static_cast<int>((x - this->front().t) / dt_);
-        if (i < 0) return this->front().d.value_or(T{});
-        if (static_cast<size_t>(i + 1) >= this->size()) return this->back().d.value_or(T{});
+    // last i with t_i <= x (same bracket as the codegen kernel's idxAt)
+    const size_t i = std::upper_bound(this->begin(), this->end(), x,
+                                      [](const T& v, const DataPoint<T>& p) { return v < p.t; })
+                     - this->begin() - 1;
+    if (i + 1 >= this->size())
+        return this->back().d.value_or(T{});
 
-        const auto& p1 = (*this)[i];
-        const auto& p2 = (*this)[i + 1];
+    const auto& p1 = (*this)[i];
+    const auto& p2 = (*this)[i + 1];
 
-        if (!p1.d || !p2.d)
-            return p1.d.value_or(p2.d.value_or(T{}));
+    if (!p1.d || !p2.d)
+        return p1.d.value_or(p2.d.value_or(p2.t - p1.t));
 
-        T dt = p2.t - p1.t;
-        T interpolated = p1.d.value() + (p2.d.value() - p1.d.value()) * (x - p1.t) / dt;
-        return std::max(interpolated, dt);
-    }
-
-    // Unstructured mode
-    for (size_t i = 0; i < this->size() - 1; ++i) {
-        const auto& p1 = (*this)[i];
-        const auto& p2 = (*this)[i + 1];
-
-        if (p1.t <= x && x <= p2.t) {
-            if (!p1.d || !p2.d)
-                return p1.d.value_or(p2.d.value_or(p2.t - p1.t));
-
-            T dt = p2.t - p1.t;
-            T interpolated = p1.d.value() + (p2.d.value() - p1.d.value()) * (x - p1.t) / dt;
-            return std::max(interpolated, dt);
-        }
-    }
-
-    return this->back().d.value_or(T{});
+    T dt = p2.t - p1.t;
+    T interpolated = p1.d.value() + (p2.d.value() - p1.d.value()) * (x - p1.t) / dt;
+    return std::max(interpolated, dt);
 }
 
 template<typename T>
@@ -1742,27 +1730,32 @@ T sum_interpolate(const std::vector<TimeSeries<T>>& series_list, T time) {
     return sum;
 }
 
+// d_i: time from sample i to the LAST sample of the constant run that starts at
+// i, or to sample i+1 when the value changes right after i. It used to run to
+// the first sample of the next value, so from inside a dry spell the step landed
+// on the first wet sample and, being implicit, applied that sample's rate over
+// the whole (up to 0.5 d) step instead of over the one-sample ramp.
 template<typename T>
 void TimeSeries<T>::assign_D() {
     if (this->empty()) return;
+    const size_t n = this->size();
 
-    for (size_t i = 0; i < this->size(); ++i) {
+    // run_end[i]: last sample of the constant run containing i (one backward
+    // pass, so a long constant series costs O(n), not O(n^2))
+    std::vector<size_t> run_end(n, n - 1);
+    for (size_t i = n - 1; i-- > 0; )
+        run_end[i] = ((*this)[i + 1].c == (*this)[i].c) ? run_end[i + 1] : i;
+
+    for (size_t i = 0; i < n; ++i) {
         T counter = T{};
 
-        for (size_t j = i + 1; j < this->size(); ++j) {
-            if ((*this)[j].c == (*this)[i].c) {
-                counter += (*this)[j].t - (*this)[j - 1].t;
-            }
-            else {
-                counter += (*this)[j].t - (*this)[j - 1].t;
-                break;
-            }
-        }
-
-        if (i + 1 == this->size() && this->size() > 1)
-            counter = (*this)[this->size() - 1].t - (*this)[this->size() - 2].t;
-        else if (this->size() == 1)
+        if (n == 1)
             counter = T(100);
+        else if (i + 1 == n)
+            counter = (*this)[n - 1].t - (*this)[n - 2].t;
+        else
+            counter = (run_end[i] > i) ? (*this)[run_end[i]].t - (*this)[i].t
+                                       : (*this)[i + 1].t - (*this)[i].t;
 
         if (counter == T{}) {
             counter = (i > 0) ? (*this)[i].t - (*this)[i - 1].t : (*this)[0].t;

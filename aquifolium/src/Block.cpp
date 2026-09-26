@@ -57,13 +57,17 @@ double Block::GetInflowValue(const string &variable, const Expression::timing &t
     corresponding_inflow_var = Variable(variable)->GetCorrespondingInflowVar();
 
 
+    // Every term is evaluated at the caller's timing. (It used to be CalcVal's
+    // default, 'past': a source term such as Precipitation returned its current
+    // cached value while an expression term such as Precipitation_loss read
+    // Precipitation from the previous step, so the two no longer cancelled.)
     for (unsigned int i=0; i<corresponding_inflow_var.size(); i++)
     {
         if (corresponding_inflow_var[i] != "")
         {
             if (Variable(corresponding_inflow_var[i]))
             {
-                double inflow1 = CalcVal(corresponding_inflow_var[i]);
+                double inflow1 = CalcVal(corresponding_inflow_var[i], tmg);
                 Variable(corresponding_inflow_var[i])->SetVal(inflow1, tmg);
                 if (inflow1>0)
                     inflow += inflow1;

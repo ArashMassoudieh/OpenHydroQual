@@ -602,6 +602,13 @@ double Quan::GetVal(const Expression::timing& tmg)
     {
         if (value_star_updated)
             return _val_star;
+        else if (type == _type::source)
+        {
+            // An expression that reads a source (e.g. Precipitation_loss reading
+            // Precipitation) must see its current value even when it is evaluated
+            // before the source term itself; CalcVal takes _val_lock on its own.
+            return CalcVal(tmg);
+        }
         else
         {
 #ifndef NO_OPENMP

@@ -1314,7 +1314,11 @@ void System::InitializeSolver(bool applyparameters)
         SetNumberOfStateVariables(solvevariableorder.size());
 
     SolverTempVars.SetUpdateJacobian(true);
-    alltimeseries = GetTimeSeries(true);
+    // dt is clamped (GetMinimumNextTimeStepSize) to EVERY loaded time series --
+    // precipitation, but also imposed gate openings, fixed heads, inflows and
+    // the ET inputs -- as the codegen kernel does (issues.md ISSUE 8). A series
+    // that never changes value costs nothing: its D spans the whole record.
+    alltimeseries = GetTimeSeries(false);
 
 #ifdef Q_GUI_SUPPORT
     errorhandler.SetProgressWindow(rtw);
@@ -3111,17 +3115,20 @@ bool System::OutFlowCanOccur(int blockno, const string &variable)
 {
     bool alloutflowszero = true;
     double outflow;
+    // The block's own inflow terms are tested as their net sum, evaluated at the
+    // same (present) time as the residual: a pair such as Precipitation and
+    // Precipitation_loss is a positive net inflow, not an outflow, and testing
+    // the negative member alone flags a wetting block as outflow-limited.
+    double net_inflow = 0;
     for (unsigned int i=0; i<blocks[blockno].Variable(variable)->GetCorrespondingInflowVar().size(); i++)
     {
         if (blocks[blockno].Variable(variable)->GetCorrespondingInflowVar()[i] != "")
         {
             if (blocks[blockno].Variable(blocks[blockno].Variable(variable)->GetCorrespondingInflowVar()[i]))
-            {
-                outflow = blocks[blockno].CalcVal(blocks[blockno].Variable(variable)->GetCorrespondingInflowVar()[i]);
-                alloutflowszero &= !aquiutils::isnegative(outflow);
-            }
+                net_inflow += blocks[blockno].CalcVal(blocks[blockno].Variable(variable)->GetCorrespondingInflowVar()[i], Expression::timing::present);
         }
     }
+    alloutflowszero &= !aquiutils::isnegative(net_inflow);
 
     for (unsigned int j = 0; j < blocks[blockno].GetLinksFrom().size(); j++)
     {
@@ -4068,7 +4075,7 @@ SafeVector<TimeSeries<timeseriesprecision>*> System::GetTimeSeries(bool onlyprec
         vector<TimeSeries<timeseriesprecision>*> linktimeseires = links[i].GetTimeSeries(onlyprecip);
         for (unsigned int j=0; j<linktimeseires.size(); j++)
         {
-            links[i].GetTimeSeries()[j]->assign_D();
+            linktimeseires[j]->assign_D();
             out.push_back(linktimeseires[j]);
         }
     }
@@ -4078,7 +4085,7 @@ SafeVector<TimeSeries<timeseriesprecision>*> System::GetTimeSeries(bool onlyprec
         vector<TimeSeries<timeseriesprecision>*> blocktimeseires = blocks[i].GetTimeSeries(onlyprecip);
         for (unsigned int j=0; j<blocktimeseires.size(); j++)
         {
-            blocks[i].GetTimeSeries()[j]->assign_D();
+            blocktimeseires[j]->assign_D();
             out.push_back(blocktimeseires[j]);
         }
     }
@@ -4088,7 +4095,7 @@ SafeVector<TimeSeries<timeseriesprecision>*> System::GetTimeSeries(bool onlyprec
         vector<TimeSeries<timeseriesprecision>*> sourcetimeseires = sources[i].GetTimeSeries(onlyprecip);
         for (unsigned int j=0; j<sourcetimeseires.size(); j++)
         {
-            sources[i].GetTimeSeries()[j]->assign_D();
+            sourcetimeseires[j]->assign_D();
             out.push_back(sourcetimeseires[j]);
         }
     }
@@ -5247,19 +5254,19 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
     {
         if (!block(i)->GetLimitedOutflow() && !block(i)->isrigid(variable))
             jacobian(i,i) += 1/SolverTempVars.dt;
+        if (block(i)->GetLimitedOutflow())
+        {   // d/d(factor) of the limited residual's -inflow*factor term: the
+            // block's net inflow, once (not once per inflow term)
+            double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
+            if (inflow<0) jacobian(i,i) -= inflow;
+            continue;
+        }
         for (unsigned int j=0; j<block(i)->Variable(variable)->GetCorrespondingInflowVar().size(); j++)
         {
             if (block(i)->Variable(variable)->GetCorrespondingInflowVar()[j] != "")
             {
                 if (Variable(block(i)->Variable(variable)->GetCorrespondingInflowVar()[j]))
-                {
-                    if (!block(i)->GetLimitedOutflow())
-                        jacobian(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
-                    else
-                    {   double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
-                        if (inflow<0) jacobian(i,i) -= inflow;
-                    }
-                }
+                    jacobian(i,i) -= Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable);
             }
         }
     }
@@ -5270,7 +5277,8 @@ CMatrix_arma System::JacobianDirect(const string &variable, CVector_arma &X, boo
         {
             if (!OutFlowCanOccur(i,variable))
             {
-                for (unsigned int j=0; j<blocks.size(); j++) jacobian(j,i)=0;
+                // the residual row is F[i] = X[i] - 1.1
+                for (unsigned int j=0; j<blocks.size(); j++) { jacobian(j,i)=0; jacobian(i,j)=0; }
                 jacobian(i,i)=1;
             }
         }
@@ -5363,19 +5371,18 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
     {
         if (!block(i)->GetLimitedOutflow() && !block(i)->isrigid(variable))
             jac_add(i,i,(1/SolverTempVars.dt));
+        if (block(i)->GetLimitedOutflow())
+        {   // net inflow, once (see JacobianDirect)
+            double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
+            if (inflow<0) jac_add(i,i,-(inflow));
+            continue;
+        }
         for (unsigned int j=0; j<block(i)->Variable(variable)->GetCorrespondingInflowVar().size(); j++)
         {
             if (block(i)->Variable(variable)->GetCorrespondingInflowVar()[j] != "")
             {
                 if (Variable(block(i)->Variable(variable)->GetCorrespondingInflowVar()[j]))
-                {
-                    if (!block(i)->GetLimitedOutflow())
-                        jac_add(i,i,-(Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable)));
-                    else
-                    {   double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
-                        if (inflow<0) jac_add(i,i,-(inflow));
-                    }
-                }
+                    jac_add(i,i,-(Gradient(block(i),block(i),block(i)->Variable(variable)->GetCorrespondingInflowVar()[j],variable)));
             }
         }
     }
@@ -5400,7 +5407,9 @@ CMatrix_arma_sp System::JacobianDirect_SP(const string &variable, CVector_arma &
         {
             if (!OutFlowCanOccur(i,variable))
             {
-                for (unsigned int j=0; j<blocks.size(); j++) jacobian_sp(j,i)=0;
+                // the residual row is F[i] = X[i] - 1.1
+                jacobian_sp.matr.col(i).zeros();
+                jacobian_sp.matr.row(i).zeros();
                 jacobian_sp(i,i)=1;
             }
         }
