@@ -145,6 +145,15 @@
    "delegate": "ComboBox, items: Yes, No",
    "code": "update_jacobian_every_iteration"
   },
+  "jacobian_dt_refresh_factor": {
+   "type": "value",
+   "default": "2",
+   "description": "Reassemble the Jacobian when the time step changes by more than this factor",
+   "helptext": "The reused (chord) Jacobian contains 1/dt, so it stops being a good approximation once the time step moves away from the step it was assembled with. When the time step is clamped to rapidly changing time series it changes almost every step, and a Jacobian kept for 50 steps can cost 20-30 Newton iterations per step. With this set, the Jacobian is reassembled whenever the applied time step differs from the one it was built with by more than this factor, up or down. 2 is the default; 1 or less switches the check off (reassemble only every 50 steps or after a failed step, the behaviour before September 2026).",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "jacobian_dt_refresh_factor"
+  },
   "timestep_clamp_series": {
    "type": "string",
    "default": "Precipitation only",
