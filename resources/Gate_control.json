@@ -364,5 +364,305 @@
     "unit": "m^2;ft^2",
     "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
   }
-}
+},
+  "trench_outfall": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Trench outfall (flap-gated drain)",
+    "icon": {
+      "filename": "trench_outfall.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,70,200"
+    },
+    "crest_elevation": {
+      "type": "value",
+      "description": "Outlet crest elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m;ft",
+      "default": "-1.8",
+      "helptext": "Elevation of the drain crest. The outfall flows only when the upstream head exceeds both this crest and the receiving water level."
+    },
+    "head_loss_coefficient": {
+      "type": "value",
+      "description": "Head-loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "4007.95",
+      "criteria": "head_loss_coefficient>0",
+      "warningmessage": "Head-loss coefficient must be positive",
+      "helptext": "Lumped entrance, friction and exit losses. The calibrated Arena exfiltration-trench unit gives 4007.95."
+    },
+    "pipe_diameter": {
+      "type": "value",
+      "description": "Outlet pipe diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m;ft;cm",
+      "default": "0.457",
+      "criteria": "pipe_diameter>0",
+      "warningmessage": "pipe diameter must be positive"
+    },
+    "driving_head": {
+      "type": "expression",
+      "description": "Driving head: upstream head above max(crest, receiving head)",
+      "expression": "_pos(head.s-_max(crest_elevation;head.e))",
+      "includeinoutput": "true",
+      "unit": "m"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "expression": "86400*3.47*driving_head^(0.5)/((head_loss_coefficient+1)^0.5)*(pipe_diameter^2)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "unit": "m^3/day;ft^3/s"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    },
+    "helptext": "Drain of an exfiltration-trench unit to a receiving water body, with a flap gate and tailwater. Q = 86400*3.47*sqrt(h_s - max(crest, h_e))_+ / sqrt(K+1) * d^2. No backflow: Q = 0 whenever the receiving head is at or above the upstream head."
+  },
+  "trench_network_outfall": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Trench-network outfall (fitted network curve, flap-gated)",
+    "icon": {
+      "filename": "trench_network_outfall.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,70,200"
+    },
+    "network_coefficient": {
+      "type": "value",
+      "description": "Network outflow coefficient C",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "615964",
+      "criteria": "network_coefficient>0",
+      "warningmessage": "C must be positive",
+      "helptext": "m3/day per m^beta. Scales with the number of units in the network."
+    },
+    "reference_elevation": {
+      "type": "value",
+      "description": "Reference crest elevation z",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m;ft",
+      "default": "-1.7024",
+      "helptext": "Effective crest of the network: the centre of the distribution of the units' crest elevations."
+    },
+    "spread": {
+      "type": "value",
+      "description": "Spread of crest elevations w",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m;ft",
+      "default": "0.1055",
+      "criteria": "spread>0",
+      "warningmessage": "spread must be positive",
+      "helptext": "Softplus width representing the spread of the units' crest elevations."
+    },
+    "exponent": {
+      "type": "value",
+      "description": "Outflow exponent beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.5468",
+      "criteria": "exponent>0",
+      "warningmessage": "exponent must be positive"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "expression": "network_coefficient*_pos((_max(head.s-reference_elevation;0)+spread*_log(1+_exp(-_abs(head.s-reference_elevation)/spread)))-(_max(head.e-reference_elevation;0)+spread*_log(1+_exp(-_abs(head.e-reference_elevation)/spread))))^exponent",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "unit": "m^3/day;ft^3/s"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    },
+    "helptext": "Outflow of a whole trench network as one fitted curve: Q = C*[sp(h_s - z; w) - sp(h_e - z; w)]_+^beta, sp(x; w) = w ln(1 + e^(x/w)). Zero when the receiving head reaches the network level (flap gate). Superseded by trench_class_outfall, which is accurate near the gate onset."
+  },
+  "trench_class_outfall": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Trench-class outfall (n units, pipe and orifice in series, flap-gated)",
+    "icon": {
+      "filename": "trench_class_outfall.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,70,200"
+    },
+    "units": {
+      "type": "value",
+      "description": "Number of trench units n",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "units>-0.0000001",
+      "warningmessage": "Number of units cannot be negative",
+      "helptext": "Number of identical exfiltration-trench units in this elevation class (may be fractional: an expected count)."
+    },
+    "pipe_coefficient": {
+      "type": "value",
+      "description": "Pipe-limit coefficient a_p (per unit)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "21742.86",
+      "criteria": "pipe_coefficient>0",
+      "warningmessage": "a_p must be positive",
+      "helptext": "m3/day per unit per m^b_p. Fitted to the calibrated Arena unit (trench -> S4 pipe)."
+    },
+    "pipe_invert": {
+      "type": "value",
+      "description": "Pipe invert elevation z_p",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m;ft",
+      "default": "-1.6419",
+      "helptext": "Invert of the pipe from the trench to the outlet structure; no outflow below it."
+    },
+    "pipe_exponent": {
+      "type": "value",
+      "description": "Pipe-limit exponent b_p",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.121",
+      "criteria": "pipe_exponent>0",
+      "warningmessage": "b_p must be positive"
+    },
+    "orifice_coefficient": {
+      "type": "value",
+      "description": "Orifice-limit coefficient c_o (per unit)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "994.35",
+      "criteria": "orifice_coefficient>0",
+      "warningmessage": "c_o must be positive",
+      "helptext": "m3/day per unit per m^b_o. Fitted to the calibrated Arena unit (S4 outlet)."
+    },
+    "orifice_crest": {
+      "type": "value",
+      "description": "Orifice crest elevation z_o",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m;ft",
+      "default": "-1.794"
+    },
+    "orifice_exponent": {
+      "type": "value",
+      "description": "Orifice-limit exponent b_o",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.504",
+      "criteria": "orifice_exponent>0",
+      "warningmessage": "b_o must be positive"
+    },
+    "pipe_limit": {
+      "type": "expression",
+      "description": "Pipe-limited flow",
+      "expression": "units*pipe_coefficient*_pos(head.s-pipe_invert)^pipe_exponent",
+      "includeinoutput": "true",
+      "unit": "m^3/day"
+    },
+    "orifice_limit": {
+      "type": "expression",
+      "description": "Orifice-limited flow (flap-gated, tailwater)",
+      "expression": "units*orifice_coefficient*_pos(head.s-_max(orifice_crest;head.e))^orifice_exponent",
+      "includeinoutput": "true",
+      "unit": "m^3/day"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "expression": "_min(pipe_limit;orifice_limit)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "unit": "m^3/day;ft^3/s"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    },
+    "helptext": "Outfall of n identical exfiltration-trench units to a receiving water body: Q = n*min(a_p (h_s - z_p)_+^b_p, c_o (h_s - max(z_o, h_e))_+^b_o). The pipe limit (onset at the pipe invert) and the orifice limit (onset at max(crest, receiving head)) act in series; a flap gate prevents backflow. Defaults are the calibrated Arena unit in its own elevation frame: shift z_p and z_o by the class elevation offset. Used with an Aggregate_storage_layer block per class and a partially_submerged_trench_Link to the groundwater cell."
+  }
 }
