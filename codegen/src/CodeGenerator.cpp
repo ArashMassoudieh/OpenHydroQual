@@ -414,6 +414,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     // otherwise the diurnal ET cycle or a 15-min gate operation is stepped over
     // at 0.5 d (issues.md ISSUE 8).
     std::vector<std::string> clampHandles;
+    // SolverSettings::clamp_dt_to_all_timeseries = false ("Precipitation only")
+    // registers precipitation series only, like GetTimeSeries(true).
+    const bool clampAllSeries = system.GetSolverSettings().clamp_dt_to_all_timeseries;
+    auto clampsDt = [&](Quan::_type t) { return clampAllSeries || t == Quan::_type::prec_timeseries; };
     // G4: every baked series by (object, quantity) so the host can replace it at
     // runtime by name (DTRunner::injectPrecipitation / DTWeather::injectWeather).
     struct SeriesEntry { std::string obj, q, handle; };
@@ -530,7 +534,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 seriesDecls  << "    ohq::TimeSeries " << h << ";\n";
                 seriesSetters << "    void set_" << h << "(const ohq::TimeSeries& ts) { "
                               << h << " = ts; }\n";
-                bakeSeries(o->GetName(), qn, h, q->GetTimeSeries(), 200000, /*clampDt=*/true);
+                bakeSeries(o->GetName(), qn, h, q->GetTimeSeries(), 200000, clampsDt(q->GetType()));
                 continue;
             }
             if (qi->tier == Tier::Constant) {
@@ -564,7 +568,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 seriesDecls  << "    ohq::TimeSeries " << h << ";\n";
                 seriesSetters << "    void set_" << h << "(const ohq::TimeSeries& ts) { " << h << " = ts; }\n";
                 Quan* tq = s->Variable("timeseries");
-                bakeSeries(s->GetName(), "timeseries", h, tq ? tq->GetTimeSeries() : nullptr, 200000, /*clampDt=*/true);
+                bakeSeries(s->GetName(), "timeseries", h, tq ? tq->GetTimeSeries() : nullptr, 200000,
+                           tq ? clampsDt(tq->GetType()) : clampAllSeries);
 
                 // The source's own graph: every other time series becomes a
                 // member (+ setter, baked data) and every expression quantity a
@@ -595,7 +600,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                         seriesDecls  << "    ohq::TimeSeries " << hh << ";\n";
                         seriesSetters << "    void set_" << hh << "(const ohq::TimeSeries& ts) { " << hh << " = ts; }\n";
                         // clamps dt where the ET input changes (see clampHandles comment)
-                        bakeSeries(s->GetName(), sqn, hh, sq.GetTimeSeries(), 200000, /*clampDt=*/true);
+                        bakeSeries(s->GetName(), sqn, hh, sq.GetTimeSeries(), 200000, clampsDt(sq.GetType()));
                     } else if (sq.GetType() == Quan::_type::expression && sqn != "coefficient") {
                         ExpressionEmitter em(makeCtxSrc(s));
                         srcFns << "    double " << srcFn(s->GetName(), sqn) << "(double t) const { (void)t; return "
@@ -896,7 +901,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     const std::string hh = tsHandle(o->GetName(), qn);
                     seriesDecls  << "    ohq::TimeSeries " << hh << ";\n";
                     seriesSetters << "    void set_" << hh << "(const ohq::TimeSeries& ts) { " << hh << " = ts; }\n";
-                    bakeSeries(o->GetName(), qn, hh, q.GetTimeSeries(), 200000, /*clampDt=*/true);
+                    bakeSeries(o->GetName(), qn, hh, q.GetTimeSeries(), 200000, clampsDt(q.GetType()));
                 }
             }
         }

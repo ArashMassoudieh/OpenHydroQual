@@ -206,13 +206,7 @@ outputs and the grid comparison (`out/`). The codegen lives in
 
 ## ISSUE 6 — `addtemplate` resolves file names relative to the process CWD first
 
-**Status:** fixed 2026-09-25 — `alltimeseries = GetTimeSeries(false)`; also
-`System::GetTimeSeries` assigned D to the wrong series under `onlyprecip`, and
-`assign_D`/`interpol_D` (interpreter and kernel alike) measured the distance to
-the first sample of the NEXT value, floored at one spacing, so a step from a dry
-spell landed on the first wet sample and applied its rate over the whole step.
-D is now the time to the next sample at which the series starts to change.
-Opened 2026-09-13. Not changed per "do not touch the interpreter".
+**Status:** open (interpreter), 2026-09-13. Not changed per "do not touch the interpreter".
 
 `Command.cpp:203-211` (`addtemplate`, same for `loadtemplate` at 185-191): it
 tries `AppendQuanTemplate(assignments["filename"])` with the bare name — i.e.
@@ -229,13 +223,7 @@ folder; delete/rename the root `mass_transfer.json`.
 
 ## ISSUE 7 — Transport Newton fails repeatedly at large dt (Wetland)
 
-**Status:** fixed 2026-09-25 — `alltimeseries = GetTimeSeries(false)`; also
-`System::GetTimeSeries` assigned D to the wrong series under `onlyprecip`, and
-`assign_D`/`interpol_D` (interpreter and kernel alike) measured the distance to
-the first sample of the NEXT value, floored at one spacing, so a step from a dry
-spell landed on the first wet sample and applied its rate over the whole step.
-D is now the time to the next sample at which the series starts to change.
-Opened 2026-09-13.
+**Status:** open (interpreter), 2026-09-13.
 
 On the Wetland forward model with hourly forcing and the deployment settings
 (`max_timestep_increase_factor=50` → dt up to 0.5 d) the interpreter logs 365
@@ -250,10 +238,19 @@ a look at the transport Newton (Jacobian/line search) — it costs the interpret
 
 **Status:** fixed 2026-09-25 — `alltimeseries = GetTimeSeries(false)`; also
 `System::GetTimeSeries` assigned D to the wrong series under `onlyprecip`, and
-`assign_D`/`interpol_D` (interpreter and kernel alike) measured the distance to
-the first sample of the NEXT value, floored at one spacing, so a step from a dry
-spell landed on the first wet sample and applied its rate over the whole step.
-D is now the time to the next sample at which the series starts to change.
+`assign_D` (interpreter and kernel alike) measured the distance to the first
+sample of the NEXT value, so a step from inside a dry spell landed on the first
+wet sample and, being implicit, applied its rate over the whole (up to 0.5 d)
+step. d_i now runs to the LAST sample of the constant run (O(n) backward pass);
+`interpol_D` is unchanged (interpolated d, floored at one spacing; now a binary
+search). Dropping that floor as well would stop on every sample of a changing
+stretch, but offset grids (rain/gates at :07:30, ET on the hour) then cut the
+steps into slivers: +41% kernel steps for the same S-26 fit, so the floor stays.
+S-26 (interpreter, cap 0.52): hourly flow NSE 0.44 -> 0.92, kernel 0.93.
+Solver setting `timestep_clamp_series` = "All time series" (default) /
+"Precipitation only" (the old behaviour; read by the kernel generator too).
+Precipitation only on S-26: kernel 1753 steps, hourly flow NSE 0.46; on
+Examples/Wet_pond (2-min inflow series) it restores the ~1 min run time.
 Opened 2026-09-13. Affects every deployment that uses a
 Penman-type ET source with sub-daily inputs.
 
@@ -1138,3 +1135,42 @@ ignored` lines appear, and the covariance refreshes on schedule.
 Rebuilding one does not rebuild the others, and a stale copy of any of them
 accepts a current script while quietly ignoring whatever is newer than itself.
 A version or build stamp in each driver's banner would make that visible.
+
+## ISSUE 24 -- Catchment own inflows mixed two times; a wetting catchment was flagged outflow-limited (FIXED 2026-09-26)
+
+Found calibrating the S-26 canal model (Catchment `Runoff_coeff` 0.287): at
+t=45721.321 block C_1 had `Precipitation` = 16937.5 but `Precipitation_loss` =
+-20055.7 (should be -12076). The net rain went negative, the catchments were
+driven below zero and flagged outflow-limited, their direct-Jacobian diagonals
+were then zero ("The Jacobian Matrix is not full-ranked" at dt = 2e-7) and the
+run stalled; with `Runoff_coeff` = 0 it crashed.
+
+* `Block::GetInflowValue` called `CalcVal(term)` with CalcVal's default timing,
+  `past`. A source term (Precipitation) returns its current cached value at any
+  timing, but the expression `Precipitation_loss` read `Precipitation` at `past`,
+  i.e. whatever an earlier evaluation had last written into `_val`. Every term
+  is now evaluated at the caller's timing (the residual's `present`), as the
+  Jacobian (`Gradient` at `present`) and the codegen kernel already assumed.
+* `Quan::GetVal(present)` had no branch for `source` quantities and returned a
+  stale `_val_star` when the source had not been evaluated yet in this pass; it
+  now computes it (order of the inflow list no longer matters, and `Gradient`
+  of a state-dependent source such as soil ET is no longer 0).
+* `System::OutFlowCanOccur` tested each own inflow term on its own, so the
+  always-negative `Precipitation_loss` counted as an outflow even when the net
+  own inflow was positive. It now tests the net own inflow, as the kernel does.
+* `JacobianDirect[_SP]`: the limited-block `-inflow` term was added once per
+  inflow term instead of once, and the `F = X - 1.1` row of a limited block
+  whose outflow cannot occur zeroed column i but not row i. Both fixed.
+* Template: Catchment `Storage` inflow is now
+  `Precipitation_runoff,Evapotranspiration,loss,inflow` (main_components.json,
+  Sewer_system.json); `Precipitation_loss` stays as an output quantity.
+
+**Exposed by the fix:** `surfacewater_to_soil_link` (unsaturated_soil.json)
+multiplied infiltration by `_mon(depth.s;0.001)` = depth/(depth+0.001), which has
+a pole at depth = -1 mm. With the rain no longer over-applied at its onset, a
+draining catchment's Newton iterate goes slightly negative before the limiter
+engages, lands near the pole, and Newton diverges; dt collapsed to 1e-6 at gate
+openings (t = 45799.8, 45903.5). Now `_mon(_pos(depth.s);0.001)`: no infiltration
+from an empty catchment. Converged results are unaffected (kernel: hourly flow
+NSE 0.93 either way, 23522 vs 23538 steps). The pipe flow in open_channel.json
+has the same pattern, `_mon(depth.s;diameter)`, not changed.

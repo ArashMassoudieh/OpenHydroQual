@@ -1318,7 +1318,8 @@ void System::InitializeSolver(bool applyparameters)
     // precipitation, but also imposed gate openings, fixed heads, inflows and
     // the ET inputs -- as the codegen kernel does (issues.md ISSUE 8). A series
     // that never changes value costs nothing: its D spans the whole record.
-    alltimeseries = GetTimeSeries(false);
+    // timestep_clamp_series = "Precipitation only" restores the old behaviour.
+    alltimeseries = GetTimeSeries(!SolverSettings.clamp_dt_to_all_timeseries);
 
 #ifdef Q_GUI_SUPPORT
     errorhandler.SetProgressWindow(rtw);
@@ -1868,6 +1869,17 @@ bool System::SetProperty(const string &s, const string &val)
         SolverSettings.update_jacobian_every_iteration =
             (aquiutils::trim(aquiutils::tolower(val))=="yes"
              || aquiutils::trim(val)=="1" || aquiutils::trim(aquiutils::tolower(val))=="true");
+        return true;
+    }
+    if (s=="timestep_clamp_series")
+    {
+        const string v = aquiutils::trim(aquiutils::tolower(val));
+        if (v=="all time series" || v=="all")
+            SolverSettings.clamp_dt_to_all_timeseries = true;
+        else if (v=="precipitation only" || v=="precipitation")
+            SolverSettings.clamp_dt_to_all_timeseries = false;
+        else
+            return false;
         return true;
     }
     if (s=="jacobian_method")

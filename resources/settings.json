@@ -145,6 +145,15 @@
    "delegate": "ComboBox, items: Yes, No",
    "code": "update_jacobian_every_iteration"
   },
+  "timestep_clamp_series": {
+   "type": "string",
+   "default": "All time series",
+   "description": "Time series that limit the time step",
+   "helptext": "A step is never allowed to run past a point where a time series starts to change. All time series (the default) applies this to every loaded series -- precipitation, gate openings, imposed heads, inflows and weather inputs -- so forcing that changes quickly is followed closely, at the cost of more steps. Precipitation only applies it to precipitation series alone (the behaviour before September 2026): fewer and larger steps, but other forcing is only sampled at the step ends and short events such as a 15-minute gate operation can be stepped over.",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: All time series, Precipitation only",
+   "code": "timestep_clamp_series"
+  },
   "write_intermittently": {
    "type": "string",
    "default": "No",

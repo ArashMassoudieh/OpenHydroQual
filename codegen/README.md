@@ -328,7 +328,9 @@ The generated class is now *assimilable*:
 - **dt policy** mirrors the interpreter's Solve loop (`assign_D`/`interpol_D`
   port; applied step vs adaptive `dt_base`), and both codes clamp on **all**
   forcing series (the interpreter registered only precipitation series until
-  2026-09-25, issues.md ISSUE 8).
+  2026-09-25, issues.md ISSUE 8). The solver setting `timestep_clamp_series`
+  = "Precipitation only" restores the old behaviour in both: the generator then
+  registers only `prec_timeseries` series with `addClampSeries`.
 
 ### The kernel ABI — `tools/ohq_kernel.h` (2026-09-14)
 A generated library exports its C API under the **class name**
