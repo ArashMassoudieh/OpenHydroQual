@@ -146,13 +146,58 @@ inline bool VerifyKernelMatches(System& system)
             { host_owned.push_back(p->GetName()); break; }
         }
     }
-    const int dead = k.self_test(0.05, 0.0, host_owned);
-    if (dead >= 0)
+    // Probe each parameter across ITS OWN prior range rather than by a blanket
+    // relative step. self_test's default +5% is the wrong probe for a parameter
+    // whose prior spans orders of magnitude and whose current value sits at the
+    // bottom of it: a control threshold at its 1e-4 lower bound with a 1e-4..0.03
+    // log-normal prior moves nothing at 1.05e-4 -- the forecast indicator is
+    // either 0 or already far above both -- yet it plainly moves the model at
+    // 1e-3. Perturbing to the far side of the range asks the question the GA
+    // will actually ask. (Still a BITWISE check, per ISSUE 17.)
     {
-        std::cout << "Parameter " << dead << " '" << k.parameter_name(dead)
-                  << "' is advertised by the kernel but does NOT change its output."
-                     " Refusing to calibrate against it (issues.md ISSUE 17)." << std::endl;
-        return false;
+        const double t0 = k.simulation_start();
+        const double tend = t0 + 0.05 * (k.simulation_end() - t0);
+        const int ns = k.n_states(), nm = k.n_mass();
+        auto snap = [&](void* h, std::vector<double>& o) {
+            o.resize(ns + nm);
+            for (int i = 0; i < ns; ++i) o[i] = k.state(h, i);
+            for (int i = 0; i < nm; ++i) o[ns + i] = k.mass(h, i);
+        };
+        std::vector<double> base, cur;
+        { void* h = k.create(); k.initialize(h); k.run_to(h, tend); snap(h, base); k.destroy(h); }
+        for (int i = 0; i < np; i++)
+        {
+            const std::string pname = k.parameter_name(i);
+            bool skip = false;
+            for (size_t j = 0; j < host_owned.size(); j++)
+                if (host_owned[j] == pname) { skip = true; break; }
+            if (skip) continue;
+
+            void* h = k.create(); k.initialize(h);
+            const double v0 = k.parameter(h, i);
+            double probe = (v0 == 0.0) ? 0.05 : v0 * 1.05;     // self_test's default
+            Parameter* mp = system.GetParameter(i);
+            if (mp)
+            {
+                const double lo = mp->GetVal("low"), hi = mp->GetVal("high");
+                if (hi > lo)                                    // far side of the prior
+                    probe = (v0 - lo) < 0.5 * (hi - lo) ? lo + 0.75 * (hi - lo)
+                                                        : lo + 0.25 * (hi - lo);
+            }
+            k.set_parameter(h, i, probe); k.apply_parameters(h);
+            k.run_to(h, tend); snap(h, cur); k.destroy(h);
+
+            bool moved = false;
+            for (int q = 0; q < ns + nm && !moved; ++q) moved = (cur[q] != base[q]);
+            if (!moved)
+            {
+                std::cout << "Parameter " << i << " '" << pname
+                          << "' is advertised by the kernel but does NOT change its output"
+                             " (probed " << v0 << " -> " << probe << ")."
+                             " Refusing to calibrate against it (issues.md ISSUE 17)." << std::endl;
+                return false;
+            }
+        }
     }
     std::cout << "Kernel verified : " << np << " parameters, " << no
               << " observations, names match the model; all "
