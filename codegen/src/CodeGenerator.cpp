@@ -426,11 +426,29 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     // Bake a loaded series as a static data table + fill loop. (One push() per
     // point in straight-line code sent GCC's optimizer superlinear: >10 min for
     // 88k hourly points; a brace-initialized table compiles in seconds.)
+    //
+    // System::InitializeSolver resamples every loaded series onto a grid of dt0
+    // (make_timeseries_uniform, default Yes) before the first step, and both the
+    // forcing values AND the dt clamp (interpol_D) then read the resampled series.
+    // Bake that same series. With the raw series the kernel clamps dt to the raw
+    // rain record's sample spacing instead of the dt0 grid's; under "All time
+    // series" the hourly ET inputs dominated the clamp and hid this, under
+    // "Precipitation only" it cost Bioretention a 10% storage mismatch.
+    const bool uniformSeries = system.GetSolverSettings().make_timeseries_uniform;
+    const double uniformDt = system.dt0();
     auto bakeSeries = [&](const std::string& obj, const std::string& q, const std::string& handle,
                           TimeSeries<timeseriesprecision>* ts, size_t maxPoints, bool clampDt) {
         seriesTable.push_back({obj, q, handle});          // addressable even when empty now
         if (clampDt) clampHandles.push_back(handle);      // (an injected series must clamp too)
         if (!ts || ts->size() == 0) return;
+        TimeSeries<timeseriesprecision> uni;
+        bool uniformAtLoad = false;                       // resample in loadSeries() instead
+        if (uniformSeries) {
+            uni = ts->make_uniform(uniformDt);            // (< 2 points -> empty, as in the interpreter)
+            if (uni.size() <= maxPoints) ts = &uni;
+            else uniformAtLoad = true;                    // too many grid points to bake: bake raw
+        }
+        if (ts->size() == 0) return;
         if (ts->size() > maxPoints) {
             seriesInit << "        // " << handle << ": " << ts->size()
                        << " points not baked (large); use set_" << handle << "().\n";
@@ -449,6 +467,9 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         seriesInit << "        { static const double D[] = {" << tbl.str() << " };\n"
                    << "          for (size_t k = 0; k < " << n << "; ++k) " << handle
                    << ".push(D[2*k], D[2*k+1]); }\n";
+        if (uniformAtLoad)
+            seriesInit << "        " << handle << " = " << handle << ".makeUniform(" << fmt(uniformDt)
+                       << ");   // make_timeseries_uniform (grid too large to bake)\n";
     };
 
     // state enum

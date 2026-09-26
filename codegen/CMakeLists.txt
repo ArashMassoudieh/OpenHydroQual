@@ -65,6 +65,9 @@ target_compile_definitions(ohq_codegen PUBLIC
 if(Qt6_FOUND)
   target_link_libraries(ohq_codegen PUBLIC Qt6::Core)
 endif()
+# CodeGenerator instantiates TimeSeries<double> (make_uniform), whose members
+# reference GSL's RNG (compiled with -DGSL, as libOHQLib is).
+target_link_libraries(ohq_codegen PUBLIC gsl gslcblas)
 
 if(Qt6_FOUND AND EXISTS "${OHQLIB_DIR}/libOHQLib.so")
   add_executable(test_emitter tests/test_emitter.cpp)
