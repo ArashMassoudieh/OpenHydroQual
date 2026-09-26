@@ -1434,6 +1434,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         std::ostringstream b;
         b << "        { auto& S = " << obj << ".settings();\n"
           << "          S.tolerance = " << fmt(ss.NRtolerance)
+          << "; S.block_tolerance = " << fmt(ss.nr_block_tolerance)
           << "; S.iter_lower = " << ss.NR_niteration_lower
           << "; S.iter_upper = " << ss.NR_niteration_upper
           << "; S.max_iterations = " << ss.NR_niteration_max << ";\n"

@@ -37,6 +37,15 @@
    "delegate": "ValueBox",
    "code": "nr_tolerance"
   },
+  "nr_block_tolerance": {
+   "type": "value",
+   "default": "0.001",
+   "description": "Newton-Raphson per-block mass-balance tolerance",
+   "helptext": "A second convergence test for the Newton iteration, applied to every block on its own. nr_tolerance and the update test are norms over the whole model, so they are set by its largest blocks: when some blocks are very large (a fixed-head boundary given a nominal storage of 1e12, for example) a small, stiff block can be accepted far out of balance. With this test a step is accepted only once each block's residual is below this fraction of its own throughput (storage change plus all its inflows and outflows), or the block has stopped changing. 0.001 bounds the mass-balance error of every block at about 0.1% of what flows through it; blocks whose throughput is below a thousandth of the largest are held to that level instead. The transport (constituent) solve applies the same test to each constituent in each block. 0 switches the test off (the behaviour before September 2026).",
+   "ask_user": "true",
+   "delegate": "ValueBox",
+   "code": "nr_block_tolerance"
+  },
   "nr_niteration_lower": {
    "type": "value",
    "default": "20",

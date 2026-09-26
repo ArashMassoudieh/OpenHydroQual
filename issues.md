@@ -1175,3 +1175,64 @@ openings (t = 45799.8, 45903.5). Now `_mon(_pos(depth.s);0.001)`: no infiltratio
 from an empty catchment. Converged results are unaffected (kernel: hourly flow
 NSE 0.93 either way, 23522 vs 23538 steps). The pipe flow in open_channel.json
 has the same pattern, `_mon(depth.s;diameter)`, not changed.
+
+## ISSUE 25 -- Newton convergence test blind to small blocks next to huge ones (FIXED 2026-09-26)
+
+**Found on:** the S-26 regional model with a lumped exfiltration-trench retrofit
+(Prince_Work/Upscaling/Retrofit_SW7). 20 `time_variable_fixed_head` boundaries
+carry a nominal Storage = 1e12, so ||X|| ~ 4.5e12.
+
+**Defect (interpreter and codegen alike):** the Newton loop stopped on
+`|F|/(|F0| + 1e-8|X|) < nr_tolerance` or `|dx|/|X| < 1e-10`, both norms over the
+whole state with |X| taken from the initial guess. With |X| ~ 4.5e12 the
+increment escape accepts any step that moves less than ~450 m3, and the relative
+test is dominated by the big blocks. A small, stiff trench block (conductance
+~1.7e7 m2/d to its groundwater cell) was accepted far out of balance: over
+Mar-Oct its outflows exceeded inflow + storage change by 169,000 m3 (on 221,000
+m3 of inflow). On the plain S-26 model the loop ended after ~1.3 chord
+iterations per step on average (30,088 iterations for 23,561 steps).
+
+**Fix:** new solver setting `nr_block_tolerance` (default 1e-3; 0 = old test).
+In addition to the global test, a step is accepted only once every block has
+    |F_i| <= nr_block_tolerance * (Q_i + 1e-3 max_j Q_j) + 1e-12,
+with Q_i the block's own throughput (|storage change|/dt + |own inflow| + sum
+of |link flows|), or has stopped moving (|dx_i| <= 1e-10 |X_i| of the current
+iterate). The 1e-3 max_j Q_j floor is needed: without it nearly dry catchments
+(storage ~1e-13 m3, residual ~1e-9 m3/d) could never meet 0.1% of their own
+vanishing flow and dt collapsed (S-26 kernel: 141 s instead of 6 s). The
+transport solve applies the same test per (block, constituent), with the floor
+taken per constituent; sources and reactions enter Q as their net sum, as the
+kernel lumps them. When the block test passes the loop condition is exactly
+the old one. Q is filled by `GetResiduals` / `GetResiduals_TR`
+(`SolverTempVars.block_flux_scale`) and by `MassBalanceSolver::assemble` /
+`TransportSolver::assemble`.
+
+**Results:**
+* Retrofit trench, original numerics (1e12, nr_tolerance 1e-3): imbalance
+  -169,000 m3 -> +34 m3 (0.015% of inflow). The Upscaling workaround (boundary
+  storage 1e8, nr_tolerance 1e-6) left -15,300 m3 (6.9%) under the old test by
+  the same measure, and -285 m3 (0.13%) under the new one. nr_block_tolerance
+  1e-2 gives -2,850 m3 (1.3%).
+* S-26 calibrated fit (June-Oct, hourly), old -> new:
+  kernel flow NSE 0.9229 -> 0.9228, headwater NSE 0.765 -> 0.763
+  (RMSE 0.0544 -> 0.0547 m); interpreter flow NSE 0.9229 -> 0.9234,
+  headwater NSE 0.764 -> 0.762 (RMSE 0.0545 -> 0.0547 m).
+* Run time: S-26 kernel 3.43 s -> 7.4 s (23,561 -> 24,000 steps; 30k -> 83k
+  Newton iterations, the extra ones mostly in pervious catchments C_16/C_17/C_18
+  and the canal c_1). Retrofit kernel 3.6 s -> 8.3 s at 1e12/1e-3; the old
+  workaround settings cost 6.4 s. Interpreter S-26 (both runs on a loaded
+  machine): 5153 s -> 4640 s, iteration-limit failures 57 -> 24.
+* Parity (run_parity.sh, test on vs off): Draining_Tank, Parallel_Links,
+  Fixed_Head_Test, Channel_Test, Culvert T1/T6/T8/T10, Reservoir_Rule, HRU,
+  Water_Network, Wet_pond pass both ways at the same or better error.
+  CN_watershed (9.3e-3) and Bioretention (11.2% off, 11.7% on) fail both ways,
+  pre-existing. Transport (all constituents): PFR_tracer 5e-14, Culvert T10
+  4e-8, unchanged. Wet_pond transport and the full-year Wetland observation
+  gate were already out of parity with the test off (Wetland diverges at step
+  11); the test makes both worse (Wet_pond NH3 6% -> 39%, Wetland stage rms
+  6% -> 16%). The block test itself fires identically in both engines (same
+  block, same F and Q per iteration). It runs Newton deeper, into a tail where
+  the two engines' chord Jacobians differ: on Wetland step 1 the interpreter's
+  residual stalls at ~20 in a pond stiffly coupled to its neighbour while the
+  kernel's drops to 0.03. That difference was hidden when the loop stopped
+  early.

@@ -32,6 +32,12 @@ namespace ohq {
 
 struct SolverSettings {
     double tolerance          = 1e-6;   // relative Newton tolerance
+    // Per-block mass-balance test (solversettings::nr_block_tolerance): a step
+    // is accepted only once every block has |F_i| <= block_tolerance*(Q_i +
+    // 1e-3 max_j Q_j) + 1e-12, Q_i = the block's own throughput, or has stopped moving (|dx_i| <=
+    // 1e-10|X_i|). The global tests are set by the largest blocks. Transport runs it
+    // per (block, constituent), max_j per constituent. 0 disables.
+    double block_tolerance    = 1e-3;
     double abs_floor          = 1e-12;  // absolute residual floor
     int    max_iterations     = 40;     // NR_niteration_max
     int    iter_lower         = 3;      // grow dt below this

@@ -1096,6 +1096,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         st.push_back({"initial_time_step",     aquiutils::numbertostring(SimulationParameters.dt0)});
         st.push_back({"minimum_timestep",      aquiutils::numbertostring(SolverSettings.minimum_timestep)});
         st.push_back({"nr_tolerance",          aquiutils::numbertostring(SolverSettings.NRtolerance)});
+        st.push_back({"nr_block_tolerance",    aquiutils::numbertostring(SolverSettings.nr_block_tolerance)});
         st.push_back({"jacobian_method",       SolverSettings.use_sparse_solver ? "Sparse"
                                           : (SolverSettings.direct_jacobian ? "Direct" : "Inverse Jacobian")});
         st.push_back({"jacobian_assembly",     SolverSettings.dependency_jacobian ? "Dependency" : "Full"});
@@ -1870,6 +1871,11 @@ bool System::SetProperty(const string &s, const string &val)
              || aquiutils::trim(val)=="1" || aquiutils::trim(aquiutils::tolower(val))=="true");
         return true;
     }
+    if (s=="nr_block_tolerance")
+    {
+        SolverSettings.nr_block_tolerance = aquiutils::atof(val);
+        return true;
+    }
     if (s=="jacobian_dt_refresh_factor")
     {
         SolverSettings.jacobian_dt_refresh_factor = aquiutils::atof(val);
@@ -2474,7 +2480,33 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
 
 		//if (SolverTempVars.NR_coefficient[statevarno]==0)
             SolverTempVars.NR_coefficient[statevarno] = 1;
-        while ((err/(err_ini+1e-8*X_norm)>SolverSettings.NRtolerance && err>1e-12 && dx_norm/X_norm>1e-10))
+
+        // Per-block test (solversettings::nr_block_tolerance). The global tests
+        // below are norms over the whole state, so they are set by the largest
+        // blocks; this one requires every block to balance against its own
+        // throughput, or to have stopped moving. dx is empty before the first
+        // iteration: no block counts as stopped then.
+        CVector_arma dx_last;
+        auto blocks_balanced = [&]() -> bool
+        {
+            if (SolverSettings.nr_block_tolerance <= 0) return true;
+            const vector<double> &Q = SolverTempVars.block_flux_scale;
+            // floor: an entry whose throughput is below 1e-3 of the largest (of
+            // the same constituent, in transport) is held to that level -- a
+            // nearly dry block can not be balanced to 0.1% of its own, vanishing,
+            // flow. Entries are block-major, constituent-minor.
+            const int ng = transport ? max(int(ConstituentsCount()), 1) : 1;
+            vector<double> Q_max(ng, 0.0);
+            for (unsigned int i = 0; i < Q.size(); i++) Q_max[i % ng] = max(Q_max[i % ng], Q[i]);
+            for (int i = 0; i < F.getsize(); i++)
+            {
+                if (fabs(F[i]) <= SolverSettings.nr_block_tolerance*(Q[i] + 1e-3*Q_max[i % ng]) + 1e-12) continue;
+                if (dx_last.getsize() == F.getsize() && fabs(dx_last[i]) <= 1e-10*fabs(X[i])) continue;
+                return false;
+            }
+            return true;
+        };
+        while (err>1e-12 && ((err/(err_ini+1e-8*X_norm)>SolverSettings.NRtolerance && dx_norm/X_norm>1e-10) || !blocks_balanced()))
         {
             SolverTempVars.numiterations[statevarno]++;
 
@@ -2581,6 +2613,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 return false;
 
             dx_norm = dx.norm2();
+            dx_last = dx;
 
             if (!X.is_finite())
 			{
@@ -3055,6 +3088,10 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
     UnUpdateAllVariables();
     //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
     CVector LinkFlow(links.size());
+    // Q_i, each block's own throughput, for the per-block convergence test
+    // (solversettings::nr_block_tolerance; codegen: MassBalanceSolver::assemble)
+    vector<double> &Q = SolverTempVars.block_flux_scale;
+    Q.assign(blocks.size(), 0.0);
 
 
 
@@ -3067,6 +3104,7 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
         if (blocks[i].isrigid(variable))
         {
             F[i] = - blocks[i].GetInflowValue(variable, Expression::timing::present);
+            Q[i] = fabs(F[i]);
         }
         else if (blocks[i].GetLimitedOutflow())
         {
@@ -3074,10 +3112,17 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
             blocks[i].SetVal(variable, blocks[i].GetVal(variable, Expression::timing::past) * SolverSettings.landtozero_factor,Expression::timing::present);
             double inflow = blocks[i].GetInflowValue(variable, Expression::timing::present);
             if (inflow<0) inflow*=blocks[i].GetOutflowLimitFactor(Expression::timing::present);
-            F[i] = -blocks[i].GetVal(variable,Expression::timing::past)*(1.0-SolverSettings.landtozero_factor)/dt() - inflow;
+            const double storage_rate = blocks[i].GetVal(variable,Expression::timing::past)*(1.0-SolverSettings.landtozero_factor)/dt();
+            F[i] = -storage_rate - inflow;
+            Q[i] = fabs(storage_rate) + fabs(inflow);
         }
         else
-            F[i] = (X[i]-blocks[i].GetVal(variable,Expression::timing::past))/dt() - blocks[i].GetInflowValue(variable,Expression::timing::present);
+        {
+            const double storage_rate = (X[i]-blocks[i].GetVal(variable,Expression::timing::past))/dt();
+            const double inflow = blocks[i].GetInflowValue(variable,Expression::timing::present);
+            F[i] = storage_rate - inflow;
+            Q[i] = fabs(storage_rate) + fabs(inflow);
+        }
     }
 
 
@@ -3112,6 +3157,8 @@ CVector_arma System::GetResiduals(const string &variable, CVector_arma &X, bool 
             F[links[i].e_Block_No()] -= LinkFlow[i];
         else
             F[links[i].e_Block_No()] -= LinkFlow[i];
+        Q[links[i].s_Block_No()] += fabs(LinkFlow[i]);
+        Q[links[i].e_Block_No()] += fabs(LinkFlow[i]);
     }
 }
 
@@ -3196,19 +3243,34 @@ CVector_arma System::GetResiduals_TR(const string &variable, CVector_arma &X)
     //CalculateFlows(Variable(variable)->GetCorrespondingFlowVar(),Expression::timing::present);
 
 
+    // Q, the throughput of each (block, constituent), for the per-block
+    // convergence test (solversettings::nr_block_tolerance; codegen:
+    // TransportSolver::assemble). Sources and reactions enter as their net sum,
+    // as codegen lumps them.
+    vector<double> &Q = SolverTempVars.block_flux_scale;
+    Q.assign(F.getsize(), 0.0);
+
    for (unsigned int i=0; i<blocks.size(); i++)
     {
        CVector V = blocks[i].GetAllReactionRates(Expression::timing::present);
        for (unsigned int j=0; j<ConstituentsCount(); j++)
-            F[j+i*ConstituentsCount()] = (X[j+i*ConstituentsCount()]-blocks[i].GetVal(variable, constituent(j)->GetName(), Expression::timing::past))/dt() - blocks[i].GetInflowValue(variable,constituent(j)->GetName(), Expression::timing::present) - V[j];
+       {
+            const double storage_rate = (X[j+i*ConstituentsCount()]-blocks[i].GetVal(variable, constituent(j)->GetName(), Expression::timing::past))/dt();
+            const double inflow = blocks[i].GetInflowValue(variable,constituent(j)->GetName(), Expression::timing::present);
+            F[j+i*ConstituentsCount()] = storage_rate - inflow - V[j];
+            Q[j+i*ConstituentsCount()] = fabs(storage_rate) + fabs(inflow + V[j]);
+       }
     }
 
     for (unsigned int i=0; i<links.size(); i++)
     {
         for (unsigned int j=0; j<ConstituentsCount(); j++)
         {
-            F[j+ConstituentsCount()*links[i].s_Block_No()] += links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable,constituent(j)->GetName())->GetCorrespondingFlowVar(),constituent(j)->GetName(),Expression::timing::present, true);
+            const double massflow = links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable,constituent(j)->GetName())->GetCorrespondingFlowVar(),constituent(j)->GetName(),Expression::timing::present, true);
+            F[j+ConstituentsCount()*links[i].s_Block_No()] += massflow;
             F[j+ConstituentsCount()*links[i].e_Block_No()] -= links[i].GetVal(blocks[links[i].s_Block_No()].Variable(variable,constituent(j)->GetName())->GetCorrespondingFlowVar(),constituent(j)->GetName(),Expression::timing::present, true);
+            Q[j+ConstituentsCount()*links[i].s_Block_No()] += fabs(massflow);
+            Q[j+ConstituentsCount()*links[i].e_Block_No()] += fabs(massflow);
         }
 
     }
@@ -6160,6 +6222,7 @@ QJsonObject System::toJsonObjectFull() const
     QJsonObject settings;
     settings["n_threads"] = SolverSettings.n_threads;
     settings["NRtolerance"] = SolverSettings.NRtolerance;
+    settings["nr_block_tolerance"] = SolverSettings.nr_block_tolerance;
     settings["C_N_weight"] = SolverSettings.C_N_weight;
     settings["direct_jacobian"] = SolverSettings.direct_jacobian;
     settings["scalediagonal"] = SolverSettings.scalediagonal;

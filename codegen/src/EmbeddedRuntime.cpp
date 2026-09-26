@@ -260,6 +260,7 @@ public:
         storage_.assign(n_, 0.0); past_.assign(n_, 0.0);
         factor_.assign(n_, 1.0); limited_.assign(n_, 0); allow_.assign(n_, 1);
         X_.assign(n_, 0.0); F_.assign(n_, 0.0); eff_.assign(n_, 0.0);
+        Q_.assign(n_, 0.0);
         flowRaw_.assign(nl_ > 0 ? nl_ : 1, 0.0);
         inflowOwn_.assign(n_, 0.0);
         // adjacency for OutFlowCanOccur / propagation
@@ -456,16 +457,24 @@ private:
             eff_[b] = limited_[b] ? past_[b] * landtozero : X[b];
         m_->computeFluxes(eff_.data(), tnew_, flowRaw_.data(), inflowOwn_.data());
 
+        // Q_ = each block's own throughput, for the per-block convergence test
+        // (System::GetResiduals, block_flux_scale)
         for (int b = 0; b < n_; ++b) {
             if (m_->rigid(b)) {
                 F[b] = -inflowOwn_[b];
+                Q_[b] = std::fabs(F[b]);
             } else if (limited_[b]) {
                 double inflow = inflowOwn_[b];
                 if (inflow < 0) inflow *= X[b];
-                F[b] = -past_[b] * (1.0 - landtozero) / dtApplied_ - inflow;
+                const double storageRate = past_[b] * (1.0 - landtozero) / dtApplied_;
+                F[b] = -storageRate - inflow;
+                Q_[b] = std::fabs(storageRate) + std::fabs(inflow);
             } else {
-                F[b] = (X[b] - past_[b]) / dtApplied_ - inflowOwn_[b];
-            }
+                const double storageRate = (X[b] - past_[b]) / dtApplied_;
+                F[b] = storageRate - inflowOwn_[b];
+                Q_[b] = std::fabs(storageRate) + std::fabs(inflowOwn_[b]);
+            })OHQRT"
+R"OHQRT(
         }
         for (int l = 0; l < nl_; ++l) {
             const int s = m_->linkSrc(l), e = m_->linkDst(l);
@@ -475,10 +484,10 @@ private:
             else if (limited_[e] && q < 0) factor = X[e];
             const double lf = q * factor;
             F[s] += lf; F[e] -= lf;
+            Q_[s] += std::fabs(lf); Q_[e] += std::fabs(lf);
         }
         for (int b = 0; b < n_; ++b)
-            if (limited_[b])OHQRT"
-R"OHQRT( && !outflowCanOccur(b)) F[b] = X[b] - 1.1;
+            if (limited_[b] && !outflowCanOccur(b)) F[b] = X[b] - 1.1;
     }
 
     bool outflowCanOccur(int b)
@@ -556,8 +565,27 @@ R"OHQRT( && !outflowCanOccur(b)) F[b] = X[b] - 1.1;
         // at t=0 -- would otherwise never be solved at all, and since it then
         // stays zero the guard latches for the whole run.
         std::vector<double> dx(n_), X1(n_), F1(n_);
-        while (err / (err_ini + 1e-8 * X_norm) > s_.tolerance && err > 1e-12
-               && dx_norm / X_norm > 1e-10)
+        // Per-block test (System.cpp OneStepSolve, blocks_balanced): every block
+        // balances against its own throughput Q_, or has stopped moving relative
+        // to the current iterate. No block counts as stopped before the first
+        // iteration. Q_ is from the last assemble(), which -- as F_ -- is at X_.
+        auto blocksBalanced = [&]() -> bool {
+            if (s_.block_tolerance <= 0) return true;
+            // floor: 1e-3 of the largest throughput, so a nearly dry block is not
+            // held to a fraction of its own, vanishing, flow
+            double Q_max = 0;
+            for (int i = 0; i < n_; ++i) Q_max = std::max(Q_max, Q_[i]);
+            const double floor = 1e-3 * Q_max;
+            for (int i = 0; i < n_; ++i) {
+                if (std::fabs(F_[i]) <= s_.block_tolerance * (Q_[i] + floor) + 1e-12) continue;
+                if (iters > 0 && std::fabs(dx[i]) <= 1e-10 * std::fabs(Xit[i])) continue;
+                return false;
+            }
+            return true;
+        };
+        while (err > 1e-12
+               && ((err / (err_ini + 1e-8 * X_norm) > s_.tolerance && dx_norm / X_norm > 1e-10)
+                   || !blocksBalanced()))
         {
             ++iters;
             if (s_.update_jacobian_every_iteration) updateJac_ = true;
@@ -716,6 +744,7 @@ R"OHQRT( && !outflowCanOccur(b)) F[b] = X[b] - 1.1;
     double t_ = 0, dt_ = 0, dt0_ = 0, tnew_ = 0;
     double dtApplied_ = 0, lastDt_ = 0;   // applied step of the current / last accepted step
     std::vector<double> storage_, past_, factor_, X_, F_, eff_, flowRaw_, inflowOwn_;
+    std::vector<double> Q_;   // per-block throughput, see assemble()
     std::vector<double> committedFlow_;
     std::vector<char> limited_, allow_;
     std::vector<std::vector<int>> linksFrom_, linksTo_;
@@ -776,6 +805,12 @@ namespace ohq {
 
 struct SolverSettings {
     double tolerance          = 1e-6;   // relative Newton tolerance
+    // Per-block mass-balance test (solversettings::nr_block_tolerance): a step
+    // is accepted only once every block has |F_i| <= block_tolerance*(Q_i +
+    // 1e-3 max_j Q_j) + 1e-12, Q_i = the block's own throughput, or has stopped moving (|dx_i| <=
+    // 1e-10|X_i|). The global tests are set by the largest blocks. Transport runs it
+    // per (block, constituent), max_j per constituent. 0 disables.
+    double block_tolerance    = 1e-3;
     double abs_floor          = 1e-12;  // absolute residual floor
     int    max_iterations     = 40;     // NR_niteration_max
     int    iter_lower         = 3;      // grow dt below this
@@ -1374,6 +1409,7 @@ public:
         F_.assign(n_, 0.0);
         mt_.assign(nl_ * nc_ > 0 ? nl_ * nc_ : 1, 0.0);
         inflow_.assign(n_, 0.0);
+        Q_.assign(n_, 0.0);
         m_->initialMass(mass_.data());
     }
 
@@ -1397,13 +1433,21 @@ private:
     void assemble(const double* X, double* F)
     {
         m_->computeTransportFluxes(X, t_, mt_.data(), inflow_.data());
-        for (int i = 0; i < n_; ++i) F[i] = (X[i] - past_[i]) / dt_ - inflow_[i];
+        // Q_ = each (block, constituent)'s own throughput, for the per-block
+        // convergence test (System::GetResiduals_TR, block_flux_scale)
+        for (int i = 0; i < n_; ++i) {
+            const double storageRate = (X[i] - past_[i]) / dt_;
+            F[i] = storageRate - inflow_[i];
+            Q_[i] = std::fabs(storageRate) + std::fabs(inflow_[i]);
+        }
         for (int l = 0; l < nl_; ++l) {
             const int s = m_->linkSrcT(l), e = m_->linkDstT(l);
             for (int j = 0; j < nc_; ++j) {
                 const double q = mt_[l * nc_ + j];
                 F[s * nc_ + j] += q;
                 F[e * nc_ + j] -= q;
+                Q_[s * nc_ + j] += std::fabs(q);
+                Q_[e * nc_ + j] += std::fabs(q);
             }
         }
     }
@@ -1478,8 +1522,24 @@ private:
         // at t=0 -- would otherwise never be solved at all, and since it then
         // stays zero the guard latches for the whole run.
         std::vector<double> dx(n_), X1(n_), F1(n_);
-        while (err / (err_ini + 1e-8 * X_norm) > s_.tolerance && err > 1e-12
-               && dx_norm / X_norm > 1e-10)
+        // Per-block test, as MassBalanceSolver::newtonInterp, per (block,
+        // constituent) with the floor taken per constituent (System.cpp
+        // OneStepSolve, blocks_balanced).
+        auto blocksBalanced = [&]() -> bool {
+            if (s_.block_tolerance <= 0) return true;
+            const int ng = nc_ > 0 ? nc_ : 1;
+            std::vector<double> Q_max(ng, 0.0);
+            for (int i = 0; i < n_; ++i) Q_max[i % ng] = std::max(Q_max[i % ng], Q_[i]);
+            for (int i = 0; i < n_; ++i) {
+                if (std::fabs(F_[i]) <= s_.block_tolerance * (Q_[i] + 1e-3 * Q_max[i % ng]) + 1e-12) continue;
+                if (last_iters_ > 0 && std::fabs(dx[i]) <= 1e-10 * std::fabs(Xit[i])) continue;
+                return false;
+            }
+            return true;
+        };
+        while (err > 1e-12
+               && ((err / (err_ini + 1e-8 * X_norm) > s_.tolerance && dx_norm / X_norm > 1e-10)
+                   || !blocksBalanced()))
         {
             ++last_iters_;
             if (s_.update_jacobian_every_iteration) updateJac_ = true;
@@ -1597,6 +1657,7 @@ private:
     int n_ = 0, nc_ = 0, nl_ = 0;
     double t_ = 0, dt_ = 0;
     std::vector<double> mass_, past_, F_, mt_, inflow_;
+    std::vector<double> Q_;   // per-entry throughput, see assemble()
     // interpreter-parity Newton state (persists across steps, as in System.cpp)
     std::vector<double> Jfac_;
     std::vector<int> piv_;

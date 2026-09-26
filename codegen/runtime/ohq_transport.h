@@ -53,6 +53,7 @@ public:
         F_.assign(n_, 0.0);
         mt_.assign(nl_ * nc_ > 0 ? nl_ * nc_ : 1, 0.0);
         inflow_.assign(n_, 0.0);
+        Q_.assign(n_, 0.0);
         m_->initialMass(mass_.data());
     }
 
@@ -76,13 +77,21 @@ private:
     void assemble(const double* X, double* F)
     {
         m_->computeTransportFluxes(X, t_, mt_.data(), inflow_.data());
-        for (int i = 0; i < n_; ++i) F[i] = (X[i] - past_[i]) / dt_ - inflow_[i];
+        // Q_ = each (block, constituent)'s own throughput, for the per-block
+        // convergence test (System::GetResiduals_TR, block_flux_scale)
+        for (int i = 0; i < n_; ++i) {
+            const double storageRate = (X[i] - past_[i]) / dt_;
+            F[i] = storageRate - inflow_[i];
+            Q_[i] = std::fabs(storageRate) + std::fabs(inflow_[i]);
+        }
         for (int l = 0; l < nl_; ++l) {
             const int s = m_->linkSrcT(l), e = m_->linkDstT(l);
             for (int j = 0; j < nc_; ++j) {
                 const double q = mt_[l * nc_ + j];
                 F[s * nc_ + j] += q;
                 F[e * nc_ + j] -= q;
+                Q_[s * nc_ + j] += std::fabs(q);
+                Q_[e * nc_ + j] += std::fabs(q);
             }
         }
     }
@@ -157,8 +166,24 @@ private:
         // at t=0 -- would otherwise never be solved at all, and since it then
         // stays zero the guard latches for the whole run.
         std::vector<double> dx(n_), X1(n_), F1(n_);
-        while (err / (err_ini + 1e-8 * X_norm) > s_.tolerance && err > 1e-12
-               && dx_norm / X_norm > 1e-10)
+        // Per-block test, as MassBalanceSolver::newtonInterp, per (block,
+        // constituent) with the floor taken per constituent (System.cpp
+        // OneStepSolve, blocks_balanced).
+        auto blocksBalanced = [&]() -> bool {
+            if (s_.block_tolerance <= 0) return true;
+            const int ng = nc_ > 0 ? nc_ : 1;
+            std::vector<double> Q_max(ng, 0.0);
+            for (int i = 0; i < n_; ++i) Q_max[i % ng] = std::max(Q_max[i % ng], Q_[i]);
+            for (int i = 0; i < n_; ++i) {
+                if (std::fabs(F_[i]) <= s_.block_tolerance * (Q_[i] + 1e-3 * Q_max[i % ng]) + 1e-12) continue;
+                if (last_iters_ > 0 && std::fabs(dx[i]) <= 1e-10 * std::fabs(Xit[i])) continue;
+                return false;
+            }
+            return true;
+        };
+        while (err > 1e-12
+               && ((err / (err_ini + 1e-8 * X_norm) > s_.tolerance && dx_norm / X_norm > 1e-10)
+                   || !blocksBalanced()))
         {
             ++last_iters_;
             if (s_.update_jacobian_every_iteration) updateJac_ = true;
@@ -276,6 +301,7 @@ private:
     int n_ = 0, nc_ = 0, nl_ = 0;
     double t_ = 0, dt_ = 0;
     std::vector<double> mass_, past_, F_, mt_, inflow_;
+    std::vector<double> Q_;   // per-entry throughput, see assemble()
     // interpreter-parity Newton state (persists across steps, as in System.cpp)
     std::vector<double> Jfac_;
     std::vector<int> piv_;

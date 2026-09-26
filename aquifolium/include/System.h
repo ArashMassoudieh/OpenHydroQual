@@ -65,6 +65,21 @@ struct solversettings
 {
     double C_N_weight; //Crank-Nicholson Weight
     double NRtolerance = 1e-6; //Newton Raphson Tolerance
+    /// Per-block mass-balance tolerance for the Newton loop. The global test
+    /// (|F|/|F_0| < NRtolerance, or |dx| < 1e-10 |X| over the whole state) is
+    /// dominated by the largest blocks: a model with huge-storage blocks (e.g.
+    /// fixed-head boundaries at Storage = 1e12) accepts steps that leave a
+    /// small, stiff block far out of balance. When > 0, a step is accepted only
+    /// once, in addition, every block i satisfies
+    ///     |F_i| <= nr_block_tolerance * (Q_i + 1e-3 max_j Q_j) + 1e-12,
+    /// Q_i = |storage change|/dt + |own inflow| + sum |link flows| of block i
+    /// (the block's own throughput), or has stopped moving, |dx_i| <= 1e-10 |X_i|.
+    /// The 1e-3 max_j Q_j floor keeps nearly dry blocks, whose own throughput
+    /// vanishes, from being held to a balance that is meaningless in absolute
+    /// terms.
+    /// In transport the test runs per (block, constituent), with the floor
+    /// taken per constituent. 0 disables the test (pre-2026-09 behaviour).
+    double nr_block_tolerance = 1e-3;
     int n_threads = 16; //Number of threads
     double NR_coeff_reduction_factor = 0.8; //The coefficient to reduce the Newton-Raphson coefficient
     /// Reassemble the Jacobian at every Newton iteration instead of reusing the
@@ -197,6 +212,9 @@ struct solvertemporaryvars
     /// dt each state variable's stored Jacobian was assembled with (0 = none
     /// yet); see solversettings::jacobian_dt_refresh_factor.
     std::vector<double> jacobian_dt;
+    /// Per-entry throughput scale Q_i filled by GetResiduals / GetResiduals_TR;
+    /// see solversettings::nr_block_tolerance.
+    std::vector<double> block_flux_scale;
     int MaxNumberOfIterations()
     {
         return aquiutils::Max(numiterations);
