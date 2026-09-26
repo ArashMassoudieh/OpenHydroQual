@@ -513,7 +513,7 @@
       "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
     }
   },
-  "Flow_control_device (function, uncertain)": {
+  "Flow_control_device (function uncertain)": {
     "type": "link",
     "typecategory": "Connectors",
     "description": "Flow control device (function, forecast uncertainty)",
