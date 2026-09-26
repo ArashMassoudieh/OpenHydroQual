@@ -1870,6 +1870,11 @@ bool System::SetProperty(const string &s, const string &val)
              || aquiutils::trim(val)=="1" || aquiutils::trim(aquiutils::tolower(val))=="true");
         return true;
     }
+    if (s=="jacobian_dt_refresh_factor")
+    {
+        SolverSettings.jacobian_dt_refresh_factor = aquiutils::atof(val);
+        return true;
+    }
     if (s=="timestep_clamp_series")
     {
         const string v = aquiutils::trim(aquiutils::tolower(val));
@@ -2407,6 +2412,15 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
     vector<bool> outflowlimitstatus_old;
     InitializeOneStep(variable, statevarno, transport, outflowlimitstatus_old);
 
+    // The stored Jacobian holds 1/dt on its diagonal: reassemble it when the
+    // applied dt has moved more than jacobian_dt_refresh_factor away from the
+    // dt it was assembled with (codegen: MassBalanceSolver/TransportSolver).
+    if (SolverSettings.jacobian_dt_refresh_factor > 1.0
+        && SolverTempVars.jacobian_dt[statevarno] > 0
+        && fabs(log(SolverTempVars.dt / SolverTempVars.jacobian_dt[statevarno]))
+               > log(SolverSettings.jacobian_dt_refresh_factor))
+        SolverTempVars.updatejacobian[statevarno] = true;
+
     bool switchvartonegpos = true;
     unsigned int attempts = 0;
 
@@ -2537,6 +2551,7 @@ bool System::OneStepSolve(unsigned int statevarno, bool transport)
                 else
                     SolverTempVars.Inverse_Jacobian[statevarno] = J;
                 SolverTempVars.updatejacobian[statevarno] = false;
+                SolverTempVars.jacobian_dt[statevarno] = SolverTempVars.dt;
                 // OHQ_JACDUMP=<prefix> : write each assembled Jacobian once, as
                 // "i j value" for the nonzeros, for codegen parity work.
                 if (const char* _pfx = std::getenv("OHQ_JACDUMP"))
@@ -6470,6 +6485,7 @@ bool System::ComputeNewtonStep(const string &variable, CVector_arma &X, CVector_
                 J.ScaleDiagonal(1.0 / SolverTempVars.NR_coefficient[statevarno]);
             SolverTempVars.Sparse_Jacobian[statevarno] = ohq_to_sparse(J);
             SolverTempVars.updatejacobian[statevarno] = false;
+            SolverTempVars.jacobian_dt[statevarno] = SolverTempVars.dt;
         }
 
         arma::vec dxv;
@@ -6562,6 +6578,7 @@ bool System::ComputeNewtonStep(const string &variable, CVector_arma &X, CVector_
             SolverTempVars.Inverse_Jacobian[statevarno] = J;
 
         SolverTempVars.updatejacobian[statevarno] = false;
+        SolverTempVars.jacobian_dt[statevarno] = SolverTempVars.dt;
     }
 
     // Compute Newton step dx and update X

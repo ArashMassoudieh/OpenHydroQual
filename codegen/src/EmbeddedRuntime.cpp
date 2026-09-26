@@ -359,6 +359,12 @@ public:
             // refresh lands on the 50th, 100th, ... accepted step (1-based).
             if (s_.jac_refresh_every > 0 && (stepCounter_ + 1) % s_.jac_refresh_every == 0)
                 updateJac_ = true;
+            // System.cpp OneStepSolve -- the stored Jacobian holds 1/dt on its diagonal:
+            // refresh it when the applied dt is more than jac_dt_refresh_factor away
+            // from the dt it was assembled with
+            if (s_.jac_dt_refresh_factor > 1.0 && jacDt_ > 0
+                && std::fabs(std::log(dtApplied_ / jacDt_)) > std::log(s_.jac_dt_refresh_factor))
+                updateJac_ = true;
             for (int b = 0; b < n_; ++b) past_[b] = storage_[b];
             std::vector<char> limitedAtStart = limited_;
             std::vector<double> factorAtStart = factor_;
@@ -471,7 +477,8 @@ private:
             F[s] += lf; F[e] -= lf;
         }
         for (int b = 0; b < n_; ++b)
-            if (limited_[b] && !outflowCanOccur(b)) F[b] = X[b] - 1.1;
+            if (limited_[b])OHQRT"
+R"OHQRT( && !outflowCanOccur(b)) F[b] = X[b] - 1.1;
     }
 
     bool outflowCanOccur(int b)
@@ -480,8 +487,7 @@ private:
         if (inflowOwn_[b] < -tol) return true;         // negative own inflow = outflow
         for (int l : linksFrom_[b]) if (flowRaw_[l] > tol) return true;  // leaves b forward
         for (int l : linksTo_[b])   if (flowRaw_[l] < -tol) return true; // leaves b in reverse
-        return false;)OHQRT"
-R"OHQRT(
+        return false;
     }
 
     // Flag block b limited and propagate through rigid neighbours reached by an
@@ -559,6 +565,7 @@ R"OHQRT(
                 std::vector<double> F0(F_);
                 if (!assembleJacobian(F0)) { iters_last_ = iters; return false; }
                 updateJac_ = false;
+                jacDt_ = dtApplied_;
             }
             if (!solveCached(F_, dx)) { iters_last_ = iters; return false; }
             for (int i = 0; i < n_; ++i) dx[i] *= nrCoeff_;
@@ -727,6 +734,7 @@ R"OHQRT(
     double nrCoeff_ = 1.0;
     long stepCounter_ = 0;
     double dtCeiling_ = 0;
+    double jacDt_ = 0;   // dt the stored Jacobian was assembled with (0 = none)
 };
 
 } // namespace ohq
@@ -804,6 +812,11 @@ struct SolverSettings {
     double nr_coeff_reduction = 0.8;    // NR_coeff_reduction_factor, System.h:69
     bool   update_jacobian_every_iteration = false;
     int    jac_refresh_every  = 50;     // System.cpp:1138, counter % 50
+    // System.cpp OneStepSolve: the stored Jacobian holds 1/dt on its diagonal,
+    // so it is reassembled when the applied dt differs from the dt it was
+    // assembled with by more than this factor (either way); <= 1 disables.
+    // solversettings::jacobian_dt_refresh_factor.
+    double jac_dt_refresh_factor = 2.0;
     // ---- oscillation control (System.h:112-140, System.cpp:1531-1610) --------
     // A step can satisfy the Newton tolerance and still be wrong: with a step
     // coarse relative to the fastest reaction the scheme oscillates and the run
@@ -1437,6 +1450,12 @@ private:
     {
         if (s_.jac_refresh_every > 0 && (stepCounter_ + 1) % s_.jac_refresh_every == 0)
             updateJac_ = true;                       // System.cpp:1136-1138 (1-based)
+        // System.cpp OneStepSolve -- the stored Jacobian holds 1/dt on its diagonal:
+        // refresh it when the applied dt is more than jac_dt_refresh_factor away
+        // from the dt it was assembled with
+        if (s_.jac_dt_refresh_factor > 1.0 && jacDt_ > 0
+            && std::fabs(std::log(dt_ / jacDt_)) > std::log(s_.jac_dt_refresh_factor))
+            updateJac_ = true;
         ++stepCounter_;
         const double X_norm = norm(mass_);
         double dx_norm = X_norm * 10 + 1;
@@ -1468,6 +1487,7 @@ private:
                 std::vector<double> F0(F_);
                 if (!assembleJacobian(F0)) return false;
                 updateJac_ = false;
+                jacDt_ = dt_;
             }
             luSolve(n_, Jfac_.data(), piv_.data(), F_.data(), dx.data());
             for (int i = 0; i < n_; ++i) dx[i] *= nrCoeff_;
@@ -1583,6 +1603,7 @@ private:
     bool updateJac_ = true;
     double nrCoeff_ = 1.0;
     long stepCounter_ = 0;
+    double jacDt_ = 0;   // dt the stored Jacobian was assembled with (0 = none)
 };
 
 } // namespace ohq

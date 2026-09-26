@@ -129,6 +129,12 @@ private:
     {
         if (s_.jac_refresh_every > 0 && (stepCounter_ + 1) % s_.jac_refresh_every == 0)
             updateJac_ = true;                       // System.cpp:1136-1138 (1-based)
+        // System.cpp OneStepSolve -- the stored Jacobian holds 1/dt on its diagonal:
+        // refresh it when the applied dt is more than jac_dt_refresh_factor away
+        // from the dt it was assembled with
+        if (s_.jac_dt_refresh_factor > 1.0 && jacDt_ > 0
+            && std::fabs(std::log(dt_ / jacDt_)) > std::log(s_.jac_dt_refresh_factor))
+            updateJac_ = true;
         ++stepCounter_;
         const double X_norm = norm(mass_);
         double dx_norm = X_norm * 10 + 1;
@@ -160,6 +166,7 @@ private:
                 std::vector<double> F0(F_);
                 if (!assembleJacobian(F0)) return false;
                 updateJac_ = false;
+                jacDt_ = dt_;
             }
             luSolve(n_, Jfac_.data(), piv_.data(), F_.data(), dx.data());
             for (int i = 0; i < n_; ++i) dx[i] *= nrCoeff_;
@@ -275,6 +282,7 @@ private:
     bool updateJac_ = true;
     double nrCoeff_ = 1.0;
     long stepCounter_ = 0;
+    double jacDt_ = 0;   // dt the stored Jacobian was assembled with (0 = none)
 };
 
 } // namespace ohq

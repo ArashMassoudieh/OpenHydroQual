@@ -1448,7 +1448,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
           << "          S.interpreter_newton = true; S.optimize_lambda = " << (ss.optimize_lambda ? "true" : "false")
           << "; S.nr_coeff_reduction = " << fmt(ss.NR_coeff_reduction_factor)
           << ";\n          S.update_jacobian_every_iteration = " << (ss.update_jacobian_every_iteration ? "true" : "false")
-          << "; S.jac_refresh_every = 50;\n"
+          << "; S.jac_refresh_every = 50; S.jac_dt_refresh_factor = " << fmt(ss.jacobian_dt_refresh_factor) << ";\n"
           << "          S.oscillation_control = " << (ss.oscillation_control ? "true" : "false")
           << "; S.oscillation_tolerance = " << fmt(ss.oscillation_tolerance)
           << "; S.oscillation_rewind = " << (ss.oscillation_rewind ? "true" : "false") << ";\n"

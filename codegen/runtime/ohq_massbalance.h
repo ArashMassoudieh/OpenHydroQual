@@ -183,6 +183,12 @@ public:
             // refresh lands on the 50th, 100th, ... accepted step (1-based).
             if (s_.jac_refresh_every > 0 && (stepCounter_ + 1) % s_.jac_refresh_every == 0)
                 updateJac_ = true;
+            // System.cpp OneStepSolve -- the stored Jacobian holds 1/dt on its diagonal:
+            // refresh it when the applied dt is more than jac_dt_refresh_factor away
+            // from the dt it was assembled with
+            if (s_.jac_dt_refresh_factor > 1.0 && jacDt_ > 0
+                && std::fabs(std::log(dtApplied_ / jacDt_)) > std::log(s_.jac_dt_refresh_factor))
+                updateJac_ = true;
             for (int b = 0; b < n_; ++b) past_[b] = storage_[b];
             std::vector<char> limitedAtStart = limited_;
             std::vector<double> factorAtStart = factor_;
@@ -382,6 +388,7 @@ private:
                 std::vector<double> F0(F_);
                 if (!assembleJacobian(F0)) { iters_last_ = iters; return false; }
                 updateJac_ = false;
+                jacDt_ = dtApplied_;
             }
             if (!solveCached(F_, dx)) { iters_last_ = iters; return false; }
             for (int i = 0; i < n_; ++i) dx[i] *= nrCoeff_;
@@ -550,6 +557,7 @@ private:
     double nrCoeff_ = 1.0;
     long stepCounter_ = 0;
     double dtCeiling_ = 0;
+    double jacDt_ = 0;   // dt the stored Jacobian was assembled with (0 = none)
 };
 
 } // namespace ohq

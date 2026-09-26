@@ -68,6 +68,11 @@ struct SolverSettings {
     double nr_coeff_reduction = 0.8;    // NR_coeff_reduction_factor, System.h:69
     bool   update_jacobian_every_iteration = false;
     int    jac_refresh_every  = 50;     // System.cpp:1138, counter % 50
+    // System.cpp OneStepSolve: the stored Jacobian holds 1/dt on its diagonal,
+    // so it is reassembled when the applied dt differs from the dt it was
+    // assembled with by more than this factor (either way); <= 1 disables.
+    // solversettings::jacobian_dt_refresh_factor.
+    double jac_dt_refresh_factor = 2.0;
     // ---- oscillation control (System.h:112-140, System.cpp:1531-1610) --------
     // A step can satisfy the Newton tolerance and still be wrong: with a step
     // coarse relative to the fastest reaction the scheme oscillates and the run

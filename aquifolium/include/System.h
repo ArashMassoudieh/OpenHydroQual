@@ -74,6 +74,13 @@ struct solversettings
     /// true Newton convergence, so far fewer iterations -- and because the
     /// iteration count drives the time-step adaptation, a larger dt as well.
     bool update_jacobian_every_iteration = false;
+    /// The stored (chord) Jacobian carries 1/dt on its diagonal, so it goes
+    /// stale when the applied step moves away from the dt it was assembled
+    /// with -- which, with dt clamped to every time series, happens almost
+    /// every step. Reassemble a state variable's Jacobian when the applied dt
+    /// differs from its assembly dt by more than this factor (either way).
+    /// <= 1 disables the check (refresh only every 50 steps / on failure).
+    double jacobian_dt_refresh_factor = 2.0;
     /// Which time series limit the step (GetMinimumNextTimeStepSize):
     /// precipitation series only (default: fewer, larger steps, but other
     /// forcing is sampled only at the step ends), or every loaded series --
@@ -187,6 +194,9 @@ struct solvertemporaryvars
 #endif
     std::vector<double> NR_coefficient;
     std::vector<bool> updatejacobian;
+    /// dt each state variable's stored Jacobian was assembled with (0 = none
+    /// yet); see solversettings::jacobian_dt_refresh_factor.
+    std::vector<double> jacobian_dt;
     int MaxNumberOfIterations()
     {
         return aquiutils::Max(numiterations);
@@ -1026,6 +1036,7 @@ private:
         SolverTempVars.NR_coefficient.resize(n);
         SolverTempVars.numiterations.resize(n);
         SolverTempVars.updatejacobian.resize(n);
+        SolverTempVars.jacobian_dt.assign(n, 0.0);
     }
     
     std::pair<int, int> GetBlockConstituentValue(unsigned int i) const;
