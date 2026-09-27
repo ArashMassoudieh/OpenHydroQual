@@ -221,8 +221,10 @@ public:
     KernelSystem& operator=(const System& o) { release(); System::operator=(o); return *this; }
     ~KernelSystem() { release(); }
 
-    // Shadows System::Solve. Same signature so the GA/MCMC templates bind to it.
-    bool Solve(bool ApplyParams = false, bool uniformize_outputs = true)
+    // Overrides System::Solve (virtual since the kernel path was introduced), so
+    // helpers holding a System& reach the kernel too rather than silently falling
+    // back to the interpreter.
+    bool Solve(bool ApplyParams = false, bool uniformize_outputs = true) override
     {
         (void)uniformize_outputs;
         KernelABI& k = TheKernel();

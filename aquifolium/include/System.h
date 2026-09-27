@@ -591,7 +591,15 @@ public:
     // =====================================================================
     // Solver
     // =====================================================================
-    bool Solve(bool ApplyParams = false, bool uniformize_outputs = true);
+    /// Virtual so an alternative forward model (KernelSystem, which evaluates a
+    /// codegen-generated library) is reached even through a System& . It was
+    /// non-virtual and merely shadowed, so a GA templated on the concrete type
+    /// optimised with the kernel while any helper taking System& -- notably
+    /// WriteForwardRunOutputs -- silently re-ran the interpreter and reported
+    /// ITS objective. The two disagree wherever the control law switches often,
+    /// so the value written to objective_function_values.txt did not belong to
+    /// the model that had just been optimised.
+    virtual bool Solve(bool ApplyParams = false, bool uniformize_outputs = true);
     bool Update(const std::string& variable = "");
     bool Renew(const std::string& variable);
     bool OneStepSolve(unsigned int i, bool transport = false);
