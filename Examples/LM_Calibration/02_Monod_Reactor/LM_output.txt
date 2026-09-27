@@ -1,0 +1,47 @@
+# OpenHydroQual -- Levenberg-Marquardt calibration log
+# started            : 2026-09-27 19:12:19
+# max iterations     : 40
+# initial lambda     : 0.01 (x3 rejected, /3 accepted)
+# finite differences : forward, step = 0.001 of each parameter's range
+# tolerances         : objective 1e-08, step 1e-08, gradient 1e-08
+#
+# optimised parameters (3):
+#   k_A                      searched in log10 space, within [0.02, 20]
+#   K_s                      searched in log10 space, within [0.02, 20]
+#   k_B                      searched in log10 space, within [0.02, 20]
+#
+# error standard deviations profiled out analytically (2):
+#   sigma_A_conc
+#   sigma_B_conc
+#
+# One row per iteration. 'status' is accept when the step reduced the
+# negative log-likelihood and reject when lambda had to be raised and the
+# step retried. Parameter columns are in MODEL space, not search space.
+#
+iter , neg_log_lik   , lambda     , status , k_A, K_s, k_B, sigma_A_conc, sigma_B_conc
+0    ,  9.0512200e+00,  1.0000e-02, start  , 0.35, 2.5, 1.6, 1.1174815, 0.36863905
+1    , -1.7387910e+02,  3.9020e-03, accept , 2.0173189, 0.31165432, 0.40491742, 0.42811746, 0.097770626
+2    , -1.0943083e+02,  1.1706e-02, reject , 3.665283, 20, 0.50617521, 0.42811746, 0.097770626
+2    , -7.3971315e+01,  3.5118e-02, reject , 3.0487093, 20, 0.50530447, 0.42811746, 0.097770626
+2    , -3.0333809e+01,  1.0535e-01, reject , 2.278006, 18.651959, 0.50277955, 0.42811746, 0.097770626
+2    , -2.3047356e+02,  1.5265e-01, accept , 1.7451476, 5.3892648, 0.49591124, 0.5562437, 0.037091378
+3    , -3.8667362e+02,  5.0884e-02, accept , 2.580148, 3.3162522, 0.50779009, 0.082297822, 0.035578646
+4    , -3.9239588e+02,  1.6961e-02, accept , 2.4712456, 2.9749824, 0.50958711, 0.076678611, 0.035549967
+5    , -3.9938506e+02,  5.6537e-03, accept , 2.0453365, 2.3102225, 0.50967836, 0.070264029, 0.0355499
+6    , -4.1198908e+02,  5.4101e-03, accept , 1.3519449, 1.2617025, 0.50968016, 0.060021912, 0.0355499
+7    , -4.3354023e+02,  3.5108e-03, accept , 1.0951866, 0.80003419, 0.50967997, 0.045847483, 0.0355499
+8    , -4.4302149e+02,  1.1703e-03, accept , 1.0036261, 0.62533731, 0.50967978, 0.040723467, 0.0355499
+9    , -4.4393648e+02,  3.9009e-04, accept , 0.9822188, 0.58161796, 0.50967959, 0.040260356, 0.0355499
+10   , -4.4394613e+02,  1.3003e-04, accept , 0.98038407, 0.57764089, 0.5096794, 0.040255498, 0.0355499
+11   , -4.4394616e+02,  4.3344e-05, accept , 0.98030804, 0.57749153, 0.5096802, 0.040255484, 0.0355499
+12   , -4.4394616e+02,  1.4448e-05, accept , 0.9803065, 0.57748796, 0.50968001, 0.040255483, 0.0355499
+
+# stopped after 12 iteration(s) and 68 model solves: the objective improved by less than tol_objective
+# final negative log-likelihood: -4.43946158e+02
+#
+# final estimates
+k_A                     , 0.9803065013
+K_s                     , 0.5774879556
+k_B                     , 0.5096800131
+sigma_A_conc            , 0.04025548346   # profiled analytically
+sigma_B_conc            , 0.03554990046   # profiled analytically

@@ -1,0 +1,275 @@
+{
+    "Blocks": {
+        "Reactor (1)": {
+            "A:concentration": "0.034755",
+            "A:constant_inflow_concentration": "0",
+            "A:external_mass_flow_timeseries": "",
+            "A:external_source": "",
+            "A:time_variable_inflow_concentration": "",
+            "B:concentration": "0.326561",
+            "B:constant_inflow_concentration": "0",
+            "B:external_mass_flow_timeseries": "",
+            "B:external_source": "",
+            "B:time_variable_inflow_concentration": "",
+            "Storage": "10.1126",
+            "_height": "200",
+            "_width": "200",
+            "bottom_elevation": "0",
+            "constant_inflow": "0",
+            "name": "Reactor (1)",
+            "time_variable_inflow": "",
+            "type": "Reactor",
+            "x": "949",
+            "y": "844"
+        }
+    },
+    "Constituents": {
+        "A": {
+            "concentration": "0",
+            "constant_inflow_concentration": "0",
+            "diffusion_coefficient": "0",
+            "dispersivity": "0",
+            "external_mass_flow_timeseries": "",
+            "external_source": "",
+            "name": "A",
+            "stoichiometric_constant": "0",
+            "time_variable_inflow_concentration": "",
+            "type": "Constituent"
+        },
+        "B": {
+            "concentration": "0",
+            "constant_inflow_concentration": "0",
+            "diffusion_coefficient": "0",
+            "dispersivity": "0",
+            "external_mass_flow_timeseries": "",
+            "external_source": "",
+            "name": "B",
+            "stoichiometric_constant": "0",
+            "time_variable_inflow_concentration": "",
+            "type": "Constituent"
+        }
+    },
+    "Links": {
+    },
+    "Objective Functions": {
+    },
+    "Observations": {
+        "A_conc": {
+            "autocorrelation_time-span": "1",
+            "comparison_method": "Least Squared",
+            "emc_events": "",
+            "emc_weighting_expression": "flow",
+            "emc_weighting_object": "",
+            "error_standard_deviation": "0.0402555",
+            "error_structure": "normal",
+            "expression": "A:concentration",
+            "kernel_Delta0": "1",
+            "kernel_alpha": "1",
+            "kernel_tau": "1",
+            "name": "A_conc",
+            "object": "Reactor (1)",
+            "observed_data": "obs_A_conc.csv",
+            "type": "Observation"
+        },
+        "B_conc": {
+            "autocorrelation_time-span": "1",
+            "comparison_method": "Least Squared",
+            "emc_events": "",
+            "emc_weighting_expression": "flow",
+            "emc_weighting_object": "",
+            "error_standard_deviation": "0.0355499",
+            "error_structure": "normal",
+            "expression": "B:concentration",
+            "kernel_Delta0": "1",
+            "kernel_alpha": "1",
+            "kernel_tau": "1",
+            "name": "B_conc",
+            "object": "Reactor (1)",
+            "observed_data": "obs_B_conc.csv",
+            "type": "Observation"
+        }
+    },
+    "Parameters": {
+        "K_s": {
+            "high": "20",
+            "low": "0.02",
+            "name": "K_s",
+            "prior_distribution": "log-normal",
+            "type": "Parameter",
+            "value": "0.577488"
+        },
+        "k_A": {
+            "high": "20",
+            "low": "0.02",
+            "name": "k_A",
+            "prior_distribution": "log-normal",
+            "type": "Parameter",
+            "value": "0.980307"
+        },
+        "k_B": {
+            "high": "20",
+            "low": "0.02",
+            "name": "k_B",
+            "prior_distribution": "log-normal",
+            "type": "Parameter",
+            "value": "0.50968"
+        },
+        "sigma_A_conc": {
+            "high": "2",
+            "low": "0.0001",
+            "name": "sigma_A_conc",
+            "prior_distribution": "log-normal",
+            "type": "Parameter",
+            "value": "0.0402555"
+        },
+        "sigma_B_conc": {
+            "high": "2",
+            "low": "0.0001",
+            "name": "sigma_B_conc",
+            "prior_distribution": "log-normal",
+            "type": "Parameter",
+            "value": "0.0355499"
+        }
+    },
+    "Reaction Parameters": {
+        "K_s": {
+            "Arrhenius_factor": "1",
+            "base_value": "0.577488",
+            "name": "K_s",
+            "reference_temperature": "0",
+            "temperature": "",
+            "type": "ReactionParameter"
+        },
+        "k_A": {
+            "Arrhenius_factor": "1.05",
+            "base_value": "0.980307",
+            "name": "k_A",
+            "reference_temperature": "20",
+            "temperature": "Temperature_for_Rxn_example.txt",
+            "type": "ReactionParameter"
+        },
+        "k_B": {
+            "Arrhenius_factor": "1",
+            "base_value": "0.50968",
+            "name": "k_B",
+            "reference_temperature": "0",
+            "temperature": "",
+            "type": "ReactionParameter"
+        }
+    },
+    "Reactions": {
+        "A_Decay": {
+            "A:stoichiometric_constant": "-1",
+            "B:stoichiometric_constant": "0",
+            "name": "A_Decay",
+            "rate_expression": "(k_A*A/(K_s+A))",
+            "type": "Reaction"
+        },
+        "B_Decay": {
+            "A:stoichiometric_constant": "0",
+            "B:stoichiometric_constant": "-1",
+            "name": "B_Decay",
+            "rate_expression": "(k_B*B^2)",
+            "type": "Reaction"
+        }
+    },
+    "Set As Parameters": [
+        {
+            "Object": "A_conc",
+            "Parameter": "sigma_A_conc",
+            "Quantity": "error_standard_deviation"
+        },
+        {
+            "Object": "B_conc",
+            "Parameter": "sigma_B_conc",
+            "Quantity": "error_standard_deviation"
+        },
+        {
+            "Object": "k_A",
+            "Parameter": "k_A",
+            "Quantity": "base_value"
+        },
+        {
+            "Object": "k_B",
+            "Parameter": "k_B",
+            "Quantity": "base_value"
+        },
+        {
+            "Object": "K_s",
+            "Parameter": "K_s",
+            "Quantity": "base_value"
+        }
+    ],
+    "Settings": {
+        "acceptance_rate": "0.15",
+        "add_noise_to_realizations": "No",
+        "alloutputfile": "output.txt",
+        "c_n_weight": "1",
+        "central_differences": "No",
+        "continue_based_on_file_name": "",
+        "continue_based_on_filename": "",
+        "covariance_min_samples": "500",
+        "covariance_proposal": "Yes",
+        "covariance_scale": "2.38",
+        "covariance_update_interval": "1000",
+        "covariancefile": "LM_covariance.txt",
+        "fd_step": "0.001",
+        "initial_purturbation": "No",
+        "initial_time_step": "0.01",
+        "initual_purturbation_factor": "0.05",
+        "jacobian_assembly": "Dependency",
+        "jacobian_dt_refresh_factor": "2",
+        "jacobian_method": "Inverse Jacobian",
+        "lambda0": "0.01",
+        "lm_numthreads": "4",
+        "lm_outputfile": "LM_output.txt",
+        "make_timeseries_uniform": "Yes",
+        "max_iterations": "40",
+        "max_rejections": "10",
+        "max_timestep_decrease_factor": "100000",
+        "max_timestep_increase_factor": "50",
+        "maximum_number_of_matrix_inverstions": "200000",
+        "maximum_time_allowed": "86400",
+        "maxpop": "40",
+        "minimum_timestep": "1e-08",
+        "n_threads": "8",
+        "ngen": "40",
+        "nr_block_tolerance": "0.001",
+        "nr_niteration_lower": "20",
+        "nr_niteration_upper": "40",
+        "nr_timestep_reduction_factor": "0.75",
+        "nr_timestep_reduction_factor_fail": "0.2",
+        "nr_tolerance": "1e-09",
+        "number_of_burnout_samples": "0",
+        "number_of_chains": "8",
+        "number_of_post_estimate_realizations": "0",
+        "number_of_samples": "1000",
+        "number_of_threads": "1",
+        "numthreads": "8",
+        "observed_outputfile": "observedoutput.txt",
+        "outputfile": "GA_output.txt",
+        "pcross": "1",
+        "perform_global_sensitivity": "No",
+        "pmute": "0.02",
+        "profile_sigma": "Yes",
+        "purturbation_change_scale": "0.75",
+        "record_interval": "1",
+        "samples_filename": "mcmc.txt",
+        "shakescale": "0.05",
+        "shakescalered": "0.75",
+        "simulation_end_time": "5",
+        "simulation_start_time": "5.07573",
+        "timestep_clamp_series": "Precipitation only",
+        "tol_objective": "1e-08",
+        "update_jacobian_every_iteration": "No",
+        "verify_jacobian": "",
+        "write_interval": "100",
+        "write_solution_details": "No"
+    },
+    "Sources": {
+    },
+    "Templates": [
+        "../../../resources/main_components.json",
+        "../../../resources/mass_transfer.json"
+    ]
+}

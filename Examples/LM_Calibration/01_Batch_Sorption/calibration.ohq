@@ -1,0 +1,60 @@
+loadtemplate; filename = ../../../resources/main_components.json
+addtemplate; filename = ../../../resources/main_components.json
+addtemplate; filename = ../../../resources/groundwater.json
+addtemplate; filename = ../../../resources/mass_transfer.json
+setvalue; object=system, quantity=acceptance_rate, value=0.15
+setvalue; object=system, quantity=add_noise_to_realizations, value=No
+setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=initial_purturbation, value=No
+setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
+setvalue; object=system, quantity=number_of_burnout_samples, value=0
+setvalue; object=system, quantity=number_of_chains, value=8
+setvalue; object=system, quantity=number_of_post_estimate_realizations, value=100
+setvalue; object=system, quantity=number_of_samples, value=1000
+setvalue; object=system, quantity=number_of_threads, value=1
+setvalue; object=system, quantity=perform_global_sensitivity, value=No
+setvalue; object=system, quantity=purturbation_change_scale, value=0.75
+setvalue; object=system, quantity=record_interval, value=1
+setvalue; object=system, quantity=samples_filename, value=mcmc.txt
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+setvalue; object=system, quantity=simulation_end_time, value=20
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=maxpop, value=40
+setvalue; object=system, quantity=ngen, value=40
+setvalue; object=system, quantity=numthreads, value=8
+setvalue; object=system, quantity=outputfile, value=GA_output.txt
+setvalue; object=system, quantity=pcross, value=1
+setvalue; object=system, quantity=pmute, value=0.02
+setvalue; object=system, quantity=shakescale, value=0.05
+setvalue; object=system, quantity=shakescalered, value=0.75
+setvalue; object=system, quantity=c_n_weight, value=1
+setvalue; object=system, quantity=initial_time_step, value=0.01
+setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
+setvalue; object=system, quantity=maximum_time_allowed, value=86400
+setvalue; object=system, quantity=minimum_timestep, value=1e-09
+setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
+setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
+setvalue; object=system, quantity=nr_tolerance, value=1e-10
+setvalue; object=system, quantity=write_intermittently, value=No
+setvalue; object=system, quantity=write_interval, value=100
+setvalue; object=system, quantity=write_solution_details, value=Yes
+create constituent;type=Constituent,concentration=0[g/m~^3],constant_inflow_concentration=0[g/m~^3],diffusion_coefficient=0[m~^2/s],dispersivity=0[m],external_mass_flow_timeseries=,external_source=,name=Cu_aq,stoichiometric_constant=0,time_variable_inflow_concentration=
+create constituent;type=Sorbed_Constituent,concentration=0[g/m~^3],external_mass_flow_timeseries=,external_source=,name=Cu_s,stoichiometric_constant=0
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=1.5,name=k_f,reference_temperature=0,temperature=
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=120,name=KD,reference_temperature=0,temperature=
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=0.4,name=porosity,reference_temperature=0,temperature=
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=1400,name=rho,reference_temperature=0,temperature=
+create reaction;type=Reaction,Cu_aq:stoichiometric_constant=-1,Cu_s:stoichiometric_constant=(porosity/rho),name=Sorption,rate_expression=(k_f*Cu_aq)
+create reaction;type=Reaction,Cu_aq:stoichiometric_constant=1,Cu_s:stoichiometric_constant=(0-porosity/rho),name=Desorption,rate_expression=(k_f/KD*Cu_s)
+create block;type=Groundwater cell,Cu_aq:concentration=1[g/m~^3],Cu_aq:constant_inflow_concentration=0[g/m~^3],Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0[g/m~^3],Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=1[m~^2],bottom_elevation=0[m],depth=1[m],hydraulic_conductivity=1[m/day],inflow=,moisture_content=0.4,name=Groundwater cell (1),porosity=0.4,specific_storage=0.01[1/m],x=900,y=900
+create observation;type=Observation,name=Cu_aqueous,object=Groundwater cell (1),expression=Cu_aq:concentration,error_structure=log-normal,error_standard_deviation=0.05,observed_data=obs_Cu_aqueous.csv
+create observation;type=Observation,name=Cu_sorbed,object=Groundwater cell (1),expression=Cu_s:concentration,error_structure=log-normal,error_standard_deviation=0.05,observed_data=obs_Cu_sorbed.csv
+create parameter;type=Parameter,name=k_f,low=0.1,high=50,value=1.5,prior_distribution=log-normal
+setasparameter; object=k_f, quantity=base_value, parametername=k_f
+create parameter;type=Parameter,name=KD,low=10,high=5000,value=120,prior_distribution=log-normal
+setasparameter; object=KD, quantity=base_value, parametername=KD
+setvalue; object=LM, quantity=max_iterations, value=40
+setvalue; object=LM, quantity=lm_numthreads, value=4

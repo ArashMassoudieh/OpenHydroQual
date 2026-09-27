@@ -1,0 +1,3 @@
+class, object name, function, description, error code
+Object,fixed_head (1),GetVal,property 'inflow' does not exist in 'fixed_head (1)',1002
+Object,fixed_head (2),GetVal,property 'inflow' does not exist in 'fixed_head (2)',1002

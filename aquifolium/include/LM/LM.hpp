@@ -267,6 +267,26 @@ double CLM<T>::Evaluate(const vector<double> &x_t, T &model, vector<double> &r)
 }
 
 // ---------------------------------------------------------------------------
+// Re-solving a System object does not reproduce its previous solution: state
+// left behind by the first solve leaks into the second, and the residuals drift
+// by tens of percent. Every evaluation therefore starts from a fresh copy of
+// the pristine *Model, which is never itself solved. ComputeJacobian() already
+// works this way; this is the same guarantee for the points optimize() compares
+// directly against each other. Without it the base residual vector and the
+// Jacobian columns describe systems in different states, and the resulting step
+// is meaningless.
+// ---------------------------------------------------------------------------
+template<class T>
+double CLM<T>::EvaluateFresh(const vector<double> &x_t, T &model, vector<double> &r)
+{
+    model = *Model;
+    model.SetSilent(true);
+    model.SetRecordResults(false);
+    model.SetNumThreads(1);
+    return Evaluate(x_t, model, r);
+}
+
+// ---------------------------------------------------------------------------
 // sigma_hat minimises A/(2 s^2) + c*log(s) over the observations a parameter
 // drives, where A = sum_k sigma_k^2 * ||r_k||^2 (the residual sum of squares
 // with the current sigma divided back out) and c = sum_k log_sigma_coeff_k.
@@ -576,13 +596,9 @@ int CLM<T>::optimize()
     FILE *FileOut = fopen(RunFileName.c_str(), "w");
     WriteHeader(FileOut);
 
-    T current = *Model;
-    current.SetSilent(true);
-    current.SetRecordResults(false);
-    current.SetNumThreads(1);
-
+    T current;
     vector<double> r;
-    double f_now = Evaluate(x, current, r);
+    double f_now = EvaluateFresh(x, current, r);
 
     // With sigma profiled the first evaluation used whatever sigma the model
     // came with, which is usually not its maximiser; set it and re-score so the
@@ -592,7 +608,7 @@ int CLM<T>::optimize()
         vector<double> r_tmp; vector<ResidualBlock> blocks; string dummy;
         current.ResidualVector(r_tmp, blocks, &dummy);
         if (ProfileSigmas(current, blocks))
-            f_now = Evaluate(x, current, r);
+            f_now = EvaluateFresh(x, current, r);
     }
 
     Log("Starting from a negative log-likelihood of " + aquiutils::numbertostring(f_now) +
@@ -709,29 +725,20 @@ int CLM<T>::optimize()
                 break;
             }
 
-            T trial = *Model;
-            trial.SetSilent(true);
-            trial.SetRecordResults(false);
-            trial.SetNumThreads(1);
-            f_try = Evaluate(x_try, trial, r_try);
+            T trial;
+            f_try = EvaluateFresh(x_try, trial, r_try);
 
-            if (!sigma_params.empty() && !trial.GetSolutionFailed())
-            {
-                // Profiling sigma at the trial point is what makes the accept
-                // test compare like with like: both points are scored at their
-                // own best sigma, which is the profile likelihood LM is
-                // actually descending.
-                vector<double> r_tmp; vector<ResidualBlock> blocks; string dummy;
-                trial.ResidualVector(r_tmp, blocks, &dummy);
-                vector<double> x_saved = x;
-                x = x_try;
-                if (ProfileSigmas(trial, blocks))
-                {
-                    x_try = x;
-                    f_try = Evaluate(x_try, trial, r_try);
-                }
-                x = x_saved;
-            }
+            // NOTE: sigma is deliberately NOT re-profiled here. Setting each
+            // sigma to its maximiser makes sigma^2 == MSE, and therefore
+            // ||r||^2 == n exactly, at every point. The Gauss-Newton objective
+            // 0.5*||r||^2 would then be the constant n/2: J'r vanishes, the
+            // predicted reduction vanishes, and the search stalls after a few
+            // percent of movement. sigma is held fixed across the whole
+            // iteration -- the same value the Jacobian was built with, so the
+            // step, the predicted reduction and the accept test all describe
+            // one objective -- and is updated once per accepted iteration
+            // below. That is the usual iteratively-reweighted scheme and it
+            // converges to the same joint optimum.
 
             const double actual = f_now - f_try;
             const double rho = (predicted > 0) ? actual/predicted : (actual > 0 ? 1.0 : -1.0);
@@ -743,9 +750,27 @@ int CLM<T>::optimize()
                 r = r_try;
                 f_now = f_try;
                 current = trial;
-                // A step the quadratic model predicted well earns more trust.
-                lambda = max(lambda/((rho > 0.75) ? LM_params.lambda_down : 1.0),
-                             1e-12);
+
+                // Re-profile the error standard deviations at the point just
+                // accepted, and re-score there, so the next iteration's
+                // Jacobian and accept test share the updated sigma.
+                if (!sigma_params.empty())
+                {
+                    vector<double> r_tmp; vector<ResidualBlock> blocks; string dummy;
+                    current.ResidualVector(r_tmp, blocks, &dummy);
+                    if (ProfileSigmas(current, blocks))
+                        f_now = EvaluateFresh(x, current, r);
+                }
+                // Nielsen's damping update: shrink lambda in proportion to how
+                // well the quadratic model predicted this step, instead of only
+                // on very good ones. Leaving lambda untouched after a merely
+                // adequate step keeps the search taking short Gauss-Newton steps
+                // down a curving valley long after it could be taking long ones,
+                // which on a Monod pair costs tens of iterations. lambda_down
+                // still sets the floor on how fast it may shrink.
+                const double shrink = max(1.0/LM_params.lambda_down,
+                                          1.0 - pow(2.0*rho - 1.0, 3));
+                lambda = max(lambda*shrink, 1e-12);
             }
             else
             {

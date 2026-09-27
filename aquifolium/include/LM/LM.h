@@ -179,6 +179,10 @@ private:
     // Applies `x_t` to `model` and solves. Fills `r` with the residual vector
     // and returns the negative log-likelihood, +1e18 when the solve failed.
     double Evaluate(const vector<double> &x_t, T &model, vector<double> &r);
+    // Evaluate on a FRESH copy of the model. Solving a System object a second
+    // time does not reproduce its first solution, so every evaluation LM
+    // compares against another must start from an unsolved copy.
+    double EvaluateFresh(const vector<double> &x_t, T &model, vector<double> &r);
     // Perturbs one active parameter at a time, in parallel, and fills J
     // (n_residual by n_active) column by column. Returns false if the residual
     // vector changed length under perturbation, which means the comparison

@@ -1,0 +1,2 @@
+class, object name, function, description, error code
+Object,Groundwater cell (1),GetVal,property 'Cu_s:inflow_loading' does not exist in 'Groundwater cell (1)',1017
