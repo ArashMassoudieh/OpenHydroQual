@@ -617,10 +617,38 @@ int CLM<T>::optimize()
     WriteIteration(FileOut, 0, f_now, LM_params.lambda0, x, "start");
 
 #ifdef Q_GUI_SUPPORT
+    // Progress-chart scaling.
+    //
+    // The plotted quantity is a NEGATIVE log-likelihood: it starts high, falls
+    // as the fit improves and, once sigma is small or profiled, routinely ends
+    // below zero. Anchoring the axis at zero, or fixing it once from the
+    // starting value, therefore produces an inverted or empty range and the
+    // trace disappears. The axis has to follow the data in both directions, so
+    // the extremes are tracked here and the range reset on every point.
+    //
+    // SetPrimaryChartYRange() switches the widget's own auto-scaling off, which
+    // is why this cannot simply be left to the chart: that auto-scale also
+    // pins nothing and gives a zero-height axis for a flat or single-point
+    // series. The padding below is what keeps the first point visible before
+    // there is any spread to scale to.
+    double chart_lo = f_now, chart_hi = f_now;
+    auto RescaleChart = [&](double y, int last_iter)
+    {
+        if (!rtw) return;
+        chart_lo = min(chart_lo, y);
+        chart_hi = max(chart_hi, y);
+        double pad = 0.05*(chart_hi - chart_lo);
+        if (pad <= 0) pad = max(1e-6, 0.05*fabs(chart_hi));
+        rtw->SetPrimaryChartYRange(chart_lo - pad, chart_hi + pad);
+        // LM usually converges well inside max_iterations, so a fixed x range
+        // would squeeze the whole run into the left edge. Grow it instead.
+        rtw->SetPrimaryChartXRange(0, max(4, last_iter + 1));
+    };
+
     if (rtw)
     {
-        rtw->SetPrimaryChartYRange(0, f_now*1.1);
         rtw->AddPrimaryChartPoint(0, f_now);
+        RescaleChart(f_now, 0);
         rtw->ReplotPrimaryChart();
     }
 #endif
@@ -827,6 +855,7 @@ int CLM<T>::optimize()
         {
             rtw->SetProgress(double(iter)/double(LM_params.max_iterations));
             rtw->AddPrimaryChartPoint(double(iter), f_now);
+            RescaleChart(f_now, iter);
             rtw->ReplotPrimaryChart();
             QCoreApplication::processEvents();
         }
