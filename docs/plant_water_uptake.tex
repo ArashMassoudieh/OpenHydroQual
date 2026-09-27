@@ -522,13 +522,24 @@ Neither model evaporates water from the soil surface. To add it, attach an
 a basal coefficient, the transpiration and evaporation terms are additive and
 no double counting arises.
 
-One caveat applies to the time-series variant. The source value is formed as
-\code{coefficient} $\times$ \code{timeseries} $\times$ \code{rate}, and
-\code{Evapotranspiration\_Time\_Series (Soil)} defines its \code{rate} as
-\code{corr\_fact*timeseries}, so the supplied series enters the product twice
-and the resulting flux is proportional to its square. Neither of the examples in
-Section~5.5 uses that source. If you need a time-series soil evaporation, the
-correct \code{rate} is \code{corr\_fact} alone.
+For \code{Evapotranspiration\_Time\_Series (Soil)}, the supplied series
+is stored as \code{ET\_timeseries} and the source computes
+\code{rate = 0-corr\_fact*ET\_timeseries} in units of length per day.
+Because the source has no quantity named \code{timeseries}, the generic
+\code{coefficient} $\times$ \code{timeseries} $\times$ \code{rate}
+calculation uses one as its automatic time-series factor. The resulting
+flux is negative (water removed), with the soil-moisture factor in
+\code{coefficient}. The surface-water and both soil template versions
+use the same convention.
+
+\textbf{Existing saved models:} Earlier versions of these
+\code{Evapotranspiration\_Time\_Series} sources stored the CSV under
+\code{timeseries}. After updating the templates, open each affected source
+and reselect its CSV in the \emph{Evaporation time series} field, which now
+maps to \code{ET\_timeseries}; then save the model and check its ET output.
+An old \code{timeseries=} entry is not recognized by the updated template,
+and ET may remain zero until the forcing file is reselected. This migration
+applies to both soil versions and the surface-water version.
 
 % ==============================================================================
 \section{Summary of the components}
