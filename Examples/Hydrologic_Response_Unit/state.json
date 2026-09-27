@@ -175,7 +175,7 @@
         "ET": {
             "corr_fact": "1",
             "name": "ET",
-            "timeseries": "",
+            "ET_timeseries": "",
             "type": "Evapotranspiration_Time_Series (Soil)"
         },
         "Rain": {

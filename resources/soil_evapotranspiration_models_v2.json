@@ -113,7 +113,7 @@
     	"delegate": "ValueBox",
 		"estimate": "true"
     },
-    "timeseries":{
+    "ET_timeseries":{
     	"type": "timeseries",
 	"includeinoutput": "true",
 	"description": "Evaporation time series",
@@ -123,9 +123,9 @@
     "rate": {
       "type": "expression",
       "includeinoutput": "true",
-      "description": "Evapotranspiration multiplier (negative: water removed)",
+      "description": "Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "0-corr_fact"
+      "expression": "0-corr_fact*ET_timeseries"
     }
   },
   "Evapotranspiration_Energy_Balance (Soil)": {

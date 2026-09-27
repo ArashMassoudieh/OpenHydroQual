@@ -45,7 +45,7 @@ setvalue; object=system, quantity=nr_tolerance, value=0.001
 setvalue; object=system, quantity=write_interval, value=100
 setvalue; object=system, quantity=write_solution_details, value=No
 create source;type=Precipitation,name=Rain,timeseries=precipitation.csv
-create source;type=Evapotranspiration_Time_Series (Soil),corr_fact=1,name=ET,timeseries=evapotranspiration.csv
+create source;type=Evapotranspiration_Time_Series (Soil),corr_fact=1,name=ET,ET_timeseries=evapotranspiration.csv
 create composite;type=Hydrologic_Response_Unit,Evapotranspiration=ET,K_sat=0.5,Precipitation=Rain,_height=260,_width=260,alpha_vG=1.5,area=20000,catchment_slope=0.05,catchment_width=200,depression_storage=0.002,depth_to_groundwater=7,groundwater_K=5,groundwater_porosity=0.25,groundwater_specific_storage=0.01,groundwater_thickness=6,initial_groundwater_moisture_content=0.25,initial_moisture_content=0.22,manning_coefficient=0.1,n_vG=1.4,name=Upslope,recharge_K=0.5,runoff_coefficient=1,soil_specific_storage=0.01,surface_elevation=100,theta_res=0.06,theta_sat=0.42,x=200,y=0
 create composite;type=Hydrologic_Response_Unit,Evapotranspiration=ET,K_sat=0.5,Precipitation=Rain,_height=260,_width=260,alpha_vG=1.5,area=20000,catchment_slope=0.02,catchment_width=200,depression_storage=0.003,depth_to_groundwater=4,groundwater_K=5,groundwater_porosity=0.25,groundwater_specific_storage=0.01,groundwater_thickness=6,initial_groundwater_moisture_content=0.25,initial_moisture_content=0.24,manning_coefficient=0.12,n_vG=1.4,name=Downslope,recharge_K=0.5,runoff_coefficient=1,soil_specific_storage=0.01,surface_elevation=94,theta_res=0.06,theta_sat=0.42,x=900,y=0
 create block;type=fixed_head,Storage=100000,_height=200,_width=200,head=88,name=Stream,x=1600,y=1150

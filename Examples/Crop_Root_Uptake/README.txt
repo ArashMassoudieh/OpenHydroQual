@@ -145,9 +145,10 @@ compensation is 0. soil_stress is the lag-free quantity.
 These components model transpiration only. Kcb is the FAO-56 basal crop
 coefficient and excludes soil evaporation. If you need evaporation from the
 surface, add an Evapotranspiration_*(Soil) source to the top layer. The
-Evapotranspiration_Time_Series (Soil) source defines its rate as 0-corr_fact;
-the source value is coefficient*timeseries*rate, so the series is applied
-once and the result is negative (water removed). Neither example here uses it.
+Evapotranspiration_Time_Series (Soil) source reads the ET series into
+ET_timeseries and defines its rate as 0-corr_fact*ET_timeseries (m/day,
+negative = water removed), like the other ET models. Neither example here
+uses it.
 
 Both models are also documented, with the full set of equations, in
 docs/plant_water_uptake.tex.
