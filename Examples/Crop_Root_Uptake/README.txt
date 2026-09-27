@@ -148,7 +148,10 @@ surface, add an Evapotranspiration_*(Soil) source to the top layer. The
 Evapotranspiration_Time_Series (Soil) source reads the ET series into
 ET_timeseries and defines its rate as 0-corr_fact*ET_timeseries (m/day,
 negative = water removed), like the other ET models. Neither example here
-uses it.
+uses it. If opening an older saved model using a time-series ET source
+(soil v1/v2 or surface water), reselect its CSV in the source's
+"Evaporation time series" field and save the model: the old timeseries=
+property is no longer recognized, so ET may otherwise be zero.
 
 Both models are also documented, with the full set of equations, in
 docs/plant_water_uptake.tex.
