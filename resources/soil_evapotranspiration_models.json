@@ -137,7 +137,7 @@
       "includeinoutput": "true",
       "description": "Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "corr_fact*timeseries",
+      "expression": "0-corr_fact",
       "unit": "m/day;mm/day;inch/day"
     },
     "helptext": "Evapotranspiration time-series for soil"

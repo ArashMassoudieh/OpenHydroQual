@@ -125,7 +125,7 @@
       "includeinoutput": "true",
       "description": "Evapotranspiration rate",
       "ask_user": "false",
-      "expression": "corr_fact*timeseries"
+      "expression": "0-corr_fact"
     }
   },
   "Evapotranspiration_Energy_Balance (Soil)": {
