@@ -24,6 +24,7 @@
     <Keyword>QtVS_v302</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>OpenHydroQual</ProjectName>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -147,6 +148,7 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <WarningLevel>Level3</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ProcessorNumber>8</ProcessorNumber>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -201,6 +203,7 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <WarningLevel>Level3</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ProcessorNumber>8</ProcessorNumber>
       <OpenMPSupport>true</OpenMPSupport>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -265,6 +268,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <WarningLevel>Level3</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ProcessorNumber>8</ProcessorNumber>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
@@ -318,6 +322,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <WarningLevel>Level3</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ProcessorNumber>8</ProcessorNumber>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <OpenMPSupport>false</OpenMPSupport>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -376,6 +381,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClCompile Include="aquifolium\src\Expression.cpp" />
     <ClCompile Include="aquifolium\src\GA\Individual.cpp" />
     <ClCompile Include="aquifolium\src\Link.cpp" />
+    <ClCompile Include="aquifolium\src\LM\LM_impl.cpp" />
     <ClCompile Include="aquifolium\src\Matrix.cpp" />
     <ClCompile Include="aquifolium\src\Matrix_arma.cpp" />
     <ClCompile Include="aquifolium\src\MetaModel.cpp" />
@@ -452,6 +458,8 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClInclude Include="aquifolium\include\GA\GA.hpp" />
     <ClInclude Include="aquifolium\include\GA\Individual.h" />
     <ClInclude Include="aquifolium\include\Link.h" />
+    <ClInclude Include="aquifolium\include\LM\LM.h" />
+    <ClInclude Include="aquifolium\include\LM\LM.hpp" />
     <ClInclude Include="aquifolium\include\Matrix.h" />
     <ClInclude Include="aquifolium\include\Matrix_arma.h" />
     <ClInclude Include="aquifolium\include\MCMC\MCMC.h" />

@@ -27,10 +27,10 @@
     <ROW Property="ARPURLUPDATEINFO" Value="www.OpenHydroQual.com"/>
     <ROW Property="AppLogoIcon" Value="applogoicon" MultiBuildValue="DefaultBuild:Aquifolium.jpg_1" Type="1" MsiKey="AppLogoIcon"/>
     <ROW Property="Manufacturer" Value="EnviroInformatics, LLC"/>
-    <ROW Property="ProductCode" Value="1033:{0AE07E1C-D7A8-4B1D-A025-6605F26CC212} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{0A8583FC-8727-4A41-8D9F-F795366C9315} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="OpenHydroQual"/>
-    <ROW Property="ProductVersion" Value="2.0.8" Type="32"/>
+    <ROW Property="ProductVersion" Value="2.1.1" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{22A5F0D0-785C-400D-99C4-4FBF0A322AB6}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -61,7 +61,7 @@
     <ROW Directory="resources_Dir" Directory_Parent="APPDIR" DefaultDir="RESOUR~1|resources"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
-    <ROW Component="AI_CustomARPName" ComponentId="{FB9A7F22-C65D-47BC-92BC-B3C244629A84}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
+    <ROW Component="AI_CustomARPName" ComponentId="{18DF3A8D-9B55-411F-B750-34154A9A715C}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
     <ROW Component="AI_ExePath" ComponentId="{E9233AF7-0339-4898-BA7A-0EA6DCB0522F}" Directory_="APPDIR" Attributes="4" KeyPath="AI_ExePath"/>
     <ROW Component="AI_IA_ENABLE" ComponentId="{9961D3AC-A7F7-45C8-9F93-9695250B97F1}" Directory_="APPDIR" Attributes="4" KeyPath="AI_IA_ENABLE" Options="1"/>
     <ROW Component="Bioretention.png" ComponentId="{F01F4FC1-0721-4F89-8CAF-F9B6A4F658CD}" Directory_="Wizard_Icons_Dir" Attributes="0" KeyPath="Bioretention.png_1" Type="0"/>
@@ -148,6 +148,7 @@
     <ROW File="GW_to_Stream.png" Component_="pd.nfo" FileName="GW_TO_~2.PNG|GW_to_Stream.png" Attributes="0" SourcePath="..\resources\Icons\GW_to_Stream.png" SelfReg="false" NextFile="GWA.ico"/>
     <ROW File="GW_to_lake.png" Component_="pd.nfo" FileName="GW_TO_~1.PNG|GW_to_lake.png" Attributes="0" SourcePath="..\resources\Icons\GW_to_lake.png" SelfReg="false" NextFile="GW_to_Stream.png"/>
     <ROW File="Gate_Opening.png" Component_="pd.nfo" FileName="GATE_O~1.PNG|Gate_Opening.png" Attributes="0" SourcePath="..\resources\Icons\Gate_Opening.png" SelfReg="false" NextFile="orifice.png"/>
+    <ROW File="Gate_control.json" Component_="mass_transfer.json" FileName="GATE_C~1.JSO|Gate_control.json" Attributes="0" SourcePath="..\resources\Gate_control.json" SelfReg="false"/>
     <ROW File="GoogleNotoEmojiSymbols73016potablewater.ico" Component_="pd.nfo" FileName="GOOGLE~1.ICO|Google-Noto-Emoji-Symbols-73016-potable-water.ico" Attributes="0" SourcePath="..\resources\Icons\Google-Noto-Emoji-Symbols-73016-potable-water.ico" SelfReg="false" NextFile="Governmental_user.png"/>
     <ROW File="Governmental_user.png" Component_="pd.nfo" FileName="GOVERN~1.PNG|Governmental_user.png" Attributes="0" SourcePath="..\resources\Icons\Governmental_user.png" SelfReg="false" NextFile="Graph.png"/>
     <ROW File="Graph.png" Component_="pd.nfo" FileName="Graph.png" Attributes="0" SourcePath="..\resources\Icons\Graph.png" SelfReg="false" NextFile="Groundwater.png"/>
@@ -161,6 +162,7 @@
     <ROW File="Infiltration_Basin.png" Component_="Bioretention.png" FileName="INFILT~1.PNG|Infiltration_Basin.png" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Wizard_Icons\Infiltration_Basin.png" SelfReg="false" NextFile="Infiltration_trench.png"/>
     <ROW File="Infiltration_trench.png" Component_="Bioretention.png" FileName="INFILT~2.PNG|Infiltration_trench.png" Attributes="0" SourcePath="..\resources\Wizard_Scripts\Wizard_Icons\Infiltration_trench.png" SelfReg="false" NextFile="ASMS.svg"/>
     <ROW File="InfiltrationandInflow.png" Component_="pd.nfo" FileName="INFILT~1.PNG|Infiltration and Inflow.png" Attributes="0" SourcePath="..\resources\Icons\Infiltration and Inflow.png" SelfReg="false" NextFile="inverserun.png"/>
+    <ROW File="LM.png" Component_="pd.nfo" FileName="LM.png" Attributes="0" SourcePath="..\resources\Icons\LM.png" SelfReg="false" NextFile="Gate_control.json"/>
     <ROW File="Lake2GWlink.png" Component_="pd.nfo" FileName="LAKE2G~1.PNG|Lake2GWlink.png" Attributes="0" SourcePath="..\resources\Icons\Lake2GWlink.png" SelfReg="false" NextFile="log_icon.jpg"/>
     <ROW File="LeakyDam.png" Component_="pd.nfo" FileName="LeakyDam.png" Attributes="0" SourcePath="..\resources\Icons\LeakyDam.png" SelfReg="false" NextFile="unconfined_aquifer2well_pumped.png"/>
     <ROW File="LeakyDamwPipe.png" Component_="pd.nfo" FileName="LEAKYD~1.PNG|LeakyDamwPipe.png" Attributes="0" SourcePath="..\resources\Icons\LeakyDamwPipe.png" SelfReg="false" NextFile="unsaturated_soil_revised_model.json"/>
@@ -287,7 +289,7 @@
     <ROW File="copydisk.png" Component_="pd.nfo" FileName="COPY-D~1.PNG|copy-disk.png" Attributes="0" SourcePath="..\resources\Icons\copy-disk.png" SelfReg="false" NextFile="Curve.png"/>
     <ROW File="crop.png" Component_="pd.nfo" FileName="crop.png" Attributes="0" SourcePath="..\resources\Icons\crop.png" SelfReg="false" NextFile="cn_reservoir.png"/>
     <ROW File="crop_penman.png" Component_="pd.nfo" FileName="CROP_P~1.PNG|crop_penman.png" Attributes="0" SourcePath="..\resources\Icons\crop_penman.png" SelfReg="false" NextFile="cn_retention.png"/>
-    <ROW File="culvert.json" Component_="D_Soil.json" FileName="CULVER~1.JSO|culvert.json" Attributes="0" SourcePath="..\resources\culvert.json" SelfReg="false"/>
+    <ROW File="culvert.json" Component_="D_Soil.json" FileName="CULVER~1.JSO|culvert.json" Attributes="0" SourcePath="..\resources\culvert.json" SelfReg="false" NextFile="trench_outfall.png"/>
     <ROW File="culvert_box.png" Component_="pd.nfo" FileName="CULVER~6.PNG|culvert_box.png" Attributes="0" SourcePath="..\resources\Icons\culvert_box.png" SelfReg="false" NextFile="culvert_circular.png"/>
     <ROW File="culvert_circular.png" Component_="pd.nfo" FileName="CULVER~7.PNG|culvert_circular.png" Attributes="0" SourcePath="..\resources\Icons\culvert_circular.png" SelfReg="false" NextFile="culvert.json"/>
     <ROW File="culvert_contraction.png" Component_="pd.nfo" FileName="CULVER~5.PNG|culvert_contraction.png" Attributes="0" SourcePath="..\resources\Icons\culvert_contraction.png" SelfReg="false" NextFile="culvert_box.png"/>
@@ -456,6 +458,9 @@
     <ROW File="tracer.png" Component_="pd.nfo" FileName="tracer.png" Attributes="0" SourcePath="..\resources\Icons\tracer.png" SelfReg="false" NextFile="Transfertogroundwater.png"/>
     <ROW File="transpiration_penman.png" Component_="pd.nfo" FileName="TRANSP~1.PNG|transpiration_penman.png" Attributes="0" SourcePath="..\resources\Icons\transpiration_penman.png" SelfReg="false" NextFile="transpiration_timeseries.png"/>
     <ROW File="transpiration_timeseries.png" Component_="pd.nfo" FileName="TRANSP~2.PNG|transpiration_timeseries.png" Attributes="0" SourcePath="..\resources\Icons\transpiration_timeseries.png" SelfReg="false" NextFile="street_gutter.png"/>
+    <ROW File="trench_class_outfall.png" Component_="pd.nfo" FileName="TRENCH~3.PNG|trench_class_outfall.png" Attributes="0" SourcePath="..\resources\Icons\trench_class_outfall.png" SelfReg="false" NextFile="LM.png"/>
+    <ROW File="trench_network_outfall.png" Component_="pd.nfo" FileName="TRENCH~2.PNG|trench_network_outfall.png" Attributes="0" SourcePath="..\resources\Icons\trench_network_outfall.png" SelfReg="false" NextFile="trench_class_outfall.png"/>
+    <ROW File="trench_outfall.png" Component_="pd.nfo" FileName="TRENCH~1.PNG|trench_outfall.png" Attributes="0" SourcePath="..\resources\Icons\trench_outfall.png" SelfReg="false" NextFile="trench_network_outfall.png"/>
     <ROW File="unconfined_GW2fixedhead.png" Component_="pd.nfo" FileName="UNCONF~5.PNG|unconfined_GW2fixedhead.png" Attributes="0" SourcePath="..\resources\Icons\unconfined_GW2fixedhead.png" SelfReg="false" NextFile="unconfined_GW2unconfined_GW.png"/>
     <ROW File="unconfined_GW2unconfined_GW.png" Component_="pd.nfo" FileName="UNCONF~6.PNG|unconfined_GW2unconfined_GW.png" Attributes="0" SourcePath="..\resources\Icons\unconfined_GW2unconfined_GW.png" SelfReg="false" NextFile="undo.png"/>
     <ROW File="unconfined_aquifer.png" Component_="pd.nfo" FileName="UNCONF~1.PNG|unconfined_aquifer.png" Attributes="0" SourcePath="..\resources\Icons\unconfined_aquifer.png" SelfReg="false" NextFile="unconfined_aquifer2well.png"/>
@@ -872,10 +877,10 @@
     <ROW XmlAttribute="xsischemaLocation" XmlElement="swidsoftware_identification_tag" Name="xsi:schemaLocation" Flags="14" Order="3" Value="http://standards.iso.org/iso/19770/-2/2008/schema.xsd software_identification_tag.xsd"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
-    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="8"/>
+    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="1"/>
     <ROW XmlElement="swidentitlement_required_indicator" ParentElement="swidsoftware_identification_tag" Name="swid:entitlement_required_indicator" Condition="1" Order="0" Flags="14" Text="false"/>
     <ROW XmlElement="swidmajor" ParentElement="swidnumeric" Name="swid:major" Condition="1" Order="0" Flags="14" Text="2"/>
-    <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="0"/>
+    <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="1"/>
     <ROW XmlElement="swidname" ParentElement="swidproduct_version" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[ProductVersion]"/>
     <ROW XmlElement="swidname_1" ParentElement="swidsoftware_creator" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[Manufacturer]"/>
     <ROW XmlElement="swidname_2" ParentElement="swidsoftware_licensor" Name="swid:name" Condition="1" Order="0" Flags="14" Text="[Manufacturer]"/>
