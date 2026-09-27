@@ -135,10 +135,9 @@
     "rate": {
       "type": "expression",
       "includeinoutput": "true",
-      "description": "Evapotranspiration rate",
+      "description": "Evapotranspiration multiplier (negative: water removed)",
       "ask_user": "false",
-      "expression": "0-corr_fact",
-      "unit": "m/day;mm/day;inch/day"
+      "expression": "0-corr_fact"
     }
   },
   "Evapotranspiration_Energy_Balance (S)": {
