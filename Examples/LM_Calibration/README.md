@@ -18,6 +18,9 @@ threads, using the interpreter (no codegen kernel).
 
 ## Results
 
+Each case folder carries a `fit.png` showing the observed data against the
+model at the starting guess and at the calibrated parameters.
+
 Every run starts from parameter values deliberately set well away from the
 truth. "CI" is the 95% interval LM reports from `(J'J)^-1`.
 

@@ -1,1 +1,0 @@
-class, object name, function, description, error code

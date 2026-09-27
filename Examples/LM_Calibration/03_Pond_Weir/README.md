@@ -33,6 +33,16 @@ Three observations, 120 points each, uniform from day 2 to day 364:
 The stage record uses an absolute 5 mm error, which is what a pressure
 transducer gives; the two quantities spanning decades use relative error.
 
+## Observed and modelled
+
+![Observed and modelled](fit.png)
+
+Drawn over the observed window (day 2 onward), which omits a large start-up
+transient in the first two days that carries no information. Note that the
+initial guess is visibly wrong in depth and PCB but nearly right in weir
+outflow: the outflow is set mostly by the inflow record, and only its
+partitioning depends on the weir parameters.
+
 ## Result
 
     weir_alpha = 722818   (truth 794880)   95% CI [587109, 889895]

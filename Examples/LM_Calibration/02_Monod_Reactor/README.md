@@ -30,6 +30,13 @@ sigmas are declared as parameters bound to their observation's
 sets each to its analytic maximiser at every accepted iteration; the run
 reports "3 free parameters" although five are declared.
 
+## Observed and modelled
+
+![Observed and modelled](fit.png)
+
+A is drawn on a log axis, spanning nearly two decades; B on a linear one. The
+dashed curve is the model at the starting guess, which is where LM began.
+
 ## Result
 
     k_A     = 0.9803   (truth 1.0)     95% CI [0.9135, 1.0520]

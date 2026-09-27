@@ -27,6 +27,14 @@ log-spaced from t = 0.02 to 20, with 5% multiplicative noise and a log-normal
 error structure. Both `error_standard_deviation` values are fixed at the true
 noise level of 0.05, so the confidence intervals are directly checkable.
 
+## Observed and modelled
+
+![Observed and modelled](fit.png)
+
+Both axes are logarithmic: the aqueous concentration falls through six decades
+and the sampling is log-spaced in time, so a linear axis would pile every point
+against the origin.
+
 ## Result
 
     k_f = 5.012   (truth 5.0)    95% CI [4.996, 5.029]
