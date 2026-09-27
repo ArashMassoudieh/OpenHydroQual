@@ -426,10 +426,31 @@ int counter=0;
             //Models[k].SaveFullStateTo(QString::fromStdString(filenames.pathname + "/statefull_presolve_" + aquiutils::numbertostring(k)+".json"));
             Models[k].Solve();
             Ind[k].actual_fitness = Models[k].GetObjectiveFunctionValue();
-            if (Models[k].GetSolutionFailed() && false)
-            {   Ind[k].actual_fitness = (Ind_old[Ind[k].parents[0]].actual_fitness+Ind_old[Ind[k].parents[1]].actual_fitness)/2.0;
+            // A solve that gives up partway -- dt collapsed to the floor, or the
+            // maximum_simulation_time budget expired -- still leaves a TRUNCATED
+            // objective series behind, and GetObjectiveFunctionValue() scores it
+            // without complaint. That is not conservative: an exceedance quantile
+            // taken over a short record that happens to miss the large storms is
+            // SMALLER than the converged one, so a crash can outscore the true
+            // optimum and the GA will chase parameter sets whose only merit is
+            // that they die early. (Measured: on the half-footprint geometry a
+            // run that died at 9.4% of the record scored 55.5 against 56.0 for
+            // the best converged set.)
+            //
+            // Selection is by rank (fitness = (1/rank)^N), so the magnitude here
+            // is irrelevant -- only the ordering. Use the same >=1e17 sentinel
+            // that the per-generation failure counter already recognises, which
+            // puts the individual last and gets it reported in the log.
+            //
+            // The previous form averaged the parents' fitness, disabled by
+            // "&& false": generation-0 and file-seeded individuals have no
+            // parents, so it indexed Ind_old out of range. Averaging is also the
+            // wrong remedy -- it hands a crash-prone set a survivable score.
+            if (Models[k].GetSolutionFailed())
+            {   Ind[k].actual_fitness = 1e18;
                 FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
-                fprintf(FileOut, "Simulation failed: %i, parent1=%i, parent2=%i, parent1_fitness=%e, parent2_fitness=%e, fitness=%e\n", k, Ind[k].parents[0], Ind[k].parents[1], Ind_old[Ind[k].parents[0]].actual_fitness, Ind_old[Ind[k].parents[1]].actual_fitness, Ind[k].actual_fitness);
+                fprintf(FileOut, "Solve failed (truncated series rejected): gen=%i, individual=%i\n",
+                        current_generation, k);
                 fclose(FileOut);
             }
             // Individuals in generation 0 (and any re-seeded from file) have no
