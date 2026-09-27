@@ -68,10 +68,42 @@ public:
     int lastIterations() const { return last_iters_; }
     bool step(double t, double dt)
     {
+        const std::vector<double> entry(mass_);   // restore point for a retry
         t_ = t; dt_ = dt;
         for (int i = 0; i < n_; ++i) past_[i] = mass_[i];
-        return newton();
+        if (newton()) return true;
+
+        // The flow phase recovers from a failed solve by shrinking dt and
+        // retrying (up to max_step_failures); transport had no recovery at all,
+        // so ONE non-converged transport solve aborted the entire run. On a
+        // 4-year age-tracer run that killed it 5% in, with the classic stalled-
+        // Newton signature: dx ~ 1e-6 going nowhere while err/err_ini sat just
+        // above tolerance.
+        //
+        // The flow field is frozen across this interval -- computeTransportFluxes
+        // reads the committed storages and flows of the accepted flow step -- so
+        // integrating the same ODE in smaller increments is a pure refinement.
+        // It converges to the same answer and is better conditioned, because the
+        // 1/dt term on the residual diagonal grows as the sub-step shrinks.
+        for (int level = 1; level <= max_substep_levels_; ++level) {
+            const int nsub = 1 << level;                  // 2, 4, 8, ... 64
+            const double h = dt / nsub;
+            mass_ = entry;
+            updateJac_ = true;                            // conditioning changed with h
+            bool ok = true;
+            for (int k = 0; k < nsub && ok; ++k) {
+                t_ = t + k * h; dt_ = h;
+                for (int i = 0; i < n_; ++i) past_[i] = mass_[i];
+                ok = newton();
+            }
+            if (ok) { ++substep_recoveries_; return true; }
+        }
+        mass_ = entry;                                    // leave state untouched on failure
+        return false;
     }
+
+    /// Number of steps that only converged after sub-stepping (diagnostic).
+    long substepRecoveries() const { return substep_recoveries_; }
 
 private:
     void assemble(const double* X, double* F)
@@ -299,6 +331,8 @@ private:
     SolverSettings s_;
     int last_iters_ = 0;
     int n_ = 0, nc_ = 0, nl_ = 0;
+    int  max_substep_levels_ = 6;      // up to 64 sub-steps before giving up
+    long substep_recoveries_ = 0;
     double t_ = 0, dt_ = 0;
     std::vector<double> mass_, past_, F_, mt_, inflow_;
     std::vector<double> Q_;   // per-entry throughput, see assemble()
