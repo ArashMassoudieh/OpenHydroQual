@@ -51,12 +51,12 @@ create reaction;type=Reaction,A:stoichiometric_constant=0,B:stoichiometric_const
 create block;type=Reactor,A:concentration=2,A:constant_inflow_concentration=0,A:external_mass_flow_timeseries=,A:external_source=,A:time_variable_inflow_concentration=,B:concentration=2,B:constant_inflow_concentration=0,B:external_mass_flow_timeseries=,B:external_source=,B:time_variable_inflow_concentration=,Storage=9.99998[ft~^3],_height=200,_width=200,bottom_elevation=0,constant_inflow=0,name=Reactor (1),time_variable_inflow=StepFlow.txt [m~^3/day],x=949,y=844
 create observation;type=Observation,name=A_conc,object=Reactor (1),expression=A:concentration,error_structure=normal,error_standard_deviation=0.05,observed_data=obs_A_conc.csv
 create observation;type=Observation,name=B_conc,object=Reactor (1),expression=B:concentration,error_structure=normal,error_standard_deviation=0.05,observed_data=obs_B_conc.csv
-create parameter;type=Parameter,name=k_A,low=0.02,high=20,value=0.35,prior_distribution=log-normal
-setasparameter; object=k_A, quantity=base_value, parametername=k_A
-create parameter;type=Parameter,name=K_s,low=0.02,high=20,value=2.5,prior_distribution=log-normal
-setasparameter; object=K_s, quantity=base_value, parametername=K_s
-create parameter;type=Parameter,name=k_B,low=0.02,high=20,value=1.6,prior_distribution=log-normal
-setasparameter; object=k_B, quantity=base_value, parametername=k_B
+create parameter;type=Parameter,name=p_k_A,low=0.02,high=20,value=0.35,prior_distribution=log-normal
+setasparameter; object=k_A, quantity=base_value, parametername=p_k_A
+create parameter;type=Parameter,name=p_K_s,low=0.02,high=20,value=2.5,prior_distribution=log-normal
+setasparameter; object=K_s, quantity=base_value, parametername=p_K_s
+create parameter;type=Parameter,name=p_k_B,low=0.02,high=20,value=1.6,prior_distribution=log-normal
+setasparameter; object=k_B, quantity=base_value, parametername=p_k_B
 create parameter;type=Parameter,name=sigma_A_conc,low=0.0001,high=2,value=0.05,prior_distribution=log-normal
 setasparameter; object=A_conc, quantity=error_standard_deviation, parametername=sigma_A_conc
 create parameter;type=Parameter,name=sigma_B_conc,low=0.0001,high=2,value=0.05,prior_distribution=log-normal

@@ -15,8 +15,8 @@ the ratio Cu_s / Cu_aq equals KD exactly.
 
 | Parameter | Truth | Start | Range | Searched in |
 |---|---:|---:|---|---|
-| `k_f` | 5.0 | 1.5 | 0.1 to 50 | log10 |
-| `KD` | 500 | 120 | 10 to 5000 | log10 |
+| `p_k_f` | 5.0 | 1.5 | 0.1 to 50 | log10 |
+| `p_KD` | 500 | 120 | 10 to 5000 | log10 |
 
 The two are informed by different parts of the curve, which is what makes the
 case well conditioned: **k_f** by the early decay rate, **KD** by the height of

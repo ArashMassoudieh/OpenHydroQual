@@ -56,7 +56,7 @@ create parameter;type=Parameter,name=weir_alpha,low=50000,high=5e+06,value=40000
 setasparameter; object=Pond (1) - fixed_head (2), quantity=alpha, parametername=weir_alpha
 create parameter;type=Parameter,name=crest_elev,low=1,high=2,value=1.35,prior_distribution=normal
 setasparameter; object=Pond (1) - fixed_head (2), quantity=crest_elevation, parametername=crest_elev
-create parameter;type=Parameter,name=k_d,low=0.05,high=20,value=0.45,prior_distribution=log-normal
-setasparameter; object=k_d, quantity=base_value, parametername=k_d
+create parameter;type=Parameter,name=p_k_d,low=0.05,high=20,value=0.45,prior_distribution=log-normal
+setasparameter; object=k_d, quantity=base_value, parametername=p_k_d
 setvalue; object=LM, quantity=max_iterations, value=40
 setvalue; object=LM, quantity=lm_numthreads, value=4

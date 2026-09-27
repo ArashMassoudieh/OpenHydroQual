@@ -52,9 +52,9 @@ create reaction;type=Reaction,Cu_aq:stoichiometric_constant=1,Cu_s:stoichiometri
 create block;type=Groundwater cell,Cu_aq:concentration=1[g/m~^3],Cu_aq:constant_inflow_concentration=0[g/m~^3],Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0[g/m~^3],Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=1[m~^2],bottom_elevation=0[m],depth=1[m],hydraulic_conductivity=1[m/day],inflow=,moisture_content=0.4,name=Groundwater cell (1),porosity=0.4,specific_storage=0.01[1/m],x=900,y=900
 create observation;type=Observation,name=Cu_aqueous,object=Groundwater cell (1),expression=Cu_aq:concentration,error_structure=log-normal,error_standard_deviation=0.05,observed_data=obs_Cu_aqueous.csv
 create observation;type=Observation,name=Cu_sorbed,object=Groundwater cell (1),expression=Cu_s:concentration,error_structure=log-normal,error_standard_deviation=0.05,observed_data=obs_Cu_sorbed.csv
-create parameter;type=Parameter,name=k_f,low=0.1,high=50,value=1.5,prior_distribution=log-normal
-setasparameter; object=k_f, quantity=base_value, parametername=k_f
-create parameter;type=Parameter,name=KD,low=10,high=5000,value=120,prior_distribution=log-normal
-setasparameter; object=KD, quantity=base_value, parametername=KD
+create parameter;type=Parameter,name=p_k_f,low=0.1,high=50,value=1.5,prior_distribution=log-normal
+setasparameter; object=k_f, quantity=base_value, parametername=p_k_f
+create parameter;type=Parameter,name=p_KD,low=10,high=5000,value=120,prior_distribution=log-normal
+setasparameter; object=KD, quantity=base_value, parametername=p_KD
 setvalue; object=LM, quantity=max_iterations, value=40
 setvalue; object=LM, quantity=lm_numthreads, value=4

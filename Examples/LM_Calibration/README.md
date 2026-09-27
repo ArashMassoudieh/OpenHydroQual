@@ -26,16 +26,16 @@ truth. "CI" is the 95% interval LM reports from `(J'J)^-1`.
 
 | Case | Parameter | Truth | Start | Estimate | CI covers truth |
 |---|---|---:|---:|---:|:--:|
-| 1 | `k_f` | 5.0 | 1.5 | 5.012 | yes |
-| 1 | `KD` | 500 | 120 | 511.2 | yes |
-| 2 | `k_A` | 1.0 | 0.35 | 0.9803 | yes |
-| 2 | `K_s` | 0.6 | 2.5 | 0.5775 | yes |
-| 2 | `k_B` | 0.5 | 1.6 | 0.5097 | yes |
+| 1 | `p_k_f` | 5.0 | 1.5 | 5.012 | yes |
+| 1 | `p_KD` | 500 | 120 | 511.2 | yes |
+| 2 | `p_k_A` | 1.0 | 0.35 | 0.9803 | yes |
+| 2 | `p_K_s` | 0.6 | 2.5 | 0.5775 | yes |
+| 2 | `p_k_B` | 0.5 | 1.6 | 0.5097 | yes |
 | 2 | `sigma_A` | 0.0393 | 0.05 | 0.0403 | profiled |
 | 2 | `sigma_B` | 0.0375 | 0.05 | 0.0355 | profiled |
 | 3 | `weir_alpha` | 794880 | 400000 | 722818 | yes |
 | 3 | `crest_elev` | 1.5 | 1.35 | 1.4989 | yes |
-| 3 | `k_d` | 1.2 | 0.45 | 1.2048 | yes |
+| 3 | `p_k_d` | 1.2 | 0.45 | 1.2048 | yes |
 
 Cost, and the likelihood reached against the likelihood at the true values:
 
@@ -68,6 +68,21 @@ set to its true value. Scoring it is the reference point:
 ```
 OHQ-LM at_truth.ohq . --verify-residuals
 ```
+
+## A naming rule
+
+A calibration `Parameter` must never share a name with the reaction parameter,
+block, link or observation it drives. The estimated parameters here are prefixed
+`p_`, so `p_k_f` drives the reaction parameter `k_f`:
+
+```
+create parameter;type=Parameter,name=p_k_f,low=0.1,high=50,value=1.5,prior_distribution=log-normal
+setasparameter; object=k_f, quantity=base_value, parametername=p_k_f
+```
+
+Reusing the name makes `object=` and `parametername=` refer to two different
+objects that happen to be spelled the same, and which one a lookup resolves to
+is not something a model should depend on.
 
 ## Files in each case
 

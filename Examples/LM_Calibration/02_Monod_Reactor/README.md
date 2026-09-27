@@ -14,9 +14,9 @@ reaction parameters as well.
 
 | Parameter | Truth | Start | Range | Searched in |
 |---|---:|---:|---|---|
-| `k_A` | 1.0 | 0.35 | 0.02 to 20 | log10 |
-| `K_s` | 0.6 | 2.5 | 0.02 to 20 | log10 |
-| `k_B` | 0.5 | 1.6 | 0.02 to 20 | log10 |
+| `p_k_A` | 1.0 | 0.35 | 0.02 to 20 | log10 |
+| `p_K_s` | 0.6 | 2.5 | 0.02 to 20 | log10 |
+| `p_k_B` | 0.5 | 1.6 | 0.02 to 20 | log10 |
 | `sigma_A_conc` | 0.0393 | 0.05 | 1e-4 to 2 | profiled out |
 | `sigma_B_conc` | 0.0375 | 0.05 | 1e-4 to 2 | profiled out |
 

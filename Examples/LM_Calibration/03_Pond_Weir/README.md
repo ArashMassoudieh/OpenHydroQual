@@ -20,7 +20,7 @@ inflow concentration is set to 5 g/m3 here so that `k_d` is identifiable.
 |---|---:|---:|---|---|
 | `weir_alpha` | 794880 | 400000 | 5e4 to 5e6 | weir link `alpha` |
 | `crest_elev` | 1.5 | 1.35 | 1.0 to 2.0 | weir link `crest_elevation` |
-| `k_d` | 1.2 | 0.45 | 0.05 to 20 | reaction parameter `base_value` |
+| `p_k_d` | 1.2 | 0.45 | 0.05 to 20 | reaction parameter `base_value` |
 
 Three observations, 120 points each, uniform from day 2 to day 364:
 
