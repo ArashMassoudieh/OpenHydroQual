@@ -853,10 +853,12 @@ void Object::MakeTimeSeriesUniform(const double &increment)
         
         if (var[s->first].GetType() == Quan::_type::timeseries || var[s->first].GetType() == Quan::_type::prec_timeseries)
         {
-            if (var[s->first].GetTimeSeries() != nullptr)
+            if (auto* series = var[s->first].GetTimeSeries())
             {
-                *(var[s->first].GetTimeSeries()) = var[s->first].GetTimeSeries()->make_uniform(increment);
-                var[s->first].GetTimeSeries()->assign_D();
+                // GetTimeSeries returns null once a series becomes empty
+                // (e.g. all samples were NaN). Keep the original valid handle.
+                *series = series->make_uniform(increment);
+                series->assign_D();
             }
         }
 }

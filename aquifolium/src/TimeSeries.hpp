@@ -1523,10 +1523,18 @@ TimeSeries<T> TimeSeries<T>::make_uniform(T increment, bool assignD) const {
 
     TimeSeries<T> nansRemoved = this->removeNaNs();
 
-    // Guard on the series we actually walk, not on `this`. A series whose
-    // finite points number fewer than two cannot be interpolated.
-    if (nansRemoved.size() < 2) return out;
+    // A singleton is a valid constant forcing (interpol holds its value at
+    // either end). Keep it rather than erasing a one-interval rainfall input.
+    if (nansRemoved.empty()) return out;
     if (!(increment > T{})) return out;          // a non-positive step would spin forever
+    if (nansRemoved.size() == 1) {
+        out.addPoint(nansRemoved.front().t, nansRemoved.front().c, nansRemoved.front().d);
+        out.setName(name());
+        out.setUnit(unit());
+        out.setFilename(getFilename());
+        if (assignD) out.assign_D();
+        return out;
+    }
 
     if (assignD) {
         // Ensure all distances are initialized
@@ -2775,7 +2783,6 @@ double weighted_mse(const TimeSeries<T>& observed,
     return sum_we / sum_w;
 }
 #endif
-
 
 
 

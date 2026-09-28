@@ -119,7 +119,7 @@ CPrecipitation::CPrecipitation(string _filename)
             }
         }
     }
-	dt = e[1] - s[1];
+	dt = n > 0 ? e[0] - s[0] : 0.0;
 
 }
 
@@ -177,8 +177,8 @@ void CPrecipitation::getfromfile(string _filename)
 	// A missing/empty/single-row file (e.g. a stale filename reference from a
 	// JSON config, reached via fromJsonObject() with no validity check ahead
 	// of it) used to read e[1]/s[1] out of bounds here - undefined behavior.
-	// n<2 means there is no interval to derive a timestep from.
-	dt = (n >= 2) ? e[1] - s[1] : 0.0;
+	// Each row already has an interval, including a single-row file.
+	dt = n > 0 ? e[0] - s[0] : 0.0;
 }
 
 
@@ -323,4 +323,3 @@ bool CPrecipitation::fromJsonObject(const QJsonObject &obj)
     return true;
 }
 #endif
-
