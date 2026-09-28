@@ -86,6 +86,9 @@
       },
       "groundwater_to_fixedhead": {
         "from": "Groundwater"
+      },
+      "groundwater_to_stream": {
+        "from": "Groundwater"
       }
     },
 
