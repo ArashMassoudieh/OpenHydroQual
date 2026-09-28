@@ -1,0 +1,175 @@
+{
+  "requires": [
+    "main_components.json",
+    "Stormwater_control_measures.json"
+  ],
+  "Riser_Spillway": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Drop-inlet (riser) principal spillway with conduit",
+    "icon": {
+      "filename": "Riser_Spillway.png"
+    },
+    "helptext": "Principal spillway of an ungated drop-inlet structure (e.g. NRCS/SCS flood-control dams): water spills over the riser crest (weir flow, Q = weir_coefficient*riser_crest_length*H^1.5 with H = head.s - crest_elevation) and leaves through a conduit under pressure (Q = conduit_area*sqrt(2g*(head.s - outlet_elevation)/(1 + loss_coefficient))). The discharge is the smaller of the two controls. Flow is from the source (pond/reservoir) only; tailwater is ignored (outlet_elevation is the conduit outlet crown or tailwater level). rating_multiplier scales the whole rating for calibration.",
+    "crest_elevation": {
+      "type": "value",
+      "description": "Riser crest elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "riser_crest_length": {
+      "type": "value",
+      "description": "Riser crest (weir) length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "weir_coefficient": {
+      "type": "value",
+      "description": "Riser weir coefficient (SI, m^0.5/s)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.84"
+    },
+    "conduit_diameter": {
+      "type": "value",
+      "description": "Conduit diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;in",
+      "estimate": "true"
+    },
+    "outlet_elevation": {
+      "type": "value",
+      "description": "Conduit outlet (crown or tailwater) elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "loss_coefficient": {
+      "type": "value",
+      "description": "Total conduit loss coefficient (entrance + friction + bends)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.5"
+    },
+    "rating_multiplier": {
+      "type": "value",
+      "description": "Rating multiplier (calibration)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1"
+    },
+    "weir_flow": {
+      "type": "expression",
+      "expression": "86400*weir_coefficient*riser_crest_length*_pos(head.s-crest_elevation)^1.5",
+      "description": "Riser weir capacity",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "flow": {
+      "type": "expression",
+      "expression": "rating_multiplier*_min(86400*weir_coefficient*riser_crest_length*_pos(head.s-crest_elevation)^1.5;86400*0.7854*conduit_diameter^2*_sqr(19.62*_pos(head.s-outlet_elevation)/(1+loss_coefficient)))",
+      "description": "Flow",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "ask_user": "false",
+      "default": "1"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "ask_user": "false",
+      "default": "0"
+    }
+  },
+  "Emergency_Spillway": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Emergency (auxiliary) spillway: broad-crested weir",
+    "icon": {
+      "filename": "Emergency_Spillway.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,200,200"
+    },
+    "crest_elevation": {
+      "type": "value",
+      "description": "Crest Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Crest Elevation"
+    },
+    "alpha": {
+      "type": "value",
+      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "alpha>0",
+      "warningmessage": "alpha must be positive",
+      "helptext": "Coefficient alpha in Q=alpha*(h-z_0)^beta"
+    },
+    "beta": {
+      "type": "value",
+      "description": "Exponent beta in Q=alpha*(h-z_0)^beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.5",
+      "criteria": "beta>0",
+      "warningmessage": "beta must be positive",
+      "helptext": "Exponent beta in Q=alpha*(h-z_0)^beta"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "alpha*_pos(head.s-crest_elevation)^beta",
+      "includeinoutput": "true",
+      "applylimit": "true"
+    },
+    "helptext": "Emergency spillway of a dam: flow = alpha*(head.s - crest_elevation)^beta from the reservoir (source) only; for a broad-crested weir use beta = 1.5 and alpha = 86400*C*L (m3/day) with C ~ 1.7 m^0.5/s and L the crest length. Identical formulation to the 'wier' link; a separate type for the dam diagram icon.",
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
+  }
+}

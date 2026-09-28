@@ -430,7 +430,7 @@
       "applyto": {
         "Catchment#depression_storage": "depression_storage"
       },
-      "criteria": "depression_storage>=0",
+      "criteria": "depression_storage>-1e-12",
       "warningmessage": "Depression storage must be nonnegative."
     },
     "runoff_coefficient": {
@@ -501,7 +501,7 @@
       "delegate": "ValueBox",
       "default": "0.4",
       "estimate": "true",
-      "criteria": "theta_sat*(1-theta_sat)>=0",
+      "criteria": "theta_sat*(1-theta_sat)>-1e-12",
       "warningmessage": "Saturated moisture content must be greater than 0 and no greater than 1.",
       "applyto": {
         "Soil_1#theta_sat": "theta_sat",
@@ -552,7 +552,7 @@
         "Soil_2#theta": "initial_moisture_content",
         "Soil_3#theta": "initial_moisture_content"
       },
-      "criteria": "(initial_moisture_content-theta_res)*(theta_sat-initial_moisture_content)>=0",
+      "criteria": "(initial_moisture_content-theta_res)*(theta_sat-initial_moisture_content)>-1e-12",
       "warningmessage": "Initial soil moisture content must lie between residual and saturated moisture contents."
     },
     "groundwater_K": {
@@ -577,7 +577,7 @@
       "delegate": "ValueBox",
       "default": "0.4",
       "estimate": "true",
-      "criteria": "groundwater_porosity*(1-groundwater_porosity)>=0",
+      "criteria": "groundwater_porosity*(1-groundwater_porosity)>-1e-12",
       "warningmessage": "Groundwater porosity must be greater than 0 and no greater than 1.",
       "applyto": {
         "Groundwater#porosity": "groundwater_porosity"
@@ -607,7 +607,7 @@
       "applyto": {
         "Groundwater#moisture_content": "initial_groundwater_moisture_content"
       },
-      "criteria": "initial_groundwater_moisture_content*(groundwater_porosity-initial_groundwater_moisture_content)>=0",
+      "criteria": "initial_groundwater_moisture_content*(groundwater_porosity-initial_groundwater_moisture_content)>-1e-12",
       "warningmessage": "Initial groundwater moisture content must be nonnegative and cannot exceed groundwater porosity."
     },
     "impervious_manning_coefficient": {
@@ -634,7 +634,7 @@
       "applyto": {
         "Impervious_Catchment#depression_storage": "impervious_depression_storage"
       },
-      "criteria": "impervious_depression_storage>=0",
+      "criteria": "impervious_depression_storage>-1e-12",
       "warningmessage": "Impervious depression storage must be nonnegative."
     },
     "reach_base_width": {
@@ -699,7 +699,7 @@
       "unit": "m;ft",
       "default": "0.01",
       "estimate": "true",
-      "criteria": "initial_reach_depth>=0",
+      "criteria": "initial_reach_depth>-1e-12",
       "warningmessage": "Initial reach depth must be non-negative!",
       "applyto": {
         "Reach#depth": "initial_reach_depth"
@@ -767,7 +767,7 @@
       "unit": "m;ft",
       "default": "0.01",
       "estimate": "true",
-      "criteria": "initial_impervious_reach_depth>=0",
+      "criteria": "initial_impervious_reach_depth>-1e-12",
       "warningmessage": "Initial impervious reach depth must be nonnegative!",
       "applyto": {
         "Impervious_Reach#depth": "initial_impervious_reach_depth"

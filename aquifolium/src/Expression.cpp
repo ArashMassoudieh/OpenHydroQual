@@ -30,6 +30,22 @@ bool Expression::func_operators_initialized =false;
 vector<string> Expression::funcs = vector<string>();
 vector<string> Expression::opts = vector<string>();
 
+// True when S[i] ('+' or '-') is the sign of an exponent: the text from token_start to i-1 is a
+// numeric mantissa followed by 'e' or 'E' (e.g. "1e", "2.5E", ".5e").
+static bool is_exponent_sign(const string &S, unsigned int i, int token_start)
+{
+    if (i < 2 || token_start < 0 || int(i) - 1 <= token_start) return false;
+    if (S[i - 1] != 'e' && S[i - 1] != 'E') return false;
+    bool digit = false;
+    for (unsigned int k = token_start; k < i - 1; k++)
+    {
+        const char c = S[k];
+        if (c >= '0' && c <= '9') digit = true;
+        else if (c != '.' && c != ' ') return false;
+    }
+    return digit;
+}
+
 Expression::Expression(void)
 {
     if (Expression::func_operators_initialized != true)
@@ -152,6 +168,10 @@ Expression::Expression(string S)
 				if (parenthesis_level == 0)
 					if ((S.substr(i, 1) == "+") || (S.substr(i, 1) == "-") || (S.substr(i, 1) == "*") || (S.substr(i, 1) == "/") || (S.substr(i, 1) == "^") || (S.substr(i, 1) == ";"))
 					{
+                        // A sign right after the exponent marker of a numeric mantissa
+                        // (e.g. the '-' in 1e-12 or 2.5E+3) belongs to the number, not an operator.
+                        if ((S[i] == '+' || S[i] == '-') && is_exponent_sign(S, i, last_operator_location + 1))
+                            continue;
 						operators.push_back(S.substr(i, 1));
 						Expression sub_exp = Expression(aquiutils::trim(S.substr(last_operator_location+1, i -1- last_operator_location)));
 						if (!sub_exp.text.empty())
@@ -755,21 +775,24 @@ vector<double> Expression::argument_values(unsigned int calculation_sequence, Ob
     const int i2 = CalculationStructure.sources[static_cast<std::vector<int, std::allocator<int>>::size_type>(calculation_sequence) * 2 + 1];
     double val1=0;
     double val2=0;
-    if (i1>=0 && i2>=0)
+    // An argument is either a single term (index >= 0) or the result of an earlier
+    // calculation step (index < 0). Signs of single terms are applied as in oprt().
+    const int op0 = CalculationStructure.CalcOrder[calculation_sequence].operands[0];
+    const int op1 = CalculationStructure.CalcOrder[calculation_sequence].operands[1];
+    if (i1>=0)
     {
-        val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(W,tmg,limit);
-        val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(W,tmg,limit);
+        val1 = terms[op0].calc(W,tmg,limit);
+        if (terms[op0].sign=="-") val1 = -val1;
     }
-    else if (i1<0 && i2>=0)
-    {
+    else
         val1 = CalculationStructure.CalcOrder[-i1-1000].value;
-        val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(W,tmg,limit);
-    }
-    else if (i2<0 && i1>=0)
+    if (i2>=0)
     {
-        val2 = CalculationStructure.CalcOrder[-i2-1000].value;
-        val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(W,tmg,limit);
+        val2 = terms[op1].calc(W,tmg,limit);
+        if (terms[op1].sign=="-") val2 = -val2;
     }
+    else
+        val2 = CalculationStructure.CalcOrder[-i2-1000].value;
     out[0]=val1;
     out[1]=val2;
     return out;

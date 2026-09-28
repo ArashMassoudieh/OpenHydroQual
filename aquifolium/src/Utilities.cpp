@@ -239,8 +239,24 @@ namespace aquiutils
         for (unsigned int i = 0; i < S.size(); i++)
             if (!isnumber(S[i]))
                 res = false;
+        if (res)
+            return true;
 
-        return res;
+        // Scientific notation (e.g. 1e-12, 2.5E+3): only digits, '.', signs and the exponent
+        // marker, at least one digit, and strtod must consume the whole string. Names, inf/nan
+        // and hex are rejected by the character check.
+        bool digit = false;
+        for (unsigned int i = 0; i < S.size(); i++)
+        {
+            const char c = S[i];
+            if (c >= '0' && c <= '9') digit = true;
+            else if (c != '.' && c != '-' && c != '+' && c != 'e' && c != 'E') return false;
+        }
+        if (!digit) return false;
+        const char *begin = S.c_str();
+        char *end = nullptr;
+        strtod(begin, &end);
+        return end != begin && *end == '\0';
     }
 
 

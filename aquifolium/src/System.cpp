@@ -3960,6 +3960,26 @@ bool System::SetAsParameter(const string &location, const string &quantity, cons
             return true;
         }
     }
+
+    // A composite property: ApplyParameters sets it and then re-runs every composite's
+    // Propagate, so the new value reaches the members through the composite's applyto mappings.
+    if (composite(location) != nullptr)
+    {
+        if (!composite(location)->HasQuantity(quantity))
+        {
+            lasterror() = "In composite" + location + ": variable " + quantity + " does not exist";
+            errorhandler.Append(GetName(), "System", "SetAsParameter", lasterror(), 609);
+            return false;
+        }
+        else
+        {
+            GetParameter(parametername)->AppendLocationQuan(location, quantity);
+            return true;
+        }
+    }
+
+    lasterror() = "Location '" + location + "' is not a block, link, observation, reaction parameter, source, constituent or composite";
+    errorhandler.Append(GetName(), "System", "SetAsParameter", lasterror(), 610);
     return false;
 }
 

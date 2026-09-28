@@ -1,0 +1,63 @@
+{
+ "requires": [
+  "main_components.json",
+  "open_channel.json",
+  "compound_channel.json"
+ ],
+ "Floodplain_bypass_link": {
+  "type": "link",
+  "typecategory": "Connectors",
+  "description": "Floodplain flow around a structure (above the bank of the upstream compound segment)",
+  "icon": {
+   "filename": "Floodplain_Bypass_Link.png"
+  },
+  "fp_depth": {
+   "type": "expression",
+   "description": "Water depth above the bank of the upstream segment",
+   "expression": "_pos(head.s-bottom_elevation.s-bank_depth.s)",
+   "includeinoutput": "true",
+   "ask_user": "false",
+   "unit": "m;ft"
+  },
+  "area": {
+   "type": "expression",
+   "description": "Floodplain flow area (outside the main-channel column)",
+   "expression": "floodplain_width.s*fp_depth+floodplain_side_slope.s*fp_depth^2",
+   "includeinoutput": "true",
+   "ask_user": "false",
+   "unit": "m^2;ft^2"
+  },
+  "perimeter": {
+   "type": "expression",
+   "description": "Floodplain wetted perimeter",
+   "expression": "floodplain_width.s*_min(fp_depth/0.1;1)+2*fp_depth*_sqt(1+floodplain_side_slope.s^2)+0.01",
+   "includeinoutput": "true",
+   "ask_user": "false",
+   "unit": "m;ft"
+  },
+  "ManningCoeff": {
+   "type": "expression",
+   "description": "Manning's roughness coefficient",
+   "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+   "includeinoutput": "false",
+   "ask_user": "false"
+  },
+  "length": {
+   "type": "expression",
+   "description": "Connector length",
+   "expression": "(length.s+length.e)/2",
+   "includeinoutput": "false",
+   "ask_user": "false"
+  },
+  "flow": {
+   "type": "expression",
+   "description": "Floodplain flow",
+   "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*(area/perimeter)^0.6667",
+   "includeinoutput": "true",
+   "ask_user": "false",
+   "unit": "m^3/day;m^3/s;ft^3/s",
+   "applylimit": "true"
+  },
+  "helptext": "Manning flow over the floodplain part of the upstream Compound Channel Segment only: depth above bank_depth, outside the main-channel width (area = floodplain_width*d + floodplain_side_slope*d^2, d = head - bottom_elevation - bank_depth). Place it in parallel with an in-channel structure such as 'Leaky Dam with pipes', whose weir spans only the channel: above bankfull, water goes around the structure across the floodplain. Uses the upstream (source) segment's section, so connect it in the downstream direction."
+ }
+}

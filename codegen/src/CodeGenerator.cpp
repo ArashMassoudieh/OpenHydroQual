@@ -37,6 +37,8 @@
 #include "Parameter.h"
 #include "observation.h"
 #include "ErrorHandler.h"
+#include "Composite.h"
+#include <regex>
 
 #include <fstream>
 #include <sstream>
@@ -173,6 +175,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     struct ParamInfo { std::string name; double value; };
     std::vector<ParamInfo> params;
     std::map<std::string, int> paramBound;   // "<object>::<quan>" -> parameter index
+    std::map<std::string, std::map<std::string, int>> compositeBound;   // composite -> property -> parameter index
+    std::map<std::string, std::string> paramExpr;   // "<member>::<quan>" -> C++ expression over params_
     std::vector<std::string> paramNotes;     // bindings the kernel cannot own (observation sigma, ...)
     for (unsigned i = 0; i < system.ParametersCount(); ++i) {
         Parameter* p = system.GetParameter(i);
@@ -207,6 +211,22 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             }
             hostOwnedOnly = false;   // a forward-model target: it must end up live
             bool bound = false;
+            if (ot == object_type::composite) {
+                // A composite property reaches the members only through the composite's
+                // applyto mappings (System::ApplyParameters -> Composite::Propagate). The
+                // mappings that read it are compiled into member expressions below.
+                if (Quan* q = o->Variable(qs[k]))
+                    if (q->GetType() == Quan::_type::value || q->GetType() == Quan::_type::constant) {
+                        compositeBound[o->GetName()][qs[k]] = static_cast<int>(i);
+                        bound = anyLive = true;
+                    }
+                if (!bound)
+                    throw std::runtime_error(
+                        "CodeGenerator: estimated parameter '" + p->GetName() + "' is bound to composite property "
+                        + locs[k] + "." + qs[k] + ", which is not a numeric value. Refusing to emit a kernel that "
+                        "would silently ignore it.");
+                continue;
+            }
             if (Quan* q = o->Variable(qs[k])) {
                 if (q->GetType() == Quan::_type::value || q->GetType() == Quan::_type::constant) {
                     paramBound[o->GetName() + "::" + qs[k]] = static_cast<int>(i);
@@ -294,10 +314,56 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 "a kernel a calibration cannot drive.");
         }
     }
+    // ---- composite-level parameters -> member expressions -------------------
+    // The interpreter applies a composite parameter by setting the composite property and
+    // re-running Composite::Propagate, which evaluates each applyto mapping over the
+    // composite's properties and writes the member quantity. Mirror that: every mapping that
+    // reads a parameter-bound composite property becomes a C++ expression for its member
+    // quantity, with bound properties as params_[i] and all others as literals.
+    for (const auto& cb : compositeBound) {
+        Object* comp = system.object(cb.first);
+        const std::map<std::string, int>& props = cb.second;
+        for (auto it = comp->GetVars()->begin(); it != comp->GetVars()->end(); ++it) {
+            for (const auto& mp : it->second.ApplyTo()) {
+                bool uses = false;
+                for (const auto& pr : props)
+                    if (std::regex_search(mp.second, std::regex("(^|[^A-Za-z0-9_])" + pr.first + "([^A-Za-z0-9_]|$)")))
+                        uses = true;
+                if (!uses) continue;
+                const std::size_t sep = mp.first.find(COMPOSITE_QUANTITY_SEPARATOR);
+                if (sep == std::string::npos) continue;
+                const std::string member = cb.first + COMPOSITE_MEMBER_SEPARATOR + mp.first.substr(0, sep);
+                const std::string mq = mp.first.substr(sep + 1);
+                Object* mo = system.object(member);
+                Quan* mqq = mo ? mo->Variable(mq) : nullptr;
+                if (!mqq || !(mqq->GetType() == Quan::_type::value || mqq->GetType() == Quan::_type::constant)) {
+                    paramNotes.push_back(cb.first + "." + it->first + " -> " + member + "." + mq
+                                         + ": not a numeric member value; the mapping is not compiled");
+                    continue;
+                }
+                EmitContext ctx;
+                ctx.timeVar = "t";
+                ctx.resolveValue = [comp, &props](const std::string& name, Loc) -> std::string {
+                    auto f = props.find(name);
+                    if (f != props.end()) return "params_[" + std::to_string(f->second) + "]";
+                    return fmt(comp->GetVal(name, Expression::timing::present));
+                };
+                ctx.resolveSeries = [&](const std::string& name, Loc) -> std::string {
+                    throw std::runtime_error("CodeGenerator: composite mapping '" + mp.second + "' of "
+                                             + cb.first + " reads the time series '" + name + "'");
+                };
+                ExpressionEmitter em(ctx);
+                paramExpr[member + "::" + mq] = "(" + em.translate(Expression(mp.second)) + ")";
+            }
+        }
+    }
+
     const unsigned nP = static_cast<unsigned>(params.size());
     auto paramRef = [&](const std::string& obj, const std::string& q) -> std::string {   // "" if unbound
         auto it = paramBound.find(obj + "::" + q);
-        return it == paramBound.end() ? std::string() : "params_[" + std::to_string(it->second) + "]";
+        if (it != paramBound.end()) return "params_[" + std::to_string(it->second) + "]";
+        auto ex = paramExpr.find(obj + "::" + q);
+        return ex == paramExpr.end() ? std::string() : ex->second;
     };
     // A ReactionParameter's effective value is CalcVal("value"), which is
     // base_value corrected for temperature (Arrhenius). When base_value is the
@@ -794,7 +860,38 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         Quan* bal = b->Variable(stateVar);
         const std::string idx = stateEnum(b->GetName(), stateVar);
         double iv = bal ? std::atof(bal->GetProperty(true).c_str()) : 0.0;
-        iniBody << "        s0[" << idx << "] = " << fmt(iv) << ";\n";
+        // System::Solve runs CalcAllInitialValues AFTER ApplyParameters, so an initial storage
+        // computed from an expression (e.g. area*depth*theta) follows any parameter-dependent
+        // value it reads (e.g. a member area set by a composite parameter). Emit such an
+        // expression symbolically: value quantities read their (possibly parameter-driven)
+        // member symbols, everything else keeps the interpreter's numeric initial value.
+        bool paramDependent = false;
+        if (bal && bal->calcinivalue()) {
+            const std::string ie = bal->InitialValueExpression().ToString();
+            for (auto it = b->GetVars()->begin(); it != b->GetVars()->end(); ++it)
+                if (!paramRef(b->GetName(), it->first).empty()
+                    && std::regex_search(ie, std::regex("(^|[^A-Za-z0-9_])" + it->first + "([^A-Za-z0-9_]|$)")))
+                    paramDependent = true;
+        }
+        if (paramDependent) {
+            EmitContext ctx;
+            ctx.timeVar = "t";
+            ctx.resolveValue = [b](const std::string& name, Loc) -> std::string {
+                Quan* q = b->Variable(name);
+                if (!q) return "0.0";
+                if (q->GetType() == Quan::_type::value || q->GetType() == Quan::_type::constant)
+                    return sym(b->GetName(), name);
+                return fmt(b->GetVal(name, Expression::timing::past));
+            };
+            ctx.resolveSeries = [&](const std::string& name, Loc) -> std::string {
+                throw std::runtime_error("CodeGenerator: initial value of " + b->GetName() + " reads the series " + name);
+            };
+            ExpressionEmitter em(ctx);
+            iniBody << "        s0[" << idx << "] = " << em.translate(bal->InitialValueExpression())
+                    << ";   // parameter-dependent initial value\n";
+        } else {
+            iniBody << "        s0[" << idx << "] = " << fmt(iv) << ";\n";
+        }
     }
 
     // ======================================================================

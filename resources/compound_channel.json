@@ -1,0 +1,264 @@
+{
+  "requires": [
+    "main_components.json",
+    "open_channel.json"
+  ],
+  "Compound Channel Segment": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Compound Channel Segment (power-law main channel + floodplain)",
+    "icon": {
+      "filename": "Compound_Channel.png"
+    },
+    "helptext": "Channel segment with a power-law main channel, A = channel_coeff*y^channel_exponent for depth y <= bank_depth (exponent 1 = rectangle, 2 = triangle/parabola-like), and above bank_depth vertical channel walls plus a floodplain of flat width floodplain_width and side slope floodplain_side_slope. Wetted perimeter: main channel P = T(y) + 2y with top width T = channel_coeff*channel_exponent*y^(channel_exponent-1); above bank the floodplain bottom (ramped in over the first 0.1 m) and sloped sides are added. A pool_depth (dead storage below the zero-flow control) can be set: Storage and depth include it, the flowing area exposed as 'area' excludes it, and obs_depth = depth - pool_depth. Depth is obtained from Storage by inverting the area relation in closed form. Exposes area, perimeter, head, ManningCoeff and length, so it connects with the existing channel links (Trapezoidal_Channel_link, channel2fixed, Reach_link, groundwater_to_stream, pond outlets). Implementation note: all state-dependent quantities are written inline in terms of Storage (depth) and depth (area, perimeter, top width) only; chains of named helper expressions were found to be evaluated with stale values. Requires the Expression::argument_values fix for _min/_max with two compound arguments.",
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "inflow",
+      "includeinoutput": "true",
+      "description": "Storage",
+      "initial_value_expression": "length*(channel_coeff*(_min(_pos(depth);bank_depth))^channel_exponent+(channel_coeff*channel_exponent*bank_depth^(channel_exponent-1)+floodplain_width)*_pos(depth-bank_depth)+floodplain_side_slope*_pos(depth-bank_depth)^2)",
+      "ask_user": "false",
+      "estimate": "true",
+      "unit": "m^3;ft^3"
+    },
+    "channel_coeff": {
+      "type": "value",
+      "description": "Main-channel area coefficient a (A = a*y^m)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "criteria": "channel_coeff>0",
+      "warningmessage": "Channel area coefficient must be greater than zero",
+      "helptext": "Coefficient a of the main-channel area-depth relation A = a*y^m (SI: m^(2-m))."
+    },
+    "channel_exponent": {
+      "type": "value",
+      "description": "Main-channel area exponent m (A = a*y^m)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1.5",
+      "criteria": "channel_exponent>0.999",
+      "warningmessage": "Channel area exponent must be at least 1",
+      "helptext": "Exponent m of the main-channel area-depth relation; 1 = rectangular, 2 = triangular."
+    },
+    "bank_depth": {
+      "type": "value",
+      "description": "Bank-full (maximum) depth of the main channel",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "criteria": "bank_depth>0",
+      "warningmessage": "Bank depth must be greater than zero"
+    },
+    "floodplain_width": {
+      "type": "value",
+      "description": "Floodplain flat width (in addition to the main-channel top width)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "default": "0"
+    },
+    "floodplain_side_slope": {
+      "type": "value",
+      "description": "Floodplain/valley side slope (horizontal:vertical)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "10",
+      "criteria": "floodplain_side_slope>0",
+      "warningmessage": "Floodplain side slope must be greater than zero"
+    },
+    "pool_depth": {
+      "type": "value",
+      "description": "Pool (dead-storage) depth below the zero-flow control",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "default": "0",
+      "helptext": "Depth of water retained at zero flow (pool behind the riffle/control). Storage and depth include the pool; the flowing area used by the connectors excludes it. Must not exceed bank_depth."
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's Roughness Coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness must be greater than zero",
+      "estimate": "true"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Segment length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
+    },
+    "bank_area": {
+      "type": "expression",
+      "expression": "channel_coeff*bank_depth^channel_exponent",
+      "description": "Main-channel area at bank-full depth",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m^2;ft^2"
+    },
+    "bank_width": {
+      "type": "expression",
+      "expression": "channel_coeff*channel_exponent*bank_depth^(channel_exponent-1)",
+      "description": "Main-channel top width at bank-full depth",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m;ft"
+    },
+    "depth": {
+      "type": "expression",
+      "expression": "(_min(_pos(Storage/length)/channel_coeff;bank_depth^channel_exponent))^(1/channel_exponent)+(-(channel_coeff*channel_exponent*bank_depth^(channel_exponent-1)+floodplain_width)+_sqt((channel_coeff*channel_exponent*bank_depth^(channel_exponent-1)+floodplain_width)^2+4*floodplain_side_slope*_pos(Storage/length-channel_coeff*bank_depth^channel_exponent)))/(2*floodplain_side_slope)",
+      "description": "Initial Water Depth; Water Depth",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "includeinoutput": "true",
+      "criteria": "depth>-0.0000001",
+      "warningmessage": "Depth must be non-negative",
+      "helptext": "Depth of water above the channel invert (main channel + floodplain). The value entered is the initial water depth; the initial storage is computed from it with the compound section. If depth is initially unknown, it is estimated based on storage."
+    },
+    "head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation",
+      "description": "Hydraulic Head",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "_pos(channel_coeff*(_min(_pos(depth);bank_depth))^channel_exponent+(channel_coeff*channel_exponent*bank_depth^(channel_exponent-1)+floodplain_width)*_pos(depth-bank_depth)+floodplain_side_slope*_pos(depth-bank_depth)^2-channel_coeff*pool_depth^channel_exponent)",
+      "description": "Flowing cross-sectional area (total minus pool)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2"
+    },
+    "top_width": {
+      "type": "expression",
+      "expression": "channel_coeff*channel_exponent*(_min(_pos(depth);bank_depth))^(channel_exponent-1)+(floodplain_width+2*floodplain_side_slope*_pos(depth-bank_depth))*_min(_pos(depth-bank_depth)/0.1;1)",
+      "description": "Top width",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "perimeter": {
+      "type": "expression",
+      "expression": "channel_coeff*channel_exponent*(_min(_pos(depth);bank_depth))^(channel_exponent-1)+2*_min(_pos(depth);bank_depth)+floodplain_width*_min(_pos(depth-bank_depth)/0.1;1)+2*_pos(depth-bank_depth)*_sqt(1+floodplain_side_slope^2)",
+      "description": "Wetted Perimeter",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow time series",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "total_area": {
+      "type": "expression",
+      "expression": "channel_coeff*(_min(_pos(depth);bank_depth))^channel_exponent+(channel_coeff*channel_exponent*bank_depth^(channel_exponent-1)+floodplain_width)*_pos(depth-bank_depth)+floodplain_side_slope*_pos(depth-bank_depth)^2",
+      "description": "Total cross-sectional area including the pool",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2"
+    },
+    "obs_depth": {
+      "type": "expression",
+      "expression": "depth-pool_depth",
+      "description": "Depth above the zero-flow control (comparable to gage height minus gage height of zero flow)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    }
+  },
+  "Compound_Channel_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Link from a compound channel segment to another channel segment",
+    "icon": {
+      "filename": "Compound_Channel_Link.png"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(_bkw(head;area);0)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "(perimeter.s+perimeter.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Velocity",
+      "expression": "flow/area/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    },
+    "helptext": "Manning (diffusive-wave) connector between channel segments; identical to Trapezoidal_Channel_link (upwind flowing area, average wetted perimeter and roughness). Works with Compound Channel Segment and Trapezoidal Channel Segment."
+  }
+}
