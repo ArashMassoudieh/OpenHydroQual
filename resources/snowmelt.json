@@ -3,6 +3,9 @@
     "type": "source",
     "typecategory": "Sources",
     "description": "Air-temperature forcing",
+    "icon": {
+      "filename": "snowmelt.png"
+    },
     "name": {
       "type": "string",
       "description": "Name",
@@ -28,6 +31,9 @@
     "type": "source",
     "typecategory": "Sources",
     "description": "Liquid portion of precipitation from a temperature transition",
+    "icon": {
+      "filename": "snowmelt.png"
+    },
     "name": {
       "type": "string",
       "description": "Name",
@@ -91,6 +97,9 @@
     "type": "source",
     "typecategory": "Sources",
     "description": "Solid portion of precipitation from a temperature transition",
+    "icon": {
+      "filename": "snowmelt.png"
+    },
     "name": {
       "type": "string",
       "description": "Name",
@@ -154,6 +163,9 @@
     "type": "block",
     "typecategory": "Blocks",
     "description": "Temperature-index snow water-equivalent store",
+    "icon": {
+      "filename": "snowmelt.png"
+    },
     "helptext": "Stores solid precipitation as snow water equivalent and releases degree-day snowmelt through a Snowmelt_link.",
     "name": {
       "type": "string",
@@ -237,6 +249,9 @@
     "type": "link",
     "typecategory": "Connectors",
     "description": "Degree-day snowmelt release to a catchment",
+    "icon": {
+      "filename": "snowmelt.png"
+    },
     "flow": {
       "type": "expression",
       "description": "Snowmelt flow",
@@ -252,6 +267,9 @@
     "type": "link",
     "typecategory": "Connectors",
     "description": "Degree-day snowmelt release to a mixed HRU's pervious surface",
+    "icon": {
+      "filename": "snowmelt.png"
+    },
     "flow": {
       "type": "expression",
       "description": "Pervious-area snowmelt flow",
@@ -267,6 +285,9 @@
     "type": "link",
     "typecategory": "Connectors",
     "description": "Degree-day snowmelt release to a mixed HRU's impervious surface",
+    "icon": {
+      "filename": "snowmelt.png"
+    },
     "flow": {
       "type": "expression",
       "description": "Impervious-area snowmelt flow",
