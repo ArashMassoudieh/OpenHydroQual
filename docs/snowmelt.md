@@ -36,3 +36,10 @@ snow redistribution, cold content, refreezing, liquid-water retention in the
 pack, sublimation, or a surface-energy balance. Use an energy-balance model
 when radiation, humidity, wind, and snow thermal state are material to the
 study.
+
+Verification of snow accumulation and melt is independent of verification of
+the receiving catchment or HRU. A correct snow water-equivalent trajectory does
+not establish that a spatially aggregated soil column produces the right
+surface-runoff partition or outlet hydrograph. Validate the receiving runoff,
+infiltration, groundwater, and routing formulation at the intended spatial
+scale before using discharge results.

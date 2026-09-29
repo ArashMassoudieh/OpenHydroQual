@@ -9,10 +9,12 @@ This four-day example demonstrates the temperature-index snow components in
 3. A second ten-millimetre event falls above freezing and reaches the
    catchment directly as liquid rain.
 
-From this directory, run:
+Build `OpenHydroQual-Console` for the current machine, then from this directory
+run:
 
 ```sh
-../../terminal/TOpenHydroQual/build_lm/OpenHydroQual-Console snowmelt.ohq \
+CONSOLE=/path/to/built/OpenHydroQual-Console
+"$CONSOLE" snowmelt.ohq \
   --resources ../../resources --quiet
 ```
 

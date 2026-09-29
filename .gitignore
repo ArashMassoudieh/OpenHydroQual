@@ -433,6 +433,7 @@ codegen/build-local/
 OHQLib/build-fresh/
 
 terminal/TOpenHydroQual/build-fresh/
+terminal/TOpenHydroQual/build_lm/
 
 *.bak-paramfn
 

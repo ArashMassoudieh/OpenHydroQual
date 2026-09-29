@@ -109,10 +109,11 @@ system.solve()
 system.write_outputs()
 ```
 
-See [docs/python_api.html](docs/python_api.html) for the full API reference.
+See the [generated Python API reference](../PythonBindings/openhydroqual_python_api.html)
+for the full binding interface.
 
 ---
 
 ## License
 
-[MIT License](LICENSE)
+[MIT License](../LICENSE)
