@@ -20,5 +20,6 @@ Plants, plants.json, plant_template.png
 Physics based data driven hydrology ,physicsbaseddatadrivenhydrology.json, physicsbaseddd.png
 Hydrologic Response Unit, hydrologic_response_unit.json, hydrologic_response_unit.png
 Mixed Hydrologic Response Unit, mixed_hydrologic_response_unit.json, mixed_hydrologic_response_unit.png
+Urban HRU, urban_hru.json, urban_hru.png
 CN Catchment (SCS Curve Number), cn_catchment.json, cn_catchment.png
 Culverts, culvert.json, culvert_template.png

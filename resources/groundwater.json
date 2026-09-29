@@ -404,5 +404,48 @@
       "ask_user": "false",
       "unit": "m^3/day;ft^3/day;m^3/s"
     }
+  },
+  "soil2groundwater_unsat_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Soil to groundwater link (unsaturated conductivity)",
+    "icon": {
+      "filename": "soil2GW_link.png"
+    },
+    "helptext": "Darcy flow between the bottom soil layer (source, must be a Soil block) and a groundwater cell. When the soil head is higher (drainage), the conductivity is the soil's unsaturated conductivity K_sat*k_r(Se), with the Mualem-van Genuchten k_r of the soil layer, as in soil_to_soil_link. When the groundwater head is higher (upward flow), the soil's saturated conductivity K_sat is used. flow = area*K_eff*(head.s-head.e)/length",
+    "length": {
+      "type": "expression",
+      "expression": "(depth.s+depth.e)/2",
+      "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;cm~^2;in~^2",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero"
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective hydraulic conductivity",
+      "expression": "K_sat.s*((1-(1-Se.s^(1/m.s))^m.s)^2*_hsd(head.s-head.e)+_hsd(head.e-head.s))",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m/day;ft/day;cm/s;m/s"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "area*K_sat.s*((1-(1-Se.s^(1/m.s))^m.s)^2*_pos(head.s-head.e)-_pos(head.e-head.s))/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
+    }
   }
 }

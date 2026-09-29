@@ -240,10 +240,27 @@
       "ask_user": "false",
       "unit": "m;ft;in"
     },
+    "head_difference": {
+      "type": "expression",
+      "description": "Driving head difference",
+      "expression": "_max(head.s;start_elevation)-_max(head.e;end_elevation)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft",
+      "helptext": "Head at the upstream end minus head at the downstream end, each taken no lower than the pipe invert at that end (free outfall when the water is below the invert)."
+    },
+    "upstream_weight": {
+      "type": "expression",
+      "description": "Upstream weight",
+      "expression": "(_pos(head_difference)+0.0005)/(_abs(head_difference)+0.001)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Smooth upwind weight for the flow area and hydraulic radius: 1 when the start end is more than a few mm higher, 0 when the end is higher, 0.5 at equal heads (1 mm smoothing, replaces a hard Heaviside switch)."
+    },
     "eff_area": {
       "type": "expression",
       "description": "Effective area",
-      "expression": "_hsd(_max(head.s;start_elevation)-_max(head.e;end_elevation))*area_1 + _hsd(_max(head.e;end_elevation)-_max(head.s;start_elevation))*area_2",
+      "expression": "upstream_weight*area_1 + (1-upstream_weight)*area_2",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m^2;ft^2;in^2"
@@ -251,7 +268,7 @@
     "hydraulic_radius": {
       "type": "expression",
       "description": "Effective hydraulic radius",
-      "expression": "_hsd(_max(head.s;start_elevation)-_max(head.e;end_elevation))*area_1/perimeter_1 + _hsd(_max(head.e;end_elevation)-_max(head.s;start_elevation))*area_2/perimeter_2",
+      "expression": "upstream_weight*area_1/_max(perimeter_1;0.000001) + (1-upstream_weight)*area_2/_max(perimeter_2;0.000001)",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m;ft;in"
@@ -259,7 +276,7 @@
     "flow": {
       "type": "expression",
       "description": "Flow rate",
-      "expression": "86400*(_sqt((_max(head.s;start_elevation)-_max(head.e;end_elevation))/length)/ManningCoeff)*eff_area*hydraulic_radius^0.6667",
+      "expression": "86400*(_sqt(head_difference/length)/ManningCoeff)*eff_area*hydraulic_radius^0.6667",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",
