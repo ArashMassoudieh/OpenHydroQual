@@ -19,6 +19,18 @@ above 1 °C, and linear between them. The default melt threshold is 0 °C and
 the degree-day factor is 0.003 m/day/°C. These are initial estimates and should
 be calibrated or replaced with locally supported values.
 
+`Liquid_Precipitation`, `Snowfall`, and `Snowpack` each expose a
+`temperature_offset` in °C. Apply the same offset to all three components for
+a surface. This supports lapse-rate adjustment from a measured forcing
+elevation without changing the original temperature file. A negative
+environmental lapse rate makes surfaces above the reference elevation colder.
+
+Do not connect `Snowmelt_link` directly to a `CN_Catchment`. That composite's
+generic external inflow enters its first routing reservoir after the curve-
+number abstraction partition, which would treat all melt as runoff. A
+snow-aware curve-number formulation needs a dedicated melt partition before
+the routing cascade.
+
 This is a temperature-index model. It does not represent canopy interception,
 snow redistribution, cold content, refreezing, liquid-water retention in the
 pack, sublimation, or a surface-energy balance. Use an energy-balance model

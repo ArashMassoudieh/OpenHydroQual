@@ -61,6 +61,22 @@
       "delegate": "Browser;time series",
       "unit": "degC"
     },
+    "temperature_offset": {
+      "type": "value",
+      "description": "Additive air-temperature adjustment for this modeled surface",
+      "default": "0",
+      "ask_user": "true",
+      "estimate": "true",
+      "unit": "degC"
+    },
+    "effective_temperature": {
+      "type": "expression",
+      "description": "Air temperature after the local elevation adjustment",
+      "expression": "Temperature+temperature_offset",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "degC"
+    },
     "snowfall_temperature": {
       "type": "value",
       "description": "Temperature at or below which all precipitation is snow",
@@ -80,7 +96,7 @@
     "rain_fraction": {
       "type": "expression",
       "description": "Fraction of total precipitation falling as liquid water",
-      "expression": "_min(_max((Temperature-snowfall_temperature)/(rainfall_temperature-snowfall_temperature);0);1)",
+      "expression": "_min(_max((effective_temperature-snowfall_temperature)/(rainfall_temperature-snowfall_temperature);0);1)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -127,6 +143,22 @@
       "delegate": "Browser;time series",
       "unit": "degC"
     },
+    "temperature_offset": {
+      "type": "value",
+      "description": "Additive air-temperature adjustment for this modeled surface",
+      "default": "0",
+      "ask_user": "true",
+      "estimate": "true",
+      "unit": "degC"
+    },
+    "effective_temperature": {
+      "type": "expression",
+      "description": "Air temperature after the local elevation adjustment",
+      "expression": "Temperature+temperature_offset",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "degC"
+    },
     "snowfall_temperature": {
       "type": "value",
       "description": "Temperature at or below which all precipitation is snow",
@@ -146,7 +178,7 @@
     "snow_fraction": {
       "type": "expression",
       "description": "Fraction of total precipitation falling as snow",
-      "expression": "1-_min(_max((Temperature-snowfall_temperature)/(rainfall_temperature-snowfall_temperature);0);1)",
+      "expression": "1-_min(_max((effective_temperature-snowfall_temperature)/(rainfall_temperature-snowfall_temperature);0);1)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -198,6 +230,22 @@
       "includeinoutput": "true",
       "ask_user": "true",
       "delegate": "ComboBox;Sources",
+      "unit": "degC"
+    },
+    "temperature_offset": {
+      "type": "value",
+      "description": "Additive air-temperature adjustment for this snowpack",
+      "default": "0",
+      "ask_user": "true",
+      "estimate": "true",
+      "unit": "degC"
+    },
+    "effective_temperature": {
+      "type": "expression",
+      "description": "Air temperature after the local elevation adjustment",
+      "expression": "Temperature+temperature_offset",
+      "includeinoutput": "true",
+      "ask_user": "false",
       "unit": "degC"
     },
     "area": {
@@ -255,7 +303,7 @@
     "flow": {
       "type": "expression",
       "description": "Snowmelt flow",
-      "expression": "area.s*degree_day_factor.s*_pos(Temperature.s-melt_temperature.s)",
+      "expression": "area.s*degree_day_factor.s*_pos(effective_temperature.s-melt_temperature.s)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",
@@ -273,7 +321,7 @@
     "flow": {
       "type": "expression",
       "description": "Pervious-area snowmelt flow",
-      "expression": "area.s*degree_day_factor.s*_pos(Temperature.s-melt_temperature.s)",
+      "expression": "area.s*degree_day_factor.s*_pos(effective_temperature.s-melt_temperature.s)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",
@@ -291,7 +339,7 @@
     "flow": {
       "type": "expression",
       "description": "Impervious-area snowmelt flow",
-      "expression": "area.s*degree_day_factor.s*_pos(Temperature.s-melt_temperature.s)",
+      "expression": "area.s*degree_day_factor.s*_pos(effective_temperature.s-melt_temperature.s)",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",
