@@ -3,9 +3,138 @@
     "main_components.json",
     "unsaturated_soil.json",
     "groundwater.json",
-    "open_channel.json",
-    "mixed_hydrologic_response_unit.json"
+    "open_channel.json"
   ],
+  "Reach_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Urban HRU pervious-surface reach outlet",
+    "icon": {
+      "filename": "HRU_Pervious_Outlet.png"
+    },
+    "helptext": "Outlet of the Urban_HRU's Reach member (pervious-surface routing) to the receiving channel segment. Same Manning's-equation formulation as Trapezoidal_Channel_link; a distinct type name lets the Reach and the Impervious_Reach be connected as separate exits of the same composite (see Impervious_Reach_link).",
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(_bkw(head;area);0)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "(perimeter.s+perimeter.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Velocity",
+      "expression": "flow/area/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    }
+  },
+  "Impervious_Reach_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Urban HRU impervious-surface reach outlet",
+    "icon": {
+      "filename": "HRU_Impervious_Outlet.png"
+    },
+    "helptext": "Outlet of the Urban_HRU's Impervious_Reach member (impervious-surface routing) to the receiving channel segment. Same Manning's-equation formulation as Trapezoidal_Channel_link; a distinct type name lets the Impervious_Reach and the Reach be connected as separate exits of the same composite (see Reach_link).",
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(_bkw(head;area);0)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "perimeter": {
+      "type": "expression",
+      "description": "Wetted Perimeter",
+      "expression": "(perimeter.s+perimeter.e)/2",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "hydraulic_radious": {
+      "type": "expression",
+      "description": "Hydraulic Radius",
+      "expression": "area/perimeter",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Velocity",
+      "expression": "flow/area/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    }
+  },
   "Urban_HRU": {
     "type": "composite",
     "typecategory": "Blocks",
@@ -126,7 +255,7 @@
     },
     "area": {
       "type": "value",
-      "description": "Total plan area of the mixed hydrologic response unit",
+      "description": "Total plan area of the Urban HRU",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m~^2;ft~^2",
@@ -153,8 +282,8 @@
       "default": "0.2",
       "estimate": "true",
       "criteria": "impervious_fraction*(1-impervious_fraction)>0",
-      "warningmessage": "For the mixed HRU, impervious_fraction must be greater than 0 and less than 1. Use the original HRU for a fully non-impervious unit and a dedicated impervious HRU for a fully impervious unit.",
-      "helptext": "GIS-derived fraction of the total HRU area assigned to Impervious_Catchment. This mixed component is intended only for 0 < impervious_fraction < 1. The remaining fraction, 1-impervious_fraction, is assigned to Catchment, the soil profile, groundwater, and recharge interface."
+      "warningmessage": "impervious_fraction must be greater than 0 and less than 1. Use the Hydrologic Response Unit for land without impervious cover.",
+      "helptext": "Directly connected impervious fraction (DCIA) of the total area, before impervious_multiplier: the share of the land whose runoff reaches a storm drain or the stream without crossing pervious ground (not the total impervious area). The Impervious_Catchment receives area*min(impervious_fraction*impervious_multiplier, 0.95); the pervious Catchment, the soil layers and the recharge interface receive the rest; the Groundwater cell receives the whole area."
     },
     "surface_elevation": {
       "type": "value",

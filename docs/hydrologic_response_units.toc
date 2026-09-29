@@ -1,0 +1,21 @@
+\contentsline {section}{\numberline {1}Which HRU to use}{2}{section.1}%
+\contentsline {section}{\numberline {2}Elements shared by both units}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Vertical geometry}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Soil water}{2}{subsection.2.2}%
+\contentsline {section}{\numberline {3}HRU}{3}{section.3}%
+\contentsline {section}{\numberline {4}Urban HRU}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Structure}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Ports}{5}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Surface runoff and routing}{6}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}The impervious fraction}{6}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Areas}{6}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Recharge through the unsaturated conductivity}{7}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}Unconfined groundwater}{7}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}Layer-specific soil}{7}{subsection.4.8}%
+\contentsline {subsection}{\numberline {4.9}Calibration multipliers}{7}{subsection.4.9}%
+\contentsline {subsection}{\numberline {4.10}Disconnected impervious area}{8}{subsection.4.10}%
+\contentsline {section}{\numberline {5}Using the units}{8}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Templates}{8}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}A worked example}{8}{subsection.5.2}%
+\contentsline {section}{\numberline {6}Property reference}{10}{section.6}%
+\contentsline {section}{\numberline {7}Limitations and pitfalls}{12}{section.7}%

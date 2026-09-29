@@ -1,0 +1,23 @@
+loadtemplate; filename = main_components.json
+addtemplate; filename = unsaturated_soil.json
+addtemplate; filename = groundwater.json
+addtemplate; filename = open_channel.json
+addtemplate; filename = soil_evapotranspiration_models.json
+addtemplate; filename = urban_hru.json
+setvalue; object=system, quantity=simulation_start_time, value=36526
+setvalue; object=system, quantity=simulation_end_time, value=36556
+setvalue; object=system, quantity=initial_time_step, value=0.001
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=maximum_time_allowed, value=3600
+setvalue; object=system, quantity=write_interval, value=10
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+create source;type=Precipitation,name=Rain,timeseries=precipitation.csv
+create source;type=Evapotranspiration_Time_Series (Soil),name=ET,corr_fact=0.8,ET_timeseries=evapotranspiration.csv
+create composite;type=Urban_HRU,name=Neighbourhood,x=0,y=0,_width=260,_height=260,area=500000,impervious_fraction=0.25,impervious_multiplier=1,surface_elevation=100,depth_to_groundwater=3.5,groundwater_thickness=12,Precipitation=Rain,Evapotranspiration=ET,catchment_slope=0.03,catchment_width=2500,manning_coefficient=0.15,depression_storage=0.005,runoff_coefficient=1,impervious_manning_coefficient=0.015,impervious_depression_storage=0.0015,K_sat_1=0.6,K_sat_2=0.4,K_sat_3=0.8,alpha_vG_1=1.5,alpha_vG_2=1.2,alpha_vG_3=2.0,n_vG_1=1.35,n_vG_2=1.35,n_vG_3=1.45,theta_sat_1=0.42,theta_sat_2=0.40,theta_sat_3=0.36,theta_res_1=0.06,theta_res_2=0.06,theta_res_3=0.04,soil_specific_storage=0.01,initial_moisture_content=0.25,K_sat_scale=1,groundwater_K=1,groundwater_porosity=0.15,initial_groundwater_moisture_content=0.05,reach_base_width=1,reach_side_slope=2,reach_manning_coefficient=0.05,reach_length=400,initial_reach_depth=0.01,impervious_reach_base_width=1,impervious_reach_side_slope=2,impervious_reach_manning_coefficient=0.02,impervious_reach_length=400,initial_impervious_reach_depth=0.01
+create block;type=Trapezoidal Channel Segment,name=Stream,x=700,y=0,_width=240,_height=200,base_width=3,side_slope=2,ManningCoeff=0.035,bottom_elevation=88,length=800,depth=0.1
+create block;type=fixed_head,name=Outlet,x=1300,y=0,_width=200,_height=200,head=87,Storage=100000
+create link;type=Reach_link,from=Neighbourhood,to=Stream,name=Pervious_outlet
+create link;type=Impervious_Reach_link,from=Neighbourhood,to=Stream,name=Impervious_outlet
+create link;type=groundwater_to_stream,from=Neighbourhood,to=Stream,name=Baseflow,area=8000,length=150,hydraulic_conductivity=5
+create link;type=channel2fixed,from=Stream,to=Outlet,name=Stream_outlet
