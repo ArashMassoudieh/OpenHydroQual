@@ -244,6 +244,12 @@
         "from": "Impervious_Reach",
         "to": "Trapezoidal Channel Segment"
       },
+      "Pervious_Snowmelt_link": {
+        "to": "Catchment"
+      },
+      "Impervious_Snowmelt_link": {
+        "to": "Impervious_Catchment"
+      },
       "groundwater_link": {
         "from": "Groundwater",
         "to": "Groundwater"

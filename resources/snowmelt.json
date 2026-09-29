@@ -1,0 +1,280 @@
+{
+  "Air_Temperature": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Air-temperature forcing",
+    "name": {
+      "type": "string",
+      "description": "Name",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "value",
+      "default": "1",
+      "ask_user": "false"
+    },
+    "timeseries": {
+      "type": "timeseries",
+      "description": "Air temperature time series",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "degC"
+    }
+  },
+
+  "Liquid_Precipitation": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Liquid portion of precipitation from a temperature transition",
+    "name": {
+      "type": "string",
+      "description": "Name",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area",
+      "ask_user": "false"
+    },
+    "timeseries": {
+      "type": "timeseries_prec",
+      "description": "Cumulative total precipitation",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "m;mm;in;ft"
+    },
+    "Temperature": {
+      "type": "timeseries",
+      "description": "Air temperature",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "degC"
+    },
+    "snowfall_temperature": {
+      "type": "value",
+      "description": "Temperature at or below which all precipitation is snow",
+      "default": "-1",
+      "ask_user": "true",
+      "estimate": "true"
+    },
+    "rainfall_temperature": {
+      "type": "value",
+      "description": "Temperature at or above which all precipitation is rain",
+      "default": "1",
+      "ask_user": "true",
+      "estimate": "true",
+      "criteria": "rainfall_temperature>snowfall_temperature",
+      "warningmessage": "Rainfall transition temperature must exceed snowfall transition temperature."
+    },
+    "rain_fraction": {
+      "type": "expression",
+      "description": "Fraction of total precipitation falling as liquid water",
+      "expression": "_min(_max((Temperature-snowfall_temperature)/(rainfall_temperature-snowfall_temperature);0);1)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "rate": {
+      "type": "expression",
+      "description": "Liquid precipitation fraction",
+      "expression": "rain_fraction",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    }
+  },
+
+  "Snowfall": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Solid portion of precipitation from a temperature transition",
+    "name": {
+      "type": "string",
+      "description": "Name",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area",
+      "ask_user": "false"
+    },
+    "timeseries": {
+      "type": "timeseries_prec",
+      "description": "Cumulative total precipitation",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "m;mm;in;ft"
+    },
+    "Temperature": {
+      "type": "timeseries",
+      "description": "Air temperature",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "degC"
+    },
+    "snowfall_temperature": {
+      "type": "value",
+      "description": "Temperature at or below which all precipitation is snow",
+      "default": "-1",
+      "ask_user": "true",
+      "estimate": "true"
+    },
+    "rainfall_temperature": {
+      "type": "value",
+      "description": "Temperature at or above which all precipitation is rain",
+      "default": "1",
+      "ask_user": "true",
+      "estimate": "true",
+      "criteria": "rainfall_temperature>snowfall_temperature",
+      "warningmessage": "Rainfall transition temperature must exceed snowfall transition temperature."
+    },
+    "snow_fraction": {
+      "type": "expression",
+      "description": "Fraction of total precipitation falling as snow",
+      "expression": "1-_min(_max((Temperature-snowfall_temperature)/(rainfall_temperature-snowfall_temperature);0);1)",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "rate": {
+      "type": "expression",
+      "description": "Snowfall fraction",
+      "expression": "snow_fraction",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    }
+  },
+
+  "Snowpack": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Temperature-index snow water-equivalent store",
+    "helptext": "Stores solid precipitation as snow water equivalent and releases degree-day snowmelt through a Snowmelt_link.",
+    "name": {
+      "type": "string",
+      "description": "Name",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Snowfall",
+      "includeinoutput": "true",
+      "description": "Snow water-equivalent volume",
+      "ask_user": "false",
+      "initial_value_expression": "area*initial_swe",
+      "unit": "m^3;ft^3"
+    },
+    "Snowfall": {
+      "type": "source",
+      "description": "Solid precipitation input",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "unit": "m^3/day;ft^3/s"
+    },
+    "Temperature": {
+      "type": "source",
+      "description": "Air-temperature forcing",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "unit": "degC"
+    },
+    "area": {
+      "type": "value",
+      "description": "Snow-covered plan area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^2;ft^2",
+      "criteria": "area>0",
+      "warningmessage": "Snowpack area must be positive."
+    },
+    "initial_swe": {
+      "type": "value",
+      "description": "Initial snow water equivalent",
+      "default": "0",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;mm;in;ft",
+      "criteria": "initial_swe>-1e-12",
+      "warningmessage": "Initial snow water equivalent cannot be negative."
+    },
+    "SWE": {
+      "type": "expression",
+      "description": "Snow water equivalent depth",
+      "expression": "Storage/area",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;mm;in;ft"
+    },
+    "degree_day_factor": {
+      "type": "value",
+      "description": "Degree-day melt factor in water-depth per day per degree Celsius",
+      "default": "0.003",
+      "ask_user": "true",
+      "estimate": "true",
+      "criteria": "degree_day_factor>-1e-12",
+      "warningmessage": "Degree-day factor cannot be negative."
+    },
+    "melt_temperature": {
+      "type": "value",
+      "description": "Temperature above which snow melts",
+      "default": "0",
+      "ask_user": "true",
+      "estimate": "true"
+    }
+  },
+
+  "Snowmelt_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Degree-day snowmelt release to a catchment",
+    "flow": {
+      "type": "expression",
+      "description": "Snowmelt flow",
+      "expression": "area.s*degree_day_factor.s*_pos(Temperature.s-melt_temperature.s)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    }
+  },
+
+  "Pervious_Snowmelt_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Degree-day snowmelt release to a mixed HRU's pervious surface",
+    "flow": {
+      "type": "expression",
+      "description": "Pervious-area snowmelt flow",
+      "expression": "area.s*degree_day_factor.s*_pos(Temperature.s-melt_temperature.s)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    }
+  },
+
+  "Impervious_Snowmelt_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Degree-day snowmelt release to a mixed HRU's impervious surface",
+    "flow": {
+      "type": "expression",
+      "description": "Impervious-area snowmelt flow",
+      "expression": "area.s*degree_day_factor.s*_pos(Temperature.s-melt_temperature.s)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    }
+  }
+}

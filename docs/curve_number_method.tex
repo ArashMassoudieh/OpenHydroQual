@@ -476,8 +476,10 @@ with $n=5$; it is not a term-by-term reproduction of the dimensionless
 hydrograph ordinates.
 \item \textbf{The lag equation} is calibrated for catchments below roughly
 $800$~ha with $CN$ between 50 and 95.
-\item \textbf{No baseflow, no channel routing, no snow.} The component
-produces direct runoff from a single catchment only.
+\item \textbf{No baseflow or channel routing.} The component itself produces
+direct runoff from a single catchment only. Snow accumulation and melt can be
+placed upstream with \exfile{resources/snowmelt.json}; they are not intrinsic
+to the curve-number closure.
 \item \textbf{Uniform rainfall} over the catchment is assumed, as in the
 original method.
 \end{itemize}

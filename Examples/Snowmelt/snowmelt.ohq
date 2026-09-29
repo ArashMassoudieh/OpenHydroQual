@@ -1,0 +1,22 @@
+loadtemplate; filename=../../resources/main_components.json
+addtemplate; filename=../../resources/rainfall_runoff.json
+addtemplate; filename=../../resources/snowmelt.json
+
+create source;type=Liquid_Precipitation,name=LiquidRain,timeseries=precipitation.csv,Temperature=temperature.csv
+create source;type=Snowfall,name=SolidPrecipitation,timeseries=precipitation.csv,Temperature=temperature.csv
+create source;type=Air_Temperature,name=AirTemperature,timeseries=temperature.csv
+
+create block;type=Snowpack,name=Snowpack,area=1000[m^2],initial_swe=0[m],Snowfall=SolidPrecipitation,Temperature=AirTemperature,degree_day_factor=0.003,melt_temperature=0
+create block;type=Catchment,name=Land,area=1000[m^2],Slope=0.01,Width=31.6228[m],ManningCoeff=0.03,depression_storage=0[m],Runoff_coeff=1,depth=0[m],elevation=0[m],Precipitation=LiquidRain
+create link;from=Snowpack,to=Land,type=Snowmelt_link,name=Snowmelt
+
+create observation;type=Observation,name=snow_water_equivalent,object=Snowpack,expression=SWE,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,name=snowmelt_flow,object=Snowmelt,expression=flow,observed_data=,error_structure=normal,error_standard_deviation=1
+create observation;type=Observation,name=catchment_storage,object=Land,expression=Storage,observed_data=,error_structure=normal,error_standard_deviation=1
+
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=simulation_end_time, value=4
+setvalue; object=system, quantity=initial_time_step, value=0.01
+setvalue; object=system, quantity=record_results, value=No
+setvalue; object=system, quantity=alloutputfile, value=
+setvalue; object=system, quantity=observed_outputfile, value=snowmelt_observed.txt
