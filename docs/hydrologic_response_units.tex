@@ -55,7 +55,7 @@
   {\egroup;\end{tikzpicture}\par\medskip}
 
 \title{\textbf{Hydrologic Response Units in OpenHydroQual}\\[0.3em]
-       \large The HRU and Urban HRU composite blocks (and the legacy Mixed HRU)}
+       \large The HRU and Urban HRU composite blocks}
 \author{}
 \date{}
 
@@ -68,17 +68,15 @@
 A hydrologic response unit (HRU) in OpenHydroQual is a composite block that bundles the surface,
 soil and groundwater stores of one piece of land and the connectors between them, so that a
 sub-catchment is added to a model as a single object with a single set of properties. This document
-describes the two HRUs offered in the interface: the \code{Hydrologic\_Response\_Unit} (``HRU''), a
-single infiltrating surface over a three-layer soil column and a groundwater cell, and the
-\code{Urban\_HRU}, which adds an impervious surface, internal routing reaches, a groundwater cell under
-the whole unit recharged through the unsaturated conductivity of the bottom soil layer, unconfined
-groundwater storage, layer-specific soil parameters and two calibration multipliers. It also
-documents the \code{Mixed\_Hydrologic\_Response\_Unit}, the predecessor of the Urban HRU, which is no
-longer listed in the interface but is kept so that existing models load, and shows with a pair of
-example models run with identical inputs why it was replaced. For each unit the document sets out the
-members and connectors, the equation of each flux, how the plan area is divided, how the vertical
-geometry and the initial state follow from a few properties, and how the impervious fraction should
-be estimated.
+describes the two HRUs: the \code{Hydrologic\_Response\_Unit} (``HRU''), a single infiltrating surface
+over a three-layer soil column and a groundwater cell, and the \code{Urban\_HRU}, which divides the
+land into pervious and impervious surfaces with their own routing reaches, places the groundwater cell
+under the whole unit, recharges it through the unsaturated conductivity of the bottom soil layer,
+treats it as an unconfined aquifer, takes soil parameters layer by layer and carries two calibration
+multipliers. For each unit the document sets out the members and connectors, the equation of each
+flux, how the plan area is divided, how the vertical geometry and the initial state follow from a
+few properties, and how the impervious fraction should be estimated, and it closes with a worked
+example and a property reference.
 \end{abstract}
 
 \tableofcontents
@@ -88,26 +86,24 @@ be estimated.
 
 \begin{table}[H]
 \centering\small
-\begin{tabular}{p{3.6cm}p{3.4cm}p{3.6cm}p{3.6cm}}
+\begin{tabular}{p{4.2cm}p{4.6cm}p{5.2cm}}
 \toprule
- & \code{Hydrologic\_Response\_Unit} & \code{Mixed\_Hydrologic\_Response\_Unit} & \code{Urban\_HRU} \\
+ & \code{Hydrologic\_Response\_Unit} & \code{Urban\_HRU} \\
 \midrule
-File & \file{hydrologic\_response\_unit.json} & \file{mixed\_hydrologic\_response\_unit.json} & \file{urban\_hru.json} \\
-Surfaces & one, infiltrating & pervious + impervious & pervious + impervious \\
-Internal routing reaches & none & one per surface & one per surface \\
-Soil parameters & one set & one set & one set per layer \\
-Groundwater area & $A$ & $A(1-f_i)$ & $A$ (whole unit) \\
-Recharge conductivity & constant \code{recharge\_K} & constant \code{recharge\_K} & $K_{sat,3}\,k_r(S_{e,3})$ \\
-Groundwater storage & user $S_s$ & user $S_s$ & unconfined, $S_s=\phi/b$ \\
-Calibration multipliers & --- & --- & \code{impervious\_multiplier}, \code{K\_sat\_scale} \\
-In the template list & yes & no (legacy) & yes \\
+File & \file{hydrologic\_response\_unit.json} & \file{urban\_hru.json} \\
+Surfaces & one, infiltrating & pervious + impervious \\
+Internal routing reaches & none & one per surface \\
+Soil parameters & one set & one set per layer \\
+Groundwater area & $A$ & $A$ \\
+Recharge conductivity & constant \code{recharge\_K} & $K_{sat,3}\,k_r(S_{e,3})$ \\
+Groundwater storage & user $S_s$ & unconfined, $S_s=\phi/b$ \\
+Calibration multipliers & --- & \code{impervious\_multiplier}, \code{K\_sat\_scale} \\
 Icon & \includegraphics[height=1.4cm]{hydrologic_response_unit.png} &
-       \includegraphics[height=1.4cm]{mixed_hydrologic_response_unit.png} &
        \includegraphics[height=1.4cm]{urban_hru.png} \\
 \bottomrule
 \end{tabular}
-\caption{The three HRU composites. $A$ is the plan area, $f_i$ the impervious fraction, $\phi$ the
-groundwater porosity and $b$ the groundwater thickness.}
+\caption{The two HRU composites. $A$ is the plan area, $\phi$ the groundwater porosity and $b$ the
+groundwater thickness.}
 \end{table}
 
 Use the \textbf{HRU} for land without significant impervious cover --- forest, fields, parks,
@@ -115,17 +111,15 @@ hillslopes --- and for cascades of units where the overland flow of one unit run
 (\cref{sec:hru}). Use the \textbf{Urban HRU} wherever part of the land is impervious and drains
 directly to a stream or storm drain: it partitions the area, routes each surface separately, and its
 subsurface (\cref{sec:urbanspec}) stays physically sensible when the water table lies well below the
-soil column. The \textbf{Mixed HRU} is superseded by the Urban HRU; it remains in
-\file{resources/} so that existing models open, and because the Urban HRU loads its two outlet link
-types from it (\cref{sec:mixedspec}).
+soil column.
 
 %==========================================================================================
-\section{Elements shared by all units}
+\section{Elements shared by both units}
 \label{sec:shared}
-All three units build their subsurface from the same members: three \code{Soil} layers and a
+Both units build their subsurface from the same members: three \code{Soil} layers and a
 \code{Groundwater cell}, connected by infiltration, two percolation links and a recharge link. The
-geometry and the soil-water relations below apply to all of them; the units differ in the plan areas
-they give these members and in the recharge link (\cref{sec:hru,sec:mixedspec,sec:urbanspec}).
+geometry and the soil-water relations below apply to both; the units differ in the plan areas they
+give these members, the recharge link and the groundwater storage (\cref{sec:hru,sec:urbanspec}).
 
 \subsection{Vertical geometry}
 The user gives three levels; everything else is derived:
@@ -205,17 +199,24 @@ Port (link type) & From member & Typical target & Icon \\
 \end{table}
 
 \noindent Recharge uses the stock \code{soil2groundwater\_link} with the constant conductivity
-\code{recharge\_K}, $Q_r=A\,K_{rech}(h_3-h_g)/L$ with $L=\tfrac12(d_3+b)$, and the groundwater cell's
-head is $h_g=z_g+b+(\theta_g-\phi)/S_s$ with user-supplied $\phi$ and $S_s$. One set of soil parameters
-applies to all three layers. The caveats of \cref{sec:mixedspec} about deep water tables and the
-confined-style default $S_s$ apply to the HRU as well. A two-unit hillslope using it is in
-\exfile{Examples/Hydrologic\_Response\_Unit/HRU\_hillslope.ohq}.
+\code{recharge\_K},
+\begin{equation}
+  Q_r=A\,K_{rech}\,\frac{h_3-h_g}{L},\qquad L=\tfrac12\,(d_3+b),
+\end{equation}
+and the groundwater cell's head is $h_g=z_g+b+(\theta_g-\phi)/S_s$ with user-supplied porosity $\phi$
+and specific storage $S_s$. With the defaults ($S_s=0.01$\,m$^{-1}$) the cell responds as a
+\emph{confined} aquifer: a change of 0.01 in moisture content moves the head by 1\,m; set
+$S_s=\phi/b$ for unconfined behaviour (\cref{sec:unconfined}). A constant recharge conductivity is
+adequate when the water table lies at or just below the soil column; when it lies far below, see
+\cref{sec:recharge}. One set of soil parameters applies to all three layers. A two-unit hillslope
+using the HRU is in \exfile{Examples/Hydrologic\_Response\_Unit/HRU\_hillslope.ohq}.
 
-\section{Structure of the Urban (and Mixed) HRU}
-\label{sec:common}
+%==========================================================================================
+\section{Urban HRU}
+\label{sec:urbanspec}
 
-\Cref{fig:urban} shows the Urban HRU and \cref{fig:mixed} the legacy Mixed HRU, which has the same
-members. Each has eight members:
+\subsection{Structure}
+\Cref{fig:urban} shows the Urban HRU (\file{urban\_hru.json}). It has eight members:
 
 \begin{itemize}[leftmargin=1.4em]
 \item \code{Catchment} --- the pervious (infiltrating) surface;
@@ -242,19 +243,11 @@ and ports to the receiving channel segment. The recharge connector is highlighte
 \label{fig:urban}
 \end{figure}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.86\textwidth]{mixed_hru_structure}
-\caption{The legacy \code{Mixed\_Hydrologic\_Response\_Unit}. Differences from \cref{fig:urban}: the
-groundwater cell has only the pervious area, recharge uses a constant conductivity, and the
-groundwater specific storage is user-supplied.}
-\label{fig:mixed}
-\end{figure}
 
 \subsection{Ports}
 \label{sec:ports}
-A composite exposes the members that may be connected from outside as \emph{ports}. Both units
-declare the same five:
+A composite exposes the members that may be connected from outside as \emph{ports}. The Urban HRU
+declares five:
 
 \begin{table}[H]
 \centering\small
@@ -271,13 +264,12 @@ Port (link type) & From member & Typical target & Icon \\
 \end{tabular}
 \end{table}
 
-\code{Reach\_link} and \code{Impervious\_Reach\_link} are defined in
-\file{mixed\_hydrologic\_response\_unit.json} and are used by both units. Their equations are those of
-the channel-to-channel connector (\code{Trapezoidal\_Channel\_link}); they exist as separate types
-only so that the two outlets of one composite can be told apart when a link is drawn from it, and
-they have their own icons so that HRU outlets are distinguishable from links along the stream
-network. When a link is drawn from an HRU in the interface, the port whose type matches the chosen
-link is used; in a script, \code{create link;type=Reach\_link,from=SC01,to=R01} connects the
+\code{Reach\_link} and \code{Impervious\_Reach\_link} are defined in \file{urban\_hru.json}. Their
+equations are those of the channel-to-channel connector (\code{Trapezoidal\_Channel\_link}); they exist
+as separate types only so that the two outlets of the composite can be told apart when a link is drawn
+from it, and they have their own icons so that HRU outlets are distinguishable from links along the
+stream network. When a link is drawn from the unit in the interface, the port whose type matches the
+chosen link is used; in a script, \code{create link;type=Reach\_link,from=SC01,to=R01} connects the
 \code{Reach} member of \code{SC01}.
 
 \subsection{Surface runoff and routing}
@@ -327,45 +319,13 @@ up to the modeller. Common choices:
 \item \textbf{Storm-drain inventories.} Where inlet locations are available, impervious surfaces
   within a set distance of an inlet (or of a guttered street that leads to one) can be counted as
   connected. Public inventories miss private systems, so this tends to be a lower bound.
-\item \textbf{Calibration.} In the Urban HRU the estimate is scaled by
+\item \textbf{Calibration.} The estimate is scaled by
   \code{impervious\_multiplier} (\cref{sec:multipliers}); keeping each unit's estimate and
   calibrating one multiplier preserves the spatial pattern and adjusts the level.
 \end{itemize}
 
 \noindent Impervious surfaces that are \emph{not} directly connected remain part of the pervious
 surface (\cref{sec:disconnected}).
-
-%==========================================================================================
-\section{Mixed HRU (legacy)}
-\label{sec:mixedspec}
-
-The Mixed HRU (\file{mixed\_hydrologic\_response\_unit.json}) is not listed in the interface. It
-remains in the repository so that models built with it open and run unchanged, and because the
-\code{Reach\_link} and \code{Impervious\_Reach\_link} types used by the Urban HRU are defined in its file.
-It differs from the Urban HRU in six ways (\cref{sec:differences}), so the Urban HRU does not reproduce
-it; results change when a model is moved from one to the other.
-
-\paragraph{Areas.} With $f_i$ = \code{impervious\_fraction} (strictly between 0 and 1):
-$A f_i$ for \code{Impervious\_Catchment}; $A(1-f_i)$ for \code{Catchment}, the three soil layers,
-the recharge interface \emph{and} the groundwater cell. Nothing lies below the impervious surface.
-
-\paragraph{Soil.} One set of $K_{sat}$, $\alpha$, $n$, $\theta_s$, $\theta_r$ applies to all three
-layers, which then discretise a single profile.
-
-\paragraph{Recharge.} \code{soil2groundwater\_link}:
-\begin{equation}
-  Q_r = A(1-f_i)\,K_{rech}\,\frac{h_3-h_g}{L},\qquad L=\tfrac12\,(d_3+b),
-\end{equation}
-with the constant \code{recharge\_K}.
-
-\paragraph{Groundwater.} $h_g=z_g+b+(\theta_g-\phi)/S_s$ with user-supplied porosity $\phi$ and specific
-storage $S_s$. With the defaults ($S_s=0.01$\,m$^{-1}$, $\theta_{g,0}=\phi=0.4$) the cell starts full
-and responds as a \emph{confined} aquifer: a change of 0.01 in moisture content moves the head by
-1\,m.
-
-%==========================================================================================
-\section{Urban HRU}
-\label{sec:urbanspec}
 
 \subsection{Areas}
 With $f_i=\min(f_{imp}\,m_{imp},\,0.95)$, where $f_{imp}$ is \code{impervious\_fraction} and $m_{imp}$
@@ -385,9 +345,9 @@ Member & Plan area \\
 \end{table}
 
 \noindent The aquifer continues beneath roads and roofs, so the groundwater cell receives the whole
-area; it is recharged only through the pervious soil column. With the pervious area instead (as in the
-Mixed HRU) the water table would rise $1/(1-f_i)$ times too fast per unit of recharge --- twice as fast
-at $f_i=0.5$ --- and any change of $f_i$ during calibration would also change the aquifer.
+area; it is recharged only through the pervious soil column. Were it given only the pervious area, the
+water table would rise $1/(1-f_i)$ times too fast per unit of recharge --- twice as fast at
+$f_i=0.5$ --- and any change of $f_i$ during calibration would also change the aquifer.
 
 \subsection{Recharge through the unsaturated conductivity}
 \label{sec:recharge}
@@ -413,6 +373,7 @@ table. Calibrating $K_{rech}$ can only trade one error for the other. With \eqre
 flux falls with $k_r$ as the bottom layer drains, and no separate recharge conductivity is needed.
 
 \subsection{Unconfined groundwater}
+\label{sec:unconfined}
 The composite sets the cell's specific storage to $S_s=\phi/b$ (\code{groundwater\_porosity} over
 \code{groundwater\_thickness}), so that
 \begin{equation}
@@ -470,44 +431,19 @@ that matters, a third \code{Catchment} for the disconnected area, joined to \cod
 \code{Catchment\_link}, would represent both; it is not part of the composite.
 
 %==========================================================================================
-\section{Urban HRU versus Mixed HRU}
-\label{sec:differences}
-The two units share their members, surface routing and ports; the subsurface and the parameters
-differ:
-
-\begin{table}[H]
-\centering\small
-\begin{tabular}{p{3.6cm}p{5.4cm}p{5.4cm}}
-\toprule
- & Mixed HRU & Urban HRU \\
-\midrule
-Groundwater area & $A(1-f_i)$ & $A$ \\
-Recharge link & \code{soil2groundwater\_link}, constant \code{recharge\_K} & \code{soil2groundwater\_unsat\_link}, $K_{sat,3}k_r(S_{e,3})$ / $K_{sat,3}$ \\
-Groundwater storage & user $S_s$ (default: confined) & $S_s=\phi/b$ (unconfined) \\
-Soil parameters & \code{K\_sat}, \code{alpha\_vG}, \code{n\_vG}, \code{theta\_sat}, \code{theta\_res} & the same with suffix \code{\_1}, \code{\_2}, \code{\_3} \\
-Properties only here & \code{recharge\_K}, \code{groundwater\_specific\_storage} & \code{impervious\_multiplier}, \code{K\_sat\_scale} \\
-Impervious fraction & $0<f_i<1$ & $f_i=\min(f_{imp}m_{imp},0.95)$ \\
-Default \code{groundwater\_porosity} / initial moisture & 0.4 / 0.4 (full cell) & 0.2 / 0.1 (half full) \\
-In the template list & no & yes \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-%==========================================================================================
 \section{Using the units}
 
 \subsection{Templates}
 The HRU lists \file{main\_components.json}, \file{unsaturated\_soil.json} and \file{groundwater.json} in
-its \code{requires}. The Urban HRU lists \file{main\_components.json}, \file{unsaturated\_soil.json},
-\file{groundwater.json}, \file{open\_channel.json} and \file{mixed\_hydrologic\_response\_unit.json}
-(for the outlet ports) in its \code{requires}, so selecting it alone in the interface is enough. The
-evapotranspiration source is not a member; load \file{soil\_evapotranspiration\_models.json} for the
-\code{Evapotranspiration\_Time\_Series (Soil)} source.
+its \code{requires}; the Urban HRU lists the same three and \file{open\_channel.json}, so selecting
+either alone in the interface is enough. The evapotranspiration source is not a member; load
+\file{soil\_evapotranspiration\_models.json} for the \code{Evapotranspiration\_Time\_Series (Soil)}
+source. In a script, add each template explicitly.
 
-\subsection{A minimal model}
-\exdir{Examples/Mixed\_Urban\_HRU} holds two models with identical inputs: one 50\,ha unit with 25\,\%
-impervious area, draining to an 800\,m trapezoidal stream that ends at a fixed head, forced by 30 days
-of hourly rain and daily reference ET. The Urban HRU version:
+\subsection{A worked example}
+\exfile{Examples/Urban\_HRU/Urban\_HRU\_example.ohq} is one 50\,ha unit with 25\,\% impervious area,
+draining to an 800\,m trapezoidal stream that ends at a fixed head, forced by 30 days of hourly rain
+and daily reference ET:
 
 \begin{lstlisting}[style=plain]
 loadtemplate; filename = main_components.json
@@ -515,7 +451,6 @@ addtemplate; filename = unsaturated_soil.json
 addtemplate; filename = groundwater.json
 addtemplate; filename = open_channel.json
 addtemplate; filename = soil_evapotranspiration_models.json
-addtemplate; filename = mixed_hydrologic_response_unit.json
 addtemplate; filename = urban_hru.json
 create source;type=Precipitation,name=Rain,timeseries=precipitation.csv
 create source;type=Evapotranspiration_Time_Series (Soil),name=ET,corr_fact=0.8,ET_timeseries=evapotranspiration.csv
@@ -535,42 +470,37 @@ create link;type=groundwater_to_stream,from=Neighbourhood,to=Stream,name=Baseflo
 create link;type=channel2fixed,from=Stream,to=Outlet,name=Stream_outlet
 \end{lstlisting}
 
-\noindent(Line breaks inside \code{create} commands are for display only.) The Mixed HRU version
-replaces the layer-specific soil parameters with the first layer's values and sets
-\code{recharge\_K}\,=\,0.1\,m/d and \code{groundwater\_specific\_storage}\,=\,$\phi/b$ = 0.0125\,m$^{-1}$,
-so that both start from the same water table. Members are addressed as
+\noindent(Line breaks inside \code{create} commands are for display only.) Members are addressed as
 \code{Neighbourhood\_\_Soil\_3}, \code{Neighbourhood\_\_recharge} and so on in outputs and scripts.
 
-\subsection{What the example shows}
-\Cref{fig:example} and \cref{tab:example} compare the two runs. The surfaces behave identically:
-all impervious runoff reaches the stream, and the pervious surface produces almost none because the
-rain rate rarely exceeds the infiltration capacity. The difference is in the subsurface. With the
-constant recharge conductivity the Mixed HRU passes more water to the aquifer in 30 days than
-infiltrates, because it also drains the initial storage of the soil column (recharge of 90\,mm/d on
-the first day, independent of soil moisture), and the smaller groundwater area amplifies the rise of
-the water table. The Urban HRU's recharge follows the unsaturated conductivity, starts at 8\,mm/d
-and settles near the rate at which water percolates through the column.
+\Cref{fig:example} and \cref{tab:example} show the run. All impervious runoff reaches the stream
+within hours of each storm, while the pervious surface produces almost none because the rain rate
+rarely exceeds the infiltration capacity. About three quarters of the rain infiltrates; recharge
+starts at 8\,mm/d as the initially wet bottom layer drains, falls with its unsaturated conductivity
+and settles near the rate at which water percolates through the column, and the water table rises
+gradually and feeds baseflow between storms.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{hru_example_comparison}
-\caption{Mixed and Urban HRU with identical inputs (\exdir{Examples/Mixed\_Urban\_HRU}).}
+\includegraphics[width=0.9\textwidth]{urban_hru_example}
+\caption{The worked example: rain, outflows of the three ports and of the stream, recharge and
+groundwater head.}
 \label{fig:example}
 \end{figure}
 
 \begin{table}[H]
 \centering\small
 \input{figures/hru_example_volumes.tex}
-\caption{Water balance of the two example runs.}
+\caption{Water balance of the worked example.}
 \label{tab:example}
 \end{table}
 
 %==========================================================================================
 \section{Property reference}
 \label{sec:reference}
-Generated from the three resource files by \exfile{docs/make\_hru\_figures.py}. ``In'' gives the
-units that expose the property (HRU, Mixed, Urban); ``Applied to'' lists the members that receive it;
-where the defaults differ between units they are separated by a slash.
+Generated from the two resource files by \exfile{docs/make\_hru\_figures.py}. ``In'' gives the units
+that expose the property; ``Applied to'' lists the members that receive it; where the defaults differ
+between the units they are separated by a slash.
 
 {\small
 \input{figures/hru_properties.tex}
@@ -582,11 +512,11 @@ where the defaults differ between units they are separated by a slash.
 \item \textbf{Fixed layer split.} The three soil layers are always $D/7$, $2D/7$ and $4D/7$; $D$
   controls the storage, the recharge path length and the heads together, so calibrating it moves all
   three at once.
-\item \textbf{Deep water tables.} When the water table is far below the soil column, the Mixed HRU's
-  constant recharge conductivity drains the column regardless of its wetness and pulls water upward
-  when the bottom layer dries (\cref{sec:recharge}); use the Urban HRU or keep \code{recharge\_K}
-  small.
-\item \textbf{Confined-style defaults in the Mixed HRU.} With $S_s=0.01$\,m$^{-1}$ the head responds
+\item \textbf{Deep water tables in the HRU.} When the water table is far below the soil column, the
+  HRU's constant recharge conductivity drains the column regardless of its wetness and pulls water
+  upward when the bottom layer dries (\cref{sec:recharge}); keep \code{recharge\_K} small or use the
+  Urban HRU, whose recharge follows the unsaturated conductivity.
+\item \textbf{Confined-style defaults in the HRU.} With $S_s=0.01$\,m$^{-1}$ the head responds
   metres to small changes of storage. For an unconfined aquifer set $S_s=\phi/b$.
 \item \textbf{Outlet link length.} \eqref{eq:outlet} averages the length of the internal reach with
   that of the receiving segment, so a long receiving segment lowers the outlet slope.
@@ -594,7 +524,7 @@ where the defaults differ between units they are separated by a slash.
   not derived from its drainage network; they mostly control the timing of the runoff peak.
 \item \textbf{Evapotranspiration from \code{Soil\_1} only.} Deeper layers and the groundwater cell do
   not transpire; the rate is scaled by $\theta/\theta_s$ of the top layer.
-\item \textbf{Disconnected impervious area} is treated as pervious soil (\cref{sec:urbanspec}).
+\item \textbf{Disconnected impervious area} is treated as pervious soil (\cref{sec:disconnected}).
 \item \textbf{One unit, one soil column.} Spatial variation inside a sub-catchment is represented
   only through its areas; use more units for more variation.
 \end{itemize}
