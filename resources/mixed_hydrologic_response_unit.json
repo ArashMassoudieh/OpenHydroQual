@@ -10,7 +10,7 @@
     "typecategory": "Connectors",
     "description": "Mixed HRU pervious-surface reach outlet",
     "icon": {
-      "filename": "Trapezoidal_Channel_Link.png"
+      "filename": "HRU_Pervious_Outlet.png"
     },
     "helptext": "Outlet of the Mixed_Hydrologic_Response_Unit's Reach member (pervious-surface routing). Identical Manning's-equation physics to Trapezoidal_Channel_link; a distinct type name is required only so Reach and Impervious_Reach can be resolved as separate external exits of the same composite - see Impervious_Reach_link.",
     "area": {
@@ -70,13 +70,12 @@
       "unit": "m/s;m/day;ft/s"
     }
   },
-
   "Impervious_Reach_link": {
     "type": "link",
     "typecategory": "Connectors",
     "description": "Mixed HRU impervious-surface reach outlet",
     "icon": {
-      "filename": "Trapezoidal_Channel_Link.png"
+      "filename": "HRU_Impervious_Outlet.png"
     },
     "helptext": "Outlet of the Mixed_Hydrologic_Response_Unit's Impervious_Reach member (impervious-surface routing). Identical Manning's-equation physics to Trapezoidal_Channel_link; see Reach_link for why a separate type name is required.",
     "area": {
@@ -136,7 +135,6 @@
       "unit": "m/s;m/day;ft/s"
     }
   },
-
   "Mixed_Hydrologic_Response_Unit": {
     "type": "composite",
     "typecategory": "Blocks",

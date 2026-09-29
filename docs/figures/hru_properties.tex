@@ -1,0 +1,60 @@
+\begin{longtable}{p{4.9cm}p{1.3cm}p{1.2cm}p{1.9cm}p{4.7cm}}
+\toprule
+Property & Unit & Default & In & Applied to \\
+\midrule
+\endhead
+\code{area} & m$^2$ & 1000 & all & member areas \\
+\code{recharge\_K} & m/day & 1 & HRU, Mixed & recharge \\
+\code{surface\_elevation} & m & 0 & all & Catchment, Groundwater, Impervious\_Catchment, Impervious\_Reach, Reach, Soil\_1, Soil\_2, Soil\_3 \\
+\code{depth\_to\_groundwater} & m & 3.5 & all & Soil\_1, Soil\_2, Soil\_3 \\
+\code{groundwater\_thickness} & m & 5 & all & Groundwater \\
+\code{Precipitation} &  &  & all & Catchment, Impervious\_Catchment \\
+\code{Evapotranspiration} &  &  & all & Soil\_1 \\
+\code{catchment\_slope} &  & 0.01 & all & Catchment, Impervious\_Catchment \\
+\code{catchment\_width} & m & 30 & all & Catchment, Impervious\_Catchment \\
+\code{manning\_coefficient} &  & 0.05 & all & Catchment \\
+\code{depression\_storage} & m & 0 & all & Catchment \\
+\code{runoff\_coefficient} &  & 1 & all & Catchment, Impervious\_Catchment \\
+\code{K\_sat} & m/day & 1 & HRU, Mixed & Soil\_1, Soil\_2, Soil\_3 \\
+\code{alpha\_vG} & 1/m & 1 & HRU, Mixed & Soil\_1, Soil\_2, Soil\_3 \\
+\code{n\_vG} &  & 1.41 & HRU, Mixed & Soil\_1, Soil\_2, Soil\_3 \\
+\code{theta\_sat} &  & 0.4 & HRU, Mixed & Soil\_1, Soil\_2, Soil\_3 \\
+\code{theta\_res} &  & 0.05 & HRU, Mixed & Soil\_1, Soil\_2, Soil\_3 \\
+\code{soil\_specific\_storage} & 1/m & 0.01 & all & Soil\_1, Soil\_2, Soil\_3 \\
+\code{initial\_moisture\_content} &  & 0.2 & all & Soil\_1, Soil\_2, Soil\_3 \\
+\code{groundwater\_K} & m/day & 1 & all & Groundwater \\
+\code{groundwater\_porosity} &  & 0.2/0.4 & all & Groundwater \\
+\code{groundwater\_specific\_storage} & 1/m & 0.01 & HRU, Mixed & Groundwater \\
+\code{initial\_groundwater\_moisture\_content} &  & 0.1/0.25/0.4 & all & Groundwater \\
+\code{impervious\_fraction} &  & 0.2 & Mixed, Urban & member areas \\
+\code{impervious\_manning\_coefficient} &  & 0.015 & Mixed, Urban & Impervious\_Catchment \\
+\code{impervious\_depression\_storage} & m & 0.001 & Mixed, Urban & Impervious\_Catchment \\
+\code{reach\_base\_width} & m & 1 & Mixed, Urban & Reach \\
+\code{reach\_side\_slope} &  & 2 & Mixed, Urban & Reach \\
+\code{reach\_manning\_coefficient} &  & 0.035 & Mixed, Urban & Reach \\
+\code{reach\_length} & m & 10 & Mixed, Urban & Reach \\
+\code{initial\_reach\_depth} & m & 0.01 & Mixed, Urban & Reach \\
+\code{impervious\_reach\_base\_width} & m & 1 & Mixed, Urban & Impervious\_Reach \\
+\code{impervious\_reach\_side\_slope} &  & 2 & Mixed, Urban & Impervious\_Reach \\
+\code{impervious\_reach\_manning\_coefficient} &  & 0.02 & Mixed, Urban & Impervious\_Reach \\
+\code{impervious\_reach\_length} & m & 10 & Mixed, Urban & Impervious\_Reach \\
+\code{initial\_impervious\_reach\_depth} & m & 0.01 & Mixed, Urban & Impervious\_Reach \\
+\code{K\_sat\_1} & m/day & 1 & Urban & Soil\_1 \\
+\code{K\_sat\_2} & m/day & 1 & Urban & Soil\_2 \\
+\code{K\_sat\_3} & m/day & 1 & Urban & Soil\_3 \\
+\code{alpha\_vG\_1} & 1/m & 1 & Urban & Soil\_1 \\
+\code{alpha\_vG\_2} & 1/m & 1 & Urban & Soil\_2 \\
+\code{alpha\_vG\_3} & 1/m & 1 & Urban & Soil\_3 \\
+\code{n\_vG\_1} &  & 1.41 & Urban & Soil\_1 \\
+\code{n\_vG\_2} &  & 1.41 & Urban & Soil\_2 \\
+\code{n\_vG\_3} &  & 1.41 & Urban & Soil\_3 \\
+\code{theta\_sat\_1} &  & 0.4 & Urban & Soil\_1 \\
+\code{theta\_sat\_2} &  & 0.4 & Urban & Soil\_2 \\
+\code{theta\_sat\_3} &  & 0.4 & Urban & Soil\_3 \\
+\code{theta\_res\_1} &  & 0.05 & Urban & Soil\_1 \\
+\code{theta\_res\_2} &  & 0.05 & Urban & Soil\_2 \\
+\code{theta\_res\_3} &  & 0.05 & Urban & Soil\_3 \\
+\code{impervious\_multiplier} &  & 1 & Urban & member areas \\
+\code{K\_sat\_scale} &  & 1 & Urban & Soil\_1, Soil\_2, Soil\_3 \\
+\bottomrule
+\end{longtable}
