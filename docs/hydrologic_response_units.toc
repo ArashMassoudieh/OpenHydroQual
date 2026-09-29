@@ -1,0 +1,28 @@
+\contentsline {section}{\numberline {1}Which HRU to use}{2}{section.1}%
+\contentsline {section}{\numberline {2}Elements shared by all units}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Vertical geometry}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Soil water}{3}{subsection.2.2}%
+\contentsline {section}{\numberline {3}HRU}{4}{section.3}%
+\contentsline {section}{\numberline {4}Structure of the Urban (and Mixed) HRU}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Ports}{6}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Surface runoff and routing}{7}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}The impervious fraction}{7}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Mixed HRU (legacy)}{8}{section.5}%
+\contentsline {paragraph}{Areas.}{8}{section*.2}%
+\contentsline {paragraph}{Soil.}{8}{section*.3}%
+\contentsline {paragraph}{Recharge.}{8}{section*.4}%
+\contentsline {paragraph}{Groundwater.}{8}{section*.5}%
+\contentsline {section}{\numberline {6}Urban HRU}{8}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Areas}{8}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Recharge through the unsaturated conductivity}{8}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Unconfined groundwater}{9}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Layer-specific soil}{9}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Calibration multipliers}{9}{subsection.6.5}%
+\contentsline {subsection}{\numberline {6.6}Disconnected impervious area}{10}{subsection.6.6}%
+\contentsline {section}{\numberline {7}Urban HRU versus Mixed HRU}{10}{section.7}%
+\contentsline {section}{\numberline {8}Using the units}{10}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Templates}{10}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}A minimal model}{10}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}What the example shows}{11}{subsection.8.3}%
+\contentsline {section}{\numberline {9}Property reference}{12}{section.9}%
+\contentsline {section}{\numberline {10}Limitations and pitfalls}{14}{section.10}%
