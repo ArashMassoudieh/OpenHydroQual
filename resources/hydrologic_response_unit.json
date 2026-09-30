@@ -11,7 +11,7 @@
     "icon": {
       "filename": "hydrologic_response_unit.png"
     },
-    "helptext": "A one-dimensional land column: runoff-generating catchment surface, an unsaturated profile discretised into three layers whose thicknesses are in a 1:2:4 ratio (finest at the surface, where moisture gradients are steepest), and a groundwater cell beneath. Runoff leaves through the catchment; lateral groundwater flow and discharge to a fixed head leave through the groundwater cell. Layer thicknesses and all bottom elevations are computed from the ground surface elevation, the depth to groundwater and the groundwater thickness.",
+    "helptext": "A one-dimensional land column: runoff-generating catchment surface, an unsaturated profile discretised into three layers whose thicknesses are in a 1:2:4 ratio (finest at the surface, where moisture gradients are steepest), and a groundwater cell beneath. Runoff leaves through the catchment; groundwater leaves through a selected external connector. Use groundwater_to_stream for head-gradient-driven discharge or Linear_baseflow for a threshold linear-reservoir recession, not both for the same physical pathway. Layer thicknesses and all bottom elevations are computed from the ground surface elevation, the depth to groundwater and the groundwater thickness.",
     "members": {
       "Catchment": {
         "type": "Catchment",
@@ -88,6 +88,9 @@
         "from": "Groundwater"
       },
       "groundwater_to_stream": {
+        "from": "Groundwater"
+      },
+      "Linear_baseflow": {
         "from": "Groundwater"
       }
     },
@@ -378,7 +381,8 @@
       "warningmessage": "The hydraulic conductivity must be positive!",
       "applyto": {
         "Groundwater#hydraulic_conductivity": "groundwater_K"
-      }
+      },
+      "helptext": "Hydraulic conductivity of the groundwater cell. It controls groundwater_to_stream and other Darcy-style groundwater links. Linear_baseflow uses its own recession_rate instead, so groundwater_K does not control that connector."
     },
     "groundwater_porosity": {
       "type": "value",
