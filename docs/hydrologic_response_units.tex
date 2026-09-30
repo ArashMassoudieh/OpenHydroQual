@@ -71,9 +71,10 @@ sub-catchment is added to a model as a single object with a single set of proper
 describes the two HRUs: the \code{Hydrologic\_Response\_Unit} (``HRU''), a single infiltrating surface
 over a three-layer soil column and a groundwater cell, and the \code{Urban\_HRU}, which divides the
 land into pervious and impervious surfaces with their own routing reaches, places the groundwater cell
-under the whole unit, recharges it through the unsaturated conductivity of the bottom soil layer,
-treats it as an unconfined aquifer, takes soil parameters layer by layer and carries two calibration
-multipliers. For each unit the document sets out the members and connectors, the equation of each
+under the whole unit as an unconfined aquifer whose initial state is a water-table elevation,
+recharges it through the unsaturated conductivity of the bottom soil layer, can draw
+evapotranspiration from the deeper soil layers through a second source, takes soil parameters layer
+by layer and carries three calibration multipliers. For each unit the document sets out the members and connectors, the equation of each
 flux, how the plan area is divided, how the vertical geometry and the initial state follow from a
 few properties, and how the impervious fraction should be estimated, and it closes with a worked
 example and a property reference.
@@ -96,8 +97,10 @@ Internal routing reaches & none & one per surface \\
 Soil parameters & one set & one set per layer \\
 Groundwater area & $A$ & $A$ \\
 Recharge conductivity & constant \code{recharge\_K} & $K_{sat,3}\,k_r(S_{e,3})$ \\
-Groundwater storage & user $S_s$ & unconfined, $S_s=\phi/b$ \\
-Calibration multipliers & --- & \code{impervious\_multiplier}, \code{K\_sat\_scale} \\
+Groundwater cell & \code{Groundwater cell}, user $S_s$ & \code{Unconfined groundwater cell} \\
+Initial groundwater state & moisture content & water-table elevation \\
+Evapotranspiration & \code{Soil\_1} & \code{Soil\_1}; optional second source on \code{Soil\_2}--\code{Soil\_3} \\
+Calibration multipliers & --- & \code{impervious\_multiplier}, \code{K\_sat\_scale}, \code{K\_sat\_scale\_surface} \\
 Icon & \includegraphics[height=1.4cm]{hydrologic_response_unit.png} &
        \includegraphics[height=1.4cm]{urban_hru.png} \\
 \bottomrule
@@ -162,9 +165,10 @@ specific storage). The layer's conductivity is $K_{sat}=$ \code{K\_sat\_original
 \item[Percolation] (\code{soil\_to\_soil\_link}): $Q=\bar A\,K_{\text{eff}}\,(h_i-h_j)/\bar d$ with
   $K_{\text{eff}}=\min(K_{sat,i},K_{sat,j})\,k_r\big(\max(S_{e,i},S_{e,j})\big)$, mean area $\bar A$ and
   mean thickness $\bar d$. Flow can be upward (capillary rise).
-\item[Evapotranspiration] is withdrawn from \code{Soil\_1} only, by the source connected to the
+\item[Evapotranspiration] is withdrawn from \code{Soil\_1} by the source connected to the
   \code{Evapotranspiration} property. With the \code{Evapotranspiration\_Time\_Series (Soil)} source
-  the rate is $\text{corr\_fact}\times ET_0\times A_1\,\theta/\theta_s$.
+  the rate is $\text{corr\_fact}\times ET_0\times A_1\,\theta/\theta_s$. The Urban HRU can also withdraw
+  from \code{Soil\_2} and \code{Soil\_3} through a second source (\cref{sec:et2}).
 \end{description}
 
 %==========================================================================================
@@ -203,10 +207,12 @@ Port (link type) & From member & Typical target & Icon \\
 \begin{equation}
   Q_r=A\,K_{rech}\,\frac{h_3-h_g}{L},\qquad L=\tfrac12\,(d_3+b),
 \end{equation}
-and the groundwater cell's head is $h_g=z_g+b+(\theta_g-\phi)/S_s$ with user-supplied porosity $\phi$
-and specific storage $S_s$. With the defaults ($S_s=0.01$\,m$^{-1}$) the cell responds as a
-\emph{confined} aquifer: a change of 0.01 in moisture content moves the head by 1\,m; set
-$S_s=\phi/b$ for unconfined behaviour (\cref{sec:unconfined}). A constant recharge conductivity is
+and the groundwater member is the stock \code{Groundwater cell}, whose head is
+$h_g=z_g+b+(\theta_g-\phi)/S_s$ with user-supplied porosity $\phi$ and specific storage $S_s$, and whose
+initial state is a moisture content $\theta_{g,0}$. With the defaults ($S_s=0.01$\,m$^{-1}$) the cell
+responds as a \emph{confined} aquifer: a change of 0.01 in moisture content moves the head by 1\,m;
+$S_s=\phi/b$ gives unconfined behaviour, and $\theta_{g,0}=\phi+(h_0-z_g-b)\,S_s$ starts the water table
+at $h_0$. A constant recharge conductivity is
 adequate when the water table lies at or just below the soil column; when it lies far below, see
 \cref{sec:recharge}. One set of soil parameters applies to all three layers. A two-unit hillslope
 using the HRU is in \exfile{Examples/Hydrologic\_Response\_Unit/HRU\_hillslope.ohq}.
@@ -225,7 +231,7 @@ using the HRU is in \exfile{Examples/Hydrologic\_Response\_Unit/HRU\_hillslope.o
       the runoff of each surface: the swales, gutters, small streams and storm pipes inside the unit;
 \item \code{Soil\_1}, \code{Soil\_2}, \code{Soil\_3} --- three van Genuchten soil layers under the
       pervious surface;
-\item \code{Groundwater} --- a \code{Groundwater cell}.
+\item \code{Groundwater} --- an \code{Unconfined groundwater cell} (\cref{sec:unconfined}).
 \end{itemize}
 
 \noindent and six internal links: a \code{Catchment\_link} from each surface to its reach,
@@ -374,15 +380,21 @@ flux falls with $k_r$ as the bottom layer drains, and no separate recharge condu
 
 \subsection{Unconfined groundwater}
 \label{sec:unconfined}
-The composite sets the cell's specific storage to $S_s=\phi/b$ (\code{groundwater\_porosity} over
-\code{groundwater\_thickness}), so that
+The groundwater member is an \code{Unconfined groundwater cell} (\file{groundwater.json}), a
+groundwater block with a free water table. Its storage $V_g$ and head are related through the
+porosity $\phi$ (\code{groundwater\_porosity}, acting as the specific yield):
 \begin{equation}
-  h_g = z_g + b\,\frac{\theta_g}{\phi}:
+  h_g = z_g + \frac{V_g}{\phi\,A},\qquad V_{g,0}=\phi\,\big(h_0-z_g\big)_+\,A,
 \end{equation}
-the water table rises by $1/\phi$ per unit depth of stored water, as in an unconfined aquifer with
-specific yield $\phi$. Because $S_s$ is computed inside the composite, this stays true when $\phi$ is
-calibrated. To start with the water table at elevation $h_0$, set
-\code{initial\_groundwater\_moisture\_content} to $\theta_{g,0}=\phi\,(h_0-z_g)/b$.
+so the water table rises by $1/\phi$ per unit depth of stored water. The initial state is given as a
+water-table elevation $h_0$ (\code{initial\_water\_table\_elevation}, same datum as
+\code{surface\_elevation}) and the initial storage is computed from it; the initial water table
+therefore does not move when $\phi$ changes, for example during calibration. (Specifying an initial
+moisture content instead would tie the initial head to $\phi$: a calibrated porosity of 0.107
+instead of 0.15 would raise it by 40\,\% of the saturated thickness.) The block has the same
+\code{head}, \code{depth}, \code{area} and \code{hydraulic\_conductivity} properties as the stock
+\code{Groundwater cell}, so all groundwater links connect to it unchanged; it also reports
+\code{water\_table\_depth}, the saturated thickness above the cell bottom.
 
 \subsection{Layer-specific soil}
 \code{K\_sat\_}$i$, \code{alpha\_vG\_}$i$, \code{n\_vG\_}$i$, \code{theta\_sat\_}$i$ and
@@ -391,9 +403,19 @@ averaged over the three depth intervals. The \code{K\_sat\_}$i$ go to each layer
 \code{K\_sat\_original}, so that the layer's \code{K\_sat\_scale\_factor} remains free for the
 multiplier below.
 
+\subsection{Evapotranspiration from the deeper soil}
+\label{sec:et2}
+Besides \code{Evapotranspiration} on \code{Soil\_1}, the Urban HRU has an optional source property
+\code{Evapotranspiration\_2}, applied to \code{Soil\_2} and \code{Soil\_3} (the root zone below the
+top layer). Each layer's withdrawal is scaled by its own $\theta/\theta_s$. Connecting a separate
+source --- typically the same reference-ET series with its own \code{corr\_fact} --- lets uptake from
+the deeper layers be scaled independently of the top layer, which gives summer evapotranspiration a
+way to intercept water before it drains to the groundwater cell. Left empty, the deeper layers do not
+transpire.
+
 \subsection{Calibration multipliers}
 \label{sec:multipliers}
-Both default to 1 and leave the unit unchanged at that value.
+All three default to 1 and leave the unit unchanged at that value.
 
 \begin{description}[leftmargin=1.4em,style=nextline]
 \item[\code{impervious\_multiplier} ($m_{imp}$)] scales the impervious fraction:
@@ -408,6 +430,14 @@ Both default to 1 and leave the unit unchanged at that value.
   estimate, \cref{sec:impfrac}) is fixed when the model is built; only $m_{imp}$ is calibrated.
 \item[\code{K\_sat\_scale}] multiplies $K_{sat}$ of all three layers, and therefore also the
   recharge conductivity of \eqref{eq:recharge}.
+\item[\code{K\_sat\_scale\_surface}] multiplies $K_{sat}$ of \code{Soil\_1} only: its
+  \code{K\_sat\_scale\_factor} is \code{K\_sat\_scale}\,$\times$\,\code{K\_sat\_scale\_surface}. It
+  controls infiltration at the surface --- reduced, for example, by the compaction of urban lawns and
+  graded fill, which soil surveys of undisturbed profiles do not describe --- without changing
+  percolation and recharge through the deeper layers. Note that the infiltration link drives flow with
+  the suction gradient over half the top layer, so while \code{Soil\_1} is unsaturated its
+  infiltration capacity is several times $K_{sat,1}$; infiltration-excess runoff from the pervious
+  surface appears only when rain intensity exceeds that capacity.
 \end{description}
 
 \noindent Bind a model parameter to them at the composite level,
@@ -458,7 +488,7 @@ create composite;type=Urban_HRU,name=Neighbourhood,area=500000,impervious_fracti
     surface_elevation=100,depth_to_groundwater=3.5,groundwater_thickness=12,
     Precipitation=Rain,Evapotranspiration=ET,catchment_slope=0.03,catchment_width=2500,
     K_sat_1=0.6,K_sat_2=0.4,K_sat_3=0.8,alpha_vG_1=1.5,...,
-    groundwater_porosity=0.15,initial_groundwater_moisture_content=0.05,
+    groundwater_porosity=0.15,initial_water_table_elevation=88.5,
     reach_length=400,impervious_reach_length=400,...
 create block;type=Trapezoidal Channel Segment,name=Stream,base_width=3,side_slope=2,
     ManningCoeff=0.035,bottom_elevation=88,length=800,depth=0.1
@@ -522,8 +552,12 @@ between the units they are separated by a slash.
   that of the receiving segment, so a long receiving segment lowers the outlet slope.
 \item \textbf{Internal reaches are generic.} Their shape and roughness are properties of the unit,
   not derived from its drainage network; they mostly control the timing of the runoff peak.
-\item \textbf{Evapotranspiration from \code{Soil\_1} only.} Deeper layers and the groundwater cell do
-  not transpire; the rate is scaled by $\theta/\theta_s$ of the top layer.
+\item \textbf{Evapotranspiration.} The HRU transpires from \code{Soil\_1} only; the Urban HRU from
+  \code{Soil\_1} and, with \code{Evapotranspiration\_2}, from \code{Soil\_2} and \code{Soil\_3}. Each
+  layer's rate is scaled by its own $\theta/\theta_s$. The groundwater cell does not transpire.
+\item \textbf{Hourly rainfall and infiltration excess.} With hourly forcing, short bursts of high
+  intensity are averaged out, so infiltration-excess runoff from pervious surfaces is underestimated;
+  \code{K\_sat\_scale\_surface} can compensate in calibration.
 \item \textbf{Disconnected impervious area} is treated as pervious soil (\cref{sec:disconnected}).
 \item \textbf{One unit, one soil column.} Spatial variation inside a sub-catchment is represented
   only through its areas; use more units for more variation.

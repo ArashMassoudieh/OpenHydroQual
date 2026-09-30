@@ -25,8 +25,9 @@ Property & Unit & Default & In & Applied to \\
 \code{groundwater\_K} & m/day & 1 & both & Groundwater \\
 \code{groundwater\_porosity} &  & 0.2/0.4 & both & Groundwater \\
 \code{groundwater\_specific\_storage} & 1/m & 0.01 & HRU & Groundwater \\
-\code{initial\_groundwater\_moisture\_content} &  & 0.1/0.25 & both & Groundwater \\
+\code{initial\_groundwater\_moisture\_content} &  & 0.25 & HRU & Groundwater \\
 \code{impervious\_fraction} &  & 0.2 & Urban & member areas \\
+\code{Evapotranspiration\_2} &  &  & Urban & Soil\_2, Soil\_3 \\
 \code{K\_sat\_1} & m/day & 1 & Urban & Soil\_1 \\
 \code{K\_sat\_2} & m/day & 1 & Urban & Soil\_2 \\
 \code{K\_sat\_3} & m/day & 1 & Urban & Soil\_3 \\
@@ -42,6 +43,7 @@ Property & Unit & Default & In & Applied to \\
 \code{theta\_res\_1} &  & 0.05 & Urban & Soil\_1 \\
 \code{theta\_res\_2} &  & 0.05 & Urban & Soil\_2 \\
 \code{theta\_res\_3} &  & 0.05 & Urban & Soil\_3 \\
+\code{initial\_water\_table\_elevation} & m & 93 & Urban & Groundwater \\
 \code{impervious\_manning\_coefficient} &  & 0.015 & Urban & Impervious\_Catchment \\
 \code{impervious\_depression\_storage} & m & 0.001 & Urban & Impervious\_Catchment \\
 \code{reach\_base\_width} & m & 1 & Urban & Reach \\
@@ -56,5 +58,6 @@ Property & Unit & Default & In & Applied to \\
 \code{initial\_impervious\_reach\_depth} & m & 0.01 & Urban & Impervious\_Reach \\
 \code{impervious\_multiplier} &  & 1 & Urban & member areas \\
 \code{K\_sat\_scale} &  & 1 & Urban & Soil\_1, Soil\_2, Soil\_3 \\
+\code{K\_sat\_scale\_surface} &  & 1 & Urban &  \\
 \bottomrule
 \end{longtable}
