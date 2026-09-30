@@ -196,11 +196,32 @@ Port (link type) & From member & Typical target & Icon \\
 \midrule
 \code{Catchment\_link} & \code{Catchment} & a downslope HRU, a catchment, a channel or any block & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{Catchment_outlet.png}} \\
 \code{groundwater\_link} & \code{Groundwater} & the groundwater cell of a neighbouring unit & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{Groundwater_link.png}} \\
-\code{groundwater\_to\_stream} & \code{Groundwater} & a channel segment (baseflow) & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{GW_to_Stream.png}} \\
+\code{groundwater\_to\_stream} & \code{Groundwater} & a channel segment (baseflow, head-driven) & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{GW_to_Stream.png}} \\
+\code{Linear\_baseflow} & \code{Groundwater} & a channel segment (baseflow, linear reservoir) & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{GW_to_Stream.png}} \\
 \code{groundwater\_to\_fixedhead} & \code{Groundwater} & a \code{fixed\_head} block & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{gw_2_fixed_head.png}} \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\noindent Baseflow can leave the groundwater cell through either of two connectors (use one of them
+for a given discharge pathway, not both in parallel):
+\begin{description}[leftmargin=1.4em,style=nextline]
+\item[\code{groundwater\_to\_stream}] Darcy flow driven by the head difference between the
+  groundwater cell and the receiving segment, $Q=K\,A_b\,(h_g-h_c)/L$, with the connector's
+  exchange area $A_b$, flow path $L$ and conductivity $K$. Discharge stops, and reverses, when the
+  stream stage rises above the water table.
+\item[\code{Linear\_baseflow}] A linear reservoir above an inactive storage (\file{groundwater.json}):
+  \begin{equation}
+    Q = k\,\big(\theta_g-\theta_{\min}\big)_+\,V_g^{\text{tot}},
+  \end{equation}
+  where $\theta_g$ is the moisture content and $V_g^{\text{tot}}$ the total volume of the groundwater
+  cell, $k$ the \code{recession\_rate} (1/d) and $\theta_{\min}$ the \code{min\_moisture\_content}
+  below which no baseflow leaves (an absolute moisture content, not larger than the porosity). With
+  no recharge the active storage recedes exponentially with time constant $1/k$. The discharge does
+  not depend on the stream stage or on \code{groundwater\_K}; $k$ is set, or calibrated, directly
+  from observed recession rates. An example is in
+  \exfile{Examples/Linear\_Baseflow/Linear\_Baseflow.ohq}.
+\end{description}
 
 \noindent Recharge uses the stock \code{soil2groundwater\_link} with the constant conductivity
 \code{recharge\_K},
@@ -253,7 +274,8 @@ and ports to the receiving channel segment. The recharge connector is highlighte
 \subsection{Ports}
 \label{sec:ports}
 A composite exposes the members that may be connected from outside as \emph{ports}. The Urban HRU
-declares five:
+declares five; its baseflow leaves through \code{groundwater\_to\_stream} (the \code{Linear\_baseflow}
+connector of the HRU, \cref{sec:hru}, is not a port of the Urban HRU):
 
 \begin{table}[H]
 \centering\small

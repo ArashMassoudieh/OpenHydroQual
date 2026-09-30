@@ -117,15 +117,14 @@ def structure_plain():
     ax.text(4.38, 1.9, r"$K$ = recharge_K (constant)", fontsize=6.6, color=ORANGE, va="center")
     box(8.2, 5.75, 11.3, 6.95, "", "", "#dfe9d6")
     ax.text(9.75, 6.35, "downslope HRU,\ncatchment or any block\n(external)", ha="center", va="center", fontsize=7.5)
-    box(8.2, 0.55, 11.3, 1.9, "", "", "#9ec5f4")
-    ax.text(9.75, 1.22, "neighbouring groundwater,\nstream or fixed head\n(external)", ha="center", va="center",
-            fontsize=7.5)
+    box(8.55, 0.55, 11.3, 1.9, "", "", "#9ec5f4")
+    ax.text(9.925, 1.22, "neighbouring\ngroundwater, stream\nor fixed head (external)", ha="center", va="center",
+            fontsize=7)
     arrow((6.3, 6.35), (8.2, 6.35))
     ax.text(6.4, 6.6, "Catchment_link", fontsize=6.8, color=TEXT2, family="monospace")
-    arrow((6.3, 1.22), (8.2, 1.22))
-    ax.text(6.4, 1.62, "groundwater_link /", fontsize=6.6, color=TEXT2, family="monospace")
-    ax.text(6.4, 0.95, "groundwater_to_stream /", fontsize=6.6, color=TEXT2, family="monospace")
-    ax.text(6.4, 0.72, "groundwater_to_fixedhead", fontsize=6.6, color=TEXT2, family="monospace")
+    arrow((6.3, 1.5), (8.55, 1.5))
+    for i, lab in enumerate(("groundwater_link", "groundwater_to_stream", "Linear_baseflow", "groundwater_to_fixedhead")):
+        ax.text(6.38, 1.3 - 0.21 * i, lab, fontsize=5.9, color=TEXT2, family="monospace", va="center")
     ax.text(0.3, 0.3, r"$D$ = depth_to_groundwater;  one set of van Genuchten parameters and $K_{sat}$ shared by the three layers",
             fontsize=7.2, color=TEXT2, va="center")
     fig.savefig(FIG / "hru_structure.pdf")
