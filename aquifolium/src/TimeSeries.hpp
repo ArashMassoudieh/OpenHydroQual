@@ -656,7 +656,25 @@ T TimeSeries<T>::interpol(const T& x) const {
         return p1.c + ratio * (p2.c - p1.c);
     }
 
-    // fallback for unstructured case
+    // Unstructured case: binary search for the first point with t >= x. On
+    // ascending times this is the same segment the linear scan below finds (the
+    // first i with t[i] <= x <= t[i+1]), in O(log n) instead of O(n). It matters
+    // because CalcMisfit/R2/NSE interpolate the modeled series at every observed
+    // time, which made each misfit evaluation O(n*m).
+    {
+        auto it = std::lower_bound(this->begin(), this->end(), x,
+                                   [](const DataPoint<T>& p, const T& v) { return p.t < v; });
+        if (it != this->begin() && it != this->end()) {
+            const auto& p1 = *(it - 1);
+            const auto& p2 = *it;
+            if (p1.t <= x && x <= p2.t) {
+                T ratio = (x - p1.t) / (p2.t - p1.t);
+                return p1.c + ratio * (p2.c - p1.c);
+            }
+        }
+    }
+
+    // times not ascending: linear scan
     for (size_t i = 0; i < this->size() - 1; ++i) {
         const auto& p1 = (*this)[i];
         const auto& p2 = (*this)[i + 1];
@@ -2223,8 +2241,10 @@ T diff2(const TimeSeries<T>& predicted, const TimeSeries<T>* observed) {
     T sum = T{};
     int count = 0;
 
+    // mint()/maxt() scan the whole series: evaluate once, not per observed point
+    const T t_lo = predicted.mint(), t_hi = predicted.maxt();
     for (const auto& pt : *observed) {
-        if (pt.t > predicted.mint() && pt.t < predicted.maxt()) {
+        if (pt.t > t_lo && pt.t < t_hi) {
             sum += std::pow(pt.c - predicted.interpol(pt.t), 2);
             ++count;
         }
@@ -2240,8 +2260,10 @@ T diff2(const TimeSeries<T>& predicted, const TimeSeries<T>& observed) {
     T sum = T{};
     int count = 0;
 
+    // mint()/maxt() scan the whole series: evaluate once, not per observed point
+    const T t_lo = predicted.mint(), t_hi = predicted.maxt();
     for (const auto& pt : observed) {
-        if (pt.t > predicted.mint() && pt.t < predicted.maxt()) {
+        if (pt.t > t_lo && pt.t < t_hi) {
             sum += std::pow(pt.c - predicted.interpol(pt.t), 2);
             ++count;
         }
@@ -2290,8 +2312,10 @@ T R2(const TimeSeries<T>& modeled, const TimeSeries<T>& observed) {
     T sum_prod = 0, sum_mod = 0, sum_obs = 0, sum_mod2 = 0, sum_obs2 = 0;
     int count = 0;
 
+    // mint()/maxt() scan the whole series: evaluate once, not per observed point
+    const T t_lo = modeled.mint(), t_hi = modeled.maxt();
     for (const auto& pt : observed) {
-        if (pt.t >= modeled.mint() && pt.t <= modeled.maxt()) {
+        if (pt.t >= t_lo && pt.t <= t_hi) {
             T m = modeled.interpol(pt.t);
             T o = pt.c;
             sum_prod += m * o;
@@ -2318,8 +2342,10 @@ T NSE(const TimeSeries<T>& modeled, const TimeSeries<T>& observed) {
     T avg = observed.mean();
     T numerator = 0, denominator = 0;
 
+    // mint()/maxt() scan the whole series: evaluate once, not per observed point
+    const T t_lo = modeled.mint(), t_hi = modeled.maxt();
     for (const auto& pt : observed) {
-        if (pt.t >= modeled.mint() && pt.t <= modeled.maxt()) {
+        if (pt.t >= t_lo && pt.t <= t_hi) {
             T err = pt.c - modeled.interpol(pt.t);
             numerator += err * err;
             denominator += (pt.c - avg) * (pt.c - avg);
