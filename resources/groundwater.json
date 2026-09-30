@@ -263,6 +263,59 @@
       "unit": "m^3/day;ft^3/day;m^3/s"
     }
   },
+  "Linear_baseflow": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "One-way groundwater baseflow represented as a linear reservoir above an inactive-storage threshold",
+    "icon": {
+      "filename": "GW_to_Stream.png"
+    },
+    "helptext": "Discharge is recession_rate times the groundwater storage above min_moisture_content: Q = k max(moisture_content - min_moisture_content, 0) volume. This is an alternative to groundwater_to_stream, not an additional parallel outlet. Create only one of those links between a groundwater cell and a receiving stream. The threshold is an absolute volumetric moisture content and should not exceed the source groundwater porosity.",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "recession_rate": {
+      "type": "value",
+      "description": "First-order recession rate",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day",
+      "default": "0.01",
+      "estimate": "true",
+      "criteria": "recession_rate>0",
+      "warningmessage": "The recession rate must be positive.",
+      "helptext": "Inverse of the linear-reservoir storage time constant. With no recharge, active storage and baseflow recede exponentially with e-folding time 1/recession_rate."
+    },
+    "min_moisture_content": {
+      "type": "value",
+      "description": "Inactive-storage moisture-content threshold",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.3",
+      "estimate": "true",
+      "criteria": "min_moisture_content*(1-min_moisture_content)>-1e-12",
+      "warningmessage": "The minimum moisture content must be between 0 and 1.",
+      "helptext": "Absolute volumetric moisture content below which this connector produces no baseflow. It should not exceed the porosity of the source groundwater cell."
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Baseflow",
+      "expression": "recession_rate*_pos(moisture_content.s-min_moisture_content)*volume.s",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s"
+    },
+    "color": {
+      "type": "string",
+      "description": "color",
+      "default": "0,90,160",
+      "ask_user": "false"
+    }
+  },
   "soil2groundwater_link": {
     "type": "link",
     "typecategory": "Connectors",
