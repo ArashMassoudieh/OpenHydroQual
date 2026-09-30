@@ -53,9 +53,9 @@ def structure_urban():
     box(0.3, 5.95, 3.8, 6.75, "Impervious_Catchment", r"area $A\,f_i$;  P", "#55585e")
     box(4.3, 5.95, 8.3, 6.75, "Catchment (pervious)", perv + ";  P", "#4f9a2f")
     box(4.3, 4.75, 8.3, 5.45, "Soil_1", r"$D/7$;  " + perv + ";  ET", SOIL[0])
-    box(4.3, 3.6, 8.3, 4.3, "Soil_2", r"$2D/7$;  " + perv, SOIL[1])
-    box(4.3, 2.45, 8.3, 3.15, "Soil_3", r"$4D/7$;  " + perv, SOIL[2])
-    box(0.3, 0.7, 8.3, 1.75, "Groundwater (unconfined)", r"area $A$ (whole unit);  $S_s=\phi/b$ (set by the composite)", BLUE)
+    box(4.3, 3.6, 8.3, 4.3, "Soil_2", r"$2D/7$;  " + perv + ";  ET$_2$", SOIL[1])
+    box(4.3, 2.45, 8.3, 3.15, "Soil_3", r"$4D/7$;  " + perv + ";  ET$_2$", SOIL[2])
+    box(0.3, 0.7, 8.3, 1.75, "Unconfined groundwater cell", r"area $A$ (whole unit);  $h=z_g+V/(\phi A)$;  initial state: water-table elevation", BLUE)
     ax.add_patch(FancyBboxPatch((0.3, 1.95), 3.5, 3.5, boxstyle="round,pad=0.02,rounding_size=0.12",
                                 fc="#e9e7e2", ec=MUTED, lw=0.6, ls="--"))
     ax.text(2.05, 3.7, "no infiltration\nbelow impervious\nsurfaces", ha="center", va="center", fontsize=7.5,
@@ -78,7 +78,7 @@ def structure_urban():
     foot = r"$f_i=\min(f_{imp}\,m_{imp},\,0.95)$;  "
     ax.text(0.3, 0.42, foot + r"$D$ = depth_to_groundwater;  $\phi$ = porosity, $b$ = groundwater thickness",
             fontsize=7.2, color=TEXT2, va="center")
-    ax.text(0.3, 0.1, "van Genuchten parameters and $K_{sat}$ set per soil layer",
+    ax.text(0.3, 0.1, "van Genuchten parameters and $K_{sat}$ set per soil layer; Soil_1 $K_{sat}$ also scaled by K_sat_scale_surface",
             fontsize=7.2, color=TEXT2, va="center")
     fig.savefig(FIG / "urban_hru_structure.pdf")
     plt.close(fig)

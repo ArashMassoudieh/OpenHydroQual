@@ -142,7 +142,7 @@
     "icon": {
       "filename": "urban_hru.png"
     },
-    "helptext": "Total HRU area is partitioned by min(impervious_fraction*impervious_multiplier, 0.95). The pervious Catchment and Soil_1..Soil_3 receive area*(1-impervious_fraction); the Impervious_Catchment receives area*impervious_fraction and has no infiltration. The Groundwater cell underlies the WHOLE unit (area), since the aquifer continues beneath impervious surfaces; it is recharged only through the pervious soil column (recharge interface area*(1-impervious_fraction)) by a soil2groundwater_unsat_link: unsaturated conductivity of Soil_3 (K_sat*k_r(Se)) for drainage, saturated conductivity for upward flow. Soil layers are 1:2:4 fractions of depth_to_groundwater, each with its own van Genuchten parameters. The groundwater cell behaves as an unconfined aquifer: specific storage = groundwater_porosity/groundwater_thickness, so the head rises by 1/porosity per unit of stored water depth. Each surface drains through its own Trapezoidal Channel Segment. impervious_multiplier and K_sat_scale (default 1) are watershed-wide calibration multipliers.",
+    "helptext": "Total HRU area is partitioned by min(impervious_fraction*impervious_multiplier, 0.95). The pervious Catchment and Soil_1..Soil_3 receive area*(1-impervious_fraction); the Impervious_Catchment receives area*impervious_fraction and has no infiltration. The Groundwater cell underlies the WHOLE unit (area), since the aquifer continues beneath impervious surfaces; it is recharged only through the pervious soil column (recharge interface area*(1-impervious_fraction)) by a soil2groundwater_unsat_link: unsaturated conductivity of Soil_3 (K_sat*k_r(Se)) for drainage, saturated conductivity for upward flow. Soil layers are 1:2:4 fractions of depth_to_groundwater, each with its own van Genuchten parameters. The groundwater cell is an Unconfined groundwater cell: its head rises by 1/porosity per unit of stored water depth, and its initial state is a water-table elevation. Each surface drains through its own Trapezoidal Channel Segment. impervious_multiplier and K_sat_scale (default 1) are watershed-wide calibration multipliers.",
     "members": {
       "Catchment": {
         "type": "Catchment",
@@ -173,7 +173,7 @@
         "_height": "200"
       },
       "Groundwater": {
-        "type": "Groundwater cell",
+        "type": "Unconfined groundwater cell",
         "dx": "0",
         "dy": "1000",
         "_width": "200",
@@ -350,12 +350,23 @@
     },
     "Evapotranspiration": {
       "type": "source",
-      "description": "Evapotranspiration source (top soil layer only)",
+      "description": "Evapotranspiration source for the top soil layer (Soil_1)",
       "ask_user": "true",
       "delegate": "ComboBox;Sources",
-      "helptext": "Applied to the uppermost soil layer only; the deeper layers and the groundwater cell are not subject to evapotranspiration.",
+      "helptext": "Applied to Soil_1. A second, optional source (Evapotranspiration_2) can be attached to Soil_2 and Soil_3 for root-zone uptake below the top layer; the groundwater cell is not subject to evapotranspiration.",
       "applyto": {
         "Soil_1#Evapotranspiration": "Evapotranspiration"
+      }
+    },
+    "Evapotranspiration_2": {
+      "type": "source",
+      "description": "Evapotranspiration source for the deeper soil layers (Soil_2 and Soil_3, optional)",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Optional root-zone evapotranspiration from Soil_2 and Soil_3. Use a separate source (for example the same reference-ET series with its own corr_fact) so that uptake from the deeper layers can be scaled independently of Soil_1. Each layer's rate is scaled by its own theta/theta_sat. Leave empty for no evapotranspiration below Soil_1.",
+      "applyto": {
+        "Soil_2#Evapotranspiration": "Evapotranspiration_2",
+        "Soil_3#Evapotranspiration": "Evapotranspiration_2"
       }
     },
     "catchment_slope": {
@@ -686,22 +697,23 @@
       "criteria": "groundwater_porosity*(1-groundwater_porosity)>-1e-12",
       "warningmessage": "Groundwater porosity must be greater than 0 and no greater than 1.",
       "applyto": {
-        "Groundwater#porosity": "groundwater_porosity",
-        "Groundwater#specific_storage": "groundwater_porosity/groundwater_thickness"
+        "Groundwater#porosity": "groundwater_porosity"
       }
     },
-    "initial_groundwater_moisture_content": {
+    "initial_water_table_elevation": {
       "type": "value",
-      "description": "Initial moisture content of the groundwater cell",
+      "description": "Initial water-table elevation (same datum as surface_elevation)",
       "ask_user": "true",
-      "delegate": "ValueBox",
-      "default": "0.1",
-      "helptext": "Initial water content of the groundwater cell. With the unconfined formulation the initial head is bottom + thickness*theta/porosity, i.e. theta = porosity*(h0-bottom)/thickness.",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "93",
+      "estimate": "true",
+      "criteria": "(initial_water_table_elevation-surface_elevation+depth_to_groundwater+groundwater_thickness)*(surface_elevation-depth_to_groundwater-initial_water_table_elevation)>-1e-12",
+      "warningmessage": "The initial water table must lie within the groundwater cell (between its bottom and the bottom of the soil column).",
+      "helptext": "Initial water-table elevation of the unconfined groundwater cell (same datum as surface_elevation). The cell's initial storage is groundwater_porosity*(initial_water_table_elevation-z_bottom)*area with z_bottom = surface_elevation-depth_to_groundwater-groundwater_thickness, so the initial water table does not move when groundwater_porosity changes (for example during calibration).",
       "applyto": {
-        "Groundwater#moisture_content": "initial_groundwater_moisture_content"
-      },
-      "criteria": "initial_groundwater_moisture_content*(groundwater_porosity-initial_groundwater_moisture_content)>-1e-12",
-      "warningmessage": "Initial groundwater moisture content must be nonnegative and cannot exceed groundwater porosity."
+        "Groundwater#initial_head": "initial_water_table_elevation"
+      }
     },
     "impervious_manning_coefficient": {
       "type": "value",
@@ -887,11 +899,22 @@
       "criteria": "K_sat_scale>0",
       "warningmessage": "The conductivity multiplier must be positive!",
       "applyto": {
-        "Soil_1#K_sat_scale_factor": "K_sat_scale",
+        "Soil_1#K_sat_scale_factor": "K_sat_scale*K_sat_scale_surface",
         "Soil_2#K_sat_scale_factor": "K_sat_scale",
         "Soil_3#K_sat_scale_factor": "K_sat_scale"
       },
-      "helptext": "Scales K_sat_1..K_sat_3 (and therefore also the recharge conductivity, which is Soil_3's). Keep 1 unless calibrating."
+      "helptext": "Scales K_sat_1..K_sat_3 (and therefore also the recharge conductivity, which is Soil_3's). The top layer is additionally scaled by K_sat_scale_surface. Keep 1 unless calibrating."
+    },
+    "K_sat_scale_surface": {
+      "type": "value",
+      "description": "Additional multiplier on the saturated conductivity of the top soil layer (calibration)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "K_sat_scale_surface>0",
+      "warningmessage": "The surface conductivity multiplier must be positive!",
+      "helptext": "Multiplies the saturated conductivity of Soil_1 only (its K_sat_scale_factor is K_sat_scale*K_sat_scale_surface), so infiltration at the surface - reduced, for example, by compaction of urban lawns - can be adjusted without changing percolation and recharge through the deeper layers. Keep 1 unless calibrating."
     }
   }
 }
