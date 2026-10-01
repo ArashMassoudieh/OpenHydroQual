@@ -746,7 +746,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             if (!emitted.count(key)) ordered.push_back(key);
 
         for (const std::string& key : ordered) {
-            const ConstantNode& node = constantNodes.at(key);
+            const auto nodeIt = constantNodes.find(key);
+            if (nodeIt == constantNodes.end())
+                throw std::runtime_error("CodeGenerator: constant ordering referenced missing node '" + key + "'");
+            const ConstantNode& node = nodeIt->second;
             emitQuantity(node.o, node.isLink, node.qn, "0.0", initBody,
                          /*asLocal=*/false);
         }

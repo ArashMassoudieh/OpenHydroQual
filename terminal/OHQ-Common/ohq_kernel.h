@@ -159,9 +159,24 @@ inline bool VerifyKernelMatches(System& system)
         const double tend = t0 + 0.05 * (k.simulation_end() - t0);
         const int ns = k.n_states(), nm = k.n_mass();
         auto snap = [&](void* h, std::vector<double>& o) {
-            o.resize(ns + nm);
-            for (int i = 0; i < ns; ++i) o[i] = k.state(h, i);
-            for (int i = 0; i < nm; ++i) o[ns + i] = k.mass(h, i);
+            o.clear();
+            o.reserve(ns + nm + no * 2);
+            for (int i = 0; i < ns; ++i) o.push_back(k.state(h, i));
+            for (int i = 0; i < nm; ++i) o.push_back(k.mass(h, i));
+            // Some estimated parameters affect only a reported observation
+            // (for example an EC(theta) mapping) and correctly leave every
+            // hydraulic/transport state unchanged. Include the observation
+            // series so those live bindings are not rejected as inert.
+            for (int i = 0; i < no; ++i)
+            {
+                const int n = k.observation_count(h, i);
+                o.push_back((double)n);
+                for (int j = 0; j < n; ++j)
+                {
+                    double t = 0, v = 0;
+                    if (k.observation_at(h, i, j, &t, &v)) o.push_back(v);
+                }
+            }
         };
         std::vector<double> base, cur;
         { void* h = k.create(); k.initialize(h); k.run_to(h, tend); snap(h, base); k.destroy(h); }
@@ -187,8 +202,8 @@ inline bool VerifyKernelMatches(System& system)
             k.set_parameter(h, i, probe); k.apply_parameters(h);
             k.run_to(h, tend); snap(h, cur); k.destroy(h);
 
-            bool moved = false;
-            for (int q = 0; q < ns + nm && !moved; ++q) moved = (cur[q] != base[q]);
+            bool moved = cur.size() != base.size();
+            for (size_t q = 0; q < cur.size() && !moved; ++q) moved = (cur[q] != base[q]);
             if (!moved)
             {
                 std::cout << "Parameter " << i << " '" << pname

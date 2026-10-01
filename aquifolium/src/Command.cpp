@@ -513,16 +513,26 @@ bool Command::Execute(System *_sys)
     {
         if (Validate())
         {
-            sys->SetAsParameter(assignments["object"],assignments["quantity"],assignments["parametername"]);
-			if (sys->object(assignments["object"]))
-            {	if (sys->object(assignments["object"])->HasQuantity(assignments["quantity"]))
-                    sys->object(assignments["object"])->Variable(assignments["quantity"])->SetParameterAssignedTo(assignments["parametername"]);
+            const string& objectName = assignments["object"];
+            const string& quantityName = assignments["quantity"];
+            const string& parameterName = assignments["parametername"];
+            if (!sys->SetAsParameter(objectName, quantityName, parameterName))
+            {
+                last_error = "Could not bind '" + objectName + "." + quantityName
+                           + "' to parameter '" + parameterName + "'";
+                return false;
             }
-            else
-			{
-				return false;
-				sys->GetErrorHandler()->Append("system", "command", "Execute", "object '" + assignments["object"] + "' was not found!", 11237);
-			}
+
+            Object* target = sys->object(objectName);
+            if (target == nullptr || !target->HasQuantity(quantityName))
+            {
+                last_error = "Bound parameter target '" + objectName + "."
+                           + quantityName + "' is unavailable";
+                sys->GetErrorHandler()->Append("system", "command", "Execute",
+                                               last_error, 11237);
+                return false;
+            }
+            target->Variable(quantityName)->SetParameterAssignedTo(parameterName);
             return true;
         }
         else
