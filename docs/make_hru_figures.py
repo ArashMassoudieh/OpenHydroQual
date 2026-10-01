@@ -55,7 +55,7 @@ def structure_urban():
     box(4.3, 4.75, 8.3, 5.45, "Soil_1", r"$D/7$;  " + perv + ";  ET", SOIL[0])
     box(4.3, 3.6, 8.3, 4.3, "Soil_2", r"$2D/7$;  " + perv + ";  ET$_2$", SOIL[1])
     box(4.3, 2.45, 8.3, 3.15, "Soil_3", r"$4D/7$;  " + perv + ";  ET$_2$", SOIL[2])
-    box(0.3, 0.7, 8.3, 1.75, "Unconfined groundwater cell", r"area $A$ (whole unit);  $h=z_g+V/(\phi A)$;  initial state: water-table elevation", BLUE)
+    box(0.3, 0.7, 8.3, 1.75, "Unconfined Groundwater cell", r"area $A$ (whole unit);  $h=z_g+V/(S_y A)$;  initial state: water-table elevation", BLUE)
     ax.add_patch(FancyBboxPatch((0.3, 1.95), 3.5, 3.5, boxstyle="round,pad=0.02,rounding_size=0.12",
                                 fc="#e9e7e2", ec=MUTED, lw=0.6, ls="--"))
     ax.text(2.05, 3.7, "no infiltration\nbelow impervious\nsurfaces", ha="center", va="center", fontsize=7.5,
@@ -68,15 +68,15 @@ def structure_urban():
     arrow((6.3, 5.95), (6.3, 5.45), "surfacewater_to_soil_link", lpos=(6.38, 5.7))
     arrow((6.3, 4.75), (6.3, 4.3), "soil_to_soil_link", lpos=(6.38, 4.52))
     arrow((6.3, 3.6), (6.3, 3.15), "soil_to_soil_link", lpos=(6.38, 3.37))
-    arrow((6.3, 2.45), (6.3, 1.75), "soil2groundwater_unsat_link", color=ORANGE, lw=2.0, lpos=(6.38, 2.12))
+    arrow((6.3, 2.45), (6.3, 1.75), "soil_to_unconfined_groundwater_link", color=ORANGE, lw=2.0, lpos=(6.38, 2.12))
     ax.text(6.38, 1.9, r"$K=K_{sat,3}k_r(S_{e,3})$ / $K_{sat,3}$;  " + perv, fontsize=6.6, color=ORANGE, va="center")
     arrow((3.8, 8.72), (9.1, 8.72), "Impervious_Reach_link", lpos=(5.0, 8.88))
     arrow((8.3, 7.62), (9.1, 7.62))
     ax.text(8.45, 7.9, "Reach_link", fontsize=6.8, color=TEXT2, family="monospace")
     arrow((8.3, 1.22), (9.1, 1.22))
-    ax.text(8.4, 0.95, "groundwater_to_stream", fontsize=6.8, color=TEXT2, family="monospace", va="center")
+    ax.text(10.2, 1.75, "unconfined_\ngroundwater_\nto_stream", fontsize=6.6, color=TEXT2, family="monospace", va="center", ha="center")
     foot = r"$f_i=\min(f_{imp}\,m_{imp},\,0.95)$;  "
-    ax.text(0.3, 0.42, foot + r"$D$ = depth_to_groundwater;  $\phi$ = porosity, $b$ = groundwater thickness",
+    ax.text(0.3, 0.42, foot + r"$D$ = depth_to_groundwater;  $S_y$ = groundwater_porosity, $b$ = groundwater thickness",
             fontsize=7.2, color=TEXT2, va="center")
     ax.text(0.3, 0.1, "van Genuchten parameters and $K_{sat}$ set per soil layer; Soil_1 $K_{sat}$ also scaled by K_sat_scale_surface",
             fontsize=7.2, color=TEXT2, va="center")
@@ -145,7 +145,7 @@ def read(f, names):
 
 def example():
     names = ["Impervious_outlet_flow", "Pervious_outlet_flow", "Baseflow_flow", "Stream_outlet_flow",
-             "Neighbourhood__recharge_flow", "Neighbourhood__infiltration_flow", "Neighbourhood__Groundwater_head"]
+             "Neighbourhood__recharge_flow", "Neighbourhood__infiltration_flow", "Neighbourhood__Groundwater_piezometric_head"]
     s = read(EX / "output.txt", names)
     A, fi, t0 = 500000.0, 0.25, 36526
     p = pd.read_csv(EX / "precipitation.csv", header=None)
@@ -166,7 +166,7 @@ def example():
     axs[2].set_ylabel("Recharge (mm/d)")
     axs[2].set_xlabel("Day")
     ax2 = axs[2].twinx()
-    h = s["Neighbourhood__Groundwater_head"]
+    h = s["Neighbourhood__Groundwater_piezometric_head"]
     ax2.plot(h.index - t0, h.values, color="#e34948", lw=1.1, label="groundwater head")
     ax2.set_ylabel("Groundwater head (m)")
     axs[2].legend(fontsize=7, loc="upper center")
@@ -186,7 +186,7 @@ def example():
                      ("Baseflow_flow", "Baseflow (\\code{groundwater\\_to\\_stream})"),
                      ("Stream_outlet_flow", "Stream outflow")):
         rows.append((lab, vol(s[key])))
-    hh = s["Neighbourhood__Groundwater_head"]
+    hh = s["Neighbourhood__Groundwater_piezometric_head"]
     lines = [r"\begin{tabular}{lr}", r"\toprule", r"Volume over 30 days & m$^3$ \\", r"\midrule"]
     lines += [f"{a} & {b:,.0f} \\\\" for a, b in rows]
     lines += [r"\midrule", f"Groundwater head rise (m) & {hh.iloc[-1] - hh.iloc[0]:.2f} \\\\", r"\bottomrule",

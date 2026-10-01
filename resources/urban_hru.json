@@ -2,7 +2,7 @@
   "requires": [
     "main_components.json",
     "unsaturated_soil.json",
-    "groundwater.json",
+    "unconfined_groundwater.json",
     "open_channel.json"
   ],
   "Reach_link": {
@@ -142,7 +142,7 @@
     "icon": {
       "filename": "urban_hru.png"
     },
-    "helptext": "Total HRU area is partitioned by min(impervious_fraction*impervious_multiplier, 0.95). The pervious Catchment and Soil_1..Soil_3 receive area*(1-impervious_fraction); the Impervious_Catchment receives area*impervious_fraction and has no infiltration. The Groundwater cell underlies the WHOLE unit (area), since the aquifer continues beneath impervious surfaces; it is recharged only through the pervious soil column (recharge interface area*(1-impervious_fraction)) by a soil2groundwater_unsat_link: unsaturated conductivity of Soil_3 (K_sat*k_r(Se)) for drainage, saturated conductivity for upward flow. Soil layers are 1:2:4 fractions of depth_to_groundwater, each with its own van Genuchten parameters. The groundwater cell is an Unconfined groundwater cell: its head rises by 1/porosity per unit of stored water depth, and its initial state is a water-table elevation. Each surface drains through its own Trapezoidal Channel Segment. impervious_multiplier and K_sat_scale (default 1) are watershed-wide calibration multipliers.",
+    "helptext": "Total HRU area is partitioned by min(impervious_fraction*impervious_multiplier, 0.95). The pervious Catchment and Soil_1..Soil_3 receive area*(1-impervious_fraction); the Impervious_Catchment receives area*impervious_fraction and has no infiltration. The Groundwater cell underlies the WHOLE unit (area), since the aquifer continues beneath impervious surfaces; it is recharged only through the pervious soil column (recharge interface area*(1-impervious_fraction)) by a soil_to_unconfined_groundwater_link: unsaturated conductivity of Soil_3 (K_sat*k_r(Se)) for drainage, saturated conductivity for upward flow. Soil layers are 1:2:4 fractions of depth_to_groundwater, each with its own van Genuchten parameters. The groundwater cell is an Unconfined Groundwater cell (unconfined_groundwater.json): its piezometric head rises by 1/specific_yield per unit of stored water depth, and its initial state is a water-table elevation. Neighbouring units exchange groundwater through UC_groundwater_link. Each surface drains through its own Trapezoidal Channel Segment. impervious_multiplier and K_sat_scale (default 1) are watershed-wide calibration multipliers.",
     "members": {
       "Catchment": {
         "type": "Catchment",
@@ -173,7 +173,7 @@
         "_height": "200"
       },
       "Groundwater": {
-        "type": "Unconfined groundwater cell",
+        "type": "Unconfined Groundwater cell",
         "dx": "0",
         "dy": "1000",
         "_width": "200",
@@ -218,7 +218,7 @@
         "to": "Soil_3"
       },
       "recharge": {
-        "type": "soil2groundwater_unsat_link",
+        "type": "soil_to_unconfined_groundwater_link",
         "from": "Soil_3",
         "to": "Groundwater"
       },
@@ -242,14 +242,14 @@
         "from": "Impervious_Reach",
         "to": "Trapezoidal Channel Segment"
       },
-      "groundwater_link": {
+      "unconfined_groundwater_to_stream": {
+        "from": "Groundwater"
+      },
+      "UC_groundwater_link": {
         "from": "Groundwater",
         "to": "Groundwater"
       },
-      "groundwater_to_fixedhead": {
-        "from": "Groundwater"
-      },
-      "groundwater_to_stream": {
+      "unconfined_groundwater_to_fixedhead": {
         "from": "Groundwater"
       }
     },
@@ -299,7 +299,7 @@
         "Soil_1#bottom_elevation": "surface_elevation-depth_to_groundwater/7",
         "Soil_2#bottom_elevation": "surface_elevation-3*depth_to_groundwater/7",
         "Soil_3#bottom_elevation": "surface_elevation-depth_to_groundwater",
-        "Groundwater#bottom_elevation": "surface_elevation-depth_to_groundwater-groundwater_thickness",
+        "Groundwater#base_elevation": "surface_elevation-depth_to_groundwater-groundwater_thickness",
         "Impervious_Catchment#elevation": "surface_elevation",
         "Reach#bottom_elevation": "surface_elevation",
         "Impervious_Reach#bottom_elevation": "surface_elevation"
@@ -332,9 +332,39 @@
       "estimate": "true",
       "criteria": "groundwater_thickness>0",
       "warningmessage": "The groundwater thickness must be positive!",
-      "helptext": "Saturated thickness below the water table. Its bottom elevation is the surface elevation less the depth to groundwater less this thickness.",
+      "helptext": "Thickness of the groundwater cell from its base to the bottom of the soil column. Its base elevation is the surface elevation less the depth to groundwater less this thickness; it also sets the recharge flow path.",
       "applyto": {
-        "Groundwater#depth": "groundwater_thickness"
+        "Groundwater#aquifer_thickness": "groundwater_thickness"
+      }
+    },
+    "groundwater_residual_thickness": {
+      "type": "value",
+      "description": "Residual thickness of the groundwater cell",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "estimate": "true",
+      "criteria": "groundwater_residual_thickness>-1e-12",
+      "warningmessage": "The residual thickness cannot be negative",
+      "helptext": "Saturated thickness above the cell base that lateral flow to neighbouring units (UC_groundwater_link) cannot remove; for example the depth of the base below the receiving stream bed, so that lateral flow cannot draw the water table below the stream.",
+      "applyto": {
+        "Groundwater#residual_thickness": "groundwater_residual_thickness"
+      }
+    },
+    "recharge_elevation_offset": {
+      "type": "value",
+      "description": "Soil elevation offset in the recharge link",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "estimate": "true",
+      "criteria": "recharge_elevation_offset>-1e-12",
+      "warningmessage": "The offset cannot be negative",
+      "helptext": "The recharge link evaluates Soil_3 as if it lay this much lower, so that it sits a chosen gap G above the water table: offset = (soil bottom - water table) - G. Only the recharge exchange is affected; the soil, catchments, reaches and groundwater cell keep their elevations. 0 = actual geometry.",
+      "applyto": {
+        "recharge#elevation_offset": "recharge_elevation_offset"
       }
     },
     "Precipitation": {
@@ -685,7 +715,7 @@
       "applyto": {
         "Groundwater#hydraulic_conductivity": "groundwater_K"
       },
-      "helptext": "Hydraulic conductivity of the groundwater cell. Together with groundwater_to_stream connector properties and the head difference between Groundwater and the receiving stream/reach, this controls groundwater discharge/baseflow."
+      "helptext": "Hydraulic conductivity of the groundwater cell. Together with unconfined_groundwater_to_stream connector properties and the head difference between Groundwater and the receiving stream/reach, this controls groundwater discharge/baseflow."
     },
     "groundwater_porosity": {
       "type": "value",
@@ -697,6 +727,7 @@
       "criteria": "groundwater_porosity*(1-groundwater_porosity)>-1e-12",
       "warningmessage": "Groundwater porosity must be greater than 0 and no greater than 1.",
       "applyto": {
+        "Groundwater#specific_yield": "groundwater_porosity",
         "Groundwater#porosity": "groundwater_porosity"
       }
     },
@@ -712,7 +743,7 @@
       "warningmessage": "The initial water table must lie within the groundwater cell (between its bottom and the bottom of the soil column).",
       "helptext": "Initial water-table elevation of the unconfined groundwater cell (same datum as surface_elevation). The cell's initial storage is groundwater_porosity*(initial_water_table_elevation-z_bottom)*area with z_bottom = surface_elevation-depth_to_groundwater-groundwater_thickness, so the initial water table does not move when groundwater_porosity changes (for example during calibration).",
       "applyto": {
-        "Groundwater#initial_head": "initial_water_table_elevation"
+        "Groundwater#piezometric_head": "initial_water_table_elevation"
       }
     },
     "impervious_manning_coefficient": {

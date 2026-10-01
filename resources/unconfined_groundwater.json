@@ -93,6 +93,30 @@
       "estimate": "true",
       "helptext": "Base Elevation"
     },
+    "aquifer_thickness": {
+      "type": "value",
+      "description": "Aquifer thickness",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "default": "10",
+      "estimate": "true",
+      "criteria": "aquifer_thickness>0",
+      "warningmessage": "Aquifer thickness must be greater than zero",
+      "helptext": "Thickness of the aquifer cell from its base to its top (for example, to the bottom of an overlying soil column). It sets the flow path of soil_to_unconfined_groundwater_link; it does not limit the storage."
+    },
+    "residual_thickness": {
+      "type": "value",
+      "description": "Residual thickness",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "default": "0",
+      "estimate": "true",
+      "criteria": "residual_thickness>-1e-12",
+      "warningmessage": "Residual thickness cannot be negative",
+      "helptext": "Saturated thickness above the base that lateral flow (UC_groundwater_link) cannot remove: the outflow of a cell stops as its saturated thickness falls to this value. For example, the depth of the base below the stream bed, so that lateral flow cannot pull the water table below the stream. Other connectors are not affected."
+    },
     "piezometric_head": {
       "type": "expression",
       "expression": "Storage/(specific_yield*area)+base_elevation",
@@ -160,10 +184,29 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "cutoff_depth": {
+      "type": "value",
+      "description": "Cutoff depth",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "default": "0.05",
+      "criteria": "cutoff_depth>0",
+      "warningmessage": "Cutoff depth must be greater than zero",
+      "helptext": "The flow tapers linearly to zero over this depth as the saturated thickness of the cell it leaves approaches that cell's residual_thickness."
+    },
+    "cutoff_factor": {
+      "type": "expression",
+      "description": "Drainage cutoff factor",
+      "expression": "_hsd(piezometric_head.s-piezometric_head.e)*_min(_pos(depth.s-residual_thickness.s)/cutoff_depth;1)+_hsd(piezometric_head.e-piezometric_head.s)*_min(_pos(depth.e-residual_thickness.e)/cutoff_depth;1)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "helptext": "Between 0 and 1: 0 when the upgradient cell has drained to its residual thickness, 1 when it has more than cutoff_depth above it."
+    },
     "flow": {
       "type": "expression",
       "description": "Flow rate",
-      "expression": "0.25*(hydraulic_conductivity.s+hydraulic_conductivity.e)*(piezometric_head.s-piezometric_head.e)*width*(depth.s+depth.e)/length",
+      "expression": "cutoff_factor*0.25*(hydraulic_conductivity.s+hydraulic_conductivity.e)*(piezometric_head.s-piezometric_head.e)*width*(depth.s+depth.e)/length",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false",
@@ -188,6 +231,61 @@
       "unit": "m^2;ft^2",
       "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
+  },
+  "unconfined_groundwater_to_stream": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Unconfined groundwater to stream",
+    "icon": {
+      "filename": "GW_to_Stream.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero"
+    },
+    "hydraulic_conductivity": {
+      "type": "value",
+      "description": "Hydraulic Conductivity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;cm/s;in/s;m/s",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "hydraulic_conductivity>0",
+      "warningmessage": "Hydraulic conductivity must be greater than zero"
+    },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;cm~^2;in~^2",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "area*hydraulic_conductivity*(piezometric_head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
+    },
+    "helptext": "Darcy exchange between an Unconfined Groundwater cell and a channel segment (baseflow when the water table is above the stream, stream loss when below): flow = area*hydraulic_conductivity*(piezometric_head.s-head.e)/length, with area the bank (seepage-face) area and length the flow path from the aquifer to the stream."
   },
   "unconfined_groundwater_to_fixedhead": {
     "type": "link",
@@ -311,6 +409,61 @@
       "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "helptext": "Surface water to unconfined groundwater link"
+  },
+  "soil_to_unconfined_groundwater_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Soil to unconfined groundwater link (unsaturated conductivity)",
+    "icon": {
+      "filename": "soil2GW_link.png"
+    },
+    "helptext": "Darcy flow between the bottom soil layer (source, must be a Soil block) and an Unconfined Groundwater cell. When the soil head is higher (drainage), the conductivity is the soil's unsaturated conductivity K_sat*k_r(Se), with the Mualem-van Genuchten k_r of the soil layer, as in soil_to_soil_link. When the groundwater head is higher (upward flow), the soil's saturated conductivity K_sat is used. The soil head is taken elevation_offset lower than it is (default 0), and the flow path runs from the centre of the soil layer to the centre of the aquifer cell, (depth.s+aquifer_thickness.e-elevation_offset)/2. flow = area*K_eff*(head.s-elevation_offset-piezometric_head.e)/length",
+    "length": {
+      "type": "expression",
+      "expression": "(depth.s+aquifer_thickness.e-elevation_offset)/2",
+      "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;cm~^2;in~^2",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero"
+    },
+    "elevation_offset": {
+      "type": "value",
+      "description": "Soil elevation offset",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "criteria": "elevation_offset>-1e-12",
+      "warningmessage": "The elevation offset cannot be negative",
+      "helptext": "The link evaluates the soil layer as if it lay this much lower: its head is reduced by elevation_offset and the flow path shortened by elevation_offset/2. Use it to place the soil column a chosen distance above the water table when the soil column sits at a mean surface elevation far above it. Nothing else in the model moves. 0 = actual geometry."
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective hydraulic conductivity",
+      "expression": "K_sat.s*((1-(1-Se.s^(1/m.s))^m.s)^2*_hsd((head.s-elevation_offset)-piezometric_head.e)+_hsd(piezometric_head.e-(head.s-elevation_offset)))",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m/day;ft/day;cm/s;m/s"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "area*K_sat.s*((1-(1-Se.s^(1/m.s))^m.s)^2*_pos((head.s-elevation_offset)-piezometric_head.e)-_pos(piezometric_head.e-(head.s-elevation_offset)))/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
+    }
   },
   "water_supply_well": {
     "type": "block",

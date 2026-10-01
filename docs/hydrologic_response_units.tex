@@ -97,7 +97,8 @@ Internal routing reaches & none & one per surface \\
 Soil parameters & one set & one set per layer \\
 Groundwater area & $A$ & $A$ \\
 Recharge conductivity & constant \code{recharge\_K} & $K_{sat,3}\,k_r(S_{e,3})$ \\
-Groundwater cell & \code{Groundwater cell}, user $S_s$ & \code{Unconfined groundwater cell} \\
+Groundwater cell & \code{Groundwater cell}, user $S_s$ & \code{Unconfined Groundwater cell} \\
+Groundwater template & \file{groundwater.json} & \file{unconfined\_groundwater.json} \\
 Initial groundwater state & moisture content & water-table elevation \\
 Evapotranspiration & \code{Soil\_1} & \code{Soil\_1}; optional second source on \code{Soil\_2}--\code{Soil\_3} \\
 Calibration multipliers & --- & \code{impervious\_multiplier}, \code{K\_sat\_scale}, \code{K\_sat\_scale\_surface} \\
@@ -252,7 +253,7 @@ using the HRU is in \exfile{Examples/Hydrologic\_Response\_Unit/HRU\_hillslope.o
       the runoff of each surface: the swales, gutters, small streams and storm pipes inside the unit;
 \item \code{Soil\_1}, \code{Soil\_2}, \code{Soil\_3} --- three van Genuchten soil layers under the
       pervious surface;
-\item \code{Groundwater} --- an \code{Unconfined groundwater cell} (\cref{sec:unconfined}).
+\item \code{Groundwater} --- an \code{Unconfined Groundwater cell} (\cref{sec:unconfined}).
 \end{itemize}
 
 \noindent and six internal links: a \code{Catchment\_link} from each surface to its reach,
@@ -274,8 +275,9 @@ and ports to the receiving channel segment. The recharge connector is highlighte
 \subsection{Ports}
 \label{sec:ports}
 A composite exposes the members that may be connected from outside as \emph{ports}. The Urban HRU
-declares five; its baseflow leaves through \code{groundwater\_to\_stream} (the \code{Linear\_baseflow}
-connector of the HRU, \cref{sec:hru}, is not a port of the Urban HRU):
+declares five, all from \file{unconfined\_groundwater.json} or \file{urban\_hru.json}; its baseflow
+leaves through \code{unconfined\_groundwater\_to\_stream} (the \code{Linear\_baseflow} connector of the
+HRU, \cref{sec:hru}, is not a port of the Urban HRU):
 
 \begin{table}[H]
 \centering\small
@@ -285,9 +287,9 @@ Port (link type) & From member & Typical target & Icon \\
 \midrule
 \code{Reach\_link} & \code{Reach} & the receiving channel segment & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{HRU_Pervious_Outlet.png}} \\
 \code{Impervious\_Reach\_link} & \code{Impervious\_Reach} & the receiving channel segment & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{HRU_Impervious_Outlet.png}} \\
-\code{groundwater\_to\_stream} & \code{Groundwater} & a channel segment (baseflow) & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{GW_to_Stream.png}} \\
-\code{groundwater\_link} & \code{Groundwater} & the groundwater cell of a neighbouring unit & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{Groundwater_link.png}} \\
-\code{groundwater\_to\_fixedhead} & \code{Groundwater} & a \code{fixed\_head} block & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{gw_2_fixed_head.png}} \\
+\code{unconfined\_groundwater\_to\_stream} & \code{Groundwater} & a channel segment (baseflow) & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{GW_to_Stream.png}} \\
+\code{UC\_groundwater\_link} & \code{Groundwater} & the groundwater cell of a neighbouring Urban HRU (lateral flow) & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{unconfined_GW2unconfined_GW.png}} \\
+\code{unconfined\_groundwater\_to\_fixedhead} & \code{Groundwater} & a \code{fixed\_head} block & \raisebox{-0.4\height}{\includegraphics[height=0.9cm]{unconfined_GW2fixedhead.png}} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -379,15 +381,18 @@ $f_i=0.5$ --- and any change of $f_i$ during calibration would also change the a
 
 \subsection{Recharge through the unsaturated conductivity}
 \label{sec:recharge}
-\code{soil2groundwater\_unsat\_link} (\file{groundwater.json}) connects \code{Soil\_3} (the source,
-which must be a \code{Soil} block) to the groundwater cell:
+\code{soil\_to\_unconfined\_groundwater\_link} (\file{unconfined\_groundwater.json}) connects
+\code{Soil\_3} (the source, which must be a \code{Soil} block) to the groundwater cell:
 \begin{equation}
   Q_r = A(1-f_i)\,K_{sat,3}\;
-        \frac{k_r(S_{e,3})\,\big(h_3-h_g\big)_+ \;-\; \big(h_g-h_3\big)_+}{L},
-        \qquad L=\tfrac12\,(d_3+b).
+        \frac{k_r(S_{e,3})\,\big(h_3-\Delta z-h_g\big)_+ \;-\; \big(h_g-h_3+\Delta z\big)_+}{L},
+        \qquad L=\tfrac12\,(d_3+b-\Delta z),
   \label{eq:recharge}
 \end{equation}
-When the soil head is higher (drainage) the conductivity is the unsaturated conductivity of the bottom
+with $d_3$ the thickness of \code{Soil\_3} and $b$ the \code{aquifer\_thickness} of the cell (the
+unit's \code{groundwater\_thickness}), so that $L$ runs from the centre of the soil layer to the centre
+of the aquifer cell, and $\Delta z$ the link's \code{elevation\_offset} (the unit's
+\code{recharge\_elevation\_offset}, default 0). When the soil head is higher (drainage) the conductivity is the unsaturated conductivity of the bottom
 layer, with the same Mualem $k_r$ as the percolation links; when the groundwater head is higher
 (upward flow) the saturated conductivity is used.
 
@@ -400,23 +405,67 @@ suction of the bottom layer reversed it into up to 380\,mm/d of upward flow from
 table. Calibrating $K_{rech}$ can only trade one error for the other. With \eqref{eq:recharge} the
 flux falls with $k_r$ as the bottom layer drains, and no separate recharge conductivity is needed.
 
+\paragraph{Elevation offset.} The soil column of a unit sits at the unit's mean surface elevation,
+while the single groundwater cell has its water table near the stream: in incised terrain the two can
+be tens of metres apart, so that recharge falls across a large gap under a nearly constant gradient
+and the water table can never reach the root zone. $\Delta z$ lets the recharge link evaluate
+\code{Soil\_3} as if it lay $\Delta z$ lower, a chosen gap $G$ above the water table,
+$\Delta z = \big(z_{3,\mathrm{bottom}}-h_{g,0}\big)-G$ (at least 0); the path length shrinks by the
+same amount, exactly as if the column had been moved. Nothing else moves: the soil layers, the
+catchments, the internal reaches and the groundwater cell keep their elevations, so surface routing
+is unaffected. With a small $G$ the link reverses when \code{Soil\_3} dries (suction larger than
+$G+d_3$), and evapotranspiration from the deeper layers can then draw on the groundwater.
+
 \subsection{Unconfined groundwater}
 \label{sec:unconfined}
-The groundwater member is an \code{Unconfined groundwater cell} (\file{groundwater.json}), a
-groundwater block with a free water table. Its storage $V_g$ and head are related through the
-porosity $\phi$ (\code{groundwater\_porosity}, acting as the specific yield):
+The groundwater member is the stock \code{Unconfined Groundwater cell} of
+\file{unconfined\_groundwater.json}, a cell with a free water table. Its storage $V_g$ and piezometric
+head are related through the specific yield $S_y$ (the unit's \code{groundwater\_porosity}, which sets
+both \code{specific\_yield} and \code{porosity} of the cell):
 \begin{equation}
-  h_g = z_g + \frac{V_g}{\phi\,A},\qquad V_{g,0}=\phi\,\big(h_0-z_g\big)_+\,A,
+  h_g = z_g + \frac{V_g}{S_y\,A},\qquad V_{g,0}=S_y\,\big(h_0-z_g\big)\,A,
 \end{equation}
-so the water table rises by $1/\phi$ per unit depth of stored water. The initial state is given as a
-water-table elevation $h_0$ (\code{initial\_water\_table\_elevation}, same datum as
-\code{surface\_elevation}) and the initial storage is computed from it; the initial water table
-therefore does not move when $\phi$ changes, for example during calibration. (Specifying an initial
-moisture content instead would tie the initial head to $\phi$: a calibrated porosity of 0.107
-instead of 0.15 would raise it by 40\,\% of the saturated thickness.) The block has the same
-\code{head}, \code{depth}, \code{area} and \code{hydraulic\_conductivity} properties as the stock
-\code{Groundwater cell}, so all groundwater links connect to it unchanged; it also reports
-\code{water\_table\_depth}, the saturated thickness above the cell bottom.
+where $z_g$ is the cell's \code{base\_elevation}, so the water table rises by $1/S_y$ per unit depth
+of stored water. The initial state is the initial piezometric head $h_0$ (the unit's
+\code{initial\_water\_table\_elevation}, same datum as \code{surface\_elevation}) and the initial
+storage is computed from it; the initial water table therefore does not move when $S_y$ changes, for
+example during calibration. (Specifying an initial moisture content instead would tie the initial head
+to $S_y$: a calibrated value of 0.107 instead of 0.15 would raise it by 40\,\% of the saturated
+thickness.) The cell reports its saturated thickness as \code{depth} $=h_g-z_g$. For the Urban HRU the
+template gained one property, \code{aquifer\_thickness} (the unit's \code{groundwater\_thickness}): the
+thickness of the cell from its base to the bottom of the soil column. It sets the recharge path
+length of \eqref{eq:recharge}; it does not cap the storage.
+
+Neighbouring units exchange groundwater through the stock \code{UC\_groundwater\_link}, a Darcy
+connector whose transmissive thickness follows the water tables:
+\begin{equation}
+Q = \tfrac12\,(K_s+K_e)\;\tfrac12\,(b_s+b_e)\; W\,\frac{h_s-h_e}{L},
+\end{equation}
+where $K$ is the cells' \code{hydraulic\_conductivity} (the unit's \code{groundwater\_K}), $b$ their
+saturated thickness (\code{depth}), $W$ the interface width (\code{width}, the contact length of the
+shared boundary) and $L$ the distance between the centroids of the two units (\code{length}). For
+example, \code{create link;type=UC\_groundwater\_link,from=SC01,to=SC02,width=3616,length=1352}.
+The flow is multiplied by a drainage cutoff on the cell it leaves (the upgradient cell, $u$):
+\begin{equation}
+f_c=\min\!\Big(\frac{(b_u-b_{r,u})_+}{\delta},\,1\Big),
+\end{equation}
+with $b_r$ the cell's \code{residual\_thickness} (the unit's \code{groundwater\_residual\_thickness},
+default 0) and $\delta$ the link's \code{cutoff\_depth} (default 0.05\,m). Lateral outflow therefore
+tapers to zero as the cell drains to its residual thickness, and a cell cannot be emptied (or driven
+negative) by its neighbours. Setting $b_r$ to the depth of the cell base below the receiving stream
+bed keeps lateral flow from drawing the water table below the stream: with one cell per unit there
+is no groundwater mound under the divide between two units, so the head difference across it is the
+difference of their stream beds, and without the cutoff a high tributary unit can be drained into a
+lower neighbour until its stream turns losing. Exchange with the stream itself is not cut off.
+
+Baseflow uses \code{unconfined\_groundwater\_to\_stream}, the unconfined counterpart of
+\code{groundwater\_to\_stream}:
+\begin{equation}
+Q_b = K_b\,A_b\,\frac{h_g-h_c}{L_b},
+\end{equation}
+with $h_c$ the head of the channel segment, $A_b$ the bank (seepage-face) area (\code{area}), $L_b$ the
+flow path to the stream (\code{length}) and $K_b$ the link's \code{hydraulic\_conductivity}. Water
+flows back into the aquifer when the stream is higher.
 
 \subsection{Layer-specific soil}
 \code{K\_sat\_}$i$, \code{alpha\_vG\_}$i$, \code{n\_vG\_}$i$, \code{theta\_sat\_}$i$ and
@@ -448,7 +497,7 @@ All three default to 1 and leave the unit unchanged at that value.
   disconnected. Area moves between the impervious catchment and the pervious catchment with its soil
   column; the total stays $A$ and the groundwater cell is unaffected. Infiltration, soil storage,
   \code{Soil\_1} evapotranspiration and recharge scale with the pervious area; the internal reaches and
-  the \code{groundwater\_to\_stream} link do not change. $f_{imp}$ itself (for example a Sutherland
+  the \code{unconfined\_groundwater\_to\_stream} link do not change. $f_{imp}$ itself (for example a Sutherland
   estimate, \cref{sec:impfrac}) is fixed when the model is built; only $m_{imp}$ is calibrated.
 \item[\code{K\_sat\_scale}] multiplies $K_{sat}$ of all three layers, and therefore also the
   recharge conductivity of \eqref{eq:recharge}.
@@ -487,8 +536,9 @@ that matters, a third \code{Catchment} for the disconnected area, joined to \cod
 
 \subsection{Templates}
 The HRU lists \file{main\_components.json}, \file{unsaturated\_soil.json} and \file{groundwater.json} in
-its \code{requires}; the Urban HRU lists the same three and \file{open\_channel.json}, so selecting
-either alone in the interface is enough. The evapotranspiration source is not a member; load
+its \code{requires}; the Urban HRU lists \file{main\_components.json}, \file{unsaturated\_soil.json},
+\file{unconfined\_groundwater.json} and \file{open\_channel.json} (not \file{groundwater.json}), so
+selecting either alone in the interface is enough. The evapotranspiration source is not a member; load
 \file{soil\_evapotranspiration\_models.json} for the \code{Evapotranspiration\_Time\_Series (Soil)}
 source. In a script, add each template explicitly.
 
@@ -500,7 +550,7 @@ and daily reference ET:
 \begin{lstlisting}[style=plain]
 loadtemplate; filename = main_components.json
 addtemplate; filename = unsaturated_soil.json
-addtemplate; filename = groundwater.json
+addtemplate; filename = unconfined_groundwater.json
 addtemplate; filename = open_channel.json
 addtemplate; filename = soil_evapotranspiration_models.json
 addtemplate; filename = urban_hru.json
@@ -517,7 +567,7 @@ create block;type=Trapezoidal Channel Segment,name=Stream,base_width=3,side_slop
 create block;type=fixed_head,name=Outlet,head=87
 create link;type=Reach_link,from=Neighbourhood,to=Stream,name=Pervious_outlet
 create link;type=Impervious_Reach_link,from=Neighbourhood,to=Stream,name=Impervious_outlet
-create link;type=groundwater_to_stream,from=Neighbourhood,to=Stream,name=Baseflow,
+create link;type=unconfined_groundwater_to_stream,from=Neighbourhood,to=Stream,name=Baseflow,
     area=8000,length=150,hydraulic_conductivity=5
 create link;type=channel2fixed,from=Stream,to=Outlet,name=Stream_outlet
 \end{lstlisting}
