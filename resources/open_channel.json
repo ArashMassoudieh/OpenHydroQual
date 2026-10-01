@@ -127,7 +127,7 @@
       "delegate": "ValueBox",
       "estimate": "true",
       "default": "1",
-      "criteria": "inflow_multiplier>-0.0000001",
+      "criteria": "inflow_multiplier>-1e-12",
       "warningmessage": "Inflow multiplier must be non-negative",
       "helptext": "Scales the inflow time series (for example an uncertain lateral inflow estimate). 1 uses the series as given."
     },
