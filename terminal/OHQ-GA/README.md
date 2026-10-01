@@ -93,9 +93,9 @@ The model is an ordinary `.ohq` script. Before generating a kernel, check:
 
    | quantity | meaning | typical |
    |---|---|---|
-   | `maxpop` | population size (also sets the memory use, §11) | 40 |
+   | `maxpop` | population size | 40 |
    | `ngen` | number of generations (the GA runs generations 0 … ngen) | 20 |
-   | `numthreads` | individuals evaluated in parallel | number of physical cores |
+   | `numthreads` | individuals evaluated in parallel (sets the memory use, §11) | number of physical cores |
    | `pcross`, `pmute` | crossover and mutation probability | 1, 0.02 |
    | `shakescale`, `shakescalered` | initial perturbation scale and its reduction factor per generation | 0.05, 0.75 |
    | `outputfile` | population log; **use `GA_output.txt`** — it is the file `--continue` reads | `GA_output.txt` |
@@ -312,28 +312,27 @@ changes** — see the script in §13.
 near the edges of their ranges can be several times slower than the start values, so estimate with
 the slower runs from `detail_GA.txt`, not the fastest. The whole run is `ngen + 1` generations.
 
-**Memory.** Memory has two parts:
+**Memory.** Each thread solves one individual at a time on its own full copy of the model; the
+copy is made just before the solve and released right after it (only the best individual of the
+generation is kept, for the final outputs). A copy holds all blocks, links, sources and their time
+series, and a running individual also stores the modeled value of every observation on a uniform
+grid with spacing `initial_time_step`, twice (in the kernel and in the runner):
+`2 × observations × (simulation length / initial_time_step) × 16 bytes`. The total is therefore about
 
-* **One copy of the model per individual.** Each generation the GA makes a full copy of the loaded
-  model for **every individual of the population** (`maxpop` copies), whatever the number of
-  threads. A copy holds all blocks, links, sources and their time series (forcing and observed
-  data), so its size grows with the model: for a watershed model with ~500 blocks, ~550 links and
-  13 years of hourly forcing for 54 sub-catchments it is about 200 MB, i.e. about 8 GB for a
-  population of 40.
-* **One forward run per thread.** A running individual also stores the modeled value of every
-  observation on a uniform grid with spacing `initial_time_step`, twice (in the kernel and in the
-  runner): roughly `2 × observations × (simulation length / initial_time_step) × 16 bytes` — a
-  few hundred MB for 2 years at 0.01 day, but about 1.3 GB for 6 observations over 7 years at
-  0.0002 day.
+```
+(numthreads + 1) × (model copy + observation series)
+```
 
-So the total is about `maxpop × (model copy) + numthreads × (observation series)`. To estimate the
-model copy, watch the runner's memory (`ps -o rss -p <pid>`) during the first generation and divide
-by `maxpop`. **To reduce memory, reduce `maxpop`** (and forcing files that cover much more than the
-simulated period); reducing `numthreads` helps only when the observation series dominate (long
-periods, small time steps). Leave room for everything else on the machine: if the operating system
-runs out of memory it kills the largest or least protected process — often the GA (the terminal
-shows `Killed`; `grep -i "out of memory" /var/log/syslog` shows which process was chosen). A swap
-file of a few tens of GB lets idle programs be paged out instead.
+and does not depend on `maxpop`. To estimate the per-copy size, watch the runner's memory
+(`ps -o rss -p <pid>`) during the first generation and divide by `numthreads + 1`. **To reduce
+memory, reduce `numthreads`**, keep forcing files to the simulated period (a copy loads every
+series a model references, whatever its length), or use a larger `initial_time_step` for long
+periods. (Before October 2026 the runner held one copy per member of the population, so memory
+scaled with `maxpop`; for a ~500-block watershed model at 40 × 12 that was 8.3 GB, now 1.7 GB with
+the forcing clipped to the simulated period.) Leave room for everything else on the machine: if the
+operating system runs out of memory it kills the largest or least protected process — often the GA
+(the terminal shows `Killed`; `grep -i "out of memory" /var/log/syslog` shows which process was
+chosen). A swap file of a few tens of GB lets idle programs be paged out instead.
 
 **Threads.** More threads than physical cores rarely helps. On CPUs with performance and efficiency
 cores, runs on the slower cores set the pace of each batch.
@@ -346,7 +345,7 @@ cores, runs on the slower cores set the pace of each batch.
 | `Parameter ... does NOT change its output ... Refusing to calibrate against it` | the parameter has no effect on the model over the probe period (wrong binding, or a process that never occurs); fix the binding or remove the parameter |
 | objective exactly 0 for every individual | observation files not found — check the paths (§2.3) |
 | a generation never finishes; one `START` without `DONE` in `detail_GA.txt` | a very slow parameter set; set `maximum_time_allowed` (§6) |
-| `Killed` shortly after `Running GA ...` | out of memory (§11); reduce `maxpop` rather than `numthreads` |
+| `Killed` shortly after `Running GA ...` | out of memory (§11); reduce `numthreads` |
 | many `solved=no` | parameter ranges reach values where the model cannot be solved; narrow them |
 | `--continue` stops with a parameter mismatch | the model's parameters changed since that run; start fresh |
 | the best objective stops improving after a few generations | the GA has converged for this model; check the fit of the best run before running more generations — systematic misfit points to the model structure, not to the calibration |

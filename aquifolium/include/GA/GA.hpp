@@ -20,6 +20,8 @@
 ////////////////////////////////////////////////////////////////////////
 #include "GA.h"
 #include <iomanip>
+#include <algorithm>
+#include <memory>
 #include <stdlib.h>
 #ifndef mac_version
 #include <omp.h>
@@ -348,8 +350,6 @@ void CGA<T>::assignfitnesses()
 	vector<double> time_(GA_params.maxpop);
 	vector<int> epochs(GA_params.maxpop);
 	clock_t t0,t1;
-    Models.clear();
-    Models.resize(GA_params.maxpop);
 	for (int k = 0; k < GA_params.maxpop; k++)
 	{
 		for (int i = 0; i < GA_params.nParam; i++)
@@ -365,16 +365,27 @@ void CGA<T>::assignfitnesses()
 		}
 
         Ind[k].actual_fitness = 0;
-
-        Models[k] = *Model;
-        Models[k].SetSilent(true);
-		Models[k].SetRecordResults(false);
-        Models[k].SetNumThreads(1);
-		for (int i = 0; i < GA_params.nParam; i++)
-			Models[k].SetParameterValue(i, inp[k][i]);
-        Models[k].ApplyParameters();
-
 	}
+
+    // Memory: a full copy of the model exists only while an individual is being
+    // solved, plus the best one so far. The previous version filled one full copy
+    // per member of the population before solving any of them (maxpop copies), so
+    // memory scaled with the population size rather than with the number of
+    // threads -- for a large watershed model ~200 MB x 40 = 8 GB.
+    //
+    // Reproducibility: constructing or copying a model draws from rand() (every
+    // object gets a random primary key), and the GA's crossover and mutation draw
+    // from the same stream. To keep runs identical to the previous version and
+    // independent of the number of threads and of the order in which they finish,
+    // the number of constructions and copies is the same as before: maxpop empty
+    // models, one copy of *Model per individual, one copy into Model_out at the
+    // end. Solved models that are not the best are destroyed (no draw) instead of
+    // being reassigned.
+    Models.clear();
+    std::vector<std::unique_ptr<T>> model_slots(GA_params.maxpop);
+    for (auto& p : model_slots) p = std::make_unique<T>();    // cheap: empty models
+    double best_actual_fitness = 1e308;
+    int best_k = -1;
 
 
 #ifndef NO_OPENMP
@@ -395,6 +406,21 @@ int counter=0;
 #endif
 		for (int k=0; k<GA_params.maxpop; k++)
 		{
+            T& M = *model_slots[k];
+            // Copying the shared base model and applying the parameters touch the
+            // base model and template data; keep that serial. The solve is parallel.
+#ifndef NO_OPENMP
+#pragma omp critical(ga_model_copy)
+#endif
+            {
+                M = *Model;
+                M.SetSilent(true);
+                M.SetRecordResults(false);
+                M.SetNumThreads(1);
+                for (int i = 0; i < GA_params.nParam; i++)
+                    M.SetParameterValue(i, inp[k][i]);
+                M.ApplyParameters();
+            }
 
 			FILE *FileOut;
 #ifndef NO_OPENMP
@@ -421,11 +447,11 @@ int counter=0;
             time_t t0 = time(nullptr);
 
 #ifdef Debug_GA
-            Models[k].SavetoScriptFile(filenames.pathname+"/temp/model_" + aquiutils::numbertostring(k) +"_" +aquiutils::numbertostring(current_generation)+".ohq",string(""), vector<string>());
+            M.SavetoScriptFile(filenames.pathname+"/temp/model_" + aquiutils::numbertostring(k) +"_" +aquiutils::numbertostring(current_generation)+".ohq",string(""), vector<string>());
 #endif
-            //Models[k].SaveFullStateTo(QString::fromStdString(filenames.pathname + "/statefull_presolve_" + aquiutils::numbertostring(k)+".json"));
-            Models[k].Solve();
-            Ind[k].actual_fitness = Models[k].GetObjectiveFunctionValue();
+            //M.SaveFullStateTo(QString::fromStdString(filenames.pathname + "/statefull_presolve_" + aquiutils::numbertostring(k)+".json"));
+            M.Solve();
+            Ind[k].actual_fitness = M.GetObjectiveFunctionValue();
             // A solve that gives up partway -- dt collapsed to the floor, or the
             // maximum_simulation_time budget expired -- still leaves a TRUNCATED
             // objective series behind, and GetObjectiveFunctionValue() scores it
@@ -446,7 +472,7 @@ int counter=0;
             // "&& false": generation-0 and file-seeded individuals have no
             // parents, so it indexed Ind_old out of range. Averaging is also the
             // wrong remedy -- it hands a crash-prone set a survivable score.
-            if (Models[k].GetSolutionFailed())
+            if (M.GetSolutionFailed())
             {   Ind[k].actual_fitness = 1e18;
                 FileOut = fopen((filenames.pathname+"detail_GA.txt").c_str(),"a");
                 fprintf(FileOut, "Solve failed (truncated series rejected): gen=%i, individual=%i\n",
@@ -458,7 +484,7 @@ int counter=0;
             // "Simulation failed: <n_parents>" here for every such individual,
             // and left a stray ":" with no newline that ran into the next line.
             // Whether the solve actually failed is reported on the eval line below.
-            if (Ind[k].actual_fitness == 0 && !Models[k].GetSolutionFailed())
+            if (Ind[k].actual_fitness == 0 && !M.GetSolutionFailed())
             {
                 // A solved individual scoring exactly zero means the objective is
                 // not discriminating between parameter sets. Warn once rather than
@@ -473,13 +499,13 @@ int counter=0;
                             "objective functions or observations with observed data." << std::endl;
                 }
             }
-            for (unsigned int i=0; i<Models[k].fit_measures.size(); i++)
-                Ind[k].fit_measures[i] = Models[k].fit_measures[i];
+            for (unsigned int i=0; i<M.fit_measures.size(); i++)
+                Ind[k].fit_measures[i] = M.fit_measures[i];
 #ifdef Debug_GA
-            Models[k].GetModeledObjectiveFunctions().writetofile(filenames.pathname+"/temp//observedoutputs_"+aquiutils::numbertostring(k)+"_"+aquiutils::numbertostring(current_generation)+".txt");
-            Models[k].GetOutputs().writetofile(filenames.pathname+"/temp//outputs_"+aquiutils::numbertostring(k)+"_"+aquiutils::numbertostring(current_generation)+".txt");
+            M.GetModeledObjectiveFunctions().writetofile(filenames.pathname+"/temp//observedoutputs_"+aquiutils::numbertostring(k)+"_"+aquiutils::numbertostring(current_generation)+".txt");
+            M.GetOutputs().writetofile(filenames.pathname+"/temp//outputs_"+aquiutils::numbertostring(k)+"_"+aquiutils::numbertostring(current_generation)+".txt");
 #endif
-			epochs[k] += Models[k].EpochCount();
+			epochs[k] += M.EpochCount();
             time_[k] = time(nullptr)-t0;
             counter++;
 #ifndef NO_OPENMP
@@ -510,14 +536,27 @@ int counter=0;
                 fprintf(FileOut,
                         "gen %d | ind %-3d | DONE   objective=%- 14.6e wall_s=%-6.0f solver_s=%-6.0f solved=%s\n",
                         current_generation, k, Ind[k].actual_fitness,
-                        double(time_[k]), double(Models[k].GetSimulationDuration()),
-                        Models[k].GetSolutionFailed() ? "no" : "yes");
+                        double(time_[k]), double(M.GetSimulationDuration()),
+                        M.GetSolutionFailed() ? "no" : "yes");
                 fclose(FileOut);
             }
 
+            // Keep the solved model of the best individual so far (lowest
+            // actual_fitness, first index on ties, as maxfitness() would pick).
+            if (Ind[k].actual_fitness < best_actual_fitness ||
+                (Ind[k].actual_fitness == best_actual_fitness && k < best_k))
+            {
+                if (best_k >= 0) model_slots[best_k].reset();          // previous best: free it
+                best_actual_fitness = Ind[k].actual_fitness;
+                best_k = k;
+            }
+            else
+                model_slots[k].reset();                                 // not the best: free it now
+
 		}
     }
-	Model_out = Models[maxfitness()];
+	if (best_k >= 0) Model_out = *model_slots[best_k];          // one copy per generation, as before
+	model_slots.clear();                                          // release the remaining copies
 #ifdef Q_GUI_SUPPORT
     if (rtw != nullptr)
     {

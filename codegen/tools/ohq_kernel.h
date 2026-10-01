@@ -322,9 +322,10 @@ public:
     /* Does this kernel actually RESPOND to every parameter it advertises?
      * ISSUE 17: a kernel that ignores a parameter reports a converged optimum
      * that does not reproduce. Perturbs each parameter by `rel`, runs a short
-     * window, and requires some state to move. Returns the index of the first
-     * dead parameter, or -1 if all are live. `skip` names parameters the HOST
-     * owns (an observation's sigma), which are legitimately inert here.
+     * window, and requires some state, mass, or modeled observation to move.
+     * Returns the index of the first dead parameter, or -1 if all are live.
+     * `skip` names parameters the HOST owns (an observation's sigma), which are
+     * legitimately inert here.
      */
     int self_test(double rel = 0.05, double window = 0.0,
                   const std::vector<std::string>& skip = {}) const
@@ -333,14 +334,26 @@ public:
         const double t0 = simulation_start();
         const double tend = window > 0 ? t0 + window
                                        : t0 + 0.05 * (simulation_end() - t0);
-        // Compare over the FULL state: storages AND constituent masses. A
-        // chemistry parameter (a sorption rate, a decay constant) never moves a
-        // flow-phase storage, so checking state() alone reports it as dead.
+        // Compare over the full state plus modeled observations. A chemistry
+        // parameter may move mass but not storage; a reporting parameter (for
+        // example an EC(theta) mapping) may move only an observation and no
+        // integrated state at all.
         const int ns = n_states(), nm = n_mass();
-        std::vector<double> base(ns + nm);
+        const int no = n_observations();
+        std::vector<double> base;
         auto snapshot = [&](void* h, std::vector<double>& out) {
-            for (int i = 0; i < ns; ++i) out[i] = state(h, i);
-            for (int i = 0; i < nm; ++i) out[ns + i] = mass(h, i);
+            out.clear();
+            out.reserve(ns + nm + no * 2);
+            for (int i = 0; i < ns; ++i) out.push_back(state(h, i));
+            for (int i = 0; i < nm; ++i) out.push_back(mass(h, i));
+            for (int i = 0; i < no; ++i) {
+                const int n = observation_count(h, i);
+                out.push_back((double)n);
+                for (int j = 0; j < n; ++j) {
+                    double t = 0, v = 0;
+                    if (observation_at(h, i, j, &t, &v)) out.push_back(v);
+                }
+            }
         };
         {
             void* h = create(); initialize(h); run_to(h, tend);
@@ -356,7 +369,7 @@ public:
             set_parameter(h, p, v0 == 0.0 ? rel : v0 * (1.0 + rel));
             apply_parameters(h);
             run_to(h, tend);
-            std::vector<double> cur(ns + nm);
+            std::vector<double> cur;
             snapshot(h, cur);
             destroy(h);
             // BITWISE comparison, deliberately: the kernel is deterministic, so a
@@ -366,8 +379,8 @@ public:
             // parameter moves the answer by 5e-4 against a state vector dominated
             // by ~1e9 of (constant) bulk-density mass, i.e. 1e-12 relative, which
             // any sane threshold would call dead.
-            bool moved = false;
-            for (int i = 0; i < ns + nm && !moved; ++i) moved = (cur[i] != base[i]);
+            bool moved = cur.size() != base.size();
+            for (size_t i = 0; i < cur.size() && !moved; ++i) moved = (cur[i] != base[i]);
             if (!moved) return p;   // advertised but ignored
         }
         return -1;

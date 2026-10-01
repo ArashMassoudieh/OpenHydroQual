@@ -1,6 +1,6 @@
 loadtemplate; filename = main_components.json
 addtemplate; filename = unsaturated_soil.json
-addtemplate; filename = groundwater.json
+addtemplate; filename = unconfined_groundwater.json
 addtemplate; filename = open_channel.json
 addtemplate; filename = soil_evapotranspiration_models.json
 addtemplate; filename = urban_hru.json
@@ -19,5 +19,5 @@ create block;type=Trapezoidal Channel Segment,name=Stream,x=700,y=0,_width=240,_
 create block;type=fixed_head,name=Outlet,x=1300,y=0,_width=200,_height=200,head=87,Storage=100000
 create link;type=Reach_link,from=Neighbourhood,to=Stream,name=Pervious_outlet
 create link;type=Impervious_Reach_link,from=Neighbourhood,to=Stream,name=Impervious_outlet
-create link;type=groundwater_to_stream,from=Neighbourhood,to=Stream,name=Baseflow,area=8000,length=150,hydraulic_conductivity=5
+create link;type=unconfined_groundwater_to_stream,from=Neighbourhood,to=Stream,name=Baseflow,area=8000,length=150,hydraulic_conductivity=5
 create link;type=channel2fixed,from=Stream,to=Outlet,name=Stream_outlet

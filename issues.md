@@ -681,6 +681,19 @@ state vector dominated by ~1e9 of constant bulk-density mass, i.e. 1e-12
 relative, which any sane threshold would call dead. (That mistake was made and
 caught while writing the test.)
 
+### Refinement 2026-10-01 — observation-only parameters are live
+
+The liveness snapshot originally included storage and constituent mass only.
+That falsely rejected parameters used solely in a modeled observation, such as
+an `EC(theta)` reporting relationship: changing the parameter correctly changes
+the reported EC series without changing the integrated hydraulic or transport
+state. Both `Kernel::self_test()` and the GA/LM/MCMC host check now include all
+modeled observation values in the snapshot. The ABI is unchanged.
+
+`kernel_observation_liveness` provides a self-contained regression kernel whose
+single parameter changes only an observation while its state and mass remain
+constant. The test fails with the old liveness check and passes with the fix.
+
 
 ## ISSUE 18 — codegen: Newton skipped whenever the state norm was zero (FIXED 2026-09-14)
 
