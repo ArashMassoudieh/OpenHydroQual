@@ -86,6 +86,16 @@ if(Qt6_FOUND AND EXISTS "${OHQLIB_DIR}/libOHQLib.so")
     BUILD_RPATH "${OHQLIB_DIR}")
   add_test(NAME emitter COMMAND test_emitter)
 
+  add_executable(test_command_parameter_binding
+    tests/test_command_parameter_binding.cpp)
+  target_compile_definitions(test_command_parameter_binding PRIVATE
+    OHQ_TEST_RESOURCES="${OHQ_ROOT}/resources")
+  target_link_libraries(test_command_parameter_binding PRIVATE ohq_codegen Qt6::Core
+    "${OHQLIB_DIR}/libOHQLib.so")
+  set_target_properties(test_command_parameter_binding PROPERTIES
+    BUILD_RPATH "${OHQLIB_DIR}")
+  add_test(NAME command_parameter_binding COMMAND test_command_parameter_binding)
+
   add_executable(ohq_generate src/ohq_generate.cpp)
   target_link_libraries(ohq_generate PRIVATE ohq_codegen Qt6::Core
     "${OHQLIB_DIR}/libOHQLib.so")
