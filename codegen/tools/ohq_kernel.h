@@ -178,7 +178,48 @@ double      ohq_kernel_mass(const void* h, int i);
  * ========================================================================== */
 #if defined(__cplusplus) && !defined(OHQ_KERNEL_NO_LOADER)
 
-#include <dlfcn.h>
+#ifdef _WIN32
+// Minimal dlopen/dlsym/dlclose/dlerror over the Win32 loader, so the class
+// below is identical on every platform.
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+#  include <cstdio>
+#  define RTLD_NOW 0
+#  define RTLD_LOCAL 0
+namespace ohq { namespace win_dl {
+inline DWORD& last_error() { static thread_local DWORD e = 0; return e; }
+inline const char* error_text()
+{
+    static thread_local char buf[64];
+    DWORD& e = last_error();
+    if (!e) return nullptr;
+    std::snprintf(buf, sizeof buf, "Win32 error %lu", static_cast<unsigned long>(e));
+    e = 0;
+    return buf;
+}
+}} // namespace ohq::win_dl
+inline void* dlopen(const char* path, int)
+{
+    HMODULE h = LoadLibraryA(path);
+    ohq::win_dl::last_error() = h ? 0 : GetLastError();
+    return reinterpret_cast<void*>(h);
+}
+inline void* dlsym(void* lib, const char* name)
+{
+    FARPROC p = GetProcAddress(reinterpret_cast<HMODULE>(lib), name);
+    ohq::win_dl::last_error() = p ? 0 : GetLastError();
+    return reinterpret_cast<void*>(p);
+}
+inline int dlclose(void* lib) { return FreeLibrary(reinterpret_cast<HMODULE>(lib)) ? 0 : -1; }
+inline const char* dlerror() { return ohq::win_dl::error_text(); }
+#else
+#  include <dlfcn.h>
+#endif
 #include <string>
 #include <vector>
 #include <cmath>

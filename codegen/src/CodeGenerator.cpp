@@ -2120,7 +2120,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                   "  target_compile_definitions(" << cls << " PRIVATE " << CLS << "_EXPORTS PUBLIC " << CLS << "_SHARED)\n"
                   "else()\n  add_library(" << cls << " STATIC " << cls << "_api.cpp)\nendif()\n"
                   "target_include_directories(" << cls << " PUBLIC ${OHQ_INC})\n"
-                  "set_target_properties(" << cls << " PROPERTIES POSITION_INDEPENDENT_CODE ON)\n\n"
+                  "set_target_properties(" << cls << " PROPERTIES POSITION_INDEPENDENT_CODE ON)\n"
+                  "# the ohq_kernel_* aliases carry no dllexport; export them on Windows too\n"
+                  "set_target_properties(" << cls << " PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)\n"
+                  "if(MSVC)\n  target_compile_options(" << cls << " PRIVATE /bigobj)\nendif()\n\n"
                   "# tiny client: verifies the library links and runs\n"
                   "add_executable(" << cls << "_example example.cpp)\n"
                   "target_link_libraries(" << cls << "_example PRIVATE " << cls << ")\n";
