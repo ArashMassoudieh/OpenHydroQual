@@ -13,6 +13,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(ohq_codegen LANGUAGES CXX)
 
+enable_testing()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(NOT CMAKE_BUILD_TYPE)
@@ -37,6 +39,13 @@ target_include_directories(ohq_kernel_abi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/
 
 add_executable(kernel_abi_test tests/kernel_abi_test.cpp)
 target_link_libraries(kernel_abi_test PRIVATE ohq_kernel_abi ${CMAKE_DL_LIBS})
+
+# Regression fixture for kernel liveness validation. Its only parameter changes
+# a modeled observation while state and mass remain constant.
+add_library(observation_only_kernel SHARED tests/observation_only_kernel.cpp)
+target_link_libraries(observation_only_kernel PRIVATE ohq_kernel_abi)
+add_test(NAME kernel_observation_liveness
+  COMMAND kernel_abi_test $<TARGET_FILE:observation_only_kernel>)
 
 # --- demo: proves the runtime compiles and solves (no core, no Qt) -----------
 add_executable(two_pond_demo demo/main_two_pond.cpp)
@@ -75,7 +84,6 @@ if(Qt6_FOUND AND EXISTS "${OHQLIB_DIR}/libOHQLib.so")
     "${OHQLIB_DIR}/libOHQLib.so")
   set_target_properties(test_emitter PROPERTIES
     BUILD_RPATH "${OHQLIB_DIR}")
-  enable_testing()
   add_test(NAME emitter COMMAND test_emitter)
 
   add_executable(ohq_generate src/ohq_generate.cpp)
