@@ -22,3 +22,4 @@ Hydrologic Response Unit, hydrologic_response_unit.json, hydrologic_response_uni
 Urban HRU, urban_hru.json, urban_hru.png
 CN Catchment (SCS Curve Number), cn_catchment.json, cn_catchment.png
 Culverts, culvert.json, culvert_template.png
+Dual Drainage, dual_drainage.json, dual_drainage_inlet.png

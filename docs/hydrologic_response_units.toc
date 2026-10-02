@@ -1,23 +1,31 @@
 \contentsline {section}{\numberline {1}Which HRU to use}{2}{section.1}%
 \contentsline {section}{\numberline {2}Elements shared by both units}{2}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Vertical geometry}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.1}Vertical geometry}{3}{subsection.2.1}%
 \contentsline {subsection}{\numberline {2.2}Soil water}{3}{subsection.2.2}%
-\contentsline {section}{\numberline {3}HRU}{3}{section.3}%
+\contentsline {section}{\numberline {3}HRU}{4}{section.3}%
 \contentsline {section}{\numberline {4}Urban HRU}{5}{section.4}%
 \contentsline {subsection}{\numberline {4.1}Structure}{5}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Ports}{5}{subsection.4.2}%
-\contentsline {subsection}{\numberline {4.3}Surface runoff and routing}{6}{subsection.4.3}%
-\contentsline {subsection}{\numberline {4.4}The impervious fraction}{6}{subsection.4.4}%
-\contentsline {subsection}{\numberline {4.5}Areas}{7}{subsection.4.5}%
-\contentsline {subsection}{\numberline {4.6}Recharge through the unsaturated conductivity}{7}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.2}Ports}{6}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Surface runoff and routing}{7}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}The impervious fraction}{7}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Areas}{8}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Recharge through the unsaturated conductivity}{8}{subsection.4.6}%
 \contentsline {paragraph}{Elevation offset.}{8}{section*.2}%
 \contentsline {subsection}{\numberline {4.7}Unconfined groundwater}{8}{subsection.4.7}%
 \contentsline {subsection}{\numberline {4.8}Layer-specific soil}{9}{subsection.4.8}%
-\contentsline {subsection}{\numberline {4.9}Evapotranspiration from the deeper soil}{9}{subsection.4.9}%
-\contentsline {subsection}{\numberline {4.10}Calibration multipliers}{9}{subsection.4.10}%
+\contentsline {subsection}{\numberline {4.9}Evapotranspiration from the deeper soil}{10}{subsection.4.9}%
+\contentsline {subsection}{\numberline {4.10}Calibration multipliers}{10}{subsection.4.10}%
 \contentsline {subsection}{\numberline {4.11}Disconnected impervious area}{10}{subsection.4.11}%
-\contentsline {section}{\numberline {5}Using the units}{10}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Templates}{10}{subsection.5.1}%
-\contentsline {subsection}{\numberline {5.2}A worked example}{10}{subsection.5.2}%
-\contentsline {section}{\numberline {6}Property reference}{12}{section.6}%
-\contentsline {section}{\numberline {7}Limitations and pitfalls}{13}{section.7}%
+\contentsline {section}{\numberline {5}Using the units}{11}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Templates}{11}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}A worked example}{11}{subsection.5.2}%
+\contentsline {section}{\numberline {6}Dual drainage: units served by storm sewers}{12}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Inlets}{13}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Outfall}{14}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Sewer size, surcharge and groundwater}{14}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Catch basins with a rim and spreading}{14}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Ports}{15}{subsection.6.5}%
+\contentsline {subsection}{\numberline {6.6}Example}{15}{subsection.6.6}%
+\contentsline {subsection}{\numberline {6.7}Limitations}{16}{subsection.6.7}%
+\contentsline {section}{\numberline {7}Property reference}{16}{section.7}%
+\contentsline {section}{\numberline {8}Limitations and pitfalls}{18}{section.8}%
