@@ -484,6 +484,26 @@ the deeper layers be scaled independently of the top layer, which gives summer e
 way to intercept water before it drains to the groundwater cell. Left empty, the deeper layers do not
 transpire.
 
+\subsection{Evapotranspiration from groundwater}
+\label{sec:etgw}
+The Urban HRU also has an optional source property \code{Evapotranspiration\_GW}, applied to the
+\code{Evapotranspiration} source slot of the groundwater cell (added to \code{Unconfined Groundwater
+cell}; its storage balance now reads \code{recharge}, \code{Precipitation} and
+\code{Evapotranspiration}). It is meant for a source of the new type
+\code{Evapotranspiration\_Time\_Series (Groundwater)} (\file{unconfined\_groundwater.json}), which
+withdraws
+\begin{equation}
+Q_{ET,g} = c_3\,E_0(t)\,A\,\frac{b_+}{b_+ + 0.01},
+\end{equation}
+with $E_0$ the ET series (\code{ET\_timeseries}, m/d), $c_3$ the source's \code{corr\_fact}, $A$ the cell
+area and $b$ the saturated thickness (\code{depth}, m). The factor is close to one for any real
+saturated thickness and only keeps the cell from being driven below its base. It represents riparian
+and deep-rooted uptake from the water table, which the soil layers above cannot supply when they sit
+far above it. The withdrawal applies over the whole cell area and does not depend on the depth of the
+water table below the surface, so $c_3$ should be small: a reference ET of 3.5\,mm/d with $c_3=0.1$
+removes 0.35\,mm/d, comparable to or larger than summer baseflow in small Piedmont catchments. Left
+empty (the default), the groundwater cell does not evapotranspire and existing models are unchanged.
+
 \subsection{Calibration multipliers}
 \label{sec:multipliers}
 All three default to 1 and leave the unit unchanged at that value.
@@ -800,7 +820,8 @@ between the units they are separated by a slash.
   not derived from its drainage network; they mostly control the timing of the runoff peak.
 \item \textbf{Evapotranspiration.} The HRU transpires from \code{Soil\_1} only; the Urban HRU from
   \code{Soil\_1} and, with \code{Evapotranspiration\_2}, from \code{Soil\_2} and \code{Soil\_3}. Each
-  layer's rate is scaled by its own $\theta/\theta_s$. The groundwater cell does not transpire.
+  layer's rate is scaled by its own $\theta/\theta_s$. The groundwater cell transpires only with
+  \code{Evapotranspiration\_GW} (\cref{sec:etgw}), at a rate independent of the water-table depth.
 \item \textbf{Hourly rainfall and infiltration excess.} With hourly forcing, short bursts of high
   intensity are averaged out, so infiltration-excess runoff from pervious surfaces is underestimated;
   \code{K\_sat\_scale\_surface} can compensate in calibration.
