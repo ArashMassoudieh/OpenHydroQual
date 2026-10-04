@@ -582,7 +582,7 @@
       "type": "expression",
       "description": "Maximum flow",
       "includeinoutput": "true",
-      "expression": "86400*_sqr(2*9.81*_pos(head.s-head.e)/valve_K)*area",
+      "expression": "86400*area*_sqr(2*9.81/valve_K)*_pos(head.s-head.e)/_sqr(_pos(head.s-head.e)+0.001)",
       "unit": "m^3/day;ft^3/s;m^3/s"
     },
     "valve_K": {
