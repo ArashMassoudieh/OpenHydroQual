@@ -587,6 +587,15 @@
 	    "unit": "day",
 	    "helptext": "Time span over which to compute autocorrelation when 'Similarity' comparison is selected. The autocorrelation is sampled at 20 lags between zero and this span. Ignored for other comparison methods."
 	  },
+	  "likelihood_scale": {
+	    "type": "value",
+	    "description": "Likelihood scale (autocorrelation time, in compared points)",
+	    "default": "1",
+	    "ask_user": "true",
+	    "delegate": "ValueBox",
+	    "estimate": "false",
+	    "helptext": "Divides this observation's log-likelihood: the effective number of independent residuals is n/likelihood_scale. Set it to the integral autocorrelation time of the residuals, in compared points (e.g. 120 for residuals correlated over about 120 consecutive 15-min values), so that autocorrelated residuals are not counted as independent. 1 (the default) treats them as independent. Used by Least Squared, EMC and Weighted Least Squared comparisons."
+	  },
 	  "kernel_tau": {
 	    "type": "value",
 	    "description": "Log decay rate (dimensionless)",
