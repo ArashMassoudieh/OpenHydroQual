@@ -383,7 +383,7 @@
       "description": "Evapotranspiration source for the top soil layer (Soil_1)",
       "ask_user": "true",
       "delegate": "ComboBox;Sources",
-      "helptext": "Applied to Soil_1. A second, optional source (Evapotranspiration_2) can be attached to Soil_2 and Soil_3 for root-zone uptake below the top layer; the groundwater cell is not subject to evapotranspiration.",
+      "helptext": "Applied to Soil_1. A second, optional source (Evapotranspiration_2) can be attached to Soil_2 and Soil_3 for root-zone uptake below the top layer, and a third (Evapotranspiration_GW) to the groundwater cell.",
       "applyto": {
         "Soil_1#Evapotranspiration": "Evapotranspiration"
       }
@@ -397,6 +397,16 @@
       "applyto": {
         "Soil_2#Evapotranspiration": "Evapotranspiration_2",
         "Soil_3#Evapotranspiration": "Evapotranspiration_2"
+      }
+    },
+    "Evapotranspiration_GW": {
+      "type": "source",
+      "description": "Evapotranspiration source for the groundwater cell (optional)",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Optional evapotranspiration from the groundwater cell (e.g. riparian uptake), normally an Evapotranspiration_Time_Series (Groundwater) source with its own corr_fact. Leave empty for none (the earlier behaviour).",
+      "applyto": {
+        "Groundwater#Evapotranspiration": "Evapotranspiration_GW"
       }
     },
     "catchment_slope": {

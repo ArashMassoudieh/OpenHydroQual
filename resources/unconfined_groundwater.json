@@ -10,7 +10,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "recharge,Precipitation",
+      "inflow": "recharge,Precipitation,Evapotranspiration",
       "includeinoutput": "true",
       "description": "Storage",
       "initial_value_expression": "area*(piezometric_head-base_elevation)*specific_yield",
@@ -25,6 +25,15 @@
       "ask_user": "true",
       "delegate": "ComboBox;Sources",
       "helptext": "precipitation time series",
+      "unit": "m^3/day;ft^3/day;ft^3/s"
+    },
+    "Evapotranspiration": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration from groundwater (optional)",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Optional evapotranspiration drawn from the groundwater cell (e.g. riparian uptake), normally an Evapotranspiration_Time_Series (Groundwater) source. Leave empty for none.",
       "unit": "m^3/day;ft^3/day;ft^3/s"
     },
     "recharge": {
@@ -607,5 +616,50 @@
       "unit": "m^2;ft^2",
       "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
+  },
+  "Evapotranspiration_Time_Series (Groundwater)": {
+    "type": "source",
+    "typecategory": "Sources",
+    "icon": {
+      "filename": "Evapotranspiration_timeseries_soil.png"
+    },
+    "description": "Evapotranspiration time-series for groundwater",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*_pos(depth)/(_pos(depth)+0.01)",
+      "ask_user": "false"
+    },
+    "corr_fact": {
+      "type": "value",
+      "ask_user": "true",
+      "includeinoutput": "false",
+      "description": "Scale factor",
+      "default": "1",
+      "delegate": "ValueBox",
+      "estimate": "true"
+    },
+    "ET_timeseries": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Evaporation time series",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "unit": "m/day;mm/day;inch/day"
+    },
+    "rate": {
+      "type": "expression",
+      "includeinoutput": "true",
+      "description": "Evapotranspiration rate",
+      "ask_user": "false",
+      "expression": "0-corr_fact*ET_timeseries",
+      "unit": "m/day;mm/day;inch/day"
+    },
+    "helptext": "Evapotranspiration drawn from an Unconfined Groundwater cell: corr_fact x the ET time series x area x depth/(depth+0.01), with depth the saturated thickness above the cell's base; the factor is ~1 until the cell is nearly empty and goes to zero as it empties."
   }
 }

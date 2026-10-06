@@ -484,6 +484,26 @@ the deeper layers be scaled independently of the top layer, which gives summer e
 way to intercept water before it drains to the groundwater cell. Left empty, the deeper layers do not
 transpire.
 
+\subsection{Evapotranspiration from groundwater}
+\label{sec:etgw}
+The Urban HRU also has an optional source property \code{Evapotranspiration\_GW}, applied to the
+\code{Evapotranspiration} source slot of the groundwater cell (added to \code{Unconfined Groundwater
+cell}; its storage balance now reads \code{recharge}, \code{Precipitation} and
+\code{Evapotranspiration}). It is meant for a source of the new type
+\code{Evapotranspiration\_Time\_Series (Groundwater)} (\file{unconfined\_groundwater.json}), which
+withdraws
+\begin{equation}
+Q_{ET,g} = c_3\,E_0(t)\,A\,\frac{b_+}{b_+ + 0.01},
+\end{equation}
+with $E_0$ the ET series (\code{ET\_timeseries}, m/d), $c_3$ the source's \code{corr\_fact}, $A$ the cell
+area and $b$ the saturated thickness (\code{depth}, m). The factor is close to one for any real
+saturated thickness and only keeps the cell from being driven below its base. It represents riparian
+and deep-rooted uptake from the water table, which the soil layers above cannot supply when they sit
+far above it. The withdrawal applies over the whole cell area and does not depend on the depth of the
+water table below the surface, so $c_3$ should be small: a reference ET of 3.5\,mm/d with $c_3=0.1$
+removes 0.35\,mm/d, comparable to or larger than summer baseflow in small Piedmont catchments. Left
+empty (the default), the groundwater cell does not evapotranspire and existing models are unchanged.
+
 \subsection{Calibration multipliers}
 \label{sec:multipliers}
 All three default to 1 and leave the unit unchanged at that value.
@@ -598,6 +618,180 @@ groundwater head.}
 \end{table}
 
 %==========================================================================================
+\section{Dual drainage: units served by storm sewers}
+\label{sec:dualdrainage}
+In developed catchments the runoff of a unit often has no open channel to flow in: streets and
+swales collect it, inlets take it into a storm-sewer trunk, and the trunk discharges into the nearest
+stream. Only when the sewer is full does water stay on the street and flow overland. The template
+\file{dual\_drainage.json} represents this \emph{dual drainage} with existing blocks and two new
+links (\cref{fig:dualstructure}):
+\begin{itemize}[nosep]
+  \item a \emph{surface segment} (any open-channel block, normally a \code{Compound Channel Segment}
+        shaped as the street or swale) receives the unit's \code{Reach\_link} and
+        \code{Impervious\_Reach\_link};
+  \item a \code{Sewerchannelsegment} (\file{Sewer\_system.json}) is the trunk sewer;
+  \item \code{Swale\_to\_pipe\_inlet} moves water from the surface segment into the sewer, and
+        \code{Pipe\_outfall\_link} discharges the sewer into the receiving open channel;
+  \item the surface segment also keeps its ordinary channel link (e.g.\ \code{Compound\_Channel\_link})
+        to the receiving channel, which carries the overflow when the inlets or the sewer cannot take
+        the flow.
+\end{itemize}
+The template lists \file{main\_components.json}, \file{open\_channel.json},
+\file{compound\_channel.json} and \file{Sewer\_system.json} in its \code{requires}. Nothing in the
+existing templates changes.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{dual_drainage_structure}
+\caption{Dual drainage of an Urban HRU: the unit drains to a surface segment, inlets take the water
+into a sewer segment, the sewer discharges into the receiving channel, and flow the sewer cannot take
+continues overland.}
+\label{fig:dualstructure}
+\end{figure}
+
+\subsection{Inlets}
+All inlets that drain the surface segment are lumped into one grate inlet with the two regimes of
+FHWA HEC-22: weir flow while the water over the inlets is shallow and orifice flow once they are
+submerged, whichever is smaller,
+\begin{align}
+Q_w &= C_w\,P\,|\Delta h|^{3/2}\,\frac{|\Delta h|}{|\Delta h|+h_s}, &
+Q_o &= C_d\,A\,\sqrt{2g\,|\Delta h|}, &
+Q &= \operatorname{sign}(\Delta h)\,\min(Q_w,Q_o),\\
+\Delta h &= \max(H_{\mathrm{surf}},z_{\mathrm{in}})-\max(H_{\mathrm{sewer}},z_{\mathrm{in}}),
+\end{align}
+with $P$ the total weir length (\code{inlet\_perimeter}), $A$ the total effective opening
+(\code{inlet\_area}), $C_w=1.66$ (SI) and $C_d=0.67$ (HEC-22 defaults), $z_{\mathrm{in}}$ the inlet
+elevation (normally the bottom of the surface segment) and $H$ the hydraulic heads. Water enters
+while the sewer head is below the surface water level. When the sewer surcharges above it the flow
+reverses and the sewer overflows to the street; with both heads below the inlets the flow is zero. With \code{one\_way}~=~1 (default 0) $\Delta h$ is replaced by $\max(\Delta h,0)$:
+the inlets only take water in, and water that rises above the street stays in the receiving block (for
+a catch basin with a rim and spreading, below). The default is byte-identical to the two-way link.
+
+The factor $|\Delta h|/(|\Delta h|+h_s)$ (\code{smoothing\_depth} $h_s$, default 5\,mm) matters
+numerically, not physically (it is below 20\,\% for depths above $5h_s$). A pure orifice law has an
+infinite derivative at zero depth, and a weir law $|\Delta h|^{3/2}$ still drains a surface segment
+whose storage grows as depth$^2$ at an unbounded relative rate as it empties; both stalled the
+solver in the example (the 15-day test took 111\,s instead of 3\,s). With the factor the inflow falls
+off as depth$^{5/2}$ and the surface segment empties smoothly.
+
+\subsection{Outfall}
+The sewer segment's head is at its centre; the outfall link applies Manning's equation over half
+its length with the sewer's flowing area $A_s$ and wetted perimeter $P_s$,
+\begin{equation}
+Q = \frac{1}{n}\,\operatorname{sign}(\Delta h)\sqrt{\frac{|\Delta h|}{L/2}}\;A_s\Big(\frac{A_s}{P_s}\Big)^{2/3},\qquad
+\Delta h = \max(H_{\mathrm{sewer}},z_{\mathrm{out}})-\max(H_{\mathrm{chan}},z_{\mathrm{out}}),
+\end{equation}
+with $z_{\mathrm{out}}$ the outfall invert (\code{outfall\_invert}). The outfall is free while the
+receiving water surface is below the invert. A full sewer segment raises its head steeply with any
+further storage (\code{Sewerchannelsegment}), which drives pressurised flow through the outfall.
+Reverse flow (stream above the sewer) uses the sewer's current flowing area, so it cannot fill an
+empty sewer from the stream.
+
+\subsection{Sewer size, surcharge and groundwater}
+\code{Sewerchannelsegment} has a \code{diameter\_multiplier} (default 1) that scales its diameter in
+all of its hydraulics and in the links that read it (\code{Sewer2Sewer\_link}, \code{sewer2pond},
+\code{soil2sewer}); it lets a calibration adjust uncertain pipe sizes with one parameter while each
+segment keeps its own nominal diameter. With the default the results are unchanged (the example's
+outputs are byte-identical to those before the property was added); with 1.5 the example's sewer
+carries the whole second storm and the overland overflow nearly vanishes.
+
+When a sewer is full, its head rises by \code{surcharge\_coefficient} (m per m$^3$) for every cubic
+metre stored above the full pipe. The default, 10\,000, keeps the earlier behaviour of a practically
+rigid pipe; it is very stiff for the solver, and the code-generated kernels, which give up after 20
+failed attempts at a step, stop at the first surcharge. Real sewers surcharge into their manholes:
+with manholes of plan area $A_m$ every $s$ metres the coefficient is $1/(A_m L/s)$, e.g.\ 0.11 for the
+example's 800\,m sewer with 1.2\,m manholes every 100\,m. Once the head reaches the street the inlet
+link returns the water to the surface. The example uses this value.
+
+Groundwater that enters storm sewers (infiltration through joints and trenches) can be represented
+with the Urban HRU's \code{unconfined\_groundwater\_to\_stream} link to the sewer segment: the flow is
+$K A (H_{gw}-H_{sewer})/\ell$ with the sewer's head, so the sewer drains the aquifer while the water
+table is above it and loses water to it only while it carries flow (the link is limited at zero
+sewer storage; tested with the water table below and above the pipe).
+
+\subsection{Catch basins with a rim and spreading}
+The shafts of a sewer (manholes, inlet boxes) can be represented explicitly with \code{Catch basin}
+blocks between the inlets and the sewer (street $\to$ \code{Swale\_to\_pipe\_inlet} $\to$ catch
+basin $\to$ \code{Sewer\_pipe} $\to$ sewer). The block has a base area $A$ and bottom $z$, and two
+optional properties: \code{max\_height} $h_{\max}$ (rim above the bottom) and
+\code{spread\_side\_slope} $m$. Below the rim it is a prism; above it the plan area grows as an
+inverted square pyramid, $A(e)=(\sqrt{A}+2me)^2$ at height $e$ above the rim, which stores water that
+would spread over the surroundings. Its depth is
+\[
+d=\min\!\Big(\frac{S}{A},h_{\max}\Big)+\frac{3V}{X^2+X\sqrt{A}+A},\qquad
+V=\max(S-Ah_{\max},0),\quad X=\big(A^{3/2}+6mV\big)^{1/3},
+\]
+the closed-form inverse of $V(e)=[(\sqrt A+2me)^3-A^{3/2}]/(6m)$, written so that it is exactly $S/A$
+when $V=0$ and reduces to the prism when $m=0$. With the defaults ($h_{\max}=10^{12}$, $m=0$) the
+block is the earlier prism: a model using catch basins gives identical results (185 of 185 series).
+$\mathrm{d}d/\mathrm{d}S=1/A$ on both sides of the rim, so the transition is smooth. The block
+reports \code{flood\_depth} ($e$), \code{flood\_volume} ($V$) and \code{spread\_area}
+($A(e)-A$). In the example with a catch basin of 40\,m$^2$, rim 2\,m, $m=30$ and a sewer
+\code{surcharge\_coefficient} of 10, the second storm raises the basin 0.16\,m above the rim
+(20.7\,m$^3$, 211\,m$^2$); the generated kernel runs it without failure and matches the interpreter's
+peak storages within 0.3\,\%. A catch basin alone does not remove the stiffness of a rigid sewer
+(default \code{surcharge\_coefficient}): keep a finite coefficient on the sewer.
+
+\subsection{Ports}
+\begin{center}\small
+\begin{tabular}{llll}
+\toprule
+Link & From & To & Icon \\
+\midrule
+\code{Swale\_to\_pipe\_inlet} & surface segment & \code{Sewerchannelsegment} &
+  \IfFileExists{../resources/Icons/dual_drainage_inlet.png}{\raisebox{-0.4\height}{\includegraphics[height=0.9cm]{dual_drainage_inlet.png}}}{(icon pending)} \\
+\code{Pipe\_outfall\_link} & \code{Sewerchannelsegment} & open-channel segment &
+  \IfFileExists{../resources/Icons/dual_drainage_outfall.png}{\raisebox{-0.4\height}{\includegraphics[height=0.9cm]{dual_drainage_outfall.png}}}{(icon pending)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+Properties: \code{Swale\_to\_pipe\_inlet} takes \code{inlet\_area}, \code{inlet\_perimeter},
+\code{discharge\_coefficient} (0.67), \code{weir\_coefficient} (1.66), \code{inlet\_elevation},
+\code{smoothing\_depth} (0.005\,m) and \code{one\_way} (0); \code{Pipe\_outfall\_link} takes \code{outfall\_invert}. Both
+report \code{head\_difference} and \code{flow}; the outfall also reports \code{area} and
+\code{velocity}.
+
+\subsection{Example}
+\exfile{Examples/Dual\_Drainage/dual\_drainage\_example.ohq} is a 40\,ha Urban HRU (30\,\%
+impervious) draining to an 800\,m street segment with inlets ($A=1.5$\,m$^2$, $P=20$\,m) into an
+800\,m, 0.6\,m sewer that discharges into a 600\,m stream; the street also overflows to the stream.
+Two storms test both regimes (\cref{fig:dualexample}; manhole surcharge storage, coefficient 0.11):
+\begin{itemize}[nosep]
+  \item 10\,mm/h for 3\,h: the inlets take all the street runoff (0.33\,m$^3$/s), the sewer runs
+        62\,\% full and nothing flows overland;
+  \item 50\,mm/h for 1\,h: the street receives 1.51\,m$^3$/s; the sewer surcharges (outfall
+        0.65\,m$^3$/s at capacity, inlets briefly 0.75\,m$^3$/s while the sewer fills) and
+        0.58\,m$^3$/s flows overland to the stream. The sewer head rises above the inlets but the
+        street water surface stays higher, so no water returns to the street.
+\end{itemize}
+The run takes 3\,s for 30 days (8\,s with the rigid default). A kernel generated from the example
+(\file{codegen}) reproduces the interpreter: peak storages of street, sewer and stream within 0.5\,\%,
+time-averaged storages within 1--4\,\% (soils and groundwater within 0.05\,\%); with the rigid default
+the kernel stops at the second storm. Volume balances of the street and the sewer computed from the
+written outputs close within 0.3\,\% for the first storm. For the second they differ by 1--2\,\% at
+the abrupt end of the rain, where flows change faster than the output interval; with a ten times
+smaller time step the sewer's difference fell from 94 to 8\,m$^3$, i.e.\ it is an artefact of
+integrating the interpolated outputs (the links move water between blocks within each step).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{dual_drainage_example}
+\caption{Dual-drainage example: flows (top) and sewer head and street water surface (bottom) for the
+two storms.}
+\label{fig:dualexample}
+\end{figure}
+
+\subsection{Limitations}
+\begin{itemize}[nosep]
+  \item One lumped inlet per surface segment: the time water spends on the street before reaching an
+        inlet and inlet bypass at high gutter velocities are not represented.
+  \item One sewer segment per unit represents the trunk; the branch network's storage and travel
+        time are lumped into it.
+  \item The sewer cannot be filled from the receiving stream (see Outfall); backwater into the sewer
+        is therefore underestimated during floods that rise above the outfall.
+\end{itemize}
+
+%==========================================================================================
 \section{Property reference}
 \label{sec:reference}
 Generated from the two resource files by \exfile{docs/make\_hru\_figures.py}. ``In'' gives the units
@@ -626,7 +820,8 @@ between the units they are separated by a slash.
   not derived from its drainage network; they mostly control the timing of the runoff peak.
 \item \textbf{Evapotranspiration.} The HRU transpires from \code{Soil\_1} only; the Urban HRU from
   \code{Soil\_1} and, with \code{Evapotranspiration\_2}, from \code{Soil\_2} and \code{Soil\_3}. Each
-  layer's rate is scaled by its own $\theta/\theta_s$. The groundwater cell does not transpire.
+  layer's rate is scaled by its own $\theta/\theta_s$. The groundwater cell transpires only with
+  \code{Evapotranspiration\_GW} (\cref{sec:etgw}), at a rate independent of the water-table depth.
 \item \textbf{Hourly rainfall and infiltration excess.} With hourly forcing, short bursts of high
   intensity are averaged out, so infiltration-excess runoff from pervious surfaces is underestimated;
   \code{K\_sat\_scale\_surface} can compensate in calibration.

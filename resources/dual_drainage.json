@@ -1,0 +1,160 @@
+{
+	"requires": [
+		"main_components.json",
+		"open_channel.json",
+		"compound_channel.json",
+		"Sewer_system.json"
+	],
+	"Swale_to_pipe_inlet": {
+		"type": "link",
+		"typecategory": "Connectors",
+		"description": "Storm-drain inlets from a surface channel (swale, gutter) to a sewer segment",
+		"icon": {
+			"filename": "dual_drainage_inlet.png"
+		},
+		"helptext": "Dual drainage: the storm-drain inlets that take water from a surface channel segment (e.g. a Compound Channel Segment representing a street or swale) into a Sewer Channel Segment. All inlets of the surface segment are lumped into one grate inlet (FHWA HEC-22): weir flow at shallow depth, Qw = weir_coefficient*inlet_perimeter*dh^1.5*dh/(dh+smoothing_depth), and orifice flow once submerged, Qo = discharge_coefficient*inlet_area*sqrt(2g*dh); flow = 86400*sign(dh)*min(Qw;Qo), dh = max(head of surface;inlet_elevation) - max(head of sewer;inlet_elevation). Water enters while the sewer head is below the surface water level; when the sewer surcharges above it, the flow reverses and the sewer overflows to the surface. With both heads below inlet_elevation the flow is zero. The weir branch, tapered below smoothing_depth, keeps the flow smooth at zero depth and lets the surface segment drain to empty without stiffness. The flow expression is written out in full (no helper expressions; head_difference, area and hydraulic_radius are reported for output only), as the code generator needs. With one_way = 1 the head difference is replaced by max(dh, 0): no reverse flow.",
+		"inlet_area": {
+			"type": "value",
+			"description": "Total effective inlet opening",
+			"ask_user": "true",
+			"delegate": "UnitBox",
+			"unit": "m^2;ft^2",
+			"default": "1",
+			"criteria": "inlet_area>0",
+			"warningmessage": "Inlet area must be greater than zero",
+			"helptext": "Sum of the effective (open) areas of the inlets that drain the surface segment."
+		},
+		"inlet_perimeter": {
+			"type": "value",
+			"description": "Total inlet weir length",
+			"ask_user": "true",
+			"delegate": "UnitBox",
+			"unit": "m;ft",
+			"default": "5",
+			"criteria": "inlet_perimeter>0",
+			"warningmessage": "Inlet perimeter must be greater than zero",
+			"helptext": "Sum of the weir lengths (grate perimeters or curb-opening lengths) of the inlets that drain the surface segment."
+		},
+		"discharge_coefficient": {
+			"type": "value",
+			"description": "Inlet discharge coefficient",
+			"ask_user": "true",
+			"delegate": "ValueBox",
+			"default": "0.67",
+			"criteria": "discharge_coefficient>0",
+			"warningmessage": "Discharge coefficient must be greater than zero",
+			"helptext": "Orifice discharge coefficient of the inlets (HEC-22: 0.67)."
+		},
+		"weir_coefficient": {
+			"type": "value",
+			"description": "Inlet weir coefficient",
+			"ask_user": "true",
+			"delegate": "ValueBox",
+			"default": "1.66",
+			"criteria": "weir_coefficient>0",
+			"warningmessage": "Weir coefficient must be greater than zero",
+			"helptext": "Weir coefficient of the inlets in SI units (HEC-22 grate inlet: 1.66 for perimeter in m, flow in m^3/s)."
+		},
+		"inlet_elevation": {
+			"type": "value",
+			"description": "Inlet elevation",
+			"ask_user": "true",
+			"delegate": "UnitBox",
+			"unit": "m;ft",
+			"default": "0",
+			"helptext": "Elevation of the inlet openings (normally the bottom elevation of the surface segment). It must not be below the sewer's head when the sewer is not surcharged."
+		},
+		"smoothing_depth": {
+			"type": "value",
+			"description": "Smoothing depth",
+			"ask_user": "true",
+			"delegate": "UnitBox",
+			"unit": "m;ft;cm;in",
+			"default": "0.005",
+			"criteria": "smoothing_depth>0",
+			"warningmessage": "Smoothing depth must be greater than zero",
+			"helptext": "The weir flow is multiplied by dh/(dh+smoothing_depth), so that at very small depths it falls off faster than the storage of the surface segment (which the solver needs when the surface segment drains to empty). Effect is under 20% for dh > 5 x smoothing_depth."
+		},
+		"one_way": {
+			"type": "value",
+			"description": "One-way inlets (1) or two-way (0)",
+			"ask_user": "true",
+			"delegate": "ValueBox",
+			"default": "0",
+			"criteria": "one_way>-1e-12",
+			"warningmessage": "one_way must be 0 or 1",
+			"helptext": "0 (default): the flow reverses when the receiving block's head is above the surface water level (the sewer or catch basin overflows to the street). 1: no reverse flow (water that rises above the street stays in the receiving block, e.g. a Catch basin with max_height and spread_side_slope)."
+		},
+		"head_difference": {
+			"type": "expression",
+			"description": "Driving head difference",
+			"expression": "_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation)",
+			"includeinoutput": "true",
+			"ask_user": "false",
+			"unit": "m;ft"
+		},
+		"flow": {
+			"type": "expression",
+			"description": "Flow",
+			"expression": "86400*_sgn(((_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation))+one_way*_pos(-(_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation)))))*_min(weir_coefficient*inlet_perimeter*_abs(((_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation))+one_way*_pos(-(_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation)))))^1.5*_abs(((_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation))+one_way*_pos(-(_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation)))))/(_abs(((_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation))+one_way*_pos(-(_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation)))))+smoothing_depth);discharge_coefficient*inlet_area*_sqr(19.62*_abs(((_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation))+one_way*_pos(-(_max(head.s;inlet_elevation)-_max(head.e;inlet_elevation)))))))",
+			"includeinoutput": "true",
+			"ask_user": "false"
+		}
+	},
+	"Pipe_outfall_link": {
+		"type": "link",
+		"typecategory": "Connectors",
+		"description": "Outfall of a sewer segment into an open channel segment",
+		"icon": {
+			"filename": "dual_drainage_outfall.png"
+		},
+		"helptext": "Dual drainage: the outfall of a Sewer Channel Segment into an open channel segment (Compound Channel Segment, Trapezoidal Channel Segment, ...). Manning flow with the sewer's flowing area and wetted perimeter over half the sewer length (from the segment centre to the outfall): flow = 86400*sqrt(dh/(length/2))/n*A*R^(2/3), dh = max(head of sewer;outfall_invert) - max(head of channel;outfall_invert). The outfall is free while the channel water surface is below outfall_invert; a surcharged sewer drives pressurised flow through its head. Reverse flow (channel above the sewer) uses the sewer's current flowing area, so it does not fill an empty sewer. The flow expression is written out in full (no helper expressions; head_difference, area and hydraulic_radius are reported for output only), as the code generator needs.",
+		"outfall_invert": {
+			"type": "value",
+			"description": "Outfall invert elevation",
+			"ask_user": "true",
+			"delegate": "UnitBox",
+			"unit": "m;ft",
+			"default": "0",
+			"helptext": "Invert elevation of the sewer at the outfall. Must not be above the sewer segment's bottom_elevation (the invert at its centre)."
+		},
+		"head_difference": {
+			"type": "expression",
+			"description": "Driving head difference",
+			"expression": "_max(head.s;outfall_invert)-_max(head.e;outfall_invert)",
+			"includeinoutput": "true",
+			"ask_user": "false",
+			"unit": "m;ft"
+		},
+		"area": {
+			"type": "expression",
+			"description": "Flowing area",
+			"expression": "_max(xsectionarea.s;0)",
+			"includeinoutput": "true",
+			"ask_user": "false",
+			"unit": "m^2;ft^2"
+		},
+		"hydraulic_radius": {
+			"type": "expression",
+			"description": "Hydraulic radius",
+			"expression": "area/_max(perimeter.s;0.000001)",
+			"includeinoutput": "false",
+			"ask_user": "false",
+			"unit": "m;ft"
+		},
+		"flow": {
+			"type": "expression",
+			"description": "Flow",
+			"expression": "86400*(_sqt((_max(head.s;outfall_invert)-_max(head.e;outfall_invert))/(0.5*length.s))/ManningCoeff.s)*_max(xsectionarea.s;0)*(_max(xsectionarea.s;0)/_max(perimeter.s;0.000001))^0.6667",
+			"includeinoutput": "true",
+			"ask_user": "false"
+		},
+		"velocity": {
+			"type": "expression",
+			"description": "Velocity",
+			"expression": "flow/_max(_max(xsectionarea.s;0);0.000001)/86400",
+			"includeinoutput": "true",
+			"ask_user": "false"
+		}
+	}
+}
