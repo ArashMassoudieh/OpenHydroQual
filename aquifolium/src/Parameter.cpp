@@ -15,6 +15,7 @@
 
 
 #include "Parameter.h"
+#include <limits>
 #include "Expression.h"
 #include "System.h"
 
@@ -172,8 +173,16 @@ TimeSeries<double> Parameter::PriorDistribution(unsigned int nbins)
     return prior_dist;
 }
 
+// Uniform prior: support is the parameter's [low, high] range; outside it the
+// density is 0 / the log-density -inf, so MCMC rejects the proposal. Before, the
+// uniform branch tested 'Range().high' -- a default-constructed Range struct, not
+// this parameter's range -- so the test always failed and every value, inside or
+// outside, got the same log(1e-30): the uniform prior was flat and unbounded.
+// (The normal and log-normal priors are unchanged: full densities, not truncated.)
 double Parameter::CalcPriorProbability(const double &x)
 {
+    const Range r = GetRange();
+    const bool inside = (x >= r.low && x <= r.high);
     if (GetPriorDistribution()=="normal")
         return 1.0/std()/sqrt(2*PI)*exp(-pow((x-mean())/std(),2)/2.0);
     if (GetPriorDistribution()=="log-normal")
@@ -183,16 +192,19 @@ double Parameter::CalcPriorProbability(const double &x)
             return 1e-30;
     }
     if (GetPriorDistribution()=="uniform")
-    {   if (x<Range().high && x>Range().low)
-            return 1.0/(Range().high-Range().low);
+    {   if (inside && r.high > r.low)
+            return 1.0/(r.high-r.low);
         else
-            return 1e-30;
+            return 0.0;
     }
     return 1e-30;
 }
 
 double Parameter::CalcLogPriorProbability(const double &x)
 {
+    const Range r = GetRange();
+    const bool inside = (x >= r.low && x <= r.high);
+    const double minus_inf = -std::numeric_limits<double>::infinity();
     if (GetPriorDistribution()=="normal")
         return -log(std()/sqrt(2*PI))-pow((x-mean())/std(),2)/2.0;
     if (GetPriorDistribution()=="log-normal")
@@ -202,10 +214,10 @@ double Parameter::CalcLogPriorProbability(const double &x)
             return log(1e-30);
     }
     if (GetPriorDistribution()=="uniform")
-    {   if (x<Range().high && x>Range().low)
-            return -log((Range().high-Range().low));
+    {   if (inside && r.high > r.low)
+            return -log((r.high-r.low));
         else
-            return log(1e-30);
+            return minus_inf;
     }
     return 1e-30;
 }

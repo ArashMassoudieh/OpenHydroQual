@@ -207,18 +207,21 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
 template<class T>
 double CMCMC<T>::posterior(vector<double> par, int sample_number, bool out)
 {
+    // Prior first: a proposal outside a parameter's [low, high] has log-prior
+    // -inf and is rejected whatever the likelihood, so don't copy the model and
+    // run it (with a parameter at its bound about half the proposals land here).
+    double sum = 0;
+    for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
+        sum+=parameter(i)->CalcLogPriorProbability(par[i]);
+    if (!out && std::isinf(sum) && sum < 0)
+        return sum;
 
     T Model1 = *Model;
     Model1.SetSilent(true);
     Model1.SetRecordResults(false);
     Model1.SetNumThreads(1);
-	double sum = 0;
     for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
-    {
-
         Model1.SetParameterValue(i, par[i]);
-        sum+=parameter(i)->CalcLogPriorProbability(par[i]);
-	}
 
     Model1.ApplyParameters();
 

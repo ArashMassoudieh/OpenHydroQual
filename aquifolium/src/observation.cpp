@@ -226,7 +226,17 @@ ResidualBlock Observation::ResidualVector()
     const string structure = Variable("error_structure")->GetProperty();
     const bool lognormal   = (structure=="log-normal" || structure=="lognormal");
     const bool normal      = (structure=="normal");
-    const double tau       = likelihood_scale;
+    // Likelihood scale tau (the integral autocorrelation time of the residuals,
+    // in compared points): the per-observation 'likelihood_scale' property when
+    // the template defines it and it is > 0, otherwise the programmatic value.
+    // tau divides the log-likelihood (effective sample size n/tau), so
+    // autocorrelated residuals are not counted as independent.
+    double tau = likelihood_scale;
+    if (Quan* ls = Variable("likelihood_scale"))
+    {
+        const double v = ls->GetVal();
+        if (v > 0.0) tau = v;
+    }
 
     if (method=="Least Squared")
     {

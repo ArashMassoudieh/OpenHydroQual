@@ -125,6 +125,18 @@ static std::string srcSym(const std::string& sourceName, const std::string& q)
 {
     return "src_" + sanitize(sourceName) + "__" + sanitize(q) + "_";
 }
+// The 'timeseries' factor of a Source (Source::GetValue: coefficient * timeseries * rate).
+// It is a time series for precipitation/ET sources, but an expression or a value for others
+// (atmospheric exchange, build-up: "1"). Baking an expression as a series left the series
+// empty, interpol() returned 0 and the whole source vanished from the kernel.
+static std::string srcTimeseriesFactor(Source* s, const std::string& timeVar)
+{
+    Quan* tq = s->Variable("timeseries");
+    if (!tq) return "1.0";
+    if (isSeriesType(tq->GetType())) return srcHandle(s->GetName()) + ".interpol(" + timeVar + ")";
+    if (tq->GetType() == Quan::_type::expression) return srcFn(s->GetName(), "timeseries") + "(" + timeVar + ")";
+    return srcSym(s->GetName(), "timeseries");
+}
 // C string literal for a model name.
 static std::string cstr(const std::string& s)
 {
@@ -370,8 +382,55 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     // estimated parameter we must emit params_[i] so applyParameters() moves it;
     // we only do that when the Arrhenius correction is the identity, otherwise
     // the correction would be silently dropped and the literal is kept.
-    auto reactionParamRef = [&](const std::string& name) -> std::string {
+    //
+    // A ReactionParameter with a non-empty time series (temperature) has a value
+    // that changes in time: base_value*Arrhenius_factor^(temperature-reference_
+    // temperature). Its series are baked as members (rpSeriesHandle, baked before
+    // the walk) and its 'value' expression is emitted with the series interpolated
+    // at the current time and base_value / Arrhenius_factor / reference_temperature
+    // bound to params_[i] when estimated. Before, the value at t0 was baked as a
+    // literal, which dropped both the calibrated rate and the temperature
+    // dependence (generation refused: "parameter never appears").
+    std::map<std::string, std::string> rpSeriesHandle;   // "<rp>::<quantity>" -> member
+    for (unsigned i = 0; i < system.ReactionParametersCount(); ++i) {
+        RxnParameter* rp = system.reactionparameter(i);
+        QuanSet* qs = rp->GetVars();
+        for (auto it = qs->begin(); it != qs->end(); ++it) {
+            Quan& q = it->second;
+            if (!isSeriesType(q.GetType())) continue;
+            TimeSeries<timeseriesprecision>* ts = q.GetTimeSeries();
+            if (!ts || ts->size() == 0) continue;
+            rpSeriesHandle[rp->GetName() + "::" + q.GetName()] =
+                "ts_rp_" + sanitize(rp->GetName()) + "__" + sanitize(q.GetName()) + "_";
+        }
+    }
+    auto rpHasSeries = [&](const std::string& rpName) {
+        for (const auto& kv : rpSeriesHandle)
+            if (kv.first.compare(0, rpName.size() + 2, rpName + "::") == 0) return true;
+        return false;
+    };
+    auto reactionParamRef = [&](const std::string& name, const std::string& timeVar = "t_new") -> std::string {
         Object* rp = (Object*)system.reactionparameter(name);
+        if (rpHasSeries(name)) {
+            Quan* vq = rp->Variable("value");
+            if (vq && vq->GetType() == Quan::_type::expression && vq->GetExpression()) {
+                EmitContext ctx; ctx.timeVar = timeVar;
+                ctx.resolveValue = [&, rp, name, timeVar](const std::string& n, Loc) -> std::string {
+                    auto h = rpSeriesHandle.find(name + "::" + n);
+                    if (h != rpSeriesHandle.end()) return h->second + ".interpol(" + timeVar + ")";
+                    Quan* q = rp->Variable(n);
+                    if (!q || isSeriesType(q->GetType())) return "0.0";   // missing / empty series
+                    const std::string pb = paramRef(name, n);
+                    if (!pb.empty()) return pb;
+                    return fmt(rp->GetVal(n, Expression::timing::present));
+                };
+                ctx.resolveSeries = [&, name](const std::string& n, Loc) -> std::string {
+                    auto h = rpSeriesHandle.find(name + "::" + n);
+                    return h == rpSeriesHandle.end() ? std::string("ts_none_") : h->second;
+                };
+                return "(" + ExpressionEmitter(ctx).translate(*vq->GetExpression()) + ")";
+            }
+        }
         const double v = rp->CalcVal("value", Expression::timing::present);
         const std::string pb = paramRef(name, "base_value");
         if (!pb.empty()) {
@@ -448,8 +507,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                         rate = srcFn(s->GetName(), "rate") + "(" + timeVar + ")";
                     else rate = srcSym(s->GetName(), "rate");
                 }
-                const std::string tsFactor = s->Variable("timeseries")
-                    ? srcHandle(s->GetName()) + ".interpol(" + timeVar + ")" : std::string("1.0");
+                const std::string tsFactor = srcTimeseriesFactor(s, timeVar);
                 return "(" + coeff + " * " + tsFactor + " * " + rate + ")";
             }
             if (isPlainSeries(q->GetType()))
@@ -681,7 +739,9 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 for (auto sit = sqs->begin(); sit != sqs->end(); ++sit) {
                     Quan& sq = sit->second;
                     const std::string& sqn = sq.GetName();
-                    if (sqn == "timeseries") continue;
+                    // a series 'timeseries' is baked above; an expression or value one
+                    // (e.g. "1") becomes a member function / member like any other quantity
+                    if (sqn == "timeseries" && isSeriesType(sq.GetType())) continue;
                     if (isSeriesType(sq.GetType())) {
                         const std::string hh = srcTs(s->GetName(), sqn);
                         seriesDecls  << "    ohq::TimeSeries " << hh << ";\n";
@@ -702,6 +762,16 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 }
             }
         }
+    }
+
+    // Bake the reaction parameters' time series (temperature), see reactionParamRef.
+    for (const auto& kv : rpSeriesHandle) {
+        const std::size_t sep = kv.first.find("::");
+        const std::string rpName = kv.first.substr(0, sep), qn = kv.first.substr(sep + 2);
+        Quan* q = system.reactionparameter(rpName)->Variable(qn);
+        seriesDecls   << "    ohq::TimeSeries " << kv.second << ";\n";
+        seriesSetters << "    void set_" << kv.second << "(const ohq::TimeSeries& ts) { " << kv.second << " = ts; }\n";
+        bakeSeries(rpName, qn, kv.second, q->GetTimeSeries(), 200000, clampsDt(q->GetType()));
     }
 
     for (unsigned i = 0; i < nB; ++i) walk(system.block(i), false);
@@ -981,16 +1051,34 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     const bool tIsLink = (t->ObjectType() == object_type::link);
                     std::string coeff = "1.0", rate = "1.0";
                     if (Quan* cq = s->Variable("coefficient")) {
-                        if (cq->GetType() == Quan::_type::expression)
-                            coeff = "(" + ExpressionEmitter(makeCtxT(t, tIsLink, curLinkIdx, curConst)).translate(*cq->GetExpression()) + ")";
+                        if (cq->GetType() == Quan::_type::expression) {
+                            // The coefficient is evaluated on the BLOCK, but names the block
+                            // does not carry fall back to the source's own quantities, as in
+                            // Object::GetVal via SetCurrentCorrespondingSource (e.g. the
+                            // atmospheric-exchange 'rate_coefficient' and 'saturation', or a
+                            // build-up 'build_up_rate'). Without this they baked as 0 and the
+                            // source vanished.
+                            EmitContext base = makeCtxT(t, tIsLink, curLinkIdx, curConst);
+                            EmitContext sctx = base;
+                            sctx.resolveValue = [base, s, t](const std::string& nm, Loc l) -> std::string {
+                                if (l == Loc::self && !t->Variable(nm)) {
+                                    if (Quan* sq = s->Variable(nm)) {
+                                        if (isSeriesType(sq->GetType())) return srcTs(s->GetName(), nm) + ".interpol(t_new)";
+                                        if (sq->GetType() == Quan::_type::expression) return srcFn(s->GetName(), nm) + "(t_new)";
+                                        return srcSym(s->GetName(), nm);
+                                    }
+                                }
+                                return base.resolveValue(nm, l);
+                            };
+                            coeff = "(" + ExpressionEmitter(sctx).translate(*cq->GetExpression()) + ")";
+                        }
                         else coeff = srcSym(s->GetName(), "coefficient");
                     }
                     if (Quan* rq = s->Variable("rate")) {
                         if (rq->GetType() == Quan::_type::expression) rate = srcFn(s->GetName(), "rate") + "(t_new)";
                         else rate = srcSym(s->GetName(), "rate");
                     }
-                    const std::string tsFactor = s->Variable("timeseries")
-                        ? srcHandle(s->GetName()) + ".interpol(t_new)" : std::string("1.0");
+                    const std::string tsFactor = srcTimeseriesFactor(s, "t_new");
                     return "(" + coeff + " * " + tsFactor + " * " + rate + ")";
                 }
                 if (isSeriesType(q->GetType()))
@@ -1141,21 +1229,34 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 transBody << "        inflowOwn[" << (b * nC + j) << "] = 0.0";
                 Quan* balt = blk->Variable(cj + ":mass");
                 if (balt) {
-                    EmitContext ctx = makeCtxT(blk, false, -1, std::string());
+                    // current constituent = cj, so a bare 'concentration' in a source
+                    // coefficient (e.g. reaeration k*(saturation - concentration)) reaches
+                    // <cj>:concentration, as Block::GetInflow sets it in the interpreter
+                    EmitContext ctx = makeCtxT(blk, false, -1, cj);
                     for (const std::string& inf : balt->GetCorrespondingInflowVar()) {
                         if (inf.empty()) continue;
                         std::string nm = blk->Variable(inf) ? inf : (blk->Variable(cj + ":" + inf) ? cj + ":" + inf : "");
                         if (!nm.empty()) transBody << " + " << ctx.resolveValue(nm, Loc::self);
                     }
                 }
-                // reaction contributions: + rate_r * stoich_{r,j} * Storage (subtracted as V[j])
+                // reaction contributions: + rate_r * stoich_{r,j} * N_r (subtracted as V[j]),
+                // N_r = the reaction's normalizing quantity on this block -- Storage by
+                // default, e.g. bed_area for a per-area reaction (Block::GetAllReactionRates
+                // multiplies by the same quantity). A block without that quantity gets 0.
                 for (unsigned r = 0; r < nRx; ++r) {
                     Expression* st = system.reaction(r)->Stoichiometric_Constant(cj);
                     if (!st) continue;
                     std::string ss = ExpressionEmitter(rc).translate(*st);
                     if (ss == "0.0" || ss == "0") continue;   // skip zero stoichiometry
-                    transBody << " + " << rrate[r] << " * (" << ss << ") * flowStorage_["
-                              << stateEnum(blk->GetName(), stateVar) << "]";
+                    const std::string nq = system.reaction(r)->GetVars()->Normalizing_Quantity();
+                    std::string norm;
+                    if (nq.empty() || nq == stateVar)
+                        norm = "flowStorage_[" + stateEnum(blk->GetName(), stateVar) + "]";
+                    else if (blk->Variable(nq))
+                        norm = "(" + makeCtxT(blk, false, -1, std::string()).resolveValue(nq, Loc::self) + ")";
+                    else
+                        norm = "0.0";
+                    transBody << " + " << rrate[r] << " * (" << ss << ") * " << norm;
                 }
                 transBody << ";\n";
             }
@@ -1241,8 +1342,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                         if (rq->GetType() == Quan::_type::expression) rate = srcFn(s->GetName(), "rate") + "(t_new)";
                         else rate = srcSym(s->GetName(), "rate");
                     }
-                    const std::string tsFactor = s->Variable("timeseries")
-                        ? srcHandle(s->GetName()) + ".interpol(t_new)" : std::string("1.0");
+                    const std::string tsFactor = srcTimeseriesFactor(s, "t_new");
                     return "(" + coeff + " * " + tsFactor + " * " + rate + ")";
                 }
                 if (isSeriesType(q->GetType())) return tsHandle(t->GetName(), name) + ".interpol(t_new)";

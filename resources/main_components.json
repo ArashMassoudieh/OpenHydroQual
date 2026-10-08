@@ -587,6 +587,15 @@
 	    "unit": "day",
 	    "helptext": "Time span over which to compute autocorrelation when 'Similarity' comparison is selected. The autocorrelation is sampled at 20 lags between zero and this span. Ignored for other comparison methods."
 	  },
+	  "likelihood_scale": {
+	    "type": "value",
+	    "description": "Likelihood scale (autocorrelation time, in compared points)",
+	    "default": "1",
+	    "ask_user": "true",
+	    "delegate": "ValueBox",
+	    "estimate": "false",
+	    "helptext": "Divides this observation's log-likelihood: the effective number of independent residuals is n/likelihood_scale. Set it to the integral autocorrelation time of the residuals, in compared points (e.g. 120 for residuals correlated over about 120 consecutive 15-min values), so that autocorrelated residuals are not counted as independent. 1 (the default) treats them as independent. Used by Least Squared, EMC and Weighted Least Squared comparisons."
+	  },
 	  "kernel_tau": {
 	    "type": "value",
 	    "description": "Log decay rate (dimensionless)",
@@ -753,6 +762,18 @@
       "estimate": "true",
       "unit": "m;ft"
     },
+    "exchange_velocity": {
+      "description": "Interface exchange velocity",
+      "type": "value",
+      "includeinoutput": "false",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m/day;m/s;ft/day;ft/s",
+      "default": "0",
+      "ask_user": "true",
+      "role": "copytolinks",
+      "helptext": "Link-specific mass-transfer velocity for exchange across an interface, e.g. hyporheic/bioturbation exchange between a channel and the bed or aggregate beneath it: exchange_velocity*area*(concentration.s-concentration.e), with area the link's interface area. Equivalent to an effective diffusion coefficient D_eff = exchange_velocity*length. 0 (the default) leaves the link without it."
+    },
     "advective_masstransfer": {
       "description": "Advective mass transfer rate",
       "type": "expression",
@@ -765,7 +786,7 @@
     "diffusive_masstransfer": {
       "description": "Diffusive/Dispersive mass transfer rate",
       "type": "expression",
-      "expression": "(diffusion_coefficient*area+dispersivity*flow)/length*(concentration.s-concentration.e)",
+      "expression": "((diffusion_coefficient*area+dispersivity*flow)/length+exchange_velocity*area)*(concentration.s-concentration.e)",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks",
@@ -836,7 +857,7 @@
     "concentration": {
       "description": "Concentration",
       "type": "expression",
-      "expression": "mass/Storage",
+      "expression": "mass/(Storage+0.00001)",
       "ask_user": "true",
       "role": "copytoblocks",
       "includeinoutput": "true",
@@ -859,6 +880,18 @@
       "delegate": "UnitBox",
       "estimate": "true",
       "unit": "m/s;m/day;ft/s;ft/day"
+    },
+    "trapping_velocity": {
+      "description": "Additional trapping velocity",
+      "type": "value",
+      "includeinoutput": "false",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m/day;m/s;ft/day;ft/s",
+      "default": "0",
+      "ask_user": "true",
+      "role": "copytolinks",
+      "helptext": "Link-specific removal velocity added to the constituent's settling velocity on this link, e.g. filtration by vegetation on the link from a vegetated channel to the bed beneath it. 0 (the default) leaves the link with plain settling."
     },
 	"turbidity_coefficient": {
       "description": "Turbidity Coefficient",
@@ -897,7 +930,7 @@
     "masstransfer": {
       "description": "Mass transfer rate",
       "type": "expression",
-      "expression": "_ups(flow;concentration)+settling_velocity*area*(_hsd(bottom_elevation.s-bottom_elevation.e-0.0000001)*concentration.s-_hsd(bottom_elevation.e-bottom_elevation.s-0.000001)*concentration.e)",
+      "expression": "_ups(flow;concentration)+(settling_velocity+trapping_velocity)*area*(_hsd(bottom_elevation.s-bottom_elevation.e-0.0000001)*concentration.s-_hsd(bottom_elevation.e-bottom_elevation.s-0.000001)*concentration.e)",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks",
@@ -906,7 +939,7 @@
     "settling_transfer": {
       "description": "Settling transfer rate",
       "type": "expression",
-      "expression": "settling_velocity*area*(_hsd(bottom_elevation.s-bottom_elevation.e-0.0000001)*concentration.s-_hsd(bottom_elevation.e-bottom_elevation.s-0.000001)*concentration.e)",
+      "expression": "(settling_velocity+trapping_velocity)*area*(_hsd(bottom_elevation.s-bottom_elevation.e-0.0000001)*concentration.s-_hsd(bottom_elevation.e-bottom_elevation.s-0.000001)*concentration.e)",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks",

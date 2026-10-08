@@ -245,10 +245,13 @@ public:
         KernelABI& k = TheKernel();
         if (!k.valid()) return System::Solve(ApplyParams, uniformize_outputs);
         // The kernel records only each observation's expression; an EMC
-        // observation also needs its weighting (flow) series, which only the
-        // interpreter records.
+        // observation also needs its weighting (flow) series. It is taken from
+        // another observation that records the same weighting expression on the
+        // same weighting object (e.g. a flow observation on the outlet link).
+        // Without one, fall back to the interpreter, which records it per step.
+        const std::vector<int> emc_weight = EMCWeightObservations();
         for (unsigned int i = 0; i < ObservationsCount(); i++)
-            if (observation(i)->IsEMC()) return System::Solve(ApplyParams, uniformize_outputs);
+            if (observation(i)->IsEMC() && emc_weight[i] < 0) return System::Solve(ApplyParams, uniformize_outputs);
         if (ApplyParams) ApplyParameters();
         if (!h_) h_ = k.create();
         if (!h_) return false;
@@ -305,6 +308,23 @@ public:
                 if (k.observation_at(h_, i, s, &t, &v)) ts.addPoint(t, v);
             observation(i)->SetModeledTimeSeries(ts);
         }
+        // EMC observations: weight = the matched observation's series, flux =
+        // expression x weight, both on this observation's time grid. The
+        // interpreter forms the same two series from per-step values.
+        for (int i = 0; i < (int)ObservationsCount(); i++)
+        {
+            if (!observation(i)->IsEMC()) continue;
+            const TimeSeries<timeseriesprecision>& c = *observation(i)->GetModeledTimeSeries();
+            const TimeSeries<timeseriesprecision>& w = *observation(emc_weight[i])->GetModeledTimeSeries();
+            TimeSeries<timeseriesprecision> flux, weight;
+            for (size_t s = 0; s < c.size(); s++)
+            {
+                const double t = c.getTime(s), wv = w.interpol(t);
+                weight.append(t, wv);
+                flux.append(t, c.getValue(s) * wv);
+            }
+            observation(i)->SetEMCSeries(flux, weight);
+        }
         // G2b. Objective functions score their OWN stored_time_series, which
         // System::Solve fills via Objective_Function::append_value each step --
         // and this method shadows System::Solve, so without this the series stays
@@ -340,6 +360,32 @@ public:
     }
 
 private:
+    // For each EMC observation, the index of a non-EMC observation recording
+    // its weighting expression (default "flow") on its weighting object (default
+    // the observation's own object); -1 if there is none. Non-EMC entries are -1.
+    std::vector<int> EMCWeightObservations()
+    {
+        auto prop = [](Observation* o, const std::string& name) {
+            return o->Variable(name) ? aquiutils::trim(o->Variable(name)->GetProperty()) : std::string();
+        };
+        std::vector<int> idx(ObservationsCount(), -1);
+        for (int i = 0; i < (int)ObservationsCount(); i++)
+        {
+            Observation* oi = observation(i);
+            if (!oi->IsEMC()) continue;
+            std::string wloc = prop(oi, "emc_weighting_object");
+            if (wloc.empty()) wloc = oi->GetLocation();
+            std::string wexp = prop(oi, "emc_weighting_expression");
+            if (wexp.empty()) wexp = "flow";
+            for (int j = 0; j < (int)ObservationsCount(); j++)
+            {
+                Observation* oj = observation(j);
+                if (j == i || oj->IsEMC()) continue;
+                if (aquiutils::trim(oj->GetLocation()) == wloc && prop(oj, "expression") == wexp) { idx[i] = j; break; }
+            }
+        }
+        return idx;
+    }
     void release() { if (h_) { TheKernel().destroy(h_); h_ = nullptr; } }
     void* h_ = nullptr;
 public:

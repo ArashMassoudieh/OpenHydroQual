@@ -117,6 +117,9 @@ class Observation: public Object
         // exactly as CalcMisfit() does, so callers need only one of the two.
         ResidualBlock ResidualVector();
         void SetModeledTimeSeries(const TimeSeries<timeseriesprecision> &X) {modeled_time_series = X;}
+        // EMC inputs supplied from outside (the codegen kernel host), in place of
+        // the per-step recording append_value() does during an interpreter solve.
+        void SetEMCSeries(const TimeSeries<timeseriesprecision> &flux, const TimeSeries<timeseriesprecision> &weight) {emc_flux_series = flux; emc_weight_series = weight;}
         TimeSeries<timeseriesprecision>* GetModeledTimeSeries() {return &modeled_time_series;}
         void SetRealizations(const TimeSeriesSet<double>& rlztions) {realizations = rlztions;}
         TimeSeriesSet<double>& Realizations() {return realizations;}

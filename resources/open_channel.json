@@ -87,6 +87,15 @@
       "criteria": "length>0",
       "warningmessage": "Length must be greater than zero"
     },
+    "bed_area": {
+      "type": "expression",
+      "expression": "length*base_width",
+      "description": "Bed area",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Plan area of the channel bed (segment length x base width). Constant, unlike 'area', which is the cross-sectional flow area. Used by the bed build-up/wash-off components."
+    },
     "area": {
       "type": "expression",
       "expression": "_pos((base_width+side_slope*depth)*depth-dam_area)",
@@ -278,6 +287,15 @@
       "estimate": "true",
       "criteria": "length>0",
       "warningmessage": "Length must be greater than zero"
+    },
+    "bed_area": {
+      "type": "expression",
+      "expression": "length*base_width",
+      "description": "Bed area",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Plan area of the channel bed (segment length x base width). Constant, unlike 'area', which is the cross-sectional flow area. Used by the bed build-up/wash-off components."
     },
     "area": {
       "type": "expression",
