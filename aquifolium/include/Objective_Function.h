@@ -21,7 +21,7 @@
 #include "TimeSeries.h"
 #include "Object.h"
 
-enum class objfunctype {Integrate, Value, Maximum, Variance, Exceedance};
+enum class objfunctype {Integrate, Value, Maximum, Variance, Exceedance, TailExpectation};
 
 class System;
 
