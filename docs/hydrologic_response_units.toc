@@ -17,16 +17,17 @@
 \contentsline {subsection}{\numberline {4.10}Evapotranspiration from groundwater}{10}{subsection.4.10}%
 \contentsline {subsection}{\numberline {4.11}Calibration multipliers}{10}{subsection.4.11}%
 \contentsline {subsection}{\numberline {4.12}Disconnected impervious area}{11}{subsection.4.12}%
-\contentsline {section}{\numberline {5}Using the units}{11}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Templates}{11}{subsection.5.1}%
-\contentsline {subsection}{\numberline {5.2}A worked example}{11}{subsection.5.2}%
-\contentsline {section}{\numberline {6}Dual drainage: units served by storm sewers}{13}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Inlets}{14}{subsection.6.1}%
-\contentsline {subsection}{\numberline {6.2}Outfall}{14}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}Sewer size, surcharge and groundwater}{14}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}Catch basins with a rim and spreading}{15}{subsection.6.4}%
-\contentsline {subsection}{\numberline {6.5}Ports}{15}{subsection.6.5}%
-\contentsline {subsection}{\numberline {6.6}Example}{15}{subsection.6.6}%
-\contentsline {subsection}{\numberline {6.7}Limitations}{16}{subsection.6.7}%
-\contentsline {section}{\numberline {7}Property reference}{16}{section.7}%
-\contentsline {section}{\numberline {8}Limitations and pitfalls}{18}{section.8}%
+\contentsline {section}{\numberline {5}Riparian Urban HRU}{11}{section.5}%
+\contentsline {section}{\numberline {6}Using the units}{12}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Templates}{12}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}A worked example}{12}{subsection.6.2}%
+\contentsline {section}{\numberline {7}Dual drainage: units served by storm sewers}{13}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Inlets}{14}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Outfall}{15}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Sewer size, surcharge and groundwater}{15}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Catch basins with a rim and spreading}{15}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Ports}{16}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}Example}{16}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}Limitations}{17}{subsection.7.7}%
+\contentsline {section}{\numberline {8}Property reference}{17}{section.8}%
+\contentsline {section}{\numberline {9}Limitations and pitfalls}{19}{section.9}%

@@ -552,6 +552,39 @@ that matters, a third \code{Catchment} for the disconnected area, joined to \cod
 \code{Catchment\_link}, would represent both; it is not part of the composite.
 
 %==========================================================================================
+\section{Riparian Urban HRU}
+\label{sec:riparian}
+\code{Riparian\_Urban\_HRU} (\file{riparian\_urban\_hru.json}) is the Urban HRU with its groundwater split
+into two unconfined cells. A single cell per unit has one head and one flow path to the stream, so its
+discharge changes on one time scale (in a watershed application, about 100 days); observed baseflow, in
+contrast, keeps falling for one to three weeks after each event (about 10\,\% per day at Rock Creek) before
+settling into the slow seasonal decline. The near-stream cell supplies the missing intermediate store.
+
+\begin{itemize}[leftmargin=1.4em]
+\item \code{Groundwater} --- the regional cell, area $A(1-f_r)$, recharged from \code{Soil\_3} over
+      $A(1-f_i)(1-f_r)$. It drains into the near-stream aquifer
+      through an internal \code{UC\_groundwater\_link} (\code{hillslope\_to\_near\_stream}; width
+      \code{hillslope\_link\_width}, normally twice the stream length in the unit; length
+      \code{hillslope\_link\_length}, normally the hillslope length $1/(2D_d)$), and it keeps the
+      \code{UC\_groundwater\_link} port to neighbouring units and the fixed-head port. Optionally it also
+      discharges directly to the stream through the \code{regional\_groundwater\_to\_stream} port, a separate
+      link type with the equation of \code{unconfined\_groundwater\_to\_stream} (a composite exposes one member
+      per link type), normally over the hillslope path; leave it unconnected for the near-stream aquifer to be
+      the only path to the stream.
+\item \code{Near\_Stream\_Aquifer} --- area $A f_r$ (\code{near\_stream\_fraction}), recharged from
+      \code{Soil\_3} over $A(1-f_i)f_r$ (\code{recharge\_near\_stream}), with its own specific yield
+      (\code{near\_stream\_specific\_yield}) and conductivity (\code{near\_stream\_K}). It connects to the
+      stream through the \code{unconfined\_groundwater\_to\_stream} port. With a short
+      path (the half-width of the riparian strip) the exchange is fast and runs both ways: the stream fills it
+      during events (bank storage) and it drains back over days to weeks.
+\end{itemize}
+
+Both cells share the base elevation, thickness, residual thickness and initial water table of the Urban HRU,
+and both recharge links use \code{recharge\_elevation\_offset}. There is no evapotranspiration from either
+cell. Everything else (surfaces, reaches, soils, ports for the surface outlets) is as in the Urban HRU. With
+$\tau_r=S_{y,r}A f_r L/(K_r A_b)$ for the near-stream cell and the regional cell's drainage through the
+hillslope link, the unit has a fast and a slow baseflow store in series.
+
 \section{Using the units}
 
 \subsection{Templates}
