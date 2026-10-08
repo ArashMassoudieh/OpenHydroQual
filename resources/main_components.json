@@ -459,7 +459,7 @@
     },
     "method": {
       "type": "string",
-      "delegate": "ComboBox;items:integrate,value,maximum,variance,exceedance",
+      "delegate": "ComboBox;items:integrate,value,maximum,variance,exceedance,tail_expectation",
       "includeinoutput": "false",
       "description": "Calculation method",
       "ask_user": "true"

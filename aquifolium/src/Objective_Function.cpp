@@ -16,6 +16,8 @@
 
 #include "Objective_Function.h"
 #include "System.h"
+#include <algorithm>
+#include <vector>
 
 
 Objective_Function::Objective_Function(): Object::Object()
@@ -83,6 +85,7 @@ bool Objective_Function::SetProperty(const string &prop, const string &val)
         if (aquiutils::tolower(val) == "maximum") { type = objfunctype::Maximum; }
         if (aquiutils::tolower(val) == "variance") { type = objfunctype::Variance; }
         if (aquiutils::tolower(val) == "exceedance") { type = objfunctype::Exceedance; }
+        if (aquiutils::tolower(val) == "tail_expectation") { type = objfunctype::TailExpectation; }
         lasterror = "Type '" + val + "' was not recognized!";
     }
     return Object::SetProperty(prop,val);
@@ -154,6 +157,22 @@ double Objective_Function::GetObjective()
     {   objective_value = stored_time_series.percentile(1-Percentile());
         return objective_value;
 
+    }
+    else if (type == objfunctype::TailExpectation)
+    {   // Upper-tail partial expectation: integral of Q p(Q) H(Q - Q_p) dQ,
+        // with Q_p the exceedance-probability-p quantile (same index as Exceedance).
+        // On the uniform dt0 grid this is sum(Q_i >= Q_p) / N, i.e. p times the
+        // mean flow over the top p of the time.
+        std::vector<double> values;
+        values.reserve(stored_time_series.size());
+        for (const auto& pt : stored_time_series) values.push_back(pt.c);
+        if (values.empty()) { objective_value = 0; return objective_value; }
+        std::sort(values.begin(), values.end());
+        size_t index = std::min(static_cast<size_t>((1 - Percentile()) * values.size()), values.size() - 1);
+        double sum = 0;
+        for (size_t i = index; i < values.size(); ++i) sum += values[i];
+        objective_value = sum / values.size();
+        return objective_value;
     }
     else
     {   objective_value = 0;
