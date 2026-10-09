@@ -80,6 +80,14 @@ static std::string massEnum(const std::string& block, const std::string& constNa
     return sanitize(block) + "__" + sanitize(constName) + "__mass";
 }
 // Constituent prefix of a quantity name ("Tracer:concentration" -> "Tracer"), or "".
+// '*' and '?' wildcards (G7 output selection)
+static bool globMatch(const char* p, const char* s)
+{
+    if (!*p) return !*s;
+    if (*p == '*') return globMatch(p + 1, s) || (*s && globMatch(p, s + 1));
+    return *s && (*p == '?' || *p == *s) && globMatch(p + 1, s + 1);
+}
+
 static std::string constPrefix(const std::string& name)
 {
     auto c = name.find(':');
@@ -829,6 +837,29 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     // Map node key -> the object/quantity so we can sort by dependency and emit
     // each local only after the locals it uses (fixes use-before-declaration).
     struct Node { Object* o; bool isLink; std::string qn; };
+    // G7: the quantities selected by opt.outputs, resolved here because they need
+    // the per-iteration locals cached as members (needFlowLocals below)
+    struct OutputSpec { Object* o; bool isLink; int linkIdx; std::string qn; };
+    std::vector<OutputSpec> outSpecs;
+    for (unsigned i = 0; i < nB + nL && !opt.outputs.empty(); ++i) {
+        Object* o = (i < nB) ? (Object*)system.block(i) : (Object*)system.link(i - nB);
+        const bool isLink = (i >= nB);
+        QuanSet* qs = o->GetVars();
+        for (auto it = qs->begin(); it != qs->end(); ++it) {
+            Quan& q = it->second;
+            const std::string qn = q.GetName();
+            if (!constPrefix(qn).empty()) continue;                           // constituent-scoped
+            if (q.GetType() == Quan::_type::balance && qn != stateVar) continue;
+            bool sel = false;
+            for (const auto& pq : opt.outputs) {
+                if (!globMatch(pq.first.c_str(), o->GetName().c_str())) continue;
+                const bool wild = pq.second.find_first_of("*?") != std::string::npos;
+                if (wild ? (q.IncludeInOutput() && globMatch(pq.second.c_str(), qn.c_str())) : pq.second == qn)
+                    { sel = true; break; }
+            }
+            if (sel) outSpecs.push_back({o, isLink, isLink ? (int)(i - nB) : -1, qn});
+        }
+    }
     std::map<std::string, Node> perIter;
     for (unsigned i = 0; i < nB + nL; ++i) {
         Object* o = (i < nB) ? (Object*)system.block(i) : (Object*)system.link(i - nB);
@@ -854,7 +885,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         // computeFluxes. Emit the same ordered computations a second time into
         // computeFlowLocals(), assigning to members (same symbols; the locals in
         // computeFluxes shadow them), called once per accepted flow step.
-        const bool needFlowLocals = system.ConstituentsCount() > 0 || system.ObservationsCount() > 0;
+        const bool needFlowLocals = system.ConstituentsCount() > 0 || system.ObservationsCount() > 0 || !outSpecs.empty();
         auto emitGroupF = [&](bool wantLink) {
             std::map<std::string, int> indeg;
             std::map<std::string, std::vector<std::string>> radj;
@@ -1283,7 +1314,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     // shadows. Emit them alongside the observations so a kernel-driven GA has
     // something to score.
     const unsigned nObj = system.ObjectiveFunctionsCount();
-    std::ostringstream obsBody, obsNameArr, paramNameArr, paramInitArr, objBody, objNameArr;
+    std::ostringstream obsBody, obsNameArr, paramNameArr, paramInitArr, objBody, objNameArr, outBody, outNameArr;
     {
         std::function<EmitContext(Object*, bool, int)> makeCtxObs;
         makeCtxObs = [&](Object* cur, bool isLink, int linkIdx) -> EmitContext {
@@ -1390,6 +1421,14 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             objBody << "        out[" << i << "] = " << ExpressionEmitter(makeCtxObs(o, isLink, li)).translate(ex)
                     << ";   // objective " << of->GetName() << " @ " << loc << "\n";
         }
+        // G7 outputs: each selected quantity as the observation resolver sees it
+        // (a link's flow is the limited solver flow, the state is the storage)
+        for (size_t i = 0; i < outSpecs.size(); ++i) {
+            const OutputSpec& s = outSpecs[i];
+            outNameArr << (i ? ", " : "") << cstr(s.o->GetName() + ":" + s.qn);
+            outBody << "        out[" << i << "] = " << makeCtxObs(s.o, s.isLink, s.linkIdx).resolveValue(s.qn, Loc::self)
+                    << ";\n";
+        }
         for (unsigned i = 0; i < nP; ++i) {
             paramNameArr << (i ? ", " : "") << cstr(params[i].name);
             paramInitArr << (i ? ", " : "") << fmt(params[i].value);
@@ -1420,7 +1459,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                              "        N_MASS = " + std::to_string(nB * nC) + "\n    };\n") : "";
     std::string tCtor = T ? ", transport_(*this)" : "";
     std::string tInit = T ? " transport_.initialize();" : "";
-    const bool L = T || nObs > 0;           // cached flow-phase locals needed
+    const bool L = T || nObs > 0 || !outSpecs.empty();   // cached flow-phase locals needed
     const bool O = nObs > 0;
     const bool OJ = nObj > 0;
     // step(): flow phase, then (optionally) cache locals, transport, observations.
@@ -1606,6 +1645,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + "    void uniformizeObjectives() { for (auto& s : obj_) s = s.makeUniform(dt0_); }\n"
         + "    void recordObjectives(double t_eval) {\n        double v[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1]; computeObjectives(v, t_eval);\n"
           "        for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i].push(t_eval, v[i]);\n    }\n";
+    paramApi +=
+        std::string("    // ---- outputs (G7): selected quantities at the current accepted state, on demand ----\n")
+        + "    static const char* outputName(int i) { static const char* a[] = {" + (outSpecs.empty() ? std::string("\"\"") : outNameArr.str()) + "}; return a[i]; }\n"
+        + "    void computeOutputs(double* out) const {\n        const double t_new = solver_.time(); (void)t_new; (void)out;\n" + outBody.str() + "    }\n";
     // G4/G5 API: named series injection; state values in/out.
     std::ostringstream ioApi;
     {
@@ -1734,7 +1777,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << tInclude << "\n"
       << "class " << cls << " {\npublic:\n"
       << "    enum State {\n" << stateEnumBody.str() << "        N_STATES = " << nB << "\n    };\n"
-      << "    enum { N_LINKS = " << nL << ", N_PARAMETERS = " << nP << ", N_OBSERVATIONS = " << nObs << ", N_OBJECTIVES = " << nObj << " };\n"
+      << "    enum { N_LINKS = " << nL << ", N_PARAMETERS = " << nP << ", N_OBSERVATIONS = " << nObs << ", N_OBJECTIVES = " << nObj << ", N_OUTPUTS = " << outSpecs.size() << " };\n"
       << tEnum << "\n"
       << "    " << cls << "() : solver_(*this)" << tCtor << " {}\n\n"
       << seriesSetters.str() << srcFns.str() << "\n"
@@ -2046,6 +2089,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                << CLS << "_API void   " << cls << "_apply_parameters(" << cls << "_handle* h);\n"
                << CLS << "_API int    " << cls << "_n_observations(void);\n"
                << CLS << "_API int    " << cls << "_n_objectives(void);\n"
+                  "/* G7 outputs: selected quantities (\"object:quantity\") at the current state */\n"
+               << CLS << "_API int    " << cls << "_n_outputs(void);\n"
+               << CLS << "_API const char* " << cls << "_output_name(int i);\n"
+               << CLS << "_API void   " << cls << "_outputs(const " << cls << "_handle* h, double* out);\n"
                << CLS << "_API const char* " << cls << "_observation_name(int i);\n"
                << CLS << "_API int    " << cls << "_observation_count(const " << cls << "_handle* h, int i);\n"
                << CLS << "_API int    " << cls << "_observation_at(const " << cls << "_handle* h, int i, int k, double* t, double* v);\n"
@@ -2098,6 +2145,9 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                   "    const ohq::TimeSeries& s = h->m.observationSeries(i); if (k < 0 || k >= (int)s.size()) return 0; *t = s.t[k]; *v = s.c[k]; return 1; }\n"
                   "void   " << cls << "_clear_observations(" << cls << "_handle* h) { h->m.clearObservations(); }\n"
                   "int    " << cls << "_n_objectives(void) { return " << cls << "::N_OBJECTIVES; }\n"
+                  "int    " << cls << "_n_outputs(void) { return " << cls << "::N_OUTPUTS; }\n"
+                  "const char* " << cls << "_output_name(int i) { return " << cls << "::outputName(i); }\n"
+                  "void   " << cls << "_outputs(const " << cls << "_handle* h, double* out) { h->m.computeOutputs(out); }\n"
                   "const char* " << cls << "_objective_name(int i) { return " << cls << "::objectiveName(i); }\n"
                   "int    " << cls << "_objective_count(const " << cls << "_handle* h, int i) { return (int)h->m.objectiveSeries(i).size(); }\n"
                   "int    " << cls << "_objective_at(const " << cls << "_handle* h, int i, int k, double* t, double* v) {\n"
@@ -2151,6 +2201,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                   "/* G2b objective functions: same (object, expression) shape as an observation,\n"
                   "   but scored by Objective_Function rather than compared to data. */\n"
                   "int    ohq_kernel_n_objectives(void) { return " << cls << "_n_objectives(); }\n"
+                  "/* G7 outputs (optional extension of v3: a host binds these if present) */\n"
+                  "int    ohq_kernel_n_outputs(void) { return " << cls << "_n_outputs(); }\n"
+                  "const char* ohq_kernel_output_name(int i) { return " << cls << "_output_name(i); }\n"
+                  "void   ohq_kernel_outputs(const void* h, double* out) { " << cls << "_outputs((const " << cls << "_handle*)h, out); }\n"
                   "const char* ohq_kernel_objective_name(int i) { return " << cls << "_objective_name(i); }\n"
                   "int    ohq_kernel_objective_count(const void* h, int i) { return " << cls << "_objective_count((const " << cls << "_handle*)h, i); }\n"
                   "int    ohq_kernel_objective_at(const void* h, int i, int k, double* t, double* v) { return " << cls << "_objective_at((const " << cls << "_handle*)h, i, k, t, v); }\n"

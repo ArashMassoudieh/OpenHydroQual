@@ -21,6 +21,7 @@
 
 #include <QCoreApplication>
 #include <QFileInfo>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -30,19 +31,24 @@ int main(int argc, char* argv[])
     QCoreApplication app(argc, argv);
 
     std::vector<std::string> pos;
-    std::string project;
+    std::string project, outputsFile;
     for (int i = 1; i < argc; ++i) {
         const std::string a = argv[i];
         if (a == "--project") {
             if (i + 1 >= argc) { std::cerr << "--project needs exe|lib|shared\n"; return 1; }
             project = argv[++i];
+        } else if (a == "--outputs") {
+            if (i + 1 >= argc) { std::cerr << "--outputs needs a file\n"; return 1; }
+            outputsFile = argv[++i];
         } else {
             pos.push_back(a);
         }
     }
     if (pos.size() < 4) {
         std::cerr << "usage: ohq_generate <model.ohq> <resources_dir> <out_dir> "
-                     "<ClassName> [stateVar] [--project exe|lib|shared]\n";
+                     "<ClassName> [stateVar] [--project exe|lib|shared] [--outputs <file>]\n"
+                     "  --outputs: lines '<object glob> <quantity glob>' ('#' comments); a glob quantity\n"
+                     "             matches quantities flagged include_in_output, a plain name any quantity\n";
         return 1;
     }
     if (!project.empty() && project != "exe" && project != "lib" && project != "shared") {
@@ -69,6 +75,20 @@ int main(int argc, char* argv[])
 
     ohqcg::GenOptions opt;
     opt.className     = cls;
+    if (!outputsFile.empty()) {
+        std::ifstream f(outputsFile);
+        if (!f) { std::cerr << "cannot read " << outputsFile << "\n"; return 1; }
+        std::string line;
+        while (std::getline(f, line)) {
+            const size_t h = line.find('#'); if (h != std::string::npos) line.erase(h);
+            const size_t a = line.find_first_not_of(" \t\r"); if (a == std::string::npos) continue;
+            const size_t b = line.find_first_of(" \t", a);
+            const size_t c = (b == std::string::npos) ? b : line.find_first_not_of(" \t", b);
+            if (c == std::string::npos) { std::cerr << "--outputs: bad line '" << line << "'\n"; return 1; }
+            std::string q = line.substr(c); q.erase(q.find_last_not_of(" \t\r") + 1);   // names may contain spaces
+            opt.outputs.emplace_back(line.substr(a, b - a), q);
+        }
+    }
     opt.outputDir     = out;
     opt.stateVariable = stateVar;
     opt.emitProject   = !project.empty();

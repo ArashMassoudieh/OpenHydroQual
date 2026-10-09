@@ -38,6 +38,9 @@
  *   G6 status  solution_failed / simulation_duration / step_count /
  *              last_iterations / reset_status
  *   results    n_states / state / state_name, n_mass / mass
+ *   G7 outputs n_outputs / output_name / outputs  (OPTIONAL within v3: kernels
+ *              generated with `ohq_generate --outputs <file>`; the loader binds
+ *              them when present, so older kernels load and report 0 outputs)
  *
  * CONTRACTS THE HOST MUST HONOUR
  * ------------------------------
@@ -124,6 +127,15 @@ int         ohq_kernel_objective_count(const void* h, int i);
 int         ohq_kernel_objective_at(const void* h, int i, int k, double* t, double* v);
 void        ohq_kernel_clear_objectives(void* h);
 void        ohq_kernel_uniformize_objectives(void* h);
+
+/* ---- G7: outputs (optional) ---------------------------------------------- */
+/* Quantities selected at generation time (`ohq_generate --outputs <file>`),
+   named "object:quantity", evaluated at the current accepted state on demand:
+   run_to(t), then outputs(h, out) fills out[0 .. n_outputs-1]. A link's flow is
+   the solver's (limited) flow, as an observation sees it. */
+int         ohq_kernel_n_outputs(void);
+const char* ohq_kernel_output_name(int i);
+void        ohq_kernel_outputs(const void* h, double* out);
 
 /* ---- G4: runtime forcing, addressed by (object, quantity) name ----------- */
 int         ohq_kernel_n_series(void);
@@ -295,6 +307,11 @@ public:
         ok &= bind(n_mass, "ohq_kernel_n_mass");
         ok &= bind(mass, "ohq_kernel_mass");
         if (!ok) { close(); return false; }
+        // G7 outputs are optional: a kernel generated without --outputs lacks them
+        n_outputs = nullptr; output_name = nullptr; outputs = nullptr;
+        if (!bind(n_outputs, "ohq_kernel_n_outputs") || !bind(output_name, "ohq_kernel_output_name")
+            || !bind(outputs, "ohq_kernel_outputs"))
+            { n_outputs = nullptr; output_name = nullptr; outputs = nullptr; err_.clear(); }
         return true;
     }
 
@@ -406,6 +423,10 @@ public:
     void        (*apply_parameters)(void*) = nullptr;
     int         (*n_observations)(void) = nullptr;
     int         (*n_objectives)(void) = nullptr;
+    int         (*n_outputs)(void) = nullptr;            /* G7, null when the kernel has none */
+    const char* (*output_name)(int) = nullptr;
+    void        (*outputs)(const void*, double*) = nullptr;
+    int         outputCount() const { return n_outputs ? n_outputs() : 0; }
     const char* (*objective_name)(int) = nullptr;
     int         (*objective_count)(const void*, int) = nullptr;
     int         (*objective_at)(const void*, int, int, double*, double*) = nullptr;

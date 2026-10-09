@@ -28,12 +28,19 @@
 #define OHQ_CODE_GENERATOR_H
 
 #include <string>
+#include <utility>
+#include <vector>
 
 class System;  // aquifolium
 
 namespace ohqcg {
 
 struct GenOptions {
+    // G7 outputs: (object glob, quantity glob) pairs selecting the quantities the
+    // kernel can report on demand (ohq_kernel_outputs). A glob quantity matches the
+    // quantities flagged include_in_output; a plain name matches that quantity
+    // whether flagged or not. Empty (the default) = no outputs, kernel unchanged.
+    std::vector<std::pair<std::string, std::string>> outputs;
     std::string className   = "GeneratedModel";
     std::string outputDir   = ".";
     std::string stateVariable = "Storage";  // the solutionorder variable to integrate

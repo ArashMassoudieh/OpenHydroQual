@@ -370,6 +370,33 @@ Validated on two very different models: Wetland (10 states, 1 constituent, 5
 parameters, 44 series) and the 8-column study (152 states, 1368 masses, 11
 parameters incl. one host-owned sigma, 3176 series) — both PASS.
 
+### Outputs — G7, optional within ABI v3 (2026-10-08)
+Observations are recorded every step; a host that wants to *show* the model
+(the twin's viewer: soil moisture, ponding, link flows, water tables) needs other
+quantities, on its own schedule. `ohq_generate ... --outputs <file>` selects them:
+
+```
+# <object glob> <quantity glob>        ('#' comments; the quantity may contain spaces)
+SC*__Soil_1   theta                    # a plain name: that quantity, flagged or not
+R21-*         flow                     # the outgoing stream link of R21
+SC01__*       *                        # a glob: every include_in_output quantity
+```
+
+The kernel then exports `ohq_kernel_n_outputs()`, `ohq_kernel_output_name(i)`
+(`"object:quantity"`) and `ohq_kernel_outputs(h, out)`, which evaluates all of
+them at the current accepted state (`run_to(t)` first). Each is resolved exactly
+as an observation expression naming that quantity is (a link's `flow` is the
+limited solver flow, the state variable is the storage), so a selected link flow
+equals the observation on that link to the bit. Selecting outputs turns on the
+per-step cache of flow-phase quantities that observations already use.
+Without `--outputs` the kernel is unchanged and lacks the three symbols; the
+loader binds them only when present (`Kernel::outputCount()` is 0 otherwise), so
+the ABI version stays 3 and existing kernels and hosts are unaffected.
+
+Rock Creek (547 blocks, 778 links): all 8,765 include_in_output quantities
+compile (3.7 min) and, read hourly, add 25 % to the run time; the 2,369 the twin
+uses cost less.
+
 ## Next phase
 
 The purpose of all this is to run **OpenHydroTwin**'s GA / streaming-MCMC data
