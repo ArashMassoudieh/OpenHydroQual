@@ -450,6 +450,25 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         return fmt(v);
     };
 
+    // `<q>.v` on a block (Expression::loc::average_of_links): the mean of q over the
+    // links connected to the block that carry q, as Block::GetAvgOverLinks does in the
+    // interpreter (e.g. a channel's velocity = mean velocity of its Manning links).
+    // onLink(link, linkIndex) translates q in that link's own context. No such link -> 0.
+    auto avgOverLinks = [&](Object* blk, const std::string& name,
+                            const std::function<std::string(Object*, int)>& onLink) -> std::string {
+        std::vector<std::string> terms;
+        for (unsigned l = 0; l < system.LinksCount(); ++l) {
+            Link* L = system.link(l);
+            const bool touches = (Object*)system.block(L->s_Block_No()) == blk ||
+                                 (Object*)system.block(L->e_Block_No()) == blk;
+            if (touches && L->HasQuantity(name)) terms.push_back(onLink((Object*)L, (int)l));
+        }
+        if (terms.empty()) return "0.0";
+        std::string s = "((";
+        for (size_t i = 0; i < terms.size(); ++i) s += (i ? " + " : "") + terms[i];
+        return s + ")/" + std::to_string(terms.size()) + ".0)";
+    };
+
     // A resolver factory bound to the current object / time symbol.
     // (std::function so resolveValue can call makeCtx recursively for Source
     // coefficient/rate sub-expressions.)
@@ -464,6 +483,9 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             return cur;
         };
         ctx.resolveValue = [&, target, timeVar, cur](const std::string& name, Loc loc) -> std::string {
+            if (loc == Loc::average_of_links && target(Loc::self)->ObjectType() == object_type::block)
+                return avgOverLinks(target(Loc::self), name, [&, timeVar](Object* L, int) {
+                    return makeCtx(L, true, timeVar).resolveValue(name, Loc::self); });
             Object* t = target(loc);
             Quan* q = t->Variable(name);
             if (!q) {
@@ -569,9 +591,12 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     const bool uniformSeries = system.GetSolverSettings().make_timeseries_uniform;
     const double uniformDt = system.dt0();
     auto bakeSeries = [&](const std::string& obj, const std::string& q, const std::string& handle,
-                          TimeSeries<timeseriesprecision>* ts, size_t maxPoints, bool clampDt) {
+                          TimeSeries<timeseriesprecision>* ts, size_t maxPoints, bool clampDt,
+                          double fallback = 0.0) {
         seriesTable.push_back({obj, q, handle});          // addressable even when empty now
         if (clampDt) clampHandles.push_back(handle);      // (an injected series must clamp too)
+        // value of the series while it is empty (template "default", Quan::EmptySeriesValue)
+        if (fallback != 0.0) seriesInit << "        " << handle << ".fallback = " << fmt(fallback) << ";\n";
         if (!ts || ts->size() == 0) return;
         TimeSeries<timeseriesprecision> uni;
         bool uniformAtLoad = false;                       // resample in loadSeries() instead
@@ -687,7 +712,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 seriesDecls  << "    ohq::TimeSeries " << h << ";\n";
                 seriesSetters << "    void set_" << h << "(const ohq::TimeSeries& ts) { "
                               << h << " = ts; }\n";
-                bakeSeries(o->GetName(), qn, h, q->GetTimeSeries(), 200000, clampsDt(q->GetType()));
+                bakeSeries(o->GetName(), qn, h, q->GetTimeSeries(), 200000, clampsDt(q->GetType()), q->EmptySeriesValue());
                 continue;
             }
             if (qi->tier == Tier::Constant) {
@@ -755,7 +780,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                         seriesDecls  << "    ohq::TimeSeries " << hh << ";\n";
                         seriesSetters << "    void set_" << hh << "(const ohq::TimeSeries& ts) { " << hh << " = ts; }\n";
                         // clamps dt where the ET input changes (see clampHandles comment)
-                        bakeSeries(s->GetName(), sqn, hh, sq.GetTimeSeries(), 200000, clampsDt(sq.GetType()));
+                        bakeSeries(s->GetName(), sqn, hh, sq.GetTimeSeries(), 200000, clampsDt(sq.GetType()), sq.EmptySeriesValue());
                     } else if (sq.GetType() == Quan::_type::expression && sqn != "coefficient") {
                         ExpressionEmitter em(makeCtxSrc(s));
                         srcFns << "    double " << srcFn(s->GetName(), sqn) << "(double t) const { (void)t; return "
@@ -1026,6 +1051,9 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 return cur;
             };
             ctx.resolveValue = [&, target, isLink, curLinkIdx, curConst](const std::string& name0, Loc loc) -> std::string {
+                if (loc == Loc::average_of_links && !isLink)
+                    return avgOverLinks(target(Loc::self), name0, [&, curConst](Object* L, int li) {
+                        return makeCtxT(L, true, li, curConst).resolveValue(name0, Loc::self); });
                 Object* t = target(loc);
                 std::string name = name0;
                 Quan* q = t->Variable(name);
@@ -1141,7 +1169,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     const std::string hh = tsHandle(o->GetName(), qn);
                     seriesDecls  << "    ohq::TimeSeries " << hh << ";\n";
                     seriesSetters << "    void set_" << hh << "(const ohq::TimeSeries& ts) { " << hh << " = ts; }\n";
-                    bakeSeries(o->GetName(), qn, hh, q.GetTimeSeries(), 200000, clampsDt(q.GetType()));
+                    bakeSeries(o->GetName(), qn, hh, q.GetTimeSeries(), 200000, clampsDt(q.GetType()), q.EmptySeriesValue());
                 }
             }
         }
@@ -1326,6 +1354,9 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 return cur;
             };
             ctx.resolveValue = [&, target, isLink, linkIdx](const std::string& name, Loc loc) -> std::string {
+                if (loc == Loc::average_of_links && !isLink)
+                    return avgOverLinks(target(Loc::self), name, [&](Object* L, int li) {
+                        return makeCtxObs(L, true, li).resolveValue(name, Loc::self); });
                 Object* t = target(loc);
                 Quan* q = t->Variable(name);
                 if (!q) {

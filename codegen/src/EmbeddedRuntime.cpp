@@ -1193,6 +1193,8 @@ class TimeSeries {
 public:
     std::vector<double> t;   // ascending sample times
     std::vector<double> c;   // sample values
+    double fallback = 0.0;   // value of an EMPTY series (the quantity's template "default",
+                             // as Quan::EmptySeriesValue in the interpreter)
 
     TimeSeries() = default;
 
@@ -1294,7 +1296,7 @@ public:
     double interpol(double x) const
     {
         const int n = static_cast<int>(t.size());
-        if (n == 0) return 0.0;
+        if (n == 0) return fallback;
         if (x <= t.front()) return c.front();
         if (x >= t.back())  return c.back();
         int i = idxAt(x);

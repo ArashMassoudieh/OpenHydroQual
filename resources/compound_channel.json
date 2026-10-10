@@ -146,13 +146,32 @@
       "includeinoutput": "true",
       "unit": "m;ft"
     },
-    "area": {
+    "xsectionarea": {
       "type": "expression",
       "expression": "_pos(channel_coeff*(_min(_pos(depth);bank_depth))^channel_exponent+(channel_coeff*channel_exponent*bank_depth^(channel_exponent-1)+floodplain_width)*_pos(depth-bank_depth)+floodplain_side_slope*_pos(depth-bank_depth)^2-channel_coeff*pool_depth^channel_exponent)",
       "description": "Flowing cross-sectional area (total minus pool)",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m^2;ft^2"
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional flow area. (Called 'area' before Oct 2026; 'area' is now the water-surface area, as on other blocks.)"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "length*top_width",
+      "description": "Water-surface (top) area",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2",
+      "helptext": "Plan area of the free water surface (segment length x top width). Used by surface processes such as atmospheric (re)aeration and precipitation."
+    },
+    "velocity": {
+      "type": "expression",
+      "expression": "_abs(velocity.v)",
+      "description": "Mean flow velocity",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m/s",
+      "helptext": "Mean of the velocities of the channel links connected to this segment (.v = average over links). Used by the reaeration models."
     },
     "top_width": {
       "type": "expression",
@@ -206,7 +225,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "_max(_bkw(head;area);0)",
+      "expression": "_max(_bkw(head;xsectionarea);0)",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m^2;ft^2"

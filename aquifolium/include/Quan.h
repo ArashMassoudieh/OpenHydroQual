@@ -126,6 +126,11 @@ public:
     string& Category() { return category; }
     string& Input() { return input; }
     string& Default() { return default_val; }
+    // Value of a time-series quantity that has no data: the template's numeric
+    // "default" (e.g. a temperature series defaulting to 20 C, so a temperature
+    // correction is neutral when no series is given), otherwise 0.
+    double EmptySeriesValue() const;
+    void SetSourceContext(Object* obj) const;
     bool& ExperimentDependent() { return experiment_dependent; }
     string& DescriptionCode() { return description_code; }
     string& Abbreviation() { return abbreviation; }
