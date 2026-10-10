@@ -33,11 +33,22 @@ static Loc locFromText(const std::string& t)
     return Loc::self;
 }
 
+// The parsed location of a parameter leaf (text may not carry the suffix).
+static Loc locOf(const Expression& e)
+{
+    switch (e.GetLocation()) {
+    case Expression::loc::source:           return Loc::source;
+    case Expression::loc::destination:      return Loc::destination;
+    case Expression::loc::average_of_links: return Loc::average_of_links;
+    default:                                return locFromText(e.text);
+    }
+}
+
 // Collect leaves, remapping self-located refs to `selfAs` (for _ups/_bkw args).
 static void collectRefsSelfAs(const Expression& e, std::vector<std::pair<std::string, Loc>>& out, Loc selfAs)
 {
     if (e.param_constant_expression == "parameter") {
-        Loc loc = locFromText(e.text);
+        Loc loc = locOf(e);
         if (loc == Loc::self) loc = selfAs;
         out.emplace_back(e.parameter, loc);
         return;
@@ -50,7 +61,7 @@ static void collectRefsSelfAs(const Expression& e, std::vector<std::pair<std::st
 static void collectRefs(const Expression& e, std::vector<std::pair<std::string, Loc>>& out)
 {
     if (e.param_constant_expression == "parameter") {
-        out.emplace_back(e.parameter, locFromText(e.text));
+        out.emplace_back(e.parameter, locOf(e));
         return;
     }
     // The 2-argument link forms of _ups/_bkw evaluate their arguments at the
@@ -90,6 +101,25 @@ static std::string resolveRef(System& sys, Object* owner, bool ownerIsLink,
     return key(owner->GetName(), name);
 }
 
+// Append the node keys a reference depends on. A block's "x.v" (average over
+// the links touching it, Block::GetAvgOverLinks) depends on x of each of those
+// links, so e.g. a segment velocity averaged from link flows is per-iteration,
+// not a constant evaluated once at t0.
+static void addDeps(System& sys, Object* owner, bool ownerIsLink, const std::string& name, Loc loc,
+                    std::vector<std::string>& deps)
+{
+    if (!ownerIsLink && loc == Loc::average_of_links) {
+        for (unsigned l = 0; l < sys.LinksCount(); ++l) {
+            Link* L = sys.link(l);
+            const bool touches = (Object*)sys.block(L->s_Block_No()) == owner ||
+                                 (Object*)sys.block(L->e_Block_No()) == owner;
+            if (touches && L->HasQuantity(name)) deps.push_back(key(L->GetName(), name));
+        }
+        return;
+    }
+    deps.push_back(resolveRef(sys, owner, ownerIsLink, name, loc));
+}
+
 // ---- analysis --------------------------------------------------------------
 
 AnalysisResult DependencyAnalyzer::analyze(System& system) const
@@ -125,7 +155,7 @@ AnalysisResult DependencyAnalyzer::analyze(System& system) const
                 std::vector<std::pair<std::string, Loc>> refs;
                 collectRefs(*q.GetExpression(), refs);
                 for (auto& r : refs)
-                    info.dependencies.push_back(resolveRef(system, obj, isLink, r.first, r.second));
+                    addDeps(system, obj, isLink, r.first, r.second, info.dependencies);
                 break;
             }
             case Quan::_type::rule: {
@@ -143,7 +173,7 @@ AnalysisResult DependencyAnalyzer::analyze(System& system) const
                         collectRefs(cr->result, refs);
                     }
                     for (auto& rf : refs)
-                        info.dependencies.push_back(resolveRef(system, obj, isLink, rf.first, rf.second));
+                        addDeps(system, obj, isLink, rf.first, rf.second, info.dependencies);
                 }
                 break;
             }

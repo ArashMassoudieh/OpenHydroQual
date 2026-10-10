@@ -342,6 +342,10 @@ void Object::SetDefaults()
     for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
     {
         //qDebug() << "Setting Defults for variable " << QString::fromStdString(s->first);
+        // A time series' "default" is the value it takes while no series is
+        // given (Quan::EmptySeriesValue), not a file name to load.
+        if (var[s->first].GetType() == Quan::_type::timeseries || var[s->first].GetType() == Quan::_type::prec_timeseries)
+            continue;
         if (var[s->first].Default() != "")
         {
             //qDebug()<<QString::fromStdString(s->first);

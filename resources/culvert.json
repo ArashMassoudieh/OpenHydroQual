@@ -2865,7 +2865,7 @@
   "v_appr": {
    "type": "expression",
    "description": "Approach velocity",
-   "expression": "(1/ManningCoeff.s)*(area.s/_max(perimeter.s;0.001))^0.6667*_sqt(approach_slope)",
+   "expression": "(1/ManningCoeff.s)*(xsectionarea.s/_max(perimeter.s;0.001))^0.6667*_sqt(approach_slope)",
    "includeinoutput": "false",
    "ask_user": "false"
   },
@@ -2902,7 +2902,7 @@
   "q_deliver": {
    "type": "expression",
    "description": "Kinematic delivery from the approach",
-   "expression": "86400*(1/ManningCoeff.s)*area.s*(area.s/_max(perimeter.s;0.001))^0.6667*_sqt(approach_slope)",
+   "expression": "86400*(1/ManningCoeff.s)*xsectionarea.s*(xsectionarea.s/_max(perimeter.s;0.001))^0.6667*_sqt(approach_slope)",
    "includeinoutput": "false",
    "ask_user": "false"
   },

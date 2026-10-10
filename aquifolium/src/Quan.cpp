@@ -14,6 +14,7 @@
  */
 
 
+#include <cstdlib>
 #include "Quan.h"
 #include "Block.h"
 #include "Link.h"
@@ -559,7 +560,7 @@ double Quan::CalcVal(Object* block, const Expression::timing& tmg)
         if (_timeseries.size() > 0)
             return _timeseries.interpol(block->GetParent()->GetTime());
         else
-            return 0;
+            return EmptySeriesValue();
     }
     if (type == _type::value)
         return _val;
@@ -577,6 +578,7 @@ double Quan::CalcVal(Object* block, const Expression::timing& tmg)
 #endif
                 if (!value_star_updated)
                 {
+                    SetSourceContext(block);
                     _val_star = source->GetValue(block);
                     value_star_updated = true;
                 }
@@ -592,6 +594,27 @@ double Quan::CalcVal(Object* block, const Expression::timing& tmg)
     }
     last_error = "Quantity cannot be evaluated";
     return 0;
+}
+
+double Quan::EmptySeriesValue() const
+{
+    if (default_val.empty()) return 0;
+    char* end = nullptr;
+    const double v = std::strtod(default_val.c_str(), &end);
+    return (end == default_val.c_str()) ? 0 : v;   // non-numeric default -> 0
+}
+
+// A source's coefficient is evaluated in the block's context and falls back to
+// the source's own quantities (Object::GetVal), and to the constituent's for
+// "concentration". Point the block at this source and constituent so the
+// fallback works whoever triggers the evaluation (not only GetInflowValue).
+void Quan::SetSourceContext(Object* obj) const
+{
+    if (!obj || !source) return;
+    obj->SetCurrentCorrespondingSource(source->GetName());
+    const size_t c = _var_name.find(':');
+    if (c != string::npos)
+        obj->SetCurrentCorrespondingConstituent(_var_name.substr(0, c));
 }
 
 double Quan::GetVal(const Expression::timing& tmg)
@@ -630,7 +653,7 @@ double Quan::GetVal(const Expression::timing& tmg)
                 if (GetTimeSeries() != nullptr)
                     _val_star = GetTimeSeries()->interpol(GetSimulationTime());
                 else
-                    _val_star = 0;
+                    _val_star = EmptySeriesValue();
                 value_star_updated = true;
             }
             if (type == _type::prec_timeseries)
@@ -726,6 +749,7 @@ double Quan::CalcVal(const Expression::timing& tmg)
 #endif
                 if (!value_star_updated)
                 {
+                    SetSourceContext(parent);
                     _val_star = source->GetValue(parent);
                     value_star_updated = true;
                 }

@@ -94,15 +94,34 @@
       "ask_user": "false",
       "includeinoutput": "false",
       "unit": "m^2;ft^2",
-      "helptext": "Plan area of the channel bed (segment length x base width). Constant, unlike 'area', which is the cross-sectional flow area. Used by the bed build-up/wash-off components."
+      "helptext": "Plan area of the channel bed (segment length x base width). Constant, unlike 'area', which is the water-surface area and grows with depth. Used by the bed build-up/wash-off components."
+    },
+    "xsectionarea": {
+      "type": "expression",
+      "expression": "_pos((base_width+side_slope*depth)*depth-dam_area)",
+      "description": "Cross-sectional flow area",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional flow area. (Called 'area' before Oct 2026; 'area' is now the water-surface area, as on other blocks.)"
     },
     "area": {
       "type": "expression",
-      "expression": "_pos((base_width+side_slope*depth)*depth-dam_area)",
-      "description": "Cross-sectional area",
+      "expression": "length*(base_width+2*side_slope*_pos(depth))",
+      "description": "Water-surface (top) area",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m^2;ft^2"
+      "unit": "m^2;ft^2",
+      "helptext": "Plan area of the free water surface (segment length x top width). Used by surface processes such as atmospheric (re)aeration and precipitation."
+    },
+    "velocity": {
+      "type": "expression",
+      "expression": "_abs(velocity.v)",
+      "description": "Mean flow velocity",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m/s",
+      "helptext": "Mean of the velocities of the channel links connected to this segment (.v = average over links). Used by the reaeration models."
     },
     "dam_area": {
       "type": "expression",
@@ -295,15 +314,34 @@
       "ask_user": "false",
       "includeinoutput": "false",
       "unit": "m^2;ft^2",
-      "helptext": "Plan area of the channel bed (segment length x base width). Constant, unlike 'area', which is the cross-sectional flow area. Used by the bed build-up/wash-off components."
+      "helptext": "Plan area of the channel bed (segment length x base width). Constant, unlike 'area', which is the water-surface area and grows with depth. Used by the bed build-up/wash-off components."
+    },
+    "xsectionarea": {
+      "type": "expression",
+      "expression": "_pos((base_width+side_slope*depth)*depth-dam_area)",
+      "description": "Cross-sectional flow area",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional flow area. (Called 'area' before Oct 2026; 'area' is now the water-surface area, as on other blocks.)"
     },
     "area": {
       "type": "expression",
-      "expression": "_pos((base_width+side_slope*depth)*depth-dam_area)",
-      "description": "Cross-sectional area",
+      "expression": "length*(base_width+2*side_slope*_pos(depth))",
+      "description": "Water-surface (top) area",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m^2;ft^2"
+      "unit": "m^2;ft^2",
+      "helptext": "Plan area of the free water surface (segment length x top width). Used by surface processes such as atmospheric (re)aeration and precipitation."
+    },
+    "velocity": {
+      "type": "expression",
+      "expression": "_abs(velocity.v)",
+      "description": "Mean flow velocity",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m/s",
+      "helptext": "Mean of the velocities of the channel links connected to this segment (.v = average over links). Used by the reaeration models."
     },
     "dam_area": {
       "type": "expression",
@@ -397,7 +435,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "_max(_bkw(head;area);0)",
+      "expression": "_max(_bkw(head;xsectionarea);0)",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m^2;ft^2"
@@ -528,7 +566,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "_max(area.s;0)",
+      "expression": "_max(xsectionarea.s;0)",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m^2;ft^2"

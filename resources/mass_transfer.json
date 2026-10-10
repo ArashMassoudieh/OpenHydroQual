@@ -123,6 +123,250 @@
       "ask_user": "false"
     }
   },
+  "reaeration_OConnor_Dobbins": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Reaeration (O'Connor-Dobbins)",
+    "icon": {
+      "filename": "reaeration_OConnor_Dobbins.png"
+    },
+    "helptext": "Oxygen reaeration of a channel by the O'Connor-Dobbins (1958) formula, k_a = 3.93 U^0.5 H^-1.5 (1/day, U in m/s, H in m), suited to moderately deep, slow rivers. Implemented as a surface flux: area * K_L * theta^(T-20) * (C_s - C) with the gas-transfer velocity K_L = k_a*H = 3.93 (U/H)^0.5 m/day, area the water-surface area, U the channel velocity and H the depth. Attach to dissolved oxygen as an external source on channel blocks (Trapezoidal, Compound or River segments).",
+    "temperature": {
+      "type": "timeseries",
+      "description": "Water temperature",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "default": "20",
+      "includeinoutput": "false",
+      "unit": "degC",
+      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value (9.09 g/m3)."
+    },
+    "theta": {
+      "type": "value",
+      "description": "Temperature coefficient of reaeration",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1.024",
+      "helptext": "Reaeration rate correction theta^(T-20); 1.024 is the standard value (Elmore and West 1961)."
+    },
+    "saturation": {
+      "type": "expression",
+      "expression": "14.652-0.41022*temperature+0.007991*temperature^2-0.000077774*temperature^3",
+      "description": "Saturation concentration",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "g/m^3",
+      "helptext": "Dissolved-oxygen saturation in fresh water at sea level as a function of temperature (polynomial fit to APHA/Elmore-Hayes data)."
+    },
+    "timeseries": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "wind_speed": {
+      "type": "timeseries",
+      "description": "Wind speed at 10 m",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "default": "0",
+      "includeinoutput": "false",
+      "unit": "m/s",
+      "helptext": "Optional wind-speed series at 10 m. Adds the wind-driven transfer velocity of Banks and Herrera (1977), 0.728 U_w^0.5 - 0.317 U_w + 0.0372 U_w^2 m/day, to the hydraulic one (as in QUAL2K), which keeps still or ponded water reaerating. None given: 0, hydraulic reaeration only."
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*(3.93*_sqt(velocity/_max(depth;0.01))+0.728*_sqt(wind_speed)-0.317*wind_speed+0.0372*wind_speed^2)*theta^(temperature-20)*_min(_pos(depth)/0.02;1)*(saturation-concentration)",
+      "includeinoutput": "false",
+      "description": "Transfer rate",
+      "ask_user": "false",
+      "helptext": "Mass flux (g/day). The factor min(depth/0.02,1) switches the flux off smoothly as a channel runs dry (depth < 2 cm), where the formulas diverge."
+    }
+  },
+  "reaeration_Churchill": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Reaeration (Churchill)",
+    "icon": {
+      "filename": "reaeration_Churchill.png"
+    },
+    "helptext": "Oxygen reaeration of a channel by the Churchill et al. (1962) formula, k_a = 5.026 U H^-1.67 (1/day, U in m/s, H in m), suited to deeper, faster rivers. Surface flux area * K_L * theta^(T-20) * (C_s - C) with K_L = k_a*H = 5.026 U H^-0.67 m/day. Attach to dissolved oxygen as an external source on channel blocks.",
+    "temperature": {
+      "type": "timeseries",
+      "description": "Water temperature",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "default": "20",
+      "includeinoutput": "false",
+      "unit": "degC",
+      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value (9.09 g/m3)."
+    },
+    "theta": {
+      "type": "value",
+      "description": "Temperature coefficient of reaeration",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1.024",
+      "helptext": "Reaeration rate correction theta^(T-20); 1.024 is the standard value (Elmore and West 1961)."
+    },
+    "saturation": {
+      "type": "expression",
+      "expression": "14.652-0.41022*temperature+0.007991*temperature^2-0.000077774*temperature^3",
+      "description": "Saturation concentration",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "g/m^3",
+      "helptext": "Dissolved-oxygen saturation in fresh water at sea level as a function of temperature (polynomial fit to APHA/Elmore-Hayes data)."
+    },
+    "timeseries": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "wind_speed": {
+      "type": "timeseries",
+      "description": "Wind speed at 10 m",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "default": "0",
+      "includeinoutput": "false",
+      "unit": "m/s",
+      "helptext": "Optional wind-speed series at 10 m. Adds the wind-driven transfer velocity of Banks and Herrera (1977), 0.728 U_w^0.5 - 0.317 U_w + 0.0372 U_w^2 m/day, to the hydraulic one (as in QUAL2K), which keeps still or ponded water reaerating. None given: 0, hydraulic reaeration only."
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*(5.026*velocity*_max(depth;0.01)^(-0.67)+0.728*_sqt(wind_speed)-0.317*wind_speed+0.0372*wind_speed^2)*theta^(temperature-20)*_min(_pos(depth)/0.02;1)*(saturation-concentration)",
+      "includeinoutput": "false",
+      "description": "Transfer rate",
+      "ask_user": "false",
+      "helptext": "Mass flux (g/day). The factor min(depth/0.02,1) switches the flux off smoothly as a channel runs dry (depth < 2 cm), where the formulas diverge."
+    }
+  },
+  "reaeration_Owens_Gibbs": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Reaeration (Owens-Gibbs)",
+    "icon": {
+      "filename": "reaeration_Owens_Gibbs.png"
+    },
+    "helptext": "Oxygen reaeration of a channel by the Owens et al. (1964) formula, k_a = 5.32 U^0.67 H^-1.85 (1/day, U in m/s, H in m), suited to shallow streams (0.1-3 m). Surface flux area * K_L * theta^(T-20) * (C_s - C) with K_L = k_a*H = 5.32 U^0.67 H^-0.85 m/day. Attach to dissolved oxygen as an external source on channel blocks.",
+    "temperature": {
+      "type": "timeseries",
+      "description": "Water temperature",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "default": "20",
+      "includeinoutput": "false",
+      "unit": "degC",
+      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value (9.09 g/m3)."
+    },
+    "theta": {
+      "type": "value",
+      "description": "Temperature coefficient of reaeration",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1.024",
+      "helptext": "Reaeration rate correction theta^(T-20); 1.024 is the standard value (Elmore and West 1961)."
+    },
+    "saturation": {
+      "type": "expression",
+      "expression": "14.652-0.41022*temperature+0.007991*temperature^2-0.000077774*temperature^3",
+      "description": "Saturation concentration",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "g/m^3",
+      "helptext": "Dissolved-oxygen saturation in fresh water at sea level as a function of temperature (polynomial fit to APHA/Elmore-Hayes data)."
+    },
+    "timeseries": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "wind_speed": {
+      "type": "timeseries",
+      "description": "Wind speed at 10 m",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "default": "0",
+      "includeinoutput": "false",
+      "unit": "m/s",
+      "helptext": "Optional wind-speed series at 10 m. Adds the wind-driven transfer velocity of Banks and Herrera (1977), 0.728 U_w^0.5 - 0.317 U_w + 0.0372 U_w^2 m/day, to the hydraulic one (as in QUAL2K), which keeps still or ponded water reaerating. None given: 0, hydraulic reaeration only."
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*(5.32*velocity^0.67*_max(depth;0.01)^(-0.85)+0.728*_sqt(wind_speed)-0.317*wind_speed+0.0372*wind_speed^2)*theta^(temperature-20)*_min(_pos(depth)/0.02;1)*(saturation-concentration)",
+      "includeinoutput": "false",
+      "description": "Transfer rate",
+      "ask_user": "false",
+      "helptext": "Mass flux (g/day). The factor min(depth/0.02,1) switches the flux off smoothly as a channel runs dry (depth < 2 cm), where the formulas diverge."
+    }
+  },
+  "reaeration_Banks_Herrera": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Reaeration (Banks-Herrera, wind)",
+    "icon": {
+      "filename": "reaeration_Banks_Herrera.png"
+    },
+    "helptext": "Wind-driven oxygen reaeration of still or slow water (ponds, wetlands, lakes) by the Banks and Herrera (1977) gas-transfer velocity K_L = 0.728 U_w^0.5 - 0.317 U_w + 0.0372 U_w^2 (m/day, U_w = wind speed at 10 m in m/s). Surface flux area * K_L * theta^(T-20) * (C_s - C). Attach to dissolved oxygen as an external source on any block with a water-surface 'area' (channels, ponds).",
+    "wind_speed": {
+      "type": "timeseries",
+      "description": "Wind speed at 10 m",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "default": "3",
+      "includeinoutput": "false",
+      "unit": "m/s",
+      "helptext": "Optional wind-speed time series at 10 m height; if none is given, 3 m/s is used."
+    },
+    "temperature": {
+      "type": "timeseries",
+      "description": "Water temperature",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "default": "20",
+      "includeinoutput": "false",
+      "unit": "degC",
+      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value (9.09 g/m3)."
+    },
+    "theta": {
+      "type": "value",
+      "description": "Temperature coefficient of reaeration",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1.024",
+      "helptext": "Reaeration rate correction theta^(T-20); 1.024 is the standard value (Elmore and West 1961)."
+    },
+    "saturation": {
+      "type": "expression",
+      "expression": "14.652-0.41022*temperature+0.007991*temperature^2-0.000077774*temperature^3",
+      "description": "Saturation concentration",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "g/m^3",
+      "helptext": "Dissolved-oxygen saturation in fresh water at sea level as a function of temperature (polynomial fit to APHA/Elmore-Hayes data)."
+    },
+    "timeseries": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "area*(0.728*_sqt(wind_speed)-0.317*wind_speed+0.0372*wind_speed^2)*theta^(temperature-20)*_min(_pos(depth)/0.02;1)*(saturation-concentration)",
+      "includeinoutput": "false",
+      "description": "Transfer rate",
+      "ask_user": "false",
+      "helptext": "Mass flux (g/day). The factor min(depth/0.02,1) switches the flux off smoothly as a channel runs dry (depth < 2 cm), where the formulas diverge."
+    }
+  },
   "Reactor": {
     "type": "block",
     "typecategory": "Blocks",

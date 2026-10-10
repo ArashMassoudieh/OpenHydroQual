@@ -213,12 +213,20 @@
       "criteria": "length>0",
       "warningmessage": "Length must be greater than zero"
     },
-    "area": {
+    "xsectionarea": {
       "type": "expression",
       "expression": "(base_width+side_slope*depth)*depth",
       "description": "Cross-sectional area",
       "ask_user": "false",
       "includeinoutput": "true"
+    },
+    "area": {
+      "type": "expression",
+      "expression": "length*(base_width+2*side_slope*_pos(depth))",
+      "description": "Water-surface (top) area",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m^2;ft^2"
     },
     "perimeter": {
       "type": "expression",
@@ -296,7 +304,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "_max(_bkw(head;area);0)",
+      "expression": "_max(_bkw(head;xsectionarea);0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -426,7 +434,7 @@
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
-      "expression": "_max(area.s;0)",
+      "expression": "_max(xsectionarea.s;0)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
