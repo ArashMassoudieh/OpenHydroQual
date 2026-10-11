@@ -235,16 +235,14 @@ namespace aquiutils
 
     bool isnumber(string S)
     {
-        bool res = true;
-        for (unsigned int i = 0; i < S.size(); i++)
-            if (!isnumber(S[i]))
-                res = false;
-        if (res)
+        if (S.empty())
             return true;
 
-        // Scientific notation (e.g. 1e-12, 2.5E+3): only digits, '.', signs and the exponent
-        // marker, at least one digit, and strtod must consume the whole string. Names, inf/nan
-        // and hex are rejected by the character check.
+        // A number is a single literal: optional sign, digits, '.', optional exponent
+        // (e.g. 3, -0.5, 1e-12, 2.5E+3), and strtod must consume the whole string.
+        // Checking characters alone is not enough: "3-1" or "5-3.5" consist only of digits,
+        // '.' and '-' but are expressions, and atof would silently drop everything after
+        // the first number. Names, inf/nan and hex are rejected by the character check.
         bool digit = false;
         for (unsigned int i = 0; i < S.size(); i++)
         {
