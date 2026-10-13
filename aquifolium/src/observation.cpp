@@ -149,6 +149,57 @@ static vector<double> in_range_residuals(const TimeSeries<timeseriesprecision> &
     return d;
 }
 
+// Same as in_range_residuals(), also returning the times of the compared points
+// (needed by the AR1 error model, whose correlation depends on their spacing).
+static vector<double> in_range_residuals(const TimeSeries<timeseriesprecision> &modeled,
+                                         const TimeSeries<timeseriesprecision> &observed,
+                                         vector<double> &times)
+{
+    vector<double> d;
+    times.clear();
+    if (modeled.empty() || observed.empty()) return d;
+    const double t_min = modeled.mint();
+    const double t_max = modeled.maxt();
+    d.reserve(observed.size());
+    times.reserve(observed.size());
+    for (const auto &pt : observed)
+        if (pt.t >= t_min && pt.t <= t_max)
+        {
+            d.push_back(pt.c - modeled.interpol(pt.t));
+            times.push_back(pt.t);
+        }
+    return d;
+}
+
+// Whitens residuals under a continuous-time AR1 (Ornstein-Uhlenbeck) error
+// model with correlation time tc:
+//     e_i = phi_i e_(i-1) + eta_i,  phi_i = exp(-(t_i - t_(i-1))/tc),
+//     Var(eta_i) = sigma^2 (1 - phi_i^2),  Var(e_1) = sigma^2.
+// Returns u with u_1 = e_1 and u_i = (e_i - phi_i e_(i-1))/sqrt(1 - phi_i^2), so
+// that the exact negative log-likelihood is
+//     n log sigma + sum_i log sqrt(1 - phi_i^2) + sum_i u_i^2/(2 sigma^2) + const.
+// log_det receives sum_i log sqrt(1 - phi_i^2). Non-increasing times (repeated
+// time stamps) are treated as uncorrelated, and phi is capped below 1 so the
+// innovation variance never vanishes.
+vector<double> AR1Whiten(const vector<double> &e, const vector<double> &t,
+                         double tc, double &log_det)
+{
+    static const double phi_max = 0.9999;
+    log_det = 0.0;
+    vector<double> u(e.size());
+    if (e.empty()) return u;
+    u[0] = e[0];
+    for (size_t i = 1; i < e.size(); i++)
+    {
+        const double dt = t[i] - t[i-1];
+        const double phi = (dt > 0.0 && tc > 0.0) ? min(exp(-dt/tc), phi_max) : 0.0;
+        const double s = sqrt(1.0 - phi*phi);
+        u[i] = (e[i] - phi*e[i-1])/s;
+        log_det += log(s);
+    }
+    return u;
+}
+
 double Observation::CalcMisfit()
 {
     //qDebug()<<"Inside the misfit function";
@@ -248,11 +299,11 @@ ResidualBlock Observation::ResidualVector()
             return block;
         }
 
-        vector<double> d;
+        vector<double> d, d_t;
         double fit_mse = 0, _R2 = 0, nse = 0;
         if (normal)
         {
-            d   = in_range_residuals(modeled_time_series, *obs);
+            d   = in_range_residuals(modeled_time_series, *obs, d_t);
             _R2 = R2(&modeled_time_series, obs);
             nse = NSE(&modeled_time_series, obs);
         }
@@ -260,7 +311,7 @@ ResidualBlock Observation::ResidualVector()
         {
             const TimeSeries<timeseriesprecision> mod_log = modeled_time_series.log(1e-8);
             const TimeSeries<timeseriesprecision> obs_log = obs->log(1e-8);
-            d   = in_range_residuals(mod_log, obs_log);
+            d   = in_range_residuals(mod_log, obs_log, d_t);
             _R2 = R2(mod_log, obs_log);
             nse = NSE(mod_log, obs_log);
         }
@@ -269,9 +320,32 @@ ResidualBlock Observation::ResidualVector()
         for (double v : d) ss += pow(v,2);
         const size_t count = d.size();
         fit_mse = count ? ss/double(count) : 0.0;
+        // fit_measures report the raw (not whitened) residuals in either case.
         fit_measures.push_back(fit_mse);
         fit_measures.push_back(_R2);
         fit_measures.push_back(nse);
+
+        // AR1 error model: the likelihood is evaluated on the whitened
+        // residuals, plus the log-determinant term. With 'none' (default) or a
+        // correlation time <= 0 nothing below changes the independent case.
+        double log_det = 0.0;
+        Quan* ac = Variable("error_autocorrelation");
+        Quan* ct = Variable("error_correlation_time");
+        const bool ar1 = (ac && ct && ac->GetProperty()=="AR1");
+        if (ar1)
+        {
+            block.ar1 = true;
+            block.e_raw = d;
+            block.t = d_t;
+            block.ar1_tc = ct->GetVal();
+        }
+        if (ar1 && ct->GetVal() > 0.0 && count > 1)
+        {
+            d = AR1Whiten(d, d_t, ct->GetVal(), log_det);
+            ss = 0;
+            for (double v : d) ss += pow(v,2);
+            fit_mse = ss/double(count);
+        }
 
         // Gaussian negative log-likelihood, constants dropped:
         //   -log L = (n/tau) * ( MSE/(2 sigma^2) + log sigma )
@@ -291,6 +365,8 @@ ResidualBlock Observation::ResidualVector()
         block.sigma = sigma;
         block.log_sigma_coeff = double(count)/tau;
         block.mse = fit_mse;
+        block.log_det = log_det/tau;
+        block.scale = tau;
         block.kind = ResidualBlock::Kind::sum_of_squares;
         if (count)
         {

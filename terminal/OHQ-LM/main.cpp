@@ -86,9 +86,16 @@ static int VerifyResiduals(ohq::KernelSystem &system)
         return 1;
     }
 
-    double reconstructed = 0;
+    double reconstructed = 0, from_r = 0;
     for (size_t k = 0; k < blocks.size(); k++)
+    {
         reconstructed += blocks[k].NegLogLikelihood();
+        // The same quantity rebuilt from the residual vector LM differentiates:
+        // 0.5*||r||^2 + N_eff*log(sigma) + log_det (the AR1 term, 0 otherwise).
+        if (blocks[k].kind == ResidualBlock::Kind::sum_of_squares)
+            from_r += 0.5*blocks[k].SumOfSquares() + blocks[k].log_sigma_coeff*std::log(blocks[k].sigma)
+                      + blocks[k].log_det;
+    }
 
     const double abs_err = std::fabs(reconstructed - misfit);
     const double rel_err = abs_err / std::max(std::fabs(misfit), 1e-300);
@@ -100,10 +107,13 @@ static int VerifyResiduals(ohq::KernelSystem &system)
                   << ": n = " << blocks[k].r.size()
                   << ", sigma = " << blocks[k].sigma
                   << ", effective N = " << blocks[k].log_sigma_coeff
-                  << ", -logL = " << blocks[k].NegLogLikelihood() << std::endl;
+                  << ", -logL = " << blocks[k].NegLogLikelihood()
+                  << (blocks[k].log_det != 0.0 ? ", AR1 log-det = " + std::to_string(blocks[k].log_det) : std::string())
+                  << std::endl;
     std::cout.precision(17);
     std::cout << "  CalcMisfit()      : " << misfit << std::endl;
     std::cout << "  from residuals    : " << reconstructed << std::endl;
+    std::cout << "  from 0.5*||r||^2  : " << from_r << std::endl;
     std::cout.precision(6);
     std::cout << "  absolute error    : " << abs_err << std::endl;
     std::cout << "  relative error    : " << rel_err << std::endl;

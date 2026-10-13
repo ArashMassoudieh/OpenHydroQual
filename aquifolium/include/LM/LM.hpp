@@ -115,6 +115,8 @@ void CLM<T>::IdentifySigmaParameters()
 {
     sigma_params.clear();
     sigma_observations.clear();
+    tau_params.clear();
+    tau_observations.clear();
     if (!LM_params.profile_sigma) return;
 
     for (unsigned int i=0; i<Model->Parameters().size(); i++)
@@ -124,22 +126,30 @@ void CLM<T>::IdentifySigmaParameters()
         const vector<string> quans = p->GetQuans();
         if (locs.empty()) continue;
 
-        vector<int> obs_indices;
-        bool all_sigma = true;
-        for (unsigned int j=0; j<locs.size(); j++)
+        // A parameter is profiled when every location/quantity it drives is the
+        // same error parameter (sigma, or the AR1 correlation time) of an
+        // observation.
+        for (const string target : {string("error_standard_deviation"), string("error_correlation_time")})
         {
-            if (j >= quans.size() || aquiutils::tolower(quans[j]) != "error_standard_deviation")
-            {   all_sigma = false; break; }
-            int found = -1;
-            for (unsigned int k=0; k<Model->ObservationsCount(); k++)
-                if (Model->observation(k)->GetName() == locs[j]) { found = int(k); break; }
-            if (found < 0) { all_sigma = false; break; }
-            obs_indices.push_back(found);
-        }
-        if (all_sigma && !obs_indices.empty())
-        {
-            sigma_params.push_back(int(i));
-            sigma_observations.push_back(obs_indices);
+            vector<int> obs_indices;
+            bool all_match = true;
+            for (unsigned int j=0; j<locs.size(); j++)
+            {
+                if (j >= quans.size() || aquiutils::tolower(quans[j]) != target)
+                {   all_match = false; break; }
+                int found = -1;
+                for (unsigned int k=0; k<Model->ObservationsCount(); k++)
+                    if (Model->observation(k)->GetName() == locs[j]) { found = int(k); break; }
+                if (found < 0) { all_match = false; break; }
+                obs_indices.push_back(found);
+            }
+            if (all_match && !obs_indices.empty())
+            {
+                if (target == "error_standard_deviation")
+                {   sigma_params.push_back(int(i)); sigma_observations.push_back(obs_indices); }
+                else
+                {   tau_params.push_back(int(i)); tau_observations.push_back(obs_indices); }
+            }
         }
     }
 }
@@ -217,7 +227,8 @@ bool CLM<T>::Initialize()
 
     active.clear();
     for (int i=0; i<nP; i++)
-        if (std::find(sigma_params.begin(), sigma_params.end(), i) == sigma_params.end())
+        if (std::find(sigma_params.begin(), sigma_params.end(), i) == sigma_params.end() &&
+            std::find(tau_params.begin(), tau_params.end(), i) == tau_params.end())
             active.push_back(i);
 
     if (active.empty())
@@ -318,6 +329,120 @@ bool CLM<T>::ProfileSigmas(T &model, const vector<ResidualBlock> &blocks)
         if (fabs(x_new - x[pi]) > 1e-14*max(1.0,fabs(x[pi]))) changed = true;
         x[pi] = x_new;
         model.SetParameterValue(pi, s_hat);
+    }
+    return changed;
+}
+
+// ---------------------------------------------------------------------------
+// AR1 correlation times. The likelihood depends on a correlation time only
+// through the whitening of the residuals and the log-determinant term, both of
+// which can be recomputed from the raw residuals the blocks carry, so a
+// correlation time is profiled by a 1-D golden-section search (in its search
+// space, within its bounds) with no model solve. The sigmas are re-profiled
+// analytically at every trial value, because the optimal sigma (the RMS of the
+// whitened residuals) moves with the correlation time; holding it fixed makes
+// every step in the correlation time look worse than it is.
+// ---------------------------------------------------------------------------
+template<class T>
+double CLM<T>::ProfiledErrorNLL(const vector<ResidualBlock> &blocks, const vector<double> &tc,
+                                vector<double> &sig_hat) const
+{
+    const size_t K = blocks.size();
+    vector<double> mse(K, 0.0), ld(K, 0.0), sig(K, 1.0);
+    for (size_t k=0; k<K; k++)
+    {
+        if (blocks[k].kind != ResidualBlock::Kind::sum_of_squares) continue;
+        mse[k] = blocks[k].mse;
+        ld[k]  = blocks[k].log_det;
+        sig[k] = blocks[k].sigma;
+        if (blocks[k].ar1 && k < tc.size() && tc[k] >= 0.0 && blocks[k].e_raw.size() > 1)
+        {
+            double l = 0.0;
+            const vector<double> u = (tc[k] > 0.0) ? AR1Whiten(blocks[k].e_raw, blocks[k].t, tc[k], l)
+                                                   : blocks[k].e_raw;
+            double ss = 0.0;
+            for (double v : u) ss += v*v;
+            mse[k] = ss/double(u.size());
+            ld[k]  = l/blocks[k].scale;
+        }
+    }
+    sig_hat.assign(sigma_params.size(), 0.0);
+    for (unsigned int s=0; s<sigma_params.size(); s++)
+    {
+        double A = 0, c = 0;
+        for (int k : sigma_observations[s])
+        {
+            if (k >= int(K) || blocks[k].kind != ResidualBlock::Kind::sum_of_squares) continue;
+            A += blocks[k].log_sigma_coeff*mse[k];
+            c += blocks[k].log_sigma_coeff;
+        }
+        if (c <= 0 || A <= 0) { sig_hat[s] = -1; continue; }
+        const int pi = sigma_params[s];
+        const double s_hat = min(max(sqrt(A/c), ToModelSpace(pi,minval[pi])), ToModelSpace(pi,maxval[pi]));
+        sig_hat[s] = s_hat;
+        for (int k : sigma_observations[s]) if (k < int(K)) sig[k] = s_hat;
+    }
+    double f = 0;
+    for (size_t k=0; k<K; k++)
+        if (blocks[k].kind == ResidualBlock::Kind::sum_of_squares)
+            f += blocks[k].log_sigma_coeff*(mse[k]/(2.0*sig[k]*sig[k]) + log(sig[k])) + ld[k];
+    return f;
+}
+
+template<class T>
+bool CLM<T>::ProfileCorrelationTimes(T &model, const vector<ResidualBlock> &blocks)
+{
+    if (tau_params.empty()) return false;
+    vector<double> tc(blocks.size(), -1.0);
+    for (size_t k=0; k<blocks.size(); k++)
+        if (blocks[k].ar1) tc[k] = blocks[k].ar1_tc;
+
+    vector<double> sig_hat;
+    vector<double> x_new = x;
+    const double gr = 0.5*(sqrt(5.0) - 1.0);
+    for (int pass=0; pass<2; pass++)               // coordinate passes over several taus
+        for (unsigned int s=0; s<tau_params.size(); s++)
+        {
+            const int pi = tau_params[s];
+            auto F = [&](double xs)
+            {
+                vector<double> tct = tc;
+                for (int k : tau_observations[s]) if (k < int(tct.size())) tct[k] = ToModelSpace(pi, xs);
+                return ProfiledErrorNLL(blocks, tct, sig_hat);
+            };
+            double a = minval[pi], b = maxval[pi];
+            double c = b - gr*(b - a), d = a + gr*(b - a);
+            double fc = F(c), fd = F(d);
+            for (int it=0; it<80 && fabs(b - a) > 1e-10*max(1.0, fabs(a) + fabs(b)); it++)
+            {
+                if (fc < fd) { b = d; d = c; fd = fc; c = b - gr*(b - a); fc = F(c); }
+                else         { a = c; c = d; fc = fd; d = a + gr*(b - a); fd = F(d); }
+            }
+            // keep the best of the bracket and the bounds (the optimum may sit on one)
+            double xbest = 0.5*(a + b), fbest = F(xbest);
+            for (double xs : {minval[pi], maxval[pi]})
+            {   const double fx = F(xs); if (fx < fbest) { fbest = fx; xbest = xs; } }
+            x_new[pi] = xbest;
+            for (int k : tau_observations[s]) if (k < int(tc.size())) tc[k] = ToModelSpace(pi, xbest);
+        }
+
+    ProfiledErrorNLL(blocks, tc, sig_hat);         // sigmas at the final correlation times
+    bool changed = false;
+    for (unsigned int s=0; s<tau_params.size(); s++)
+    {
+        const int pi = tau_params[s];
+        if (fabs(x_new[pi] - x[pi]) > 1e-12*max(1.0, fabs(x[pi]))) changed = true;
+        x[pi] = x_new[pi];
+        model.SetParameterValue(pi, ToModelSpace(pi, x[pi]));
+    }
+    for (unsigned int s=0; s<sigma_params.size(); s++)
+    {
+        if (sig_hat[s] <= 0) continue;
+        const int pi = sigma_params[s];
+        const double xs = ToSearchSpace(pi, sig_hat[s]);
+        if (fabs(xs - x[pi]) > 1e-14*max(1.0, fabs(x[pi]))) changed = true;
+        x[pi] = xs;
+        model.SetParameterValue(pi, sig_hat[s]);
     }
     return changed;
 }
@@ -456,6 +581,13 @@ void CLM<T>::WriteHeader(FILE *f) const
                 int(sigma_params.size()));
         for (unsigned int s=0; s<sigma_params.size(); s++)
             fprintf(f, "#   %s\n", paramname[sigma_params[s]].c_str());
+    }
+    if (!tau_params.empty())
+    {
+        fprintf(f, "#\n# AR1 error correlation times profiled out numerically (%d):\n",
+                int(tau_params.size()));
+        for (unsigned int s=0; s<tau_params.size(); s++)
+            fprintf(f, "#   %s\n", paramname[tau_params[s]].c_str());
     }
     fprintf(f, "#\n# One row per iteration. 'status' is accept when the step reduced the\n");
     fprintf(f, "# negative log-likelihood and reject when lambda had to be raised and the\n");
@@ -603,11 +735,14 @@ int CLM<T>::optimize()
     // With sigma profiled the first evaluation used whatever sigma the model
     // came with, which is usually not its maximiser; set it and re-score so the
     // first reported value is on the same footing as every later one.
-    if (!sigma_params.empty())
+    if (!sigma_params.empty() || !tau_params.empty())
     {
         vector<double> r_tmp; vector<ResidualBlock> blocks; string dummy;
         current.ResidualVector(r_tmp, blocks, &dummy);
-        if (ProfileSigmas(current, blocks))
+        // correlation times first (they re-profile the sigmas jointly)
+        bool changed = ProfileCorrelationTimes(current, blocks);
+        if (!changed) changed = ProfileSigmas(current, blocks);
+        if (changed)
             f_now = EvaluateFresh(x, current, r);
     }
 
@@ -782,11 +917,13 @@ int CLM<T>::optimize()
                 // Re-profile the error standard deviations at the point just
                 // accepted, and re-score there, so the next iteration's
                 // Jacobian and accept test share the updated sigma.
-                if (!sigma_params.empty())
+                if (!sigma_params.empty() || !tau_params.empty())
                 {
                     vector<double> r_tmp; vector<ResidualBlock> blocks; string dummy;
                     current.ResidualVector(r_tmp, blocks, &dummy);
-                    if (ProfileSigmas(current, blocks))
+                    bool changed = ProfileCorrelationTimes(current, blocks);
+                    if (!changed) changed = ProfileSigmas(current, blocks);
+                    if (changed)
                         f_now = EvaluateFresh(x, current, r);
                 }
                 // Nielsen's damping update: shrink lambda in proportion to how
@@ -937,7 +1074,9 @@ int CLM<T>::optimize()
         for (unsigned int i=0; i<final_params.size(); i++)
             fprintf(FileOut, "%-24s, %.10g%s\n", paramname[i].c_str(), final_params[i],
                     (std::find(sigma_params.begin(), sigma_params.end(), int(i)) != sigma_params.end())
-                        ? "   # profiled analytically" : "");
+                        ? "   # profiled analytically" :
+                    (std::find(tau_params.begin(), tau_params.end(), int(i)) != tau_params.end())
+                        ? "   # profiled numerically (AR1 correlation time)" : "");
         fclose(FileOut);
     }
 
