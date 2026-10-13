@@ -85,6 +85,66 @@ inline bool LoadKernel(const std::string& path)
 // The kernel is compiled from one .ohq; the runner is given the same file. If
 // the two ever drift apart the objective would be computed on mismatched
 // quantities, silently. Refuse rather than produce a plausible wrong answer.
+// Model parameter index -> kernel parameter index, matched BY NAME.
+//
+// The two orders are not the same in general. A System built from the .ohq keeps
+// declaration order, which is what the kernel was generated from; a System built
+// with LoadfromJson(snapshot) -- what OpenHydroTwin's assimilation does -- gets
+// whatever order the JSON object yields, which Qt returns sorted. Pushing
+// parameters positionally then lands every value on the wrong parameter, and the
+// counts match so nothing complains.
+inline std::vector<int>& KernelParamMap()
+{
+    static std::vector<int> m;
+    return m;
+}
+
+// Model observation index -> kernel observation index, matched BY NAME. Same
+// reason as the parameter map: Solve() hands each kernel series to
+// observation(i)->SetModeledTimeSeries(), so a positional copy would score every
+// observation against another one's modeled series.
+inline std::vector<int>& KernelObsMap()
+{
+    static std::vector<int> m;
+    return m;
+}
+
+inline bool BuildKernelObsMap(System& system, std::string* missing = nullptr)
+{
+    KernelABI& k = TheKernel();
+    std::vector<int>& m = KernelObsMap();
+    m.assign(system.ObservationsCount(), -1);
+    for (int i = 0; i < (int)system.ObservationsCount(); i++)
+    {
+        Observation* o = system.observation(i);
+        if (!o) continue;
+        const std::string mn = o->GetName();
+        for (int j = 0; j < k.n_observations(); j++)
+            if (mn == k.observation_name(j)) { m[i] = j; break; }
+        if (m[i] < 0) { if (missing) *missing = mn; m.clear(); return false; }
+    }
+    return true;
+}
+
+// Fills KernelParamMap() for `system`. Returns false and names the offender if a
+// model parameter has no kernel counterpart.
+inline bool BuildKernelParamMap(System& system, std::string* missing = nullptr)
+{
+    KernelABI& k = TheKernel();
+    std::vector<int>& m = KernelParamMap();
+    m.assign(system.ParametersCount(), -1);
+    for (int i = 0; i < (int)system.ParametersCount(); i++)
+    {
+        Parameter* p = system.GetParameter(i);
+        if (!p) continue;
+        const std::string mn = p->GetName();
+        for (int j = 0; j < k.n_parameters(); j++)
+            if (mn == k.parameter_name(j)) { m[i] = j; break; }
+        if (m[i] < 0) { if (missing) *missing = mn; m.clear(); return false; }
+    }
+    return true;
+}
+
 inline bool VerifyKernelMatches(System& system)
 {
     KernelABI& k = TheKernel();
@@ -98,16 +158,24 @@ inline bool VerifyKernelMatches(System& system)
                   << std::endl;
         return false;
     }
-    for (int i = 0; i < np; i++)
+    // Match by NAME. Positional comparison rejected a perfectly good kernel
+    // whenever the System's parameter order differed from the generated order
+    // (e.g. a System loaded from a JSON snapshot, where Qt sorts the keys).
+    std::string missing;
+    if (!BuildKernelParamMap(system, &missing))
     {
-        Parameter* p = system.GetParameter(i);
-        const std::string kn = k.parameter_name(i), mn = p ? p->GetName() : std::string();
-        if (kn != mn)
-        {
-            std::cout << "Parameter " << i << " is '" << kn << "' in the kernel but '"
-                      << mn << "' in the model." << std::endl;
-            return false;
-        }
+        std::cout << "Model parameter '" << missing
+                  << "' is not exposed by the kernel. Regenerate the kernel from this model."
+                  << std::endl;
+        return false;
+    }
+    {
+        const std::vector<int>& m = KernelParamMap();
+        int reordered = 0;
+        for (int i = 0; i < (int)m.size(); i++) if (m[i] != i) ++reordered;
+        if (reordered)
+            std::cout << "Parameter order differs from the kernel's (" << reordered
+                      << " of " << m.size() << "); mapping by name." << std::endl;
     }
     const int no = k.n_observations();
     if (no != (int)system.ObservationsCount())
@@ -116,16 +184,13 @@ inline bool VerifyKernelMatches(System& system)
                   << system.ObservationsCount() << "." << std::endl;
         return false;
     }
-    for (int i = 0; i < no; i++)
+    std::string missing_obs;
+    if (!BuildKernelObsMap(system, &missing_obs))
     {
-        const std::string kn = k.observation_name(i);
-        const std::string mn = system.observation(i)->GetName();
-        if (kn != mn)
-        {
-            std::cout << "Observation " << i << " is '" << kn << "' in the kernel but '"
-                      << mn << "' in the model." << std::endl;
-            return false;
-        }
+        std::cout << "Model observation '" << missing_obs
+                  << "' is not recorded by the kernel. Regenerate the kernel from this model."
+                  << std::endl;
+        return false;
     }
     // Names and counts matching is NOT enough (issues.md ISSUE 17): a kernel can
     // advertise a parameter it silently ignores, and a GA then "converges" on an
@@ -191,7 +256,10 @@ inline bool VerifyKernelMatches(System& system)
             void* h = k.create(); k.initialize(h);
             const double v0 = k.parameter(h, i);
             double probe = (v0 == 0.0) ? 0.05 : v0 * 1.05;     // self_test's default
-            Parameter* mp = system.GetParameter(i);
+            // By NAME: i indexes the KERNEL's parameters here, so GetParameter(i)
+            // would read a different parameter's prior whenever the two orders
+            // differ, and probe would be drawn from the wrong range.
+            Parameter* mp = system.GetParameter(pname);
             if (mp)
             {
                 const double lo = mp->GetVal("low"), hi = mp->GetVal("high");
@@ -263,8 +331,17 @@ public:
         if (fit_measures.size() < ObservationsCount() * 3)
             fit_measures.resize(ObservationsCount() * 3);
 
+        // Push by NAME via the cached map, never by position.
+        if (KernelParamMap().size() != ParametersCount())
+            BuildKernelParamMap(*this);
+        const std::vector<int>& pmap = KernelParamMap();
         for (int i = 0; i < (int)ParametersCount(); i++)
-            if (Parameter* p = GetParameter(i)) k.set_parameter(h_, i, p->GetValue());
+        {
+            Parameter* p = GetParameter(i);
+            if (!p) continue;
+            const int j = (i < (int)pmap.size()) ? pmap[i] : -1;
+            if (j >= 0) k.set_parameter(h_, j, p->GetValue());
+        }
         k.apply_parameters(h_);
 
         k.clear_observations(h_);
@@ -299,13 +376,18 @@ public:
         // Hand the kernel's modeled series to the System's observations; the
         // objective function then scores exactly what it would have after an
         // interpreter solve.
+        if (KernelObsMap().size() != ObservationsCount())
+            BuildKernelObsMap(*this);
+        const std::vector<int>& omap = KernelObsMap();
         for (int i = 0; i < (int)ObservationsCount(); i++)
         {
-            const int n = k.observation_count(h_, i);
+            const int ki = (i < (int)omap.size()) ? omap[i] : -1;
+            if (ki < 0) continue;                     // not recorded by the kernel
+            const int n = k.observation_count(h_, ki);
             TimeSeries<timeseriesprecision> ts;
             double t = 0, v = 0;
             for (int s = 0; s < n; s++)
-                if (k.observation_at(h_, i, s, &t, &v)) ts.addPoint(t, v);
+                if (k.observation_at(h_, ki, s, &t, &v)) ts.addPoint(t, v);
             observation(i)->SetModeledTimeSeries(ts);
         }
         // EMC observations: weight = the matched observation's series, flux =
