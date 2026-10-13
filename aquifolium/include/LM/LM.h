@@ -171,6 +171,11 @@ private:
     // error_standard_deviation, together with the observations they drive.
     vector<int>            sigma_params;
     vector<vector<int>>    sigma_observations;
+    // Likewise for error_correlation_time (AR1 error model): these are profiled
+    // numerically (a 1-D search on the stored raw residuals, with the sigmas
+    // re-profiled at every trial value), not differentiated.
+    vector<int>            tau_params;
+    vector<vector<int>>    tau_observations;
 
     vector<T> Models;         // scratch copies for the parallel Jacobian sweep
 
@@ -192,6 +197,15 @@ private:
     // Sets each profiled sigma to its analytic maximiser given the current
     // residuals. Returns true if any value changed.
     bool  ProfileSigmas(T &model, const vector<ResidualBlock> &blocks);
+    // Sets each profiled AR1 correlation time, and every profiled sigma with it,
+    // to the values that maximise the likelihood given the current model
+    // output. Returns true if any value changed.
+    bool  ProfileCorrelationTimes(T &model, const vector<ResidualBlock> &blocks);
+    // Negative log-likelihood of `blocks` re-whitened with the correlation times
+    // `tc` (per observation, <0 = keep) and with every profiled sigma at its
+    // maximiser; fills sig_hat (per sigma parameter).
+    double ProfiledErrorNLL(const vector<ResidualBlock> &blocks, const vector<double> &tc,
+                            vector<double> &sig_hat) const;
     void  Clamp(vector<double> &x_t) const;
     double ToModelSpace(int i, double xi) const { return loged[i]==1 ? pow(10,xi) : xi; }
     double ToSearchSpace(int i, double v) const { return loged[i]==1 ? log10(max(v,1e-300)) : v; }

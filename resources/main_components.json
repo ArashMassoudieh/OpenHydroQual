@@ -596,6 +596,25 @@
 	    "estimate": "false",
 	    "helptext": "Divides this observation's log-likelihood: the effective number of independent residuals is n/likelihood_scale. Set it to the integral autocorrelation time of the residuals, in compared points (e.g. 120 for residuals correlated over about 120 consecutive 15-min values), so that autocorrelated residuals are not counted as independent. 1 (the default) treats them as independent. Used by Least Squared, EMC and Weighted Least Squared comparisons."
 	  },
+	  "error_autocorrelation": {
+	    "type": "string",
+	    "delegate": "ComboBox;items:none,AR1",
+	    "description": "Error autocorrelation model",
+	    "default": "none",
+	    "includeinoutput": "false",
+	    "ask_user": "true",
+	    "helptext": "Serial correlation of the residuals (in the space set by the error structure, i.e. of the log residuals for 'log-normal'). 'none' (default): independent errors, the previous behaviour. 'AR1': continuous-time first-order autoregressive errors (Ornstein-Uhlenbeck), e_i = phi_i*e_(i-1) + eta_i with phi_i = exp(-(t_i - t_(i-1))/error_correlation_time) and Var(eta_i) = sigma^2*(1 - phi_i^2), so irregularly spaced observations and gaps are handled consistently; the likelihood is evaluated exactly on the whitened residuals. error_standard_deviation is then the marginal (stationary) standard deviation. Used by the 'Least Squared' comparison only."
+	  },
+	  "error_correlation_time": {
+	    "type": "value",
+	    "description": "Error correlation time",
+	    "default": "0",
+	    "ask_user": "true",
+	    "delegate": "UnitBox",
+	    "estimate": "true",
+	    "unit": "day",
+	    "helptext": "Correlation time tau of the AR1 error model: the correlation between two residuals dt apart is exp(-dt/tau). 0 means independent errors. Can be fixed or calibrated like error_standard_deviation. Used only when error_autocorrelation is 'AR1'. Do not combine with likelihood_scale > 1, which corrects for the same autocorrelation in a cruder way."
+	  },
 	  "kernel_tau": {
 	    "type": "value",
 	    "description": "Log decay rate (dimensionless)",

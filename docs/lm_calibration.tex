@@ -194,6 +194,67 @@ This is exact, costs nothing, removes a parameter from the problem, and is the
 same value the GA converges to. It is on by default (\code{profile\_sigma});
 the estimate reported at the end is the profiled one.
 
+\subsection{Autocorrelated errors (AR1)}\label{sec:ar1}
+
+Residuals of a hydrological model are serially correlated: an error in the
+timing or volume of an event, or a baseflow bias, persists over many
+observations. Treating them as independent counts $n$ correlated residuals as
+$n$ independent ones, which makes parameter uncertainty far too small and lets
+long, smooth stretches of record dominate the fit. An observation can instead be
+given a first-order autoregressive error model by setting its
+\code{error\_autocorrelation} property to \code{AR1}; the default, \code{none},
+is the independent model above, unchanged.
+
+\paragraph{Model.} With $e_i$ the residual at time $t_i$ (in the space set by
+\code{error\_structure}, i.e.\ the log residual for log-normal errors), the
+errors follow a continuous-time AR1 (Ornstein--Uhlenbeck) process with
+correlation time $\tau$ (\code{error\_correlation\_time}, days):
+\begin{equation}
+  e_i = \phi_i\, e_{i-1} + \eta_i,\qquad
+  \phi_i = e^{-(t_i - t_{i-1})/\tau},\qquad
+  \eta_i \sim N\!\left(0,\ \sigma^2(1-\phi_i^2)\right),\qquad
+  e_1 \sim N(0,\sigma^2).
+\end{equation}
+$\sigma$ (\code{error\_standard\_deviation}) is the marginal, stationary standard
+deviation, so it keeps its meaning. Because $\phi_i$ depends on the spacing,
+irregularly sampled data (hourly during events, daily otherwise) and gaps
+between observation windows are handled consistently: across a long gap
+$\phi_i\to 0$ and the series restarts. $\tau = 0$ is the independent model.
+
+\paragraph{Likelihood.} The exact negative log-likelihood is
+\begin{equation}
+  -\ln L \;=\; n\ln\sigma \;+\; \sum_{i\ge 2}\ln\sqrt{1-\phi_i^2}
+  \;+\; \frac{1}{2\sigma^2}\left[e_1^2 + \sum_{i\ge 2}
+  \frac{(e_i-\phi_i e_{i-1})^2}{1-\phi_i^2}\right] + \text{const},
+\end{equation}
+i.e.\ the independent likelihood of the \emph{whitened} residuals
+$u_1=e_1$, $u_i=(e_i-\phi_i e_{i-1})/\sqrt{1-\phi_i^2}$, plus a log-determinant
+term that depends only on $\tau$ and the observation times. The residual vector
+LM differentiates is $r_i = u_i/\sigma$, and the decomposition of
+Section~\ref{sec:verify} becomes $-\ln L = \tfrac12\|r\|^2 + n\ln\sigma + \sum\ln\sqrt{1-\phi_i^2}$
+(\code{--verify-residuals} reports the log-determinant term). $\phi_i$ is capped
+at 0.9999 and repeated time stamps are treated as uncorrelated. The fit measures
+(MSE, $R^2$, NSE) are still reported for the raw residuals.
+
+\paragraph{Fixed or estimated.} $\sigma$ and $\tau$ are ordinary observation
+properties, one each per observation: they can be given values or driven by a
+parameter with \code{setasparameter} (quantity \code{error\_correlation\_time}).
+The GA and MCMC search or sample $\tau$ like any parameter. LM profiles it, as it
+does $\sigma$: a parameter that drives only correlation times is removed from the
+Gauss--Newton vector and set, after every accepted step, by a golden-section
+search over its range on the stored raw residuals (no model solve), with every
+profiled $\sigma$ re-profiled at each trial value. Holding $\sigma$ fixed while
+$\tau$ moves would make every step in $\tau$ look worse than it is, because the
+optimal $\sigma$ (the RMS of the whitened residuals) changes with $\tau$. On
+synthetic AR1 data (1780 irregularly spaced points, $\sigma=0.3$, $\tau=0.7$\,d)
+LM returns the maximum-likelihood values of a direct fit to all digits
+($\hat\sigma=0.3178$, $\hat\tau=0.808$\,d).
+
+\paragraph{Not combined with \code{likelihood\_scale}.} The likelihood scale
+corrects for the same autocorrelation by dividing the log-likelihood by an
+integral correlation time; with AR1 errors leave it at 1. AR1 is implemented for
+the \code{Least Squared} comparison only.
+
 \section{Requirements and limitations}
 
 LM refuses to start, with an explanatory message, unless all of the following

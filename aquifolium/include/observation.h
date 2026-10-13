@@ -28,7 +28,11 @@ class System;
 // Decomposition of an observation's negative log-likelihood into a weighted
 // residual vector, for gradient-based calibration (Levenberg-Marquardt).
 //
-//     -log L  =  0.5 * sum_i r_i^2  +  log_sigma_coeff * log(sigma)
+//     -log L  =  0.5 * sum_i r_i^2  +  log_sigma_coeff * log(sigma)  +  log_det
+//
+// Under an AR1 error model the r_i are the WHITENED residuals
+// (e_i - phi_i e_(i-1)) / (sigma sqrt(1 - phi_i^2)) and log_det collects
+// sum_i log sqrt(1 - phi_i^2); see Observation::ResidualVector().
 //
 // Every scaling that CalcMisfit() applies -- the error standard deviation, the
 // effective-information factor tau_int, the recency kernel -- is already folded
@@ -40,6 +44,12 @@ class System;
 // a calibrated sigma be profiled out analytically:
 //     sigma_hat^2 = sigma^2 * ||r||^2 / log_sigma_coeff
 // ---------------------------------------------------------------------------
+// Whitens residuals e at times t under a continuous-time AR1 error model with
+// correlation time tc (see Observation::ResidualVector); returns the whitened
+// residuals and sets log_det = sum_i log sqrt(1 - phi_i^2).
+std::vector<double> AR1Whiten(const std::vector<double> &e, const std::vector<double> &t,
+                              double tc, double &log_det);
+
 struct ResidualBlock
 {
     enum class Kind
@@ -56,6 +66,22 @@ struct ResidualBlock
     double log_sigma_coeff = 0.0;
     double mse = 0.0;               // the mean squared error the misfit is built from
     double sigma = 1.0;
+    // Log-determinant term of an AR1 error model (error_autocorrelation =
+    // "AR1"): sum_i log sqrt(1 - phi_i^2), divided by the likelihood scale.
+    // It does not depend on the model output or on sigma, only on the
+    // correlation time and the observation times, so it is a constant for LM
+    // and for sigma profiling; it matters when the correlation time is
+    // calibrated. 0 for independent errors.
+    double log_det = 0.0;
+    // AR1 bookkeeping, filled when error_autocorrelation is "AR1" (even with a
+    // correlation time of 0) so that an optimiser can re-whiten the same
+    // residuals for another correlation time without re-solving the model:
+    // the raw residuals, their times, the correlation time used, and the
+    // likelihood scale the log-likelihood is divided by.
+    std::vector<double> e_raw, t;
+    double ar1_tc = 0.0;
+    double scale = 1.0;
+    bool ar1 = false;
     Kind kind = Kind::empty;
 
     double SumOfSquares() const
@@ -77,7 +103,7 @@ struct ResidualBlock
     double NegLogLikelihood() const
     {
         if (kind != Kind::sum_of_squares) return 0;
-        return log_sigma_coeff*(mse/(2.0*pow(sigma,2)) + log(sigma));
+        return log_sigma_coeff*(mse/(2.0*pow(sigma,2)) + log(sigma)) + log_det;
     }
 };
 
