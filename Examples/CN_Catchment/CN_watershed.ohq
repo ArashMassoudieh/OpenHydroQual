@@ -1,9 +1,23 @@
 loadtemplate; filename = C:/Projects/OpenHydroQual/x64/Release/../../resources/main_components.json
 addtemplate; filename = C:/Projects/OpenHydroQual/x64/Release/../../resources/main_components.json
 addtemplate; filename = C:/Projects/OpenHydroQual/x64/Release/../../resources/cn_catchment.json
+setvalue; object=system, quantity=central_differences, value=No
+setvalue; object=system, quantity=covariancefile, value=LM_covariance.txt
+setvalue; object=system, quantity=fd_step, value=0.001
+setvalue; object=system, quantity=lambda0, value=0.01
+setvalue; object=system, quantity=lm_numthreads, value=8
+setvalue; object=system, quantity=lm_outputfile, value=LM_output.txt
+setvalue; object=system, quantity=max_iterations, value=50
+setvalue; object=system, quantity=max_rejections, value=10
+setvalue; object=system, quantity=profile_sigma, value=Yes
+setvalue; object=system, quantity=tol_objective, value=1e-08
 setvalue; object=system, quantity=acceptance_rate, value=0.15
 setvalue; object=system, quantity=add_noise_to_realizations, value=No
 setvalue; object=system, quantity=continue_based_on_file_name, value=
+setvalue; object=system, quantity=covariance_min_samples, value=500
+setvalue; object=system, quantity=covariance_proposal, value=Yes
+setvalue; object=system, quantity=covariance_scale, value=2.38
+setvalue; object=system, quantity=covariance_update_interval, value=1000
 setvalue; object=system, quantity=initial_purturbation, value=No
 setvalue; object=system, quantity=initual_purturbation_factor, value=0.05
 setvalue; object=system, quantity=number_of_burnout_samples, value=0
@@ -19,6 +33,7 @@ setvalue; object=system, quantity=alloutputfile, value=output.txt
 setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
 setvalue; object=system, quantity=simulation_end_time, value=36527.5
 setvalue; object=system, quantity=simulation_start_time, value=36526
+setvalue; object=system, quantity=continue_based_on_filename, value=
 setvalue; object=system, quantity=maxpop, value=40
 setvalue; object=system, quantity=ngen, value=40
 setvalue; object=system, quantity=numthreads, value=8
@@ -29,16 +44,25 @@ setvalue; object=system, quantity=shakescale, value=0.05
 setvalue; object=system, quantity=shakescalered, value=0.75
 setvalue; object=system, quantity=c_n_weight, value=1
 setvalue; object=system, quantity=initial_time_step, value=0.0001
+setvalue; object=system, quantity=jacobian_assembly, value=Dependency
+setvalue; object=system, quantity=jacobian_dt_refresh_factor, value=2
 setvalue; object=system, quantity=jacobian_method, value=Inverse Jacobian
+setvalue; object=system, quantity=make_timeseries_uniform, value=Yes
 setvalue; object=system, quantity=max_timestep_decrease_factor, value=100000
 setvalue; object=system, quantity=max_timestep_increase_factor, value=50
 setvalue; object=system, quantity=maximum_number_of_matrix_inverstions, value=200000
 setvalue; object=system, quantity=maximum_time_allowed, value=86400
 setvalue; object=system, quantity=minimum_timestep, value=1e-08
 setvalue; object=system, quantity=n_threads, value=8
+setvalue; object=system, quantity=nr_block_tolerance, value=0.001
+setvalue; object=system, quantity=nr_niteration_lower, value=20
+setvalue; object=system, quantity=nr_niteration_upper, value=40
 setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
 setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
 setvalue; object=system, quantity=nr_tolerance, value=1e-06
+setvalue; object=system, quantity=timestep_clamp_series, value=Precipitation only
+setvalue; object=system, quantity=update_jacobian_every_iteration, value=No
+setvalue; object=system, quantity=verify_jacobian, value=
 setvalue; object=system, quantity=write_interval, value=20
 setvalue; object=system, quantity=write_solution_details, value=No
 create source;type=Precipitation,name=Storm,timeseries=design_storm.csv
