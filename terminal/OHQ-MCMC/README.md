@@ -107,7 +107,7 @@ Settings are system values in the model, as the GUI saves them
 The initial step for each parameter is `initual_purturbation_factor` times its range:
 
 * `log-normal` parameter: step in ln(value) = factor × ln(high/low)
-* `normal` or `uniform` parameter: step = factor × |low + high| (see [Known issues](#14-known-issues))
+* `normal` or `uniform` parameter: step = factor × (high − low)
 
 The default factor of 0.05 is sized for parameters that are only loosely determined by the data.
 For a well-determined parameter it is many times larger than the width of the posterior, so
@@ -126,7 +126,7 @@ where `d` is the number of parameters, and for each parameter
 | prior | `sigma` | `range` |
 |---|---|---|
 | `log-normal` | 2.303 × `std_error` (LM reports it in log10 units) | ln(high/low) |
-| `normal`, `uniform` | `std_error` | \|low + high\| |
+| `normal`, `uniform` | `std_error` | high − low |
 
 The same factor applies to all parameters, so use the **smallest** value over the parameters.
 The covariance-adapted proposals then correct the step for each parameter once they start.
@@ -298,8 +298,11 @@ OHQ-MCMC model.ohq mcmc_dir --continue            # add --kernel ... if the firs
 ```
 
 `--continue` reads the chain file in `mcmc_dir` (`samples_filename`, default `mcmc.txt`), restarts
-from its last recorded samples, and appends to it. The parameter names in the file must match the
-model's; otherwise the program stops. If no chain file is found, it starts a fresh run and says so.
+each chain from its last recorded sample, and appends to the file from the next sample number, so no
+sample number appears twice. Raise `number_of_samples` in the model to extend a finished run. The
+parameter names in the file must match the model's; otherwise the program stops. It also stops when
+a chain has no rows in the file, which happens with `record_interval` larger than 1. If no chain
+file is found, it starts a fresh run and says so.
 
 ## 11. Run time
 
@@ -366,15 +369,4 @@ size from `LM_covariance.txt` (§4), and run this one.
 
 These are current limitations of the sampler, not of the command-line program:
 
-* **Step size for `normal` and `uniform` priors.** The initial step is computed as factor ×
-  |low + high|, not factor × (high − low). For a range far from zero (for example 100 to 110) this
-  makes the step about 20 times larger than intended; for a range centred on zero (for example -1
-  to 1) the step is 0 and the parameter never moves. Until this is fixed, choose the factor with
-  |low + high| as in §4, and avoid ranges centred on zero for these priors.
-* **The chain file can end early.** `mcmc.txt` is written in blocks of 50 × `number_of_chains`
-  samples, and the last partial block is not written: in a 1600-sample run with 8 chains, the file
-  ends at sample 1215. `posterior_percentiles.txt`, `Posterior_distributions.txt` and the
-  realizations are computed from all samples in memory and are complete. To keep the whole chain
-  in the file, make `number_of_samples` a multiple of 50 × `number_of_chains` plus
-  `number_of_chains` (for 8 chains: 1608, 2008, ...).
 * `logp_1`, `stuck_counter` and the `purt_coeff_*` columns of `mcmc.txt` are internal diagnostics.
