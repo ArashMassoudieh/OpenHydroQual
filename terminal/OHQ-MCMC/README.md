@@ -298,8 +298,11 @@ OHQ-MCMC model.ohq mcmc_dir --continue            # add --kernel ... if the firs
 ```
 
 `--continue` reads the chain file in `mcmc_dir` (`samples_filename`, default `mcmc.txt`), restarts
-from its last recorded samples, and appends to it. The parameter names in the file must match the
-model's; otherwise the program stops. If no chain file is found, it starts a fresh run and says so.
+each chain from its last recorded sample, and appends to the file from the next sample number, so no
+sample number appears twice. Raise `number_of_samples` in the model to extend a finished run. The
+parameter names in the file must match the model's; otherwise the program stops. It also stops when
+a chain has no rows in the file, which happens with `record_interval` larger than 1. If no chain
+file is found, it starts a fresh run and says so.
 
 ## 11. Run time
 

@@ -1006,25 +1006,37 @@ int CMCMC<T>::readfromfile(string filename)
         return -1;
     }
 
-	int jj=0;
-	while (file.eof() == false)
-	{
+    // Each row goes to the slot of its own sample number, so chain c's samples
+    // stay at indices c (mod number_of_chains) and the run resumes right after
+    // the last recorded sample. Packing the rows from index 0 (the file starts
+    // at sample number_of_chains) put the resume point one block early, and
+    // the continued run wrote that block's sample numbers a second time.
+    const int nch = MCMC_Settings.number_of_chains;
+    const int total = MCMC_Settings.total_number_of_samples;
+    vector<bool> loaded(total, false);
+    int last_id = -1;
+    while (file.eof() == false)
+    {
         s = aquiutils::getline(file);
         if (s.size() == 2*MCMC_Settings.number_of_parameters+4)
-        {	Params[jj].resize(MCMC_Settings.number_of_parameters);
+        {   const int id = atoi(s[0].c_str());
+            if (id < 0 || id >= total) continue;
+            Params[id].resize(MCMC_Settings.number_of_parameters);
             for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
-			{
-				Params[jj][i] = atof(s[i+1].c_str());
-                pertcoeff[i] = 	atof(s[MCMC_Settings.number_of_parameters+i+4].c_str());
-			}
-            logp[jj] = atof(s[MCMC_Settings.number_of_parameters+1].c_str());
-            logp1[jj] = atof(s[MCMC_Settings.number_of_parameters+2].c_str());
-			jj++;
-		}
-	}
-	file.close();
+                Params[id][i] = atof(s[i+1].c_str());
+            logp[id] = atof(s[MCMC_Settings.number_of_parameters+1].c_str());
+            logp1[id] = atof(s[MCMC_Settings.number_of_parameters+2].c_str());
+            loaded[id] = true;
+            if (id >= last_id)
+            {   last_id = id;
+                for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
+                    pertcoeff[i] = atof(s[MCMC_Settings.number_of_parameters+i+4].c_str());
+            }
+        }
+    }
+    file.close();
 
-    if (jj == 0)
+    if (last_id < 0)
     {
         last_error = "No usable samples were found in:\n  " + filename +
                      "\n\nThe parameter names match, but no row carried the "
@@ -1032,7 +1044,33 @@ int CMCMC<T>::readfromfile(string filename)
                      "truncated while the previous run was writing it.";
         return -1;
     }
-	return jj;
+
+    // Every chain must have a recorded state to continue from. With
+    // record_interval > 1 some chains may never be written at all.
+    vector<bool> chain_seen(nch, false);
+    for (int id = nch; id < total; id++)
+        if (loaded[id]) chain_seen[id % nch] = true;
+    for (int c = 0; c < nch; c++)
+        if (!chain_seen[c])
+        {
+            last_error = "Chain " + aquiutils::numbertostring(c) + " has no samples in:\n  " + filename +
+                         "\n\nEvery chain needs a recorded state to continue from; "
+                         "this happens when record_interval is larger than 1.";
+            return -1;
+        }
+
+    // Resume right after the last recorded sample. Slots with no row (samples
+    // skipped by record_interval) hold their chain's previous state, as a
+    // rejected proposal would; slots 0..nch-1 keep the starting points set by
+    // initialize().
+    const int start = last_id + 1;
+    for (int id = nch; id < start; id++)
+        if (!loaded[id])
+        {   Params[id] = Params[id - nch];
+            logp[id] = logp[id - nch];
+            logp1[id] = logp1[id - nch];
+        }
+	return start;
 }
 
 template<class T>
