@@ -1,232 +1,390 @@
 # Headless parameter estimation for OpenHydroQual
 
-Two console runners that do what the GUI's **Optimize** and **Inverse Run**
-buttons do, without Qt Widgets, so calibration can run on a cluster or in a
-loop:
+Three console programs run calibration and uncertainty analysis on an OpenHydroQual model
+without the GUI, so you can run them on a server, a cluster node, or in a script:
 
-| | |
-|---|---|
-| `terminal/OHQ-GA/` | genetic-algorithm calibration (`MainWindow::onoptimize`, headless) |
-| `terminal/OHQ-MCMC/` | Bayesian estimation + realizations (`MainWindow::oninverserun`, headless) |
-| `terminal/OHQ-Common/` | headers shared by both — `ohq_common.h`, `ohq_kernel.h` — and this README |
+| program | method | answers | GUI equivalent |
+|---|---|---|---|
+| [`OHQ-GA`](../OHQ-GA/README.md) | genetic algorithm | "which parameter values fit best?" (global search) | **Optimize** |
+| [`OHQ-LM`](../OHQ-LM/README.md) | Levenberg-Marquardt | "where exactly is the optimum, and how well is each parameter determined?" (local, fast) | **Levenberg-Marquardt** |
+| [`OHQ-MCMC`](../OHQ-MCMC/README.md) | Markov chain Monte Carlo | "what is the full posterior distribution of the parameters and predictions?" | **Inverse Run** |
 
-Both take an `.ohq` model and read everything they need out of it: the
-`parameter` entries define what is estimated and their priors, the `observation`
-entries define the likelihood. Nothing about the runners is specific to any
-model.
+All three read an ordinary `.ohq` model. The model's `parameter` entries say what to estimate
+and within which bounds; its `observation` entries define the likelihood. Nothing in the
+programs is specific to a model.
 
-Each runner can evaluate the forward model two ways:
-
-* **interpreter** (default) — `System::Solve()`, the same code path as the GUI.
-* **codegen kernel** (`--kernel`) — a shared library compiled from the model by
-  `ohq_generate`. Typically ~10-15x faster; see
-  [Running against a codegen kernel](#running-against-a-codegen-kernel).
-
-Only the *solve* is replaced. Parameter bookkeeping, the objective function, the
-GA/MCMC drivers and all output writing are identical either way, so the two
-modes are directly comparable.
+This file covers what the three have in common: building them, preparing a model, and running
+with a **codegen kernel** (a compiled copy of the model that runs much faster than the
+interpreter). Each program's own README is a step-by-step guide for that method.
 
 ---
 
-## 1. Building the runners
+## Contents
+
+1. [Which method to use](#1-which-method-to-use)
+2. [Build the programs](#2-build-the-programs)
+3. [Prepare the model](#3-prepare-the-model)
+4. [Run with the interpreter](#4-run-with-the-interpreter)
+5. [Run with a codegen kernel](#5-run-with-a-codegen-kernel)
+6. [Keep the kernel in sync with the model](#6-keep-the-kernel-in-sync-with-the-model)
+7. [Common output files](#7-common-output-files)
+8. [Common problems](#8-common-problems)
+
+---
+
+## 1. Which method to use
+
+The usual sequence is **GA, then LM, then (if you need full uncertainty) MCMC**:
+
+```
+OHQ-GA    finds the region of the best fit, starting from nothing but the parameter bounds
+   |      copy the GA's best values into the model's parameter "value=" entries
+OHQ-LM    converges precisely from there and reports standard errors and correlations
+   |      copy LM's estimates into the model; use its standard errors to size the MCMC steps
+OHQ-MCMC  samples the posterior around the optimum and produces prediction intervals
+```
+
+| situation | use |
+|---|---|
+| no idea where the parameters lie; possibly several local optima | GA |
+| a reasonable starting point; you want a precise optimum quickly | LM |
+| you need standard errors and parameter correlations | LM (linearized) or MCMC (full) |
+| you need prediction intervals for the model outputs | MCMC |
+| you are optimizing a design or operating objective with no observed data | GA with objective functions (see [OHQ-GA](../OHQ-GA/README.md#objective-functions-instead-of-observations)) |
+
+All three minimize or sample the **same negative log-likelihood**, so their results are directly
+comparable.
+
+To copy results into the model between steps, use `set_parameter_values.py` in this folder. It
+reads `GA_output.txt` (best individual of the last generation), `LM_covariance.txt` (estimates) or
+`posterior_percentiles.txt` (posterior medians) and writes the values into the `value=` entries of
+a copy of the model:
+
+```bash
+python3 terminal/OHQ-Common/set_parameter_values.py model.ohq model_ga.ohq --from ga_dir/GA_output.txt
+python3 terminal/OHQ-Common/set_parameter_values.py model.ohq --from lm_dir/LM_covariance.txt --show
+python3 terminal/OHQ-Common/set_parameter_values.py model.ohq model_new.ohq p_K=12.5 p_n=0.3
+```
+
+## 2. Build the programs
 
 Dependencies (Ubuntu):
 
 ```bash
-sudo apt-get install libarmadillo-dev liblapack-dev libblas-dev libgsl-dev \
-                     libopenblas-dev libsuperlu-dev qt6-base-dev
+sudo apt-get install build-essential cmake qt6-base-dev libarmadillo-dev liblapack-dev \
+                     libblas-dev libgsl-dev libopenblas-dev libsuperlu-dev
 ```
 
+Each program builds the same way from its own folder. For example, for OHQ-GA:
+
 ```bash
-cd terminal/OHQ-GA          # or terminal/OHQ-MCMC
+cd terminal/OHQ-GA
 mkdir -p build && cd build
 qmake6 ../OHQ-GA.pro
-make -j$(nproc)
+nice make -j4
 ```
 
-`OHQ` defaults to `$$PWD/../..`, i.e. this checkout, and `JSONCPP` to
-`$$OHQ/jsoncpp`, the vendored copy — so an in-tree build needs no arguments.
-qmake stops with an error if the aquifolium sources are not where it expects.
-To build against a different checkout:
+The result is `terminal/OHQ-GA/build/OHQ-GA`. Do the same in `terminal/OHQ-LM` and
+`terminal/OHQ-MCMC`.
 
-```bash
-qmake6 ../OHQ-GA.pro OHQ=/path/to/OpenHydroQual
-```
+* `OHQ` (the OpenHydroQual checkout) defaults to the repository the project file is in, and
+  `JSONCPP` to its vendored copy, so an in-tree build needs no arguments. To build against another
+  checkout: `qmake6 ../OHQ-GA.pro OHQ=/path/to/OpenHydroQual`.
+* The programs compile the model library's sources directly. **After pulling changes to
+  `aquifolium/`, rebuild them** (`make` again); an old binary keeps running the old model code.
+* Use a modest `-j`. Building with every core at once can exhaust memory on a desktop.
 
-These projects compile ~38 aquifolium `.cpp` files directly from
-`$$OHQ/aquifolium/src` rather than linking `libOHQLib`. That is deliberate: they
-cannot silently run against a stale library. It also means **a change to an
-aquifolium header requires rebuilding the runner**, not just relinking.
-
-## 2. Running with the interpreter
-
-```bash
-./OHQ-GA   model.ohq [working_folder]
-./OHQ-MCMC model.ohq [working_folder]
-```
-
-`working_folder` defaults to the directory containing `model.ohq`, and is
-created if missing. GA writes `GA_output.txt`, `outputs.txt`,
-`observedoutputs.txt` and `errors.txt` there. MCMC writes the chain to the
-filename given by the model's `outputfilename` setting.
-
-### Options (both runners)
-
-| flag | effect |
-|---|---|
-| `--kernel <lib>` | evaluate the forward model with a codegen shared library instead of the interpreter |
-| `--continue`, `-c` | GA: seed the initial population from an existing `GA_output.txt` in the working folder. MCMC: append to the existing chain |
-| `--sparse` | use the sparse linear solver |
-| `--dependency-jacobian` | build the Jacobian from the dependency graph rather than dense finite differences |
-| `--verify-jacobian` | cross-check the analytical/dependency Jacobian against finite differences and report |
-
----
-
-## Running against a codegen kernel
-
-This is a three-step pipeline: **generate C++ → build a shared library → point
-the runner at it.** The kernel is compiled from one specific `.ohq` file and is
-only valid for that file; see [Keeping the kernel in
-sync](#keeping-the-kernel-in-sync).
-
-### Step 1 — generate the C++ project
-
-```bash
-ohq_generate <model.ohq> <resources_dir> <out_dir> <ClassName> [stateVar] \
-             --project exe|lib|shared
-```
-
-`ohq_generate` is built from `codegen/`:
+The code generator, needed only for the kernel path (§5), builds with CMake from the repository
+root:
 
 ```bash
 cmake -S codegen -B codegen/build -DCMAKE_BUILD_TYPE=Release
-cmake --build codegen/build -j$(nproc)
+cmake --build codegen/build -j4
 ```
 
-For calibration you want **`--project shared`**, which emits the fixed-name
-`ohq_kernel_*` C ABI that `--kernel` loads with `dlopen`. (`exe` emits a
-standalone solver that writes a CSV — useful for a single forward run or a
-parameter sweep, but `--kernel` cannot load it. `lib` emits a static library
-with class-prefixed symbols for linking into your own C++.)
+The result is `codegen/build/ohq_generate`.
+
+## 3. Prepare the model
+
+The model is an ordinary `.ohq` script; you can build it in the GUI and save it. Before
+calibrating, check these points.
+
+### 3.1 Parameters
+
+Each estimated quantity needs a `parameter` with bounds, a starting value and a prior, and a
+`setasparameter` line that binds it to one or more model quantities:
+
+```
+create parameter;type=Parameter,name=p_K,low=0.01,high=100,value=1,prior_distribution=log-normal
+setasparameter; object=Aquifer, quantity=hydraulic_conductivity, parametername=p_K
+```
+
+| field | meaning |
+|---|---|
+| `low`, `high` | bounds. GA and LM never leave them. MCMC rejects proposals outside them only for `uniform` priors (see below). |
+| `value` | starting value. **LM starts here**, and MCMC chains start here, so update it after a GA run. GA ignores it. |
+| `prior_distribution` | `log-normal`, `normal` or `uniform` (see below) |
+
+How each prior is used:
+
+| prior | GA and LM search in | MCMC prior density |
+|---|---|---|
+| `log-normal` | log10 space | log-normal with geometric mean `sqrt(low*high)` and log standard deviation `ln(high/low)/4`, so `low` and `high` are about 2 standard deviations out |
+| `normal` | linear space | normal with mean `(low+high)/2` and standard deviation `(high-low)/4` |
+| `uniform` | linear space | flat on `[low, high]`, zero outside (set it in the script; the GUI menu offers only the first two) |
+
+Use `log-normal` for anything positive that can span orders of magnitude (conductivities, rate
+constants, error standard deviations).
+
+**Naming rule:** a parameter must not have the same name as the block, link, reaction parameter
+or observation it drives. Prefix it, for example `p_k_f` driving the reaction parameter `k_f`.
+Two objects with the same name make the binding ambiguous.
+
+A parameter can drive a block, link, source, reaction parameter, a composite's property (which
+reaches its members through the composite's mappings), or an observation's
+`error_standard_deviation` (see §3.2).
+
+### 3.2 Observations
+
+Each `observation` compares one modeled expression with a measured time series:
+
+```
+create observation;type=Observation,name=Q_outlet,object=Outlet link,expression=flow,error_structure=log-normal,error_standard_deviation=0.2,observed_data=/abs/path/Q_outlet.csv
+```
+
+| field | meaning |
+|---|---|
+| `object`, `expression` | what is modeled: an expression evaluated on a block or link (for example `flow`, `depth`, `NO3:concentration`) |
+| `observed_data` | two-column CSV, time and value, in model time |
+| `error_structure` | `normal` compares values; `log-normal` compares their logarithms (for strictly positive quantities spanning orders of magnitude). Zero or negative values cannot be used with `log-normal`. |
+| `error_standard_deviation` | sigma of the residuals (of the log residuals for `log-normal`). It can be fixed, or estimated by binding a parameter to it. |
+| `comparison_method` | `Least Squared` (default), `Weighted Least Squared` (downweights older data), `EMC` (event mean concentrations, see `docs/emc_calibration.tex`), or `Similarity` (not usable with LM) |
+| `error_autocorrelation`, `error_correlation_time` | `AR1` with a correlation time accounts for serially correlated residuals (for example high-frequency sensor data). Default `none`. |
+| `likelihood_scale` | a cruder correction for correlated residuals: divides the effective number of points. Do not combine it with `AR1`. |
+
+The negative log-likelihood summed over all observations is what GA and LM minimize and MCMC
+samples. With correlated residuals and no correction (no `AR1`, `likelihood_scale` 1), every point
+counts as independent: estimates are still reasonable, but stated uncertainties come out too
+narrow.
+
+### 3.3 Settings
+
+Calibration settings are written as system values, the same way the GUI saves them:
+
+```
+setvalue; object=system, quantity=maxpop, value=40
+```
+
+Writing them to the settings object by name (`object=Optimizer`, `object=MCMC`, `object=LM`) also
+works. The settings for each method are listed in its README. Solver settings (time step,
+tolerances, `maximum_time_allowed`) are written the same way and apply to every method.
+
+### 3.4 File paths
+
+A relative file name in the model (`observed_data`, forcing time series) is looked up first in the
+**working folder** you give the program, then in the **current directory** you run it from. The
+folder of the `.ohq` file is not searched. If you run from one place with the working folder in
+another, relative files are not found, and **a missing observation file does not stop the run**:
+that observation contributes nothing, and the run calibrates against nothing.
+
+Safe options:
+
+* use absolute paths in the model, or
+* leave out the working folder (it defaults to the model's folder), or
+* copy the data into the working folder.
+
+Always check the start-up output (§8): it should list each observation with a non-zero number of
+points.
+
+The templates (`resources/`) are found from the path compiled into the program (the checkout it
+was built from). Override it with the `OHQ_RESOURCES` environment variable.
+
+### 3.5 Check the model first
+
+Run the model once in the GUI (or with `OpenHydroQual-Console`) at the starting values. It
+should load without errors and give sensible results. Then run `OHQ-LM model.ohq
+--verify-residuals`. It does one forward run and prints, per observation, the number of compared
+points and the negative log-likelihood. This is the quickest way to confirm that the data are
+found and the likelihood is what you expect, whichever method you then use.
+
+## 4. Run with the interpreter
 
 ```bash
-codegen/build/ohq_generate model.ohq \
-    /path/to/OpenHydroQual/resources \
-    gen_model S13 Storage --project shared
+OHQ-GA   model.ohq [working_folder] [options]
+OHQ-LM   model.ohq [working_folder] [options]
+OHQ-MCMC model.ohq [working_folder] [options]
 ```
 
-* `<resources_dir>` is the repo's `resources/` folder — the templates the model
-  file refers to.
-* `<ClassName>` names the generated class, the library and its symbols:
-  `S13` produces `libS13.so`. Any valid C++ identifier.
-* `[stateVar]` is the state quantity to integrate, usually `Storage`.
+* `working_folder` defaults to the folder containing the model, and is created if needed. All
+  outputs go there. Use a new folder for each run you want to keep.
+* With no options the forward model is solved by the interpreter, the same code the GUI uses.
+* Command-line options override the model's settings; settings not given on the command line keep
+  their values from the model.
 
-The generator **refuses to emit a kernel a calibration cannot drive**: if any
-`parameter` in the model does not reach a settable value in the generated code,
-generation fails with
+Options shared by GA and MCMC (they change the interpreter's solver; the kernel ignores them):
 
-> `CodeGenerator: estimated parameter '<name>' ... Refusing to emit a kernel that would silently ignore it.`
+| option | effect |
+|---|---|
+| `--continue`, `-c` | GA: seed the population from the last generation in `GA_output.txt`. MCMC: resume the chain file. |
+| `--dependency-jacobian` | build the transport Jacobian from the dependency graph (exact; faster for many blocks) |
+| `--sparse` | solve the Newton step with a sparse LU (SuperLU) |
+| `--verify-jacobian` | diagnostic: build the Jacobian both ways and log the difference (slow) |
+| `--kernel <library>` | use a codegen kernel (§5) |
 
-Do not work around this. It means the calibration would have varied that
-parameter while the model ignored it, and the GA/MCMC would have reported
-confident results for a parameter that did nothing.
+LM's options are in its README.
 
-### Step 2 — build the shared library
+## 5. Run with a codegen kernel
 
-The generated `out_dir` is a self-contained CMake project — it carries its own
-copy of the header-only runtime in `runtime/` and needs nothing from this repo
-at compile time:
+`ohq_generate` translates a model into C++ with every equation written out, and compiles it into
+a shared library. Passing that library with `--kernel` replaces the forward solve; everything else
+(parameters, likelihood, the GA/LM/MCMC algorithm and the output files) stays the same. A kernel
+is typically 10 to 40 times faster, which matters because a calibration runs the model hundreds
+to hundreds of thousands of times.
+
+The steps are: **generate, build, check, run.**
+
+### 5.1 Generate
+
+```bash
+codegen/build/ohq_generate model.ohq /path/to/OpenHydroQual/resources gen_model MyModel Storage --project shared
+```
+
+| argument | meaning |
+|---|---|
+| `model.ohq` | the model to compile |
+| `resources` | the repository's `resources/` folder |
+| `gen_model` | output folder: a self-contained CMake project |
+| `MyModel` | C++ class name; also the library name (`libMyModel.so`) |
+| `Storage` | the state variable (almost always `Storage`) |
+| `--project shared` | a shared library with the `ohq_kernel_*` interface that `--kernel` loads. (`exe` builds a standalone forward-model program; `lib` a static library for your own C++.) |
+
+`ohq_generate` resolves the model's relative paths from **the model's folder** and bakes the
+forcing time series into the kernel. If the generator stops with `estimated parameter '<name>' ...
+Refusing to emit a kernel that would silently ignore it`, that parameter's `setasparameter`
+binding reaches nothing in the model; fix the binding.
+
+### 5.2 Build
 
 ```bash
 cmake -S gen_model -B gen_model/build -DCMAKE_BUILD_TYPE=Release
-cmake --build gen_model/build -j$(nproc)
+cmake --build gen_model/build -j4
 ```
 
-This produces `gen_model/build/libS13.so`, plus a small `S13_example`
-executable that verifies the library links and runs.
+The result is `gen_model/build/libMyModel.so` (`.dylib` on macOS, `.dll` on Windows) and a small
+`MyModel_example` program that runs the model once. Always build **Release**; a Debug kernel is
+about ten times slower. Large models take a few minutes to compile.
 
-Use `-DCMAKE_BUILD_TYPE=Release`. A Debug kernel is roughly an order of
-magnitude slower and gives back everything the kernel was for.
+### 5.3 Check that the kernel reproduces the interpreter
 
-### Step 3 — run the calibration
+Do this once for every new model, before calibrating with the kernel:
 
 ```bash
-./OHQ-GA   model.ohq work_dir --kernel /abs/path/to/gen_model/build/libS13.so
-./OHQ-MCMC model.ohq work_dir --kernel /abs/path/to/gen_model/build/libS13.so
+OHQ-LM model.ohq check --verify-residuals
+OHQ-LM model.ohq check --verify-residuals --kernel $PWD/gen_model/build/libMyModel.so
 ```
 
-Pass the path to the `.so` itself, not its directory. An absolute path is
-safest; a relative one is resolved by `dlopen` against the current directory,
-not the working folder.
+Compare the two outputs: each observation should have the **same number of points** (`n = ...`)
+and a `CalcMisfit()` value within about 1%. If they disagree, calibrate with the interpreter and
+report the model; a calibration on a kernel that does not reproduce the interpreter finds the
+optimum of a different model.
 
-### What you should see at startup
+### 5.4 Run
 
-The runner resolves the 19 `ohq_kernel_*` symbols it needs (a `--project shared`
-kernel exports 40), then checks the library against
-the model it was handed:
-
-```
-Kernel class    : S13
-Kernel verified : 8 parameters, 16 observations, names match the model.
+```bash
+OHQ-GA   model.ohq work_dir --kernel /abs/path/gen_model/build/libMyModel.so
+OHQ-LM   model.ohq work_dir --kernel /abs/path/gen_model/build/libMyModel.so
+OHQ-MCMC model.ohq work_dir --kernel /abs/path/gen_model/build/libMyModel.so
 ```
 
-If instead you see a parameter/observation **count** mismatch or a **name**
-mismatch at index *i*, the kernel was generated from a different version of the
-model. Regenerate it — do not proceed.
+Pass the library file itself, preferably as an absolute path (a relative path is resolved from the
+current directory). At start-up the program checks the kernel against the model and prints:
 
-A **missing-symbol** line is not fatal and the run will continue, so read the
-startup output rather than assuming silence means success. In particular a
-kernel predating `ohq_kernel_step_to` still loads, but the runner then falls
-back to `run_to`, which has no wall-clock limit — an MCMC proposal that hits a
-stiff region will hang instead of being rejected on the clock. Regenerate.
+```
+Forward model  : generated kernel /abs/path/gen_model/build/libMyModel.so
+Kernel class    : MyModel
+Kernel verified : 9 parameters, 6 observations, names match the model; all 9 kernel-owned parameters move it.
+```
 
-### Keeping the kernel in sync
+* **names match the model**: every parameter and observation in the model has a counterpart in the
+  kernel with the same name (they are matched by name, so their order may differ).
+* **parameters move it**: the program simulates the first 5% of the period at the starting values
+  and once per parameter moved to the far side of its range, and refuses any parameter that does
+  not change the result. This runs on one core and can take a minute on a large model.
 
-The verification above compares parameter and observation **names and counts**.
-That catches the common mistakes, but it is not a full equivalence check: edits
-that change the *physics* while leaving those names intact — a different
-reaction expression, a changed initial condition, a new solver setting — will
-**not** be caught, and the calibration will silently optimize the old model.
+Parameters bound to an observation's `error_standard_deviation` are handled by the program, not the
+kernel, and are skipped in this check.
 
-The safe rule: **regenerate the kernel whenever the `.ohq` changes.** It takes
-seconds and removes the whole class of error. Wiring steps 1 and 2 into the
-script that launches the calibration is the usual way to guarantee it.
+A line about a **missing symbol** is a warning, not an error, and the run continues. It means the
+kernel was generated by an older `ohq_generate`; regenerate it. In particular, without
+`ohq_kernel_step_to` the per-run time limit (`maximum_time_allowed`) does not work and a slow
+parameter set can hang the run.
 
-Two more sync rules for anyone editing this repo:
+### 5.5 Drive the kernel from your own program
 
-* Edited anything under `codegen/runtime/`? Re-run
-  `codegen/tools/embed_runtime.py` before rebuilding `ohq_generate` — the
-  runtime is embedded in the generator binary, and a stale embed means newly
-  generated projects silently carry the old runtime.
-* Edited an `aquifolium/include/` header? Rebuild `OHQLib` **and** the runners.
-  A prebuilt `libOHQLib.so` against a changed `System.h` is an ABI mismatch that
-  shows up as a segfault in `ohq_generate`, far from its cause.
-* `ohq_kernel.h` is the consumer half of the ABI emitted by
-  `codegen/src/CodeGenerator.cpp`. Change one, change the other, and bump
+`gen_model/MyModel_api.h` is a plain C interface (`MyModel_create`, `MyModel_set_parameter`,
+`MyModel_apply_parameters`, `MyModel_initialize`, `MyModel_run_to`, `MyModel_observation_at`, ...).
+Use it for scenario or sensitivity runs at a calibrated parameter set. Set the parameters and call
+`apply_parameters` **before** `initialize`, because initial storages that depend on parameters are
+computed at that moment. See [OHQ-GA §5.4](../OHQ-GA/README.md#54-use-the-kernel-from-your-own-program) for an
+example.
+
+## 6. Keep the kernel in sync with the model
+
+The kernel holds the model's structure, equations, fixed values, initial conditions, solver
+settings and forcing. The programs read everything else from the `.ohq` every time they start.
+
+| change | new kernel? |
+|---|---|
+| blocks, links, sources, reactions, composites, or their fixed property values | **yes** |
+| a template in `resources/` that the model uses (even with an unchanged `.ohq`) | **yes** |
+| initial conditions, simulation start or end time | **yes** |
+| solver settings (time step, tolerances, ...) | **yes** |
+| forcing time series (contents or file) | **yes** |
+| adding, removing or renaming parameters or observations | **yes** (the program refuses the old kernel) |
+| a parameter's `low`, `high`, `value`, prior | no |
+| observation data files (contents), `error_standard_deviation`, error model | no |
+| GA, LM and MCMC settings, `maximum_time_allowed` | no |
+
+The start-up check compares only **names** of parameters and observations. A change to the physics
+that keeps those names is **not detected**, and the calibration would fit the old model. The safe
+rule: **regenerate and rebuild the kernel whenever the model file or a template it uses changes.**
+It takes seconds for small models; wire it into the script that launches the run (see the
+complete script in each program's README).
+
+For anyone changing the code:
+
+* After editing `codegen/runtime/`, run `codegen/tools/embed_runtime.py` before rebuilding
+  `ohq_generate`; the runtime is embedded in the generator.
+* `ohq_kernel.h` (in this folder) is the consumer half of the interface that
+  `codegen/src/CodeGenerator.cpp` emits. Change one, change the other, and bump
   `ohq_kernel_abi_version`.
 
-### Interpreter vs kernel: expected agreement
+## 7. Common output files
 
-The kernel and the interpreter are held to bit-level parity on the same model at
-the same solver settings, and the runtime ports the interpreter's adaptive
-stepping, `optimize_lambda`, damping policy, chord-Jacobian refresh and
-oscillation control. On the two-site sorption models used to develop this,
-141-step runs agreed on 140 of 141 steps with a median breakthrough-curve
-difference of -0.010%.
+Every program finishes with a forward run at its final parameter set (GA: best individual; LM:
+estimate; MCMC: posterior median) and writes to the working folder:
 
-Residual disagreement is not expected. If the kernel and the interpreter give
-materially different objective values on the same model, treat it as a bug and
-check `issues.md` before trusting either.
-
-## Performance
-
-Measured on a 16-column two-site sorption model, 1000 steps:
-
-| | wall time |
+| file | content |
 |---|---|
-| interpreter | 278 s |
-| codegen kernel | ~20 s |
+| `output.txt` | all model outputs of that final run (name from the model's `alloutputfile`) |
+| `observedoutput.txt` | the modeled value of every observation over time (name from `observed_outputfile`) |
+| `fit_measures.txt` | MSE, R² and NSE per observation (for `log-normal` observations, of the logarithms) |
+| `mapped_modeled_results.txt` | modeled values at the observation times; with the observation files this is all you need to plot modeled against measured |
+| `objective_function_values.txt` | value of each objective function |
+| `errors.txt` | errors and warnings recorded during the run |
+| `state.json` | the model at the end of the final run |
 
-Roughly 14x. The gain is larger for models with many reaction terms, and it is
-multiplied by the population size or chain length — which is what makes the
-codegen path worth the extra two steps for a real calibration.
+The method-specific files are described in each README.
+
+## 8. Common problems
+
+| symptom | cause and fix |
+|---|---|
+| `No parameters have been defined - nothing to estimate.` | the model has no `parameter` entries, or the templates failed to load (check the `Templates :` line at start-up and the `loadtemplate` paths) |
+| `There are errors in the values assigned to some variables:` followed by a list | the model has invalid values; fix them in the GUI first |
+| an observation with `n = 0`, an objective of exactly 0, or `... was not found!` | the observation file was not found: see §3.4 |
+| `The model does not define an Optimizer settings object` (or `MCMC`) | the model was not saved with a settings section; add the settings (§3.3) or save it again from the GUI |
+| kernel: `count mismatch` or `name mismatch` | the kernel was built from another version of the model: regenerate it |
+| kernel: `Parameter ... does NOT change its output ... Refusing to calibrate against it` | the parameter has no effect on the model (wrong binding, or a process that never occurs in the simulated period); fix the binding or remove the parameter |
+| `Killed` with no other message | out of memory; reduce the number of threads |
+| GA or MCMC much slower than expected | the default thread counts are in the model settings (`numthreads`, `number_of_threads`); check them |
