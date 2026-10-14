@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {"name": "examples-site", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "http.server", "8765", "--directory", "/home/arash/Projects/OpenHydroQual-Examples/site"], "port": 8765}
+  ]
+}
