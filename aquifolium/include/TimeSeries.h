@@ -16,6 +16,7 @@
 #pragma once
 
 #include <vector>
+#include <limits>
 #include <string>
 #include <optional>
 #include <cmath>
@@ -210,6 +211,14 @@ public:
 
     TimeSeries<T> extract(T t1, T t2) const;               ///< Extract window
     TimeSeries<T> make_uniform(T increment, bool assignD = false) const; ///< Make uniform
+    /// Uniform resampling of a RATE recorded at the end of each solver step: the value
+    /// stamped t_i holds over (t_{i-1}, t_i]. Each output point at tau is the time average
+    /// of that step function over (tau - increment, tau], so sum(value * increment)
+    /// reproduces the integral of the recorded rate exactly.
+    /// t_start: start of the period the first recorded value covers (the simulation
+    /// start; series without a record at the start, e.g. link flows, would otherwise
+    /// lose the first step). NaN: begin at the first record.
+    TimeSeries<T> make_uniform_step(T increment, T t_start = std::numeric_limits<T>::quiet_NaN()) const;
     TimeSeries<T> getcummulative() const;                 ///< Cumulative integral
     TimeSeries<T> GetCummulativeDistribution() const;     ///< Sorted value CDF
     TimeSeries<T> distribution(int n_bins, int start_index) const; ///< Histogram density

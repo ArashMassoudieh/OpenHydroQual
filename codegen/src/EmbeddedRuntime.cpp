@@ -1274,6 +1274,36 @@ public:
         return out;
     }
 
+    // Rates recorded at the end of each step (value t[i] holds over (t[i-1], t[i])):
+    // each grid point is the time average over (tau - increment, tau]. Mirrors
+    // TimeSeries<T>::make_uniform_step in the interpreter.
+    TimeSeries makeUniformStep(double increment, double t_start = std::nan("")) const
+    {
+        TimeSeries out;
+        TimeSeries src;
+        if (std::isfinite(t_start) && !t.empty() && t_start < t[0]) src.push(t_start, c[0]);
+        for (std::size_t k = 0; k < t.size() && k < c.size(); ++k)
+            if (std::isfinite(t[k]) && std::isfinite(c[k])) src.push(t[k], c[k]);
+        if (src.size() < 1 || !(increment > 0.0)) return out;
+        const std::size_t n = src.size();
+        const double t0 = src.t[0], t_end = src.t[n - 1];
+        out.push(t0, src.c[0]);
+        std::size_t i = 1;
+        for (double tau = t0 + increment; tau <= t_end + increment * 1e-9; tau += increment) {
+            const double a = tau - increment;
+            double integral = 0.0;
+            while (i < n && src.t[i] <= a) ++i;
+            for (std::size_t k = i; k < n; ++k) {
+                const double lo = std::max(a, src.t[k - 1]);
+                const double hi = std::min(tau, src.t[k]);
+                if (hi > lo) integral += src.c[k] * (hi - lo);
+                if (src.t[k] >= tau) break;
+            }
+            out.push(tau, integral / increment);
+        }
+        return out;
+    }
+
     // Index of the last sample with t[i] <= x (clamped into [0, size-1]).
     // Mirrors CTimeSeries::GetElementNumberAt semantics closely enough for the
     // kernels, which only use it to bound the integration window.

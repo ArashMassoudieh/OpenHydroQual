@@ -35,6 +35,7 @@
 #include "ErrorHandler.h"
 #include "safevector.h"
 #include <string>
+#include <set>
 #include <omp.h>
 #define outputtimeseriesprecision double
 #if Q_GUI_SUPPORT
@@ -378,6 +379,9 @@ public:
     Block* block(const std::string& s);
     const Block* block(const string& s) const;
     Link* link(const std::string& s);
+    bool IsRateLocation(const string& name);          ///< link or source: its outputs are rates
+    std::set<std::string> RateOutputNames();          ///< output series holding a value over each step
+    void UniformizeOutputs();                         ///< resample outputs: rates step-averaged, states linear
     const Link* link(const string& s) const;
 
     /**

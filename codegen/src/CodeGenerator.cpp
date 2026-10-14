@@ -1343,6 +1343,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     // something to score.
     const unsigned nObj = system.ObjectiveFunctionsCount();
     std::ostringstream obsBody, obsNameArr, paramNameArr, paramInitArr, objBody, objNameArr, outBody, outNameArr;
+    std::ostringstream obsRateArr, objRateArr;   // 1 = located on a link/source: a rate held over each step
     {
         std::function<EmitContext(Object*, bool, int)> makeCtxObs;
         makeCtxObs = [&](Object* cur, bool isLink, int linkIdx) -> EmitContext {
@@ -1426,6 +1427,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             Observation* ob = system.observation(i);
             obsNameArr << (i ? ", " : "") << cstr(ob->GetName());
             const std::string loc = ob->GetLocation();
+            obsRateArr << (i ? ", " : "") << (system.IsRateLocation(loc) ? 1 : 0);
             const std::string exprText = ob->Variable("expression") ? ob->Variable("expression")->GetProperty() : "";
             Object* o = system.object(loc);
             const bool ok = o && !exprText.empty() &&
@@ -1441,6 +1443,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             Objective_Function* of = system.objectivefunction(i);
             objNameArr << (i ? ", " : "") << cstr(of->GetName());
             const std::string loc = of->GetLocation();
+            objRateArr << (i ? ", " : "") << (system.IsRateLocation(loc) ? 1 : 0);
             const std::string exprText = of->Variable("expression") ? of->Variable("expression")->GetProperty() : "";
             Object* o = system.object(loc);
             const bool ok = o && !exprText.empty() &&
@@ -1663,7 +1666,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
           "    // uniform initial_time_step grid. The step stayed adaptive; this only\n"
           "    // changes the sample times the caller sees, so a kernel objective compares\n"
           "    // on the same grid Objective_Function uses (make_uniform(dt0)).\n"
-        + "    void uniformizeObservations() { for (auto& s : obs_) s = s.makeUniform(dt0_); }\n"
+        + "    // rates (observations on a link or source) are step-averaged, states interpolated,\n"
+          "    // as System::MakeObservationsExpressionUniform\n"
+        + "    static bool observationIsRate(int i) { static const bool a[] = {" + (O ? obsRateArr.str() : std::string("false")) + "}; return a[i]; }\n"
+        + "    void uniformizeObservations() { for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i] = observationIsRate(i) ? obs_[i].makeUniformStep(dt0_, tstart_) : obs_[i].makeUniform(dt0_); }\n"
         + "    void recordObservations(double t_eval, double t_stamp) {\n        double v[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1]; computeObservations(v, t_eval);\n"
           "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(t_stamp, v[i]);\n    }\n"
         + "    // ---- objective functions (same shape as observations; the host feeds\n"
@@ -1673,7 +1679,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + "    void computeObjectives(double* out, double t_eval) const {\n        const double t_new = t_eval; (void)t_new; (void)out;\n" + objBody.str() + "    }\n"
         + "    const ohq::TimeSeries& objectiveSeries(int i) const { return obj_[i]; }\n"
         + "    void clearObjectives() { for (auto& s : obj_) { s.t.clear(); s.c.clear(); } }\n"
-        + "    void uniformizeObjectives() { for (auto& s : obj_) s = s.makeUniform(dt0_); }\n"
+        + "    static bool objectiveIsRate(int i) { static const bool a[] = {" + (OJ ? objRateArr.str() : std::string("false")) + "}; return a[i]; }\n"
+        + "    void uniformizeObjectives() { for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i] = objectiveIsRate(i) ? obj_[i].makeUniformStep(dt0_, tstart_) : obj_[i].makeUniform(dt0_); }\n"
         + "    void recordObjectives(double t_eval, double t_stamp) {\n        double v[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1]; computeObjectives(v, t_eval);\n"
           "        for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i].push(t_stamp, v[i]);\n    }\n";
     paramApi +=
@@ -1752,6 +1759,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + "    ohq::TimeSeries obs_[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1];\n"
         + "    ohq::TimeSeries obj_[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1];\n"
         + "    double dt0_ = 0;\n"
+        + "    double tstart_ = 0;   // start of the period the first recorded rate covers\n"
         + "    // oscillation-control state (see oscillationControl())\n"
         + "    RestorePoint rp_;\n"
         + "    std::vector<std::vector<double>> osc_history_;\n"
@@ -1815,6 +1823,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << "    void initialize(double tstart = " << fmt(system.tstart()) << ", double dt0 = "
       << fmt(system.dt0()) << ") {\n        loadSeries();\n        buildConstants();\n" << settingsInit
       << "        dt0_ = dt0;   // output grid: System::FinalizeOutputs uniformizes with dt0\n"
+      << "        tstart_ = tstart;\n"
       << "        solver_.initialize(tstart, dt0);\n"
       << "        bindSelf();\n"
       << (T ? "        transport_.initialize();\n" : "")
