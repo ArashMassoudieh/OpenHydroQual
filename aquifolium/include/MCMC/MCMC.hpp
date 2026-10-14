@@ -299,19 +299,26 @@ void CMCMC<T>::initialize(bool random)
     if (random)
     {
 
-#pragma omp parallel for
+        // Draw every chain's starting point serially, then evaluate the
+        // posteriors in parallel. Drawing inside the parallel loop gave every
+        // chain on a different thread the SAME start on Windows: MSVC keeps
+        // rand()'s state per thread, each thread seeded with 1.
+        vector<double> pp(MCMC_Settings.number_of_chains, 0.0);
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
-            double pp = 0;
             for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
             {	if (parameter(i)->GetPriorDistribution()=="log-normal")
                     Params[j][i] = exp(log(parameter(i)->GetRange().low)+(log(parameter(i)->GetRange().high)-log(parameter(i)->GetRange().low))*ND.unitrandom());
                 else
                     Params[j][i] = parameter(i)->GetRange().low+(parameter(i)->GetRange().high-parameter(i)->GetRange().low)*ND.unitrandom();
                 if (parameter(i)->GetPriorDistribution()=="log-normal")
-                    pp += log(Params[j][i]);
+                    pp[j] += log(Params[j][i]);
             }
-            logp[j] = posterior(Params[j], j)+pp;
+        }
+#pragma omp parallel for
+        for (int j=0; j<MCMC_Settings.number_of_chains; j++)
+        {
+            logp[j] = posterior(Params[j], j)+pp[j];
             logp1[j] = logp[j];
         }
     }
@@ -327,10 +334,11 @@ void CMCMC<T>::initialize(bool random)
         // Gaussian otherwise, scaled by pertcoeff (= initial_purturbation_factor
         // times the prior's log-range), and clipped to the prior range.
         // Set initial_purturbation = No to put every chain on the seed instead.
-#pragma omp parallel for
+        // Starting points are drawn serially (see the random branch above) and
+        // only the posterior evaluations run in parallel.
+        vector<double> pp(MCMC_Settings.number_of_chains, 0.0);
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
-            double pp = 0;
             for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
             {   double v = parameter(i)->GetValue();
                 if (j > 0 && !MCMC_Settings.noinipurt)
@@ -346,10 +354,13 @@ void CMCMC<T>::initialize(bool random)
                 }
                 Params[j][i] = v;
                 if (parameter(i)->GetPriorDistribution()=="log-normal")
-                    pp += log(Params[j][i]);
+                    pp[j] += log(Params[j][i]);
             }
-
-            logp[j] = posterior(Params[j], j)+pp;
+        }
+#pragma omp parallel for
+        for (int j=0; j<MCMC_Settings.number_of_chains; j++)
+        {
+            logp[j] = posterior(Params[j], j)+pp[j];
             logp1[j] = logp[j];
         }
     }
