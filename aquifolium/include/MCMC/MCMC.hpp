@@ -394,7 +394,7 @@ void CMCMC<T>::initialize(vector<double> par)
 		{
             if (parameter(j).Get_Distribution()=="normal" || parameter(j).Get_Distribution()=="uniform")
 			{
-                pertcoeff[j] = MCMC_Settings.purturbation_factor*(-parameter(j)->GetRange().low + -parameter(j)->GetRange().high);
+                pertcoeff[j] = MCMC_Settings.purturbation_factor*(parameter(j)->GetRange().high - parameter(j)->GetRange().low);
 			}
             if (parameter(j).Get_Distribution()=="log-normal")
 			{
@@ -634,6 +634,33 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
     MCMC_Settings.ini_purt_fact = pertcoeff[0];
 	int k_0 = k;
 
+    // Rows [written_to, done_to) of the chain are complete but not yet in the
+    // file. The file is appended every 50 blocks of chains and once more after
+    // the loop, so the final partial block (and a cancelled run's last
+    // samples) are never lost.
+    int written_to = k_0;
+    int done_to = k_0;
+    auto write_rows = [&](int upto)
+    {
+        if (upto <= written_to) return;
+        FILE *f = fopen(filename.c_str(), "a");
+        if (!f) return;
+        for (int jj = written_to; jj < upto; jj++)
+        {
+            if (jj%MCMC_Settings.save_interval == 0)
+            {
+                fprintf(f, "%i, ", jj);
+                for (int i = 0; i < MCMC_Settings.number_of_parameters; i++)
+                    fprintf(f, "%le, ", Params[jj][i]);
+                fprintf(f, "%le, %le, %f,", logp[jj], logp1[jj], stuckcounter[jj%MCMC_Settings.number_of_chains]);
+                for (int j = 0; j < pertcoeff.size(); j++) fprintf(f, "%le,", pertcoeff[j]);
+                fprintf(f, "\n");
+            }
+        }
+        fclose(f);
+        written_to = upto;
+    };
+
 #ifndef Q_GUI_SUPPORT
     // Headless progress state. accepted_count/total_count are zeroed by the
     // perturbation-adaptation block below, so keep separate running totals for
@@ -722,31 +749,9 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
         QCoreApplication::processEvents(QEventLoop::AllEvents,100*1000);
 #endif
 
-        if ((kk-k_0) % (50 * MCMC_Settings.number_of_chains) == 0 || kk == k + nsamps + MCMC_Settings.number_of_chains - 1)
-		{
-
-            file = fopen(filename.c_str(), "a");
-            for (int jj = max(int(min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples) - 50 * MCMC_Settings.number_of_chains), k_0); jj < min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples); jj++)
-			{
-                if (jj%MCMC_Settings.save_interval == 0)
-				{
-                    //QCoreApplication::processEvents(QEventLoop::AllEvents,100*1000);
-
-					fprintf(file, "%i, ", jj);
-                    for (int i = 0; i < MCMC_Settings.number_of_parameters; i++)
-						fprintf(file, "%le, ", Params[jj][i]);
-                    fprintf(file, "%le, %le, %f,", logp[jj], logp1[jj], stuckcounter[jj%MCMC_Settings.number_of_chains]);
-					for (int j = 0; j < pertcoeff.size(); j++) fprintf(file, "%le,", pertcoeff[j]);
-					fprintf(file, "\n");
-
-				}
-
-                //cout << jj << "," << pertcoeff[0] << "," << stuckcounter.max() << "," << stuckcounter.min() << endl;
-                ////qDebug() << jj << "," << pertcoeff[0] << "," << stuckcounter.max() << "," << stuckcounter.min();
-				//if (jj<n_burnout)
-			}
-			fclose(file);
-		}
+        done_to = min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples);
+        if ((kk-k_0) % (50 * MCMC_Settings.number_of_chains) == 0)
+            write_rows(done_to);
 
         if (MCMC_Settings.covariance_proposal &&
             kk > MCMC_Settings.burnout_samples &&
@@ -836,6 +841,8 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
         }
 #endif
 	}
+
+    write_rows(done_to);
 
 	return 0;
 }
