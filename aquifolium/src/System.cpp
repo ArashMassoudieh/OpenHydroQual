@@ -1207,7 +1207,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
             QCoreApplication::processEvents();
         }
 #else
-        errorhandler.Flush();
+        errorhandler.Flush("Warning: ");   // logged during the solve: the run continues
 #endif
     }
 

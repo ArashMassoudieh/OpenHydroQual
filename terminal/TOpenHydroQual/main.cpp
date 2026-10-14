@@ -28,8 +28,10 @@ enum ExitCode {
     EXIT_OK          = 0,
     EXIT_USAGE       = 2,   // no input file, or --help
     EXIT_NO_INPUT    = 3,   // the .ohq does not exist or is unreadable
-    EXIT_MODEL_ERROR = 4,   // model built, but the error handler logged problems,
-                            // or a property violates its declared criteria
+    EXIT_MODEL_ERROR = 4,   // the model could not be built as written (problems logged
+                            // while executing the script), or a property violates its
+                            // declared criteria. Messages logged DURING the solve are
+                            // warnings: the run continues and exits 0.
     EXIT_SOLVE_FAIL  = 5    // Solve() returned false
 };
 
@@ -188,10 +190,13 @@ int main(int argc, char *argv[])
     cout << "Solving ..." << endl;
     const bool ok = system->Solve(npar > 0);
 
-    const int nerr_after = system->GetErrorHandler()->Count();
-    if (nerr_after > 0) {
-        cout << "\n*** " << nerr_after << " error(s) during the solve:" << endl;
-        system->GetErrorHandler()->Flush();
+    // Anything logged while solving (for example an inflow term a block type does
+    // not define, which evaluates to 0) is reported as a warning. The solve itself
+    // decides success: a failed solve exits EXIT_SOLVE_FAIL below.
+    const int nwarn = system->GetErrorHandler()->Count();
+    if (nwarn > 0) {
+        cout << "\n*** " << nwarn << " warning(s) during the solve (the run continued):" << endl;
+        system->GetErrorHandler()->Flush("Warning: ");
     }
     if (!ok) {
         cout << "*** Solve() failed." << endl;
@@ -248,5 +253,5 @@ int main(int argc, char *argv[])
         system->GetOutputs().write(out);
     }
     delete system;
-    return nerr_after > 0 ? EXIT_MODEL_ERROR : EXIT_OK;
+    return EXIT_OK;
 }
