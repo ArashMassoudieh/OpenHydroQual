@@ -19,6 +19,7 @@ A loaded model can now be compiled into a standalone C++ library. Every equation
 - A fixed C ABI (`ohq_kernel_*`, version 3) for loading a compiled model at runtime: parameters, observations, objective functions, state vectors, forcing replacement, hot restart and constituent masses
 - Optional extra outputs selected with `ohq_generate --outputs`
 - Transport steps that fail to converge are retried with smaller sub-steps, where previously the whole run was aborted
+- Compiled models adapt the time step and end the run exactly as the interpreter does, and reset fully between runs, so calibrations on a compiled model reach the same estimates as on the interpreter
 - Windows DLL kernels are supported
 - Results of the compiled and interpreted models agree closely; this was checked on the example models
 
@@ -32,7 +33,7 @@ Documentation: `codegen/README.md`
 - **EMC calibration.** Models can be calibrated against event mean concentrations. Documentation: `docs/emc_calibration.tex`
 - New objective-function method **tail_expectation**, the upper-tail partial expectation, which responds to the size of the largest values and not only to how long they last
 - **Continue a GA run** from a previous GA output file. GA and MCMC now check that the file's parameter names match the model, and stop if they do not
-- Headless GA and MCMC runners (`OHQ-GA`, `OHQ-MCMC`) are now in the repository and can drive compiled models
+- Headless GA, LM and MCMC runners (`OHQ-GA`, `OHQ-LM`, `OHQ-MCMC`) are now in the repository and can drive compiled models, with step-by-step guides in `terminal/OHQ-Common/README.md` and each runner's README, and a helper (`set_parameter_values.py`) to carry results from one method to the next
 - The GA keeps only the model copies it is solving in memory, which cuts memory use by up to 5x on large models, with identical results
 - Misfit, R² and NSE calculations no longer scale quadratically with series length (about 20x faster on long series)
 - Failed simulations are handled during optimization, and the Levenberg-Marquardt progress chart now scales correctly
@@ -69,6 +70,7 @@ Documentation for the HRUs and dual drainage: `docs/hydrologic_response_units.te
 - A time-series default value was loaded as a file name and crashed model loading
 - Time series with a single point are handled safely
 - Compiled models now match parameters and observations by name, so systems rebuilt in a different order receive the correct values
+- The MCMC chain file now always includes the last samples of a run (previously up to 50 samples per chain at the end were not written), and continuing an MCMC run resumes from the correct sample without repeating rows
 - macOS build and notarization fixes
 
 ### Examples
