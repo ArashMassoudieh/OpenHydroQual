@@ -133,7 +133,10 @@ vector<string> Objective_Function::ItemswithOutput()
 double Objective_Function::GetObjective()
 {
     SetProperty("method", Variable("method")->GetProperty());
-    stored_time_series = stored_time_series.make_uniform(Parent()->dt0());
+    // rates (objective located on a link or source) hold over each step; see System::UniformizeOutputs
+    stored_time_series = Parent()->IsRateLocation(GetLocation())
+        ? stored_time_series.make_uniform_step(Parent()->dt0(), Parent()->tstart())
+        : stored_time_series.make_uniform(Parent()->dt0());
     if (type == objfunctype::Integrate)
     {   objective_value = fabs(stored_time_series.integrate());
         return objective_value;

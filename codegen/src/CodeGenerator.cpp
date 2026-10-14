@@ -1343,6 +1343,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
     // something to score.
     const unsigned nObj = system.ObjectiveFunctionsCount();
     std::ostringstream obsBody, obsNameArr, paramNameArr, paramInitArr, objBody, objNameArr, outBody, outNameArr;
+    std::ostringstream obsRateArr, objRateArr;   // 1 = located on a link/source: a rate held over each step
     {
         std::function<EmitContext(Object*, bool, int)> makeCtxObs;
         makeCtxObs = [&](Object* cur, bool isLink, int linkIdx) -> EmitContext {
@@ -1426,6 +1427,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             Observation* ob = system.observation(i);
             obsNameArr << (i ? ", " : "") << cstr(ob->GetName());
             const std::string loc = ob->GetLocation();
+            obsRateArr << (i ? ", " : "") << (system.IsRateLocation(loc) ? 1 : 0);
             const std::string exprText = ob->Variable("expression") ? ob->Variable("expression")->GetProperty() : "";
             Object* o = system.object(loc);
             const bool ok = o && !exprText.empty() &&
@@ -1441,6 +1443,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
             Objective_Function* of = system.objectivefunction(i);
             objNameArr << (i ? ", " : "") << cstr(of->GetName());
             const std::string loc = of->GetLocation();
+            objRateArr << (i ? ", " : "") << (system.IsRateLocation(loc) ? 1 : 0);
             const std::string exprText = of->Variable("expression") ? of->Variable("expression")->GetProperty() : "";
             Object* o = system.object(loc);
             const bool ok = o && !exprText.empty() &&
@@ -1507,9 +1510,13 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
         + (T ? "        // integrate transport over the ACCEPTED step. The forcing time is the\n"
                "        // step's START, as in the interpreter (see forcing_at_step_start).\n"
-               "        if (!transport_.step(t_prev, solver_.time() - t_prev)) return false;\n" : "")
-        + (O ? "        recordObservations(t_prev);   // System.cpp:1492, stamped before t advances\n" : "")
-        + (OJ ? "        recordObjectives(t_prev);     // Objective_Function::append_value, same stamping\n" : "")
+               "        if (!transport_.step(t_prev, solver_.time() - t_prev)) return false;\n"
+               "        // dt_base adapts on the largest Newton count of the step, transport\n"
+               "        // included (System::HandleSolveSuccess, MaxNumberOfIterations); an\n"
+               "        // overshoot refreshes every Jacobian (SetUpdateJacobian(true))\n"
+               "        if (solver_.adaptDt(transport_.lastIterations())) transport_.requestJacobianUpdate();\n" : "")
+        + (O ? "        recordObservations(t_prev, solver_.time());   // evaluated at the step start, stamped at its end (t + dt), as System::HandleSolveSuccess\n" : "")
+        + (OJ ? "        recordObjectives(t_prev, solver_.time());     // Objective_Function::append_value, same timing\n" : "")
         + "        oscillationControl();   // inert unless the setting is on\n"
         + "        return true;\n    }\n";
     // ---- oscillation control (System.cpp:1531-1610, CountOscillatingStates
@@ -1663,9 +1670,12 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
           "    // uniform initial_time_step grid. The step stayed adaptive; this only\n"
           "    // changes the sample times the caller sees, so a kernel objective compares\n"
           "    // on the same grid Objective_Function uses (make_uniform(dt0)).\n"
-        + "    void uniformizeObservations() { for (auto& s : obs_) s = s.makeUniform(dt0_); }\n"
-        + "    void recordObservations(double t_eval) {\n        double v[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1]; computeObservations(v, t_eval);\n"
-          "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(t_eval, v[i]);\n    }\n"
+        + "    // rates (observations on a link or source) are step-averaged, states interpolated,\n"
+          "    // as System::MakeObservationsExpressionUniform\n"
+        + "    static bool observationIsRate(int i) { static const bool a[] = {" + (O ? obsRateArr.str() : std::string("false")) + "}; return a[i]; }\n"
+        + "    void uniformizeObservations() { for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i] = observationIsRate(i) ? obs_[i].makeUniformStep(dt0_, tstart_) : obs_[i].makeUniform(dt0_); }\n"
+        + "    void recordObservations(double t_eval, double t_stamp) {\n        double v[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1]; computeObservations(v, t_eval);\n"
+          "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(t_stamp, v[i]);\n    }\n"
         + "    // ---- objective functions (same shape as observations; the host feeds\n"
           "    //      these back into Objective_Function::SetTimeSeries so GetObjective()\n"
           "    //      integrates/scores exactly what System::Solve would have given it) ----\n"
@@ -1673,9 +1683,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + "    void computeObjectives(double* out, double t_eval) const {\n        const double t_new = t_eval; (void)t_new; (void)out;\n" + objBody.str() + "    }\n"
         + "    const ohq::TimeSeries& objectiveSeries(int i) const { return obj_[i]; }\n"
         + "    void clearObjectives() { for (auto& s : obj_) { s.t.clear(); s.c.clear(); } }\n"
-        + "    void uniformizeObjectives() { for (auto& s : obj_) s = s.makeUniform(dt0_); }\n"
-        + "    void recordObjectives(double t_eval) {\n        double v[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1]; computeObjectives(v, t_eval);\n"
-          "        for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i].push(t_eval, v[i]);\n    }\n";
+        + "    static bool objectiveIsRate(int i) { static const bool a[] = {" + (OJ ? objRateArr.str() : std::string("false")) + "}; return a[i]; }\n"
+        + "    void uniformizeObjectives() { for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i] = objectiveIsRate(i) ? obj_[i].makeUniformStep(dt0_, tstart_) : obj_[i].makeUniform(dt0_); }\n"
+        + "    void recordObjectives(double t_eval, double t_stamp) {\n        double v[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1]; computeObjectives(v, t_eval);\n"
+          "        for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i].push(t_stamp, v[i]);\n    }\n";
     paramApi +=
         std::string("    // ---- outputs (G7): selected quantities at the current accepted state, on demand ----\n")
         + "    static const char* outputName(int i) { static const char* a[] = {" + (outSpecs.empty() ? std::string("\"\"") : outNameArr.str()) + "}; return a[i]; }\n"
@@ -1752,6 +1763,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + "    ohq::TimeSeries obs_[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1];\n"
         + "    ohq::TimeSeries obj_[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1];\n"
         + "    double dt0_ = 0;\n"
+        + "    double tstart_ = 0;   // start of the period the first recorded rate covers\n"
         + "    // oscillation-control state (see oscillationControl())\n"
         + "    RestorePoint rp_;\n"
         + "    std::vector<std::vector<double>> osc_history_;\n"
@@ -1815,14 +1827,17 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << "    void initialize(double tstart = " << fmt(system.tstart()) << ", double dt0 = "
       << fmt(system.dt0()) << ") {\n        loadSeries();\n        buildConstants();\n" << settingsInit
       << "        dt0_ = dt0;   // output grid: System::FinalizeOutputs uniformizes with dt0\n"
+      << "        tstart_ = tstart;\n"
       << "        solver_.initialize(tstart, dt0);\n"
       << "        bindSelf();\n"
-      << (T ? "        transport_.initialize();\n" : "")
+      << (T ? "        transport_.initialize();\n"
+              "        solver_.setDeferDtAdapt(true);   // adapted in stepImpl, after transport\n" : "")
       << (L ? "        for (int b=0;b<N_STATES;++b) flowStorage_[b]=solver_.storage(b);\n"
               "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
       << (O ? "        clearObservations();   // System::Solve records no observation before the loop\n" : "")
       << (OJ ? "        clearObjectives();\n" : "")
       << "        resetStatus();   // a re-initialize starts a fresh solve (new GA/MCMC sample)\n"
+         "        stepCounter_ = 0;   // System::Solve's `counter` is local to each solve\n"
       << "    }\n"
       << tStep
       // ---- G6: solver status (what GetObjectiveFunctionValue and the MCMC

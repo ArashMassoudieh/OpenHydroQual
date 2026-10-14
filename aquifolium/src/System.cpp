@@ -1207,7 +1207,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
             QCoreApplication::processEvents();
         }
 #else
-        errorhandler.Flush();
+        errorhandler.Flush("Warning: ");   // logged during the solve: the run continues
 #endif
     }
 
@@ -1495,8 +1495,12 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
 
     fail_counter = 0;
     Update();
-    UpdateObjectiveFunctions(SolverTempVars.t);
-    UpdateObservations(SolverTempVars.t);
+    // The accepted step advanced the state from t to t + dt: record it at t + dt.
+    // (It used to be stamped t, so every series lagged the state by one step, by up
+    // to max_timestep_increase_factor * dt0 once the step had grown.)
+    const double t_end = SolverTempVars.t + SolverTempVars.dt;
+    UpdateObjectiveFunctions(t_end);
+    UpdateObservations(t_end);
     // OHQ_OBSLOG=1 : what UpdateObservations just appended, with the time it was
     // stamped with, for codegen parity work.
     if (std::getenv("OHQ_OBSLOG") && ObservationsCount() > 0)
@@ -1532,7 +1536,7 @@ void System::HandleSolveSuccess(int& counter, int& fail_counter,
                          (*observations[0].GetModeledTimeSeries()).size() ? double((*observations[0].GetModeledTimeSeries()).back().c) : 0.0,
                          _m, _S, _c);
     }
-    PopulateOutputs();
+    PopulateOutputs(true, t_end);
     SolverTempVars.t += SolverTempVars.dt;
 
     // Relax a ceiling imposed by any rewind once the solution has been well
@@ -1695,6 +1699,91 @@ bool System::CheckTerminationConditions()
     return false;
 }
 
+// ---------------------------------------------------------------------------
+// Output resampling. Every value is recorded at the END of the accepted step that
+// produced it (t + dt). Two kinds of series need different treatment when they are
+// resampled onto the uniform dt0 grid:
+//  - point values (storages, depths, concentrations, heads): the state at that
+//    instant, interpolated linearly;
+//  - rates (link flows and mass transfer, source terms, time-series forcing, the
+//    inflow terms of a balance): one value applied over the whole step
+//    (t, t + dt], held constant and averaged over each grid interval, so that
+//    integrating the resampled series reproduces the volume the solver moved.
+// Linear interpolation of an end-stamped rate spreads the last value of a short
+// step back across the following long step and inflates integrated volumes.
+// ---------------------------------------------------------------------------
+bool System::IsRateLocation(const string& name)
+{
+    if (name.empty()) return false;
+    if (link(name) != nullptr) return true;
+    if (source(name) != nullptr) return true;
+    return false;
+}
+
+std::set<std::string> System::RateOutputNames()
+{
+    std::set<std::string> out;
+    auto suffix = [](const string& q) {
+        const size_t p = q.rfind(':');
+        return p == string::npos ? q : q.substr(p + 1);
+    };
+    for (unsigned int i = 0; i < blocks.size(); i++)
+    {
+        std::set<std::string> inflow_terms;
+        for (auto it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
+            if (it->second.GetType() == Quan::_type::balance)
+                for (const string& s : it->second.GetCorrespondingInflowVar())
+                    inflow_terms.insert(aquiutils::trim(s));
+        for (auto it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
+        {
+            if (!it->second.IncludeInOutput()) continue;
+            const Quan::_type ty = it->second.GetType();
+            if (ty == Quan::_type::timeseries || ty == Quan::_type::prec_timeseries
+                || ty == Quan::_type::source
+                || inflow_terms.count(it->first) || inflow_terms.count(suffix(it->first)))
+                out.insert(blocks[i].GetName() + "_" + it->first);
+        }
+    }
+    for (unsigned int i = 0; i < links.size(); i++)
+        for (auto it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+                out.insert(links[i].GetName() + "_" + it->first);
+    for (unsigned int i = 0; i < sources.size(); i++)
+        for (auto it = sources[i].GetVars()->begin(); it != sources[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+                out.insert(sources[i].GetName() + "_" + it->first);
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)   // evaluated at the step start
+        for (auto it = reaction_parameters[i].GetVars()->begin(); it != reaction_parameters[i].GetVars()->end(); it++)
+            if (it->second.IncludeInOutput())
+                out.insert(reaction_parameters[i].GetName() + "_" + it->first);
+    for (unsigned int i = 0; i < ObservationsCount(); i++)
+        if (IsRateLocation(observations[i].GetLocation()))
+        {
+            out.insert("Obs_" + observations[i].GetName());
+            for (auto it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
+                out.insert("Obs_" + observations[i].GetName() + "_" + it->first);
+        }
+    for (unsigned int i = 0; i < objective_function_set.size(); i++)
+        if (IsRateLocation(objective_function_set[i]->GetLocation()))
+        {
+            out.insert("Obj_" + objective_function_set[i]->GetName());
+            for (auto it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
+                out.insert("Obj_" + objective_function_set[i]->GetName() + "_" + it->first);
+        }
+    return out;
+}
+
+void System::UniformizeOutputs()
+{
+    const std::set<std::string> rates = RateOutputNames();
+    const double inc = SimulationParameters.dt0;
+    for (auto& ts : Outputs.AllOutputs)
+        ts = rates.count(ts.name()) ? ts.make_uniform_step(inc, SimulationParameters.tstart) : ts.make_uniform(inc, false);
+    for (auto& ts : Outputs.ObservedOutputs)
+        ts = IsRateLocation(observation(ts.name()) ? observation(ts.name())->GetLocation() : string())
+             ? ts.make_uniform_step(inc, SimulationParameters.tstart) : ts.make_uniform(inc, false);
+}
+
 void System::FinalizeOutputs(bool uniformizeoutput)
 {
     LogMessage("Adjusting outputs ...");
@@ -1722,10 +1811,8 @@ void System::FinalizeOutputs(bool uniformizeoutput)
     if (uniformizeoutput)
     {
         LogMessage("Uniformizing outputs ...");
-        Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0, false);
-
         LogMessage("Uniformizing observations ...");
-        Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0, false);
+        UniformizeOutputs();
 
         LogMessage("Uniformizing objective functions ...");
         MakeObjectiveFunctionExpressionUniform();
@@ -2295,6 +2382,16 @@ bool System::TransferResultsFrom(System *other)
 
 void System::PopulateOutputs(bool dolinks)
 {
+    PopulateOutputs(dolinks, SolverTempVars.t);
+}
+
+// Records the current (present) values of every output under the time stamp t_stamp.
+// After an accepted step the present values are the state at the END of the step, so
+// HandleSolveSuccess passes t + dt. Expressions are still evaluated at
+// SolverTempVars.t (the step's start, where the step's forcing was read), so the
+// recorded flows are exactly the ones the solver used for that step.
+void System::PopulateOutputs(bool dolinks, double t_stamp)
+{
 
     CalcAllExpressions(Expression::timing::present, false, dolinks);
     if (RecordResults())
@@ -2303,7 +2400,7 @@ void System::PopulateOutputs(bool dolinks)
         {
             for (unordered_map<string, Quan>::iterator it = blocks[i].GetVars()->begin(); it != blocks[i].GetVars()->end(); it++)
                 if (it->second.IncludeInOutput())
-                    Outputs.AllOutputs[blocks[i].GetName() + "_" + it->first].append(SolverTempVars.t, blocks[i].GetVal(it->first, Expression::timing::present));
+                    Outputs.AllOutputs[blocks[i].GetName() + "_" + it->first].append(t_stamp, blocks[i].GetVal(it->first, Expression::timing::present));
 
         }
 
@@ -2313,7 +2410,7 @@ void System::PopulateOutputs(bool dolinks)
                 for (unordered_map<string, Quan>::iterator it = links[i].GetVars()->begin(); it != links[i].GetVars()->end(); it++)
                     if (it->second.IncludeInOutput())
                     {
-                        Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(SolverTempVars.t, links[i].GetVal(it->first, Expression::timing::present, true));
+                        Outputs.AllOutputs[links[i].GetName() + "_" + it->first].append(t_stamp, links[i].GetVal(it->first, Expression::timing::present, true));
                     }
             }
 
@@ -2323,19 +2420,19 @@ void System::PopulateOutputs(bool dolinks)
                 if (it->second.IncludeInOutput())
                 {
                     //sources[i].CalcExpressions(Expression::timing::present);
-                    Outputs.AllOutputs[sources[i].GetName() + "_" + it->first].append(SolverTempVars.t, sources[i].GetVal(it->first, Expression::timing::present, true));
+                    Outputs.AllOutputs[sources[i].GetName() + "_" + it->first].append(t_stamp, sources[i].GetVal(it->first, Expression::timing::present, true));
                 }
         }
 
 
         for (unsigned int i = 0; i < objective_function_set.size(); i++)
         {
-            Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName()].append(SolverTempVars.t, objectivefunction(objective_function_set[i]->GetName())->Value());
+            Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName()].append(t_stamp, objectivefunction(objective_function_set[i]->GetName())->Value());
             for (unordered_map<string, Quan>::iterator it = objective_function_set[i]->GetVars()->begin(); it != objective_function_set[i]->GetVars()->end(); it++)
                 if (it->second.IncludeInOutput())
                 {
                     //sources[i].CalcExpressions(Expression::timing::present);
-                    Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName() + "_" + it->first].append(SolverTempVars.t, objective_function_set[i]->Variable(it->first)->CalcVal(object(objective_function_set[i]->GetLocation()), Expression::timing::present));
+                    Outputs.AllOutputs["Obj_" + objective_function_set[i]->GetName() + "_" + it->first].append(t_stamp, objective_function_set[i]->Variable(it->first)->CalcVal(object(objective_function_set[i]->GetLocation()), Expression::timing::present));
                 }
         }
 
@@ -2345,7 +2442,7 @@ void System::PopulateOutputs(bool dolinks)
                 if (it->second.IncludeInOutput())
                 {
                     //sources[i].CalcExpressions(Expression::timing::present);
-                    Outputs.AllOutputs[reaction_parameters[i].GetName() + "_" + it->first].append(SolverTempVars.t, reaction_parameters[i].GetVal(it->first, Expression::timing::present, true));
+                    Outputs.AllOutputs[reaction_parameters[i].GetName() + "_" + it->first].append(t_stamp, reaction_parameters[i].GetVal(it->first, Expression::timing::present, true));
                 }
         }
 
@@ -2358,8 +2455,8 @@ void System::PopulateOutputs(bool dolinks)
         for (unsigned int i = 0; i < observations.size(); i++)
         {
             if (RecordResults())
-                Outputs.AllOutputs["Obs_" + observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
-            Outputs.ObservedOutputs[observations[i].GetName()].append(SolverTempVars.t, observation(observations[i].GetName())->Value());
+                Outputs.AllOutputs["Obs_" + observations[i].GetName()].append(t_stamp, observation(observations[i].GetName())->Value());
+            Outputs.ObservedOutputs[observations[i].GetName()].append(t_stamp, observation(observations[i].GetName())->Value());
             for (unordered_map<string, Quan>::iterator it = observations[i].GetVars()->begin(); it != observations[i].GetVars()->end(); it++)
                 if (it->second.IncludeInOutput() && RecordResults())
                 {
@@ -2368,12 +2465,12 @@ void System::PopulateOutputs(bool dolinks)
                     {   location = object(observations[i].GetLocation());
                         if (location)
                             if (location->ObjectType() != object_type::link || dolinks)
-                                Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present)*location->GetOutflowLimitFactor(Expression::timing::present));
+                                Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(t_stamp, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present)*location->GetOutflowLimitFactor(Expression::timing::present));
                     }
                     else
                     {   location = observation(i);
                         if (location)
-                            Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(SolverTempVars.t, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present));
+                            Outputs.AllOutputs["Obs_" + observations[i].GetName() + "_" + it->first].append(t_stamp, observations[i].Variable(it->first)->CalcVal(location, Expression::timing::present));
                     }
                 }
         }
@@ -3781,7 +3878,9 @@ void System::MakeObjectiveFunctionExpressionUniform()
 {
 
     for (unsigned int i=0; i < ObjectiveFunctionsCount(); i++)
-        objective_function_set[i]->SetTimeSeries(objective_function_set[i]->GetTimeSeries()->make_uniform(SimulationParameters.dt0));
+        objective_function_set[i]->SetTimeSeries(IsRateLocation(objective_function_set[i]->GetLocation())
+            ? objective_function_set[i]->GetTimeSeries()->make_uniform_step(SimulationParameters.dt0, SimulationParameters.tstart)
+            : objective_function_set[i]->GetTimeSeries()->make_uniform(SimulationParameters.dt0));
 
 }
 
@@ -3789,7 +3888,9 @@ void System::MakeObservationsExpressionUniform()
 {
 
     for (unsigned int i=0; i < ObservationsCount(); i++)
-        observation(i)->SetModeledTimeSeries(observations[i].GetModeledTimeSeries()->make_uniform(SimulationParameters.dt0));
+        observation(i)->SetModeledTimeSeries(IsRateLocation(observations[i].GetLocation())
+            ? observations[i].GetModeledTimeSeries()->make_uniform_step(SimulationParameters.dt0, SimulationParameters.tstart)
+            : observations[i].GetModeledTimeSeries()->make_uniform(SimulationParameters.dt0));
 
 }
 
@@ -5578,8 +5679,7 @@ void System::PopulateFunctionOperators()
 
 bool System::WriteOutPuts()
 {
-    Outputs.AllOutputs = Outputs.AllOutputs.make_uniform(SimulationParameters.dt0,false);
-    Outputs.ObservedOutputs = Outputs.ObservedOutputs.make_uniform(SimulationParameters.dt0,false);
+    UniformizeOutputs();
     if (OutputFileName() != "")
     {
         if (QString::fromStdString(OutputFileName()).contains("/") || QString::fromStdString(OutputFileName()).contains("\\"))

@@ -552,7 +552,10 @@ double Observation::GetWeightingValue(const Expression::timing &tmg)
     return 0;
 }
 
-// Trapezoidal integral of a piecewise-linear series over [a,b], one pass.
+// Integral over [a,b] of a rate series recorded at the end of each solver step:
+// the value stamped t_i holds over (t_{i-1}, t_i], the interval the solver applied
+// it to. (A trapezoid between end-stamped values spreads a short step's value
+// across the next, possibly much longer, step.)
 static double window_integral(const TimeSeries<timeseriesprecision> &ts, double a, double b)
 {
     double sum = 0;
@@ -562,11 +565,8 @@ static double window_integral(const TimeSeries<timeseriesprecision> &ts, double 
         if (t1 <= a) continue;
         if (t0 >= b) break;
         if (t1 <= t0) continue;
-        const double c0 = ts.getValue(i-1), c1 = ts.getValue(i);
         const double lo = max(t0,a), hi = min(t1,b);
-        const double v_lo = c0 + (c1-c0)*(lo-t0)/(t1-t0);
-        const double v_hi = c0 + (c1-c0)*(hi-t0)/(t1-t0);
-        sum += 0.5*(v_lo+v_hi)*(hi-lo);
+        sum += ts.getValue(i)*(hi-lo);
     }
     return sum;
 }

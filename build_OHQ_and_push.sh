@@ -4,7 +4,7 @@ set -e  # Exit on error
 
 # === Settings ===
 PACKAGE_NAME="openhydroqual"
-VERSION="2.0.7"
+VERSION="2.1.1"
 ARCH="amd64"
 VERSIONED_DEB_FILE="${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
 FIXED_NAME="openhydroqual_amd64.deb"
@@ -24,7 +24,7 @@ echo "🔧 Running qmake6..."
 ( cd "$BUILD_DIR" && qmake6 "$(basename "$PRO_FILE")" CONFIG+=release )
 
 echo "⚙️ Running make..."
-make -C "$BUILD_DIR" -j$(nproc)
+nice make -C "$BUILD_DIR" -j4
 
 # === Step 2: Prepare staging directory ===
 echo "🧹 Cleaning old files from staging directory..."

@@ -336,7 +336,7 @@
       "includeinoutput": "true",
       "description": "Gradient of e_as vs T",
       "ask_user": "false",
-      "expression": "4098*e_as/(237.3+Temperature)"
+      "expression": "4098*e_as/((237.3+Temperature)^2)"
     },
     "rate": {
       "type": "expression",

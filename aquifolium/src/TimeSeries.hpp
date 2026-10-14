@@ -1611,6 +1611,42 @@ TimeSeries<T> TimeSeries<T>::make_uniform(T increment, bool assignD) const {
 
 
 template<typename T>
+TimeSeries<T> TimeSeries<T>::make_uniform_step(T increment, T t_start) const {
+    TimeSeries<T> out;
+    TimeSeries<T> src;
+    // the first recorded value covers (t_start, t_first]: add the start as a stamp
+    if (!std::isnan(t_start) && !this->empty() && t_start < this->front().t)
+        src.addPoint(t_start, this->front().c, std::nullopt);
+    for (const DataPoint<T>& p : this->removeNaNs()) src.addPoint(p.t, p.c, p.d);
+    if (src.empty() || !(increment > T{})) return out;
+    out.setName(name());
+    out.setUnit(unit());
+    const size_t n = src.size();
+    const T t0 = src.front().t;
+    const T t_end = src.back().t;
+    out.addPoint(t0, src.front().c, std::nullopt);
+    // Piecewise constant: value src[i].c on (src[i-1].t, src[i].t]. Walk both grids once.
+    size_t i = 1;
+    for (T tau = t0 + increment; tau <= t_end + increment * T(1e-9); tau += increment) {
+        const T a = tau - increment;
+        T integral = T{};
+        while (i < n && src[i].t <= a) ++i;            // first interval ending after a
+        size_t k = i;
+        while (k < n) {
+            const T lo = std::max(a, src[k - 1].t);
+            const T hi = std::min(tau, src[k].t);
+            if (hi > lo) integral += src[k].c * (hi - lo);
+            if (src[k].t >= tau) break;
+            ++k;
+        }
+        out.addPoint(tau, integral / increment, std::nullopt);
+    }
+    out.structured_ = true;
+    out.dt_ = increment;
+    return out;
+}
+
+template<typename T>
 T TimeSeries<T>::getLastValue() const {
     return this->empty() ? T{} : this->back().c;
 }

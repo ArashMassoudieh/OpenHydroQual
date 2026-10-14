@@ -10,13 +10,11 @@
  *
  * Comparison basis: after Solve the interpreter resamples each observation to
  * dt0 (MakeObservationsExpressionUniform); we compare at those uniform times by
- * linear interpolation of the kernel's per-step series. Empirically the
- * interpreter's series align with END-of-step time stamps (the kernel's
- * convention): on the dt-capped Wetland model every observation agrees to
- * <= 3e-3 rms with end stamps vs ~2e-2 with a start-of-step emulation
- * (UpdateObservations(t) is called before t += dt in System::Solve, but the
- * values it records already belong to the advanced time). The start-stamped
- * emulation is still printed as a diagnostic column.
+ * linear interpolation of the kernel's per-step series. Both the interpreter
+ * and the kernel stamp each recorded value with the END of the step that
+ * produced it (System::HandleSolveSuccess records at t + dt). Before that was
+ * fixed the interpreter stamped the step's start, so its series lagged by one
+ * step; the start-stamped emulation is still printed as a diagnostic column.
  *
  * Run the interpreter with dt capped (max_timestep_increase_factor small): its
  * dt clamp follows PRECIPITATION series only, so on dry days it samples the
