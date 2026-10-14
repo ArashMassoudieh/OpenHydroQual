@@ -452,3 +452,7 @@ Examples/LM_Calibration/02_Monod_Reactor/observedoutputs.txt
 Examples/LM_Calibration/02_Monod_Reactor/outputs.txt
 
 terminal/OHQ-GA/build_tail/OHQ-GA
+
+# Intermediate files of the Visual Studio builds of the command-line tools and OHQLib
+terminal/OHQ-*/x64/
+OHQLib/x64/

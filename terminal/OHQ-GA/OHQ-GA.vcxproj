@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- OHQ-GA: Visual Studio build of the same sources as OHQ-GA.pro (qmake), part of OpenHydroQual.sln.
+     Third-party locations match QAquifolium.vcxproj. If yours differ, override ArmadilloDir,
+     OpenBlasDir and GslDir (for example msbuild /p:ArmadilloDir=D:\armadillo-15.2.3). -->
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D077CC61-BC9F-4570-BCAE-0D655059DED9}</ProjectGuid>
+    <RootNamespace>OHQ-GA</RootNamespace>
+    <Keyword>QtVS_v304</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
+    <ArmadilloDir Condition="'$(ArmadilloDir)'==''">C:\Projects\armadillo-15.2.3</ArmadilloDir>
+    <OpenBlasDir Condition="'$(OpenBlasDir)'==''">C:\Projects\OpenBLAS-0.3.31-x64\win64</OpenBlasDir>
+    <GslDir Condition="'$(GslDir)'==''">C:\Projects\vcpkg\packages\gsl_x64-windows</GslDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt_defaults.props')">
+    <Import Project="$(QtMsBuild)\qt_defaults.props" />
+  </ImportGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="QtSettings">
+    <QtInstall>6.7</QtInstall>
+    <QtModules>core</QtModules>
+    <QtBuildConfig>debug</QtBuildConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="QtSettings">
+    <QtInstall>6.7</QtInstall>
+    <QtModules>core</QtModules>
+    <QtBuildConfig>release</QtBuildConfig>
+  </PropertyGroup>
+  <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
+    <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
+  </Target>
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(QtMsBuild)\Qt.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(QtMsBuild)\Qt.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <!-- Next to OpenHydroQual.exe, so every binary the installer ships is in one folder. -->
+    <OutDir>$(SolutionDir)x64\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)x64\$(Configuration)\</IntDir>
+    <!-- The tools find their templates through OHQ_RESOURCES, which the installer sets. -->
+    <LocalDebuggerEnvironment>OHQ_RESOURCES=$(SolutionDir)resources\
+$(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\jsoncpp\include;..\..\.;..\..\terminal\OHQ-Common;$(ArmadilloDir)\include;$(OpenBlasDir)\include;$(GslDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NO_OPENMP;DEBUG;_CONSOLE;WIN64;windows_version;Terminal_version;Q_JSON_SUPPORT;ARMA_USE_LAPACK;ARMA_USE_BLAS;ARMA_DONT_USE_WRAPPER;GSL;_WINDOWS;NOMINMAX;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <Optimization>Disabled</Optimization>
+      <OpenMPSupport>false</OpenMPSupport>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ProcessorNumber>8</ProcessorNumber>
+      <AdditionalOptions>/bigobj /utf-8 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(OpenBlasDir)\lib;$(GslDir)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libopenblas.lib;gsl.lib;gslcblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copy the OpenBLAS and GSL DLLs next to the executable</Message>
+      <Command>xcopy /y /d /q "$(OpenBlasDir)\bin\libopenblas.dll" "$(OutDir)" &gt;nul
+xcopy /y /d /q "$(GslDir)\bin\gsl.dll" "$(OutDir)" &gt;nul
+xcopy /y /d /q "$(GslDir)\bin\gslcblas.dll" "$(OutDir)" &gt;nul</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>..\..\aquifolium\include;..\..\aquifolium\src;..\..\aquifolium\include\GA;..\..\aquifolium\include\MCMC;..\..\jsoncpp\include;..\..\.;..\..\terminal\OHQ-Common;$(ArmadilloDir)\include;$(OpenBlasDir)\include;$(GslDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CONSOLE;WIN64;windows_version;Terminal_version;Q_JSON_SUPPORT;ARMA_USE_LAPACK;ARMA_USE_BLAS;ARMA_DONT_USE_WRAPPER;GSL;_WINDOWS;NOMINMAX;_USE_MATH_DEFINES;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <Optimization>MaxSpeed</Optimization>
+      <OpenMPSupport>true</OpenMPSupport>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ProcessorNumber>8</ProcessorNumber>
+      <AdditionalOptions>/bigobj /utf-8 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(OpenBlasDir)\lib;$(GslDir)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libopenblas.lib;gsl.lib;gslcblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copy the OpenBLAS and GSL DLLs next to the executable</Message>
+      <Command>xcopy /y /d /q "$(OpenBlasDir)\bin\libopenblas.dll" "$(OutDir)" &gt;nul
+xcopy /y /d /q "$(GslDir)\bin\gsl.dll" "$(OutDir)" &gt;nul
+xcopy /y /d /q "$(GslDir)\bin\gslcblas.dll" "$(OutDir)" &gt;nul</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\terminal\OHQ-GA\main.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Block.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Command.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Composite.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Condition.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\constituent.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\ErrorHandler.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Expression.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\GA\Binary.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\GA\Distribution.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\GA\DistributionNUnif.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\GA\Individual.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Link.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Matrix.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Matrix_arma.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\MetaModel.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\NormalDist.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Object.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Objective_Function.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Objective_Function_Set.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\observation.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Parameter.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Parameter_Set.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\precalculatedfunction.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Precipitation.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Quan.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\QuanSet.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\QuickSort.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\reaction.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\restorepoint.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Rule.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\RxnParameter.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Script.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\solutionlogger.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Source.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\System.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Utilities.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Vector.cpp" />
+    <ClCompile Include="..\..\aquifolium\src\Vector_arma.cpp" />
+    <ClCompile Include="..\..\jsoncpp\src\lib_json\json_reader.cpp" />
+    <ClCompile Include="..\..\jsoncpp\src\lib_json\json_value.cpp" />
+    <ClCompile Include="..\..\jsoncpp\src\lib_json\json_writer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\aquifolium\include\System.h" />
+    <ClInclude Include="..\..\aquifolium\include\Script.h" />
+    <ClInclude Include="..\..\aquifolium\include\GA\GA.h" />
+    <ClInclude Include="..\..\aquifolium\include\GA\GA.hpp" />
+    <ClInclude Include="..\..\aquifolium\include\MCMC\MCMC.h" />
+    <ClInclude Include="..\..\aquifolium\include\MCMC\MCMC.hpp" />
+    <ClInclude Include="..\..\terminal\OHQ-Common\ohq_common.h" />
+    <ClInclude Include="..\..\terminal\OHQ-Common\ohq_kernel.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
+    <Import Project="$(QtMsBuild)\qt.targets" />
+  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

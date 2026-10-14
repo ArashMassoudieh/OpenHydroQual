@@ -52,13 +52,14 @@ win32: QMAKE_CXXFLAGS += /MP
 CONFIG(debug, debug|release) {
     message(  debug mode)
     DEFINES += NO_OPENMP DEBUG
-    LIBS += -lpthread
+    !win32: LIBS += -lpthread
 } else {
     message(  release mode)
-    !macx: QMAKE_CXXFLAGS *= "-Xpreprocessor -fopenmp"
-    !macx: QMAKE_LFLAGS  += -fopenmp
-    !macx: LIBS += -lgomp
-    LIBS += -lpthread
+    unix:!macx: QMAKE_CXXFLAGS *= "-Xpreprocessor -fopenmp"
+    unix:!macx: QMAKE_LFLAGS  += -fopenmp
+    unix:!macx: LIBS += -lgomp
+    !win32: LIBS += -lpthread
+    win32: QMAKE_CXXFLAGS += /openmp
 }
 
 linux {
@@ -70,8 +71,19 @@ macx {
     INCLUDEPATH += /opt/homebrew/include /usr/local/include
     LIBS += -L/opt/homebrew/lib -L/usr/local/lib -larmadillo -llapack -lblas -lgsl
 }
+# Windows (MSVC 2022 + Qt 6 msvc2019_64), same third-party layout as the GUI's
+# QAquifolium.vcxproj. Override any of these on the qmake command line, e.g.
+#   qmake ..\OHQ-GA.pro ARMA_DIR=C:/Projects/armadillo-15.2.3
 win32 {
-    DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS GSL
+    isEmpty(ARMA_DIR):     ARMA_DIR     = C:/Projects/armadillo-15.2.3
+    isEmpty(OPENBLAS_DIR): OPENBLAS_DIR = C:/Projects/OpenBLAS-0.3.31-x64/win64
+    isEmpty(GSL_DIR):      GSL_DIR      = C:/Projects/vcpkg/packages/gsl_x64-windows
+    # _WINDOWS keeps MCMC.hpp away from openblas_config.h / openblas_set_num_threads;
+    # ARMA_DONT_USE_WRAPPER links BLAS/LAPACK straight from OpenBLAS.
+    DEFINES += ARMA_USE_LAPACK ARMA_USE_BLAS ARMA_DONT_USE_WRAPPER GSL _WINDOWS WIN64 NOMINMAX _USE_MATH_DEFINES
+    INCLUDEPATH += $$ARMA_DIR/include $$OPENBLAS_DIR/include $$GSL_DIR/include
+    LIBS += -L$$OPENBLAS_DIR/lib -llibopenblas -L$$GSL_DIR/lib -lgsl -lgslcblas
+    QMAKE_CXXFLAGS += /bigobj /utf-8
 }
 
 SOURCES += \
