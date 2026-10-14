@@ -247,6 +247,29 @@ public:
         return std::max(x, 0.001);
     }
     double lastDt() const { return lastDt_; }   // size of the last ACCEPTED step
+
+    // Post-success adaptation of dt_base (System.cpp HandleSolveSuccess, after
+    // the oscillation check). The interpreter decides on MaxNumberOfIterations(),
+    // the largest Newton count over EVERY state variable solved in the step --
+    // the transport phase included. A model with constituents must therefore
+    // defer this until its transport has run (setDeferDtAdapt) and pass the
+    // transport iterations in other_iters; adapting on the flow count alone
+    // grows dt on steps where transport took 20-40 iterations and the
+    // interpreter holds it. Returns true when the count exceeded iter_upper,
+    // where the interpreter also refreshes the Jacobian of every state
+    // variable (SetUpdateJacobian(true)): the caller refreshes the others.
+    bool adaptDt(int other_iters)
+    {
+        const int iters = std::max(iters_last_, other_iters);
+        if (iters > s_.iter_upper) {
+            updateJac_ = true; nrCoeff_ = 1.0;
+            dt_ = std::max(dtApplied_ * s_.dt_reduce, s_.dt_abs_min);
+            return true;
+        }
+        if (iters < s_.iter_lower) dt_ = std::min(dt_ * s_.dt_grow, dt0_ * s_.dt_max_factor);
+        return false;
+    }
+    void setDeferDtAdapt(bool v) { deferAdapt_ = v; }
     // Hard stop time: dt is clamped so a step never crosses it (used by the
     // two-phase transport runTo so both phases land exactly on t_end).
     double stopTime_ = 1e300;
@@ -270,7 +293,15 @@ public:
             linksTo_[m_->linkDst(l)].push_back(l);
         }
         m_->initialStorage(storage_.data());
-        last_iters_ = 0;
+        last_iters_ = 0; iters_last_ = 0;
+        // A fresh solve, as System::InitializeSolver: every Jacobian is stale
+        // (SetUpdateJacobian(true), jacobian_dt = 0) and the 50-step refresh
+        // counter restarts. A host reuses one kernel across GA/LM/MCMC samples;
+        // without this the next sample started on the previous sample's
+        // Jacobian -- assembled with other parameters and another dt -- and
+        // on its refresh phase, so only the first solve on a handle matched.
+        updateJac_ = true; jacDt_ = 0; stepCounter_ = 0; nrCoeff_ = 1.0;
+        dtApplied_ = 0; lastDt_ = 0;
 
         // sparse Jacobian pattern: block adjacency (self + link-connected blocks)
         nbr_.assign(n_, {});
@@ -428,7 +459,8 @@ public:
                 // past_ and poisons every later residual for that block until Newton
                 // stalls (dx/X ~ 1e-9, err/err_ini above tolerance, blocksBalanced
                 // false) and the step aborts -- with dt already at its floor, so
-                // shrinking dt cannot recover. A storage negative by less than 1e-9
+                // shrinking dt cannot recover. A s)OHQRT"
+R"OHQRT(torage negative by less than 1e-9
                 // of the largest storage in the system is solver round-off, not
                 // physics: the block is empty. Snap it to zero so it cannot
                 // accumulate. Blocks genuinely driven negative (beyond round-off)
@@ -444,19 +476,14 @@ public:
                 // post-success adaptation of dt_base (System.cpp ~1591-1605): shrink from the
                 // APPLIED dt (floored at minimum_timestep), grow the base (capped)
                 ++stepCounter_;
-                // System.cpp:1620 -- an iteration overshoot also forces a refresh
-                // and resets the damping coefficient
-                if (iters_last_ > s_.iter_upper) { updateJac_ = true; nrCoeff_ = 1.0; }
-                if (iters_last_ > s_.iter_upper)      dt_ = std::max(dta * s_.dt_reduce, s_.dt_abs_min);
-                else if (iters_last_ < s_.iter_lower) dt_ = std::min(dt_ * s_.dt_grow, dt0_ * s_.dt_max_factor);
+                if (!deferAdapt_) adaptDt(0);
                 return true;
             }
             // failed (HandleSolveFailure): restore limited state, shrink dt_base, floor, retry
             limited_ = limitedAtStart; factor_ = factorAtStart;
             updateJac_ = true;                      // System.cpp:1399 (HandleSolveFailure)
             if (++stepFails > s_.max_step_failures) return false;
-            dt_ = std::max(dt_ * s_.dt_redu)OHQRT"
-R"OHQRT(ce_fail, 0.5 * dt0_ * s_.dt_floor_factor);
+            dt_ = std::max(dt_ * s_.dt_reduce_fail, 0.5 * dt0_ * s_.dt_floor_factor);
         }
     }
 
@@ -752,7 +779,8 @@ private:
         return solveCached(F0, dx);
     }
 
-    static double norm(const std::vector<double>& v)
+    static double norm(con)OHQRT"
+R"OHQRT(st std::vector<double>& v)
     { double s = 0; for (double x : v) s += x*x; return std::sqrt(s); }
 
     // A POINTER, not a reference: the generated kernel is copied per MCMC
@@ -761,6 +789,7 @@ private:
     Model* m_;
     SolverSettings s_;
     int n_ = 0, nl_ = 0, last_iters_ = 0, iters_last_ = 0;
+    bool deferAdapt_ = false;
     double t_ = 0, dt_ = 0, dt0_ = 0, tnew_ = 0;
     double dtApplied_ = 0, lastDt_ = 0;   // applied step of the current / last accepted step
     std::vector<double> storage_, past_, factor_, X_, F_, eff_, flowRaw_, inflowOwn_;
@@ -783,8 +812,7 @@ private:
     double nrCoeff_ = 1.0;
     long stepCounter_ = 0;
     double dtCeiling_ = 0;
-    double jacDt_ = 0;  )OHQRT"
-R"OHQRT( // dt the stored Jacobian was assembled with (0 = none)
+    double jacDt_ = 0;   // dt the stored Jacobian was assembled with (0 = none)
 };
 
 } // namespace ohq
@@ -1464,6 +1492,8 @@ public:
         inflow_.assign(n_, 0.0);
         Q_.assign(n_, 0.0);
         m_->initialMass(mass_.data());
+        // a fresh solve: see MassBalanceSolver::initialize
+        updateJac_ = true; jacDt_ = 0; stepCounter_ = 0; nrCoeff_ = 1.0; last_iters_ = 0;
     }
 
     double mass(int i) const { return mass_[i]; }
@@ -1734,13 +1764,13 @@ private:
     { double s = 0; for (double x : v) s += x*x; return std::sqrt(s); }
 
     // A POINTER, not a reference: the generated kernel is copied per MCMC
-    // chain, and a copy must re-bind this to ITSELF (rebind()). A reference
+    // chain, and a copy must re-bind this to ITSELF (rebind()OHQRT"
+R"OHQRT()). A reference
     // also deletes copy-assignment, which the hosts need.
     Model* m_;
     SolverSettings s_;
     int last_iters_ = 0;
-    int n_ =)OHQRT"
-R"OHQRT( 0, nc_ = 0, nl_ = 0;
+    int n_ = 0, nc_ = 0, nl_ = 0;
     int  max_substep_levels_ = 6;      // up to 64 sub-steps before giving up
     long substep_recoveries_ = 0;
     double t_ = 0, dt_ = 0;

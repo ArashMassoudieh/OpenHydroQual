@@ -55,6 +55,8 @@ public:
         inflow_.assign(n_, 0.0);
         Q_.assign(n_, 0.0);
         m_->initialMass(mass_.data());
+        // a fresh solve: see MassBalanceSolver::initialize
+        updateJac_ = true; jacDt_ = 0; stepCounter_ = 0; nrCoeff_ = 1.0; last_iters_ = 0;
     }
 
     double mass(int i) const { return mass_[i]; }

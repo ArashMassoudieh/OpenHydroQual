@@ -358,17 +358,27 @@ public:
         const double budget  = GetSolverSettings().maximum_simulation_time;
         const auto   started = std::chrono::steady_clock::now();
         bool ok = true, timed_out = false;
-        if (budget > 0 && k.step_to) {
+        // End of run as System::Solve: it loops `while (t < tend + dt)`, dt the
+        // last applied step, and never clamps a step to tend, so the run
+        // overshoots tend by one or two steps and FinalizeOutputs uniformizes
+        // over that whole span. Clamping the last step to tend (run_to, or
+        // step_to(t_end)) instead ended the modeled series exactly at tend; its
+        // dt0 grid, built by repeated addition from the first stamp, then stops
+        // one rounding short of tend, and an observation at tend fell outside it
+        // and was not scored. step_to(+huge) is an unclamped step that also
+        // clears a stop left on this handle by an earlier run_to/step_to.
+        {
             int guard = 0;
-            while (k.time(h_) < t_end) {
-                if (!k.step_to(h_, t_end)) { ok = false; break; }
+            double dt_last = 0;
+            while (k.time(h_) < t_end + dt_last) {
+                const double t_before = k.time(h_);
+                if (!k.step_to(h_, 1e300)) { ok = false; break; }
+                dt_last = k.time(h_) - t_before;
                 // checking the clock every step would cost more than the step
-                if ((++guard & 0x3F) == 0 &&
+                if (budget > 0 && (++guard & 0x3F) == 0 &&
                     std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count() > budget)
                 { ok = false; timed_out = true; break; }
             }
-        } else {
-            ok = k.run_to(h_, t_end) != 0;
         }
         if (timed_out) ++kernel_timeouts_;
         k.uniformize_observations(h_);        // System::FinalizeOutputs does this

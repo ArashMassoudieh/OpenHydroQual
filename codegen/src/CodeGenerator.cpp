@@ -1510,7 +1510,11 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
         + (T ? "        // integrate transport over the ACCEPTED step. The forcing time is the\n"
                "        // step's START, as in the interpreter (see forcing_at_step_start).\n"
-               "        if (!transport_.step(t_prev, solver_.time() - t_prev)) return false;\n" : "")
+               "        if (!transport_.step(t_prev, solver_.time() - t_prev)) return false;\n"
+               "        // dt_base adapts on the largest Newton count of the step, transport\n"
+               "        // included (System::HandleSolveSuccess, MaxNumberOfIterations); an\n"
+               "        // overshoot refreshes every Jacobian (SetUpdateJacobian(true))\n"
+               "        if (solver_.adaptDt(transport_.lastIterations())) transport_.requestJacobianUpdate();\n" : "")
         + (O ? "        recordObservations(t_prev, solver_.time());   // evaluated at the step start, stamped at its end (t + dt), as System::HandleSolveSuccess\n" : "")
         + (OJ ? "        recordObjectives(t_prev, solver_.time());     // Objective_Function::append_value, same timing\n" : "")
         + "        oscillationControl();   // inert unless the setting is on\n"
@@ -1826,12 +1830,14 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << "        tstart_ = tstart;\n"
       << "        solver_.initialize(tstart, dt0);\n"
       << "        bindSelf();\n"
-      << (T ? "        transport_.initialize();\n" : "")
+      << (T ? "        transport_.initialize();\n"
+              "        solver_.setDeferDtAdapt(true);   // adapted in stepImpl, after transport\n" : "")
       << (L ? "        for (int b=0;b<N_STATES;++b) flowStorage_[b]=solver_.storage(b);\n"
               "        computeFlowLocals(flowStorage_, solver_.time());\n" : "")
       << (O ? "        clearObservations();   // System::Solve records no observation before the loop\n" : "")
       << (OJ ? "        clearObjectives();\n" : "")
       << "        resetStatus();   // a re-initialize starts a fresh solve (new GA/MCMC sample)\n"
+         "        stepCounter_ = 0;   // System::Solve's `counter` is local to each solve\n"
       << "    }\n"
       << tStep
       // ---- G6: solver status (what GetObjectiveFunctionValue and the MCMC
