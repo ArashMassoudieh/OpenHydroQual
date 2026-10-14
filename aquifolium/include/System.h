@@ -1095,6 +1095,7 @@ private:
     outputs Outputs;
     void InitiateOutputs();
     void PopulateOutputs(bool links = true);
+    void PopulateOutputs(bool links, double t_stamp);
 
     // =====================================================================
     // Solver logging

@@ -1508,8 +1508,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + (T ? "        // integrate transport over the ACCEPTED step. The forcing time is the\n"
                "        // step's START, as in the interpreter (see forcing_at_step_start).\n"
                "        if (!transport_.step(t_prev, solver_.time() - t_prev)) return false;\n" : "")
-        + (O ? "        recordObservations(t_prev);   // System.cpp:1492, stamped before t advances\n" : "")
-        + (OJ ? "        recordObjectives(t_prev);     // Objective_Function::append_value, same stamping\n" : "")
+        + (O ? "        recordObservations(t_prev, solver_.time());   // evaluated at the step start, stamped at its end (t + dt), as System::HandleSolveSuccess\n" : "")
+        + (OJ ? "        recordObjectives(t_prev, solver_.time());     // Objective_Function::append_value, same timing\n" : "")
         + "        oscillationControl();   // inert unless the setting is on\n"
         + "        return true;\n    }\n";
     // ---- oscillation control (System.cpp:1531-1610, CountOscillatingStates
@@ -1664,8 +1664,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
           "    // changes the sample times the caller sees, so a kernel objective compares\n"
           "    // on the same grid Objective_Function uses (make_uniform(dt0)).\n"
         + "    void uniformizeObservations() { for (auto& s : obs_) s = s.makeUniform(dt0_); }\n"
-        + "    void recordObservations(double t_eval) {\n        double v[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1]; computeObservations(v, t_eval);\n"
-          "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(t_eval, v[i]);\n    }\n"
+        + "    void recordObservations(double t_eval, double t_stamp) {\n        double v[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1]; computeObservations(v, t_eval);\n"
+          "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(t_stamp, v[i]);\n    }\n"
         + "    // ---- objective functions (same shape as observations; the host feeds\n"
           "    //      these back into Objective_Function::SetTimeSeries so GetObjective()\n"
           "    //      integrates/scores exactly what System::Solve would have given it) ----\n"
@@ -1674,8 +1674,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + "    const ohq::TimeSeries& objectiveSeries(int i) const { return obj_[i]; }\n"
         + "    void clearObjectives() { for (auto& s : obj_) { s.t.clear(); s.c.clear(); } }\n"
         + "    void uniformizeObjectives() { for (auto& s : obj_) s = s.makeUniform(dt0_); }\n"
-        + "    void recordObjectives(double t_eval) {\n        double v[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1]; computeObjectives(v, t_eval);\n"
-          "        for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i].push(t_eval, v[i]);\n    }\n";
+        + "    void recordObjectives(double t_eval, double t_stamp) {\n        double v[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1]; computeObjectives(v, t_eval);\n"
+          "        for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i].push(t_stamp, v[i]);\n    }\n";
     paramApi +=
         std::string("    // ---- outputs (G7): selected quantities at the current accepted state, on demand ----\n")
         + "    static const char* outputName(int i) { static const char* a[] = {" + (outSpecs.empty() ? std::string("\"\"") : outNameArr.str()) + "}; return a[i]; }\n"
