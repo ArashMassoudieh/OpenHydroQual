@@ -15,7 +15,19 @@
 
 
 #define openhydroqual_version "2.1.1"
-#define last_modified "September, 27, 2026"
+
+// OHQ_LAST_MODIFIED comes from ohq_build_info.h, which OpenHydroQual.pro
+// generates from the last commit date. Targets that do not generate it fall
+// back to the compile date.
+#if defined(__has_include)
+#  if __has_include("ohq_build_info.h")
+#    include "ohq_build_info.h"
+#  endif
+#endif
+#ifndef OHQ_LAST_MODIFIED
+#  define OHQ_LAST_MODIFIED __DATE__
+#endif
+#define last_modified OHQ_LAST_MODIFIED
 
 #ifdef _WIN32
 #include <windows.h>
