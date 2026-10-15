@@ -39,6 +39,11 @@ cp /opt/homebrew/opt/gcc/lib/gcc/current/libgfortran.5.dylib "${FRAMEWORKS_DIR}/
 cp /opt/homebrew/opt/gcc/lib/gcc/current/libquadmath.0.dylib "${FRAMEWORKS_DIR}/" || true
 cp /opt/homebrew/Cellar/gcc/12.2.0/lib/gcc/12/libgcc_s.1.1.dylib "${FRAMEWORKS_DIR}/" || true
 
+# Homebrew ships some dylibs read-only (mode 444) and cp preserves that, which
+# makes macdeployqt fail when it strips and relocates them. Make the copies
+# writable so it can.
+chmod u+w "${FRAMEWORKS_DIR}"/*.dylib
+
 echo "🔧 Rewriting binary linkage (non-Qt)..."
 install_name_tool -change /opt/homebrew/opt/llvm/lib/libomp.dylib \
   @executable_path/../Frameworks/libomp.dylib \
