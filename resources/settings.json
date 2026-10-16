@@ -118,6 +118,15 @@
    "delegate": "ValueBox",
    "code": "maximum_number_of_matrix_inverstions"
   },
+  "rate_output_interpolation": {
+   "type": "string",
+   "default": "midpoint",
+   "description": "Rate output interpolation",
+   "helptext": "How flows (and other rates on links and sources) are put onto the output grid of the initial time step at the end of a run, before they are plotted or compared with observations. The solver's flow for a time step is the average over that step. 'midpoint' (default) places it at the middle of the step and interpolates linearly between steps, which gives a continuous hydrograph. 'step' (the behaviour before October 2026) holds it constant over the step, so long steps give a staircase. States (storage, depth, head) are always interpolated linearly.",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: step, midpoint",
+   "code": "rate_output_interpolation"
+  },
   "make_timeseries_uniform": {
    "type": "string",
    "default": "Yes",

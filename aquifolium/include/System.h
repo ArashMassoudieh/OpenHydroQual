@@ -146,6 +146,14 @@ struct solversettings
     /// long-standing behaviour and the fast path matters for large series; set
     /// make_timeseries_uniform = No to use the series exactly as supplied.
     bool make_timeseries_uniform = true;
+    /// How recorded RATES (flows on links, sources, objective functions on them)
+    /// are resampled onto the dt0 output grid at the end of a run. true
+    /// ("midpoint", default since 2026-10-15): each step's rate is placed at the
+    /// step's midpoint and interpolated linearly (make_uniform_midpoint), so the
+    /// output is continuous rather than a staircase of solver steps. false ("step",
+    /// the behaviour before 2026-10-15): each step's rate is held constant over
+    /// the step (make_uniform_step).
+    bool rate_output_midpoint = true;
     bool write_solution_details = false;
     double maximum_simulation_time = 86400; //maximum simulation time allows in seconds
     int maximum_number_of_matrix_inversions = 200000; //maximum number of matrix inversions allowed
@@ -619,6 +627,12 @@ public:
     // OHQ-GA/OHQ-MCMC --kernel) report a failed solve; SolverTempVars is private.
     void SetSolutionFailed(bool f) { SolverTempVars.SolutionFailed = f; }
     const solversettings& GetSolverSettings() const { return SolverSettings; }
+    // Resamples a recorded RATE series onto the dt0 grid as the
+    // rate_output_interpolation setting says (step or midpoint).
+    template<class TS> TS UniformRate(const TS& ts) const
+    {   return SolverSettings.rate_output_midpoint
+            ? ts.make_uniform_midpoint(SimulationParameters.dt0, SimulationParameters.tstart)
+            : ts.make_uniform_step(SimulationParameters.dt0, SimulationParameters.tstart); }
     //   [CHANGE] Add const
     time_t GetSimulationDuration() const { return SolverTempVars.simulation_duration; }
     void SetSimulationDuration(const time_t& duration) { SolverTempVars.simulation_duration = duration; }

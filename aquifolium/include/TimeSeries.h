@@ -219,6 +219,14 @@ public:
     /// start; series without a record at the start, e.g. link flows, would otherwise
     /// lose the first step). NaN: begin at the first record.
     TimeSeries<T> make_uniform_step(T increment, T t_start = std::numeric_limits<T>::quiet_NaN()) const;
+    /// Same input convention as make_uniform_step (value stamped t_i is the rate over
+    /// (t_{i-1}, t_i], the first record covering (t_start, t_first]), but each value is
+    /// placed at the MIDPOINT of its interval and the series is then interpolated
+    /// linearly onto the same grid (first and last half-intervals held flat). The
+    /// result is continuous instead of a staircase; with equal intervals its integral
+    /// equals the recorded volume. Used for rates when rate_output_interpolation is
+    /// 'midpoint' (the default).
+    TimeSeries<T> make_uniform_midpoint(T increment, T t_start = std::numeric_limits<T>::quiet_NaN()) const;
     TimeSeries<T> getcummulative() const;                 ///< Cumulative integral
     TimeSeries<T> GetCummulativeDistribution() const;     ///< Sorted value CDF
     TimeSeries<T> distribution(int n_bins, int start_index) const; ///< Histogram density

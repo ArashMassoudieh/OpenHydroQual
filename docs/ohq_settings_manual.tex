@@ -69,6 +69,7 @@ Oscillation detection tolerance & \texttt{\small 0.\allowbreak{}01} \\
 Output write interval & \texttt{\small 100} \\
 Maximum allowable time-step increase factor with respect to the initial time-step & \texttt{\small 50} \\
 Maximum allowable time-step decrease factor with respect to the initial time-step & \texttt{\small 100000} \\
+Rate output interpolation & \texttt{\small midpoint} \\
 Transport Jacobian assembly & \texttt{\small Dependency} \\
 Verify Jacobian assembly (diagnostic) & \texttt{\small 0} \\
 Maximum oscillation interventions & \texttt{\small 4} \\
@@ -145,6 +146,21 @@ How often accumulated results are written to disk.
 {\small \textbf{Default:} \texttt{50} \quad\textbullet\quad \textbf{Name in file:} \texttt{max\_\allowbreak{}timestep\_\allowbreak{}increase\_\allowbreak{}factor}}
 
 A multiplier on the initial time-step that defines the largest step the run may ever take. It is a ceiling, not a rate of growth.
+\subsection{Rate output interpolation}
+Key \texttt{rate\_output\_interpolation}: \texttt{midpoint} (default) or \texttt{step}. At the end of a run every
+output and every modelled observation series is resampled onto a uniform grid with spacing equal to the initial
+time-step. States (storage, depth, head) are interpolated linearly between the values recorded at the end of each
+solver step. Rates (flows on links and sources) are different: the solver's flow for a step is the average over
+that step, not a value at its end. With \texttt{midpoint} each step's rate is placed at the middle of the step and
+interpolated linearly between steps (the first and last half-steps are held flat), which gives a continuous
+hydrograph with the volume of each step preserved for equal steps. With \texttt{step} (the behaviour before
+October 2026) each step's rate is held constant over the step, which turns long solver steps into a staircase;
+because a tiny parameter change can move the step boundaries, the staircase makes the likelihood of a
+calibration jump (on a 19-unit urban model calibrated to hourly flow: a likelihood range of 97 for parameter
+changes of $10^{-6}$ with \texttt{step}, 35 with \texttt{midpoint}, and 0.5 with \texttt{midpoint} and a maximum
+time-step factor of 10 instead of 50). The setting is honoured identically by the interpreter, the GUI and
+generated (codegen) kernels.
+
 \subsection{Maximum allowable time-step decrease factor with respect to the initial time-step}
 {\small \textbf{Default:} \texttt{100000} \quad\textbullet\quad \textbf{Name in file:} \texttt{max\_\allowbreak{}timestep\_\allowbreak{}decrease\_\allowbreak{}factor}}
 

@@ -1305,6 +1305,22 @@ public:
     // Rates recorded at the end of each step (value t[i] holds over (t[i-1], t[i])):
     // each grid point is the time average over (tau - increment, tau]. Mirrors
     // TimeSeries<T>::make_uniform_step in the interpreter.
+    // interpreter parity: TimeSeries<T>::make_uniform_midpoint (rate placed at the
+    // midpoint of its step, then linear onto the grid; first/last half-step flat)
+    TimeSeries makeUniformMid(double increment, double t_start = std::nan("")) const
+    {
+        TimeSeries src;
+        if (std::isfinite(t_start) && !t.empty() && t_start < t[0]) src.push(t_start, c[0]);
+        for (std::size_t k = 0; k < t.size() && k < c.size(); ++k)
+            if (std::isfinite(t[k]) && std::isfinite(c[k])) src.push(t[k], c[k]);
+        TimeSeries out;
+        if (src.size() < 1 || !(increment > 0.0)) return out;
+        TimeSeries mid;
+        mid.push(src.t[0], src.c[0]);
+        for (std::size_t i = 1; i < src.size(); ++i) mid.push(0.5 * (src.t[i - 1] + src.t[i]), src.c[i]);
+        mid.push(src.t[src.size() - 1], src.c[src.size() - 1]);
+        return mid.makeUniform(increment);
+    }
     TimeSeries makeUniformStep(double increment, double t_start = std::nan("")) const
     {
         TimeSeries out;
