@@ -21,35 +21,36 @@
 \contentsline {subsection}{\numberline {2.15}Oscillation detection tolerance}{8}{subsection.2.15}%
 \contentsline {subsection}{\numberline {2.16}Output write interval}{8}{subsection.2.16}%
 \contentsline {subsection}{\numberline {2.17}Maximum allowable time-step increase factor with respect to the initial time-step}{8}{subsection.2.17}%
-\contentsline {subsection}{\numberline {2.18}Maximum allowable time-step decrease factor with respect to the initial time-step}{8}{subsection.2.18}%
-\contentsline {subsection}{\numberline {2.19}Transport Jacobian assembly}{8}{subsection.2.19}%
-\contentsline {subsection}{\numberline {2.20}Verify Jacobian assembly (diagnostic)}{8}{subsection.2.20}%
-\contentsline {subsection}{\numberline {2.21}Maximum oscillation interventions}{8}{subsection.2.21}%
-\contentsline {subsection}{\numberline {2.22}Response to detected oscillation}{9}{subsection.2.22}%
-\contentsline {subsection}{\numberline {2.23}Clean steps before relaxing the time-step ceiling}{9}{subsection.2.23}%
-\contentsline {subsection}{\numberline {2.24}Time steps between restore points}{9}{subsection.2.24}%
-\contentsline {subsection}{\numberline {2.25}Maximum reuses of one restore point}{9}{subsection.2.25}%
-\contentsline {section}{\numberline {3}Optimization}{9}{section.3}%
+\contentsline {subsection}{\numberline {2.18}Rate output interpolation}{8}{subsection.2.18}%
+\contentsline {subsection}{\numberline {2.19}Maximum allowable time-step decrease factor with respect to the initial time-step}{8}{subsection.2.19}%
+\contentsline {subsection}{\numberline {2.20}Transport Jacobian assembly}{9}{subsection.2.20}%
+\contentsline {subsection}{\numberline {2.21}Verify Jacobian assembly (diagnostic)}{9}{subsection.2.21}%
+\contentsline {subsection}{\numberline {2.22}Maximum oscillation interventions}{9}{subsection.2.22}%
+\contentsline {subsection}{\numberline {2.23}Response to detected oscillation}{9}{subsection.2.23}%
+\contentsline {subsection}{\numberline {2.24}Clean steps before relaxing the time-step ceiling}{9}{subsection.2.24}%
+\contentsline {subsection}{\numberline {2.25}Time steps between restore points}{9}{subsection.2.25}%
+\contentsline {subsection}{\numberline {2.26}Maximum reuses of one restore point}{10}{subsection.2.26}%
+\contentsline {section}{\numberline {3}Optimization}{10}{section.3}%
 \contentsline {subsection}{\numberline {3.1}Genetic Algorithm Population}{10}{subsection.3.1}%
 \contentsline {subsection}{\numberline {3.2}Number of generations}{10}{subsection.3.2}%
 \contentsline {subsection}{\numberline {3.3}Number of threads to be used}{10}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Cross over probability}{10}{subsection.3.4}%
-\contentsline {subsection}{\numberline {3.5}Mutation Probability}{10}{subsection.3.5}%
-\contentsline {subsection}{\numberline {3.6}Shaking Scale}{10}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.4}Cross over probability}{11}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Mutation Probability}{11}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Shaking Scale}{11}{subsection.3.6}%
 \contentsline {subsection}{\numberline {3.7}Shake Scale Reduction Factor}{11}{subsection.3.7}%
 \contentsline {subsection}{\numberline {3.8}GA Output File Name}{11}{subsection.3.8}%
 \contentsline {section}{\numberline {4}MCMC}{11}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Number of MCMC samples}{11}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.1}Number of MCMC samples}{12}{subsection.4.1}%
 \contentsline {subsection}{\numberline {4.2}Number of chains}{12}{subsection.4.2}%
 \contentsline {subsection}{\numberline {4.3}Number of samples to be discarded (burn out)}{12}{subsection.4.3}%
 \contentsline {subsection}{\numberline {4.4}Initial perturbation factor}{12}{subsection.4.4}%
 \contentsline {subsection}{\numberline {4.5}The interval at which the samples are saved}{12}{subsection.4.5}%
 \contentsline {subsection}{\numberline {4.6}Initially purturb the samples}{12}{subsection.4.6}%
-\contentsline {subsection}{\numberline {4.7}Perform global sensitivity}{12}{subsection.4.7}%
-\contentsline {subsection}{\numberline {4.8}Continue MCMC using pre-created file}{12}{subsection.4.8}%
+\contentsline {subsection}{\numberline {4.7}Perform global sensitivity}{13}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}Continue MCMC using pre-created file}{13}{subsection.4.8}%
 \contentsline {subsection}{\numberline {4.9}Number of post-estimate realizations}{13}{subsection.4.9}%
 \contentsline {subsection}{\numberline {4.10}Add error noise to the realizations}{13}{subsection.4.10}%
 \contentsline {subsection}{\numberline {4.11}Number of threads to be used}{13}{subsection.4.11}%
 \contentsline {subsection}{\numberline {4.12}Desired acceptance rate}{13}{subsection.4.12}%
 \contentsline {subsection}{\numberline {4.13}Coefficient of change of purtubation factor}{13}{subsection.4.13}%
-\contentsline {subsection}{\numberline {4.14}MCMC Output file}{13}{subsection.4.14}%
+\contentsline {subsection}{\numberline {4.14}MCMC Output file}{14}{subsection.4.14}%

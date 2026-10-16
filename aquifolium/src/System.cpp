@@ -1778,10 +1778,10 @@ void System::UniformizeOutputs()
     const std::set<std::string> rates = RateOutputNames();
     const double inc = SimulationParameters.dt0;
     for (auto& ts : Outputs.AllOutputs)
-        ts = rates.count(ts.name()) ? ts.make_uniform_step(inc, SimulationParameters.tstart) : ts.make_uniform(inc, false);
+        ts = rates.count(ts.name()) ? UniformRate(ts) : ts.make_uniform(inc, false);
     for (auto& ts : Outputs.ObservedOutputs)
         ts = IsRateLocation(observation(ts.name()) ? observation(ts.name())->GetLocation() : string())
-             ? ts.make_uniform_step(inc, SimulationParameters.tstart) : ts.make_uniform(inc, false);
+             ? UniformRate(ts) : ts.make_uniform(inc, false);
 }
 
 void System::FinalizeOutputs(bool uniformizeoutput)
@@ -2017,6 +2017,12 @@ bool System::SetProperty(const string &s, const string &val)
             SolverSettings.write_solution_details = true;
         else
             SolverSettings.write_solution_details = false;
+        return true;
+    }
+    if (s=="rate_output_interpolation")
+    {
+        SolverSettings.rate_output_midpoint =
+            (aquiutils::trim(aquiutils::tolower(val))!="step");
         return true;
     }
     if (s=="make_timeseries_uniform")
@@ -3879,7 +3885,7 @@ void System::MakeObjectiveFunctionExpressionUniform()
 
     for (unsigned int i=0; i < ObjectiveFunctionsCount(); i++)
         objective_function_set[i]->SetTimeSeries(IsRateLocation(objective_function_set[i]->GetLocation())
-            ? objective_function_set[i]->GetTimeSeries()->make_uniform_step(SimulationParameters.dt0, SimulationParameters.tstart)
+            ? UniformRate(*objective_function_set[i]->GetTimeSeries())
             : objective_function_set[i]->GetTimeSeries()->make_uniform(SimulationParameters.dt0));
 
 }
@@ -3889,7 +3895,7 @@ void System::MakeObservationsExpressionUniform()
 
     for (unsigned int i=0; i < ObservationsCount(); i++)
         observation(i)->SetModeledTimeSeries(IsRateLocation(observations[i].GetLocation())
-            ? observations[i].GetModeledTimeSeries()->make_uniform_step(SimulationParameters.dt0, SimulationParameters.tstart)
+            ? UniformRate(*observations[i].GetModeledTimeSeries())
             : observations[i].GetModeledTimeSeries()->make_uniform(SimulationParameters.dt0));
 
 }

@@ -17,6 +17,8 @@
 #ifndef PARAMETER_H
 #define PARAMETER_H
 
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "Object.h"
@@ -77,7 +79,15 @@ class Parameter : public Object
         TimeSeries<double> PriorDistribution(unsigned int nbins = 100);
         double CalcPriorProbability(const double &x);
         double CalcLogPriorProbability(const double &x);
-        void SetValue(const double &val) {value = val; SetProperty("value", aquiutils::numbertostring(val));}
+        // The value is also kept as the "value" property, which GetValue() reads
+        // back. It must be written with full precision: numbertostring uses the
+        // stream default of 6 significant digits, so every value a GA, LM or MCMC
+        // set was rounded to 6 digits before it reached the model (a 1e-6
+        // relative perturbation of every parameter on each evaluation).
+        void SetValue(const double &val)
+        {   value = val;
+            std::ostringstream o; o << std::setprecision(17) << val;
+            SetProperty("value", o.str()); }
         double GetValue() {return Object::GetVal("value");}
         string LastError() {return last_error;}
         bool SetProperty(const string &s, const string &val, bool check_criteria=true)

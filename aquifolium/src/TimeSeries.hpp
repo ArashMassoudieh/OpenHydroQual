@@ -1647,6 +1647,26 @@ TimeSeries<T> TimeSeries<T>::make_uniform_step(T increment, T t_start) const {
 }
 
 template<typename T>
+TimeSeries<T> TimeSeries<T>::make_uniform_midpoint(T increment, T t_start) const {
+    TimeSeries<T> src;
+    if (!std::isnan(t_start) && !this->empty() && t_start < this->front().t)
+        src.addPoint(t_start, this->front().c, std::nullopt);
+    for (const DataPoint<T>& p : this->removeNaNs()) src.addPoint(p.t, p.c, p.d);
+    TimeSeries<T> out;
+    if (src.empty() || !(increment > T{})) return out;
+    // nodes: start of coverage, the midpoint of every interval, end of coverage
+    TimeSeries<T> mid;
+    mid.addPoint(src.front().t, src.front().c, std::nullopt);
+    for (size_t i = 1; i < src.size(); i++)
+        mid.addPoint(T(0.5)*(src[i-1].t + src[i].t), src[i].c, std::nullopt);
+    mid.addPoint(src.back().t, src.back().c, std::nullopt);
+    out = mid.make_uniform(increment, false);
+    out.setName(name());
+    out.setUnit(unit());
+    return out;
+}
+
+template<typename T>
 T TimeSeries<T>::getLastValue() const {
     return this->empty() ? T{} : this->back().c;
 }

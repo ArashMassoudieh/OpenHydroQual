@@ -1672,8 +1672,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
           "    // on the same grid Objective_Function uses (make_uniform(dt0)).\n"
         + "    // rates (observations on a link or source) are step-averaged, states interpolated,\n"
           "    // as System::MakeObservationsExpressionUniform\n"
+        + "    // rate_output_interpolation (System::UniformRate): true = midpoint, false = step\n"
+          "    static constexpr bool kRateMidpoint = " + std::string(system.GetSolverSettings().rate_output_midpoint ? "true" : "false") + ";\n"
         + "    static bool observationIsRate(int i) { static const bool a[] = {" + (O ? obsRateArr.str() : std::string("false")) + "}; return a[i]; }\n"
-        + "    void uniformizeObservations() { for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i] = observationIsRate(i) ? obs_[i].makeUniformStep(dt0_, tstart_) : obs_[i].makeUniform(dt0_); }\n"
+        + "    void uniformizeObservations() { for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i] = observationIsRate(i) ? (kRateMidpoint ? obs_[i].makeUniformMid(dt0_, tstart_) : obs_[i].makeUniformStep(dt0_, tstart_)) : obs_[i].makeUniform(dt0_); }\n"
         + "    void recordObservations(double t_eval, double t_stamp) {\n        double v[N_OBSERVATIONS > 0 ? N_OBSERVATIONS : 1]; computeObservations(v, t_eval);\n"
           "        for (int i = 0; i < N_OBSERVATIONS; ++i) obs_[i].push(t_stamp, v[i]);\n    }\n"
         + "    // ---- objective functions (same shape as observations; the host feeds\n"
@@ -1684,7 +1686,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         + "    const ohq::TimeSeries& objectiveSeries(int i) const { return obj_[i]; }\n"
         + "    void clearObjectives() { for (auto& s : obj_) { s.t.clear(); s.c.clear(); } }\n"
         + "    static bool objectiveIsRate(int i) { static const bool a[] = {" + (OJ ? objRateArr.str() : std::string("false")) + "}; return a[i]; }\n"
-        + "    void uniformizeObjectives() { for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i] = objectiveIsRate(i) ? obj_[i].makeUniformStep(dt0_, tstart_) : obj_[i].makeUniform(dt0_); }\n"
+        + "    void uniformizeObjectives() { for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i] = objectiveIsRate(i) ? (kRateMidpoint ? obj_[i].makeUniformMid(dt0_, tstart_) : obj_[i].makeUniformStep(dt0_, tstart_)) : obj_[i].makeUniform(dt0_); }\n"
         + "    void recordObjectives(double t_eval, double t_stamp) {\n        double v[N_OBJECTIVES > 0 ? N_OBJECTIVES : 1]; computeObjectives(v, t_eval);\n"
           "        for (int i = 0; i < N_OBJECTIVES; ++i) obj_[i].push(t_stamp, v[i]);\n    }\n";
     paramApi +=
