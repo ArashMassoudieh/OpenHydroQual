@@ -49,6 +49,15 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 DEFINES += GSL
 
+# About box "Last Modified" date, generated from the last commit so it cannot
+# go stale by hand. Written at qmake time, so re-run qmake to refresh it.
+# Where this does not run (Windows, no git), mainwindow.cpp falls back to the
+# compiler's __DATE__ via an __has_include guard.
+unix {
+    system(sh $$PWD/scripts/gen_build_info.sh $$OUT_PWD/ohq_build_info.h $$PWD)
+}
+INCLUDEPATH += $$OUT_PWD
+
 TARGET = OpenHydroQual
 TEMPLATE = app
 win32:QMAKE_CXXFLAGS += /MP

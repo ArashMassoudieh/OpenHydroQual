@@ -296,14 +296,13 @@ void CMCMC<T>::initialize(bool random)
 #endif
 #endif
 
+    // The starting points are drawn serially and only the posteriors are evaluated
+    // in parallel. Drawn inside the OpenMP loop, rand() gave chains on different
+    // threads the same draws on MSVC, whose rand() state is per thread and seeded
+    // with 1 in every thread: the "dispersed" chains started on identical points.
+    vector<double> pp(MCMC_Settings.number_of_chains, 0.0);
     if (random)
     {
-
-        // Draw every chain's starting point serially, then evaluate the
-        // posteriors in parallel. Drawing inside the parallel loop gave every
-        // chain on a different thread the SAME start on Windows: MSVC keeps
-        // rand()'s state per thread, each thread seeded with 1.
-        vector<double> pp(MCMC_Settings.number_of_chains, 0.0);
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
             for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
@@ -314,12 +313,6 @@ void CMCMC<T>::initialize(bool random)
                 if (parameter(i)->GetPriorDistribution()=="log-normal")
                     pp[j] += log(Params[j][i]);
             }
-        }
-#pragma omp parallel for
-        for (int j=0; j<MCMC_Settings.number_of_chains; j++)
-        {
-            logp[j] = posterior(Params[j], j)+pp[j];
-            logp1[j] = logp[j];
         }
     }
     else
@@ -334,9 +327,6 @@ void CMCMC<T>::initialize(bool random)
         // Gaussian otherwise, scaled by pertcoeff (= initial_purturbation_factor
         // times the prior's log-range), and clipped to the prior range.
         // Set initial_purturbation = No to put every chain on the seed instead.
-        // Starting points are drawn serially (see the random branch above) and
-        // only the posterior evaluations run in parallel.
-        vector<double> pp(MCMC_Settings.number_of_chains, 0.0);
         for (int j=0; j<MCMC_Settings.number_of_chains; j++)
         {
             for (int i=0; i<MCMC_Settings.number_of_parameters; i++)
@@ -357,12 +347,13 @@ void CMCMC<T>::initialize(bool random)
                     pp[j] += log(Params[j][i]);
             }
         }
+    }
+
 #pragma omp parallel for
-        for (int j=0; j<MCMC_Settings.number_of_chains; j++)
-        {
-            logp[j] = posterior(Params[j], j)+pp[j];
-            logp1[j] = logp[j];
-        }
+    for (int j=0; j<MCMC_Settings.number_of_chains; j++)
+    {
+        logp[j] = posterior(Params[j], j)+pp[j];
+        logp1[j] = logp[j];
     }
 #ifndef _WINDOWS
 #ifndef _MacOS
@@ -699,7 +690,10 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 #endif
 #endif
 
-#ifdef WIN64
+// MSVC keeps rand() state per thread, seeded 1 in every new thread, so without
+// this each worker draws the same sequence. MSVC defines _WIN64; WIN64 only
+// comes from qmake's msvc mkspec (not from the CMake build).
+#if defined(WIN64) || defined(_WIN64)
 #pragma omp parallel
 		{
 			srand(int(time(NULL)) ^ omp_get_thread_num() + kk);
