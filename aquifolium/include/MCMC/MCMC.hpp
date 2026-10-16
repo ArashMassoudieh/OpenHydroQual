@@ -690,7 +690,10 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 #endif
 #endif
 
-#ifdef WIN64
+// MSVC keeps rand() state per thread, seeded 1 in every new thread, so without
+// this each worker draws the same sequence. MSVC defines _WIN64; WIN64 only
+// comes from qmake's msvc mkspec (not from the CMake build).
+#if defined(WIN64) || defined(_WIN64)
 #pragma omp parallel
 		{
 			srand(int(time(NULL)) ^ omp_get_thread_num() + kk);
