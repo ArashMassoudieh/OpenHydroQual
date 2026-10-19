@@ -193,6 +193,12 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
     {   MCMC_Settings.covariance_min_samples = aquiutils::atoi(value); return true;}
     if (aquiutils::tolower(varname) == "covariance_scale")
     {   MCMC_Settings.covariance_scale = aquiutils::atof(value); return true;}
+    if (aquiutils::tolower(varname) == "adaptation_interval")
+    {   { const int v = int(aquiutils::atoi(value)); MCMC_Settings.adaptation_interval = v > 0 ? unsigned(v) : 1u; } return true;}
+    if (aquiutils::tolower(varname) == "covariance_centering")
+    {   const string v = aquiutils::tolower(aquiutils::trim(value));
+        MCMC_Settings.covariance_within_chain = (v == "chain" || v == "within" || v == "within-chain");
+        return true;}
     if (aquiutils::tolower(varname) == "purturbation_change_scale")
     {
         MCMC_Settings.purt_change_scale = aquiutils::atof(value);
@@ -277,6 +283,7 @@ void CMCMC<T>::initialize(bool random)
     logp1.resize(MCMC_Settings.total_number_of_samples);
     for (unsigned int i=0; i<MCMC_Settings.total_number_of_samples; i++)
         Params[i].resize(MCMC_Settings.number_of_parameters);
+    filled_copy.assign(MCMC_Settings.total_number_of_samples, 0);
     
     for (int j = 0; j<MCMC_Settings.number_of_parameters; j++)
     {
@@ -289,6 +296,7 @@ void CMCMC<T>::initialize(bool random)
             pertcoeff[j] = MCMC_Settings.purturbation_factor*(-log(parameter(j)->GetRange().low) + log(parameter(j)->GetRange().high));
         }
     }
+    if (!pertcoeff.empty()) initial_pertcoeff0 = pertcoeff[0];
 
 #ifndef _WINDOWS
 #ifndef _MacOS
@@ -501,38 +509,51 @@ void CMCMC<T>::UpdateProposalCovariance(int upto)
     for (int i = 0; i < d; i++)
         logged[i] = (parameter(i)->GetPriorDistribution() == "log-normal");
 
-    vector<double> mean(d, 0.0);
+    // means: of all samples, or of each chain (covariance_centering = chain)
+    const int nch = MCMC_Settings.number_of_chains;
+    const bool within = MCMC_Settings.covariance_within_chain;
+    const int ngroups = within ? nch : 1;
+    vector<vector<double>> gmean(ngroups, vector<double>(d, 0.0));
+    vector<int> gcount(ngroups, 0);
     int n = 0;
     for (int k = start; k < upto; k++)
     {
         if ((int)Params[k].size() != d) continue;
+        if (k < (int)filled_copy.size() && filled_copy[k]) continue;   // not a sample (readfromfile)
         bool ok = true;
         for (int i = 0; i < d && ok; i++)
             if (logged[i] && !(Params[k][i] > 0)) ok = false;
         if (!ok) continue;
+        const int g = within ? k % nch : 0;
         for (int i = 0; i < d; i++)
-            mean[i] += logged[i] ? log(Params[k][i]) : Params[k][i];
+            gmean[g][i] += logged[i] ? log(Params[k][i]) : Params[k][i];
+        gcount[g]++;
         n++;
     }
     if (n < (int)MCMC_Settings.covariance_min_samples) return;
-    for (int i = 0; i < d; i++) mean[i] /= n;
+    int nused_groups = 0;
+    for (int g = 0; g < ngroups; g++)
+        if (gcount[g] > 0) { nused_groups++; for (int i = 0; i < d; i++) gmean[g][i] /= gcount[g]; }
+    if (n - nused_groups < 2) return;
 
     vector<vector<double>> C(d, vector<double>(d, 0.0));
     for (int k = start; k < upto; k++)
     {
         if ((int)Params[k].size() != d) continue;
+        if (k < (int)filled_copy.size() && filled_copy[k]) continue;   // not a sample (readfromfile)
         bool ok = true;
         for (int i = 0; i < d && ok; i++)
             if (logged[i] && !(Params[k][i] > 0)) ok = false;
         if (!ok) continue;
+        const int g = within ? k % nch : 0;
         vector<double> z(d);
         for (int i = 0; i < d; i++)
-            z[i] = (logged[i] ? log(Params[k][i]) : Params[k][i]) - mean[i];
+            z[i] = (logged[i] ? log(Params[k][i]) : Params[k][i]) - gmean[g][i];
         for (int i = 0; i < d; i++)
             for (int j = 0; j <= i; j++) C[i][j] += z[i] * z[j];
     }
     for (int i = 0; i < d; i++)
-        for (int j = 0; j <= i; j++) { C[i][j] /= (n - 1); C[j][i] = C[i][j]; }
+        for (int j = 0; j <= i; j++) { C[i][j] /= (n - nused_groups); C[j][i] = C[i][j]; }
 
     // ridge, then Cholesky; abandon the update rather than propose from a
     // matrix that is not positive definite
@@ -633,7 +654,11 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
     CVector stuckcounter(MCMC_Settings.number_of_chains);
     CVector accepted(MCMC_Settings.number_of_chains);
 
-    MCMC_Settings.ini_purt_fact = pertcoeff[0];
+    // The acceptance-rate adaptation (pertcoeff[0] relative to ini_purt_fact) scales the covariance
+    // proposal. A continued run measures it against the initial perturbation, not against the
+    // already-adapted value read from the chain file, which restarted the scale at 1.
+    MCMC_Settings.ini_purt_fact = (MCMC_Settings.continue_mcmc && initial_pertcoeff0 > 0) ? initial_pertcoeff0
+                                                                                        : pertcoeff[0];
 	int k_0 = k;
 
     // Rows [written_to, done_to) of the chain are complete but not yet in the
@@ -763,7 +788,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
             kk - last_covariance_update >= MCMC_Settings.covariance_update_interval)
             UpdateProposalCovariance(kk);
 
-        if ((kk-k_0) % (50*MCMC_Settings.number_of_chains) == 0)
+        if ((kk-k_0) % (int(max(1u, MCMC_Settings.adaptation_interval))*MCMC_Settings.number_of_chains) == 0)
 		{
 
             if (double(accepted_count) / double(total_count)>MCMC_Settings.acceptance_rate)
@@ -1071,7 +1096,8 @@ int CMCMC<T>::readfromfile(string filename)
     const int start = last_id + 1;
     for (int id = nch; id < start; id++)
         if (!loaded[id])
-        {   Params[id] = Params[id - nch];
+        {   if (id < (int)filled_copy.size()) filled_copy[id] = 1;
+            Params[id] = Params[id - nch];
             logp[id] = logp[id - nch];
             logp1[id] = logp1[id - nch];
         }
@@ -1224,6 +1250,8 @@ void CMCMC<T>::Perform()
              << " / sqrt(" << MCMC_Settings.number_of_parameters << ")" << endl;
         cout << "    update interval : " << MCMC_Settings.covariance_update_interval << endl;
         cout << "    min samples     : " << MCMC_Settings.covariance_min_samples << endl;
+        cout << "    adaptation every: " << MCMC_Settings.adaptation_interval << " steps" << endl;
+        cout << "    centering       : " << (MCMC_Settings.covariance_within_chain ? "chain (within-chain covariance)" : "pooled") << endl;
     }
     cout << "  initial perturb   : " << (MCMC_Settings.noinipurt ? "No" : "Yes") << endl;
     cout << flush;

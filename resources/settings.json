@@ -729,6 +729,26 @@
    "criteria": "covariance_scale>0",
    "warningmessage": "Covariance proposal scale must be greater than zero"
   },
+  "adaptation_interval": {
+   "default": "50",
+   "description": "Step-size adaptation interval",
+   "helptext": "Steps (one sample of every chain) between adjustments of the step size toward the target acceptance rate. Smaller values tune the step faster, e.g. after a restart.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "adaptation_interval",
+   "criteria": "adaptation_interval>0",
+   "warningmessage": "Must be greater than zero"
+  },
+  "covariance_centering": {
+   "default": "pooled",
+   "type": "string",
+   "description": "Covariance centering",
+   "helptext": "pooled: the proposal covariance is taken about the mean of all samples. chain: about the mean of each chain (pooled within-chain covariance). Use chain while the chains have not mixed yet: the pooled covariance is then dominated by the distances between the chains, the proposals become too long and the step size shrinks until the chains stall.",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: pooled, chain",
+   "code": "covariance_centering"
+  },
   "samples_filename": {
    "default": "mcmc.txt",
    "description": "MCMC Output file",

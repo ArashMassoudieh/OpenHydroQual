@@ -95,6 +95,15 @@ struct _MCMC_settings
     unsigned int covariance_min_samples = 500;        // before the first refresh
     double covariance_scale = 2.38;                   // /sqrt(d), Roberts & Rosenthal
     double covariance_ridge = 1e-8;                   // added to the diagonal
+    // covariance_centering = "chain": the proposal covariance is built from each sample's deviation from the
+    // mean of its own chain (pooled within-chain covariance) instead of from the mean of all samples. While
+    // the chains sit in different places (before they have mixed) the pooled covariance is dominated by the
+    // gaps between chains: proposals along them are too long, are rejected, and the acceptance adaptation then
+    // shrinks every step until the chains stall. Default "pooled" (the previous behaviour).
+    bool covariance_within_chain = false;
+    // steps (blocks of number_of_chains samples) between adjustments of the step size to the target acceptance
+    // rate (x or / purturbation_change_scale); 50 was the fixed value before this setting
+    unsigned int adaptation_interval = 50;
 
 };
 
@@ -131,6 +140,13 @@ public:
     void UpdateProposalCovariance(int upto);
 	vector<double> logp;
 	vector<double> logp1;
+    // filled_copy[k]: slot k was filled by readfromfile() with its chain's previous state because the
+    // chain file has no row for it (e.g. a file holding only each chain's last state). Such slots are
+    // not samples and are left out of the proposal covariance.
+    vector<char> filled_copy;
+    // pertcoeff[0] as initialize() set it: the reference of the acceptance-rate adaptation. A continued
+    // run measures its adaptation against it, so its proposal resumes at the size the previous run reached.
+    double initial_pertcoeff0 = 0;
 	vector<double> u;
     //double posterior(vector<double> par, int ID = -1);
     void initialize(bool random=false);
