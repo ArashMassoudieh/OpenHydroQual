@@ -12,6 +12,9 @@ INCLUDEPATH += ../../aquifolium/include/GA
 INCLUDEPATH += ../../aquifolium/include/MCMC
 INCLUDEPATH += ../../jsoncpp/include/
 INCLUDEPATH += ../../
+INCLUDEPATH += ../OHQ-Common            # ohq_kernel.h: --kernel back end
+
+unix: LIBS += -ldl                       # dlopen for --kernel
 
 macx: CONFIG += staticlib
 macx: DEFINES +=mac_version
