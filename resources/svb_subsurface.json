@@ -386,5 +386,163 @@
       "default": "1",
       "includeinoutput": "false"
     }
+  },
+  "weir_capped": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Power-law weir whose discharge is smoothly capped by a maximum (e.g., the capacity of the pipe it feeds): Q = Qw*Q_max/(Qw^n+Q_max^n)^(1/n), Qw = alpha*(h_s-z)+^beta",
+    "icon": {
+      "filename": "vnotchweir.png"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,200,200"
+    },
+    "crest_elevation": {
+      "type": "value",
+      "description": "Crest Elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "alpha": {
+      "type": "value",
+      "description": "Coefficient alpha in Q=alpha*(h-z_0)^beta (SI-day units)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "alpha>0",
+      "warningmessage": "alpha must be positive"
+    },
+    "beta": {
+      "type": "value",
+      "description": "Exponent beta in Q=alpha*(h-z_0)^beta",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "2.5",
+      "criteria": "beta>0",
+      "warningmessage": "beta must be positive"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "expression": "free_flow*Q_max/(free_flow^n+Q_max^n)^(1/n)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "unit": "m^3/day;ft^3/day"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "expression": "free_flow*Q_max/(free_flow^n+Q_max^n)^(1/n)",
+      "includeinoutput": "false",
+      "applylimit": "false",
+      "unit": "m^2;ft^2"
+    },
+    "length": {
+      "type": "value",
+      "description": "length",
+      "default": "1",
+      "includeinoutput": "false"
+    },
+    "Q_max": {
+      "type": "value",
+      "description": "Maximum discharge (capacity of the downstream pipe)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3/day;m^3/s;ft^3/s",
+      "default": "1000",
+      "criteria": "Q_max>0",
+      "warningmessage": "Q_max must be positive",
+      "estimate": "true"
+    },
+    "n": {
+      "type": "value",
+      "description": "Sharpness of the cap (large n approaches min(Qw, Q_max))",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "4",
+      "criteria": "n>0",
+      "warningmessage": "n must be positive",
+      "estimate": "true"
+    },
+    "free_flow": {
+      "type": "expression",
+      "description": "Uncapped weir discharge",
+      "expression": "alpha*_pos(head.s-crest_elevation)^beta",
+      "includeinoutput": "true",
+      "unit": "m^3/day;ft^3/day"
+    },
+    "helptext": "Weir (or riser) feeding a pipe of limited capacity. Below the cap it behaves as the power-law weir; above it the discharge approaches Q_max smoothly (continuous derivative)."
+  },
+  "surface_to_collector_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "icon": {
+      "filename": "aggregate2aggregate_H.png"
+    },
+    "description": "Ponded surface water draining vertically through a gravel layer into a collector (end-wall strip)",
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "(head.s-head.e)*K*width*strip_length/thickness*_pos(depth.s)/(_pos(depth.s)+0.01)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "color": {
+      "type": "string",
+      "default": "130,20,220"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    },
+    "K": {
+      "type": "value",
+      "description": "Hydraulic conductivity of the gravel",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;m/s;ft/s",
+      "default": "1000",
+      "criteria": "K>0",
+      "warningmessage": "K must be positive",
+      "estimate": "true"
+    },
+    "width": {
+      "type": "value",
+      "description": "Width of the strip (collector length)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "strip_length": {
+      "type": "value",
+      "description": "Length of the strip above/next to the collector that drains vertically",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "thickness": {
+      "type": "value",
+      "description": "Vertical path length through the gravel (layer thickness)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true"
+    },
+    "helptext": "From a channel/ponded block to a collector box: Darcy flow through the gravel thickness over a strip of plan area width*strip_length; active only while the source holds ponded water."
   }
 }
