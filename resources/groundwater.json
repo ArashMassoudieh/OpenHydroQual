@@ -166,6 +166,72 @@
       "unit": "m^3/day;ft^3/day;m^3/s"
     }
   },
+  "groundwater_conductance_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Groundwater link (link conductivity)",
+    "icon": {
+      "filename": "Groundwater_conductance_link.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero",
+      "helptext": "Flow-path length between the two cells: centre-to-centre distance for a lateral connection, distance between the cell mid-depths for a vertical connection."
+    },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;cm~^2;in~^2",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero",
+      "helptext": "Cross-sectional area of the connection: shared face width times thickness for a lateral connection, plan area for a vertical connection."
+    },
+    "hydraulic_conductivity": {
+      "type": "value",
+      "description": "Hydraulic Conductivity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;cm/s;in/s;m/s",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "hydraulic_conductivity>0",
+      "warningmessage": "Hydraulic conductivity must be greater than zero",
+      "helptext": "Effective conductivity of the connection itself (not taken from the cells): the vertical conductivity between two layers, or the series conductivity across a fault or flow barrier."
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "expression": "area*hydraulic_conductivity*(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
+    },
+    "Darcy flux": {
+      "type": "expression",
+      "description": "Darcy flux",
+      "expression": "hydraulic_conductivity*(head.s-head.e)/length",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s"
+    },
+    "helptext": "Darcy flow between two Groundwater cells with a conductivity that belongs to the link: flow = area * hydraulic_conductivity * (head.s - head.e) / length. Use it for vertical connections between layers and for lateral connections across faults or flow barriers, where the cells' own conductivities do not describe the connection."
+  },
   "groundwater_to_fixedhead": {
     "type": "link",
     "typecategory": "Connectors",

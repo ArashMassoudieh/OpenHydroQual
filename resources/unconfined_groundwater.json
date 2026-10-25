@@ -241,6 +241,85 @@
       "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
+  "UC_groundwater_to_groundwater_link": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Unconfined to confined groundwater link",
+    "icon": {
+      "filename": "UC_GW_to_GW_link.png"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "criteria": "length>0",
+      "warningmessage": "Length must be greater than zero",
+      "helptext": "Vertical flow-path length, e.g. the distance between the mid-depths of the unconfined cell and the Groundwater cell below it."
+    },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;cm~^2;in~^2",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero",
+      "helptext": "Plan area shared by the two cells."
+    },
+    "hydraulic_conductivity": {
+      "type": "value",
+      "description": "Vertical Hydraulic Conductivity",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m/day;ft/day;cm/s;in/s;m/s",
+      "estimate": "true",
+      "default": "1",
+      "criteria": "hydraulic_conductivity>0",
+      "warningmessage": "Hydraulic conductivity must be greater than zero",
+      "helptext": "Effective vertical conductivity of the connection between the two cells."
+    },
+    "cutoff_depth": {
+      "type": "value",
+      "description": "Cutoff depth",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "default": "0.05",
+      "criteria": "cutoff_depth>0",
+      "warningmessage": "Cutoff depth must be greater than zero",
+      "helptext": "Downward flow tapers linearly to zero over this depth as the saturated thickness of the unconfined cell approaches its residual_thickness."
+    },
+    "cutoff_factor": {
+      "type": "expression",
+      "description": "Drainage cutoff factor",
+      "expression": "_hsd(piezometric_head.s-head.e)*_min(_pos(depth.s-residual_thickness.s)/cutoff_depth;1)+_hsd(head.e-piezometric_head.s)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "helptext": "Between 0 and 1 for downward flow: 0 when the unconfined cell has drained to its residual thickness, 1 when it has more than cutoff_depth above it. Always 1 for upward flow."
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate",
+      "expression": "cutoff_factor*area*hydraulic_conductivity*(piezometric_head.s-head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
+    },
+    "Darcy flux": {
+      "type": "expression",
+      "description": "Darcy flux",
+      "expression": "hydraulic_conductivity*(piezometric_head.s-head.e)/length",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m/day;ft/day;ft/s"
+    },
+    "helptext": "Vertical Darcy flow between an Unconfined Groundwater cell (source) and the Groundwater cell below it (destination): flow = cutoff_factor * area * hydraulic_conductivity * (piezometric_head.s - head.e) / length. Positive flow is downward. Requires groundwater.json to be loaded as well."
+  },
   "unconfined_groundwater_to_stream": {
     "type": "link",
     "typecategory": "Connectors",
