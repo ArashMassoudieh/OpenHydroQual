@@ -104,6 +104,29 @@ struct _MCMC_settings
     // steps (blocks of number_of_chains samples) between adjustments of the step size to the target acceptance
     // rate (x or / purturbation_change_scale); 50 was the fixed value before this setting
     unsigned int adaptation_interval = 50;
+    // --- differential-evolution proposal (proposal_method = de) -------------
+    // DE-MCz (ter Braak & Vrugt 2008) with DREAM-style crossover (Vrugt et al. 2009): a chain proposes
+    // x* = x + gamma (z1 - z2) + e, with z1 != z2 drawn from the archive of past chain states (from
+    // de_archive_start to the end of the previous round), in the same space as the other proposals (log for
+    // log-normal priors). The differences between states that are already spread over the posterior give the
+    // proposal its size and orientation, so it follows ridges without an estimated covariance; a covariance
+    // proposal learns a long ridge only once each chain has explored it. gamma = de_gamma_scale * 2.38 /
+    // sqrt(2 d'), d' = number of parameters updated; gamma = 1 every de_jump_interval rounds (jumps between
+    // distant parts of the posterior). Each parameter is updated with probability de_crossover (at least one).
+    // e ~ N(0, de_noise) (absolute in log space; relative to |x| for other priors) keeps the chain ergodic.
+    // The proposal is symmetric, so the Metropolis acceptance in step() is unchanged.
+    bool de_proposal = false;
+    int de_archive_start = -1;          // -1: burnout_samples
+    double de_gamma_scale = 1.0;
+    unsigned int de_jump_interval = 10; // 0: never
+    double de_crossover = 1.0;
+    double de_noise = 1e-4;
+    // de_adapt: the (non-jump) gamma is multiplied by an adaptive factor that is tuned, like the random-walk
+    // step size, every adaptation_interval rounds toward acceptance_rate (x or / purturbation_change_scale).
+    // On the Rock Creek ridge the theoretical gamma proposed moves ~2-14 log units downhill (none accepted
+    // in 48), i.e. too long for a 16-d ridge that is not straight.
+    bool de_adapt = true;
+    double de_adapt_factor = 1.0;       // state; not a setting
 
 };
 

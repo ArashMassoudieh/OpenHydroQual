@@ -199,6 +199,23 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
     {   const string v = aquiutils::tolower(aquiutils::trim(value));
         MCMC_Settings.covariance_within_chain = (v == "chain" || v == "within" || v == "within-chain");
         return true;}
+    if (aquiutils::tolower(varname) == "proposal_method")
+    {   const string v = aquiutils::tolower(aquiutils::trim(value));
+        MCMC_Settings.de_proposal = (v == "de" || v == "de-mc" || v == "demc" || v == "de-mcz" || v == "dream");
+        return true;}
+    if (aquiutils::tolower(varname) == "de_archive_start")
+    {   MCMC_Settings.de_archive_start = int(aquiutils::atoi(value)); return true;}
+    if (aquiutils::tolower(varname) == "de_gamma_scale")
+    {   MCMC_Settings.de_gamma_scale = aquiutils::atof(value); return true;}
+    if (aquiutils::tolower(varname) == "de_jump_interval")
+    {   { const int v = int(aquiutils::atoi(value)); MCMC_Settings.de_jump_interval = v > 0 ? unsigned(v) : 0u; } return true;}
+    if (aquiutils::tolower(varname) == "de_crossover")
+    {   { const double v = aquiutils::atof(value); MCMC_Settings.de_crossover = (v > 0 && v <= 1) ? v : 1.0; } return true;}
+    if (aquiutils::tolower(varname) == "de_noise")
+    {   MCMC_Settings.de_noise = fabs(aquiutils::atof(value)); return true;}
+    if (aquiutils::tolower(varname) == "de_adapt")
+    {   MCMC_Settings.de_adapt = aquiutils::tolower(value)=="yes" || aquiutils::tolower(value)=="true" || value=="1";
+        return true;}
     if (aquiutils::tolower(varname) == "purturbation_change_scale")
     {
         MCMC_Settings.purt_change_scale = aquiutils::atof(value);
@@ -591,6 +608,64 @@ vector<double> CMCMC<T>::purturb(int k)
     const int d = MCMC_Settings.number_of_parameters;
     X.resize(d);
 
+    if (MCMC_Settings.de_proposal)
+    {
+        // DE-MCz: x* = x + gamma (z1 - z2) + e (see _MCMC_settings::de_proposal). k is the chain's current
+        // state; the archive ends where the round that k belongs to ends, so every chain of the round being
+        // computed (in parallel) draws only from completed rounds.
+        const int nch = MCMC_Settings.number_of_chains;
+        const int zend = (k / nch + 1) * nch;
+        const int zstart = max(nch, MCMC_Settings.de_archive_start >= 0 ? MCMC_Settings.de_archive_start
+                                                                        : int(MCMC_Settings.burnout_samples));
+        vector<char> logged(d);
+        for (int i = 0; i < d; i++) logged[i] = (parameter(i)->GetPriorDistribution() == "log-normal");
+        auto usable = [&](int j) {
+            if (j < 0 || j >= (int)Params.size() || (int)Params[j].size() != d) return false;
+            if (j < (int)filled_copy.size() && filled_copy[j]) return false;   // not a sample (readfromfile)
+            for (int i = 0; i < d; i++) if (logged[i] && !(Params[j][i] > 0)) return false;
+            return true;
+        };
+        auto draw = [&](int avoid) {
+            for (int t = 0; t < 1000; t++)
+            {
+                int j = zstart + int(ND.unitrandom() * (zend - zstart));
+                if (j >= zend) j = zend - 1;
+                if (j != avoid && usable(j)) return j;
+            }
+            return -1;
+        };
+        const int r1 = (zend - zstart >= 2) ? draw(-1) : -1;
+        const int r2 = (r1 >= 0) ? draw(r1) : -1;
+        if (r1 >= 0 && r2 >= 0 && usable(k))
+        {
+            vector<char> upd(d, 0);
+            int dp = 0;
+            for (int i = 0; i < d; i++)
+                if (ND.unitrandom() < MCMC_Settings.de_crossover) { upd[i] = 1; dp++; }
+            if (dp == 0) { int i = int(ND.unitrandom() * d); if (i >= d) i = d - 1; upd[i] = 1; dp = 1; }
+            const bool jump = MCMC_Settings.de_jump_interval > 0 && (zend / nch) % MCMC_Settings.de_jump_interval == 0;
+            const double gamma = jump ? 1.0 : MCMC_Settings.de_gamma_scale * MCMC_Settings.de_adapt_factor
+                                              * 2.38 / sqrt(2.0 * dp);
+            for (int i = 0; i < d; i++)
+            {
+                if (!upd[i]) { X[i] = Params[k][i]; continue; }
+                if (logged[i])
+                {
+                    const double diff = log(Params[r1][i]) - log(Params[r2][i]);
+                    X[i] = Params[k][i] * exp(gamma * diff + MCMC_Settings.de_noise * ND.getstdnormalrand());
+                }
+                else
+                {
+                    const double diff = Params[r1][i] - Params[r2][i];
+                    X[i] = Params[k][i] + gamma * diff
+                         + MCMC_Settings.de_noise * max(fabs(Params[k][i]), 1e-12) * ND.getstdnormalrand();
+                }
+            }
+            return X;
+        }
+        // archive too small (e.g. the first rounds of a fresh run): fall through to the random-walk proposal
+    }
+
     if (MCMC_Settings.covariance_proposal && (int)proposal_chol.size() == d)
     {
         // Correlated step: X = mu + s * L z,  z ~ N(0, I), taken in log space
@@ -795,6 +870,14 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
                 for (int i = 0; i < MCMC_Settings.number_of_parameters; i++) pertcoeff[i] /= MCMC_Settings.purt_change_scale;
 			else
                 for (int i = 0; i < MCMC_Settings.number_of_parameters; i++) pertcoeff[i] *= MCMC_Settings.purt_change_scale;
+            if (MCMC_Settings.de_proposal && MCMC_Settings.de_adapt)
+            {   // same rule for the DE jump factor (capped at 1: gamma never exceeds a full difference)
+                if (double(accepted_count) / double(total_count) > MCMC_Settings.acceptance_rate)
+                    MCMC_Settings.de_adapt_factor = min(MCMC_Settings.de_adapt_factor / MCMC_Settings.purt_change_scale,
+                                                        sqrt(2.0 * MCMC_Settings.number_of_parameters) / 2.38);
+                else
+                    MCMC_Settings.de_adapt_factor *= MCMC_Settings.purt_change_scale;
+            }
 			accepted_count = 0;
 			total_count = 0;
 
@@ -807,7 +890,10 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
             double progress = double(kk) / double(nsamps);
             rtw->SetProgress(progress);
             rtw->AddPrimaryChartPoint(kk,double(accepted_count) / double(total_count));
-            rtw->AddSecondaryChartPoint(kk,double(pertcoeff[0] / MCMC_Settings.ini_purt_fact));
+            // step-size scale: the DE jump factor with the differential-evolution proposal, else pert relative to its start
+            rtw->AddSecondaryChartPoint(kk, MCMC_Settings.de_proposal
+                                            ? MCMC_Settings.de_gamma_scale * MCMC_Settings.de_adapt_factor
+                                            : double(pertcoeff[0] / MCMC_Settings.ini_purt_fact));
             rtw->ReplotPrimaryChart();
             rtw->ReplotSecondaryChart();
 		}
@@ -851,7 +937,9 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
                  << "  now " << (lp_n ? lp_sum / lp_n : 0.0)
                  << "  accept " << setprecision(3)
                  << (cum_total > 0 ? cum_accepted / cum_total : 0.0)
-                 << "  pert " << setprecision(4) << pertcoeff[0]
+                 << (MCMC_Settings.de_proposal ? "  de_gamma x" : "  pert ") << setprecision(4)
+                 << (MCMC_Settings.de_proposal ? MCMC_Settings.de_gamma_scale * MCMC_Settings.de_adapt_factor
+                                               : pertcoeff[0])
                  << "  stuck " << stuck << "/" << nch
                  << "  " << hms(elapsed) << " elapsed, ~" << hms(eta) << " left"
                  << endl;
@@ -1242,9 +1330,22 @@ void CMCMC<T>::Perform()
     cout << "  samples           : " << MCMC_Settings.total_number_of_samples << endl;
     cout << "  burn-in           : " << MCMC_Settings.burnout_samples << endl;
     cout << "  proposal          : "
-         << (MCMC_Settings.covariance_proposal
+         << (MCMC_Settings.de_proposal ? "DIFFERENTIAL EVOLUTION (DE-MCz)"
+             : MCMC_Settings.covariance_proposal
              ? "COVARIANCE-ADAPTED (correlated)" : "DIAGONAL (independent)") << endl;
-    if (MCMC_Settings.covariance_proposal)
+    if (MCMC_Settings.de_proposal)
+    {
+        cout << "    archive from    : sample "
+             << (MCMC_Settings.de_archive_start >= 0 ? MCMC_Settings.de_archive_start : int(MCMC_Settings.burnout_samples))
+             << endl;
+        cout << "    gamma           : " << MCMC_Settings.de_gamma_scale << " x 2.38 / sqrt(2 d'), 1 every "
+             << MCMC_Settings.de_jump_interval << " rounds" << endl;
+        cout << "    crossover (CR)  : " << MCMC_Settings.de_crossover << endl;
+        cout << "    noise           : " << MCMC_Settings.de_noise << endl;
+        cout << "    gamma adaptation: " << (MCMC_Settings.de_adapt ? "Yes" : "No") << ", every "
+             << MCMC_Settings.adaptation_interval << " steps toward acceptance " << MCMC_Settings.acceptance_rate << endl;
+    }
+    else if (MCMC_Settings.covariance_proposal)
     {
         cout << "    scale           : " << MCMC_Settings.covariance_scale
              << " / sqrt(" << MCMC_Settings.number_of_parameters << ")" << endl;

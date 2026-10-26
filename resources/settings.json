@@ -749,6 +749,71 @@
    "delegate": "ComboBox, items: pooled, chain",
    "code": "covariance_centering"
   },
+  "proposal_method": {
+   "default": "random_walk",
+   "type": "string",
+   "description": "Proposal method",
+   "helptext": "random_walk: Gaussian random-walk proposal (covariance-adapted when Covariance proposal is Yes). de: differential evolution (DE-MCz with DREAM-style crossover): each chain proposes x + gamma (z1 - z2) from two past chain states, so the proposal follows ridges and trade-offs between parameters without an estimated covariance. Use de when the chains sit spread along a ridge and do not mix.",
+   "ask_user": "true",
+   "delegate": "ComboBox, items: random_walk, de",
+   "code": "proposal_method"
+  },
+  "de_archive_start": {
+   "default": "-1",
+   "description": "DE archive start sample",
+   "helptext": "First sample of the archive the differential-evolution proposal draws state pairs from (-1: the burn-in length).",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "de_archive_start"
+  },
+  "de_gamma_scale": {
+   "default": "1",
+   "description": "DE jump scale",
+   "helptext": "Multiplies the differential-evolution jump factor 2.38 / sqrt(2 d'), d' = number of parameters updated.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "de_gamma_scale",
+   "criteria": "de_gamma_scale>0",
+   "warningmessage": "Must be greater than zero"
+  },
+  "de_jump_interval": {
+   "default": "10",
+   "description": "DE full-jump interval",
+   "helptext": "Every this many rounds the differential-evolution jump factor is 1 (jumps between distant parts of the posterior). 0: never.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "de_jump_interval"
+  },
+  "de_crossover": {
+   "default": "1",
+   "description": "DE crossover probability",
+   "helptext": "Probability that each parameter is updated in a differential-evolution proposal (DREAM subspace sampling); at least one is always updated. 1: all parameters.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "de_crossover"
+  },
+  "de_noise": {
+   "default": "0.0001",
+   "description": "DE noise",
+   "helptext": "Standard deviation of the small random term added to differential-evolution proposals (log units for log-normal priors, relative to the value otherwise).",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "de_noise"
+  },
+  "de_adapt": {
+   "default": "Yes",
+   "description": "DE jump adaptation",
+   "helptext": "Yes: the differential-evolution jump factor is tuned every Step-size adaptation interval toward the target acceptance rate, like the random-walk step size.",
+   "ask_user": "true",
+   "type": "string",
+   "delegate": "ComboBox, items: Yes, No",
+   "code": "de_adapt"
+  },
   "samples_filename": {
    "default": "mcmc.txt",
    "description": "MCMC Output file",
