@@ -305,9 +305,20 @@
       "criteria": "hillslope_link_width>0",
       "warningmessage": "The width must be positive",
       "applyto": {
-        "hillslope_to_near_stream#width": "hillslope_link_width"
+        "hillslope_to_near_stream#width": "hillslope_link_width*hillslope_width_scale"
       },
-      "helptext": "Normally twice the stream length in the unit (both banks)."
+      "helptext": "Normally twice the stream length in the unit (both banks). Scaled by hillslope_width_scale (default 1) so a GIS-derived per-unit value can be kept and calibrated via a dimensionless multiplier instead of being replaced by one shared absolute value across units."
+    },
+    "hillslope_width_scale": {
+      "type": "value",
+      "description": "Multiplier on the hillslope-to-near-stream contact width (calibration)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "hillslope_width_scale>0",
+      "warningmessage": "The width multiplier must be positive!",
+      "helptext": "Scales hillslope_link_width. Keep 1 unless calibrating; lets the GIS-derived per-unit width stay intact while still being adjustable, instead of a single calibrated unit replacing it everywhere."
     },
     "hillslope_link_length": {
       "type": "value",
@@ -320,9 +331,20 @@
       "criteria": "hillslope_link_length>0",
       "warningmessage": "The length must be positive",
       "applyto": {
-        "hillslope_to_near_stream#length": "hillslope_link_length"
+        "hillslope_to_near_stream#length": "hillslope_link_length*hillslope_length_scale"
       },
-      "helptext": "Normally the mean hillslope length, half the stream spacing 1/(2 Dd)."
+      "helptext": "Normally the mean hillslope length, half the stream spacing 1/(2 Dd). Scaled by hillslope_length_scale (default 1) so a GIS-derived per-unit value can be kept and calibrated via a dimensionless multiplier instead of being replaced by one shared absolute value across units."
+    },
+    "hillslope_length_scale": {
+      "type": "value",
+      "description": "Multiplier on the hillslope-to-near-stream flow-path length (calibration)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "hillslope_length_scale>0",
+      "warningmessage": "The length multiplier must be positive!",
+      "helptext": "Scales hillslope_link_length. Keep 1 unless calibrating; lets the GIS-derived per-unit length stay intact while still being adjustable, instead of a single calibrated unit replacing it everywhere."
     },
     "recharge_elevation_offset": {
       "type": "value",
