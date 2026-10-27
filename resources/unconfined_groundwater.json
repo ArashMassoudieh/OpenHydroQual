@@ -663,6 +663,61 @@
       "unit": "m^3/day;ft^3/day;m^3/s"
     }
   },
+  "soil_to_unconfined_groundwater_link_symmetric_K": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Soil to unconfined groundwater link, symmetric unsaturated conductivity (physically-limited bidirectional alternative)",
+    "icon": {
+      "filename": "soil2GW_link.png"
+    },
+    "helptext": "Experimental variant of soil_to_unconfined_groundwater_link. Same length/area/elevation_offset geometry, but instead of switching between the soil's unsaturated conductivity K_sat*kr(Se) downward and its full saturated K_sat upward, this variant uses K_sat*kr(Se) in BOTH directions -- plain signed Darcy flow with a conductivity that depends only on how dry the soil currently is, not on which way the gradient points. Physically: the unsaturated zone is the bottleneck for capillary rise into dry soil just as it is for infiltration into it, so upward flow is throttled by the same relative conductivity rather than assumed to proceed at the fully saturated rate. Added, like soil_to_unconfined_groundwater_link_oneway, to test an alternative to a hard zero-cap on upward flow: capping the upward branch entirely risks disconnecting the recharge link altogether (near-zero flow in both directions) rather than establishing credible bidirectional physics; this variant keeps the link live in both directions, just rate-limited by the soil's own moisture state. Added purely additively; does not change soil_to_unconfined_groundwater_link or soil_to_unconfined_groundwater_link_oneway. Not adopted as a default; use explicitly by name.",
+    "length": {
+      "type": "expression",
+      "expression": "(depth.s+aquifer_thickness.e-elevation_offset)/2",
+      "description": "Length",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "area": {
+      "type": "value",
+      "description": "Interface Area",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2;cm~^2;in~^2",
+      "criteria": "area>0",
+      "warningmessage": "Interface area must be greater than zero"
+    },
+    "elevation_offset": {
+      "type": "value",
+      "description": "Soil elevation offset",
+      "includeinoutput": "false",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0",
+      "criteria": "elevation_offset>-1e-12",
+      "warningmessage": "The elevation offset cannot be negative",
+      "helptext": "Same meaning as in soil_to_unconfined_groundwater_link. 0 = actual geometry."
+    },
+    "K_eff": {
+      "type": "expression",
+      "description": "Effective hydraulic conductivity (soil's unsaturated conductivity, same in both directions)",
+      "expression": "K_sat.s*(1-(1-Se.s^(1/m.s))^m.s)^2",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m/day;ft/day;cm/s;m/s"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow (signed; positive = downward/recharge, negative = upward, both at the soil's unsaturated conductivity)",
+      "expression": "area*K_sat.s*(1-(1-Se.s^(1/m.s))^m.s)^2*((head.s-elevation_offset)-piezometric_head.e)/length",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/day;m^3/s"
+    }
+  },
   "water_supply_well": {
     "type": "block",
     "typecategory": "Blocks",
