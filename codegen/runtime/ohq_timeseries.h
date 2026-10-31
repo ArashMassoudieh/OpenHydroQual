@@ -84,9 +84,11 @@ public:
     // step `increment` anchored at t[0] before writing, so an output row is an
     // interpolation between two accepted steps, never a step itself. The step
     // stays adaptive; only the OUTPUT is uniform. Reproduced point for point:
-    // non-finite samples dropped first, the grid advanced by repeated addition
-    // (so the same rounding walk), the bracket advanced while t[i+1] < t_grid
-    // but never past last-1, and every grid point emitted unconditionally.
+    // non-finite samples dropped first, the grid placed at t0 + k*increment with
+    // the last node snapped onto t_end when within rounding of it (or added as a
+    // shorter final interval when the span is not a multiple of increment), the
+    // bracket advanced while t[i+1] < t_grid but never past last-1, and every
+    // grid point emitted unconditionally.
     TimeSeries makeUniform(double increment) const
     {
         TimeSeries out;
@@ -99,7 +101,13 @@ public:
         const std::size_t last = src.size() - 1;
         std::size_t i = 0;
         const double t_end = src.t[last];
-        for (double cur = src.t[0]; cur <= t_end; cur += increment) {
+        const double t0 = src.t[0];
+        const std::size_t n_steps =
+            static_cast<std::size_t>(std::floor((t_end - t0) / increment + 1e-9));
+        std::size_t n_nodes = n_steps + 1;
+        if (t0 + double(n_steps) * increment < t_end - increment * 1e-9) ++n_nodes;
+        for (std::size_t k = 0; k < n_nodes; ++k) {
+            const double cur = std::min(t0 + double(k) * increment, t_end);
             while (i + 1 < last && src.t[i + 1] < cur) ++i;
             const double dt = src.t[i + 1] - src.t[i];
             const double ratio = (dt == 0.0) ? 0.5 : (cur - src.t[i]) / dt;
@@ -139,8 +147,14 @@ public:
         const double t0 = src.t[0], t_end = src.t[n - 1];
         out.push(t0, src.c[0]);
         std::size_t i = 1;
-        for (double tau = t0 + increment; tau <= t_end + increment * 1e-9; tau += increment) {
-            const double a = tau - increment;
+        const std::size_t n_steps =
+            static_cast<std::size_t>(std::floor((t_end - t0) / increment + 1e-9));
+        std::size_t n_nodes = n_steps + 1;
+        if (t0 + double(n_steps) * increment < t_end - increment * 1e-9) ++n_nodes;
+        for (std::size_t kk = 1; kk < n_nodes; ++kk) {
+            const double tau = std::min(t0 + double(kk) * increment, t_end);
+            const double a = t0 + double(kk - 1) * increment;
+            const double width = (kk > n_steps) ? tau - a : increment;
             double integral = 0.0;
             while (i < n && src.t[i] <= a) ++i;
             for (std::size_t k = i; k < n; ++k) {
@@ -149,7 +163,7 @@ public:
                 if (hi > lo) integral += src.c[k] * (hi - lo);
                 if (src.t[k] >= tau) break;
             }
-            out.push(tau, integral / increment);
+            out.push(tau, integral / width);
         }
         return out;
     }

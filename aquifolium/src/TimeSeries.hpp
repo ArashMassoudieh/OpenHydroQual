@@ -1575,9 +1575,21 @@ TimeSeries<T> TimeSeries<T>::make_uniform(T increment, bool assignD) const {
 
     const size_t last = nansRemoved.size() - 1;
     size_t i = 0;
-    T current_t = t0;
 
-    while (current_t <= t_end) {
+    // Nodes at t0 + k*increment, not repeated addition: the accumulated rounding
+    // of `t += increment` could carry the last node a hair past t_end and drop it,
+    // so a run ending exactly at tend lost its tend sample (and any observation
+    // there went unscored). A node within rounding of t_end is snapped onto it,
+    // and when the span is not a multiple of increment the series end is added as
+    // a final, shorter interval rather than dropped (interpol takes the ratio from
+    // the actual node times, so the structured lookup still holds).
+    const size_t n_steps = static_cast<size_t>(
+        std::floor((t_end - t0) / increment + T(1e-9)));
+    size_t n_nodes = n_steps + 1;
+    if (t0 + T(n_steps) * increment < t_end - increment * T(1e-9)) ++n_nodes;
+
+    for (size_t k = 0; k < n_nodes; ++k) {
+        const T current_t = std::min(t0 + T(k) * increment, t_end);
         // Advance the source bracket until it straddles current_t. Bounded by
         // `last - 1` so p2 is always valid; the emit below is unconditional, so
         // running out of source points can no longer end the walk early.
@@ -1595,7 +1607,6 @@ TimeSeries<T> TimeSeries<T>::make_uniform(T increment, bool assignD) const {
         }
 
         out.addPoint(current_t, c_interp, d_interp);
-        current_t += increment;
     }
 
     out.setName(name());
@@ -1627,8 +1638,16 @@ TimeSeries<T> TimeSeries<T>::make_uniform_step(T increment, T t_start) const {
     out.addPoint(t0, src.front().c, std::nullopt);
     // Piecewise constant: value src[i].c on (src[i-1].t, src[i].t]. Walk both grids once.
     size_t i = 1;
-    for (T tau = t0 + increment; tau <= t_end + increment * T(1e-9); tau += increment) {
-        const T a = tau - increment;
+    // Nodes as in make_uniform: t0 + k*increment, the last snapped onto t_end, and
+    // a shorter final interval ending at t_end when the span is not a multiple.
+    const size_t n_steps = static_cast<size_t>(
+        std::floor((t_end - t0) / increment + T(1e-9)));
+    size_t n_nodes = n_steps + 1;
+    if (t0 + T(n_steps) * increment < t_end - increment * T(1e-9)) ++n_nodes;
+    for (size_t kk = 1; kk < n_nodes; ++kk) {
+        const T tau = std::min(t0 + T(kk) * increment, t_end);
+        const T a = t0 + T(kk - 1) * increment;
+        const T width = (kk > n_steps) ? tau - a : increment;
         T integral = T{};
         while (i < n && src[i].t <= a) ++i;            // first interval ending after a
         size_t k = i;
@@ -1639,7 +1658,7 @@ TimeSeries<T> TimeSeries<T>::make_uniform_step(T increment, T t_start) const {
             if (src[k].t >= tau) break;
             ++k;
         }
-        out.addPoint(tau, integral / increment, std::nullopt);
+        out.addPoint(tau, integral / width, std::nullopt);
     }
     out.structured_ = true;
     out.dt_ = increment;

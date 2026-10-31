@@ -1126,7 +1126,12 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     CALLGRIND_TOGGLE_COLLECT;
 #endif
 
-    while (SolverTempVars.t < SimulationParameters.tend + SolverTempVars.dt
+    // The run ends exactly at tend: the last step is clamped to land on it (below).
+    // It used to loop `while (t < tend + dt)` with no clamp, overshooting tend by
+    // one or two steps -- up to max_timestep_increase_factor * dt0 of simulated
+    // time nobody asked for. t_tol absorbs the rounding of t + (tend - t).
+    const double t_tol = 1e-12 * max(1.0, fabs(SimulationParameters.tend));
+    while (SolverTempVars.t < SimulationParameters.tend - t_tol
         && !stop_triggered)
     {
 
@@ -1144,6 +1149,10 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         SolverTempVars.dt = min(SolverTempVars.dt_base, GetMinimumNextTimeStepSize());
         SolverTempVars.dt = max(SolverTempVars.dt,
             SimulationParameters.dt0 / SolverSettings.timestepminfactor);
+        // Never step past tend (applied step only; dt_base keeps adapting). Same
+        // clamp as the codegen solver's stopTime_ (codegen/runtime/ohq_massbalance.h).
+        if (SolverTempVars.t + SolverTempVars.dt > SimulationParameters.tend)
+            SolverTempVars.dt = SimulationParameters.tend - SolverTempVars.t;
 
         vector<bool> _success = OneStepSolve();
 
@@ -1222,7 +1231,7 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     // Solve() used to return true unconditionally and leave SolutionFailed
     // clear, so callers -- GA and MCMC in particular -- accepted the partial
     // result as a valid model evaluation and scored it against the data.
-    if (SolverTempVars.t < SimulationParameters.tend && !SolverTempVars.SolutionFailed)
+    if (SolverTempVars.t < SimulationParameters.tend - t_tol && !SolverTempVars.SolutionFailed)
     {
         LogMessage("Simulation stopped at t = " + aquiutils::numbertostring(SolverTempVars.t)
             + " before the requested end time " + aquiutils::numbertostring(SimulationParameters.tend)
