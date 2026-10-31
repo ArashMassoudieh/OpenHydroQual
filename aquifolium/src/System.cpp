@@ -1878,7 +1878,9 @@ bool System::SetSystemSettingsObjectProperties(const string &s, const string &va
              << "' (value '" << val << "' discarded)" << endl << flush;
 #endif
     }
-    return false;
+    // SetProperty() may have applied the value even when no Settings object
+    // carries this key (e.g. settings.json was never loaded): report that.
+    return out;
 
 }
 bool System::SetProperty(const string &s, const string &val)
