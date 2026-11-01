@@ -516,8 +516,10 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
     }
 
 
+	// A function of a pure number, e.g. _sqr(16): the constructor strips "_sqr(" into `function`
+	// and the remaining "16" becomes a constant node, so the function must be applied here too.
 	if (param_constant_expression == "constant")
-		return constant;
+		return function.empty() ? constant : func(function, constant);
 	if (param_constant_expression == "parameter")
 	{
        double out=0;
@@ -1022,8 +1024,9 @@ string Expression::ToString() const
     }
     if (param_constant_expression=="constant")
     {
-        out += aquiutils::numbertostring(constant);
-        return out;
+        if (function.empty())
+            return aquiutils::numbertostring(constant);
+        return "_" + function + "(" + aquiutils::numbertostring(constant) + ")";
     }
     if (!function.empty()) out += "_" + function;
     out += "(";

@@ -3,6 +3,12 @@
 // digit, '.' or '-'), so atof kept the first operand and dropped the rest: "(3-1)/2" -> 1.5,
 // "(5-3.5)/0.5" -> 10, "(0-1)" -> 0.
 //
+//
+// Also: a function applied to a pure numeric constant, e.g. "_sqr(16)", used to evaluate to the
+// constant itself. The constructor strips "_sqr(" into `function`, the remaining "16" becomes a
+// constant node, and calc's constant branch returned `constant` without applying `function`:
+// "100*_sqr(16)" -> 1600, "_exp(2)" -> 2, "_pos(-3)" -> -3. ToString dropped the function too.
+//
 // Build against the object files of a console build (all except main.o), e.g.:
 //   g++ -std=gnu++17 -fopenmp -Dubuntu_version -DTerminal_version -DQ_JSON_SUPPORT -DARMA_USE_LAPACK \
 //       -DARMA_USE_BLAS -DGSL -Iaquifolium/include -Iaquifolium/src -Iaquifolium/include/GA \
@@ -24,7 +30,7 @@ static void check(const char *text, double expected)
     Expression e(text);
     const double v = e.calc(&b, Expression::timing::present);
     const bool ok = std::abs(v - expected) < 1e-9 * std::max(1.0, std::abs(expected));
-    std::printf("%-6s %-16s = %-12g (expected %g)\n", ok ? "ok" : "FAIL", text, v, expected);
+    std::printf("%-6s %-24s = %-12g (expected %g)\n", ok ? "ok" : "FAIL", text, v, expected);
     if (!ok) failures++;
 }
 
@@ -56,6 +62,57 @@ int main()
     check("1e-12", 1e-12);
     check("_max(3-1;1)", 2.0);
     check("_min((5-3.5)/0.5;10)", 3.0);
+
+    // functions of pure numeric constants, standalone
+    check("_sqr(16)", 4.0);
+    check("_sqr(19.6)", std::sqrt(19.6));
+    check("_sqr(-4)", 0.0);
+    check("_sqr(1e-4)", 1e-2);
+    check("_sqr(2.5E+3)", std::sqrt(2500.0));
+    check("_sqr((16))", 4.0);
+    check("_exp(2)", std::exp(2.0));
+    check("_exp(-1)", std::exp(-1.0));
+    check("_log(10)", std::log(10.0));
+    check("_abs(-3)", 3.0);
+    check("_sgn(-2)", -1.0);
+    check("_sgn(5)", 1.0);
+    check("_pos(-3)", 0.0);
+    check("_pos(3)", 3.0);
+    check("_hsd(-1)", 0.0);
+    check("_hsd(2)", 1.0);
+    check("_sqt(4)", std::sqrt(16.0 / (4.0 + 1e-4)));
+    check("_sqt(-4)", -std::sqrt(16.0 / (4.0 + 1e-4)));
+
+    // ... inside products, sums and other operators
+    check("100*_sqr(16)", 400.0);
+    check("_sqr(16)*100", 400.0);
+    check("100*_sqr(19.6)", 100.0 * std::sqrt(19.6));
+    check("_sqr(19.6)*100", 100.0 * std::sqrt(19.6));
+    check("2*_exp(1)", 2.0 * std::exp(1.0));
+    check("_exp(0)*3", 3.0);
+    check("10*_abs(-3)", 30.0);
+    check("100*_pos(-3)+7", 7.0);
+    check("_pos(3)*2", 6.0);
+    check("5*_hsd(2)", 5.0);
+    check("_sqr(16)+_sqr(9)", 7.0);
+    check("_sqr(16)/_sqr(4)", 2.0);
+    check("2^_sqr(4)", 4.0);
+    check("1-_exp(0)", 0.0);
+    check("_max(_sqr(16);3)", 4.0);
+    check("_min(_exp(0);5)", 1.0);
+    check("_sqr(_sqr(16))", 2.0);
+    check("_sqr(3+1)", 2.0);
+    check("100*_sqr(2*8)", 400.0);
+
+    // ToString keeps the function, and re-parsing it gives the same value
+    {
+        const Expression e("_sqr(16)");
+        const std::string s = e.ToString();
+        const bool ok = s == "_sqr(16)";
+        std::printf("%-6s ToString(\"_sqr(16)\") = \"%s\"\n", ok ? "ok" : "FAIL", s.c_str());
+        if (!ok) failures++;
+        check(Expression("100*_exp(2)").ToString().c_str(), 100.0 * std::exp(2.0));
+    }
 
     std::printf("%s\n", failures ? "FAILED" : "all passed");
     return failures ? 1 : 0;
