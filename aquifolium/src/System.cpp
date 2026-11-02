@@ -113,6 +113,8 @@ void System::InitOpenMP()
 
 System::~System()
 {
+    delete stepping_restorepoint;
+    stepping_restorepoint = nullptr;
     clear();
 
 }
@@ -1126,99 +1128,10 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     CALLGRIND_TOGGLE_COLLECT;
 #endif
 
-    // The run ends exactly at tend: the last step is clamped to land on it (below).
-    // It used to loop `while (t < tend + dt)` with no clamp, overshooting tend by
-    // one or two steps -- up to max_timestep_increase_factor * dt0 of simulated
-    // time nobody asked for. t_tol absorbs the rounding of t + (tend - t).
+    // The run ends exactly at tend: the last step is clamped to land on it
+    // (AdvanceSolver).
     const double t_tol = 1e-12 * max(1.0, fabs(SimulationParameters.tend));
-    while (SolverTempVars.t < SimulationParameters.tend - t_tol
-        && !stop_triggered)
-    {
-
-        progress_p = progress;
-        progress = (SolverTempVars.t - SimulationParameters.tstart)
-            / (SimulationParameters.tend - SimulationParameters.tstart);
-        counter++;
-
-        if (counter % 50 == 0)
-            SolverTempVars.SetUpdateJacobian(true);
-
-        if (SolverTempVars.dt_ceiling > 0)
-            SolverTempVars.dt_base = min(SolverTempVars.dt_base,
-                                         SolverTempVars.dt_ceiling);
-        SolverTempVars.dt = min(SolverTempVars.dt_base, GetMinimumNextTimeStepSize());
-        SolverTempVars.dt = max(SolverTempVars.dt,
-            SimulationParameters.dt0 / SolverSettings.timestepminfactor);
-        // Never step past tend (applied step only; dt_base keeps adapting). Same
-        // clamp as the codegen solver's stopTime_ (codegen/runtime/ohq_massbalance.h).
-        if (SolverTempVars.t + SolverTempVars.dt > SimulationParameters.tend)
-            SolverTempVars.dt = SimulationParameters.tend - SolverTempVars.t;
-
-        vector<bool> _success = OneStepSolve();
-
-        if (!aquiutils::And(_success))
-            HandleSolveFailure(fail_counter, restorepoint);
-        else
-            HandleSolveSuccess(counter, fail_counter, restorepoint, progress, progress_p);
-
-        // Newton can stop solving without failing: when the residual starts
-        // below the hard-coded 1e-12 floor the iteration is skipped entirely and
-        // the step is accepted unchanged. Harmless for a system genuinely at
-        // rest, fatal when mass is crossing the boundary -- the run then reports
-        // success and returns an identically zero field. Trigger on the
-        // mechanism (Newton not iterating) qualified by the forcing, not on the
-        // zero field, which only appears much later.
-        if (ConstituentsCount() > 0)
-        {
-            const bool not_iterating = SolverTempVars.nr_below_absolute_floor
-                                     > SolverTempVars.nr_floor_seen_at;
-            SolverTempVars.nr_floor_seen_at = SolverTempVars.nr_below_absolute_floor;
-            if (not_iterating && counter % 5 == 0)
-            {
-                double mass = 0, loading = 0;
-                TransportMassAndLoading(mass, loading);
-                if (loading > 0)
-                    SolverTempVars.null_solution_steps++;
-                else
-                    SolverTempVars.null_solution_steps = 0;
-            }
-            else if (!not_iterating)
-                SolverTempVars.null_solution_steps = 0;
-
-            if (SolverTempVars.null_solution_steps >= 20)
-            {
-                const string msg = "at " + aquiutils::numbertostring(SolverTempVars.t)
-                    + ": the Newton iteration is being skipped -- the initial residual"
-                      " is below the absolute floor (1e-12) while mass is entering the"
-                      " domain, so every step is accepted unchanged and the solution"
-                      " will stay identically zero. The time step is too small for the"
-                      " scale of this problem: raise initial_time_step, or rescale the"
-                      " state variables.";
-                SolverTempVars.fail_reason.push_back(msg);
-                if (GetSolutionLogger())
-                {
-                    GetSolutionLogger()->WriteString(msg);
-                    GetSolutionLogger()->Flush();
-                }
-                LogMessage(msg, true);
-                SolverTempVars.SolutionFailed = true;
-                stop_triggered = true;
-            }
-        }
-
-        if (CheckTerminationConditions())
-            stop_triggered = true;
-
-#ifdef Q_GUI_SUPPORT
-        if (rtw)
-        {
-            errorhandler.Flush(rtw);
-            QCoreApplication::processEvents();
-        }
-#else
-        errorhandler.Flush("Warning: ");   // logged during the solve: the run continues
-#endif
-    }
+    AdvanceSolver(SimulationParameters.tend, restorepoint, counter, fail_counter, progress, progress_p);
 
 #ifdef VALGRIND
     CALLGRIND_TOGGLE_COLLECT;
@@ -1279,6 +1192,168 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     FinalizeOutputs(uniformizeoutput);
     SetSimulationDuration(time(nullptr) - SolverTempVars.time_start);
     return !SolverTempVars.SolutionFailed;
+}
+
+// Advances the solution from the current time to t_stop (the last step is
+// clamped to land on it). Shared by Solve() and the stepping API.
+bool System::AdvanceSolver(double t_stop, RestorePoint& restorepoint, int& counter,
+                           int& fail_counter, double& progress, double& progress_p)
+{
+    // The run ends exactly at tend: the last step is clamped to land on it (below).
+    // It used to loop `while (t < tend + dt)` with no clamp, overshooting tend by
+    // one or two steps -- up to max_timestep_increase_factor * dt0 of simulated
+    // time nobody asked for. t_tol absorbs the rounding of t + (tend - t).
+    const double t_tol = 1e-12 * max(1.0, fabs(t_stop));
+    while (SolverTempVars.t < t_stop - t_tol
+        && !stop_triggered)
+    {
+
+        progress_p = progress;
+        progress = (SolverTempVars.t - SimulationParameters.tstart)
+            / (SimulationParameters.tend - SimulationParameters.tstart);
+        counter++;
+
+        if (counter % 50 == 0)
+            SolverTempVars.SetUpdateJacobian(true);
+
+        if (SolverTempVars.dt_ceiling > 0)
+            SolverTempVars.dt_base = min(SolverTempVars.dt_base,
+                                         SolverTempVars.dt_ceiling);
+        SolverTempVars.dt = min(SolverTempVars.dt_base, GetMinimumNextTimeStepSize());
+        SolverTempVars.dt = max(SolverTempVars.dt,
+            SimulationParameters.dt0 / SolverSettings.timestepminfactor);
+        // Never step past tend (applied step only; dt_base keeps adapting). Same
+        // clamp as the codegen solver's stopTime_ (codegen/runtime/ohq_massbalance.h).
+        bool clamped = false;
+        if (SolverTempVars.t + SolverTempVars.dt > t_stop)
+        {
+            SolverTempVars.dt = t_stop - SolverTempVars.t;
+            clamped = true;
+        }
+        const double dt_base_before = SolverTempVars.dt_base;
+
+        vector<bool> _success = OneStepSolve();
+
+        if (!aquiutils::And(_success))
+            HandleSolveFailure(fail_counter, restorepoint);
+        else
+        {
+            HandleSolveSuccess(counter, fail_counter, restorepoint, progress, progress_p);
+            // A step shortened only to land on t_stop must not shrink the base
+            // step: the iteration-count rule scales dt_base from the (short) dt.
+            // With interval-by-interval stepping this happens at every interval
+            // boundary and would collapse the step size.
+            if (clamped && SolverTempVars.dt_base < dt_base_before)
+                SolverTempVars.dt_base = dt_base_before;
+        }
+
+        // Newton can stop solving without failing: when the residual starts
+        // below the hard-coded 1e-12 floor the iteration is skipped entirely and
+        // the step is accepted unchanged. Harmless for a system genuinely at
+        // rest, fatal when mass is crossing the boundary -- the run then reports
+        // success and returns an identically zero field. Trigger on the
+        // mechanism (Newton not iterating) qualified by the forcing, not on the
+        // zero field, which only appears much later.
+        if (ConstituentsCount() > 0)
+        {
+            const bool not_iterating = SolverTempVars.nr_below_absolute_floor
+                                     > SolverTempVars.nr_floor_seen_at;
+            SolverTempVars.nr_floor_seen_at = SolverTempVars.nr_below_absolute_floor;
+            if (not_iterating && counter % 5 == 0)
+            {
+                double mass = 0, loading = 0;
+                TransportMassAndLoading(mass, loading);
+                if (loading > 0)
+                    SolverTempVars.null_solution_steps++;
+                else
+                    SolverTempVars.null_solution_steps = 0;
+            }
+            else if (!not_iterating)
+                SolverTempVars.null_solution_steps = 0;
+
+            if (SolverTempVars.null_solution_steps >= 20)
+            {
+                const string msg = "at " + aquiutils::numbertostring(SolverTempVars.t)
+                    + ": the Newton iteration is being skipped -- the initial residual"
+                      " is below the absolute floor (1e-12) while mass is entering the"
+                      " domain, so every step is accepted unchanged and the solution"
+                      " will stay identically zero. The time step is too small for the"
+                      " scale of this problem: raise initial_time_step, or rescale the"
+                      " state variables.";
+                SolverTempVars.fail_reason.push_back(msg);
+                if (GetSolutionLogger())
+                {
+                    GetSolutionLogger()->WriteString(msg);
+                    GetSolutionLogger()->Flush();
+                }
+                LogMessage(msg, true);
+                SolverTempVars.SolutionFailed = true;
+                stop_triggered = true;
+            }
+        }
+
+        if (CheckTerminationConditions())
+            stop_triggered = true;
+
+#ifdef Q_GUI_SUPPORT
+        if (rtw)
+        {
+            errorhandler.Flush(rtw);
+            QCoreApplication::processEvents();
+        }
+#else
+        errorhandler.Flush("Warning: ");   // logged during the solve: the run continues
+#endif
+    }
+
+    return !SolverTempVars.SolutionFailed;
+}
+
+bool System::BeginStepping(bool applyparameters)
+{
+    EndStepping(false);
+#ifndef NO_OPENMP
+    omp_init_lock(&lock);
+#endif
+    stop_triggered = false;
+    SolverTempVars.SolutionFailed = false;
+    InitializeSolver(applyparameters);
+    PopulateOutputs(false);
+    stepping_restorepoint = new RestorePoint(this);
+    stepping_counter = 0;
+    stepping_fail_counter = 0;
+    stepping_progress = 0;
+    stepping_progress_p = 0;
+    return true;
+}
+
+bool System::AdvanceTo(double t)
+{
+    if (!stepping_restorepoint)
+    {
+        LogMessage("AdvanceTo called before BeginStepping", true);
+        return false;
+    }
+    const double t_stop = min(t, SimulationParameters.tend);
+    AdvanceSolver(t_stop, *stepping_restorepoint, stepping_counter, stepping_fail_counter,
+                  stepping_progress, stepping_progress_p);
+    const double t_tol = 1e-12 * max(1.0, fabs(t_stop));
+    if (SolverTempVars.t < t_stop - t_tol && !SolverTempVars.SolutionFailed)
+    {
+        LogMessage("Simulation stopped at t = " + aquiutils::numbertostring(SolverTempVars.t)
+            + " before the requested time " + aquiutils::numbertostring(t_stop) + ".", true);
+        SolverTempVars.SolutionFailed = true;
+    }
+    return !SolverTempVars.SolutionFailed;
+}
+
+void System::EndStepping(bool uniformize_outputs)
+{
+    if (!stepping_restorepoint)
+        return;
+    delete stepping_restorepoint;
+    stepping_restorepoint = nullptr;
+    FinalizeOutputs(uniformize_outputs);
 }
 
 void System::LogMessage(const string& msg, bool isWarning)
@@ -1358,7 +1433,7 @@ void System::InitializeSolver(bool applyparameters)
     UnUpdateAllVariables();
 
     for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
-        ObjectiveFunctions()[i]->GetTimeSeries()->clear();
+        ObjectiveFunctions()[i]->ClearStored();
 
     for (unsigned int i = 0; i < ObservationsCount(); i++)
         observation(i)->ClearModeled();

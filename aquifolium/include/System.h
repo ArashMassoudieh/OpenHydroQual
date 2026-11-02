@@ -612,6 +612,16 @@ public:
     /// so the value written to objective_function_values.txt did not belong to
     /// the model that had just been optimised.
     virtual bool Solve(bool ApplyParams = false, bool uniformize_outputs = true);
+    // Interval-by-interval simulation (closed-loop control, e.g. from Python):
+    // BeginStepping() initializes exactly as Solve() does; AdvanceTo(t) continues
+    // the run to t (clamped to tend) without re-initializing, so states, edits to
+    // forcing time series and objective-function series carry over between
+    // calls; EndStepping() finalizes the outputs. Solve() is equivalent to
+    // BeginStepping + AdvanceTo(tend) + EndStepping.
+    bool BeginStepping(bool applyparameters = false);
+    bool AdvanceTo(double t);
+    void EndStepping(bool uniformize_outputs = true);
+    bool IsStepping() const { return stepping_restorepoint != nullptr; }
     bool Update(const std::string& variable = "");
     bool Renew(const std::string& variable);
     bool OneStepSolve(unsigned int i, bool transport = false);
@@ -1126,6 +1136,13 @@ private:
         unsigned int statevarno, int ini_max_error_block);
     void LogErrorKeptIncreasing(const CVector_arma& F, bool transport, unsigned int statevarno);// In System.h private section:
     void InitializeSolver(bool applyparameters);
+    bool AdvanceSolver(double t_stop, RestorePoint& restorepoint, int& counter,
+                       int& fail_counter, double& progress, double& progress_p);
+    RestorePoint* stepping_restorepoint = nullptr;   // owned; set while stepping
+    int stepping_counter = 0;
+    int stepping_fail_counter = 0;
+    double stepping_progress = 0;
+    double stepping_progress_p = 0;
     void FinalizeOutputs(bool uniformizeoutput);
     void HandleSolveFailure(int& fail_counter, RestorePoint& restorepoint);
     void HandleSolveSuccess(int& counter, int& fail_counter, RestorePoint& restorepoint,

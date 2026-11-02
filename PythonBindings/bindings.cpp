@@ -5,6 +5,8 @@
 #include "Block.h"
 #include "Link.h"
 #include "Parameter.h"
+#include "Objective_Function.h"
+#include "Source.h"
 #include <QCoreApplication>
 #include <QJsonDocument>
 
@@ -233,7 +235,111 @@ PYBIND11_MODULE(openhydroqual_py, m) {
              py::arg("calculatevalue")  = false)
 
         // --- Outputs ---
-        .def("write_outputs", &System::WriteOutPuts);
+        .def("write_outputs", &System::WriteOutPuts)
+
+        // --- Block properties (counterpart of set_link_property) ---
+        .def("set_block_property", [](System& s,
+                                      const std::string& name,
+                                      const std::string& key,
+                                      const std::string& value) {
+            if (!s.block(name)) return false;
+            return s.block(name)->SetProperty(key, value, true, false);
+        }, py::arg("name"), py::arg("key"), py::arg("value"))
+
+        // --- Interval-by-interval simulation (closed-loop control) ---
+        .def("begin_stepping", &System::BeginStepping,
+             py::arg("apply_parameters") = false,
+             "Initialize the solver exactly as solve() does, without running.")
+        .def("advance_to", &System::AdvanceTo, py::arg("t"),
+             "Continue the simulation to time t (clamped to the end time) without "
+             "re-initializing. Returns False if the solve failed.")
+        .def("end_stepping", &System::EndStepping, py::arg("uniformize_output") = true,
+             "Finalize the outputs of a stepped run.")
+        .def("is_stepping", &System::IsStepping)
+        .def("current_time", [](System& s) { return s.GetTime(); })
+        .def("start_time", [](System& s) { return s.tstart(); })
+        .def("end_time", [](System& s) { return s.tend(); })
+        .def("solution_failed", &System::GetSolutionFailed)
+
+        // --- State variables and quantities of blocks, links and sources ---
+        .def("get_value", [](System& s, const std::string& object, const std::string& quantity) {
+            Object* o = s.object(object);
+            if (!o) throw py::key_error("object not found: " + object);
+            if (!o->Variable(quantity)) throw py::key_error(object + " has no quantity " + quantity);
+            return o->GetVal(quantity, Expression::timing::present);
+        }, py::arg("object"), py::arg("quantity"),
+           "Current value of a quantity (e.g. a state such as Storage). A constituent "
+           "concentration is addressed as 'Constituent:concentration'.")
+        .def("get_values", [](System& s, const std::vector<std::pair<std::string, std::string>>& items) {
+            std::vector<double> out;
+            out.reserve(items.size());
+            for (const auto& it : items) {
+                Object* o = s.object(it.first);
+                if (!o || !o->Variable(it.second))
+                    throw py::key_error("not found: " + it.first + ":" + it.second);
+                out.push_back(o->GetVal(it.second, Expression::timing::present));
+            }
+            return out;
+        }, py::arg("items"), "Current values of a list of (object, quantity) pairs.")
+        .def("set_value", [](System& s, const std::string& object, const std::string& quantity,
+                             double value) {
+            Object* o = s.object(object);
+            if (!o || !o->Variable(quantity))
+                throw py::key_error("not found: " + object + ":" + quantity);
+            return o->SetVal(quantity, value, Expression::timing::both);
+        }, py::arg("object"), py::arg("quantity"), py::arg("value"),
+           "Set the current value of a quantity (present and past), e.g. a state.")
+
+        // --- Forcing time series ---
+        .def("set_timeseries", [](System& s, const std::string& object, const std::string& property,
+                                  const std::vector<double>& t, const std::vector<double>& v) {
+            Object* o = s.object(object);
+            if (!o || !o->Variable(property))
+                throw py::key_error("not found: " + object + ":" + property);
+            if (t.size() != v.size() || t.empty())
+                throw py::value_error("t and v must be non-empty and of equal length");
+            TimeSeries<timeseriesprecision> ts(t, v);
+            ts.assign_D();
+            return o->Variable(property)->SetTimeSeries(ts);
+        }, py::arg("object"), py::arg("property"), py::arg("t"), py::arg("v"),
+           "Replace the time series of a time-series property (e.g. a controlled forcing).")
+
+        // --- Objective functions ---
+        .def("objective_names", [](System& s) {
+            std::vector<std::string> names;
+            for (unsigned int i = 0; i < s.ObjectiveFunctionsCount(); i++)
+                names.push_back(s.ObjectiveFunctions()[int(i)]->GetName());
+            return names;
+        })
+        .def("objective_method", [](System& s, const std::string& name) {
+            Objective_Function* f = s.ObjectiveFunctions()[name];
+            if (!f) throw py::key_error("objective function not found: " + name);
+            return f->Variable("method") ? f->Variable("method")->GetProperty() : std::string("integrate");
+        }, py::arg("name"))
+        .def("objective_weight", [](System& s, const std::string& name) {
+            Objective_Function* f = s.ObjectiveFunctions()[name];
+            if (!f) throw py::key_error("objective function not found: " + name);
+            return f->Weight();
+        }, py::arg("name"))
+        .def("objective_integral", [](System& s, const std::string& name) {
+            Objective_Function* f = s.ObjectiveFunctions()[name];
+            if (!f) throw py::key_error("objective function not found: " + name);
+            return f->RunningIntegral();
+        }, py::arg("name"),
+           "Integral of the objective function's expression from the start of the "
+           "run to the current time (value at the end of each step times its length).")
+        .def("objective_current_value", [](System& s, const std::string& name) {
+            Objective_Function* f = s.ObjectiveFunctions()[name];
+            if (!f) throw py::key_error("objective function not found: " + name);
+            return f->Value();
+        }, py::arg("name"), "Value of the expression at the last accepted step.")
+        .def("objective_value", [](System& s, const std::string& name) {
+            Objective_Function* f = s.ObjectiveFunctions()[name];
+            if (!f) throw py::key_error("objective function not found: " + name);
+            return f->GetObjective();
+        }, py::arg("name"),
+           "The objective function as OHQ evaluates it (its method over the stored "
+           "series), independent of the parameter-estimation mode.");
 
 
 }
