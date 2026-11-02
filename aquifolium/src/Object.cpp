@@ -222,7 +222,7 @@ double Object::GetVal(Quan* quan,const Expression::timing &tmg, bool limit)
     }
     else
     {   if (quan->Value_Updated())
-            return quan->GetVal(tmg);
+            return quan->GetVal(tmg)*GetOutflowLimitFactor(tmg);
         else
         {
             double val=0;
@@ -235,6 +235,18 @@ double Object::GetVal(Quan* quan,const Expression::timing &tmg, bool limit)
 
 
 
+
+double Object::GetLimitedVal(const string& s, const Expression::timing &tmg)
+{
+    if (ObjectType() != object_type::link)
+        return GetVal(s, tmg);
+    Quan* q = Variable(s);
+    // GetVal(s, tmg, true) would return such an expression's cached value, which was
+    // computed from the raw (unlimited) flow.
+    if (q && !q->ApplyLimit() && q->GetType() == Quan::_type::expression)
+        return q->GetExpression()->calc(this, tmg, true);
+    return GetVal(s, tmg, true);
+}
 
 bool Object::AddQnantity(const string &name,const Quan &Q)
 {

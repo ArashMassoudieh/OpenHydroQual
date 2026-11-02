@@ -266,10 +266,12 @@ PYBIND11_MODULE(openhydroqual_py, m) {
             Object* o = s.object(object);
             if (!o) throw py::key_error("object not found: " + object);
             if (!o->Variable(quantity)) throw py::key_error(object + " has no quantity " + quantity);
-            return o->GetVal(quantity, Expression::timing::present);
+            return o->GetLimitedVal(quantity, Expression::timing::present);
         }, py::arg("object"), py::arg("quantity"),
            "Current value of a quantity (e.g. a state such as Storage). A constituent "
-           "concentration is addressed as 'Constituent:concentration'.")
+           "concentration is addressed as 'Constituent:concentration'. A link's flow "
+           "(and any link expression built on it) is the flow the solver moved, i.e. "
+           "with the outflow limit of an emptying block applied.")
         .def("get_values", [](System& s, const std::vector<std::pair<std::string, std::string>>& items) {
             std::vector<double> out;
             out.reserve(items.size());
@@ -277,7 +279,7 @@ PYBIND11_MODULE(openhydroqual_py, m) {
                 Object* o = s.object(it.first);
                 if (!o || !o->Variable(it.second))
                     throw py::key_error("not found: " + it.first + ":" + it.second);
-                out.push_back(o->GetVal(it.second, Expression::timing::present));
+                out.push_back(o->GetLimitedVal(it.second, Expression::timing::present));
             }
             return out;
         }, py::arg("items"), "Current values of a list of (object, quantity) pairs.")

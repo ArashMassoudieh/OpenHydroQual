@@ -109,7 +109,58 @@ def main():
     print(f"spill with spillway closed at T/2: {spilled_half:.3f} -> {c.objective_integral('Spilled'):.3f}")
     assert spilled_half > 0 and abs(c.objective_integral("Spilled") - spilled_half) < 1e-6
     c.end_stepping(False)
+
+    limited_outflow()
     print("OK")
+
+
+def limited_outflow():
+    """A withdrawal (5000 m3/day) larger than the inflow (900 m3/day) empties the
+    reservoir; from then on the solver's outflow limiter lets only the inflow
+    through. get_value must return that limited flow, not the raw 5000, and an
+    objective on an expression built on the flow (a constituent's
+    advective_masstransfer = _ups(flow;concentration)) must integrate the limited
+    flow too: it must close the tracer mass balance."""
+    ohq = _import_ohq()
+    w = tempfile.mkdtemp()
+    R, Cin, Q = OHQ_RESOURCES, 2.0, 5000.0
+    inflow, ctrl = os.path.join(w, "inflow.txt"), os.path.join(w, "control.txt")
+    np.savetxt(inflow, [[0, 900], [T + 1, 900]], fmt="%.6f", delimiter=", ")
+    np.savetxt(ctrl, [[0, Q], [T + 1, Q]], fmt="%.6f", delimiter=", ")
+    sf = os.path.join(w, "model.ohq")
+    open(sf, "w").write("\n".join([
+        f"loadtemplate; filename = {R}main_components.json",
+        f"addtemplate; filename = {R}Reservoir_operation.json",
+        "setvalue; object=system, quantity=simulation_start_time, value=0",
+        f"setvalue; object=system, quantity=simulation_end_time, value={T}",
+        f"setvalue; object=system, quantity=initial_time_step, value={DT}",
+        "setvalue; object=system, quantity=n_threads, value=1",
+        "create constituent;type=Constituent,name=C,diffusion_coefficient=0,dispersivity=0",
+        f"create block;type=Reservoir,Storage=100,inflow={inflow},C:constant_inflow_concentration={Cin},name=Res",
+        "create block;type=fixed_head,Storage=0,head=0,name=User",
+        f"create link;from=Res,to=User,type=User_flow,flow={ctrl},C:exchange_velocity=0,name=withdrawal",
+        "create objectivefunction;type=Objective_Function,name=Withdrawn,object=withdrawal,"
+        "expression=flow,method=integrate,weight=1",
+        "create objectivefunction;type=Objective_Function,name=Load,object=withdrawal,"
+        "expression=C:advective_masstransfer,method=integrate,weight=1",
+        ""]))
+    s = ohq.System()
+    s.set_default_template_path(R)
+    s.set_working_folder(w + "/")
+    s.set_silent(True)
+    assert s.create_from_script(sf, R + "settings.json")
+    assert s.begin_stepping(True)
+    for k in range(N):
+        assert s.advance_to(k + 1.0)
+    q = s.get_value("withdrawal", "flow")
+    S, M = s.get_value("Res", "Storage"), s.get_value("Res", "C:mass")
+    W, L = s.objective_integral("Withdrawn"), s.objective_integral("Load")
+    s.end_stepping(False)
+    print(f"limited outflow: flow {q:.3f} (raw {Q:.0f}), withdrawn {W:.3f} vs {100 + 900 * T - S:.3f}, "
+          f"tracer load {L:.3f} vs {Cin * 900 * T - M:.3f}")
+    assert abs(q - 900) < 0.01 * 900, "get_value returned the unlimited flow"
+    assert abs(W - (100 + 900 * T - S)) < 0.01 * W, "water balance"
+    assert abs(L - (Cin * 900 * T - M)) < 0.01 * L, "objective on advective_masstransfer used the unlimited flow"
 
 
 if __name__ == "__main__":

@@ -534,7 +534,9 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 
        if (location == loc::self)
         {
-            if (quan!=nullptr && quan->GetParent()==W)
+            if (limit && W->ObjectType()==object_type::link)
+                out = W->GetLimitedVal(parameter, tmg);   // flows nested in link expressions limited too
+            else if (quan!=nullptr && quan->GetParent()==W)
                 out = W->GetVal(quan, tmg,limit);
             else
                 out = W->GetVal(parameter, tmg,limit);
@@ -558,7 +560,9 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
                     out = W->GetConnectedBlock(location)->GetVal(parameter, tmg, limit);
             }
             else
-            {   if (quan!=nullptr && quan->GetParent()==W)
+            {   if (limit && W->ObjectType()==object_type::link)
+                    out = W->GetLimitedVal(parameter, tmg);
+                else if (quan!=nullptr && quan->GetParent()==W)
                     out = W->GetVal(quan, tmg, limit);
                 else
                     out = W->GetVal(parameter, tmg, limit);

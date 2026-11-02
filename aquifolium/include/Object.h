@@ -41,6 +41,11 @@ class Object
         double GetVal(const string& s, const Expression::timing &tmg=Expression::timing::past, bool limit=false);
         double GetVal(const string& var, const string& consttnt, const Expression::timing &tmg, bool limit=false);
         double GetVal(Quan* quan,const Expression::timing &tmg, bool limit);
+        // Value of quantity s as the solver moves it. On a link, a quantity flagged
+        // applylimit (flow) is scaled by the outflow-limit factor, and an expression
+        // quantity (e.g. a constituent's advective_masstransfer = _ups(flow;concentration))
+        // is evaluated with the flows inside it limited. On any other object: GetVal(s, tmg).
+        double GetLimitedVal(const string& s, const Expression::timing &tmg);
         bool AddQnantity(const string &name,const Quan &Q);
         bool SetQuantities(MetaModel &m, const string& typ);
         bool SetQuantities(MetaModel *m, const string& typ );
