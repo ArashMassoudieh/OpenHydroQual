@@ -452,3 +452,12 @@ Examples/LM_Calibration/02_Monod_Reactor/observedoutputs.txt
 Examples/LM_Calibration/02_Monod_Reactor/outputs.txt
 
 terminal/OHQ-GA/build_tail/OHQ-GA
+
+# ohqrl: generated example inputs and training runs
+ohqrl/examples/pond/inflow.txt
+runs/
+ohqrl/docs/*.aux
+ohqrl/docs/*.log
+ohqrl/docs/*.out
+ohqrl/docs/*.toc
+__pycache__/

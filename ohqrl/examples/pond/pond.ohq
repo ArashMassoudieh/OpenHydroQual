@@ -1,0 +1,20 @@
+loadtemplate; filename = ${OHQ_RESOURCES}main_components.json
+addtemplate; filename = ${OHQ_RESOURCES}Pond_Plugin.json
+addtemplate; filename = ${OHQ_RESOURCES}mass_transfer.json
+addtemplate; filename = ${OHQ_RESOURCES}Sewer_system.json
+setvalue; object=system, quantity=simulation_start_time, value=29220
+setvalue; object=system, quantity=simulation_end_time, value=29221
+setvalue; object=system, quantity=initial_time_step, value=0.0034722
+setvalue; object=system, quantity=max_timestep_increase_factor, value=1
+setvalue; object=system, quantity=make_timeseries_uniform, value=no
+create constituent;type=AgeTracker_laplace,concentration=0,decay_parameter=0,diffusion_coefficient=0,external_mass_flow_timeseries=,external_source=,inflow_concentration=0,name=Age,stoichiometric_constant=0
+create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=1,name=Laplace_param,reference_temperature=0,temperature=
+create reaction;type=Reaction,Age:stoichiometric_constant=-1,name=decay,rate_expression=(Laplace_param*Age)
+create block;type=Pond,Age:concentration=0,Age:external_mass_flow_timeseries=,Age:external_source=,Age:inflow_concentration=1,Evapotranspiration=,Precipitation=,Storage=0,alpha=250,beta=2,bottom_elevation=0,inflow=${CONFIG_DIR}/inflow.txt,name=Pond
+create block;type=Catch basin,Age:concentration=0,Age:external_mass_flow_timeseries=,Age:external_source=,Age:inflow_concentration=1,Storage=0,area=4,bottom_elevation=0,inflow=,max_height=1e12,spread_side_slope=0,name=CatchBasin
+create block;type=fixed_head,Age:concentration=0,Age:external_mass_flow_timeseries=,Age:external_source=,Age:inflow_concentration=0,Storage=0,head=-1,name=Outlet
+create link;from=Pond,to=CatchBasin,type=controlled_orifice,Age:decay_parameter=0,head_loss_coefficient=0.6,max_area=0.03,opening=1,regularization_head=0.001,name=valve
+create link;from=Pond,to=CatchBasin,type=wier,Age:decay_parameter=0,alpha=440000,beta=1.5,crest_elevation=2,name=overflow
+create link;from=CatchBasin,to=Outlet,type=Sewer_pipe,Age:decay_parameter=0,ManningCoeff=0.01,diameter=0.3,length=5,start_elevation=0,end_elevation=-0.5,name=outlet_pipe
+create objectivefunction;type=Objective_Function,name=Flood,object=outlet_pipe,expression=(_pos(flow-1000)*_pos(flow-1000)/1000),method=integrate,weight=1
+create objectivefunction;type=Objective_Function,name=Young,object=outlet_pipe,expression=(flow*Age:concentration.s),method=integrate,weight=1
