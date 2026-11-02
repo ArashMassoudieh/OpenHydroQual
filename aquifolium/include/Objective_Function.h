@@ -42,6 +42,12 @@ class Objective_Function: public Object
         string GetLastError() {return lasterror;}
         void SetLastError(const string &lerror) {lasterror = lerror;}
         TimeSeries<timeseriesprecision> *GetTimeSeries() {return &stored_time_series;}
+        // Running integral of the expression over time, updated by append_value
+        // (value at the end of each step times the step length, consistent with
+        // the implicit solver). Lets a caller stepping the system read the
+        // contribution of each interval without re-integrating the series.
+        double RunningIntegral() const {return running_integral;}
+        void ClearStored() {stored_time_series.clear(); running_integral = 0;}
         void SetTimeSeries(const TimeSeries<timeseriesprecision> &X)
         {
             stored_time_series = X;
@@ -78,6 +84,7 @@ class Objective_Function: public Object
         double current_value=0;
         string outputitem=""; 
         double objective_value=0;
+        double running_integral=0;
          //the last error that occurred
 };
 
