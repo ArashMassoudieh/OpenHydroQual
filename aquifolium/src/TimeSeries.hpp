@@ -164,6 +164,8 @@ T& TimeSeries<T>::lastt() {
     return (*this).back().t;
 }
 
+// Forward exponential kernel: integral_t^{t+2/lambda} c(s) lambda exp(-lambda (s - t)) ds,
+// by the trapezoidal rule (1/2 of the two end values), so the weights integrate to 1 - exp(-2) over the window [t, t + 2/lambda].
 template<typename T>
 T TimeSeries<T>::Exponential_Kernel(const T& t, const T& lambda) const {
     if (this->empty()) return T{};
@@ -178,8 +180,7 @@ T TimeSeries<T>::Exponential_Kernel(const T& t, const T& lambda) const {
         T c_i = (*this)[i].c;
 
         T delta = t_ip1 - t_i;
-        sum += c_i * lambda * std::exp(-lambda * (t_i - t)) * delta;
-        sum += c_i * lambda * std::exp(-lambda * (t_ip1 - t)) * delta;
+        sum += T(0.5) * c_i * lambda * (std::exp(-lambda * (t_i - t)) + std::exp(-lambda * (t_ip1 - t))) * delta;
     }
 
     return sum;

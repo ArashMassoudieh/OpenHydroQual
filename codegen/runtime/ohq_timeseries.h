@@ -202,7 +202,8 @@ public:
     }
 
     // Forward exponential kernel: reproduces TimeSeries.hpp Exponential_Kernel.
-    // forecast(t) ~ integral_t^inf c(tau) * lambda * exp(-lambda (tau - t)) dtau
+    // forecast(t) = integral_t^{t+2/lambda} c(tau) * lambda * exp(-lambda (tau - t)) dtau,
+    // by the trapezoidal rule (1/2 of the two end values), so the weights integrate to 1 - exp(-2) over the window [t, t + 2/lambda].
     double ekr(double time, double lambda) const
     {
         if (t.empty()) return 0.0;
@@ -215,8 +216,8 @@ public:
             const double t_ip1 = t[i + 1];
             const double c_i   = c[i];
             const double delta = t_ip1 - t_i;
-            sum += c_i * lambda * std::exp(-lambda * (t_i   - time)) * delta;
-            sum += c_i * lambda * std::exp(-lambda * (t_ip1 - time)) * delta;
+            sum += 0.5 * c_i * lambda * (std::exp(-lambda * (t_i   - time))
+                                       + std::exp(-lambda * (t_ip1 - time))) * delta;
         }
         return sum;
     }
