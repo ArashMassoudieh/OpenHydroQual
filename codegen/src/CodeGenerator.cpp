@@ -1910,7 +1910,11 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
       << tHooks << "\n"
       << oscApi << "\n"
       << "private:\n"
-      << "    void loadSeries() {\n" << seriesInit.str() << "    }\n"
+      // The baked tables are appended with push(): load them once per instance, or every
+      // re-initialize (a new GA/MCMC sample, an RL episode) duplicates all forcing data.
+      << "    void loadSeries() {\n        if (seriesLoaded_) return;\n        seriesLoaded_ = true;\n"
+      << seriesInit.str() << "    }\n"
+      << "    bool seriesLoaded_ = false;\n"
       << "    void buildConstants() {\n" << initBody.str() << "    }\n"
       << decls.str()
       << seriesDecls.str()
