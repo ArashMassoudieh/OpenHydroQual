@@ -1249,8 +1249,8 @@
       "unit": "1/day",
       "estimate": "true",
       "default": "0.01",
-      "criteria": "leakage_coefficient>=0",
-      "warningmessage": "The leakage coefficient must not be negative",
+      "criteria": "leakage_coefficient>0",
+      "warningmessage": "The leakage coefficient must be positive",
       "helptext": "Hydraulic conductance of the pipe wall, joints and bedding per unit wall area (K/thickness), 1/day."
     },
     "pipe_length": {
