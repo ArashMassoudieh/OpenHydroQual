@@ -1233,5 +1233,63 @@
       "unit": "m^2;ft^2",
       "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
+  },
+  "groundwater2sewer": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Darcy exchange between an unconfined groundwater cell and a sewer pipe segment (infiltration/exfiltration)",
+    "icon": {
+      "filename": "groundwater2sewer_xsection.png"
+    },
+    "leakage_coefficient": {
+      "type": "value",
+      "description": "Leakage coefficient (wall conductance per unit wall area)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "1/day",
+      "estimate": "true",
+      "default": "0.01",
+      "criteria": "leakage_coefficient>=0",
+      "warningmessage": "The leakage coefficient must not be negative",
+      "helptext": "Hydraulic conductance of the pipe wall, joints and bedding per unit wall area (K/thickness), 1/day."
+    },
+    "pipe_length": {
+      "type": "value",
+      "description": "Leaking pipe length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "1",
+      "criteria": "pipe_length>0",
+      "warningmessage": "The pipe length must be greater than zero",
+      "helptext": "Length of pipe exchanging water with the aquifer cell (trunk plus laterals); may differ from the length of the sewer segment."
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "leakage_coefficient*3.1415926*diameter.e*diameter_multiplier.e*pipe_length*(_max(piezometric_head.s;bottom_elevation.e)-_max(head.e;bottom_elevation.e))",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    },
+    "helptext": "Infiltration and exfiltration between an Unconfined Groundwater cell (source; unconfined_groundwater.json must be loaded) and a Sewer Channel Segment (destination), driven by the head difference: flow = leakage_coefficient*pi*D*pipe_length*(max(piezometric_head.s;bottom_elevation.e) - max(head.e;bottom_elevation.e)), D = diameter*diameter_multiplier of the segment. Positive flow is infiltration into the pipe. A head below the pipe invert counts as the invert: with the water table below the invert, exfiltration is driven by the water depth in the pipe, and a dry pipe neither gains nor loses water while the water table stays below its invert."
   }
 }
