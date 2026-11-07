@@ -193,6 +193,8 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
     {   MCMC_Settings.covariance_min_samples = aquiutils::atoi(value); return true;}
     if (aquiutils::tolower(varname) == "covariance_scale")
     {   MCMC_Settings.covariance_scale = aquiutils::atof(value); return true;}
+    if (aquiutils::tolower(varname) == "chain_write_interval")
+    {   { const int v = int(aquiutils::atoi(value)); MCMC_Settings.chain_write_interval = v > 0 ? unsigned(v) : 1u; } return true;}
     if (aquiutils::tolower(varname) == "adaptation_interval")
     {   { const int v = int(aquiutils::atoi(value)); MCMC_Settings.adaptation_interval = v > 0 ? unsigned(v) : 1u; } return true;}
     if (aquiutils::tolower(varname) == "covariance_centering")
@@ -855,7 +857,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 #endif
 
         done_to = min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples);
-        if ((kk-k_0) % (50 * MCMC_Settings.number_of_chains) == 0)
+        if ((kk-k_0) % (int(max(1u, MCMC_Settings.chain_write_interval)) * MCMC_Settings.number_of_chains) == 0)
             write_rows(done_to);
 
         if (MCMC_Settings.covariance_proposal &&

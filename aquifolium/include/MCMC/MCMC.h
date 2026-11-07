@@ -104,6 +104,8 @@ struct _MCMC_settings
     // steps (blocks of number_of_chains samples) between adjustments of the step size to the target acceptance
     // rate (x or / purturbation_change_scale); 50 was the fixed value before this setting
     unsigned int adaptation_interval = 50;
+    // rounds (steps of all chains) between writes of the chain file; a crash loses at most this many steps
+    unsigned int chain_write_interval = 50;
     // --- differential-evolution proposal (proposal_method = de) -------------
     // DE-MCz (ter Braak & Vrugt 2008) with DREAM-style crossover (Vrugt et al. 2009): a chain proposes
     // x* = x + gamma (z1 - z2) + e, with z1 != z2 drawn from the archive of past chain states (from

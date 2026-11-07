@@ -740,6 +740,17 @@
    "criteria": "adaptation_interval>0",
    "warningmessage": "Must be greater than zero"
   },
+  "chain_write_interval": {
+   "default": "50",
+   "description": "Chain file write interval",
+   "helptext": "Steps (one sample of every chain) between writes of the chain file (mcmc.txt). A crash loses at most this many steps; --continue resumes from the last write.",
+   "ask_user": "true",
+   "type": "value",
+   "delegate": "ValueBox",
+   "code": "chain_write_interval",
+   "criteria": "chain_write_interval>0",
+   "warningmessage": "Must be greater than zero"
+  },
   "covariance_centering": {
    "default": "pooled",
    "type": "string",
