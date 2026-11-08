@@ -26,8 +26,8 @@ truth. "CI" is the 95% interval LM reports from `(J'J)^-1`.
 
 | Case | Parameter | Truth | Start | Estimate | CI covers truth |
 |---|---|---:|---:|---:|:--:|
-| 1 | `p_k_f` | 5.0 | 1.5 | 5.012 | yes |
-| 1 | `p_KD` | 500 | 120 | 511.2 | yes |
+| 1 | `p_k_f` | 5.0 | 1.5 | re-run pending | |
+| 1 | `p_KD` | 500 | 120 | re-run pending | |
 | 2 | `p_k_A` | 1.0 | 0.35 | 0.9803 | yes |
 | 2 | `p_K_s` | 0.6 | 2.5 | 0.5775 | yes |
 | 2 | `p_k_B` | 0.5 | 1.6 | 0.5097 | yes |
@@ -41,9 +41,13 @@ Cost, and the likelihood reached against the likelihood at the true values:
 
 | Case | Residuals | Iterations | Model solves | -logL at truth | -logL at estimate |
 |---|---:|---:|---:|---:|---:|
-| 1 | 120 | 5 | 29 | -286.5 | **-299.5** |
+| 1 | 120 | re-run pending | | | |
 | 2 | 160 | 12 | 68 | -441.9 | **-443.9** |
 | 3 | 360 | 6 | 35 | -1168.6 | **-1169.3** |
+
+Case 1 was corrected on 2026-11-08 (its sorbed-phase stoichiometry did not
+conserve mass) and its data regenerated; its OHQ-LM numbers are pending a
+re-run. See `01_Batch_Sorption/README.md`.
 
 In every case LM reaches a likelihood slightly better than the one at the true
 parameters, which is what should happen: it is fitting one particular noise
@@ -110,10 +114,11 @@ uniform for the other two.
 ## Two things these cases exposed
 
 **Solver tolerance can destroy identifiability.** Case 1's source model ships
-with `nr_tolerance = 1e-3`, which appears to be absolute. Cu_aq decays through
-six decades, so everything below about 1e-3 was solver noise that differed from
-run to run. Since `KD` is identified almost entirely by the equilibrium plateau
-at 2.3e-7, the parameter was unrecoverable and LM confidently returned a wrong
+with `nr_tolerance = 1e-3`, which appears to be absolute. In the original,
+mass-losing version of the case Cu_aq decayed through six decades, so
+everything below about 1e-3 was solver noise that differed from run to run.
+Since `KD` is identified almost entirely by the equilibrium plateau (then
+2.3e-7; 8.0e-4 in the corrected case, still below the shipped tolerance), the parameter was unrecoverable and LM confidently returned a wrong
 answer with tight confidence intervals. The case sets `nr_tolerance = 1e-10`.
 If a calibration returns implausibly narrow intervals around a wrong answer,
 suspect the solver before the optimiser.

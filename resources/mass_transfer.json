@@ -727,12 +727,13 @@
   "Sorbed_Constituent": {
     "type": "constituent",
     "typecategory": "Constituents",
-    "description": "sorbed chemical constituent",
+    "description": "Sorbed constituent (per total volume)",
+    "helptext": "A constituent that stays in its block, with its concentration expressed per total (bulk) volume of the block (mass/volume). Needs a block with a \"volume\" property, such as a Groundwater cell. Compare: immobile constituent, which is expressed per volume of water.",
     "icon": {
       "filename": "sorbed_constituent.png"
     },
     "concentration": {
-      "description": "Concentration per total volume",
+      "description": "Concentration per total (bulk) volume",
       "type": "expression",
       "expression": "mass/volume",
       "ask_user": "true",
@@ -740,7 +741,8 @@
       "includeinoutput": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit": "g/m^3"
+      "unit": "g/m^3",
+      "helptext": "Mass divided by the total volume of the block (solids plus pores, the block property \"volume\"); not carried by flow. It exchanges mass with a dissolved constituent through a Chemical reaction (rate per volume of water) or a Desorption reaction (rate per total volume); in both cases stoichiometric constants of -1 and +1 conserve mass. For linear sorption at equilibrium this concentration equals rho_b*K_d*C, so choose k_adsorption/k_desorption = rho_b*K_d; the retardation factor is then 1 + rho_b*K_d/n and the sorbed mass per mass of solid is concentration/rho_b."
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -759,7 +761,7 @@
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytoblocks",
-      "initial_value_expression": "concentration*depth*area",
+      "initial_value_expression": "concentration*volume",
       "unit": "g;kg"
     },
     "masstransfer": {
@@ -769,6 +771,16 @@
       "includeinoutput": "false",
       "ask_user": "false",
       "role": "copytolinks"
+    },
+    "inflow_loading": {
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Inflow loading",
+      "role": "copytoblocks",
+      "unit": "g/day",
+      "helptext": "Always 0: an immobile or sorbed constituent does not enter with inflowing water. Defined so that solver diagnostics that sum the inflow loading of every constituent find it."
     },
     "external_mass_flow_timeseries": {
       "type": "timeseries",
@@ -791,12 +803,13 @@
   "Immobile_Constituent": {
     "type": "constituent",
     "typecategory": "Constituents",
-    "description": "Immobile constituent",
+    "description": "Immobile constituent (per volume of water)",
+    "helptext": "A constituent that stays in its block, with its concentration expressed per volume of water (mass/Storage), like a dissolved constituent. Use it for sorbed or attached mass when the reactions are written per volume of water. Compare: sorbed chemical constituent, which is expressed per total volume.",
     "icon": {
       "filename": "immobile_constituent_reactor.png"
     },
     "concentration": {
-      "description": "Concentration per total volume",
+      "description": "Concentration per volume of water",
       "type": "expression",
       "expression": "mass/(Storage+0.00001)",
       "ask_user": "true",
@@ -804,7 +817,8 @@
       "includeinoutput": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit": "g/m^3"
+      "unit": "g/m^3",
+      "helptext": "Mass divided by the water volume (Storage) of the block: the same basis as a mobile chemical constituent, but not carried by flow. Exchange with a dissolved constituent through Chemical reactions (rates per volume of water); stoichiometric constants of -1 and +1 conserve mass. For linear sorption at equilibrium this concentration equals (rho_b*K_d/n)*C, so choose k_adsorption/k_desorption = rho_b*K_d/n; the retardation factor is then 1 + rho_b*K_d/n and the sorbed mass per mass of solid is n*concentration/rho_b."
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -823,7 +837,8 @@
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytoblocks",
-      "initial_value_expression": "concentration*Storage"
+      "initial_value_expression": "concentration*Storage",
+      "unit": "g;kg"
     },
     "masstransfer": {
       "description": "Mass transfer rate",
@@ -832,6 +847,16 @@
       "includeinoutput": "false",
       "ask_user": "false",
       "role": "copytolinks"
+    },
+    "inflow_loading": {
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Inflow loading",
+      "role": "copytoblocks",
+      "unit": "g/day",
+      "helptext": "Always 0: an immobile or sorbed constituent does not enter with inflowing water. Defined so that solver diagnostics that sum the inflow loading of every constituent find it."
     },
     "external_mass_flow_timeseries": {
       "type": "timeseries",
@@ -857,6 +882,7 @@
     "description": "Desorption",
     "typecategory": "Reactions",
     "normalizing_quantity": "volume",
+    "helptext": "A reaction whose rate expression is per unit total volume of the block (it is multiplied by the block property \"volume\"), whereas a Chemical reaction is per unit volume of water (multiplied by Storage). With stoichiometric constants of -1 and +1 it conserves mass between any two constituents, whatever volume their concentrations are expressed per.",
     "icon": {
       "filename": "desorption.png"
     },
