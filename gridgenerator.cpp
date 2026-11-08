@@ -180,6 +180,9 @@ void GridGenerator::on_Selected_link_changed()
 
 void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, objectType ObjectType)
 {
+    // A previous population may have left a stretch on what is now a property row.
+    for (int r = 0; r < layout->rowCount(); r++)
+        layout->setRowStretch(r, 0);
 
     for (unsigned int i=0; i<qs.AskableSize(); i++)
     {
@@ -571,8 +574,11 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
 
     if (ObjectType == objectType::block)
     {
-        verticalSpacer_blocks = new QSpacerItem(20, 40, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding);
-        layout->addItem(verticalSpacer_blocks, qs.AskableSize(), 1, 1, 1);
+        // The properties occupy rows 1..AskableSize(); the spacer goes below the last
+        // one and takes the spare height. Placing it on row AskableSize() put it in
+        // the last property's row, which then stretched to fill the dialog.
+        verticalSpacer_blocks = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        layout->addItem(verticalSpacer_blocks, qs.AskableSize() + 1, 0, 1, 4);
 
     }
     else if (ObjectType == objectType::link_x)
@@ -585,6 +591,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
         verticalSpacer_links_y = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
         layout->addItem(verticalSpacer_links_y, qs.AskableSize() + 1, 0, 1, 4);
     }
+    layout->setRowStretch(qs.AskableSize() + 1, 1);
 
 }
 

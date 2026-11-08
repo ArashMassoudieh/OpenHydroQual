@@ -765,6 +765,7 @@ const vector<string> &Object::functions() const
 
 bool Object::RenameConstituents(const string &oldname, const string &newname)
 {
+    GetVars()->RenameConstituentPrefix(oldname, newname);
     Constituent* consttnt = parent->constituent(oldname);
     if (consttnt)
     {   vector<Quan> original_quans = consttnt->GetCopyofAllQuans();
