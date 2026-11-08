@@ -193,6 +193,7 @@ public:
     vector<std::string> AllConstituents() const;
     vector<string> AllReactionParameters() const;
     bool RenameQuantity(const string& oldname, const string& newname);
+    bool RenameConstituentPrefix(const string& oldname, const string& newname);
     bool SetPrecalcIndependentVariable(const string& varname) { return precalcfunction.SetIndependentVariable(varname); }
     PreCalculatedFunction* PreCalcFunction() { return &precalcfunction; }
     double InterpolateBasedonPrecalcFunction(const double& val) const;

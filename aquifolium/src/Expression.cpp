@@ -1006,9 +1006,30 @@ bool Expression::RenameQuantity(const string &oldname, const string &newname)
         }
         else if (terms[i].param_constant_expression == "expression")
         {
-            out = out || terms[i].RenameQuantity(oldname,newname);
+            if (terms[i].RenameQuantity(oldname,newname))   // no ||: it would skip the remaining terms
+                out = true;
         }
     }
+    return out;
+}
+
+// Renames every reference "oldname:<quantity>" in this expression and all of its
+// sub-expressions to "newname:<quantity>". Used when a constituent or reaction
+// parameter is renamed: copies of its quantities refer to the constituent's own
+// properties (e.g. "Tracer:dispersivity") that are not stored on the object
+// holding the copy, so renaming by full quantity name alone misses them.
+bool Expression::RenameConstituentPrefix(const string &oldname, const string &newname)
+{
+    bool out = false;
+    const string oldprefix = oldname + ":";
+    if (param_constant_expression == "parameter" && parameter.compare(0, oldprefix.size(), oldprefix) == 0)
+    {
+        parameter = newname + ":" + parameter.substr(oldprefix.size());
+        out = true;
+    }
+    for (unsigned int i = 0; i < terms.size(); i++)
+        if (terms[i].RenameConstituentPrefix(oldname, newname))
+            out = true;
     return out;
 }
 

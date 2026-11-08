@@ -696,7 +696,8 @@ bool QuanSet::RenameQuantity(const string &oldname, const string &newname)
 {
     bool out = false;
     for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
-        out = out || it->second.RenameQuantity(oldname, newname);
+        if (it->second.RenameQuantity(oldname, newname))
+            out = true;
     return true;
 }
 
@@ -721,6 +722,15 @@ bool QuanSet::InitializePrecalcFunctions()
 
     return out;
 
+}
+
+bool QuanSet::RenameConstituentPrefix(const string &oldname, const string &newname)
+{
+    bool out = false;
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
+        if (it->second.RenameConstituentPrefix(oldname, newname))
+            out = true;
+    return out;
 }
 
 bool QuanSet::RenameConstituents(const string &oldname, const string &newname)

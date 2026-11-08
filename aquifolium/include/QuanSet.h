@@ -124,6 +124,7 @@ class QuanSet: public unordered_map<string, Quan>
         vector<string> AllReactionParameters();
         bool RenameQuantity(const string &oldname, const string &newname);
         bool RenameConstituents(const string &oldname, const string &newname);
+        bool RenameConstituentPrefix(const string &oldname, const string &newname);
         bool DeleteConstituentRelatedProperties(const string &constituent_name);
         bool Find(const string &s)
         {

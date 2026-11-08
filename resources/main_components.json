@@ -805,7 +805,7 @@
     "diffusive_masstransfer": {
       "description": "Diffusive/Dispersive mass transfer rate",
       "type": "expression",
-      "expression": "((diffusion_coefficient*area+dispersivity*flow)/length+exchange_velocity*area)*(concentration.s-concentration.e)",
+      "expression": "((diffusion_coefficient*area+dispersivity*_abs(flow))/length+exchange_velocity*area)*(concentration.s-concentration.e)",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks",

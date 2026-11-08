@@ -1535,6 +1535,13 @@ vector<string> Quan::AllReactionParameters() const
         return vector<string>();
 }
 
+bool Quan::RenameConstituentPrefix(const string& oldname, const string& newname)
+{
+    bool a = _expression.RenameConstituentPrefix(oldname, newname);
+    bool b = initial_value_expression.RenameConstituentPrefix(oldname, newname);
+    return a || b;
+}
+
 bool Quan::RenameQuantity(const string& oldname, const string& newname)
 {
     _expression.RenameQuantity(oldname, newname);
