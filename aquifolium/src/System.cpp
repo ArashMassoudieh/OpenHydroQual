@@ -723,6 +723,34 @@ ErrorHandler System::VerifyAllQuantities()
     return errs;
 }
 
+// Point every Quan in the model at its owning QuanSet's generation counter.
+// Must cover exactly the collections UnUpdateAllVariables() invalidates, and
+// must run after SetAllParents()/object construction -- any Quan missed here
+// simply never caches, so this is a performance contract, not a correctness one.
+void System::BindQuanGenerations()
+{
+    for (unsigned int i = 0; i < links.size(); i++)
+        links[i].BindQuanGenerations();
+
+    for (unsigned int i = 0; i < blocks.size(); i++)
+        blocks[i].BindQuanGenerations();
+
+    for (unsigned int i = 0; i < sources.size(); i++)
+        sources[i].BindQuanGenerations();
+
+    for (unsigned int i = 0; i < observations.size(); i++)
+        observations[i].BindQuanGenerations();
+
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+        reaction_parameters[i].BindQuanGenerations();
+
+    for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
+        ObjectiveFunctions()[i]->BindQuanGenerations();
+
+    for (unsigned int i = 0; i < ReactionsCount(); i++)
+        reactions[i].BindQuanGenerations();
+}
+
 void System::UnUpdateAllVariables()
 {
     for (unsigned int i = 0; i < links.size(); i++)
@@ -1392,6 +1420,7 @@ void System::InitializeSolver(bool applyparameters)
     SolverTempVars.time_start = time(nullptr);
     SetAllParents();
     SetQuanPointers();
+    BindQuanGenerations();
 
     if (ConstituentsCount() > 0)
         SetNumberOfStateVariables(solvevariableorder.size() + 1);

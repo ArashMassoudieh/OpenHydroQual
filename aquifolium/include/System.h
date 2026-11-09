@@ -865,7 +865,8 @@ public:
     void SetAllParents();                   
     void SetVariableParents();              
     void SetQuanPointers();                 
-    void UnUpdateAllVariables();            
+    void UnUpdateAllVariables();
+    void BindQuanGenerations();             // install generation pointers, once per solve
     bool CalcAllInitialValues();            
     bool InitiatePrecalculatedFunctions();  
     void InitOpenMP();      

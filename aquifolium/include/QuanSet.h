@@ -25,6 +25,7 @@
 #include <map>
 #include <unordered_map>
 #include <map>
+#include <memory>
 #include <Quan.h>
 
 #define unordered_map map
@@ -90,7 +91,13 @@ class QuanSet: public unordered_map<string, Quan>
         static Quan& missingQuanDummy();
         Quan* GetVar(int i);
         Quan* GetVarAskable(int i);
+        // O(1) invalidation of every quantity in this set: bump the generation
+        // counter the member Quans carry a pointer to (see Quan::BindGeneration).
         void UnUpdateAllValues();
+        // Point every member Quan at this set's counter. Called once per solve
+        // from System::BindQuanGenerations(), not from the solver loop.
+        void BindGenerations();
+        const unsigned long long* GenerationCell() const { return generation_cell.get(); }
         std::unordered_map<string,Quan>::const_iterator const_end() const {return cend();}
         std::unordered_map<string,Quan>::const_iterator const_begin() const {return cbegin();}
         unsigned long size() const {return unordered_map<string, Quan>::size();}
@@ -180,6 +187,13 @@ class QuanSet: public unordered_map<string, Quan>
     protected:
 
     private:
+        // Held on the heap so the address stays valid if this QuanSet is moved
+        // (e.g. the owning vector<Block> reallocating) -- the member Quans hold
+        // a raw pointer to it. A copied QuanSet gets its own fresh counter,
+        // because a user-defined copy constructor default-initializes members
+        // it does not name.
+        std::shared_ptr<unsigned long long> generation_cell =
+            std::make_shared<unsigned long long>(1ULL);
         Object* parent = nullptr;
         string name = "";
         string last_error = "";

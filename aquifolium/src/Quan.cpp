@@ -31,6 +31,10 @@
 #endif
 
 
+// Sentinel generation for a Quan with no owning QuanSet. It stays 0 while live
+// generations start at 1, so an unbound Quan always reports "not cached".
+const unsigned long long Quan::no_generation = 0ULL;
+
 Quan::Quan()
 {
 #ifndef NO_OPENMP
@@ -451,7 +455,7 @@ Quan::Quan(const Quan& other)
     _val = other._val;
     _val_star = other._val_star;
     //_parameters = other._parameters;
-    value_star_updated = other.value_star_updated;
+    value_stamp = 0ULL; generation = &no_generation;   // rebound at next solve
     _parameterassignedto = other._parameterassignedto;
     type = other.type;
     corresponding_flow_quan = other.corresponding_flow_quan;
@@ -481,7 +485,7 @@ Quan::Quan(const Quan& other)
     role = other.role;
     initial_value_expression = other.initial_value_expression;
     calculate_initial_value_from_expression = other.calculate_initial_value_from_expression;
-    value_star_updated = other.value_star_updated;
+    value_stamp = 0ULL; generation = &no_generation;   // rebound at next solve
     precalcfunction = other.precalcfunction;
     OutputItem = other.OutputItem;
     helptext = other.helptext;
@@ -499,7 +503,7 @@ Quan& Quan::operator=(const Quan& rhs)
     _string_value = rhs._string_value;
     _val = rhs._val;
     _val_star = rhs._val_star;
-    value_star_updated = rhs.value_star_updated;
+    value_stamp = 0ULL; generation = &no_generation;   // rebound at next solve
     //_parameters = rhs._parameters;
     _parameterassignedto = rhs._parameterassignedto;
     sourcename = rhs.sourcename;
@@ -531,7 +535,7 @@ Quan& Quan::operator=(const Quan& rhs)
     role = rhs.role;
     initial_value_expression = rhs.initial_value_expression;
     calculate_initial_value_from_expression = rhs.calculate_initial_value_from_expression;
-    value_star_updated = rhs.value_star_updated;
+    value_stamp = 0ULL; generation = &no_generation;   // rebound at next solve
     precalcfunction = rhs.precalcfunction;
     OutputItem = rhs.OutputItem;
     helptext = rhs.helptext;
@@ -568,7 +572,7 @@ double Quan::CalcVal(Object* block, const Expression::timing& tmg)
     {
         if (source != nullptr)
         {
-            if (value_star_updated)
+            if (Value_Updated())
                 return _val_star;
             else
             {
@@ -576,11 +580,11 @@ double Quan::CalcVal(Object* block, const Expression::timing& tmg)
 #ifndef NO_OPENMP
                 omp_set_lock(&_val_lock);
 #endif
-                if (!value_star_updated)
+                if (!Value_Updated())
                 {
                     SetSourceContext(block);
                     _val_star = source->GetValue(block);
-                    value_star_updated = true;
+                    value_stamp = *generation;
                 }
                 val = _val_star;
 #ifndef NO_OPENMP
@@ -623,7 +627,7 @@ double Quan::GetVal(const Expression::timing& tmg)
         return _val;
     else
     {
-        if (value_star_updated)
+        if (Value_Updated())
             return _val_star;
         else if (type == _type::source)
         {
@@ -640,13 +644,13 @@ double Quan::GetVal(const Expression::timing& tmg)
             if (type == _type::expression)
             {
                 _val_star = CalcVal(tmg);
-                value_star_updated = true;
+                value_stamp = *generation;
 
             }
             if (type == _type::rule)
             {
                 _val_star = CalcVal(tmg);
-                value_star_updated = true;
+                value_stamp = *generation;
             }
             if (type == _type::timeseries)
             {
@@ -654,7 +658,7 @@ double Quan::GetVal(const Expression::timing& tmg)
                     _val_star = GetTimeSeries()->interpol(GetSimulationTime());
                 else
                     _val_star = EmptySeriesValue();
-                value_star_updated = true;
+                value_stamp = *generation;
             }
             if (type == _type::prec_timeseries)
             {
@@ -662,7 +666,7 @@ double Quan::GetVal(const Expression::timing& tmg)
                     _val_star = GetTimeSeries()->interpol(GetSimulationTime());
                 else
                     _val_star = 0;
-                value_star_updated = true;
+                value_stamp = *generation;
             }
 
 #ifndef NO_OPENMP
@@ -739,7 +743,7 @@ double Quan::CalcVal(const Expression::timing& tmg)
     {
         if (source != nullptr)
         {
-            if (value_star_updated)
+            if (Value_Updated())
                 return _val_star;
             else
             {
@@ -747,11 +751,11 @@ double Quan::CalcVal(const Expression::timing& tmg)
 #ifndef NO_OPENMP
                 omp_set_lock(&_val_lock);
 #endif
-                if (!value_star_updated)
+                if (!Value_Updated())
                 {
                     SetSourceContext(parent);
                     _val_star = source->GetValue(parent);
-                    value_star_updated = true;
+                    value_stamp = *generation;
                 }
                 val = _val_star;
 #ifndef NO_OPENMP
@@ -811,7 +815,7 @@ bool Quan::SetVal(const double& v, const Expression::timing& tmg, bool check_cri
         omp_set_lock(&_val_lock);
 #endif
         _val_star = v;
-        value_star_updated = true;
+        value_stamp = *generation;
 #ifndef NO_OPENMP
         omp_unset_lock(&_val_lock);
 #endif
@@ -1599,7 +1603,7 @@ QJsonObject Quan::toJsonObject() const
     // Values
     json["_val"] = _val;
     json["_val_star"] = _val_star;
-    json["value_star_updated"] = value_star_updated;
+    json["value_star_updated"] = Value_Updated();
     // Expression / Rule
     if (type == _type::expression)
         json["expression"] = QString::fromStdString(_expression.ToString());

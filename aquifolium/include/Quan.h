@@ -182,8 +182,19 @@ public:
     bool HasCriteria() { if (criteria.Count() > 0) return true; else return false; }
     vector<string> GetAllRequieredStartingBlockProperties();
     vector<string> GetAllRequieredEndingBlockProperties();
-    void Set_Value_Update(bool x) { value_star_updated = x; }
-    bool Value_Updated() { return value_star_updated; }
+    // Cache validity is a generation stamp, not a boolean. Invalidating every
+    // quantity used to mean walking every QuanSet (a std::map, so a tree walk)
+    // and writing false into each flag, once per residual evaluation -- it was
+    // ~14% of solver time and grew with model size. `generation` points at the
+    // owning QuanSet's counter, installed once per solve by
+    // System::BindQuanGenerations(); bumping that counter invalidates the whole
+    // set in O(1). A Quan that is not bound -- copied, or inserted after
+    // binding -- points at `no_generation`, which stays 0 while live stamps are
+    // always >= 1, so it reports "not cached" and recomputes. Mis-binding can
+    // therefore only cost time, never return a stale value.
+    void BindGeneration(const unsigned long long* g) { generation = (g ? g : &no_generation); }
+    void Set_Value_Update(bool x) { value_stamp = (x ? *generation : 0ULL); }
+    bool Value_Updated() const { return value_stamp != 0ULL && value_stamp == *generation; }
     bool ApplyLimit() { return applylimit; }
     bool isrigid() { return rigid; }
     void SetInitialValueExpression(const string& expression);
@@ -236,7 +247,9 @@ private:
     string _string_value = "";
     double _val = 0;
     double _val_star = 0;
-    bool value_star_updated = false;
+    static const unsigned long long no_generation;          // stays 0; see BindGeneration
+    const unsigned long long* generation = &no_generation;  // owning QuanSet's counter
+    unsigned long long value_stamp = 0;                     // generation _val_star was computed for
     _type type = _type::not_assigned;
     bool perform_mass_balance = false;
     string corresponding_flow_quan;

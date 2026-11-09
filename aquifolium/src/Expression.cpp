@@ -77,7 +77,7 @@ Expression::Expression(void)
     CalculationStructure.CalcOrder.clear();
     CalculationStructure.targets.clear();
     CalculationStructure.sources.clear();
-    param_constant_expression = "undetermined";
+    SetKind("undetermined");
 
 }
 
@@ -148,7 +148,7 @@ Expression::Expression(string S)
 	}
 	if (aquiutils::isnumber(S))
 	{
-		param_constant_expression = "constant";
+		SetKind("constant");
 		constant = aquiutils::atof(S);
 	}
 	else
@@ -156,7 +156,7 @@ Expression::Expression(string S)
 		if (aquiutils::contains(S,"(") || aquiutils::contains(S,")") || aquiutils::contains(S,"+") || aquiutils::contains(S,"-") || aquiutils::contains(S,"*") || aquiutils::contains(S,"/") || aquiutils::contains(S,"^") || aquiutils::contains(S,";"))
 		{
 			unsigned int parenthesis_level = 0;
-			param_constant_expression = "expression";
+			SetKind("expression");
 			for (unsigned int i = 0; i < S.size(); i++)
 			{
 				if (S.substr(i, 1) == "(")
@@ -206,7 +206,7 @@ Expression::Expression(string S)
 		}
 		else
 		{
-			param_constant_expression = "parameter";
+			SetKind("parameter");
 			if (aquiutils::split(S,'.').size()==1)
 			{   parameter = S;
                 location = loc::self;
@@ -231,7 +231,7 @@ Expression::Expression(string S)
             }
 		}
 	}
-    if (param_constant_expression == "")
+    if (pce_kind == pce_t::unset)
     {
         qDebug() << "The type of expressions has not been determined!";
     }
@@ -252,7 +252,7 @@ Expression::Expression(const Expression & S)
 	sign = S.sign;
 	function = S.function;
 	parameter = S.parameter;
-	param_constant_expression = S.param_constant_expression;
+	SetKind(S.param_constant_expression);
 	unit = S.unit;
 	text = S.text;
 	location = S.location;
@@ -261,7 +261,7 @@ Expression::Expression(const Expression & S)
     sourceterms_resized = false;
     CalculationStructure = S.CalculationStructure;
 
-    if (param_constant_expression == "")
+    if (pce_kind == pce_t::unset)
     {
         qDebug() << "The type of expressions has not been determined!";
     }
@@ -283,7 +283,7 @@ Expression & Expression::operator=(const Expression &S)
 	sign = S.sign;
     function = S.function;
 	parameter = S.parameter;
-	param_constant_expression = S.param_constant_expression;
+	SetKind(S.param_constant_expression);
 	unit = S.unit;
 	text = S.text;
     location = S.location;
@@ -292,7 +292,7 @@ Expression & Expression::operator=(const Expression &S)
     sourceterms_resized = false;
     CalculationStructure = S.CalculationStructure;
 
-    if (param_constant_expression == "")
+    if (pce_kind == pce_t::unset)
     {
         qDebug() << "The type of expressions has not been determined!";
     }
@@ -382,9 +382,37 @@ void Expression::ResetTermsSources()
 
 
 
+Expression::pce_t Expression::KindFromString(const string &s)
+{
+    if (s.empty())            return pce_t::unset;
+    if (s == "parameter")     return pce_t::parameter;
+    if (s == "expression")    return pce_t::expression;
+    if (s == "constant")      return pce_t::constant;
+    if (s == "undetermined")  return pce_t::undetermined;
+    return pce_t::other;
+}
+
+void Expression::SetKind(const string &s)
+{
+    param_constant_expression = s;
+    pce_kind = KindFromString(s);
+}
+
+// `sign` carries a full operator ("+", "-", "*", "/", "^", ";") and codegen
+// reads it as such, so it stays a string; this just avoids the strlen+compare
+// on the negation test, which runs twice per operator per evaluation.
+static inline bool sign_is_minus(const string &s)
+{
+    return s.size() == 1 && s[0] == '-';
+}
+
 bool Expression::SetQuanPointers(Object *W)
 {
-    if (param_constant_expression=="parameter")
+    // Runs once per solve for every expression in the model, so it is the
+    // safety net that guarantees pce_kind agrees with the string before the
+    // solver starts evaluating terms.
+    ResyncKind();
+    if (pce_kind == pce_t::parameter)
     {   if (location==Expression::loc::self)
             quan = W->Variable(parameter);
         else if (location!=Expression::loc::average_of_links && W->ObjectType()==object_type::link)
@@ -393,7 +421,7 @@ bool Expression::SetQuanPointers(Object *W)
             quan = nullptr;
         return true;
     }
-    else if (param_constant_expression == "expression")
+    else if (pce_kind == pce_t::expression)
     {
         for (unsigned int i=0; i<terms.size(); i++)
         {
@@ -404,6 +432,14 @@ bool Expression::SetQuanPointers(Object *W)
 
     return false;
 
+}
+
+// Cached once: std::getenv() scans the whole environment block and was being
+// called on every term evaluation, dominating the solver profile.
+static inline bool Expression_termlog_enabled()
+{
+    static const bool enabled = (std::getenv("OHQ_TERMLOG") != nullptr);
+    return enabled;
 }
 
 double Expression::calc(Object *W, const timing &tmg, bool limit)
@@ -518,12 +554,12 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
 
 	// A function of a pure number, e.g. _sqr(16): the constructor strips "_sqr(" into `function`
 	// and the remaining "16" becomes a constant node, so the function must be applied here too.
-	if (param_constant_expression == "constant")
+	if (pce_kind == pce_t::constant)
 		return function.empty() ? constant : func(function, constant);
-	if (param_constant_expression == "parameter")
+	if (pce_kind == pce_t::parameter)
 	{
        double out=0;
-       if (std::getenv("OHQ_TERMLOG") && parameter.find("dispersivity") != std::string::npos)
+       if (Expression_termlog_enabled() && parameter.find("dispersivity") != std::string::npos)
        {
            static int _n = 0;
            if (_n++ < 3)
@@ -540,7 +576,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
                 out = W->GetVal(quan, tmg,limit);
             else
                 out = W->GetVal(parameter, tmg,limit);
-            if (std::getenv("OHQ_TERMLOG") && parameter.find("dispersivity") != std::string::npos)
+            if (Expression_termlog_enabled() && parameter.find("dispersivity") != std::string::npos)
             {
                 static int _n = 0;
                 if (_n++ < 3)
@@ -581,7 +617,7 @@ double Expression::calc(Object *W, const timing &tmg, bool limit)
         else if (count_operators(";")==0)
             return func(function, out);
 	}
-	if (param_constant_expression == "expression")
+	if (pce_kind == pce_t::expression)
 	{
         if (operators.empty())
         {
@@ -740,13 +776,13 @@ double Expression::oprt(const string &f, unsigned int i1, unsigned int i2, Objec
 	if (!(i1>0 && terms_calculated[i1]))
         if (terms[i1].sign == "/")
             val1 = 1/(val1+1e-23);
-	if (terms[i1].sign == "-") val1 = -val1;
+	if (sign_is_minus(terms[i1].sign)) val1 = -val1;
     if (term_sources.size() > i2)
 		if (terms_calculated[i2]) val2 = term_vals[i2]; else
 		{
 			val2 = terms[i2].calc(W, tmg, limit);
 			if (terms[i2].sign == "/") val2 = 1 / (val2+1e-23);
-			if (terms[i2].sign == "-") val2 = -val2;
+			if (sign_is_minus(terms[i2].sign)) val2 = -val2;
 		}
 	else
 	{
@@ -762,7 +798,7 @@ double Expression::oprt(const string &f, unsigned int i1, unsigned int i2, Objec
 
     for (unsigned int j = 0; j<terms_source_counter[i1]; j++)
     {
-        if (f=="^" && terms[i1].sign == "-")
+        if (f=="^" && sign_is_minus(terms[i1].sign))
             term_vals[term_sources[i1][j]] = -oprt(f, -val1, val2);
         else
             term_vals[term_sources[i1][j]] = oprt(f, val1, val2);
@@ -788,14 +824,14 @@ vector<double> Expression::argument_values(unsigned int calculation_sequence, Ob
     if (i1>=0)
     {
         val1 = terms[op0].calc(W,tmg,limit);
-        if (terms[op0].sign=="-") val1 = -val1;
+        if (sign_is_minus(terms[op0].sign)) val1 = -val1;
     }
     else
         val1 = CalculationStructure.CalcOrder[-i1-1000].value;
     if (i2>=0)
     {
         val2 = terms[op1].calc(W,tmg,limit);
-        if (terms[op1].sign=="-") val2 = -val2;
+        if (sign_is_minus(terms[op1].sign)) val2 = -val2;
     }
     else
         val2 = CalculationStructure.CalcOrder[-i2-1000].value;
@@ -816,16 +852,16 @@ double Expression::oprt(unsigned int calculation_sequence, string &f, Object *W,
     {
         val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(W,tmg,limit);
         val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(W,tmg,limit);
-        if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].sign=="-")
+        if (sign_is_minus(terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].sign))
             val1 = -val1;
-        if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].sign=="-")
+        if (sign_is_minus(terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].sign))
             val2 = -val2;
     }
     else if (i1<0 && i2>=0)
     {
         val1 = CalculationStructure.CalcOrder[-i1-1000].value;
         val2 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].calc(W,tmg,limit);
-        if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].sign=="-")
+        if (sign_is_minus(terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].sign))
             val2 = -val2;
 
     }
@@ -833,7 +869,7 @@ double Expression::oprt(unsigned int calculation_sequence, string &f, Object *W,
     {
         val2 = CalculationStructure.CalcOrder[-i2-1000].value;
         val1 = terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].calc(W,tmg,limit);
-        if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].sign=="-")
+        if (sign_is_minus(terms[CalculationStructure.CalcOrder[calculation_sequence].operands[0]].sign))
             val1 = -val1;
 
     }
@@ -848,7 +884,7 @@ double Expression::oprt(unsigned int calculation_sequence, string &f, Object *W,
     //if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].sign == "/") val2 = 1 / (val2+1e-23);
     //if (terms[CalculationStructure.CalcOrder[calculation_sequence].operands[1]].sign == "-") val2 = -val2;
 
-    if (f=="^" && terms[i1].sign == "-")
+    if (f=="^" && sign_is_minus(terms[i1].sign))
         CalculationStructure.CalcOrder[calculation_sequence].value = -oprt(f, -val1, val2);
     else
         CalculationStructure.CalcOrder[calculation_sequence].value = oprt(f, val1, val2);
@@ -885,13 +921,13 @@ int Expression::count_operators(const string &s) const
 vector<string> Expression::GetAllRequieredStartingBlockProperties()
 {
     vector<string> s;
-    if (param_constant_expression == "parameter")
+    if (pce_kind == pce_t::parameter)
     {
         if (location == loc::source)
             s.push_back(parameter);
         return s;
     }
-    if (param_constant_expression == "expression")
+    if (pce_kind == pce_t::expression)
     {
         for (unsigned int i = 0; i < terms.size(); i++)
         {
@@ -905,13 +941,13 @@ vector<string> Expression::GetAllRequieredStartingBlockProperties()
 vector<string> Expression::GetAllRequieredEndingBlockProperties()
 {
     vector<string> s;
-    if (param_constant_expression == "parameter")
+    if (pce_kind == pce_t::parameter)
     {
         if (location == loc::destination)
             s.push_back(parameter);
         return s;
     }
-    if (param_constant_expression == "expression")
+    if (pce_kind == pce_t::expression)
     {
         for (unsigned int i = 0; i < terms.size(); i++)
         {
@@ -926,7 +962,7 @@ vector<string> Expression::GetAllRequieredEndingBlockProperties()
 Expression Expression::ReviseConstituent(const string &constituent_name, const string &quantity)
 {
     Expression out = *this;
-    if (param_constant_expression=="parameter")
+    if (pce_kind == pce_t::parameter)
     {
         if (parameter==quantity)
         {   out.parameter = constituent_name + ":" + quantity;
@@ -935,7 +971,7 @@ Expression Expression::ReviseConstituent(const string &constituent_name, const s
     }
     for (unsigned int i=0; i<terms.size(); i++)
     {
-        if (terms[i].param_constant_expression == "parameter")
+        if (terms[i].pce_kind == pce_t::parameter)
         {
             if (out.terms[i].parameter == quantity)
             {
@@ -954,7 +990,7 @@ Expression Expression::ReviseConstituent(const string &constituent_name, const s
 Expression Expression::RenameConstituent(const string &old_constituent_name, const string &new_constituent_name, const string &quantity)
 {
     Expression out = *this;
-    if (param_constant_expression=="parameter")
+    if (pce_kind == pce_t::parameter)
     {
         if (parameter==old_constituent_name + ":" + quantity)
         {   out.parameter = new_constituent_name + ":" + quantity;
@@ -963,7 +999,7 @@ Expression Expression::RenameConstituent(const string &old_constituent_name, con
     }
     for (unsigned int i=0; i<terms.size(); i++)
     {
-        if (terms[i].param_constant_expression == "parameter")
+        if (terms[i].pce_kind == pce_t::parameter)
         {
             if (out.terms[i].parameter == old_constituent_name + ":" + quantity)
             {
@@ -985,7 +1021,7 @@ bool Expression::RenameQuantity(const string &oldname, const string &newname)
     bool out=false;
 
 
-    if (param_constant_expression=="parameter")
+    if (pce_kind == pce_t::parameter)
     {
         if (parameter==oldname)
         {   parameter = newname;
@@ -995,7 +1031,7 @@ bool Expression::RenameQuantity(const string &oldname, const string &newname)
     for (unsigned int i=0; i<terms.size(); i++)
     {
 
-        if (terms[i].param_constant_expression == "parameter")
+        if (terms[i].pce_kind == pce_t::parameter)
         {
             if (terms[i].parameter == oldname)
             {
@@ -1004,7 +1040,7 @@ bool Expression::RenameQuantity(const string &oldname, const string &newname)
             }
 
         }
-        else if (terms[i].param_constant_expression == "expression")
+        else if (terms[i].pce_kind == pce_t::expression)
         {
             if (terms[i].RenameQuantity(oldname,newname))   // no ||: it would skip the remaining terms
                 out = true;
@@ -1022,7 +1058,7 @@ bool Expression::RenameConstituentPrefix(const string &oldname, const string &ne
 {
     bool out = false;
     const string oldprefix = oldname + ":";
-    if (param_constant_expression == "parameter" && parameter.compare(0, oldprefix.size(), oldprefix) == 0)
+    if (pce_kind == pce_t::parameter && parameter.compare(0, oldprefix.size(), oldprefix) == 0)
     {
         parameter = newname + ":" + parameter.substr(oldprefix.size());
         out = true;
@@ -1036,7 +1072,7 @@ bool Expression::RenameConstituentPrefix(const string &oldname, const string &ne
 string Expression::ToString() const
 {
     string out;
-    if (param_constant_expression=="parameter")
+    if (pce_kind == pce_t::parameter)
     {
         out += parameter;
         if (location == loc::source)
@@ -1047,7 +1083,7 @@ string Expression::ToString() const
             out+=".v";
         return out;
     }
-    if (param_constant_expression=="constant")
+    if (pce_kind == pce_t::constant)
     {
         if (function.empty())
             return aquiutils::numbertostring(constant);

@@ -369,8 +369,17 @@ Quan* QuanSet::GetVar(int i)
 
 void QuanSet::UnUpdateAllValues()
 {
+    // One increment stales every cached value in this set at once: no stamp in
+    // it can equal the new generation. Replaces a full traversal that ran on
+    // every residual evaluation.
+    ++(*generation_cell);
+}
+
+void QuanSet::BindGenerations()
+{
+    const unsigned long long* cell = generation_cell.get();
     for (unordered_map<string, Quan>::iterator it = begin(); it != end(); it++)
-        it->second.Set_Value_Update(false);
+        it->second.BindGeneration(cell);
 }
 
 Quan* QuanSet::GetVarAskable(int i)

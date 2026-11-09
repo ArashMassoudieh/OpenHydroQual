@@ -144,6 +144,7 @@ class Object
         }
         vector<string>& QuantitOrder() { return var.Quantity_Order();  }
         void UnUpdateAllValues() { var.UnUpdateAllValues(); }
+        void BindQuanGenerations() { var.BindGenerations(); }
         bool RenameProperty(const string &oldname, const string &newname)
         {
             return var.RenameProperty(oldname, newname);

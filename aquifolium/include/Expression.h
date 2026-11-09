@@ -57,7 +57,21 @@ class Expression
         string function;
         string parameter;
         double constant=0;
+
+        // What kind of node this is. `param_constant_expression` is the original
+        // string form and stays public because codegen, observation and
+        // Objective_Function read it; `pce_kind` is the same information as an
+        // enum so that calc()/oprt() can dispatch without a string compare on
+        // every term evaluation. The two are kept in step by SetKind(); assign
+        // the string directly only if you call ResyncKind() afterwards.
+        // ResyncKind() also runs from SetQuanPointers(), once per solve, so a
+        // missed update cannot reach the solver loop.
+        enum class pce_t { unset, undetermined, constant, parameter, expression, other };
         string param_constant_expression;
+        pce_t Kind() const { return pce_kind; }
+        static pce_t KindFromString(const string &s);
+        void SetKind(const string &s);
+        void ResyncKind() { pce_kind = KindFromString(param_constant_expression); }
         static vector<string> extract_operators(string s);
         vector<string> _errors;
         static vector<string> extract_terms(string s);
@@ -119,6 +133,7 @@ class Expression
         bool sourceterms_resized = false;
         SafeVector<unsigned int> terms_source_counter;
         loc location = loc::self; //0: self, 1: start, 2: end
+        pce_t pce_kind = pce_t::unset;   // mirrors param_constant_expression
         int find_order_of_source_container(int j);
         int get_target_item_of_term(int term_id);
         void AppendTermToStructure(int i);
