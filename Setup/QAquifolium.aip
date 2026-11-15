@@ -495,6 +495,40 @@
     <ROW File="zoom_in.png" Component_="pd.nfo" FileName="zoom_in.png" Attributes="0" SourcePath="..\resources\Icons\zoom_in.png" SelfReg="false" NextFile="zoom_out.png"/>
     <ROW File="zoom_out.png" Component_="pd.nfo" FileName="zoom_out.png" Attributes="0" SourcePath="..\resources\Icons\zoom_out.png" SelfReg="false" NextFile="zoomin.jpg"/>
     <ROW File="zoomin.jpg" Component_="pd.nfo" FileName="zoom-in.jpg" Attributes="0" SourcePath="..\resources\Icons\zoom-in.jpg" SelfReg="false" NextFile="Qt6Charts.dll"/>
+    <ROW File="Compound_Channel.png" Component_="pd.nfo" FileName="COMPOU~1.PNG|Compound_Channel.png" Attributes="0" SourcePath="..\resources\Icons\Compound_Channel.png" SelfReg="false"/>
+    <ROW File="Compound_Channel_Link.png" Component_="pd.nfo" FileName="COMPOU~2.PNG|Compound_Channel_Link.png" Attributes="0" SourcePath="..\resources\Icons\Compound_Channel_Link.png" SelfReg="false"/>
+    <ROW File="Emergency_Spillway.png" Component_="pd.nfo" FileName="EMERGE~1.PNG|Emergency_Spillway.png" Attributes="0" SourcePath="..\resources\Icons\Emergency_Spillway.png" SelfReg="false"/>
+    <ROW File="Floodplain_Bypass_Link.png" Component_="pd.nfo" FileName="FLOODP~1.PNG|Floodplain_Bypass_Link.png" Attributes="0" SourcePath="..\resources\Icons\Floodplain_Bypass_Link.png" SelfReg="false"/>
+    <ROW File="Groundwater_conductance_link.png" Component_="pd.nfo" FileName="GROUND~5.PNG|Groundwater_conductance_link.png" Attributes="0" SourcePath="..\resources\Icons\Groundwater_conductance_link.png" SelfReg="false"/>
+    <ROW File="HRU_Impervious_Outlet.png" Component_="pd.nfo" FileName="HRU_IM~1.PNG|HRU_Impervious_Outlet.png" Attributes="0" SourcePath="..\resources\Icons\HRU_Impervious_Outlet.png" SelfReg="false"/>
+    <ROW File="HRU_Pervious_Outlet.png" Component_="pd.nfo" FileName="HRU_PE~1.PNG|HRU_Pervious_Outlet.png" Attributes="0" SourcePath="..\resources\Icons\HRU_Pervious_Outlet.png" SelfReg="false"/>
+    <ROW File="Riser_Spillway.png" Component_="pd.nfo" FileName="RISER_~1.PNG|Riser_Spillway.png" Attributes="0" SourcePath="..\resources\Icons\Riser_Spillway.png" SelfReg="false"/>
+    <ROW File="UC_GW_to_GW_link.png" Component_="pd.nfo" FileName="UC_GW_~1.PNG|UC_GW_to_GW_link.png" Attributes="0" SourcePath="..\resources\Icons\UC_GW_to_GW_link.png" SelfReg="false"/>
+    <ROW File="channel2aggregate.png" Component_="pd.nfo" FileName="CHANNE~2.PNG|channel2aggregate.png" Attributes="0" SourcePath="..\resources\Icons\channel2aggregate.png" SelfReg="false"/>
+    <ROW File="channel2soil.png" Component_="pd.nfo" FileName="CHANNE~3.PNG|channel2soil.png" Attributes="0" SourcePath="..\resources\Icons\channel2soil.png" SelfReg="false"/>
+    <ROW File="dual_drainage_inlet.png" Component_="pd.nfo" FileName="DUAL_D~1.PNG|dual_drainage_inlet.png" Attributes="0" SourcePath="..\resources\Icons\dual_drainage_inlet.png" SelfReg="false"/>
+    <ROW File="dual_drainage_outfall.png" Component_="pd.nfo" FileName="DUAL_D~2.PNG|dual_drainage_outfall.png" Attributes="0" SourcePath="..\resources\Icons\dual_drainage_outfall.png" SelfReg="false"/>
+    <ROW File="groundwater2sewer_xsection.png" Component_="pd.nfo" FileName="GROUND~6.PNG|groundwater2sewer_xsection.png" Attributes="0" SourcePath="..\resources\Icons\groundwater2sewer_xsection.png" SelfReg="false"/>
+    <ROW File="heat_constituent.png" Component_="pd.nfo" FileName="HEAT_C~1.PNG|heat_constituent.png" Attributes="0" SourcePath="..\resources\Icons\heat_constituent.png" SelfReg="false"/>
+    <ROW File="reaeration_Banks_Herrera.png" Component_="pd.nfo" FileName="REAERA~1.PNG|reaeration_Banks_Herrera.png" Attributes="0" SourcePath="..\resources\Icons\reaeration_Banks_Herrera.png" SelfReg="false"/>
+    <ROW File="reaeration_Churchill.png" Component_="pd.nfo" FileName="REAERA~2.PNG|reaeration_Churchill.png" Attributes="0" SourcePath="..\resources\Icons\reaeration_Churchill.png" SelfReg="false"/>
+    <ROW File="reaeration_OConnor_Dobbins.png" Component_="pd.nfo" FileName="REAERA~3.PNG|reaeration_OConnor_Dobbins.png" Attributes="0" SourcePath="..\resources\Icons\reaeration_OConnor_Dobbins.png" SelfReg="false"/>
+    <ROW File="reaeration_Owens_Gibbs.png" Component_="pd.nfo" FileName="REAERA~4.PNG|reaeration_Owens_Gibbs.png" Attributes="0" SourcePath="..\resources\Icons\reaeration_Owens_Gibbs.png" SelfReg="false"/>
+    <ROW File="snowmelt.png" Component_="pd.nfo" FileName="SNOWME~1.PNG|snowmelt.png" Attributes="0" SourcePath="..\resources\Icons\snowmelt.png" SelfReg="false"/>
+    <ROW File="surface_heat_exchange.png" Component_="pd.nfo" FileName="SURFA~10.PNG|surface_heat_exchange.png" Attributes="0" SourcePath="..\resources\Icons\surface_heat_exchange.png" SelfReg="false"/>
+    <ROW File="urban_hru.png" Component_="pd.nfo" FileName="URBAN_~1.PNG|urban_hru.png" Attributes="0" SourcePath="..\resources\Icons\urban_hru.png" SelfReg="false"/>
+    <ROW File="Upscaling.json" Component_="mass_transfer.json" FileName="UPSCAL~1.JSO|Upscaling.json" Attributes="0" SourcePath="..\resources\Upscaling.json" SelfReg="false"/>
+    <ROW File="compound_channel.json" Component_="mass_transfer.json" FileName="COMPOU~1.JSO|compound_channel.json" Attributes="0" SourcePath="..\resources\compound_channel.json" SelfReg="false"/>
+    <ROW File="dam_spillways.json" Component_="mass_transfer.json" FileName="DAM_SP~1.JSO|dam_spillways.json" Attributes="0" SourcePath="..\resources\dam_spillways.json" SelfReg="false"/>
+    <ROW File="dual_drainage.json" Component_="mass_transfer.json" FileName="DUAL_D~1.JSO|dual_drainage.json" Attributes="0" SourcePath="..\resources\dual_drainage.json" SelfReg="false"/>
+    <ROW File="floodplain_bypass.json" Component_="mass_transfer.json" FileName="FLOODP~1.JSO|floodplain_bypass.json" Attributes="0" SourcePath="..\resources\floodplain_bypass.json" SelfReg="false"/>
+    <ROW File="physicsbaseddatadrivenhydrology.json" Component_="mass_transfer.json" FileName="PHYSIC~1.JSO|physicsbaseddatadrivenhydrology.json" Attributes="0" SourcePath="..\resources\physicsbaseddatadrivenhydrology.json" SelfReg="false"/>
+    <ROW File="rainfall_runoff_depthonly.json" Component_="mass_transfer.json" FileName="RAINFA~2.JSO|rainfall_runoff_depthonly.json" Attributes="0" SourcePath="..\resources\rainfall_runoff_depthonly.json" SelfReg="false"/>
+    <ROW File="riparian_urban_hru.json" Component_="mass_transfer.json" FileName="RIPARI~1.JSO|riparian_urban_hru.json" Attributes="0" SourcePath="..\resources\riparian_urban_hru.json" SelfReg="false"/>
+    <ROW File="snowmelt.json" Component_="mass_transfer.json" FileName="SNOWME~1.JSO|snowmelt.json" Attributes="0" SourcePath="..\resources\snowmelt.json" SelfReg="false"/>
+    <ROW File="svb_subsurface.json" Component_="mass_transfer.json" FileName="SVB_SU~1.JSO|svb_subsurface.json" Attributes="0" SourcePath="..\resources\svb_subsurface.json" SelfReg="false"/>
+    <ROW File="unsaturated_soil_revised_model_EC_logistic.json" Component_="mass_transfer.json" FileName="UNSATU~7.JSO|unsaturated_soil_revised_model_EC_logistic.json" Attributes="0" SourcePath="..\resources\unsaturated_soil_revised_model_EC_logistic.json" SelfReg="false"/>
+    <ROW File="urban_hru.json" Component_="mass_transfer.json" FileName="URBAN_~3.JSO|urban_hru.json" Attributes="0" SourcePath="..\resources\urban_hru.json" SelfReg="false"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.custcomp.MsiEmbeddedUIComponent">
     <ROW MsiEmbeddedUI="embeddeduiproxy" FileName="embeddeduiproxy.dll" Attributes="3" MessageFilter="201359327" Data="&lt;AI_HOME&gt;bin\x86\embeddeduiproxy.dll"/>
