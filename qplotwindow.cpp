@@ -21,6 +21,27 @@
 
 #include "mainwindow.h"
 
+// Line colours for successive series: a fixed palette of dark, distinct
+// colours that stay readable on a white background (random RGB colours
+// were sometimes nearly invisible). Cycles after the last entry.
+static QColor SeriesColor(int index)
+{
+    static const QRgb palette[] = {
+        0x1f4e9c, // blue
+        0xc0392b, // red
+        0x1e8449, // green
+        0x000000, // black
+        0x7d3c98, // purple
+        0xd35400, // orange
+        0x6e2c00, // brown
+        0x117a65, // teal
+        0x5d6d7e, // slate grey
+        0x9a7d0a  // dark gold
+    };
+    const int n = int(sizeof(palette) / sizeof(palette[0]));
+    return QColor(palette[((index % n) + n) % n]);
+}
+
 QPlotWindow::QPlotWindow(MainWindow *parent) :
     QDialog(parent),
     ui(new Ui::QPlotWindow)
@@ -222,7 +243,7 @@ bool QPlotWindow::PlotData(const TimeSeries<outputtimeseriesprecision>& timeseri
 
     QPen pen = lineseries->pen();
     pen.setWidth(2);
-    pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+    pen.setBrush(SeriesColor(chart->series().size() - 1));
     lineseries->setPen(pen);
     QString seriesName = QString::fromStdString(data_to_plot.name());  // CHANGED
     if (seriesName.isEmpty()) {
@@ -425,7 +446,7 @@ bool QPlotWindow::PlotData(const TimeSeriesSet<outputtimeseriesprecision>& times
 
         QPen pen = lineseries->pen();
         pen.setWidth(2);
-        pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+        pen.setBrush(SeriesColor(chart->series().size() - 1));
         lineseries->setPen(pen);
         lineseries->setName(QString::fromStdString(data_to_plot.getSeriesName(i)));  // CHANGED: use data_to_plot
         timeSeries.insert(lineseries->name(),data_to_plot[i]);  // CHANGED: use data_to_plot
@@ -519,7 +540,7 @@ bool QPlotWindow::AddData(const TimeSeries<outputtimeseriesprecision>& timeserie
 
     QPen pen = lineseries->pen();
     pen.setWidth(2);
-    pen.setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+    pen.setBrush(SeriesColor(chart->series().size() - 1));
     lineseries->setPen(pen);
     timeSeries.insert(lineseries->name(),timeseries);
 

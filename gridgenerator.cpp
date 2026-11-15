@@ -792,12 +792,21 @@ bool GridGenerator::GenerateBlocks()
         }
     return true;
 }
+// Links are named "<from block> - <to block>", e.g. "Cell(1:1) - Cell(2:1)",
+// the same pattern the canvas uses for a link drawn by hand (edge.cpp), so
+// generated and hand-drawn links read the same in saved models.
+std::string GridGenerator::LinkName(int i1, int j1, int i2, int j2) const
+{
+    const QString block = dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text();
+    return QString("%1(%2:%3) - %1(%4:%5)").arg(block).arg(i1).arg(j1).arg(i2).arg(j2).toStdString();
+}
+
 bool GridGenerator::GenerateLinks()
 {
     for (int i=0; i<ui->spinBox_nx->text().toInt(); i++)
         for (int j=0; j<ui->spinBox_ny->text().toInt()-1; j++)
         {
-            string name = (dynamic_cast<QLineEdit*>(quan_info_Link_y["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+1)+":"+QString::number(j+2)+")").toStdString();
+            string name = LinkName(i+1, j+1, i+1, j+2);
             if (system()->object(name)!=nullptr)
             {
                 QMessageBox::question(this, QString("An object called " + QString::fromStdString(name) + "already exists. Considering chamaging the name of the object."), QString::fromStdString(system()->lasterror()), QMessageBox::Ok);
@@ -808,7 +817,7 @@ bool GridGenerator::GenerateLinks()
     for (int i=0; i<ui->spinBox_nx->text().toInt()-1; i++)
         for (int j=0; j<ui->spinBox_ny->text().toInt(); j++)
         {
-            string name = (dynamic_cast<QLineEdit*>(quan_info_Link_x["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+2)+":"+QString::number(j+1)+")").toStdString();
+            string name = LinkName(i+1, j+1, i+2, j+1);
             if (system()->object(name)!=nullptr)
             {
                 QMessageBox::question(this, QString("An object called " + QString::fromStdString(name) + "already exists. Considering chamaging the name of the object."), QString::fromStdString(system()->lasterror()), QMessageBox::Ok);
@@ -828,7 +837,7 @@ bool GridGenerator::GenerateLinks()
 
             link.SetType(Link_type_selected.toStdString());
 
-            string name = (dynamic_cast<QLineEdit*>(quan_info_Link_y["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+1)+":"+QString::number(j+2)+")").toStdString();
+            string name = LinkName(i+1, j+1, i+1, j+2);
             string srcname = (dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")").toStdString();
             string destname = (dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+2)+")").toStdString();
             link.SetName(name);
@@ -861,7 +870,7 @@ bool GridGenerator::GenerateLinks()
 
             link.SetType(Link_type_selected.toStdString());
 
-            string name = (dynamic_cast<QLineEdit*>(quan_info_Link_x["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")-("+QString::number(i+2)+":"+QString::number(j+1)+")").toStdString();
+            string name = LinkName(i+1, j+1, i+2, j+1);
             string srcname = (dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text()+ "("+QString::number(i+1)+":"+QString::number(j+1)+")").toStdString();
             string destname = (dynamic_cast<QLineEdit*>(quan_info_Block["name"].value)->text()+ "("+QString::number(i+2)+":"+QString::number(j+1)+")").toStdString();
             link.SetName(name);
