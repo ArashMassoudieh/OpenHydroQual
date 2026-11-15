@@ -416,6 +416,15 @@
       "description": "Bottom elevation",
       "delegate": "UnitBox",
       "unit": "m;ft"
+    },
+    "volume": {
+      "type": "expression",
+      "expression": "Storage",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Volume",
+      "unit": "m^3;ft^3",
+      "helptext": "Total volume of the block. All of it is water, so it equals Storage. Sorbed constituents (per total volume) use it."
     }
   },
   "Reactor_Flex": {
@@ -476,6 +485,15 @@
       "description": "Bottom elevation",
       "delegate": "UnitBox",
       "unit": "m;ft"
+    },
+    "volume": {
+      "type": "expression",
+      "expression": "Storage",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Volume",
+      "unit": "m^3;ft^3",
+      "helptext": "Total volume of the block. All of it is water, so it equals Storage. Sorbed constituents (per total volume) use it."
     }
   },
   "Settling element": {
@@ -728,7 +746,7 @@
     "type": "constituent",
     "typecategory": "Constituents",
     "description": "Sorbed constituent (per total volume)",
-    "helptext": "A constituent that stays in its block, with its concentration expressed per total (bulk) volume of the block (mass/volume). Needs a block with a \"volume\" property, such as a Groundwater cell. Compare: immobile constituent, which is expressed per volume of water.",
+    "helptext": "A constituent that stays in its block, with its concentration expressed per total (bulk) volume of the block (mass/volume). Needs a block with a \"volume\" property, such as a Groundwater cell. In a Reactor (all water) volume = Storage, so the concentration is the same as an immobile constituent's. Compare: immobile constituent, which is expressed per volume of water.",
     "icon": {
       "filename": "sorbed_constituent.png"
     },

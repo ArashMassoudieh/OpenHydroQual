@@ -10,13 +10,53 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
+      "inflow": "inflow",
       "includeinoutput": "true",
       "description": "Initial Storage;Storage",
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m^3;ft^3",
-      "estimate": "true",
-      "helptext": "Initial Storage;Storage"
+      "estimate": "true"
+    },
+    "time_variable_inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time variable inflow",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "unit": "m^3/day;ft^3/s;m^3/s"
+    },
+    "constant_inflow": {
+      "type": "value",
+      "includeinoutput": "true",
+      "description": "Constant Inflow",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^3/day;ft^3/day;m^3/s;ft^3/s"
+    },
+    "inflow": {
+      "type": "expression",
+      "expression": "time_variable_inflow+constant_inflow",
+      "includeinoutput": "true",
+      "description": "Inflow",
+      "ask_user": "false",
+      "unit": "m^3/day;ft~^3/day;m^3/s;ft^~3/s"
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Bottom elevation",
+      "delegate": "UnitBox",
+      "unit": "m;ft"
+    },
+    "volume": {
+      "type": "expression",
+      "expression": "Storage",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Volume",
+      "unit": "m^3;ft^3",
+      "helptext": "Total volume of the block. All of it is water, so it equals Storage. Sorbed constituents (per total volume) use it."
     },
     "helptext": "Reactor"
   },
@@ -57,7 +97,16 @@
       "delegate": "Browser",
       "helptext": "Inflow time series"
     },
-    "helptext": "Settling compartment"
+    "helptext": "Settling compartment",
+    "volume": {
+      "type": "expression",
+      "expression": "Storage",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Volume",
+      "unit": "m^3;ft^3",
+      "helptext": "Total volume of the block. All of it is water, so it equals Storage. Sorbed constituents (per total volume) use it."
+    }
   },
   "Fixed flow": {
     "type": "link",

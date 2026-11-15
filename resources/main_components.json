@@ -677,6 +677,14 @@
       "expression": "head",
       "ask_user": "false"
     },
+    "inflow": {
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Inflow",
+      "helptext": "Always 0: a fixed-head boundary has no external inflow. Defined because constituent inflow loadings (concentration*inflow) are evaluated in every block."
+    },
     "area": {
       "type": "value",
       "description": "area",
@@ -720,6 +728,14 @@
       "description": "Dummy timeseries",
       "ask_user": "true",
       "delegate": "Browser"
+    },
+    "inflow": {
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Inflow",
+      "helptext": "Always 0: a fixed-head boundary has no external inflow. Defined because constituent inflow loadings (concentration*inflow) are evaluated in every block."
     },
     "bottom_elevation": {
       "type": "expression",
