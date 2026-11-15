@@ -27,7 +27,7 @@ cd "$HERE/generated"
 for m in mixing heater surface timeseries; do
   rm -f "${m}_output.txt"
   rc=0
-  "$OHQ_CONSOLE" "$m.ohq" -q > "${m}_console.log" 2>&1 || rc=$?
+  "$OHQ_CONSOLE" "$m.ohq" -q -r "$RESOURCES" > "${m}_console.log" 2>&1 || rc=$?
   if [ "$rc" -ne 0 ] && ! { [ "$rc" -eq 4 ] && [ "${ALLOW_SOURCE_CONTEXT_ERRORS:-0}" = 1 ] && [ -f "${m}_output.txt" ]; }; then
     echo "run failed: $m (exit $rc, see generated/${m}_console.log)" >&2
     exit 1
