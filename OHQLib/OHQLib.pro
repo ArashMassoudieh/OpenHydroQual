@@ -7,7 +7,7 @@ TEMPLATE = lib
 
 # Shared library name
 TARGET = OHQLib
-VERSION = 2.1.1
+VERSION = 2.1.2
 
 CONFIG += c++14
 

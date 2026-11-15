@@ -14,7 +14,7 @@
  */
 
 
-#define openhydroqual_version "2.1.1"
+#define openhydroqual_version "2.1.2"
 
 // OHQ_LAST_MODIFIED comes from ohq_build_info.h, which OpenHydroQual.pro
 // generates from the last commit date. Targets that do not generate it fall
