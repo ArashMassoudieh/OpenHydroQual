@@ -113,6 +113,8 @@ void System::InitOpenMP()
 
 System::~System()
 {
+    delete stepping_restorepoint;
+    stepping_restorepoint = nullptr;
     clear();
 
 }
@@ -721,6 +723,34 @@ ErrorHandler System::VerifyAllQuantities()
     return errs;
 }
 
+// Point every Quan in the model at its owning QuanSet's generation counter.
+// Must cover exactly the collections UnUpdateAllVariables() invalidates, and
+// must run after SetAllParents()/object construction -- any Quan missed here
+// simply never caches, so this is a performance contract, not a correctness one.
+void System::BindQuanGenerations()
+{
+    for (unsigned int i = 0; i < links.size(); i++)
+        links[i].BindQuanGenerations();
+
+    for (unsigned int i = 0; i < blocks.size(); i++)
+        blocks[i].BindQuanGenerations();
+
+    for (unsigned int i = 0; i < sources.size(); i++)
+        sources[i].BindQuanGenerations();
+
+    for (unsigned int i = 0; i < observations.size(); i++)
+        observations[i].BindQuanGenerations();
+
+    for (unsigned int i = 0; i < reaction_parameters.size(); i++)
+        reaction_parameters[i].BindQuanGenerations();
+
+    for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
+        ObjectiveFunctions()[i]->BindQuanGenerations();
+
+    for (unsigned int i = 0; i < ReactionsCount(); i++)
+        reactions[i].BindQuanGenerations();
+}
+
 void System::UnUpdateAllVariables()
 {
     for (unsigned int i = 0; i < links.size(); i++)
@@ -1126,7 +1156,83 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
     CALLGRIND_TOGGLE_COLLECT;
 #endif
 
-    while (SolverTempVars.t < SimulationParameters.tend + SolverTempVars.dt
+    // The run ends exactly at tend: the last step is clamped to land on it
+    // (AdvanceSolver).
+    const double t_tol = 1e-12 * max(1.0, fabs(SimulationParameters.tend));
+    AdvanceSolver(SimulationParameters.tend, restorepoint, counter, fail_counter, progress, progress_p);
+
+#ifdef VALGRIND
+    CALLGRIND_TOGGLE_COLLECT;
+    CALLGRIND_STOP_INSTRUMENTATION;
+#endif
+
+    // A run that stopped short of the requested end time has not produced a
+    // usable solution, even when no individual step reported a failure (a
+    // cancelled run, an exhausted restore point, or a solver that stalled).
+    // Solve() used to return true unconditionally and leave SolutionFailed
+    // clear, so callers -- GA and MCMC in particular -- accepted the partial
+    // result as a valid model evaluation and scored it against the data.
+    if (SolverTempVars.t < SimulationParameters.tend - t_tol && !SolverTempVars.SolutionFailed)
+    {
+        LogMessage("Simulation stopped at t = " + aquiutils::numbertostring(SolverTempVars.t)
+            + " before the requested end time " + aquiutils::numbertostring(SimulationParameters.tend)
+            + ". The solution is incomplete.", true);
+        SolverTempVars.SolutionFailed = true;
+    }
+
+    if (GetSolutionLogger())
+    {
+        auto lg = GetSolutionLogger();
+        lg->Section("SOLVER COST PROFILE");
+        const double total = SolverTempVars.seconds_in_assembly
+                           + SolverTempVars.seconds_in_linearsolve;
+        lg->KeyValue("residual evaluations", aquiutils::numbertostring(int(SolverTempVars.residual_evaluations)));
+        lg->KeyValue("Jacobian assemblies",  aquiutils::numbertostring(int(SolverTempVars.jacobian_assemblies)));
+        lg->KeyValue("linear solves",        aquiutils::numbertostring(int(SolverTempVars.linear_solves)));
+        if (SolverSettings.oscillation_control)
+            lg->KeyValue("oscillation interventions",
+                aquiutils::numbertostring(SolverTempVars.osc_events));
+            lg->KeyValue("oscillation relaxations",
+                aquiutils::numbertostring(SolverTempVars.osc_relaxations));
+        lg->KeyValue("seconds in residual evaluation", aquiutils::numbertostring(SolverTempVars.seconds_in_residuals));
+        lg->KeyValue("seconds in Jacobian assembly",   aquiutils::numbertostring(SolverTempVars.seconds_in_assembly));
+        lg->KeyValue("seconds in linear solve",        aquiutils::numbertostring(SolverTempVars.seconds_in_linearsolve));
+        if (total > 0)
+        {
+            lg->KeyValue("assembly share of (assembly+solve)",
+                aquiutils::numbertostring(100.0*SolverTempVars.seconds_in_assembly/total) + " %");
+            lg->KeyValue("solve share of (assembly+solve)",
+                aquiutils::numbertostring(100.0*SolverTempVars.seconds_in_linearsolve/total) + " %");
+        }
+        lg->WriteSummary(SolverTempVars.t, SimulationParameters.tend,
+                         SolverTempVars.SolutionFailed);
+    }
+
+    if (SolverSettings.oscillation_control && SolverTempVars.osc_events > 0)
+        LogMessage("oscillation control: "
+            + aquiutils::numbertostring(SolverTempVars.osc_events)
+            + " intervention(s) ("
+            + string(SolverSettings.oscillation_rewind ? "rewind" : "reduce")
+            + "), " + aquiutils::numbertostring(SolverTempVars.osc_relaxations)
+            + " relaxation(s); final dt = " + aquiutils::numbertostring(SolverTempVars.dt_base)
+            + (SolverTempVars.osc_gave_up ? " (gave up before it was clean)" : ""));
+
+    FinalizeOutputs(uniformizeoutput);
+    SetSimulationDuration(time(nullptr) - SolverTempVars.time_start);
+    return !SolverTempVars.SolutionFailed;
+}
+
+// Advances the solution from the current time to t_stop (the last step is
+// clamped to land on it). Shared by Solve() and the stepping API.
+bool System::AdvanceSolver(double t_stop, RestorePoint& restorepoint, int& counter,
+                           int& fail_counter, double& progress, double& progress_p)
+{
+    // The run ends exactly at tend: the last step is clamped to land on it (below).
+    // It used to loop `while (t < tend + dt)` with no clamp, overshooting tend by
+    // one or two steps -- up to max_timestep_increase_factor * dt0 of simulated
+    // time nobody asked for. t_tol absorbs the rounding of t + (tend - t).
+    const double t_tol = 1e-12 * max(1.0, fabs(t_stop));
+    while (SolverTempVars.t < t_stop - t_tol
         && !stop_triggered)
     {
 
@@ -1144,13 +1250,30 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
         SolverTempVars.dt = min(SolverTempVars.dt_base, GetMinimumNextTimeStepSize());
         SolverTempVars.dt = max(SolverTempVars.dt,
             SimulationParameters.dt0 / SolverSettings.timestepminfactor);
+        // Never step past tend (applied step only; dt_base keeps adapting). Same
+        // clamp as the codegen solver's stopTime_ (codegen/runtime/ohq_massbalance.h).
+        bool clamped = false;
+        if (SolverTempVars.t + SolverTempVars.dt > t_stop)
+        {
+            SolverTempVars.dt = t_stop - SolverTempVars.t;
+            clamped = true;
+        }
+        const double dt_base_before = SolverTempVars.dt_base;
 
         vector<bool> _success = OneStepSolve();
 
         if (!aquiutils::And(_success))
             HandleSolveFailure(fail_counter, restorepoint);
         else
+        {
             HandleSolveSuccess(counter, fail_counter, restorepoint, progress, progress_p);
+            // A step shortened only to land on t_stop must not shrink the base
+            // step: the iteration-count rule scales dt_base from the (short) dt.
+            // With interval-by-interval stepping this happens at every interval
+            // boundary and would collapse the step size.
+            if (clamped && SolverTempVars.dt_base < dt_base_before)
+                SolverTempVars.dt_base = dt_base_before;
+        }
 
         // Newton can stop solving without failing: when the residual starts
         // below the hard-coded 1e-12 floor the iteration is skipped entirely and
@@ -1211,65 +1334,54 @@ bool System::Solve(bool applyparameters, bool uniformizeoutput)
 #endif
     }
 
-#ifdef VALGRIND
-    CALLGRIND_TOGGLE_COLLECT;
-    CALLGRIND_STOP_INSTRUMENTATION;
-#endif
+    return !SolverTempVars.SolutionFailed;
+}
 
-    // A run that stopped short of the requested end time has not produced a
-    // usable solution, even when no individual step reported a failure (a
-    // cancelled run, an exhausted restore point, or a solver that stalled).
-    // Solve() used to return true unconditionally and leave SolutionFailed
-    // clear, so callers -- GA and MCMC in particular -- accepted the partial
-    // result as a valid model evaluation and scored it against the data.
-    if (SolverTempVars.t < SimulationParameters.tend && !SolverTempVars.SolutionFailed)
+bool System::BeginStepping(bool applyparameters)
+{
+    EndStepping(false);
+#ifndef NO_OPENMP
+    omp_init_lock(&lock);
+#endif
+    stop_triggered = false;
+    SolverTempVars.SolutionFailed = false;
+    InitializeSolver(applyparameters);
+    PopulateOutputs(false);
+    stepping_restorepoint = new RestorePoint(this);
+    stepping_counter = 0;
+    stepping_fail_counter = 0;
+    stepping_progress = 0;
+    stepping_progress_p = 0;
+    return true;
+}
+
+bool System::AdvanceTo(double t)
+{
+    if (!stepping_restorepoint)
+    {
+        LogMessage("AdvanceTo called before BeginStepping", true);
+        return false;
+    }
+    const double t_stop = min(t, SimulationParameters.tend);
+    AdvanceSolver(t_stop, *stepping_restorepoint, stepping_counter, stepping_fail_counter,
+                  stepping_progress, stepping_progress_p);
+    const double t_tol = 1e-12 * max(1.0, fabs(t_stop));
+    if (SolverTempVars.t < t_stop - t_tol && !SolverTempVars.SolutionFailed)
     {
         LogMessage("Simulation stopped at t = " + aquiutils::numbertostring(SolverTempVars.t)
-            + " before the requested end time " + aquiutils::numbertostring(SimulationParameters.tend)
-            + ". The solution is incomplete.", true);
+            + " before the requested time " + aquiutils::numbertostring(t_stop) + ".", true);
         SolverTempVars.SolutionFailed = true;
     }
-
-    if (GetSolutionLogger())
-    {
-        auto lg = GetSolutionLogger();
-        lg->Section("SOLVER COST PROFILE");
-        const double total = SolverTempVars.seconds_in_assembly
-                           + SolverTempVars.seconds_in_linearsolve;
-        lg->KeyValue("residual evaluations", aquiutils::numbertostring(int(SolverTempVars.residual_evaluations)));
-        lg->KeyValue("Jacobian assemblies",  aquiutils::numbertostring(int(SolverTempVars.jacobian_assemblies)));
-        lg->KeyValue("linear solves",        aquiutils::numbertostring(int(SolverTempVars.linear_solves)));
-        if (SolverSettings.oscillation_control)
-            lg->KeyValue("oscillation interventions",
-                aquiutils::numbertostring(SolverTempVars.osc_events));
-            lg->KeyValue("oscillation relaxations",
-                aquiutils::numbertostring(SolverTempVars.osc_relaxations));
-        lg->KeyValue("seconds in residual evaluation", aquiutils::numbertostring(SolverTempVars.seconds_in_residuals));
-        lg->KeyValue("seconds in Jacobian assembly",   aquiutils::numbertostring(SolverTempVars.seconds_in_assembly));
-        lg->KeyValue("seconds in linear solve",        aquiutils::numbertostring(SolverTempVars.seconds_in_linearsolve));
-        if (total > 0)
-        {
-            lg->KeyValue("assembly share of (assembly+solve)",
-                aquiutils::numbertostring(100.0*SolverTempVars.seconds_in_assembly/total) + " %");
-            lg->KeyValue("solve share of (assembly+solve)",
-                aquiutils::numbertostring(100.0*SolverTempVars.seconds_in_linearsolve/total) + " %");
-        }
-        lg->WriteSummary(SolverTempVars.t, SimulationParameters.tend,
-                         SolverTempVars.SolutionFailed);
-    }
-
-    if (SolverSettings.oscillation_control && SolverTempVars.osc_events > 0)
-        LogMessage("oscillation control: "
-            + aquiutils::numbertostring(SolverTempVars.osc_events)
-            + " intervention(s) ("
-            + string(SolverSettings.oscillation_rewind ? "rewind" : "reduce")
-            + "), " + aquiutils::numbertostring(SolverTempVars.osc_relaxations)
-            + " relaxation(s); final dt = " + aquiutils::numbertostring(SolverTempVars.dt_base)
-            + (SolverTempVars.osc_gave_up ? " (gave up before it was clean)" : ""));
-
-    FinalizeOutputs(uniformizeoutput);
-    SetSimulationDuration(time(nullptr) - SolverTempVars.time_start);
     return !SolverTempVars.SolutionFailed;
+}
+
+void System::EndStepping(bool uniformize_outputs)
+{
+    if (!stepping_restorepoint)
+        return;
+    delete stepping_restorepoint;
+    stepping_restorepoint = nullptr;
+    FinalizeOutputs(uniformize_outputs);
 }
 
 void System::LogMessage(const string& msg, bool isWarning)
@@ -1308,6 +1420,7 @@ void System::InitializeSolver(bool applyparameters)
     SolverTempVars.time_start = time(nullptr);
     SetAllParents();
     SetQuanPointers();
+    BindQuanGenerations();
 
     if (ConstituentsCount() > 0)
         SetNumberOfStateVariables(solvevariableorder.size() + 1);
@@ -1349,7 +1462,7 @@ void System::InitializeSolver(bool applyparameters)
     UnUpdateAllVariables();
 
     for (unsigned int i = 0; i < ObjectiveFunctionsCount(); i++)
-        ObjectiveFunctions()[i]->GetTimeSeries()->clear();
+        ObjectiveFunctions()[i]->ClearStored();
 
     for (unsigned int i = 0; i < ObservationsCount(); i++)
         observation(i)->ClearModeled();
@@ -1878,7 +1991,9 @@ bool System::SetSystemSettingsObjectProperties(const string &s, const string &va
              << "' (value '" << val << "' discarded)" << endl << flush;
 #endif
     }
-    return false;
+    // SetProperty() may have applied the value even when no Settings object
+    // carries this key (e.g. settings.json was never loaded): report that.
+    return out;
 
 }
 bool System::SetProperty(const string &s, const string &val)

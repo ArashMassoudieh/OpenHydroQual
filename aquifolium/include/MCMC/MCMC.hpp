@@ -193,6 +193,31 @@ bool CMCMC<T>::SetProperty(const string &varname, const string &value)
     {   MCMC_Settings.covariance_min_samples = aquiutils::atoi(value); return true;}
     if (aquiutils::tolower(varname) == "covariance_scale")
     {   MCMC_Settings.covariance_scale = aquiutils::atof(value); return true;}
+    if (aquiutils::tolower(varname) == "chain_write_interval")
+    {   { const int v = int(aquiutils::atoi(value)); MCMC_Settings.chain_write_interval = v > 0 ? unsigned(v) : 1u; } return true;}
+    if (aquiutils::tolower(varname) == "adaptation_interval")
+    {   { const int v = int(aquiutils::atoi(value)); MCMC_Settings.adaptation_interval = v > 0 ? unsigned(v) : 1u; } return true;}
+    if (aquiutils::tolower(varname) == "covariance_centering")
+    {   const string v = aquiutils::tolower(aquiutils::trim(value));
+        MCMC_Settings.covariance_within_chain = (v == "chain" || v == "within" || v == "within-chain");
+        return true;}
+    if (aquiutils::tolower(varname) == "proposal_method")
+    {   const string v = aquiutils::tolower(aquiutils::trim(value));
+        MCMC_Settings.de_proposal = (v == "de" || v == "de-mc" || v == "demc" || v == "de-mcz" || v == "dream");
+        return true;}
+    if (aquiutils::tolower(varname) == "de_archive_start")
+    {   MCMC_Settings.de_archive_start = int(aquiutils::atoi(value)); return true;}
+    if (aquiutils::tolower(varname) == "de_gamma_scale")
+    {   MCMC_Settings.de_gamma_scale = aquiutils::atof(value); return true;}
+    if (aquiutils::tolower(varname) == "de_jump_interval")
+    {   { const int v = int(aquiutils::atoi(value)); MCMC_Settings.de_jump_interval = v > 0 ? unsigned(v) : 0u; } return true;}
+    if (aquiutils::tolower(varname) == "de_crossover")
+    {   { const double v = aquiutils::atof(value); MCMC_Settings.de_crossover = (v > 0 && v <= 1) ? v : 1.0; } return true;}
+    if (aquiutils::tolower(varname) == "de_noise")
+    {   MCMC_Settings.de_noise = fabs(aquiutils::atof(value)); return true;}
+    if (aquiutils::tolower(varname) == "de_adapt")
+    {   MCMC_Settings.de_adapt = aquiutils::tolower(value)=="yes" || aquiutils::tolower(value)=="true" || value=="1";
+        return true;}
     if (aquiutils::tolower(varname) == "purturbation_change_scale")
     {
         MCMC_Settings.purt_change_scale = aquiutils::atof(value);
@@ -277,6 +302,7 @@ void CMCMC<T>::initialize(bool random)
     logp1.resize(MCMC_Settings.total_number_of_samples);
     for (unsigned int i=0; i<MCMC_Settings.total_number_of_samples; i++)
         Params[i].resize(MCMC_Settings.number_of_parameters);
+    filled_copy.assign(MCMC_Settings.total_number_of_samples, 0);
     
     for (int j = 0; j<MCMC_Settings.number_of_parameters; j++)
     {
@@ -289,6 +315,7 @@ void CMCMC<T>::initialize(bool random)
             pertcoeff[j] = MCMC_Settings.purturbation_factor*(-log(parameter(j)->GetRange().low) + log(parameter(j)->GetRange().high));
         }
     }
+    if (!pertcoeff.empty()) initial_pertcoeff0 = pertcoeff[0];
 
 #ifndef _WINDOWS
 #ifndef _MacOS
@@ -501,38 +528,51 @@ void CMCMC<T>::UpdateProposalCovariance(int upto)
     for (int i = 0; i < d; i++)
         logged[i] = (parameter(i)->GetPriorDistribution() == "log-normal");
 
-    vector<double> mean(d, 0.0);
+    // means: of all samples, or of each chain (covariance_centering = chain)
+    const int nch = MCMC_Settings.number_of_chains;
+    const bool within = MCMC_Settings.covariance_within_chain;
+    const int ngroups = within ? nch : 1;
+    vector<vector<double>> gmean(ngroups, vector<double>(d, 0.0));
+    vector<int> gcount(ngroups, 0);
     int n = 0;
     for (int k = start; k < upto; k++)
     {
         if ((int)Params[k].size() != d) continue;
+        if (k < (int)filled_copy.size() && filled_copy[k]) continue;   // not a sample (readfromfile)
         bool ok = true;
         for (int i = 0; i < d && ok; i++)
             if (logged[i] && !(Params[k][i] > 0)) ok = false;
         if (!ok) continue;
+        const int g = within ? k % nch : 0;
         for (int i = 0; i < d; i++)
-            mean[i] += logged[i] ? log(Params[k][i]) : Params[k][i];
+            gmean[g][i] += logged[i] ? log(Params[k][i]) : Params[k][i];
+        gcount[g]++;
         n++;
     }
     if (n < (int)MCMC_Settings.covariance_min_samples) return;
-    for (int i = 0; i < d; i++) mean[i] /= n;
+    int nused_groups = 0;
+    for (int g = 0; g < ngroups; g++)
+        if (gcount[g] > 0) { nused_groups++; for (int i = 0; i < d; i++) gmean[g][i] /= gcount[g]; }
+    if (n - nused_groups < 2) return;
 
     vector<vector<double>> C(d, vector<double>(d, 0.0));
     for (int k = start; k < upto; k++)
     {
         if ((int)Params[k].size() != d) continue;
+        if (k < (int)filled_copy.size() && filled_copy[k]) continue;   // not a sample (readfromfile)
         bool ok = true;
         for (int i = 0; i < d && ok; i++)
             if (logged[i] && !(Params[k][i] > 0)) ok = false;
         if (!ok) continue;
+        const int g = within ? k % nch : 0;
         vector<double> z(d);
         for (int i = 0; i < d; i++)
-            z[i] = (logged[i] ? log(Params[k][i]) : Params[k][i]) - mean[i];
+            z[i] = (logged[i] ? log(Params[k][i]) : Params[k][i]) - gmean[g][i];
         for (int i = 0; i < d; i++)
             for (int j = 0; j <= i; j++) C[i][j] += z[i] * z[j];
     }
     for (int i = 0; i < d; i++)
-        for (int j = 0; j <= i; j++) { C[i][j] /= (n - 1); C[j][i] = C[i][j]; }
+        for (int j = 0; j <= i; j++) { C[i][j] /= (n - nused_groups); C[j][i] = C[i][j]; }
 
     // ridge, then Cholesky; abandon the update rather than propose from a
     // matrix that is not positive definite
@@ -569,6 +609,64 @@ vector<double> CMCMC<T>::purturb(int k)
 	vector<double> X;
     const int d = MCMC_Settings.number_of_parameters;
     X.resize(d);
+
+    if (MCMC_Settings.de_proposal)
+    {
+        // DE-MCz: x* = x + gamma (z1 - z2) + e (see _MCMC_settings::de_proposal). k is the chain's current
+        // state; the archive ends where the round that k belongs to ends, so every chain of the round being
+        // computed (in parallel) draws only from completed rounds.
+        const int nch = MCMC_Settings.number_of_chains;
+        const int zend = (k / nch + 1) * nch;
+        const int zstart = max(nch, MCMC_Settings.de_archive_start >= 0 ? MCMC_Settings.de_archive_start
+                                                                        : int(MCMC_Settings.burnout_samples));
+        vector<char> logged(d);
+        for (int i = 0; i < d; i++) logged[i] = (parameter(i)->GetPriorDistribution() == "log-normal");
+        auto usable = [&](int j) {
+            if (j < 0 || j >= (int)Params.size() || (int)Params[j].size() != d) return false;
+            if (j < (int)filled_copy.size() && filled_copy[j]) return false;   // not a sample (readfromfile)
+            for (int i = 0; i < d; i++) if (logged[i] && !(Params[j][i] > 0)) return false;
+            return true;
+        };
+        auto draw = [&](int avoid) {
+            for (int t = 0; t < 1000; t++)
+            {
+                int j = zstart + int(ND.unitrandom() * (zend - zstart));
+                if (j >= zend) j = zend - 1;
+                if (j != avoid && usable(j)) return j;
+            }
+            return -1;
+        };
+        const int r1 = (zend - zstart >= 2) ? draw(-1) : -1;
+        const int r2 = (r1 >= 0) ? draw(r1) : -1;
+        if (r1 >= 0 && r2 >= 0 && usable(k))
+        {
+            vector<char> upd(d, 0);
+            int dp = 0;
+            for (int i = 0; i < d; i++)
+                if (ND.unitrandom() < MCMC_Settings.de_crossover) { upd[i] = 1; dp++; }
+            if (dp == 0) { int i = int(ND.unitrandom() * d); if (i >= d) i = d - 1; upd[i] = 1; dp = 1; }
+            const bool jump = MCMC_Settings.de_jump_interval > 0 && (zend / nch) % MCMC_Settings.de_jump_interval == 0;
+            const double gamma = jump ? 1.0 : MCMC_Settings.de_gamma_scale * MCMC_Settings.de_adapt_factor
+                                              * 2.38 / sqrt(2.0 * dp);
+            for (int i = 0; i < d; i++)
+            {
+                if (!upd[i]) { X[i] = Params[k][i]; continue; }
+                if (logged[i])
+                {
+                    const double diff = log(Params[r1][i]) - log(Params[r2][i]);
+                    X[i] = Params[k][i] * exp(gamma * diff + MCMC_Settings.de_noise * ND.getstdnormalrand());
+                }
+                else
+                {
+                    const double diff = Params[r1][i] - Params[r2][i];
+                    X[i] = Params[k][i] + gamma * diff
+                         + MCMC_Settings.de_noise * max(fabs(Params[k][i]), 1e-12) * ND.getstdnormalrand();
+                }
+            }
+            return X;
+        }
+        // archive too small (e.g. the first rounds of a fresh run): fall through to the random-walk proposal
+    }
 
     if (MCMC_Settings.covariance_proposal && (int)proposal_chol.size() == d)
     {
@@ -633,7 +731,11 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
     CVector stuckcounter(MCMC_Settings.number_of_chains);
     CVector accepted(MCMC_Settings.number_of_chains);
 
-    MCMC_Settings.ini_purt_fact = pertcoeff[0];
+    // The acceptance-rate adaptation (pertcoeff[0] relative to ini_purt_fact) scales the covariance
+    // proposal. A continued run measures it against the initial perturbation, not against the
+    // already-adapted value read from the chain file, which restarted the scale at 1.
+    MCMC_Settings.ini_purt_fact = (MCMC_Settings.continue_mcmc && initial_pertcoeff0 > 0) ? initial_pertcoeff0
+                                                                                        : pertcoeff[0];
 	int k_0 = k;
 
     // Rows [written_to, done_to) of the chain are complete but not yet in the
@@ -755,7 +857,7 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
 #endif
 
         done_to = min(kk + MCMC_Settings.number_of_chains, MCMC_Settings.total_number_of_samples);
-        if ((kk-k_0) % (50 * MCMC_Settings.number_of_chains) == 0)
+        if ((kk-k_0) % (int(max(1u, MCMC_Settings.chain_write_interval)) * MCMC_Settings.number_of_chains) == 0)
             write_rows(done_to);
 
         if (MCMC_Settings.covariance_proposal &&
@@ -763,13 +865,21 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
             kk - last_covariance_update >= MCMC_Settings.covariance_update_interval)
             UpdateProposalCovariance(kk);
 
-        if ((kk-k_0) % (50*MCMC_Settings.number_of_chains) == 0)
+        if ((kk-k_0) % (int(max(1u, MCMC_Settings.adaptation_interval))*MCMC_Settings.number_of_chains) == 0)
 		{
 
             if (double(accepted_count) / double(total_count)>MCMC_Settings.acceptance_rate)
                 for (int i = 0; i < MCMC_Settings.number_of_parameters; i++) pertcoeff[i] /= MCMC_Settings.purt_change_scale;
 			else
                 for (int i = 0; i < MCMC_Settings.number_of_parameters; i++) pertcoeff[i] *= MCMC_Settings.purt_change_scale;
+            if (MCMC_Settings.de_proposal && MCMC_Settings.de_adapt)
+            {   // same rule for the DE jump factor (capped at 1: gamma never exceeds a full difference)
+                if (double(accepted_count) / double(total_count) > MCMC_Settings.acceptance_rate)
+                    MCMC_Settings.de_adapt_factor = min(MCMC_Settings.de_adapt_factor / MCMC_Settings.purt_change_scale,
+                                                        sqrt(2.0 * MCMC_Settings.number_of_parameters) / 2.38);
+                else
+                    MCMC_Settings.de_adapt_factor *= MCMC_Settings.purt_change_scale;
+            }
 			accepted_count = 0;
 			total_count = 0;
 
@@ -782,7 +892,10 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
             double progress = double(kk) / double(nsamps);
             rtw->SetProgress(progress);
             rtw->AddPrimaryChartPoint(kk,double(accepted_count) / double(total_count));
-            rtw->AddSecondaryChartPoint(kk,double(pertcoeff[0] / MCMC_Settings.ini_purt_fact));
+            // step-size scale: the DE jump factor with the differential-evolution proposal, else pert relative to its start
+            rtw->AddSecondaryChartPoint(kk, MCMC_Settings.de_proposal
+                                            ? MCMC_Settings.de_gamma_scale * MCMC_Settings.de_adapt_factor
+                                            : double(pertcoeff[0] / MCMC_Settings.ini_purt_fact));
             rtw->ReplotPrimaryChart();
             rtw->ReplotSecondaryChart();
 		}
@@ -826,7 +939,9 @@ bool CMCMC<T>::step(int k, int nsamps, string filename, ProgressWindow *rtw)
                  << "  now " << (lp_n ? lp_sum / lp_n : 0.0)
                  << "  accept " << setprecision(3)
                  << (cum_total > 0 ? cum_accepted / cum_total : 0.0)
-                 << "  pert " << setprecision(4) << pertcoeff[0]
+                 << (MCMC_Settings.de_proposal ? "  de_gamma x" : "  pert ") << setprecision(4)
+                 << (MCMC_Settings.de_proposal ? MCMC_Settings.de_gamma_scale * MCMC_Settings.de_adapt_factor
+                                               : pertcoeff[0])
                  << "  stuck " << stuck << "/" << nch
                  << "  " << hms(elapsed) << " elapsed, ~" << hms(eta) << " left"
                  << endl;
@@ -1071,7 +1186,8 @@ int CMCMC<T>::readfromfile(string filename)
     const int start = last_id + 1;
     for (int id = nch; id < start; id++)
         if (!loaded[id])
-        {   Params[id] = Params[id - nch];
+        {   if (id < (int)filled_copy.size()) filled_copy[id] = 1;
+            Params[id] = Params[id - nch];
             logp[id] = logp[id - nch];
             logp1[id] = logp1[id - nch];
         }
@@ -1216,14 +1332,29 @@ void CMCMC<T>::Perform()
     cout << "  samples           : " << MCMC_Settings.total_number_of_samples << endl;
     cout << "  burn-in           : " << MCMC_Settings.burnout_samples << endl;
     cout << "  proposal          : "
-         << (MCMC_Settings.covariance_proposal
+         << (MCMC_Settings.de_proposal ? "DIFFERENTIAL EVOLUTION (DE-MCz)"
+             : MCMC_Settings.covariance_proposal
              ? "COVARIANCE-ADAPTED (correlated)" : "DIAGONAL (independent)") << endl;
-    if (MCMC_Settings.covariance_proposal)
+    if (MCMC_Settings.de_proposal)
+    {
+        cout << "    archive from    : sample "
+             << (MCMC_Settings.de_archive_start >= 0 ? MCMC_Settings.de_archive_start : int(MCMC_Settings.burnout_samples))
+             << endl;
+        cout << "    gamma           : " << MCMC_Settings.de_gamma_scale << " x 2.38 / sqrt(2 d'), 1 every "
+             << MCMC_Settings.de_jump_interval << " rounds" << endl;
+        cout << "    crossover (CR)  : " << MCMC_Settings.de_crossover << endl;
+        cout << "    noise           : " << MCMC_Settings.de_noise << endl;
+        cout << "    gamma adaptation: " << (MCMC_Settings.de_adapt ? "Yes" : "No") << ", every "
+             << MCMC_Settings.adaptation_interval << " steps toward acceptance " << MCMC_Settings.acceptance_rate << endl;
+    }
+    else if (MCMC_Settings.covariance_proposal)
     {
         cout << "    scale           : " << MCMC_Settings.covariance_scale
              << " / sqrt(" << MCMC_Settings.number_of_parameters << ")" << endl;
         cout << "    update interval : " << MCMC_Settings.covariance_update_interval << endl;
         cout << "    min samples     : " << MCMC_Settings.covariance_min_samples << endl;
+        cout << "    adaptation every: " << MCMC_Settings.adaptation_interval << " steps" << endl;
+        cout << "    centering       : " << (MCMC_Settings.covariance_within_chain ? "chain (within-chain covariance)" : "pooled") << endl;
     }
     cout << "  initial perturb   : " << (MCMC_Settings.noinipurt ? "No" : "Yes") << endl;
     cout << flush;

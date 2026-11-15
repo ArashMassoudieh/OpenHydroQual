@@ -38,8 +38,8 @@ int main(int argc, char* argv[])
     sys.Solve();
     auto ti1 = std::chrono::steady_clock::now();
     const double interp_sec = std::chrono::duration<double>(ti1 - ti0).count();
-    // The interpreter's outer loop runs while (t < tend + dt), so it overshoots
-    // tend by up to one step. Compare at the ACTUAL final time it reached.
+    // The interpreter clamps its last step to land on tend; compare at the final
+    // time it actually reached (tend, up to rounding).
     const double tend = sys.GetTime();
 
     const unsigned nB = sys.BlockCount();

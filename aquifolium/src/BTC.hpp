@@ -2011,6 +2011,7 @@ T &CTimeSeries<T>::lastt()
     return t[n-1];
 }
 
+// Forward exponential kernel (trapezoidal rule over [t, t + 2/lambda]); see TimeSeries.hpp
 template<class T>
 T CTimeSeries<T>::Exponential_Kernel(const T &t,const T &lambda) const
 {
@@ -2019,8 +2020,7 @@ T CTimeSeries<T>::Exponential_Kernel(const T &t,const T &lambda) const
     T sum=0;
     for (unsigned int i=initial_i; i<last_i; i++)
     {
-        sum+=GetC(i)*lambda*exp(-lambda*(GetT(i)-t))*(GetT(i+1)-GetT(i));
-        sum+=GetC(i)*lambda*exp(-lambda*(GetT(i+1)-t))*(GetT(i+1)-GetT(i));
+        sum+=0.5*GetC(i)*lambda*(exp(-lambda*(GetT(i)-t))+exp(-lambda*(GetT(i+1)-t)))*(GetT(i+1)-GetT(i));
     }
     return sum;
 }

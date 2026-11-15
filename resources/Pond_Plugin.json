@@ -318,6 +318,91 @@
       "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
+  "controlled_orifice": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Controlled orifice (valve)",
+    "icon": {
+      "filename": "orifice.png"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,70,200"
+    },
+    "head_loss_coefficient": {
+      "type": "value",
+      "description": "Head-loss coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0.6",
+      "criteria": "head_loss_coefficient>0",
+      "warningmessage": "Head-loss coefficient must be positive"
+    },
+    "max_area": {
+      "type": "value",
+      "description": "Orifice area at full opening",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m^2;ft^2",
+      "estimate": "true",
+      "criteria": "max_area>0",
+      "warningmessage": "Orifice area must be positive"
+    },
+    "opening": {
+      "type": "value",
+      "description": "Valve opening (0 = closed, 1 = fully open)",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "1",
+      "includeinoutput": "true",
+      "criteria": "opening>=0",
+      "warningmessage": "Valve opening must be between 0 and 1"
+    },
+    "regularization_head": {
+      "type": "value",
+      "description": "Regularization head",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "default": "0.001",
+      "includeinoutput": "false",
+      "helptext": "Below about this head the orifice law becomes linear instead of following sqrt(head); keeps the flow-head slope finite at zero head, so the solver does not fail when the upstream block drains empty. Negligible effect for heads much larger than this value."
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow rate (m~^3/day)",
+      "expression": "86400*head_loss_coefficient*opening*max_area*4.427188724*_pos(head.s-head.e)/_sqr(_pos(head.s-head.e)+regularization_head)",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "unit": "m^3/day;ft^3/s",
+      "helptext": "Orifice law Q = Cd*opening*max_area*sqrt(2g)*h/sqrt(h+regularization_head), which equals Cd*opening*max_area*sqrt(2g*h) for h >> regularization_head. sqrt(2g) = sqrt(19.6) is written as 4.427188724."
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Distance used only for diffusive/dispersive constituent transport across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
+  },
   "darcy_connector": {
     "type": "link",
     "typecategory": "Connectors",

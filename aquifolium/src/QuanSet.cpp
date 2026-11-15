@@ -281,6 +281,7 @@ QuanSet& QuanSet::operator=(const QuanSet& rhs)
     external_links = rhs.external_links;
     normalizing_quantity = rhs.normalizing_quantity;
     parent = nullptr;
+    generations_bound = false;   // map nodes may be fresh, unbound copies
     return *this;
 }
 
@@ -369,8 +370,26 @@ Quan* QuanSet::GetVar(int i)
 
 void QuanSet::UnUpdateAllValues()
 {
+    // Once bound (System::BindQuanGenerations, at the start of a solve), one
+    // increment stales every cached value in this set: no stamp in it can equal
+    // the new generation. Members added after binding are bound first. Before
+    // binding (GUI editing, loading) the members' stamps are flags, cleared one
+    // by one as before.
+    if (generations_bound && size() != bound_size)
+        BindGenerations();
+    if (!generations_bound)
+        for (unordered_map<string, Quan>::iterator it = begin(); it != end(); it++)
+            it->second.Set_Value_Update(false);
+    ++(*generation_cell);
+}
+
+void QuanSet::BindGenerations()
+{
+    const unsigned long long* cell = generation_cell.get();
     for (unordered_map<string, Quan>::iterator it = begin(); it != end(); it++)
-        it->second.Set_Value_Update(false);
+        it->second.BindGeneration(cell);
+    generations_bound = true;
+    bound_size = size();
 }
 
 Quan* QuanSet::GetVarAskable(int i)
@@ -696,7 +715,8 @@ bool QuanSet::RenameQuantity(const string &oldname, const string &newname)
 {
     bool out = false;
     for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
-        out = out || it->second.RenameQuantity(oldname, newname);
+        if (it->second.RenameQuantity(oldname, newname))
+            out = true;
     return true;
 }
 
@@ -721,6 +741,15 @@ bool QuanSet::InitializePrecalcFunctions()
 
     return out;
 
+}
+
+bool QuanSet::RenameConstituentPrefix(const string &oldname, const string &newname)
+{
+    bool out = false;
+    for (unordered_map<string,Quan>::iterator it=begin(); it!=end(); it++)
+        if (it->second.RenameConstituentPrefix(oldname, newname))
+            out = true;
+    return out;
 }
 
 bool QuanSet::RenameConstituents(const string &oldname, const string &newname)

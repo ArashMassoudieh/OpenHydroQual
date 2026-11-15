@@ -534,6 +534,12 @@
     <ROW File="zoom_in.png" Component_="pd.nfo" FileName="zoom_in.png" Attributes="0" SourcePath="..\resources\Icons\zoom_in.png" SelfReg="false" NextFile="zoom_out.png"/>
     <ROW File="zoom_out.png" Component_="pd.nfo" FileName="zoom_out.png" Attributes="0" SourcePath="..\resources\Icons\zoom_out.png" SelfReg="false" NextFile="main_components.json"/>
     <ROW File="zoomin.jpg" Component_="pd.nfo" FileName="zoom-in.jpg" Attributes="0" SourcePath="..\resources\Icons\zoom-in.jpg" SelfReg="false" NextFile="zoom_in.png"/>
+    <ROW File="Groundwater_conductance_link.png" Component_="pd.nfo" FileName="GROUND~5.PNG|Groundwater_conductance_link.png" Attributes="0" SourcePath="..\resources\Icons\Groundwater_conductance_link.png" SelfReg="false"/>
+    <ROW File="UC_GW_to_GW_link.png" Component_="pd.nfo" FileName="UC_GW_~1.PNG|UC_GW_to_GW_link.png" Attributes="0" SourcePath="..\resources\Icons\UC_GW_to_GW_link.png" SelfReg="false"/>
+    <ROW File="groundwater2sewer_xsection.png" Component_="pd.nfo" FileName="GROUND~6.PNG|groundwater2sewer_xsection.png" Attributes="0" SourcePath="..\resources\Icons\groundwater2sewer_xsection.png" SelfReg="false"/>
+    <ROW File="heat_constituent.png" Component_="pd.nfo" FileName="HEAT_C~1.PNG|heat_constituent.png" Attributes="0" SourcePath="..\resources\Icons\heat_constituent.png" SelfReg="false"/>
+    <ROW File="surface_heat_exchange.png" Component_="pd.nfo" FileName="SURFA~10.PNG|surface_heat_exchange.png" Attributes="0" SourcePath="..\resources\Icons\surface_heat_exchange.png" SelfReg="false"/>
+    <ROW File="svb_subsurface.json" Component_="Rhistory" FileName="SVB_SU~1.JSO|svb_subsurface.json" Attributes="0" SourcePath="..\resources\svb_subsurface.json" SelfReg="false"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.custcomp.MsiEmbeddedUIComponent">
     <ROW MsiEmbeddedUI="embeddeduiproxy" FileName="embeddeduiproxy.dll" Attributes="3" MessageFilter="201359327" Data="&lt;AI_HOME&gt;bin\x86\embeddeduiproxy.dll"/>

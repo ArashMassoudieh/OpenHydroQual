@@ -677,6 +677,14 @@
       "expression": "head",
       "ask_user": "false"
     },
+    "inflow": {
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Inflow",
+      "helptext": "Always 0: a fixed-head boundary has no external inflow. Defined because constituent inflow loadings (concentration*inflow) are evaluated in every block."
+    },
     "area": {
       "type": "value",
       "description": "area",
@@ -720,6 +728,14 @@
       "description": "Dummy timeseries",
       "ask_user": "true",
       "delegate": "Browser"
+    },
+    "inflow": {
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Inflow",
+      "helptext": "Always 0: a fixed-head boundary has no external inflow. Defined because constituent inflow loadings (concentration*inflow) are evaluated in every block."
     },
     "bottom_elevation": {
       "type": "expression",
@@ -805,7 +821,7 @@
     "diffusive_masstransfer": {
       "description": "Diffusive/Dispersive mass transfer rate",
       "type": "expression",
-      "expression": "((diffusion_coefficient*area+dispersivity*flow)/length+exchange_velocity*area)*(concentration.s-concentration.e)",
+      "expression": "((diffusion_coefficient*area+dispersivity*_abs(flow))/length+exchange_velocity*area)*(concentration.s-concentration.e)",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks",

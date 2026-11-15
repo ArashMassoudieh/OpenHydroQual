@@ -1,0 +1,40 @@
+# Stormwater pond example for ohqrl:
+# a pond with a controllable outlet valve, an overflow weir, a catch basin and
+# an outlet pipe; hourly runoff from the Beltsville, MD rain record.
+# Model time: days since 1900-01-01.
+model:
+  script: pond.ohq
+  settings:
+    initial_time_step: 0.0034722          # 5 min
+    max_timestep_increase_factor: 1
+time:
+  control_interval: 0.0416666667          # 1 h
+  episode_length: 1095                    # 3 years
+  train: [[29219, 43829]]                 # 1980-2019
+  validation_starts: [35209, 40104]       # mid-1996, late 2009 (inside the training years)
+  test_starts: [43829, 44925]             # 2020-2022, 2023-2025
+controls:
+  - {name: valve, object: valve, property: opening, kind: value, min: 0, max: 1, scale: square}
+observations:
+  - {object: Pond, quantity: Storage, scale: 1000}
+  - {object: Pond, quantity: "Age:concentration"}
+  - {object: CatchBasin, quantity: "Age:concentration"}
+  - {forcing: inflow.txt, windows: [[-1, 0], [0, 1], [0, 3], [0, 6], [0, 12], [0, 24]],
+     scale: 1000, transform: log1p, noise: 0.3}
+  - {season: 365.25}
+objectives:                               # OHQ objective functions in pond.ohq
+  - {name: Flood, weight: 1, scale: 12684}  # integral of (Q_out - 1000)+^2 / 1000; scale = passive per year
+  - {name: Young, weight: 1, scale: 18982}  # integral of Q_out * C_age (young-water load); scale = passive per year
+snap:
+  - {object: Pond, quantity: Storage, below: 0.1}
+  - {object: CatchBasin, quantity: Storage, below: 0.01}
+  - {object: Pond, quantity: "Age:concentration", below: 1.0e-9}
+  - {object: CatchBasin, quantity: "Age:concentration", below: 1.0e-9}
+baseline: {valve: 1.0}                    # passive pond: valve fully open
+solver_failure_penalty: 10
+training:
+  total_steps: 3000000                    # ~340 years of hourly control over all workers
+  workers: 8                              # one CPU core each; raise on a bigger machine
+  gamma: 0.99                             # per hour: looks ~4 days ahead
+  save_every: 25
+  warm_start: {controls: {valve: 0.1}}    # start from a fixed 10% opening

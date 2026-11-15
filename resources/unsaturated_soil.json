@@ -188,6 +188,15 @@
       "warningmessage": "Van Genuchten's n must be greater than zero",
       "helptext": "Van Genuchten's n parameter"
     },
+    "L": {
+      "type": "value",
+      "description": "Tortuosity / pore-connectivity factor L (Mualem)",
+      "helptext": "Exponent L in the Mualem-van Genuchten conductivity K = K_sat*Se^L*(1-(1-Se^(1/m))^m)^2. The default 0 keeps the behaviour of earlier versions of this template, so existing (calibrated) models are unchanged; Mualem (1976) recommends L = 0.5.",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "default": "0"
+    },
     "act_X": {
       "type": "value",
       "description": "Actual x",
@@ -330,6 +339,13 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "L": {
+      "type": "expression",
+      "description": "Tortuosity / pore-connectivity factor L",
+      "expression": "0.5*(L.s+L.e)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
     "K_sat": {
       "type": "expression",
       "description": "Saturated Hydraulic Conductivity",
@@ -340,14 +356,14 @@
     "K_eff2K_sat": {
       "type": "expression",
       "description": "Keff to Ksat ratio",
-      "expression": "(1-(1-Se^(1/m))^m)^2",
+      "expression": "Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
       "ask_user": "false"
     },
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
-      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m/day;m/s;ft/s;ft/day"
@@ -425,6 +441,13 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "L": {
+      "type": "expression",
+      "description": "Tortuosity / pore-connectivity factor L",
+      "expression": "0.5*(L.s+L.e)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
     "K_sat": {
       "type": "expression",
       "description": "Saturated Hydraulic Conductivity",
@@ -436,7 +459,7 @@
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
-      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m/day;m/s;ft/s;ft/day"
@@ -495,6 +518,13 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "L": {
+      "type": "expression",
+      "description": "Tortuosity / pore-connectivity factor L",
+      "expression": "0.5*(L.s+L.e)",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
     "K_sat": {
       "type": "value",
       "description": "Saturated Hydraulic Conductivity",
@@ -509,7 +539,7 @@
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
-      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m/day;m/s;ft/s;ft/day"
@@ -611,6 +641,13 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "L": {
+      "type": "expression",
+      "description": "Tortuosity / pore-connectivity factor L",
+      "expression": "L.s",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
     "K_sat": {
       "type": "expression",
       "description": "Saturated Hydraulic Conductivity",
@@ -622,7 +659,7 @@
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
-      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m/day;m/s;ft/s;ft/day"
@@ -737,6 +774,13 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "L": {
+      "type": "expression",
+      "description": "Tortuosity / pore-connectivity factor L",
+      "expression": "L.s",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
     "K_sat": {
       "type": "expression",
       "description": "Saturated Hydraulic Conductivity",
@@ -748,7 +792,7 @@
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
-      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m/day;m/s;ft/s;ft/day"
@@ -807,6 +851,13 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "L": {
+      "type": "expression",
+      "description": "Tortuosity / pore-connectivity factor L",
+      "expression": "L.s",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
     "K_sat": {
       "type": "expression",
       "description": "Saturated Hydraulic Conductivity",
@@ -818,7 +869,7 @@
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
-      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m/day;m/s;ft/s;ft/day"
@@ -896,6 +947,13 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "L": {
+      "type": "expression",
+      "description": "Tortuosity / pore-connectivity factor L",
+      "expression": "L.s",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
     "K_sat_scale_factor": {
       "type": "value",
       "description": "Hydraulic conductivity scale factor",
@@ -930,7 +988,7 @@
     "K_eff": {
       "type": "expression",
       "description": "Effective Hydraulic Conductivity",
-      "expression": "K_sat*(1-(1-Se^(1/m))^m)^2",
+      "expression": "K_sat*Se^L*(1-(1-Se^(1/m))^m)^2",
       "includeinoutput": "true",
       "ask_user": "false",
       "unit": "m/day;m/s;ft/s;ft/day"

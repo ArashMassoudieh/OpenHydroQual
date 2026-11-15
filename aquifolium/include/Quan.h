@@ -182,8 +182,22 @@ public:
     bool HasCriteria() { if (criteria.Count() > 0) return true; else return false; }
     vector<string> GetAllRequieredStartingBlockProperties();
     vector<string> GetAllRequieredEndingBlockProperties();
-    void Set_Value_Update(bool x) { value_star_updated = x; }
-    bool Value_Updated() { return value_star_updated; }
+    // Cache validity is a generation stamp, not a boolean. Invalidating every
+    // quantity used to mean walking every QuanSet (a std::map, so a tree walk)
+    // and writing false into each flag, once per residual evaluation -- it was
+    // ~14% of solver time and grew with model size. `generation` points at the
+    // owning QuanSet's counter, installed once per solve by
+    // System::BindQuanGenerations(); bumping that counter invalidates the whole
+    // set in O(1). A Quan that is not bound (never solved, e.g. in the GUI, or
+    // copied) points at `no_generation`, a constant 1, so its stamp behaves
+    // like the old boolean: 1 = cached until Set_Value_Update(false), which
+    // QuanSet::UnUpdateAllValues() still does for sets that are not bound.
+    // A value set with SetVal()/SetProperty() before any solve must stay
+    // cached: a block's initial "<constituent>:concentration" is an expression
+    // quantity holding a forced value, and recomputing it gives mass/Storage = 0.
+    void BindGeneration(const unsigned long long* g) { const bool v = Value_Updated(); generation = (g ? g : &no_generation); value_stamp = (v ? *generation : 0ULL); }
+    void Set_Value_Update(bool x) { value_stamp = (x ? *generation : 0ULL); }
+    bool Value_Updated() const { return value_stamp != 0ULL && value_stamp == *generation; }
     bool ApplyLimit() { return applylimit; }
     bool isrigid() { return rigid; }
     void SetInitialValueExpression(const string& expression);
@@ -193,6 +207,7 @@ public:
     vector<std::string> AllConstituents() const;
     vector<string> AllReactionParameters() const;
     bool RenameQuantity(const string& oldname, const string& newname);
+    bool RenameConstituentPrefix(const string& oldname, const string& newname);
     bool SetPrecalcIndependentVariable(const string& varname) { return precalcfunction.SetIndependentVariable(varname); }
     PreCalculatedFunction* PreCalcFunction() { return &precalcfunction; }
     double InterpolateBasedonPrecalcFunction(const double& val) const;
@@ -235,7 +250,9 @@ private:
     string _string_value = "";
     double _val = 0;
     double _val_star = 0;
-    bool value_star_updated = false;
+    static const unsigned long long no_generation;          // constant 1; see BindGeneration
+    const unsigned long long* generation = &no_generation;  // owning QuanSet's counter
+    unsigned long long value_stamp = 0;                     // generation _val_star was computed for
     _type type = _type::not_assigned;
     bool perform_mass_balance = false;
     string corresponding_flow_quan;

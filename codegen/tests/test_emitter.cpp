@@ -67,6 +67,10 @@ int main()
     // nested intrinsics + orifice max_flow
     check("86400*_sqr(2*9.81*_pos(head.s-head.e)/valve_K)*area",
           "((86400.0 * ohq::f_sqr(ohq::div(((2.0 * 9.81) * ohq::pos((src.head_ - dst.head_))), valve_K_))) * area_)");
+    // a function of a pure number parses to a constant leaf carrying the function; it must not be dropped
+    check("_sqr(16)", "ohq::f_sqr(16.0)");
+    check("100*_sqr(19.6)", "(100.0 * ohq::f_sqr(19.6))");
+    check("_exp(2)*_pos(-3)", "(ohq::f_exp(2.0) * ohq::pos(-3.0))");
 
     std::printf("\n%s (%d failure%s)\n", failures ? "TESTS FAILED" : "ALL TESTS PASSED",
                 failures, failures == 1 ? "" : "s");

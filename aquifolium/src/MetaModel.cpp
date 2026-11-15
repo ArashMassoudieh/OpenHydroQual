@@ -247,4 +247,10 @@ void MetaModel::RenameConstituent(const string &oldname, const string &newname)
     }
 
 
+    // References inside the templates' expressions to the constituent's own
+    // properties (e.g. "Constituent_1:dispersivity") are not keys of the
+    // templates, so RenameProperty above does not reach them. Objects created
+    // after the rename are built from these templates.
+    for (map<string,QuanSet>::iterator model = begin(); model!=end(); model++ )
+        model->second.RenameConstituentPrefix(oldname, newname);
 }

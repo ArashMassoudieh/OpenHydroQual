@@ -7,9 +7,21 @@ kinetics:
     sorption     rate = k_f * Cu_aq
     desorption   rate = (k_f / KD) * Cu_s
 
-Starting from 1 g/m3 dissolved and nothing sorbed, the aqueous concentration
-decays with a timescale of about 0.2 and reaches equilibrium by t = 8, where
-the ratio Cu_s / Cu_aq equals KD exactly.
+`Cu_aq` is a dissolved constituent (per volume of water) and `Cu_s` a sorbed
+constituent, expressed per total volume of the cell, so `KD` is the
+dimensionless ratio of the two at equilibrium (for linear sorption it equals
+rho_b*K_d). Both reactions are Chemical reactions with stoichiometric constants
+-1 and +1, which conserves mass: `Cu_aq:mass + Cu_s:mass` stays at 0.4 g.
+
+Starting from 1 g/m3 dissolved (0.4 g in 0.4 m3 of water) and nothing sorbed,
+the aqueous concentration decays at the rate k_f*(1 + n/KD) = 5.004 per unit
+time (timescale 0.2) and levels off by about t = 2 at
+n*C0/(n + KD) = 0.4/500.4 = 8.0e-4, where Cu_s / Cu_aq = KD and Cu_s = 0.40.
+
+**Corrected 2026-11-08.** Earlier versions gave `Cu_s` the stoichiometric
+constants +-porosity/rho, which do not conserve mass: about 99.9 % of the copper
+disappeared, so `Cu_aq` fell to a spurious plateau near 2.3e-7. The data files
+were regenerated from the corrected `truth.ohq` with `make_observations.py`.
 
 ## The estimation problem
 
@@ -31,29 +43,39 @@ noise level of 0.05, so the confidence intervals are directly checkable.
 
 ![Observed and modelled](fit.png)
 
-Both axes are logarithmic: the aqueous concentration falls through six decades
+Both axes are logarithmic: the aqueous concentration falls through three decades
 and the sampling is log-spaced in time, so a linear axis would pile every point
 against the origin.
 
 ## Result
 
-    k_f = 5.012   (truth 5.0)    95% CI [4.996, 5.029]
-    KD  = 511.2   (truth 500)    95% CI [498.5, 524.2]
+**Not yet re-run with OHQ-LM after the correction.** The numbers previously
+shown here (k_f = 5.012, KD = 511.2) came from the mass-losing model and no
+longer apply. Run `OHQ-LM calibration.ohq . --threads 4` and record the result.
 
-Both intervals cover the truth. 5 iterations, 29 model solves, -logL = -299.5
-against -286.5 at the true values.
+As an independent check on the corrected case, a log-space least-squares fit
+(SciPy's Levenberg-Marquardt, with OHQTerminal as the forward model, same data,
+same starting values and noise level) gave
+
+    k_f = 4.945   (truth 5.0)    95% CI [4.907, 4.983]
+    KD  = 495.3   (truth 500)    95% CI [484.9, 506.0]
+
+with a correlation of -0.14, in 24 model runs. The k_f interval just misses the
+truth for this noise realisation; on five other realisations both intervals
+covered the truth (k_f from 4.990 to 5.028, KD from 495.7 to 504.5).
 
 ## A note on the solver setting
 
 This case overrides the source model's `nr_tolerance`, raising it from 1e-3 to
 1e-10, and `minimum_timestep` from 1e-6 to 1e-9.
 
-`Cu_aq` falls through six decades to a plateau at 2.3e-7. At the shipped
-tolerance everything below roughly 1e-3 was numerical noise that changed
-between runs, and since KD is identified by exactly that plateau, it could not
-be recovered: LM returned k_f = 3.92 against a truth of 5.0, with confidence
-intervals that excluded the true value. The fit looked converged and the
-diagnostics looked healthy.
+`Cu_aq` falls through three decades to a plateau at 8.0e-4, below the shipped
+absolute tolerance of roughly 1e-3, and KD is identified by exactly that
+plateau. (In the earlier, mass-losing version of this case the plateau was at
+2.3e-7; at the shipped tolerance everything there was numerical noise, and LM
+returned k_f = 3.92 against a truth of 5.0, with confidence intervals that
+excluded the true value. The fit looked converged and the diagnostics looked
+healthy.)
 
 Any quantity whose informative range extends far below the solver tolerance has
 this problem, and it is invisible unless you check the likelihood at known

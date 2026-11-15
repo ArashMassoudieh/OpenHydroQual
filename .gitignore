@@ -456,3 +456,11 @@ terminal/OHQ-GA/build_tail/OHQ-GA
 # Intermediate files of the Visual Studio builds of the command-line tools and OHQLib
 terminal/OHQ-*/x64/
 OHQLib/x64/
+# ohqrl: generated example inputs and training runs
+ohqrl/examples/pond/inflow.txt
+runs/
+ohqrl/docs/*.aux
+ohqrl/docs/*.log
+ohqrl/docs/*.out
+ohqrl/docs/*.toc
+__pycache__/

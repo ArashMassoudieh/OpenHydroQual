@@ -308,16 +308,25 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
                                       "File does not have the right format!", QMessageBox::Ok);
             }
         }
+        if (r && mainwindow)
+            mainwindow->SetModified();
 
         emit editCompleted(value.toString());
         return true;
     }
 
-    bool r;
+    // A rename changes the object's name; remember the old one so the Object
+    // Browser and the property panel header can follow (see the end).
+    const QString oldobjectname = (quanset->Parent() != nullptr)
+                                      ? QString::fromStdString(quanset->Parent()->GetName()) : QString();
+
+    bool r = false;
     if (role==CustomRoleCodes::UnitRole)
     {
         // Call SetUnit to trigger unit conversion
         r = quanset->GetVar(VariableName.toStdString()).SetUnit(XString::reformBack(value.toString()).toStdString());
+        if (r && mainwindow)
+            mainwindow->SetModified();
         emit editCompleted(value.toString());
         return r;
     }
@@ -386,6 +395,18 @@ bool PropModel::setData(const QModelIndex & index, const QVariant & value, int r
     else if (!r & value!="")
     {
         QMessageBox::question(mainwindow, "Validation Failed", QString::fromStdString(quanset->GetVar(VariableName.toStdString()).WarningMessage()), QMessageBox::Ok);
+    }
+
+    if (r && mainwindow)
+    {
+        // Every successful property edit is an unsaved change.
+        mainwindow->SetModified();
+        if (quanset->Parent() != nullptr)
+        {
+            const QString newobjectname = QString::fromStdString(quanset->Parent()->GetName());
+            if (!oldobjectname.isEmpty() && newobjectname != oldobjectname)
+                mainwindow->OnObjectRenamed(oldobjectname, newobjectname, quanset);
+        }
     }
 
     QString result = value.toString();

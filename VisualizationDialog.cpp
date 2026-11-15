@@ -694,6 +694,14 @@ void VisualizationDialog::onRangeManuallyChanged()
     manualMinSet = true;
     manualMaxSet = true;
 
+    // The Mid label is otherwise only set by createLegend() when the property
+    // changes, so it kept the old midpoint after a new min or max was typed.
+    bool okMin = false, okMax = false;
+    const double minValue = legendMinLineEdit->text().toDouble(&okMin);
+    const double maxValue = legendMaxLineEdit->text().toDouble(&okMax);
+    if (okMin && okMax)
+        legendMidLabel->setText(QString("Mid:\n%1").arg((minValue + maxValue) / 2.0, 0, 'g', 4));
+
     // Redraw visualization with the manually specified range
     drawVisualization();
 }

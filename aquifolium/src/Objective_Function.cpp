@@ -113,13 +113,17 @@ double Objective_Function::GetValue(const Expression::timing &tmg)
 
 void Objective_Function::append_value(double t, double val)
 {
+    const double t_prev = stored_time_series.size() > 0
+        ? stored_time_series.maxt()
+        : (system ? system->tstart() : t);
+    running_integral += val * (t - t_prev);
     stored_time_series.append(t,val);
     return;
 }
 
 void Objective_Function::append_value(double t)
 {
-    stored_time_series.append(t,GetValue(Expression::timing::present));
+    append_value(t, GetValue(Expression::timing::present));
     return;
 }
 

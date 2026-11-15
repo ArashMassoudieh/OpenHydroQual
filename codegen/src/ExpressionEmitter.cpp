@@ -112,8 +112,18 @@ std::string ExpressionEmitter::translate(const Expression& e) const
 
 std::string ExpressionEmitter::emitNode(const Expression& e) const
 {
-    if (e.param_constant_expression == "constant")
-        return formatConstant(e.constant);
+    if (e.param_constant_expression == "constant") {
+        // Like a parameter node, a constant node may carry a function: `_sqr(16)` parses to
+        // the leaf 16 with function "sqr" (Expression::calc applies it in its constant branch).
+        const std::string c = formatConstant(e.constant);
+        if (e.function.empty())
+            return c;
+        const std::string mapped = mapUnaryOrNary(e.function);
+        if (mapped.empty())
+            throw std::runtime_error("ExpressionEmitter: unsupported function _"
+                                     + e.function + " on constant " + c);
+        return mapped + "(" + c + ")";
+    }
 
     if (e.param_constant_expression == "parameter") {
         Loc loc = locationOf(e);

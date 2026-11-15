@@ -416,6 +416,15 @@
       "description": "Bottom elevation",
       "delegate": "UnitBox",
       "unit": "m;ft"
+    },
+    "volume": {
+      "type": "expression",
+      "expression": "Storage",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Volume",
+      "unit": "m^3;ft^3",
+      "helptext": "Total volume of the block. All of it is water, so it equals Storage. Sorbed constituents (per total volume) use it."
     }
   },
   "Reactor_Flex": {
@@ -476,6 +485,15 @@
       "description": "Bottom elevation",
       "delegate": "UnitBox",
       "unit": "m;ft"
+    },
+    "volume": {
+      "type": "expression",
+      "expression": "Storage",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Volume",
+      "unit": "m^3;ft^3",
+      "helptext": "Total volume of the block. All of it is water, so it equals Storage. Sorbed constituents (per total volume) use it."
     }
   },
   "Settling element": {
@@ -727,12 +745,13 @@
   "Sorbed_Constituent": {
     "type": "constituent",
     "typecategory": "Constituents",
-    "description": "sorbed chemical constituent",
+    "description": "Sorbed constituent (per total volume)",
+    "helptext": "A constituent that stays in its block, with its concentration expressed per total (bulk) volume of the block (mass/volume). Needs a block with a \"volume\" property, such as a Groundwater cell. In a Reactor (all water) volume = Storage, so the concentration is the same as an immobile constituent's. Compare: immobile constituent, which is expressed per volume of water.",
     "icon": {
       "filename": "sorbed_constituent.png"
     },
     "concentration": {
-      "description": "Concentration per total volume",
+      "description": "Concentration per total (bulk) volume",
       "type": "expression",
       "expression": "mass/volume",
       "ask_user": "true",
@@ -740,7 +759,8 @@
       "includeinoutput": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit": "g/m^3"
+      "unit": "g/m^3",
+      "helptext": "Mass divided by the total volume of the block (solids plus pores, the block property \"volume\"); not carried by flow. It exchanges mass with a dissolved constituent through a Chemical reaction (rate per volume of water) or a Desorption reaction (rate per total volume); in both cases stoichiometric constants of -1 and +1 conserve mass. For linear sorption at equilibrium this concentration equals rho_b*K_d*C, so choose k_adsorption/k_desorption = rho_b*K_d; the retardation factor is then 1 + rho_b*K_d/n and the sorbed mass per mass of solid is concentration/rho_b."
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -759,7 +779,7 @@
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytoblocks",
-      "initial_value_expression": "concentration*depth*area",
+      "initial_value_expression": "concentration*volume",
       "unit": "g;kg"
     },
     "masstransfer": {
@@ -769,6 +789,16 @@
       "includeinoutput": "false",
       "ask_user": "false",
       "role": "copytolinks"
+    },
+    "inflow_loading": {
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Inflow loading",
+      "role": "copytoblocks",
+      "unit": "g/day",
+      "helptext": "Always 0: an immobile or sorbed constituent does not enter with inflowing water. Defined so that solver diagnostics that sum the inflow loading of every constituent find it."
     },
     "external_mass_flow_timeseries": {
       "type": "timeseries",
@@ -791,12 +821,13 @@
   "Immobile_Constituent": {
     "type": "constituent",
     "typecategory": "Constituents",
-    "description": "Immobile constituent",
+    "description": "Immobile constituent (per volume of water)",
+    "helptext": "A constituent that stays in its block, with its concentration expressed per volume of water (mass/Storage), like a dissolved constituent. Use it for sorbed or attached mass when the reactions are written per volume of water. Compare: sorbed chemical constituent, which is expressed per total volume.",
     "icon": {
       "filename": "immobile_constituent_reactor.png"
     },
     "concentration": {
-      "description": "Concentration per total volume",
+      "description": "Concentration per volume of water",
       "type": "expression",
       "expression": "mass/(Storage+0.00001)",
       "ask_user": "true",
@@ -804,7 +835,8 @@
       "includeinoutput": "true",
       "delegate": "UnitBox",
       "estimate": "true",
-      "unit": "g/m^3"
+      "unit": "g/m^3",
+      "helptext": "Mass divided by the water volume (Storage) of the block: the same basis as a mobile chemical constituent, but not carried by flow. Exchange with a dissolved constituent through Chemical reactions (rates per volume of water); stoichiometric constants of -1 and +1 conserve mass. For linear sorption at equilibrium this concentration equals (rho_b*K_d/n)*C, so choose k_adsorption/k_desorption = rho_b*K_d/n; the retardation factor is then 1 + rho_b*K_d/n and the sorbed mass per mass of solid is n*concentration/rho_b."
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -823,7 +855,8 @@
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytoblocks",
-      "initial_value_expression": "concentration*Storage"
+      "initial_value_expression": "concentration*Storage",
+      "unit": "g;kg"
     },
     "masstransfer": {
       "description": "Mass transfer rate",
@@ -832,6 +865,16 @@
       "includeinoutput": "false",
       "ask_user": "false",
       "role": "copytolinks"
+    },
+    "inflow_loading": {
+      "type": "expression",
+      "expression": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "description": "Inflow loading",
+      "role": "copytoblocks",
+      "unit": "g/day",
+      "helptext": "Always 0: an immobile or sorbed constituent does not enter with inflowing water. Defined so that solver diagnostics that sum the inflow loading of every constituent find it."
     },
     "external_mass_flow_timeseries": {
       "type": "timeseries",
@@ -857,6 +900,7 @@
     "description": "Desorption",
     "typecategory": "Reactions",
     "normalizing_quantity": "volume",
+    "helptext": "A reaction whose rate expression is per unit total volume of the block (it is multiplied by the block property \"volume\"), whereas a Chemical reaction is per unit volume of water (multiplied by Storage). With stoichiometric constants of -1 and +1 it conserves mass between any two constituents, whatever volume their concentrations are expressed per.",
     "icon": {
       "filename": "desorption.png"
     },
@@ -1367,6 +1411,234 @@
         "R09#bottom_elevation": "bottom_elevation",
         "R10#bottom_elevation": "bottom_elevation"
       }
+    }
+  },
+  "Heat": {
+    "type": "constituent",
+    "typecategory": "Constituents",
+    "description": "Heat (temperature)",
+    "helptext": "Carries water temperature. The balanced quantity is the heat content rho*c_p*Storage*T (MJ) and the displayed concentration is the temperature T (degrees C); rho*c_p is held constant (volumetric_heat_capacity). Heat moves with flow like a dissolved constituent: advection rho*c_p*Q*T, plus optional conduction/dispersion. Inputs in a block: initial temperature, inflow temperature, and a heat input in kW (heater, waste heat; negative for cooling). For exchange with the air attach a Surface heat exchange source. Works in any block with Storage and inflow (Reactor) and any link with flow (Fixed flow).",
+    "icon": {
+      "filename": "heat_constituent.png"
+    },
+    "volumetric_heat_capacity": {
+      "description": "Volumetric heat capacity (rho*c_p)",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "default": "4.186",
+      "unit": "MJ/m^3/~degreeC",
+      "helptext": "Density times specific heat of the water, held constant. 4.186 MJ/m^3/degC for water (1000 kg/m^3 x 4186 J/kg/degC). Converts temperature to heat content: heat content = rho*c_p*Storage*T."
+    },
+    "concentration": {
+      "description": "Temperature",
+      "type": "expression",
+      "expression": "mass/(volumetric_heat_capacity*(Storage+0.00001))",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "includeinoutput": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "~degreeC",
+      "helptext": "Water temperature, heat content/(rho*c_p*Storage). The value entered is the initial temperature of the block."
+    },
+    "stoichiometric_constant": {
+      "description": "Stoichiometric Constant (heat of reaction)",
+      "type": "expression",
+      "ask_user": "true",
+      "role": "copytoreactions",
+      "includeinoutput": "false",
+      "delegate": "expressionEditor",
+      "helptext": "Heat released per unit of reaction, in MJ per unit of the reaction rate's mass (e.g. MJ/g). Leave 0 (the usual case): the temperature is then not changed by reactions."
+    },
+    "mass": {
+      "description": "Heat content",
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "masstransfer",
+      "inflow": "heat_input,external_source,inflow_loading",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytoblocks",
+      "initial_value_expression": "volumetric_heat_capacity*concentration*Storage",
+      "unit": "MJ",
+      "helptext": "Heat content of the block relative to 0 degC, rho*c_p*Storage*T (MJ)."
+    },
+    "thermal_diffusivity": {
+      "description": "Thermal diffusivity",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "default": "0",
+      "unit": "m^2/day;m^2/s",
+      "helptext": "Thermal (or turbulent) diffusivity used for conduction through links that have an area and length. Molecular value for water is about 0.0123 m^2/day (1.43e-7 m^2/s). 0 (the default) turns conduction off; Fixed flow links have a negligible area, so there it has no effect."
+    },
+    "dispersivity": {
+      "description": "Dispersivity",
+      "type": "value",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "default": "0",
+      "unit": "m;ft"
+    },
+    "advective_masstransfer": {
+      "description": "Advective heat transfer rate",
+      "type": "expression",
+      "expression": "volumetric_heat_capacity*_ups(flow;concentration)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks",
+      "unit": "MJ/day"
+    },
+    "diffusive_masstransfer": {
+      "description": "Conductive/dispersive heat transfer rate",
+      "type": "expression",
+      "expression": "volumetric_heat_capacity*(thermal_diffusivity*area+dispersivity*_abs(flow))/length*(concentration.s-concentration.e)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks",
+      "unit": "MJ/day"
+    },
+    "masstransfer": {
+      "description": "Total heat transfer rate",
+      "type": "expression",
+      "expression": "advective_masstransfer+diffusive_masstransfer",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "role": "copytolinks",
+      "unit": "MJ/day"
+    },
+    "constant_inflow_temperature": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Inflow temperature",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "default": "0",
+      "unit": "~degreeC",
+      "helptext": "Temperature of the block's external inflow (constant inflow plus time-variable inflow)."
+    },
+    "time_variable_inflow_temperature": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time-variable inflow temperature",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "Browser",
+      "unit": "~degreeC",
+      "helptext": "Time series of inflow temperature, added to the constant inflow temperature (leave one of them 0)."
+    },
+    "inflow_loading": {
+      "type": "expression",
+      "expression": "volumetric_heat_capacity*(constant_inflow_temperature+time_variable_inflow_temperature)*inflow",
+      "includeinoutput": "true",
+      "description": "Heat carried in by inflow",
+      "role": "copytoblocks",
+      "unit": "MJ/day"
+    },
+    "constant_heat_input": {
+      "type": "value",
+      "includeinoutput": "false",
+      "description": "Heat input (power)",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "default": "0",
+      "unit": "kW",
+      "helptext": "Heat added directly to the water in kW: a heater, or a power plant's waste heat. Negative values remove heat (a chiller). 1 kW = 86.4 MJ/day. At steady state in a well-mixed tank it raises the outflow temperature by H/(rho*c_p*Q)."
+    },
+    "time_variable_heat_input": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "description": "Time-variable heat input",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "Browser",
+      "unit": "kW",
+      "helptext": "Time series of heat input in kW, added to the constant heat input."
+    },
+    "heat_input": {
+      "type": "expression",
+      "expression": "86.4*(constant_heat_input+time_variable_heat_input)",
+      "includeinoutput": "true",
+      "description": "Heat input rate",
+      "role": "copytoblocks",
+      "unit": "MJ/day"
+    },
+    "external_source": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "External source",
+      "ask_user": "true",
+      "role": "copytoblocks",
+      "delegate": "ComboBox;Sources",
+      "unit": "MJ/day",
+      "helptext": "A source whose rate is in MJ/day, e.g. a Surface heat exchange source."
+    }
+  },
+  "surface_heat_exchange": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Surface heat exchange",
+    "helptext": "Heat exchange between the water and the air through the water surface, linearized: K*A*(T_air - T). Attach it as the External source of a Heat (temperature) constituent in a block. Positive when the air is warmer than the water. 1 W = 0.0864 MJ/day.",
+    "icon": {
+      "filename": "surface_heat_exchange.png"
+    },
+    "surface_area": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Water surface area",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "m^2;ft^2",
+      "helptext": "Area of the water surface exposed to the air."
+    },
+    "heat_exchange_coefficient": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Surface heat exchange coefficient K",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "unit": "W/m^2/~degreeC",
+      "helptext": "Linear heat exchange coefficient lumping radiation, evaporation and convection; typically 10-50 W/m^2/degC for lakes and rivers."
+    },
+    "air_temperature": {
+      "type": "value",
+      "ask_user": "true",
+      "description": "Air (equilibrium) temperature",
+      "delegate": "UnitBox",
+      "estimate": "true",
+      "default": "0",
+      "unit": "~degreeC",
+      "helptext": "Air or equilibrium temperature the water relaxes toward. Added to the time-variable air temperature, so leave one of them 0."
+    },
+    "time_variable_air_temperature": {
+      "type": "timeseries",
+      "ask_user": "true",
+      "description": "Time-variable air temperature",
+      "delegate": "Browser",
+      "unit": "~degreeC",
+      "helptext": "Time series of air (equilibrium) temperature, added to the constant air temperature."
+    },
+    "coefficient": {
+      "type": "expression",
+      "expression": "0.0864*surface_area*heat_exchange_coefficient*(air_temperature+time_variable_air_temperature-concentration)",
+      "includeinoutput": "false",
+      "description": "Heat exchange rate (MJ/day)",
+      "ask_user": "false"
+    },
+    "timeseries": {
+      "type": "expression",
+      "expression": "1",
+      "includeinoutput": "false",
+      "description": "1",
+      "ask_user": "false"
     }
   }
 }

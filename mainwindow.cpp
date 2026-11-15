@@ -4202,6 +4202,22 @@ void MainWindow::SetModified(bool modified)
     UpdateWindowTitle();
 }
 
+static void RenameTreeItems(QTreeWidgetItem *item, const QString &oldname, const QString &newname)
+{
+    if (item->data(0, Qt::UserRole) == "child" && item->text(0) == oldname)
+        item->setText(0, newname);
+    for (int i = 0; i < item->childCount(); i++)
+        RenameTreeItems(item->child(i), oldname, newname);
+}
+
+void MainWindow::OnObjectRenamed(const QString &oldname, const QString &newname, QuanSet *quanset)
+{
+    for (int i = 0; i < ui->treeWidget->topLevelItemCount(); i++)
+        RenameTreeItems(ui->treeWidget->topLevelItem(i), oldname, newname);
+    if (quanset != nullptr)
+        SetPropertyWindowTitle(newname + ":" + QString::fromStdString(quanset->Description()));
+}
+
 bool MainWindow::MaybeSaveChanges()
 {
     if (!modelModified)

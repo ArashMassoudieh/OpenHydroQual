@@ -1,0 +1,14 @@
+loadtemplate; filename = main_components.json
+addtemplate; filename = mass_transfer.json
+create constituent;type=Heat,name=Temperature,volumetric_heat_capacity=4.186[MJ/m~^3/~degreeC],thermal_diffusivity=0[m~^2/day],dispersivity=0[m],stoichiometric_constant=0,concentration=0[~degreeC],constant_inflow_temperature=0[~degreeC],time_variable_inflow_temperature=,constant_heat_input=0[kW],time_variable_heat_input=,external_source=
+create source;type=surface_heat_exchange,name=Air_exchange,surface_area=100000[m~^2],heat_exchange_coefficient=30[W/m~^2/~degreeC],air_temperature=20[~degreeC],time_variable_air_temperature=
+create block;type=Reactor,name=Pond,Storage=200000[m~^3],constant_inflow=50000[m~^3/day],time_variable_inflow=,bottom_elevation=0[m],_height=200,_width=200,x=0,y=400,Temperature:concentration=15[~degreeC],Temperature:constant_inflow_temperature=15[~degreeC],Temperature:time_variable_inflow_temperature=,Temperature:constant_heat_input=0[kW],Temperature:time_variable_heat_input=plant_heat.csv,Temperature:external_source=Air_exchange
+create block;type=fixed_head,name=Downstream,Storage=100000[m~^3],head=0[m],_height=200,_width=200,x=600,y=400,Temperature:concentration=15[~degreeC]
+create link;from=Pond,to=Downstream,type=Fixed flow,flow=50000[m~^3/day],name=Outflow
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=simulation_end_time, value=25
+setvalue; object=system, quantity=initial_time_step, value=0.01
+setvalue; object=system, quantity=max_timestep_increase_factor, value=1
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=write_interval, value=10

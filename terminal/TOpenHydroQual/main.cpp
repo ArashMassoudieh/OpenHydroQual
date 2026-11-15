@@ -15,6 +15,7 @@
 
 #include "System.h"
 #include "Script.h"
+#include "ohq_kernel.h"   // KernelSystem: run the forward model with a codegen-generated library
 #include <QCoreApplication>
 #include <QDir>
 #include "qfileinfo.h"
@@ -32,7 +33,9 @@ enum ExitCode {
                             // while executing the script), or a property violates its
                             // declared criteria. Messages logged DURING the solve are
                             // warnings: the run continues and exits 0.
-    EXIT_SOLVE_FAIL  = 5    // Solve() returned false
+    EXIT_SOLVE_FAIL  = 5,   // Solve() returned false
+    EXIT_KERNEL      = 6    // --kernel: the library could not be loaded, or it was not
+                            // generated from this model (parameters/observations differ)
 };
 
 static void usage(const char *prog)
@@ -49,16 +52,21 @@ static void usage(const char *prog)
          << "  -q, --quiet              suppress per-step solver output\n"
          << "      --skip-verify        do not check property criteria before\n"
          << "                           solving (not recommended)\n"
+         << "  -k, --kernel <lib>       solve with a codegen-generated shared library\n"
+         << "                           (ohq_generate ... --project shared) in place of\n"
+         << "                           the interpreter. Observations, objective\n"
+         << "                           functions and fit statistics are produced; the\n"
+         << "                           bulk output file (alloutputfile) is not.\n"
          << "  -h, --help               this message\n\n"
          << "Exit codes: 0 ok, 2 usage, 3 input not found, 4 model errors,\n"
-         << "            5 solve failed.\n";
+         << "            5 solve failed, 6 kernel not loadable or not this model's.\n";
 }
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    string input, outfile, workdir, resources;
+    string input, outfile, workdir, resources, kernel;
     bool quiet = false, skipverify = false;
     for (int i = 1; i < argc; ++i) {
         const char *s = argv[i];
@@ -74,6 +82,8 @@ int main(int argc, char *argv[])
             quiet = true;
         } else if (!std::strcmp(s, "--skip-verify")) {
             skipverify = true;
+        } else if ((!std::strcmp(s, "-k") || !std::strcmp(s, "--kernel")) && i + 1 < argc) {
+            kernel = argv[++i];
         } else if (s[0] != '-' && input.empty()) {
             input = s;                       // the original argv[1]=="" test was a
                                              // pointer comparison and never fired
@@ -108,7 +118,14 @@ int main(int argc, char *argv[])
     cout << "Input file: " << input << endl;
     cout << "Resources:  " << resources << endl;
 
-    System *system = new System();
+    // With --kernel the model is still read and checked by the interpreter (it
+    // owns the parameters, observations and their data); only Solve() is replaced.
+    // KernelSystem overrides the virtual System::Solve, as in OHQ-LM/GA/MCMC.
+    if (!kernel.empty() && !QFileInfo::exists(QString::fromStdString(kernel))) {
+        cout << "Kernel library not found: " << kernel << endl;
+        return EXIT_KERNEL;
+    }
+    System *system = kernel.empty() ? new System() : new ohq::KernelSystem();
     system->SetDefaultTemplatePath(resources);
     system->SetWorkingFolder(workdir.empty()
                              ? fi.canonicalPath().toStdString() + "/"
@@ -168,6 +185,17 @@ int main(int argc, char *argv[])
 
     system->SetSilent(quiet);
 
+    if (!kernel.empty()) {
+        cout << "Forward model: generated kernel " << kernel << endl;
+        if (!ohq::LoadKernel(kernel) || !ohq::VerifyKernelMatches(*system)) {
+            cout << "*** the kernel cannot be used with this model." << endl;
+            delete system;
+            return EXIT_KERNEL;
+        }
+    } else if (!quiet) {
+        cout << "Forward model: interpreter" << endl;
+    }
+
     // Honour write_solution_details from the model file, as the GUI does.
     // Without this the setting is silently ignored in terminal runs and no
     // diagnostic log is produced.
@@ -210,7 +238,19 @@ int main(int argc, char *argv[])
     if (!system->ObservedOutputFileName().empty()) {
         const string obs = system->GetWorkingFolder() + system->ObservedOutputFileName();
         cout << "Writing observed outputs in '" << obs << "'" << endl;
-        system->GetObservedOutputs().write(obs);
+        if (kernel.empty()) {
+            system->GetObservedOutputs().write(obs);
+        } else {
+            // The kernel hands its series to the observations themselves
+            // (already resampled onto the dt0 grid); collect them in model order.
+            TimeSeriesSet<timeseriesprecision> obsout;
+            for (unsigned int i = 0; i < system->ObservationsCount(); i++) {
+                TimeSeries<timeseriesprecision> ts = *system->observation(i)->GetModeledTimeSeries();
+                ts.setName(system->observation(i)->GetName());
+                obsout.push_back(ts);
+            }
+            obsout.write(obs);
+        }
     }
 
     // Score every observation that has observed data, as the GUI does after a
@@ -243,7 +283,10 @@ int main(int argc, char *argv[])
     }
 
     const string outname = outfile.empty() ? system->OutputFileName() : outfile;
-    if (outname.empty()) {
+    if (!kernel.empty()) {
+        cout << "Kernel run: the bulk output file is not produced (only observations "
+                "and objective functions are returned by the kernel)." << endl;
+    } else if (outname.empty()) {
         cout << "No output file name given; bulk outputs not written." << endl;
     } else if (!system->RecordResults()) {
         cout << "record_results=No; bulk outputs not recorded." << endl;

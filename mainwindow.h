@@ -123,6 +123,10 @@ public:
      * Updates the window title, where unsaved changes are shown with a trailing '*'.
      */
     void SetModified(bool modified = true);
+    // Renames the Object Browser entry and the property panel header after an
+    // object's Name property was edited. Does not rebuild the tree, because the
+    // call comes from inside the property model the rebuild would delete.
+    void OnObjectRenamed(const QString &oldname, const QString &newname, QuanSet *quanset);
     bool IsModified() const { return modelModified; }
     /**
      * @brief Shows what the user is doing or what is selected, on the left of the status bar

@@ -95,6 +95,40 @@ struct _MCMC_settings
     unsigned int covariance_min_samples = 500;        // before the first refresh
     double covariance_scale = 2.38;                   // /sqrt(d), Roberts & Rosenthal
     double covariance_ridge = 1e-8;                   // added to the diagonal
+    // covariance_centering = "chain": the proposal covariance is built from each sample's deviation from the
+    // mean of its own chain (pooled within-chain covariance) instead of from the mean of all samples. While
+    // the chains sit in different places (before they have mixed) the pooled covariance is dominated by the
+    // gaps between chains: proposals along them are too long, are rejected, and the acceptance adaptation then
+    // shrinks every step until the chains stall. Default "pooled" (the previous behaviour).
+    bool covariance_within_chain = false;
+    // steps (blocks of number_of_chains samples) between adjustments of the step size to the target acceptance
+    // rate (x or / purturbation_change_scale); 50 was the fixed value before this setting
+    unsigned int adaptation_interval = 50;
+    // rounds (steps of all chains) between writes of the chain file; a crash loses at most this many steps
+    unsigned int chain_write_interval = 50;
+    // --- differential-evolution proposal (proposal_method = de) -------------
+    // DE-MCz (ter Braak & Vrugt 2008) with DREAM-style crossover (Vrugt et al. 2009): a chain proposes
+    // x* = x + gamma (z1 - z2) + e, with z1 != z2 drawn from the archive of past chain states (from
+    // de_archive_start to the end of the previous round), in the same space as the other proposals (log for
+    // log-normal priors). The differences between states that are already spread over the posterior give the
+    // proposal its size and orientation, so it follows ridges without an estimated covariance; a covariance
+    // proposal learns a long ridge only once each chain has explored it. gamma = de_gamma_scale * 2.38 /
+    // sqrt(2 d'), d' = number of parameters updated; gamma = 1 every de_jump_interval rounds (jumps between
+    // distant parts of the posterior). Each parameter is updated with probability de_crossover (at least one).
+    // e ~ N(0, de_noise) (absolute in log space; relative to |x| for other priors) keeps the chain ergodic.
+    // The proposal is symmetric, so the Metropolis acceptance in step() is unchanged.
+    bool de_proposal = false;
+    int de_archive_start = -1;          // -1: burnout_samples
+    double de_gamma_scale = 1.0;
+    unsigned int de_jump_interval = 10; // 0: never
+    double de_crossover = 1.0;
+    double de_noise = 1e-4;
+    // de_adapt: the (non-jump) gamma is multiplied by an adaptive factor that is tuned, like the random-walk
+    // step size, every adaptation_interval rounds toward acceptance_rate (x or / purturbation_change_scale).
+    // On the Rock Creek ridge the theoretical gamma proposed moves ~2-14 log units downhill (none accepted
+    // in 48), i.e. too long for a 16-d ridge that is not straight.
+    bool de_adapt = true;
+    double de_adapt_factor = 1.0;       // state; not a setting
 
 };
 
@@ -131,6 +165,13 @@ public:
     void UpdateProposalCovariance(int upto);
 	vector<double> logp;
 	vector<double> logp1;
+    // filled_copy[k]: slot k was filled by readfromfile() with its chain's previous state because the
+    // chain file has no row for it (e.g. a file holding only each chain's last state). Such slots are
+    // not samples and are left out of the proposal covariance.
+    vector<char> filled_copy;
+    // pertcoeff[0] as initialize() set it: the reference of the acceptance-rate adaptation. A continued
+    // run measures its adaptation against it, so its proposal resumes at the size the previous run reached.
+    double initial_pertcoeff0 = 0;
 	vector<double> u;
     //double posterior(vector<double> par, int ID = -1);
     void initialize(bool random=false);

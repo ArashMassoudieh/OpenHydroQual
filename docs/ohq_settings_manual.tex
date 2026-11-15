@@ -54,14 +54,22 @@ These control how the equations are solved. The defaults are appropriate for ord
 Crank-Nicholson Time Weight & \texttt{\small 1} \\
 Number of threads to be used & \texttt{\small 8} \\
 Newton-Raphson convergence tolerance (relative) & \texttt{\small 0.\allowbreak{}001} \\
+Newton-Raphson per-block mass-balance tolerance & \texttt{\small 0.\allowbreak{}001} \\
+Newton iteration count below which the time step grows & \texttt{\small 20} \\
+Newton iteration count above which the time step shrinks & \texttt{\small 40} \\
 Newton-Raphson Time-step reduction factor & \texttt{\small 0.\allowbreak{}75} \\
 Newton-Raphson Time-step reduction factor when fail & \texttt{\small 0.\allowbreak{}2} \\
 Minimum time-step & \texttt{\small 1e-6} \\
 Initial time-step & \texttt{\small 1e-2} \\
 Maximum simulation time allowed (seconds) & \texttt{\small 86400} \\
 Maximum number of jacobian calculations allowed & \texttt{\small 200000} \\
+Rate output interpolation & \texttt{\small midpoint} \\
+Make time series uniform & \texttt{\small Yes} \\
 Write Solution Details & \texttt{\small No} \\
 Linear solver for the Newton step & \texttt{\small Direct} \\
+Reassemble the Jacobian at every Newton iteration & \texttt{\small No} \\
+Reassemble the Jacobian when the time step changes by more than this factor & \texttt{\small 2} \\
+Time series that limit the time step & \texttt{\small Precipitation only} \\
 Write the outputs intermittently & \texttt{\small No} \\
 Record all block/link outputs & \texttt{\small Yes} \\
 Detect and suppress solution oscillation & \texttt{\small No} \\
@@ -69,7 +77,6 @@ Oscillation detection tolerance & \texttt{\small 0.\allowbreak{}01} \\
 Output write interval & \texttt{\small 100} \\
 Maximum allowable time-step increase factor with respect to the initial time-step & \texttt{\small 50} \\
 Maximum allowable time-step decrease factor with respect to the initial time-step & \texttt{\small 100000} \\
-Rate output interpolation & \texttt{\small midpoint} \\
 Transport Jacobian assembly & \texttt{\small Dependency} \\
 Verify Jacobian assembly (diagnostic) & \texttt{\small 0} \\
 Maximum oscillation interventions & \texttt{\small 4} \\
@@ -90,6 +97,18 @@ Number of processor threads to use for parallel computation during simulation.
 {\small \textbf{Default:} \texttt{0.\allowbreak{}001} \quad\textbullet\quad \textbf{Name in file:} \texttt{nr\_\allowbreak{}tolerance}}
 
 Convergence criterion for the Newton iteration at each time step. It is a RELATIVE measure, not an absolute residual: the iteration stops once the residual has fallen to this fraction of its value at the start of the step, so 0.001 means the residual is reduced by three orders of magnitude and no further. Two other conditions also end the iteration -- an absolute residual floor of 1e-12, and an update that has become negligible against the solution norm. Because the criterion is relative and per step, the error left behind accumulates over a long run: on a model whose outputs are compared against measurements of similar magnitude, the default can leave a numerical error that is an appreciable fraction of the model-measurement residual, and it is worth tightening until the results stop changing. A smaller value does not necessarily cost time. A better converged step is a more stable one, so the solver can often take larger steps afterwards and finish sooner; measure rather than assume.
+\subsection{Newton-Raphson per-block mass-balance tolerance}
+{\small \textbf{Default:} \texttt{0.\allowbreak{}001} \quad\textbullet\quad \textbf{Name in file:} \texttt{nr\_\allowbreak{}block\_\allowbreak{}tolerance}}
+
+A second convergence test for the Newton iteration, applied to every block on its own. nr\_tolerance and the update test are norms over the whole model, so they are set by its largest blocks: when some blocks are very large (a fixed-head boundary given a nominal storage of 1e12, for example) a small, stiff block can be accepted far out of balance. With this test a step is accepted only once each block's residual is below this fraction of its own throughput (storage change plus all its inflows and outflows), or the block has stopped changing. 0.001 bounds the mass-balance error of every block at about 0.1\% of what flows through it; blocks whose throughput is below a thousandth of the largest are held to that level instead. The transport (constituent) solve applies the same test to each constituent in each block. 0 switches the test off (the behaviour before September 2026).
+\subsection{Newton iteration count below which the time step grows}
+{\small \textbf{Default:} \texttt{20} \quad\textbullet\quad \textbf{Name in file:} \texttt{nr\_\allowbreak{}niteration\_\allowbreak{}lower}}
+
+After an accepted step the solver compares the largest Newton iteration count over all state variables with this value; below it the base time step is multiplied by 1/nr\_timestep\_reduction\_factor. Raise it for models whose Newton legitimately needs many iterations (the Jacobian is assembled once per step and reused, so a stiff transport phase can need 20-30 chord iterations) -- otherwise the step is throttled for no accuracy benefit.
+\subsection{Newton iteration count above which the time step shrinks}
+{\small \textbf{Default:} \texttt{40} \quad\textbullet\quad \textbf{Name in file:} \texttt{nr\_\allowbreak{}niteration\_\allowbreak{}upper}}
+
+Counterpart to nr\_niteration\_lower: above this the base time step is multiplied by nr\_timestep\_reduction\_factor. Keep it comfortably above nr\_niteration\_lower.
 \subsection{Newton-Raphson Time-step reduction factor}
 {\small \textbf{Default:} \texttt{0.\allowbreak{}75} \quad\textbullet\quad \textbf{Name in file:} \texttt{nr\_\allowbreak{}timestep\_\allowbreak{}reduction\_\allowbreak{}factor}}
 
@@ -114,6 +133,14 @@ Real-world clock limit in seconds. When it expires the run stops wherever it has
 {\small \textbf{Default:} \texttt{200000} \quad\textbullet\quad \textbf{Name in file:} \texttt{maximum\_\allowbreak{}number\_\allowbreak{}of\_\allowbreak{}matrix\_\allowbreak{}inverstions}}
 
 Overall budget of linear solves for the run.
+\subsection{Rate output interpolation}
+{\small \textbf{Default:} \texttt{midpoint} \quad\textbullet\quad \textbf{Choices:} \texttt{step, midpoint} \quad\textbullet\quad \textbf{Name in file:} \texttt{rate\_\allowbreak{}output\_\allowbreak{}interpolation}}
+
+How flows (and other rates on links and sources) are put onto the output grid of the initial time step at the end of a run, before they are plotted or compared with observations. The solver's flow for a time step is the average over that step. 'midpoint' (default) places it at the middle of the step and interpolates linearly between steps, which gives a continuous hydrograph. 'step' (the behaviour before October 2026) holds it constant over the step, so long steps give a staircase. States (storage, depth, head) are always interpolated linearly.
+\subsection{Make time series uniform}
+{\small \textbf{Default:} \texttt{Yes} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{make\_\allowbreak{}timeseries\_\allowbreak{}uniform}}
+
+Resamples every time series onto a uniform grid whose spacing is the initial time step, so lookups index by arithmetic instead of scanning. Leave on unless a model carries long or finely-resolved time series: the number of points created is the record length divided by the initial time step, so a small initial time step can expand a short file into millions of points and the run will appear to hang before the first step. The resampling also smears steep edges, which adds a little volume. Set to No to use each series exactly as supplied.
 \subsection{Write Solution Details}
 {\small \textbf{Default:} \texttt{No} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{write\_\allowbreak{}solution\_\allowbreak{}details}}
 
@@ -122,6 +149,18 @@ Produces a log of what the solver did: where it changed the time step, where it 
 {\small \textbf{Default:} \texttt{Direct} \quad\textbullet\quad \textbf{Choices:} \texttt{Direct, Inverse Jacobian, Sparse} \quad\textbullet\quad \textbf{Name in file:} \texttt{jacobian\_\allowbreak{}method}}
 
 What is done with the assembled matrix. Direct factorises and solves, the normal choice. Inverse Jacobian forms the inverse explicitly: more work and slightly less accurate, but reusable across steps. Sparse stores only non-zero entries and pays off for large models where most of the matrix is empty.
+\subsection{Reassemble the Jacobian at every Newton iteration}
+{\small \textbf{Default:} \texttt{No} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{update\_\allowbreak{}jacobian\_\allowbreak{}every\_\allowbreak{}iteration}}
+
+Off (the default) uses the classic chord scheme: the Jacobian is assembled once at the start of a step and reused, refreshed only when the step stops improving. That is cheap per iteration but converges linearly, so a stiff phase can need 20-30 iterations. On, the Jacobian is rebuilt every iteration, giving true Newton convergence -- typically 1-2 iterations on systems that are linear in the state. Because the iteration count also drives the time-step adaptation, turning this on usually raises the time step as well.
+\subsection{Reassemble the Jacobian when the time step changes by more than this factor}
+{\small \textbf{Default:} \texttt{2} \quad\textbullet\quad \textbf{Name in file:} \texttt{jacobian\_\allowbreak{}dt\_\allowbreak{}refresh\_\allowbreak{}factor}}
+
+The reused (chord) Jacobian contains 1/dt, so it stops being a good approximation once the time step moves away from the step it was assembled with. When the time step is clamped to rapidly changing time series it changes almost every step, and a Jacobian kept for 50 steps can cost 20-30 Newton iterations per step. With this set, the Jacobian is reassembled whenever the applied time step differs from the one it was built with by more than this factor, up or down. 2 is the default; 1 or less switches the check off (reassemble only every 50 steps or after a failed step, the behaviour before September 2026).
+\subsection{Time series that limit the time step}
+{\small \textbf{Default:} \texttt{Precipitation only} \quad\textbullet\quad \textbf{Choices:} \texttt{Precipitation only, All time series} \quad\textbullet\quad \textbf{Name in file:} \texttt{timestep\_\allowbreak{}clamp\_\allowbreak{}series}}
+
+A step is never allowed to run past a point where a time series starts to change. All time series applies this to every loaded series -- precipitation, gate openings, imposed heads, inflows and weather inputs -- so forcing that changes quickly is followed closely, at the cost of more steps. Precipitation only (the default) applies it to precipitation series alone: fewer and larger steps, but other forcing is only sampled at the step ends and short events such as a 15-minute gate operation can be stepped over.
 \subsection{Write the outputs intermittently}
 {\small \textbf{Default:} \texttt{No} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{write\_\allowbreak{}intermittently}}
 
@@ -146,21 +185,6 @@ How often accumulated results are written to disk.
 {\small \textbf{Default:} \texttt{50} \quad\textbullet\quad \textbf{Name in file:} \texttt{max\_\allowbreak{}timestep\_\allowbreak{}increase\_\allowbreak{}factor}}
 
 A multiplier on the initial time-step that defines the largest step the run may ever take. It is a ceiling, not a rate of growth.
-\subsection{Rate output interpolation}
-Key \texttt{rate\_output\_interpolation}: \texttt{midpoint} (default) or \texttt{step}. At the end of a run every
-output and every modelled observation series is resampled onto a uniform grid with spacing equal to the initial
-time-step. States (storage, depth, head) are interpolated linearly between the values recorded at the end of each
-solver step. Rates (flows on links and sources) are different: the solver's flow for a step is the average over
-that step, not a value at its end. With \texttt{midpoint} each step's rate is placed at the middle of the step and
-interpolated linearly between steps (the first and last half-steps are held flat), which gives a continuous
-hydrograph with the volume of each step preserved for equal steps. With \texttt{step} (the behaviour before
-October 2026) each step's rate is held constant over the step, which turns long solver steps into a staircase;
-because a tiny parameter change can move the step boundaries, the staircase makes the likelihood of a
-calibration jump (on a 19-unit urban model calibrated to hourly flow: a likelihood range of 97 for parameter
-changes of $10^{-6}$ with \texttt{step}, 35 with \texttt{midpoint}, and 0.5 with \texttt{midpoint} and a maximum
-time-step factor of 10 instead of 50). The setting is honoured identically by the interpreter, the GUI and
-generated (codegen) kernels.
-
 \subsection{Maximum allowable time-step decrease factor with respect to the initial time-step}
 {\small \textbf{Default:} \texttt{100000} \quad\textbullet\quad \textbf{Name in file:} \texttt{max\_\allowbreak{}timestep\_\allowbreak{}decrease\_\allowbreak{}factor}}
 
@@ -205,6 +229,7 @@ Mutation Probability & \texttt{\small 0.\allowbreak{}02} \\
 Shaking Scale & \texttt{\small 0.\allowbreak{}05} \\
 Shake Scale Reduction Factor & \texttt{\small 0.\allowbreak{}75} \\
 GA Output File Name & \texttt{\small GA\_\allowbreak{}output.\allowbreak{}txt} \\
+Continue optimization using pre-created GA output file & \texttt{\small \textit{(empty)}} \\
 \bottomrule\end{longtable}
 \subsection{Genetic Algorithm Population}
 {\small \textbf{Default:} \texttt{40} \quad\textbullet\quad \textbf{Name in file:} \texttt{maxpop}}
@@ -238,6 +263,10 @@ Multiplies the shaking scale after each generation, so the search is bold at fir
 {\small \textbf{Default:} \texttt{GA\_\allowbreak{}output.\allowbreak{}txt} \quad\textbullet\quad \textbf{Name in file:} \texttt{outputfile}}
 
 Records every candidate of every generation with its score: the file to open to see whether the search converged.
+\subsection{Continue optimization using pre-created GA output file}
+{\small \textbf{Default:} \texttt{\textit{empty}} \quad\textbullet\quad \textbf{Name in file:} \texttt{continue\_\allowbreak{}based\_\allowbreak{}on\_\allowbreak{}filename}}
+
+Resumes a previous optimization from the last complete generation in its GA output file, instead of starting from a random population. The parameters recorded in the file must match the model's parameters exactly - same names, same order - or the run is refused. New generations are appended to the output file. Leave empty to start a new optimization.
 \section{MCMC}
 Optimization returns the single best answer; this returns the range of answers consistent with the data. The sampler wanders through parameter space, spending time in each region in proportion to how well it explains the measurements, so the spread of what it collects measures how well each parameter is actually constrained.
 \begin{longtable}{@{}p{0.60\textwidth}p{0.32\textwidth}@{}}
@@ -255,6 +284,12 @@ Add error noise to the realizations & \texttt{\small No} \\
 Number of threads to be used & \texttt{\small 1} \\
 Desired acceptance rate & \texttt{\small 0.\allowbreak{}15} \\
 Coefficient of change of purtubation factor & \texttt{\small 0.\allowbreak{}75} \\
+Covariance-adapted proposal & \texttt{\small Yes} \\
+Covariance refresh interval & \texttt{\small 1000} \\
+Samples before first covariance & \texttt{\small 500} \\
+Covariance proposal scale & \texttt{\small 2.\allowbreak{}38} \\
+Step-size adaptation interval & \texttt{\small 50} \\
+Covariance centering & \texttt{\small pooled} \\
 MCMC Output file & \texttt{\small mcmc.\allowbreak{}txt} \\
 \bottomrule\end{longtable}
 \subsection{Number of MCMC samples}
@@ -309,6 +344,30 @@ Target fraction of proposed moves accepted. A step too large is nearly always re
 {\small \textbf{Default:} \texttt{0.\allowbreak{}75} \quad\textbullet\quad \textbf{Name in file:} \texttt{purturbation\_\allowbreak{}change\_\allowbreak{}scale}}
 
 How quickly the step size is adjusted toward the desired acceptance rate.
+\subsection{Covariance-adapted proposal}
+{\small \textbf{Default:} \texttt{Yes} \quad\textbullet\quad \textbf{Choices:} \texttt{Yes, No} \quad\textbullet\quad \textbf{Name in file:} \texttt{covariance\_\allowbreak{}proposal}}
+
+Propose correlated steps drawn from the empirical covariance of the samples so far, instead of perturbing each parameter independently. Use this when parameters trade off against one another -- a rate and a capacity that reproduce the same curve, for example. A diagonal proposal cannot move along such a ridge and the chains drift apart instead of mixing.
+\subsection{Covariance refresh interval}
+{\small \textbf{Default:} \texttt{1000} \quad\textbullet\quad \textbf{Name in file:} \texttt{covariance\_\allowbreak{}update\_\allowbreak{}interval}}
+
+Samples between recomputing the proposal covariance. Only used when the covariance-adapted proposal is on.
+\subsection{Samples before first covariance}
+{\small \textbf{Default:} \texttt{500} \quad\textbullet\quad \textbf{Name in file:} \texttt{covariance\_\allowbreak{}min\_\allowbreak{}samples}}
+
+How many post-burn-in samples to accumulate before the first covariance is formed. Until then the diagonal proposal is used.
+\subsection{Covariance proposal scale}
+{\small \textbf{Default:} \texttt{2.\allowbreak{}38} \quad\textbullet\quad \textbf{Name in file:} \texttt{covariance\_\allowbreak{}scale}}
+
+Step size multiplier, divided by sqrt(number of parameters). 2.38 is the optimal value for a Gaussian target (Roberts \& Rosenthal 2001) and rarely needs changing.
+\subsection{Step-size adaptation interval}
+{\small \textbf{Default:} \texttt{50} \quad\textbullet\quad \textbf{Name in file:} \texttt{adaptation\_\allowbreak{}interval}}
+
+Steps (one sample of every chain) between adjustments of the step size toward the target acceptance rate. Smaller values tune the step faster, e.g. after a restart.
+\subsection{Covariance centering}
+{\small \textbf{Default:} \texttt{pooled} \quad\textbullet\quad \textbf{Choices:} \texttt{pooled, chain} \quad\textbullet\quad \textbf{Name in file:} \texttt{covariance\_\allowbreak{}centering}}
+
+pooled: the proposal covariance is taken about the mean of all samples. chain: about the mean of each chain (pooled within-chain covariance). Use chain while the chains have not mixed yet: the pooled covariance is then dominated by the distances between the chains, the proposals become too long and the step size shrinks until the chains stall.
 \subsection{MCMC Output file}
 {\small \textbf{Default:} \texttt{mcmc.\allowbreak{}txt} \quad\textbullet\quad \textbf{Name in file:} \texttt{samples\_\allowbreak{}filename}}
 

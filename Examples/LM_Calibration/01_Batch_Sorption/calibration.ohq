@@ -45,10 +45,8 @@ create constituent;type=Constituent,concentration=0[g/m~^3],constant_inflow_conc
 create constituent;type=Sorbed_Constituent,concentration=0[g/m~^3],external_mass_flow_timeseries=,external_source=,name=Cu_s,stoichiometric_constant=0
 create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=1.5,name=k_f,reference_temperature=0,temperature=
 create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=120,name=KD,reference_temperature=0,temperature=
-create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=0.4,name=porosity,reference_temperature=0,temperature=
-create reaction_parameter;type=ReactionParameter,Arrhenius_factor=1,base_value=1400,name=rho,reference_temperature=0,temperature=
-create reaction;type=Reaction,Cu_aq:stoichiometric_constant=-1,Cu_s:stoichiometric_constant=(porosity/rho),name=Sorption,rate_expression=(k_f*Cu_aq)
-create reaction;type=Reaction,Cu_aq:stoichiometric_constant=1,Cu_s:stoichiometric_constant=(0-porosity/rho),name=Desorption,rate_expression=(k_f/KD*Cu_s)
+create reaction;type=Reaction,Cu_aq:stoichiometric_constant=-1,Cu_s:stoichiometric_constant=1,name=Sorption,rate_expression=(k_f*Cu_aq)
+create reaction;type=Reaction,Cu_aq:stoichiometric_constant=1,Cu_s:stoichiometric_constant=-1,name=Desorption,rate_expression=(k_f/KD*Cu_s)
 create block;type=Groundwater cell,Cu_aq:concentration=1[g/m~^3],Cu_aq:constant_inflow_concentration=0[g/m~^3],Cu_aq:external_mass_flow_timeseries=,Cu_aq:external_source=,Cu_aq:time_variable_inflow_concentration=,Cu_s:concentration=0[g/m~^3],Cu_s:external_mass_flow_timeseries=,Cu_s:external_source=,_height=200,_width=200,area=1[m~^2],bottom_elevation=0[m],depth=1[m],hydraulic_conductivity=1[m/day],inflow=,moisture_content=0.4,name=Groundwater cell (1),porosity=0.4,specific_storage=0.01[1/m],x=900,y=900
 create observation;type=Observation,name=Cu_aqueous,object=Groundwater cell (1),expression=Cu_aq:concentration,error_structure=log-normal,error_standard_deviation=0.05,observed_data=obs_Cu_aqueous.csv
 create observation;type=Observation,name=Cu_sorbed,object=Groundwater cell (1),expression=Cu_s:concentration,error_structure=log-normal,error_standard_deviation=0.05,observed_data=obs_Cu_sorbed.csv
