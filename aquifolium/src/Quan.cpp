@@ -31,9 +31,9 @@
 #endif
 
 
-// Sentinel generation for a Quan with no owning QuanSet. It stays 0 while live
-// generations start at 1, so an unbound Quan always reports "not cached".
-const unsigned long long Quan::no_generation = 0ULL;
+// Generation of a Quan not bound to a QuanSet counter. A constant 1, so an
+// unbound Quan's stamp acts as a flag (1 = cached, 0 = not); see BindGeneration.
+const unsigned long long Quan::no_generation = 1ULL;
 
 Quan::Quan()
 {
@@ -455,7 +455,8 @@ Quan::Quan(const Quan& other)
     _val = other._val;
     _val_star = other._val_star;
     //_parameters = other._parameters;
-    value_stamp = 0ULL; generation = &no_generation;   // rebound at next solve
+    generation = &no_generation;   // rebound at next solve; keep cached state as a flag
+    value_stamp = (other.Value_Updated() ? no_generation : 0ULL);
     _parameterassignedto = other._parameterassignedto;
     type = other.type;
     corresponding_flow_quan = other.corresponding_flow_quan;
@@ -485,7 +486,6 @@ Quan::Quan(const Quan& other)
     role = other.role;
     initial_value_expression = other.initial_value_expression;
     calculate_initial_value_from_expression = other.calculate_initial_value_from_expression;
-    value_stamp = 0ULL; generation = &no_generation;   // rebound at next solve
     precalcfunction = other.precalcfunction;
     OutputItem = other.OutputItem;
     helptext = other.helptext;
@@ -503,7 +503,9 @@ Quan& Quan::operator=(const Quan& rhs)
     _string_value = rhs._string_value;
     _val = rhs._val;
     _val_star = rhs._val_star;
-    value_stamp = 0ULL; generation = &no_generation;   // rebound at next solve
+    // Keep this Quan's own generation pointer (its slot's owner is unchanged)
+    // and carry the cached state, as the old boolean did.
+    value_stamp = (rhs.Value_Updated() ? *generation : 0ULL);
     //_parameters = rhs._parameters;
     _parameterassignedto = rhs._parameterassignedto;
     sourcename = rhs.sourcename;
@@ -535,7 +537,6 @@ Quan& Quan::operator=(const Quan& rhs)
     role = rhs.role;
     initial_value_expression = rhs.initial_value_expression;
     calculate_initial_value_from_expression = rhs.calculate_initial_value_from_expression;
-    value_stamp = 0ULL; generation = &no_generation;   // rebound at next solve
     precalcfunction = rhs.precalcfunction;
     OutputItem = rhs.OutputItem;
     helptext = rhs.helptext;

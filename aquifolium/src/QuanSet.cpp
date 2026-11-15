@@ -281,6 +281,7 @@ QuanSet& QuanSet::operator=(const QuanSet& rhs)
     external_links = rhs.external_links;
     normalizing_quantity = rhs.normalizing_quantity;
     parent = nullptr;
+    generations_bound = false;   // map nodes may be fresh, unbound copies
     return *this;
 }
 
@@ -369,9 +370,16 @@ Quan* QuanSet::GetVar(int i)
 
 void QuanSet::UnUpdateAllValues()
 {
-    // One increment stales every cached value in this set at once: no stamp in
-    // it can equal the new generation. Replaces a full traversal that ran on
-    // every residual evaluation.
+    // Once bound (System::BindQuanGenerations, at the start of a solve), one
+    // increment stales every cached value in this set: no stamp in it can equal
+    // the new generation. Members added after binding are bound first. Before
+    // binding (GUI editing, loading) the members' stamps are flags, cleared one
+    // by one as before.
+    if (generations_bound && size() != bound_size)
+        BindGenerations();
+    if (!generations_bound)
+        for (unordered_map<string, Quan>::iterator it = begin(); it != end(); it++)
+            it->second.Set_Value_Update(false);
     ++(*generation_cell);
 }
 
@@ -380,6 +388,8 @@ void QuanSet::BindGenerations()
     const unsigned long long* cell = generation_cell.get();
     for (unordered_map<string, Quan>::iterator it = begin(); it != end(); it++)
         it->second.BindGeneration(cell);
+    generations_bound = true;
+    bound_size = size();
 }
 
 Quan* QuanSet::GetVarAskable(int i)

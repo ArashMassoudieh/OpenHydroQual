@@ -194,6 +194,8 @@ class QuanSet: public unordered_map<string, Quan>
         // it does not name.
         std::shared_ptr<unsigned long long> generation_cell =
             std::make_shared<unsigned long long>(1ULL);
+        bool generations_bound = false;   // BindGenerations() has run
+        size_t bound_size = 0;            // size() when it ran
         Object* parent = nullptr;
         string name = "";
         string last_error = "";
