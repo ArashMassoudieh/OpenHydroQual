@@ -464,3 +464,9 @@ ohqrl/docs/*.log
 ohqrl/docs/*.out
 ohqrl/docs/*.toc
 __pycache__/
+
+terminal/OHQ-GA/build_new/OHQ-GA
+
+terminal/OHQ-LM/build_new/OHQ-LM
+
+terminal/OHQ-MCMC/build_new/OHQ-MCMC
