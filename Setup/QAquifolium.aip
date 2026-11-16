@@ -198,8 +198,8 @@
     <ROW File="Qt6Charts.dll" Component_="Qt6Charts.dll" FileName="QT6CHA~1.DLL|Qt6Charts.dll" Attributes="0" SourcePath="..\x64\Release\Qt6Charts.dll" SelfReg="false" NextFile="Qt6Core.dll"/>
     <ROW File="Qt6Core.dll" Component_="Qt6Core.dll" FileName="Qt6Core.dll" Attributes="0" SourcePath="..\x64\Release\Qt6Core.dll" SelfReg="false" NextFile="desalination_plant.png"/>
     <ROW File="Qt6Gui.dll" Component_="Qt6Gui.dll" FileName="Qt6Gui.dll" Attributes="0" SourcePath="..\x64\Release\Qt6Gui.dll" SelfReg="false" NextFile="Qt6OpenGL.dll"/>
-    <ROW File="Qt6OpenGL.dll" Component_="Qt6OpenGL.dll" FileName="QT6OPE~1.DLL|Qt6OpenGL.dll" Attributes="0" SourcePath="..\..\..\Qt\6.7.2\msvc2019_64\bin\Qt6OpenGL.dll" SelfReg="false" NextFile="png"/>
-    <ROW File="Qt6OpenGLWidgets.dll" Component_="Qt6OpenGLWidgets.dll" FileName="QT6OPE~2.DLL|Qt6OpenGLWidgets.dll" Attributes="0" SourcePath="..\..\..\Qt\6.7.2\msvc2019_64\bin\Qt6OpenGLWidgets.dll" SelfReg="false" NextFile="Qt6PrintSupport.dll"/>
+    <ROW File="Qt6OpenGL.dll" Component_="Qt6OpenGL.dll" FileName="QT6OPE~1.DLL|Qt6OpenGL.dll" Attributes="0" SourcePath="..\x64\Release\Qt6OpenGL.dll" SelfReg="false" NextFile="png"/>
+    <ROW File="Qt6OpenGLWidgets.dll" Component_="Qt6OpenGLWidgets.dll" FileName="QT6OPE~2.DLL|Qt6OpenGLWidgets.dll" Attributes="0" SourcePath="..\x64\Release\Qt6OpenGLWidgets.dll" SelfReg="false" NextFile="Qt6PrintSupport.dll"/>
     <ROW File="Qt6PrintSupport.dll" Component_="Qt6PrintSupport.dll" FileName="QT6PRI~1.DLL|Qt6PrintSupport.dll" Attributes="0" SourcePath="..\x64\Release\Qt6PrintSupport.dll" SelfReg="false" NextFile="generatescript.png"/>
     <ROW File="Qt6Svg.dll" Component_="Qt6Svg.dll" FileName="Qt6Svg.dll" Attributes="0" SourcePath="..\x64\Release\Qt6Svg.dll" SelfReg="false" NextFile="controlable_weir.png"/>
     <ROW File="Qt6SvgWidgets.dll" Component_="Qt6SvgWidgets.dll" FileName="QT6SVG~1.DLL|Qt6SvgWidgets.dll" Attributes="0" SourcePath="..\x64\Release\Qt6SvgWidgets.dll" SelfReg="false" NextFile="Qt6Widgets.dll"/>
@@ -428,7 +428,7 @@
     <ROW File="public.png" Component_="pd.nfo" FileName="public.png" Attributes="0" SourcePath="..\resources\Icons\public.png" SelfReg="false" NextFile="pump_with_time_series_control.png"/>
     <ROW File="pump.png" Component_="pd.nfo" FileName="pump.png" Attributes="0" SourcePath="..\resources\Icons\pump.png" SelfReg="false" NextFile="InfiltrationTrench.json"/>
     <ROW File="pump_with_time_series_control.png" Component_="pd.nfo" FileName="PUMP_W~1.PNG|pump_with_time_series_control.png" Attributes="0" SourcePath="..\resources\Icons\pump_with_time_series_control.png" SelfReg="false" NextFile="qwindows.dll"/>
-    <ROW File="qwindows.dll" Component_="qwindows.dll" FileName="qwindows.dll" Attributes="0" SourcePath="..\..\..\Qt\6.7.2\msvc2019_64\plugins\platforms\qwindows.dll" SelfReg="false" NextFile="rainfall_runoff.json"/>
+    <ROW File="qwindows.dll" Component_="qwindows.dll" FileName="qwindows.dll" Attributes="0" SourcePath="..\x64\Release\platforms\qwindows.dll" SelfReg="false" NextFile="rainfall_runoff.json"/>
     <ROW File="rainfall_runoff.json" Component_="Rhistory" FileName="RAINFA~1.JSO|rainfall_runoff.json" Attributes="0" SourcePath="..\resources\rainfall_runoff.json" SelfReg="false" NextFile="soil2fixedhead.png"/>
     <ROW File="rainfall_runoff_depthonly.json" Component_="Rhistory" FileName="RAINFA~2.JSO|rainfall_runoff_depthonly.json" Attributes="0" SourcePath="..\resources\rainfall_runoff_depthonly.json" SelfReg="false" NextFile="reaction.png"/>
     <ROW File="rainfall_runoff_template.png" Component_="pd.nfo" FileName="RAINFA~1.PNG|rainfall_runoff_template.png" Attributes="0" SourcePath="..\resources\Icons\rainfall_runoff_template.png" SelfReg="false" NextFile="panicon.gif"/>
