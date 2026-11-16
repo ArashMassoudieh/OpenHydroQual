@@ -15,6 +15,7 @@
 
 
 #include "Utilities.h"
+#include <iomanip>
 #if __cplusplus >= 201703L
 #include <filesystem>
 #endif
@@ -551,6 +552,9 @@ namespace aquiutils
         ostringstream convert;   // stream used for the conversion
         if (scientific)
             convert << std::scientific;
+        else
+            convert << std::setprecision(15);   // the stream default of 6 significant digits rounded every value
+                                                // saved in an .ohq file, e.g. day 41272.58 -> 41272.6 (2.4 h)
         convert << x;      // insert the textual representation of 'Number' in the characters in the stream
         Result = convert.str();
         return Result;

@@ -1306,8 +1306,11 @@ void MainWindow::insertnumberasdate()
         QDate d = QDate::fromString(shown, "MMM dd yyyy");
         current = d.isValid() ? QDate2Xldate(QDateTime(d, QTime(0, 0))) : 0;
     }
-    double x = QInputDialog::getDouble(this,"Date/Time Value: ","Date/Time value", current, 0, 2958465, 4);
-    PropertiesWidget->tableView()->model()->setData(tableitemrightckicked, QString::number(x));
+    bool ok = false;
+    double x = QInputDialog::getDouble(this,"Date/Time Value: ","Date/Time value", current, 0, 2958465, 4, &ok);
+    if (!ok) return;   // Cancel used to write the starting value back (and, before, 0)
+    // 12 significant digits: QString::number's default of 6 rounds a day number to 0.1 day (41272.58 -> 41272.6)
+    PropertiesWidget->tableView()->model()->setData(tableitemrightckicked, QString::number(x, 'g', 12));
 }
 
 void MainWindow::PlotTimeSeries()
