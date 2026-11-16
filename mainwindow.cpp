@@ -4125,9 +4125,15 @@ void MainWindow::optionsdialog()
 
 void MainWindow::loadresults()
 {
+    // Start in the model's folder (where the run wrote its output), not the default Documents folder.
     QString fileName = QFileDialog::getOpenFileName(this,
-            tr("Open"), "",
+            tr("Open"), workingfolder,
             tr("Output files (*.txt);; All files (*.*)"),nullptr,QFileDialog::DontUseNativeDialog);
+
+    // Cancelled: an empty name used to be read as an output file, which emptied the model's outputs
+    // or threw an unhandled exception and crashed the program.
+    if (fileName.isEmpty())
+        return;
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
@@ -4155,8 +4161,11 @@ void MainWindow::loadresults()
         }
     }
     catch (...) {
-        QApplication::restoreOverrideCursor();  // Restore on exception
-        throw;  // Re-throw
+        // An unreadable file must not take the whole program down.
+        QApplication::restoreOverrideCursor();
+        QMessageBox::critical(this, "Output file not loaded",
+                              "The file could not be read as an OpenHydroQual output file:\n" + fileName,
+                              QMessageBox::Ok);
     }
 
 }
