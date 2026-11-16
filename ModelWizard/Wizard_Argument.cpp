@@ -617,9 +617,12 @@ vector<double>  Wizard_Argument::argument_values(unsigned int calculation_sequen
 
 double QDate2Xldate(const QDateTime& x)
 {
-    QDateTime base_time1 = QDateTime::fromString("1-1-1900 00:00", "M-d-yyyy hh:mm");
-    double xxx = (x.toMSecsSinceEpoch() - base_time1.toMSecsSinceEpoch()) / (1000.00 * 24.0 * 60.0 * 60.0) + 2;
-    return xxx;
+    // Spreadsheet day number through the Julian day, with no time zones (the old local-time subtraction against
+    // 1900 stored dates ~5 h early on Windows). Day 1 = 1 Jan 1900; day 60 is Excel's nonexistent 29 Feb 1900.
+    if (!x.isValid()) return 0;
+    qint64 d = qint64(x.date().toJulianDay()) - 2415020;
+    if (d >= 60) d++;
+    return double(d) + x.time().msecsSinceStartOfDay() / 86400000.0;
 }
 
 double QString2Xldate(const QString& x)

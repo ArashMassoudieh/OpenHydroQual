@@ -226,9 +226,12 @@ QStringList specialSplit(QString s)
 
 double QDate2Xldate(const QDateTime &x)
 {
-    QDateTime base_time1 = QDateTime::fromString("1-1-1900 00:00", "M-d-yyyy hh:mm");
-    double xxx = (x.toMSecsSinceEpoch() - base_time1.toMSecsSinceEpoch())/(1000.00*24.0*60.0*60.0)+2;
-    return xxx;
+    // Convert through the Julian day number, with no time zones. The old version took the milliseconds between
+    // two local-time QDateTimes, and Windows applies a historical offset to 1900 (e.g. -4:56:02 local mean time in
+    // New York), so a typed date was stored about 5 hours early (12/29/2012 -> 41271.8, shown as Dec 28 2012).
+    // This is the exact inverse of float2date / xldate2julian.
+    if (!x.isValid()) return 0;
+    return double(julian2xldate(qint64(x.date().toJulianDay()))) + x.time().msecsSinceStartOfDay() / 86400000.0;
 }
 
 QStringList extract_by_space_quote(QString s)

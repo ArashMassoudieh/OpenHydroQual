@@ -47,6 +47,7 @@
 #include <string>
 #include <QDebug>
 #include "enums.h"
+#include "utilityfuncs.h"
 #include "propmodel.h"
 #include "delegate.h"
 #include "node.h"
@@ -1295,7 +1296,17 @@ void MainWindow::clearcombobox()
 
 void MainWindow::insertnumberasdate()
 {
-    double x = QInputDialog::getDouble(this,"Date/Time Value: ","Date/Time value", PropertiesWidget->tableView()->model()->data(tableitemrightckicked).toDouble(),0,20000,2);
+    // Start from the current value (the cell shows it as a date, e.g. "Dec 29 2012"), and allow any spreadsheet day
+    // number up to 31 Dec 9999 (the old limit of 20000 refused dates after 1954, e.g. 40179 = 1 Jan 2010).
+    QString shown = PropertiesWidget->tableView()->model()->data(tableitemrightckicked).toString();
+    bool isnumber = false;
+    double current = shown.toDouble(&isnumber);
+    if (!isnumber)
+    {
+        QDate d = QDate::fromString(shown, "MMM dd yyyy");
+        current = d.isValid() ? QDate2Xldate(QDateTime(d, QTime(0, 0))) : 0;
+    }
+    double x = QInputDialog::getDouble(this,"Date/Time Value: ","Date/Time value", current, 0, 2958465, 4);
     PropertiesWidget->tableView()->model()->setData(tableitemrightckicked, QString::number(x));
 }
 
