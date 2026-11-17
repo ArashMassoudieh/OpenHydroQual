@@ -966,6 +966,10 @@ bool GridGenerator::AssignProperty(const string &name, QuanSet &quanset, QMap<st
         system()->object(name)->Variable(it.key())->SetParameterAssignedTo(it->parameter);
         if (!system()->SetAsParameter(name, it.key(), it->parameter))
             mainwindow->LogError(QString::fromStdString(system()->lasterror()));
+        // Also store the parameter's current value as the quantity's value, so the
+        // pre-run checks (e.g. "must be greater than zero") see a valid number.
+        else if (Parameter *p = system()->GetParameter(it->parameter))
+            system()->object(name)->Variable(it.key())->SetVal(p->GetValue(), Expression::timing::both);
         return true;
     }
     bool r = false;
