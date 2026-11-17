@@ -35,6 +35,8 @@ struct quan_info
     QWidget *increment_H = nullptr;
     QWidget *increment_V = nullptr;
     string delegate = "";
+    string parameter = "";      // parameter the generated objects' quantity is assigned to ("" = none)
+    QString description;        // the label's plain text, without the parameter tag
 };
 
 class MainWindow;
@@ -74,6 +76,9 @@ private:
     std::string LinkName(int i1, int j1, int i2, int j2) const;
     void connectLinkTextBoxes();
     bool AssignProperty(const string &name, QuanSet &quanset, QMap<string,quan_info>::iterator it, int i, int j);
+    QMap<string, quan_info>& quanInfo(objectType ObjectType);
+    void showParameterMenu(objectType ObjectType, const string &quantity, const QPoint &globalPos);
+    void setParameter(objectType ObjectType, const string &quantity, const string &parameter);
 protected:
     void closeEvent(QCloseEvent *event) override;
     void reject() override;

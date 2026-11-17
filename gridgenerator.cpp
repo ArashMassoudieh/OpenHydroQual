@@ -22,6 +22,7 @@
 #include "expEditor.h"
 #include "node.h"
 #include "edge.h"
+#include <QMenu>
 
 GridGenerator::GridGenerator(MainWindow *parent) :
     QDialog(parent),
@@ -220,6 +221,17 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
         label->setMinimumSize(min_size_x,min_size_y);
         label->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
         label->setToolTip(QString::fromStdString(qs.GetVarAskable(i)->Description()));
+        quanInfo(ObjectType)[qs.GetVarAskable(i)->GetName()].description = label->text();
+        // As in the Properties window, an estimable quantity can be tied to a parameter:
+        // right-click its name -> Parameters -> <parameter>. Every generated object gets the assignment.
+        if (qs.GetVarAskable(i)->Estimable())      // "estimate": "true" in the template, as for the Properties window
+        {
+            const string quantity = qs.GetVarAskable(i)->GetName();
+            label->setContextMenuPolicy(Qt::CustomContextMenu);
+            label->setToolTip(label->toolTip() + "\nRight-click to assign a parameter");
+            connect(label, &QLabel::customContextMenuRequested, this, [this, label, ObjectType, quantity](const QPoint &pos)
+                    { showParameterMenu(ObjectType, quantity, label->mapToGlobal(pos)); });
+        }
         if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("UnitBox"))
         {
             UnitTextBox3 *editor = new UnitTextBox3(QStyleOptionViewItem() ,this);
@@ -894,8 +906,68 @@ bool GridGenerator::GenerateLinks()
 
 }
 
+QMap<string, quan_info>& GridGenerator::quanInfo(objectType ObjectType)
+{
+    if (ObjectType == objectType::link_x) return quan_info_Link_x;
+    if (ObjectType == objectType::link_y) return quan_info_Link_y;
+    return quan_info_Block;
+}
+
+void GridGenerator::showParameterMenu(objectType ObjectType, const string &quantity, const QPoint &globalPos)
+{
+    QMenu menu(this);
+    QMenu *parameters = menu.addMenu("Parameters");
+    const string current = quanInfo(ObjectType)[quantity].parameter;
+    for (unsigned int k = 0; k < system()->ParametersCount(); k++)
+    {
+        const QString pname = QString::fromStdString(system()->Parameters()[k]->GetName());
+        QAction *a = parameters->addAction(pname);
+        a->setCheckable(true);
+        a->setChecked(pname.toStdString() == current);
+        connect(a, &QAction::triggered, this, [this, ObjectType, quantity, pname]() { setParameter(ObjectType, quantity, pname.toStdString()); });
+    }
+    parameters->setEnabled(system()->ParametersCount() > 0);
+    if (current != "")
+    {
+        QAction *clear = menu.addAction("Remove parameter");
+        connect(clear, &QAction::triggered, this, [this, ObjectType, quantity]() { setParameter(ObjectType, quantity, ""); });
+    }
+    menu.exec(globalPos);
+}
+
+void GridGenerator::setParameter(objectType ObjectType, const string &quantity, const string &parameter)
+{
+    // The x- and y-direction links share their values (connectLinkTextBoxes), so they share the parameter too.
+    QList<objectType> types = {ObjectType};
+    if (ObjectType == objectType::link_x) types << objectType::link_y;
+    for (objectType t : types)
+    {
+        if (!quanInfo(t).contains(quantity)) continue;
+        quan_info &q = quanInfo(t)[quantity];
+        q.parameter = parameter;
+        if (q.label)
+        {
+            q.label->setText(parameter == "" ? q.description : q.description + " = " + QString::fromStdString(parameter));
+            QFont f = q.label->font(); f.setBold(parameter != ""); q.label->setFont(f);
+            QPalette pal = q.label->palette();
+            pal.setColor(QPalette::WindowText, parameter == "" ? palette().color(QPalette::WindowText) : QColor(0x1a, 0x5f, 0xb4));
+            q.label->setPalette(pal);
+        }
+        // the parameter's value replaces the number, so the value and increments are not used
+        for (QWidget *w : {q.value, q.increment_H, q.increment_V})
+            if (w) w->setEnabled(parameter == "");
+    }
+}
+
 bool GridGenerator::AssignProperty(const string &name, QuanSet &quanset, QMap<string,quan_info>::iterator it, int i, int j)
 {
+    if (it->parameter != "" && system()->object(name) && system()->object(name)->Variable(it.key()))
+    {
+        system()->object(name)->Variable(it.key())->SetParameterAssignedTo(it->parameter);
+        if (!system()->SetAsParameter(name, it.key(), it->parameter))
+            mainwindow->LogError(QString::fromStdString(system()->lasterror()));
+        return true;
+    }
     bool r = false;
 
     if (QString::fromStdString(it->delegate).contains("UnitBox"))
