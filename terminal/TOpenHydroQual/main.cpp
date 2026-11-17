@@ -257,11 +257,29 @@ int main(int argc, char *argv[])
     // run, so a forward run reports how well it fits. EMC observations also get
     // a per-event table: the only place their modeled EMCs are visible, since the
     // bulk output holds the observation's continuous series, not the EMCs.
+    // fit_measures.txt in the working folder, in the GUI's format (one row per
+    // observation: MSE, R2, NSE; blank when an observation has no observed data).
+    std::ofstream fitfile;
+    if (system->ObservationsCount() > 0) {
+        fitfile.open(system->GetWorkingFolder() + "fit_measures.txt");
+        fitfile << "Observation\tMSE\tR2\tNSE\n";
+    }
     for (unsigned int i = 0; i < system->ObservationsCount(); i++) {
         Observation *ob = system->observation(i);
         TimeSeries<timeseriesprecision> *od = ob->Variable("observed_data")->GetTimeSeries();
-        if (od == nullptr || od->size() == 0) continue;
+        if (od == nullptr || od->size() == 0) {
+            if (fitfile.is_open()) fitfile << ob->GetName() << "\t\t\t\n";
+            continue;
+        }
         const double nll = ob->CalcMisfit();
+        if (fitfile.is_open()) {
+            fitfile << ob->GetName();
+            if (ob->fit_measures.size() == 3)
+                for (unsigned int j = 0; j < 3; j++) fitfile << "\t" << ob->fit_measures[j];
+            else
+                fitfile << "\t\t\t";
+            fitfile << "\n";
+        }
         cout << "Observation '" << ob->GetName() << "' ("
              << ob->Variable("comparison_method")->GetProperty() << "): ";
         if (ob->fit_measures.size() == 3)

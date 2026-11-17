@@ -16,6 +16,7 @@
 
 #include "System.h"
 #include "Script.h"
+#include <fstream>
 
 int main(int argc, char *argv[])
 {
@@ -48,6 +49,31 @@ int main(int argc, char *argv[])
     // TimeSeriesSet's write method is write(filename, delimiter), not
     // writetofile() -- API drift from when this file was last touched.
     system->GetOutputs().write(system->OutputFileName());
+    // fit_measures.txt, in the GUI's format: one row per observation (MSE, R2, NSE),
+    // blank when the observation has no observed data.
+    if (system->ObservationsCount() > 0)
+    {
+        std::ofstream fitfile(system->GetWorkingFolder() + "fit_measures.txt");
+        fitfile << "Observation\tMSE\tR2\tNSE\n";
+        for (unsigned int i = 0; i < system->ObservationsCount(); i++)
+        {
+            Observation *ob = system->observation(i);
+            TimeSeries<timeseriesprecision> *od = ob->Variable("observed_data")->GetTimeSeries();
+            fitfile << ob->GetName();
+            if (od != nullptr && od->size() > 0)
+            {
+                ob->CalcMisfit();
+                if (ob->fit_measures.size() == 3)
+                    for (unsigned int j = 0; j < 3; j++) fitfile << "\t" << ob->fit_measures[j];
+                else
+                    fitfile << "\t\t\t";
+            }
+            else
+                fitfile << "\t\t\t";
+            fitfile << "\n";
+        }
+        cout << "Fit measures written to fit_measures.txt" << endl;
+    }
     return 0;
 
 }
