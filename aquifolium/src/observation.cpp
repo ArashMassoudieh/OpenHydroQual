@@ -52,12 +52,14 @@ Observation::Observation(const Observation& other)
 {
     Object::operator=(other);
     expression = other.expression;
+    expression_text = other.expression_text;
     location = other.location;
     modeled_time_series = other.modeled_time_series;
     observed_time_series = other.observed_time_series;
     likelihood_scale = other.likelihood_scale;   // must survive System copies:
                                                  // every MCMC chain works on a copy
     weighting_expression = other.weighting_expression;
+    weighting_expression_text = other.weighting_expression_text;
     emc_flux_series = other.emc_flux_series;
     emc_weight_series = other.emc_weight_series;
     modeled_emc = other.modeled_emc;
@@ -69,10 +71,12 @@ Observation& Observation::operator=(const Observation& rhs)
     if (this == &rhs) return *this; // handle self assignment
     Object::operator=(rhs);
     expression = rhs.expression;
+    expression_text = rhs.expression_text;
     location = rhs.location;
     observed_time_series = rhs.observed_time_series;
     likelihood_scale = rhs.likelihood_scale;
     weighting_expression = rhs.weighting_expression;
+    weighting_expression_text = rhs.weighting_expression_text;
     ClearModeled();
     return *this;
 }
@@ -82,7 +86,7 @@ bool Observation::SetProperty(const string &prop, const string &val)
     if (aquiutils::tolower(prop)=="expression")
     {
         expression = Expression(val);
-
+        expression_text = val;
     }
     if (aquiutils::tolower(prop)=="location" || aquiutils::tolower(prop)=="object")
     {
@@ -92,6 +96,7 @@ bool Observation::SetProperty(const string &prop, const string &val)
     if (aquiutils::tolower(prop)=="emc_weighting_expression")
     {
         weighting_expression = Expression(val);
+        weighting_expression_text = val;
     }
 
     return Object::SetProperty(prop,val);
@@ -100,17 +105,26 @@ bool Observation::SetProperty(const string &prop, const string &val)
 
 double Observation::GetValue(const Expression::timing &tmg)
 {
-    if (expression.param_constant_expression == "")
-        expression = Variable("expression")->GetProperty();
-
-    if (system->block(Variable("object")->GetProperty()) != nullptr)
+    // Sync with the quantity set: the GUI edits "expression" and "object" there
+    // directly, so the cached Expression and location can be stale (an
+    // observation added in the GUI used to evaluate to 0 until the model was
+    // reopened).
+    const string exptext = Variable("expression")->GetProperty();
+    if (exptext != expression_text || expression.param_constant_expression == "")
     {
-        current_value = expression.calc(system->block(location),tmg);
+        expression = Expression(exptext);
+        expression_text = exptext;
+    }
+    const string loc = GetLocation();
+
+    if (system->block(loc) != nullptr)
+    {
+        current_value = expression.calc(system->block(loc),tmg);
         return current_value;
     }
-    if (system->link(Variable("object")->GetProperty()) != nullptr)
+    if (system->link(loc) != nullptr)
     {
-        current_value = expression.calc(system->link(location),tmg,true);
+        current_value = expression.calc(system->link(loc),tmg,true);
         return current_value;
     }
     lasterror = "Location " + location + "was not found in the system!";
@@ -537,8 +551,12 @@ double Observation::GetWeightingValue(const Expression::timing &tmg)
         lasterror = "Observation '" + GetName() + "' has no 'emc_weighting_expression' property";
         return 0;
     }
-    if (weighting_expression.param_constant_expression == "")
-        weighting_expression = Expression(Variable("emc_weighting_expression")->GetProperty());
+    const string wtext = Variable("emc_weighting_expression")->GetProperty();
+    if (wtext != weighting_expression_text || weighting_expression.param_constant_expression == "")
+    {
+        weighting_expression = Expression(wtext);
+        weighting_expression_text = wtext;
+    }
 
     string wloc = GetLocation();
     if (Variable("emc_weighting_object")!=nullptr && aquiutils::trim(Variable("emc_weighting_object")->GetProperty())!="")

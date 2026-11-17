@@ -185,6 +185,11 @@ class Observation: public Object
     private:
         string location; // location at which the objective function will be evaluated
         Expression expression; // Function
+        // Text the cached Expressions were parsed from. The GUI writes properties
+        // straight into the quantity set (not through SetProperty), so GetValue()
+        // re-parses whenever the "expression" property no longer matches.
+        string expression_text;
+        string weighting_expression_text;
         TimeSeries<timeseriesprecision> modeled_time_series; // Stored time series values;
         TimeSeries<timeseriesprecision> observed_time_series; // Stored time series values;
         System *system; // pointer to the system the observation is evaluated at
