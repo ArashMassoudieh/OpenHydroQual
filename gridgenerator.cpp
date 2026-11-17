@@ -292,7 +292,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
                 quan_info_Link_x[qs.GetVarAskable(i)->GetName()].increment_V = incrementTxtBox_V;
                 quan_info_Link_x[qs.GetVarAskable(i)->GetName()].value = editor;
             }
-            else if (ObjectType == objectType::link_x)
+            else if (ObjectType == objectType::link_y)
             {
                 quan_info_Link_y[qs.GetVarAskable(i)->GetName()].increment_H = incrementTxtBox_H;
                 quan_info_Link_y[qs.GetVarAskable(i)->GetName()].increment_V = incrementTxtBox_V;
