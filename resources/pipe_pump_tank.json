@@ -435,7 +435,7 @@
     "power": {
       "type": "expression",
       "description": "Power (Watts)",
-      "expression": "(9810/86400)*_pos(head.s-head.e+head_0)*flow",
+      "expression": "(9810/86400)*_pos(head.e-head.s)*flow",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
@@ -519,7 +519,7 @@
     "power": {
       "type": "expression",
       "description": "Power (Watts)",
-      "expression": "(9810/86400)*_pos(head.s-head.e+head_0)*flow",
+      "expression": "(9810/86400)*_pos(head.e-head.s)*flow",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
