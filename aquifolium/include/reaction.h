@@ -44,6 +44,7 @@ public:
              return Variable(constituent+":stoichiometric_constant")->GetExpression();
     }
     bool RenameConstituents(const string& oldname, const string& newname);
+    bool SetName(const string &newname, bool setprop=true);
 
 private:
 

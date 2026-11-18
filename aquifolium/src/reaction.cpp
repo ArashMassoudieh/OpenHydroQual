@@ -15,6 +15,7 @@
 
 
 #include "reaction.h"
+#include "System.h"
 
 Reaction::Reaction() : Object::Object()
 {
@@ -48,3 +49,13 @@ bool Reaction::RenameConstituents(const string& oldname, const string& newname)
     return succeed;
 }
 
+// A reaction's "copytoblocks" quantities (e.g. surface_release's release_coefficient) live in every block
+// as "<reaction name>:<quantity>". Renaming the reaction must rename them too, as constituents and
+// reaction parameters do; otherwise the saved model refers to properties that a reload does not create.
+bool Reaction::SetName(const string &newname, bool setprop)
+{
+    if (GetParent()!=nullptr && !GetName().empty() && newname!=GetName())
+        GetParent()->RenameConstituents(GetName(),newname);
+
+    return Object::SetName(newname,setprop);
+}
