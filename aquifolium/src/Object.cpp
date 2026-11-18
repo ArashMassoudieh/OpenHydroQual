@@ -832,6 +832,16 @@ bool Object::RenameConstituents(const string &oldname, const string &newname)
 bool Object::CalculateInitialValues()
 {
     bool succeed = true;
+    // Initial-value expressions (e.g. mass = concentration*area) are evaluated at timing::past.
+    // Give the derived expression quantities (e.g. a pond's depth and area) their past values first;
+    // two passes so that one derived from another (area from depth) is right whatever the order.
+    // Quantities the user enters (e.g. concentration) keep the entered value.
+    for (int pass = 0; pass < 2; pass++)
+        for (unsigned int j = 0; j < QuantitOrder().size(); j++)
+        {   Quan *q = Variable(QuantitOrder()[j]);
+            if (q && q->GetType() == Quan::_type::expression && !q->AskFromUser())
+                q->SetVal(q->CalcVal(Expression::timing::past), Expression::timing::past);
+        }
     for (unsigned int j = 0; j < QuantitOrder().size(); j++)
     {
         if (Variable(QuantitOrder()[j])->calcinivalue())

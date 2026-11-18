@@ -1458,9 +1458,6 @@ void System::InitializeSolver(bool applyparameters)
 
     InitiatePrecalculatedFunctions();
     CalculateAllExpressions(Expression::timing::present);
-    // initial-value expressions (e.g. mass = concentration*area) are evaluated at timing::past,
-    // so expression quantities such as a pond's area must have their past values too
-    CalculateAllExpressions(Expression::timing::past);
     CalcAllInitialValues();
     UnUpdateAllVariables();
 
