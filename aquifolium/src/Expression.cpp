@@ -193,8 +193,27 @@ Expression::Expression(string S)
 					}
 			}
 
-			
-            Expression sub_exp = Expression(aquiutils::trim(S.substr(last_operator_location+1, S.size() - last_operator_location)));
+
+            const string rest = aquiutils::trim(S.substr(last_operator_location+1, S.size() - last_operator_location));
+            // Nothing split S at the top level, so the last term is S itself. Parsing it again only
+            // terminates if the sub-expression strips something (outer parentheses or a known function).
+            // Otherwise, e.g. "f(x)", "(a)(b)" or "2e-x" (whose '-' is taken for an exponent sign),
+            // the constructor would recurse on the same text until the stack overflows: report it instead.
+            if (operators.empty())
+            {
+                const bool wrapped = !rest.empty() && rest[0] == '(' && aquiutils::corresponding_parenthesis(rest, 0) == int(rest.size() - 1);
+                const bool known_function = rest.size() > 4 && rest[4] == '(' && aquiutils::lookup(Expression::funcs, aquiutils::left(rest, 4)) != -1
+                                            && aquiutils::corresponding_parenthesis(rest, 4) == int(rest.size() - 1);
+                if (!wrapped && !known_function)
+                {
+                    _errors.push_back("Cannot interpret '" + S + "': no operator outside the parentheses");
+                    SetKind("parameter");
+                    parameter = S;
+                    location = loc::self;
+                    return;
+                }
+            }
+            Expression sub_exp = Expression(rest);
 			if (!operators.empty())
 				sub_exp.sign = operators[operators.size() - 1];
 			else
