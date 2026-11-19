@@ -133,7 +133,9 @@ QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
                 output << line; 
             }
         }
-        for (int i = 0; i < Arguments["n_x"].calc(params)-1; i++)
+        // An empty connector type means no links inside the array in that direction (e.g. a row of
+        // fixed-head boundary blocks, which is only connected to another array).
+        for (int i = 0; !H_ConnectorType().trimmed().isEmpty() && i < Arguments["n_x"].calc(params)-1; i++)
         {
             params->operator[]("i").SetValue(QString::number(i+0.5));
             for (int j = 0; j < Arguments["n_y"].calc(params); j++)
@@ -153,7 +155,7 @@ QStringList BlockArray::GenerateScript(QMap<QString, WizardParameter> *params)
                 output << line;
             }
         }
-        for (int i = 0; i < Arguments["n_x"].calc(params); i++)
+        for (int i = 0; !V_ConnectorType().trimmed().isEmpty() && i < Arguments["n_x"].calc(params); i++)
         {
             params->operator[]("i").SetValue(QString::number(i));
             for (int j = 0; j < Arguments["n_y"].calc(params)-1; j++)

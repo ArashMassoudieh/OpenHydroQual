@@ -1,0 +1,272 @@
+{
+  "name": "2D Confined Aquifer",
+  "icon": "confined_aquifer.png",
+  "description": "Plan-view grid of a confined aquifer with fixed-head boundaries",
+  "addtemplate": [
+    "main_components.json",
+    "groundwater.json"
+  ],
+  "entities": [],
+  "setvals": [
+    {
+      "name": "start_date",
+      "object": "system@sc",
+      "quantity": "simulation_start_time@sc",
+      "value": "StartTime@dp"
+    },
+    {
+      "name": "end_date",
+      "object": "system@sc",
+      "quantity": "simulation_end_time@sc",
+      "value": "EndTime@dp"
+    }
+  ],
+  "blockarrays": [
+    {
+      "name": "Aquifer",
+      "type": "Groundwater cell",
+      "grid_type": "2D-Rect",
+      "h_connector_type": "groundwater_link",
+      "v_connector_type": "groundwater_link",
+      "n_x": "n_x",
+      "n_y": "n_y",
+      "area": "cell_size*cell_size;m~^2",
+      "depth": "thickness;m",
+      "bottom_elevation": "bottom_elevation;m",
+      "hydraulic_conductivity": "K;m/day",
+      "porosity": "porosity",
+      "specific_storage": "Ss;1/m",
+      "moisture_content": "porosity+Ss*(head_west+(head_east-head_west)*(i+0.5)/n_x-bottom_elevation-thickness)",
+      "area.h": "cell_size*thickness;m~^2",
+      "length.h": "cell_size;m",
+      "area.v": "cell_size*thickness;m~^2",
+      "length.v": "cell_size;m",
+      "_width": "200",
+      "_height": "200",
+      "x": "1000+i*250",
+      "y": "1000+j*250"
+    },
+    {
+      "name": "North",
+      "type": "fixed_head",
+      "grid_type": "2D-Rect",
+      "h_connector_type": "",
+      "v_connector_type": "",
+      "n_x": "n_x",
+      "n_y": "1",
+      "head": "head_west+(head_east-head_west)*(i+0.5)/n_x;m",
+      "Storage": "100000;m~^3",
+      "_width": "200",
+      "_height": "200",
+      "x": "1000+i*250",
+      "y": "750"
+    },
+    {
+      "name": "South",
+      "type": "fixed_head",
+      "grid_type": "2D-Rect",
+      "h_connector_type": "",
+      "v_connector_type": "",
+      "n_x": "n_x",
+      "n_y": "1",
+      "head": "head_west+(head_east-head_west)*(i+0.5)/n_x;m",
+      "Storage": "100000;m~^3",
+      "_width": "200",
+      "_height": "200",
+      "x": "1000+i*250",
+      "y": "1000+n_y*250"
+    },
+    {
+      "name": "West",
+      "type": "fixed_head",
+      "grid_type": "2D-Rect",
+      "h_connector_type": "",
+      "v_connector_type": "",
+      "n_x": "1",
+      "n_y": "n_y",
+      "head": "head_west;m",
+      "Storage": "100000;m~^3",
+      "_width": "200",
+      "_height": "200",
+      "x": "750",
+      "y": "1000+j*250"
+    },
+    {
+      "name": "East",
+      "type": "fixed_head",
+      "grid_type": "2D-Rect",
+      "h_connector_type": "",
+      "v_connector_type": "",
+      "n_x": "1",
+      "n_y": "n_y",
+      "head": "head_east;m",
+      "Storage": "100000;m~^3",
+      "_width": "200",
+      "_height": "200",
+      "x": "1000+n_x*250",
+      "y": "1000+j*250"
+    }
+  ],
+  "connectors": [
+    {
+      "name": "Aquifer-North",
+      "from": "Aquifer",
+      "to": "North",
+      "type": "groundwater_to_fixedhead",
+      "connectiontype": "m2m",
+      "connectionconfig": "d2u",
+      "area": "cell_size*thickness;m~^2",
+      "length": "cell_size/2;m"
+    },
+    {
+      "name": "Aquifer-South",
+      "from": "Aquifer",
+      "to": "South",
+      "type": "groundwater_to_fixedhead",
+      "connectiontype": "m2m",
+      "connectionconfig": "u2d",
+      "area": "cell_size*thickness;m~^2",
+      "length": "cell_size/2;m"
+    },
+    {
+      "name": "Aquifer-West",
+      "from": "Aquifer",
+      "to": "West",
+      "type": "groundwater_to_fixedhead",
+      "connectiontype": "m2m",
+      "connectionconfig": "r2l",
+      "area": "cell_size*thickness;m~^2",
+      "length": "cell_size/2;m"
+    },
+    {
+      "name": "Aquifer-East",
+      "from": "Aquifer",
+      "to": "East",
+      "type": "groundwater_to_fixedhead",
+      "connectiontype": "m2m",
+      "connectionconfig": "l2r",
+      "area": "cell_size*thickness;m~^2",
+      "length": "cell_size/2;m"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "n_x",
+      "delegate": "SpinBox",
+      "question": "Number of cells in the x (west-east) direction",
+      "range": [
+        "2",
+        "99"
+      ]
+    },
+    {
+      "name": "n_y",
+      "delegate": "SpinBox",
+      "question": "Number of cells in the y (north-south) direction",
+      "range": [
+        "2",
+        "99"
+      ]
+    },
+    {
+      "name": "cell_size",
+      "delegate": "UnitBox",
+      "question": "Cell size (square cells)",
+      "unit": "m;ft"
+    },
+    {
+      "name": "thickness",
+      "delegate": "UnitBox",
+      "question": "Aquifer thickness",
+      "unit": "m;ft"
+    },
+    {
+      "name": "bottom_elevation",
+      "delegate": "UnitBox",
+      "question": "Elevation of the aquifer bottom",
+      "unit": "m;ft"
+    },
+    {
+      "name": "K",
+      "delegate": "UnitBox",
+      "question": "Hydraulic conductivity",
+      "unit": "m/day;ft/day"
+    },
+    {
+      "name": "Ss",
+      "delegate": "UnitBox",
+      "question": "Specific storage (storativity / thickness)",
+      "unit": "1/m;1/ft"
+    },
+    {
+      "name": "porosity",
+      "delegate": "ValueBox",
+      "question": "Porosity"
+    },
+    {
+      "name": "head_west",
+      "delegate": "UnitBox",
+      "question": "Fixed head on the west boundary",
+      "unit": "m;ft"
+    },
+    {
+      "name": "head_east",
+      "delegate": "UnitBox",
+      "question": "Fixed head on the east boundary",
+      "unit": "m;ft"
+    },
+    {
+      "name": "StartTime",
+      "delegate": "DateBox",
+      "question": "Simulation Start Date"
+    },
+    {
+      "name": "EndTime",
+      "delegate": "DateBox",
+      "question": "Simulation End Date"
+    }
+  ],
+  "parameter_groups": [
+    {
+      "name": "4_general",
+      "description": "Simulation period",
+      "parameters": [
+        "StartTime",
+        "EndTime"
+      ],
+      "criteria": []
+    },
+    {
+      "name": "1_geometry",
+      "description": "Grid and aquifer geometry",
+      "parameters": [
+        "n_x",
+        "n_y",
+        "cell_size",
+        "thickness",
+        "bottom_elevation"
+      ],
+      "criteria": []
+    },
+    {
+      "name": "2_properties",
+      "description": "Aquifer properties",
+      "parameters": [
+        "K",
+        "Ss",
+        "porosity"
+      ],
+      "criteria": []
+    },
+    {
+      "name": "3_boundaries",
+      "description": "Fixed-head boundaries (north and south vary linearly from west to east)",
+      "parameters": [
+        "head_west",
+        "head_east"
+      ],
+      "criteria": []
+    }
+  ],
+  "diagram": "2D_Confined_Aquifer.svg"
+}

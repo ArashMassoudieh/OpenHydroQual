@@ -86,9 +86,10 @@ Wizard_Argument::Wizard_Argument(const string& _S, const string& _unit)
         Wizard_Argument::opts.push_back("^");
         Wizard_Argument::func_operators_initialized = true;
     }
-    string S = _S; 
+    string S = _S;
     text = S;
-    
+    unit = _unit;   // before the early returns below, so a string parameter (e.g. a time-series file) keeps its unit
+
     if (QString::fromStdString(S).contains("@sp"))
     {
         argument_type = parameter_type::string;
