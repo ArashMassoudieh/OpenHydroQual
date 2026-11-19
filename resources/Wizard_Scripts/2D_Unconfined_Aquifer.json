@@ -26,6 +26,12 @@
       "object": "system@sc",
       "quantity": "simulation_end_time@sc",
       "value": "EndTime@dp"
+    },
+    {
+      "name": "initial_time_step",
+      "object": "system@sc",
+      "quantity": "initial_time_step@sc",
+      "value": "0.1"
     }
   ],
   "blockarrays": [
