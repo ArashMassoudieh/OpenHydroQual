@@ -48,7 +48,7 @@
       "hydraulic_conductivity": "K;m/day",
       "specific_yield": "Sy",
       "porosity": "porosity",
-      "piezometric_head": "head_west+(head_east-head_west)*(i+0.5)/n_x;m",
+      "piezometric_head": "base_elevation+_sqt((head_west-base_elevation)^2+((head_east-base_elevation)^2-(head_west-base_elevation)^2)*(i+0.5)/n_x);m",
       "Precipitation": "Recharge@sc",
       "width.h": "cell_size;m",
       "length.h": "cell_size;m",
@@ -67,7 +67,7 @@
       "v_connector_type": "",
       "n_x": "n_x",
       "n_y": "1",
-      "head": "head_west+(head_east-head_west)*(i+0.5)/n_x;m",
+      "head": "base_elevation+_sqt((head_west-base_elevation)^2+((head_east-base_elevation)^2-(head_west-base_elevation)^2)*(i+0.5)/n_x);m",
       "Storage": "100000;m~^3",
       "_width": "200",
       "_height": "200",
@@ -82,7 +82,7 @@
       "v_connector_type": "",
       "n_x": "n_x",
       "n_y": "1",
-      "head": "head_west+(head_east-head_west)*(i+0.5)/n_x;m",
+      "head": "base_elevation+_sqt((head_west-base_elevation)^2+((head_east-base_elevation)^2-(head_west-base_elevation)^2)*(i+0.5)/n_x);m",
       "Storage": "100000;m~^3",
       "_width": "200",
       "_height": "200",
@@ -271,7 +271,7 @@
     },
     {
       "name": "3_boundaries",
-      "description": "Fixed-head boundaries (north and south vary linearly from west to east)",
+      "description": "Fixed-head boundaries (north and south follow the Dupuit profile from west to east)",
       "parameters": [
         "head_west",
         "head_east"
