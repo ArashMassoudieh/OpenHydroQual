@@ -318,6 +318,239 @@
       "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
     }
   },
+  "Culvert_pipe": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Culvert pipe (short pipe with entrance and exit losses)",
+    "icon": {
+      "filename": "Sewer_pipe_link.png"
+    },
+    "diameter": {
+      "type": "value",
+      "description": "Diameter",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm;in",
+      "estimate": "true",
+      "criteria": "diameter>0",
+      "warningmessage": "diameter must be positive",
+      "helptext": "Diameter (user input required)."
+    },
+    "ManningCoeff": {
+      "type": "value",
+      "description": "Manning's roughness coefficient",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "criteria": "ManningCoeff>0",
+      "warningmessage": "Manning's roughness coefficient must be greater than zero",
+      "helptext": "Manning's roughness coefficient (user input required)."
+    },
+    "length": {
+      "type": "value",
+      "description": "Pipe length",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "criteria": "length>0",
+      "warningmessage": "length must be positive",
+      "helptext": "Barrel length (e.g. the thickness of the structure the pipe passes through)."
+    },
+    "start_elevation": {
+      "type": "value",
+      "description": "Start elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "helptext": "Invert elevation at the upstream (source) end."
+    },
+    "end_elevation": {
+      "type": "value",
+      "description": "End elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "helptext": "Invert elevation at the downstream (destination) end."
+    },
+    "entrance_loss_coefficient": {
+      "type": "value",
+      "description": "Entrance loss coefficient K_e",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "0.5",
+      "estimate": "true",
+      "criteria": "entrance_loss_coefficient>0",
+      "warningmessage": "The entrance loss coefficient must be positive",
+      "helptext": "Entrance loss as a multiple of the barrel velocity head. FHWA HDS-5: 0.5 square-edged end flush with a headwall, 0.2 bevelled or rounded, 0.9 projecting thin-wall pipe."
+    },
+    "exit_loss_coefficient": {
+      "type": "value",
+      "description": "Exit loss coefficient K_x",
+      "ask_user": "true",
+      "delegate": "ValueBox",
+      "default": "1",
+      "estimate": "true",
+      "criteria": "exit_loss_coefficient>0",
+      "warningmessage": "The exit loss coefficient must be positive",
+      "helptext": "Exit loss as a multiple of the barrel velocity head; 1 when the pipe discharges into a pool (the velocity head is lost)."
+    },
+    "depth_1": {
+      "type": "expression",
+      "description": "Start Depth",
+      "expression": "_min(_pos(head.s-start_elevation);diameter)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;in"
+    },
+    "depth_2": {
+      "type": "expression",
+      "description": "End Depth",
+      "expression": "_min(_pos(head.e-end_elevation);diameter)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;in"
+    },
+    "area_1": {
+      "type": "expression",
+      "description": "Start area",
+      "expression": "diameter^2*(-0.910331972*(depth_1/diameter)^3+1.376045712*(depth_1/diameter)^2+0.319684423*(depth_1/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2;in^2"
+    },
+    "area_2": {
+      "type": "expression",
+      "description": "End area",
+      "expression": "diameter^2*(-0.910331972*(depth_2/diameter)^3+1.376045712*(depth_2/diameter)^2+0.319684423*(depth_2/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2;in^2"
+    },
+    "perimeter_1": {
+      "type": "expression",
+      "description": "Start wetted perimeter",
+      "expression": "diameter*(5.486583*(depth_1/diameter)^3-8.60202*(depth_1/diameter)^2+6.1081605*(depth_1/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;in"
+    },
+    "perimeter_2": {
+      "type": "expression",
+      "description": "End wetted perimeter",
+      "expression": "diameter*(5.486583*(depth_2/diameter)^3-8.60202*(depth_2/diameter)^2+6.1081605*(depth_2/diameter))",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;in"
+    },
+    "head_difference": {
+      "type": "expression",
+      "description": "Driving head difference",
+      "expression": "_max(head.s;start_elevation)-_max(head.e;end_elevation)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft",
+      "helptext": "Head at the upstream end minus head at the downstream end, each taken no lower than the pipe invert at that end (free outfall when the water is below the invert)."
+    },
+    "upstream_weight": {
+      "type": "expression",
+      "description": "Upstream weight",
+      "expression": "(_pos(head_difference)+0.0005)/(_abs(head_difference)+0.001)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Smooth upwind weight for the flow area and hydraulic radius: 1 when the start end is more than a few mm higher, 0 when the end is higher, 0.5 at equal heads (1 mm smoothing, replaces a hard Heaviside switch)."
+    },
+    "eff_area": {
+      "type": "expression",
+      "description": "Effective area",
+      "expression": "upstream_weight*area_1 + (1-upstream_weight)*area_2",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2;in^2"
+    },
+    "hydraulic_radius": {
+      "type": "expression",
+      "description": "Effective hydraulic radius",
+      "expression": "upstream_weight*area_1/_max(perimeter_1;0.000001) + (1-upstream_weight)*area_2/_max(perimeter_2;0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft;in"
+    },
+    "hydraulic_gradient": {
+      "type": "expression",
+      "description": "Hydraulic Gradient",
+      "expression": "(head.e-head.s)/length",
+      "includeinoutput": "true",
+      "ask_user": "false"
+    },
+    "loss_coefficient": {
+      "type": "expression",
+      "description": "Total loss coefficient",
+      "expression": "entrance_loss_coefficient+exit_loss_coefficient+19.62*ManningCoeff^2*length/_max(hydraulic_radius;0.000001)^1.3333",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "helptext": "K_e + K_x + 2 g n^2 L / R^(4/3): entrance, exit and barrel friction losses in units of the barrel velocity head."
+    },
+    "outlet_control_flow": {
+      "type": "expression",
+      "description": "Outlet-control flow",
+      "expression": "86400*eff_area*_sqt(19.62*head_difference/loss_coefficient)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s",
+      "helptext": "Energy balance between the two ends: head_difference = (K_e + K_x + 2 g n^2 L/R^(4/3)) V^2/(2g), Q = A V (FHWA HDS-5 outlet control). Signed; a submerged outlet is handled through head.e."
+    },
+    "upstream_head": {
+      "type": "expression",
+      "description": "Head above the upstream invert",
+      "expression": "upstream_weight*_pos(head.s-start_elevation)+(1-upstream_weight)*_pos(head.e-end_elevation)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft",
+      "helptext": "Water level above the invert at whichever end is upstream (smooth switch through upstream_weight)."
+    },
+    "critical_depth": {
+      "type": "expression",
+      "description": "Critical depth at the inlet",
+      "expression": "_min(0.6667*upstream_head;diameter)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m;ft"
+    },
+    "inlet_control_flow": {
+      "type": "expression",
+      "description": "Inlet-control flow",
+      "expression": "86400*diameter^2*(-0.910331972*(critical_depth/diameter)^3+1.376045712*(critical_depth/diameter)^2+0.319684423*(critical_depth/diameter))*(6.54*upstream_head)^0.5",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s",
+      "helptext": "Largest flow the entrance can pass for the upstream head h: critical flow with y_c = 2h/3 (within 3% of exact circular critical flow), Q = A(y_c) sqrt(2 g h/3). With y_c capped at D it continues as a submerged orifice with an effective C_d of about 0.6. Magnitude only."
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "outlet_control_flow*inlet_control_flow/((_abs(outlet_control_flow)^4+inlet_control_flow^4)^0.25+0.000001)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;ft^3/s;m^3/s",
+      "helptext": "Smooth minimum (p = 4) of the outlet-control and inlet-control flows, with the sign of the outlet-control flow.",
+      "applylimit": "true"
+    },
+    "color": {
+      "type": "string",
+      "default": "0,0,200"
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    },
+    "helptext": "Short pipe or culvert between two blocks with a water surface (e.g. through a dam or weir). Flow is the smooth minimum of (1) outlet control, the energy equation with entrance, exit and Manning barrel losses, Q = A sqrt(2 g dH / (K_e + K_x + 2 g n^2 L / R^(4/3))), and (2) inlet control, critical flow at the entrance, Q = A(y_c) sqrt(2 g h/3) with y_c = min(2h/3, D). dH = max(head.s, start_elevation) - max(head.e, end_elevation); A and R are partly-full circular values weighted toward the upstream end. Use instead of Sewer_pipe when the pipe is short, where entrance and exit losses dominate over friction."
+  },
   "Catch basin": {
     "type": "block",
     "typecategory": "Blocks",
