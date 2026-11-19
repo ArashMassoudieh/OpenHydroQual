@@ -1,0 +1,283 @@
+{
+  "name": "2D Unconfined Aquifer",
+  "icon": "unconfined_aquifer.png",
+  "description": "Plan-view grid of an unconfined aquifer with fixed-head boundaries and recharge",
+  "addtemplate": [
+    "main_components.json",
+    "unconfined_groundwater.json"
+  ],
+  "entities": [
+    {
+      "name": "Recharge",
+      "entity": "source",
+      "type": "Precipitation",
+      "timeseries": "RechargeFile@sp;mm"
+    }
+  ],
+  "setvals": [
+    {
+      "name": "start_date",
+      "object": "system@sc",
+      "quantity": "simulation_start_time@sc",
+      "value": "StartTime@dp"
+    },
+    {
+      "name": "end_date",
+      "object": "system@sc",
+      "quantity": "simulation_end_time@sc",
+      "value": "EndTime@dp"
+    },
+    {
+      "name": "initial_time_step",
+      "object": "system@sc",
+      "quantity": "initial_time_step@sc",
+      "value": "0.1"
+    }
+  ],
+  "blockarrays": [
+    {
+      "name": "Aquifer",
+      "type": "Unconfined Groundwater cell",
+      "grid_type": "2D-Rect",
+      "h_connector_type": "UC_groundwater_link",
+      "v_connector_type": "UC_groundwater_link",
+      "n_x": "n_x",
+      "n_y": "n_y",
+      "area": "cell_size*cell_size;m~^2",
+      "base_elevation": "base_elevation;m",
+      "hydraulic_conductivity": "K;m/day",
+      "specific_yield": "Sy",
+      "porosity": "porosity",
+      "piezometric_head": "base_elevation+_sqt((head_west-base_elevation)^2+((head_east-base_elevation)^2-(head_west-base_elevation)^2)*(i+0.5)/n_x);m",
+      "Precipitation": "Recharge@sc",
+      "width.h": "cell_size;m",
+      "length.h": "cell_size;m",
+      "width.v": "cell_size;m",
+      "length.v": "cell_size;m",
+      "_width": "200",
+      "_height": "200",
+      "x": "1000+i*250",
+      "y": "1000+j*250"
+    },
+    {
+      "name": "North",
+      "type": "fixed_head",
+      "grid_type": "2D-Rect",
+      "h_connector_type": "",
+      "v_connector_type": "",
+      "n_x": "n_x",
+      "n_y": "1",
+      "head": "base_elevation+_sqt((head_west-base_elevation)^2+((head_east-base_elevation)^2-(head_west-base_elevation)^2)*(i+0.5)/n_x);m",
+      "Storage": "100000;m~^3",
+      "_width": "200",
+      "_height": "200",
+      "x": "1000+i*250",
+      "y": "750"
+    },
+    {
+      "name": "South",
+      "type": "fixed_head",
+      "grid_type": "2D-Rect",
+      "h_connector_type": "",
+      "v_connector_type": "",
+      "n_x": "n_x",
+      "n_y": "1",
+      "head": "base_elevation+_sqt((head_west-base_elevation)^2+((head_east-base_elevation)^2-(head_west-base_elevation)^2)*(i+0.5)/n_x);m",
+      "Storage": "100000;m~^3",
+      "_width": "200",
+      "_height": "200",
+      "x": "1000+i*250",
+      "y": "1000+n_y*250"
+    },
+    {
+      "name": "West",
+      "type": "fixed_head",
+      "grid_type": "2D-Rect",
+      "h_connector_type": "",
+      "v_connector_type": "",
+      "n_x": "1",
+      "n_y": "n_y",
+      "head": "head_west;m",
+      "Storage": "100000;m~^3",
+      "_width": "200",
+      "_height": "200",
+      "x": "750",
+      "y": "1000+j*250"
+    },
+    {
+      "name": "East",
+      "type": "fixed_head",
+      "grid_type": "2D-Rect",
+      "h_connector_type": "",
+      "v_connector_type": "",
+      "n_x": "1",
+      "n_y": "n_y",
+      "head": "head_east;m",
+      "Storage": "100000;m~^3",
+      "_width": "200",
+      "_height": "200",
+      "x": "1000+n_x*250",
+      "y": "1000+j*250"
+    }
+  ],
+  "connectors": [
+    {
+      "name": "Aquifer-North",
+      "from": "Aquifer",
+      "to": "North",
+      "type": "unconfined_groundwater_to_fixedhead",
+      "connectiontype": "m2m",
+      "connectionconfig": "d2u",
+      "length": "cell_size/2;m",
+      "width": "cell_size;m"
+    },
+    {
+      "name": "Aquifer-South",
+      "from": "Aquifer",
+      "to": "South",
+      "type": "unconfined_groundwater_to_fixedhead",
+      "connectiontype": "m2m",
+      "connectionconfig": "u2d",
+      "length": "cell_size/2;m",
+      "width": "cell_size;m"
+    },
+    {
+      "name": "Aquifer-West",
+      "from": "Aquifer",
+      "to": "West",
+      "type": "unconfined_groundwater_to_fixedhead",
+      "connectiontype": "m2m",
+      "connectionconfig": "r2l",
+      "length": "cell_size/2;m",
+      "width": "cell_size;m"
+    },
+    {
+      "name": "Aquifer-East",
+      "from": "Aquifer",
+      "to": "East",
+      "type": "unconfined_groundwater_to_fixedhead",
+      "connectiontype": "m2m",
+      "connectionconfig": "l2r",
+      "length": "cell_size/2;m",
+      "width": "cell_size;m"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "n_x",
+      "delegate": "SpinBox",
+      "question": "Number of cells in the x (west-east) direction",
+      "range": [
+        "2",
+        "99"
+      ]
+    },
+    {
+      "name": "n_y",
+      "delegate": "SpinBox",
+      "question": "Number of cells in the y (north-south) direction",
+      "range": [
+        "2",
+        "99"
+      ]
+    },
+    {
+      "name": "cell_size",
+      "delegate": "UnitBox",
+      "question": "Cell size (square cells)",
+      "unit": "m;ft"
+    },
+    {
+      "name": "base_elevation",
+      "delegate": "UnitBox",
+      "question": "Elevation of the aquifer base",
+      "unit": "m;ft"
+    },
+    {
+      "name": "K",
+      "delegate": "UnitBox",
+      "question": "Hydraulic conductivity",
+      "unit": "m/day;ft/day"
+    },
+    {
+      "name": "Sy",
+      "delegate": "ValueBox",
+      "question": "Specific yield"
+    },
+    {
+      "name": "porosity",
+      "delegate": "ValueBox",
+      "question": "Porosity"
+    },
+    {
+      "name": "head_west",
+      "delegate": "UnitBox",
+      "question": "Fixed head on the west boundary",
+      "unit": "m;ft"
+    },
+    {
+      "name": "head_east",
+      "delegate": "UnitBox",
+      "question": "Fixed head on the east boundary",
+      "unit": "m;ft"
+    },
+    {
+      "name": "RechargeFile",
+      "delegate": "FileBrowser",
+      "question": "Recharge time series (start, end, depth in mm, like a precipitation file)"
+    },
+    {
+      "name": "StartTime",
+      "delegate": "DateBox",
+      "question": "Simulation Start Date"
+    },
+    {
+      "name": "EndTime",
+      "delegate": "DateBox",
+      "question": "Simulation End Date"
+    }
+  ],
+  "parameter_groups": [
+    {
+      "name": "4_general",
+      "description": "Simulation period and recharge",
+      "parameters": [
+        "StartTime",
+        "EndTime",
+        "RechargeFile"
+      ],
+      "criteria": []
+    },
+    {
+      "name": "1_geometry",
+      "description": "Grid and aquifer geometry",
+      "parameters": [
+        "n_x",
+        "n_y",
+        "cell_size",
+        "base_elevation"
+      ],
+      "criteria": []
+    },
+    {
+      "name": "2_properties",
+      "description": "Aquifer properties",
+      "parameters": [
+        "K",
+        "Sy",
+        "porosity"
+      ],
+      "criteria": []
+    },
+    {
+      "name": "3_boundaries",
+      "description": "Fixed-head boundaries (north and south follow the Dupuit profile from west to east)",
+      "parameters": [
+        "head_west",
+        "head_east"
+      ],
+      "criteria": []
+    }
+  ],
+  "diagram": "2D_Unconfined_Aquifer.svg"
+}

@@ -92,7 +92,7 @@ QStringList Wizard_Entity::GenerateScript(QMap<QString, WizardParameter>* params
     for (QMap<QString, Wizard_Argument>::iterator it = Arguments.begin(); it != Arguments.end(); it++)
     {
         if (it.key() != "name" && it.key()!="entity")
-            line += "," + it.key() + "=" + it.value().Calc(params);
+            line += "," + it.key() + "=" + it.value().Calc(params) + it.value().UnitText();   // e.g. a precipitation file in [mm]
     }
     out << line; 
     return out; 
