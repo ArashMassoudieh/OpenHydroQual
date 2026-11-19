@@ -760,7 +760,7 @@
       "delegate": "UnitBox",
       "estimate": "true",
       "unit": "g/m^3",
-      "helptext": "Mass divided by the total volume of the block (solids plus pores, the block property \"volume\"); not carried by flow. It exchanges mass with a dissolved constituent through a Chemical reaction (rate per volume of water) or a Desorption reaction (rate per total volume); in both cases stoichiometric constants of -1 and +1 conserve mass. For linear sorption at equilibrium this concentration equals rho_b*K_d*C, so choose k_adsorption/k_desorption = rho_b*K_d; the retardation factor is then 1 + rho_b*K_d/n and the sorbed mass per mass of solid is concentration/rho_b."
+      "helptext": "Mass divided by the total volume of the block (solids plus pores, the block property \"volume\"); not carried by flow. It exchanges mass with a dissolved constituent through Chemical reactions (rate per volume of water), one for adsorption and one for desorption, with stoichiometric constants of -1 and +1. Use Chemical reactions rather than the Desorption reaction (rate per total volume) for both directions, so that the equilibrium does not depend on the moisture content. For linear sorption at equilibrium this concentration equals rho_b*K_d*C, so choose k_adsorption/k_desorption = rho_b*K_d; the retardation factor is then 1 + rho_b*K_d/n and the sorbed mass per mass of solid is concentration/rho_b."
     },
     "stoichiometric_constant": {
       "description": "Stoichiometric Constant",
@@ -900,7 +900,7 @@
     "description": "Desorption",
     "typecategory": "Reactions",
     "normalizing_quantity": "volume",
-    "helptext": "A reaction whose rate expression is per unit total volume of the block (it is multiplied by the block property \"volume\"), whereas a Chemical reaction is per unit volume of water (multiplied by Storage). With stoichiometric constants of -1 and +1 it conserves mass between any two constituents, whatever volume their concentrations are expressed per.",
+    "helptext": "A reaction whose rate expression is per unit total volume of the block (it is multiplied by the block property \"volume\"), whereas a Chemical reaction is per unit volume of water (multiplied by Storage). With stoichiometric constants of -1 and +1 it conserves mass between any two constituents, whatever volume their concentrations are expressed per. Use it for processes of the solid phase whose rate does not depend on the water content, such as decay of a sorbed constituent. For exchange between a sorbed and a dissolved constituent (adsorption and desorption), use a Chemical reaction for both directions instead: both are then multiplied by Storage, so the equilibrium (sorbed concentration = (k_adsorption/k_desorption) x dissolved concentration) does not depend on the moisture content, and the release slows down as a soil drains instead of pushing mass into a vanishing volume of water, which makes the system stiff.",
     "icon": {
       "filename": "desorption.png"
     },
