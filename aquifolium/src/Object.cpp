@@ -839,7 +839,14 @@ bool Object::CalculateInitialValues()
     for (int pass = 0; pass < 2; pass++)
         for (unsigned int j = 0; j < QuantitOrder().size(); j++)
         {   Quan *q = Variable(QuantitOrder()[j]);
-            if (q && q->GetType() == Quan::_type::expression && !q->AskFromUser())
+            // Source coefficients belong to the receiving object's context
+            // (e.g. precipitation coefficient = receiving catchment area).
+            // Source::GetValue evaluates them there; the source itself need not
+            // have those properties. Match CalculateAllExpressions' exclusion.
+            const bool receiver_coefficient = ObjectType() == object_type::source
+                && q && q->GetName() == "coefficient";
+            if (q && q->GetType() == Quan::_type::expression && !q->AskFromUser()
+                && !receiver_coefficient)
                 q->SetVal(q->CalcVal(Expression::timing::past), Expression::timing::past);
         }
     for (unsigned int j = 0; j < QuantitOrder().size(); j++)
