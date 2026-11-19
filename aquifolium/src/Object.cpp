@@ -885,7 +885,9 @@ void Object::MakeTimeSeriesUniform(const double &increment)
 {
     for (unordered_map<string, Quan>::const_iterator s = var.begin(); s != var.end(); ++s)
         
-        if (var[s->first].GetType() == Quan::_type::timeseries || var[s->first].GetType() == Quan::_type::prec_timeseries)
+        // Native precipitation retains interval boundaries; point resampling
+        // would smear its onset/cessation and destroy interval totals.
+        if (var[s->first].GetType() == Quan::_type::timeseries)
         {
             if (auto* series = var[s->first].GetTimeSeries())
             {

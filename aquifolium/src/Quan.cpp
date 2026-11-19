@@ -20,6 +20,7 @@
 #include "Link.h"
 #include "System.h"
 #include "Precipitation.h"
+#include "IntervalRainfall.h"
 #include "Expression.h"
 #ifdef Q_JSON_SUPPORT
 #include "XString.h"
@@ -664,7 +665,7 @@ double Quan::GetVal(const Expression::timing& tmg)
             if (type == _type::prec_timeseries)
             {
                 if (GetTimeSeries() != nullptr)
-                    _val_star = GetTimeSeries()->interpol(GetSimulationTime());
+                    _val_star = CalcVal(tmg);
                 else
                     _val_star = 0;
                 value_stamp = *generation;
@@ -722,7 +723,13 @@ double Quan::CalcVal(const Expression::timing& tmg)
     if (type == _type::timeseries || type == _type::prec_timeseries)
     {
         if (_timeseries.size() > 0)
-            return _timeseries.interpol(parent->GetParent()->GetTime());
+        {
+            const double t=parent->GetParent()->GetTime();
+            const double step=parent->GetParent()->dt();
+            if(type == _type::prec_timeseries && step>0)
+                return intervalRainfallAverage(_timeseries,t,step);
+            return _timeseries.interpol(t);
+        }
         else
             return 0;
     }
@@ -1040,7 +1047,11 @@ bool Quan::SetTimeSeries(const string& filename, bool prec)
         else
         {
             Prec.getfromfile(filename);
-            _timeseries = Prec.getflow(1)[0];
+            try { _timeseries = Prec.getflow(1)[0]; }
+            catch(const std::invalid_argument& error) {
+                AppendError(GetName(), "Quan", "SetTimeSeries", error.what(), 3023);
+                return false;
+            }
             _timeseries.setFilename(Prec.filename);
 
             string file_unit = unit.empty() ? default_unit : unit;

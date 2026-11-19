@@ -1,3 +1,4 @@
+#include "IntervalRainfall.h"
 /*
  * OpenHydroQual - Environmental Modeling Platform
  * Copyright (C) 2025 EnviroInformatics, LLC
@@ -125,37 +126,39 @@ CPrecipitation::CPrecipitation(string _filename)
 
 bool CPrecipitation::isFileValid(string filename)
 {
-	CPrecipitation temp;
-	ifstream fil(filename);
-	temp.n = 0;
-	if (!fil.good()) return false;
-	vector<string> ss;
-	temp.s.clear(); temp.e.clear(); temp.i.clear();
-
-	while (fil.eof() == false)
-	{
-		ss = aquiutils::getline(fil);
-
-		if (ss.size() >= 3)
-			if (ss[0].substr(0, 2) != "//")
-			{
-				temp.s.push_back(atof(ss[0].c_str()));
-				temp.e.push_back(atof(ss[1].c_str()));
-				temp.i.push_back(atof(ss[2].c_str()));
-				temp.n++;
-			}
-	}
-	if (!temp.n)
-		return false;
-	if (temp.e.size() < 1 || temp.s.size() < 1)
-		return false;
-	for (unsigned int i = 0; i < temp.e.size(); i++)
-		if (temp.e[i] - temp.s[i] <= 0)
-			return false;
-//	temp.dt = temp.e[1] - temp.s[1];
-//	if (!temp.dt)
-//		return false;
-	return true;
+    std::ifstream file(filename);
+    if(!file)return false;
+    // Accept ordinary CSV whitespace, including CRLF and tab-delimited padding.
+    // aquiutils::trim only strips spaces, so it must not define numeric-token
+    // consumption here (a valid trailing CR is not numeric junk).
+    auto clean=[](const std::string& value){
+        const auto first=value.find_first_not_of(" \t\r\n\v\f");
+        if(first==std::string::npos)return std::string();
+        const auto last=value.find_last_not_of(" \t\r\n\v\f");
+        return value.substr(first,last-first+1);
+    };
+    bool any=false;double lastEnd=0;
+    while(!file.eof()){
+        auto fields=aquiutils::getline(file);
+        if(fields.empty())continue;
+        if(clean(fields[0]).empty()){
+            if(fields.size()==1)continue;
+            return false;
+        }
+        if(clean(fields[0]).substr(0,2)=="//")continue;
+        if(fields.size()!=3)return false;
+        double values[3];
+        try{
+            for(int k=0;k<3;++k){
+                std::string token=clean(fields[k]);size_t used=0;
+                values[k]=std::stod(token,&used);
+                if(used!=token.size() || !std::isfinite(values[k]))return false;
+            }
+        }catch(const std::exception&){return false;}
+        if(values[1]<=values[0] || values[2]<0 || (any && values[0]<lastEnd))return false;
+        lastEnd=values[1];any=true;
+    }
+    return any;
 }
 
 void CPrecipitation::getfromfile(string _filename)
@@ -197,23 +200,15 @@ TimeSeriesSet<double> CPrecipitation::getflow (double A, double dt)
 
 TimeSeriesSet<double> CPrecipitation::getflow(double A) const
 {
-    TimeSeriesSet<double> Rainflowout(1);
-    Rainflowout.filename = filename;
-    Rainflowout.setSeriesName(0,"flow");
-	for (int ii = 0; ii < n; ii++)
-	{
-		if (ii>0)
-			if (s[ii] > e[ii-1]) 
-                Rainflowout[0].append(-0.5*e[ii] + 1.5*s[ii] , 0);
-		
-        Rainflowout[0].append((e[ii] + s[ii]) * 0.5, i[ii] / (e[ii] - s[ii]) * A);  //i [m]
-		if (ii < n - 1)
-			if (e[ii] < s[ii + 1])
-                Rainflowout[0].append(1.5 * e[ii] - 0.5 * s[ii], 0);
-	}
-
-    Rainflowout[0].assign_D();
-	return Rainflowout;
+    TimeSeriesSet<double> result(1);
+    result.filename=filename;
+    result.setSeriesName(0,"flow");
+    if(n<0 || size_t(n)!=s.size())throw std::invalid_argument("Inconsistent rainfall bin count");
+    for(const auto& point:intervalRainfallKnots(s,e,i,A))
+        result[0].append(point.first,point.second);
+    result[0].setFilename(filename);
+    result[0].assign_D();
+    return result;
 }
 
 void CPrecipitation::writefile(string Filename)

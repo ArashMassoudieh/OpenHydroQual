@@ -1,0 +1,10 @@
+loadtemplate;filename=../../resources/main_components.json
+addtemplate;filename=../../resources/rainfall_runoff.json
+create source;type=Precipitation,name=Rain,timeseries=interval_rainfall_adaptive.csv
+create block;type=Catchment,name=A,area=1000,depth=.01,ManningCoeff=.035,Precipitation=Rain,Runoff_coeff=1,loss_coefficient=0,elevation=0
+setvalue;object=system,quantity=simulation_start_time,value=0
+setvalue;object=system,quantity=simulation_end_time,value=.1
+setvalue;object=system,quantity=initial_time_step,value=.2
+setvalue;object=system,quantity=max_timestep_increase_factor,value=50
+setvalue;object=system,quantity=nr_tolerance,value=1e-10
+setvalue;object=system,quantity=nr_block_tolerance,value=1e-9

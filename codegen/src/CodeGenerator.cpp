@@ -133,6 +133,12 @@ static std::string srcSym(const std::string& sourceName, const std::string& q)
 {
     return "src_" + sanitize(sourceName) + "__" + sanitize(q) + "_";
 }
+// Match interpreter precipitation step integration; ordinary series stay linear.
+static std::string seriesEval(Quan* q,const std::string& handle,const std::string& time) {
+    return q && q->GetType()==Quan::_type::prec_timeseries
+        ? handle+".average("+time+", solver_.appliedDt())"
+        : handle+".interpol("+time+")";
+}
 // The 'timeseries' factor of a Source (Source::GetValue: coefficient * timeseries * rate).
 // It is a time series for precipitation/ET sources, but an expression or a value for others
 // (atmospheric exchange, build-up: "1"). Baking an expression as a series left the series
@@ -141,7 +147,7 @@ static std::string srcTimeseriesFactor(Source* s, const std::string& timeVar)
 {
     Quan* tq = s->Variable("timeseries");
     if (!tq) return "1.0";
-    if (isSeriesType(tq->GetType())) return srcHandle(s->GetName()) + ".interpol(" + timeVar + ")";
+    if (isSeriesType(tq->GetType())) return seriesEval(tq,srcHandle(s->GetName()),timeVar);
     if (tq->GetType() == Quan::_type::expression) return srcFn(s->GetName(), "timeseries") + "(" + timeVar + ")";
     return srcSym(s->GetName(), "timeseries");
 }
@@ -541,7 +547,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 return "(" + coeff + " * " + tsFactor + " * " + rate + ")";
             }
             if (isPlainSeries(q->GetType()))
-                return tsHandle(t->GetName(), name) + ".interpol(" + timeVar + ")";
+                return seriesEval(q,tsHandle(t->GetName(), name),timeVar);
             return sym(t->GetName(), name);
         };
         ctx.resolveSeries = [&, target](const std::string& name, Loc loc) -> std::string {
@@ -600,7 +606,8 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         if (!ts || ts->size() == 0) return;
         TimeSeries<timeseriesprecision> uni;
         bool uniformAtLoad = false;                       // resample in loadSeries() instead
-        if (uniformSeries) {
+        Quan* originalQuantity=system.object(obj)?system.object(obj)->Variable(q):nullptr;
+        if (uniformSeries && (!originalQuantity || originalQuantity->GetType()!=Quan::_type::prec_timeseries)) {
             uni = ts->make_uniform(uniformDt);            // (< 2 points -> empty, as in the interpreter)
             if (uni.size() <= maxPoints) ts = &uni;
             else uniformAtLoad = true;                    // too many grid points to bake: bake raw
@@ -756,10 +763,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 auto makeCtxSrc = [&](Source* src) {
                     EmitContext ctx; ctx.timeVar = "t";
                     ctx.resolveValue = [&, src](const std::string& name, Loc) -> std::string {
-                        if (name == "timeseries") return srcHandle(src->GetName()) + ".interpol(t)";
+                        if (name == "timeseries") return seriesEval(src->Variable("timeseries"),srcHandle(src->GetName()),"t");
                         Quan* sq = src->Variable(name);
                         if (!sq) return "0.0";
-                        if (isSeriesType(sq->GetType())) return srcTs(src->GetName(), name) + ".interpol(t)";
+                        if (isSeriesType(sq->GetType())) return seriesEval(sq,srcTs(src->GetName(), name),"t");
                         if (sq->GetType() == Quan::_type::expression) return srcFn(src->GetName(), name) + "(t)";
                         return srcSym(src->GetName(), name);   // value / constant / boolean: a member (may be a parameter)
                     };
@@ -1122,7 +1129,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                             sctx.resolveValue = [base, s, t](const std::string& nm, Loc l) -> std::string {
                                 if (l == Loc::self && !t->Variable(nm)) {
                                     if (Quan* sq = s->Variable(nm)) {
-                                        if (isSeriesType(sq->GetType())) return srcTs(s->GetName(), nm) + ".interpol(t_new)";
+                                        if (isSeriesType(sq->GetType())) return seriesEval(sq,srcTs(s->GetName(), nm),"t_new");
                                         if (sq->GetType() == Quan::_type::expression) return srcFn(s->GetName(), nm) + "(t_new)";
                                         return srcSym(s->GetName(), nm);
                                     }
@@ -1141,7 +1148,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     return "(" + coeff + " * " + tsFactor + " * " + rate + ")";
                 }
                 if (isSeriesType(q->GetType()))
-                    return tsHandle(t->GetName(), name) + ".interpol(t_new)";
+                    return seriesEval(q,tsHandle(t->GetName(), name),"t_new");
                 return sym(t->GetName(), name);
             };
             ctx.resolveSeries = [&, target](const std::string& name, Loc loc) -> std::string {
@@ -1259,7 +1266,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 if (q) {
                     if (q->GetType() == Quan::_type::source)   // same expansion as the transport ctx
                         return makeCtxT(blk, false, -1, std::string()).resolveValue(name, Loc::self);
-                    if (isSeriesType(q->GetType())) return tsHandle(blk->GetName(), name) + ".interpol(t_new)";
+                    if (isSeriesType(q->GetType())) return seriesEval(q,tsHandle(blk->GetName(), name),"t_new");
                     return sym(blk->GetName(), name);
                 }
                 return "0.0";
@@ -1408,7 +1415,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     const std::string tsFactor = srcTimeseriesFactor(s, "t_new");
                     return "(" + coeff + " * " + tsFactor + " * " + rate + ")";
                 }
-                if (isSeriesType(q->GetType())) return tsHandle(t->GetName(), name) + ".interpol(t_new)";
+                if (isSeriesType(q->GetType())) return seriesEval(q,tsHandle(t->GetName(), name),"t_new");
                 if (!constPrefix(name).empty() && q->GetType() == Quan::_type::expression) {
                     // constituent-scoped expression (AgeTracker_1:concentration): a transport-phase
                     // local, not a member -> inline it here
@@ -1715,20 +1722,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
               << "    bool setSeries(const char* object, const char* quantity, const double* t, const double* v, int n) {\n"
               << "        ohq::TimeSeries* s = series(object, quantity); if (!s) return false;\n"
               << "        s->t.assign(t, t + n); s->c.assign(v, v + n); s->d.clear(); return true;\n    }\n"
-              << "    // precipitation bins (CPrecipitation: start, end, depth) -> midpoint samples of depth/(end-start),\n"
-              << "    // exactly as CPrecipitation::getflow(A) converts a precipitation file / injection: where two bins\n"
-              << "    // do not touch (a gap = no rain), a zero is placed half a bin outside each of them, so the\n"
-              << "    // linear interpolation does not spread rain across the gap\n"
+              << "    // Native precipitation bins retain boundaries and interval totals.\n"
               << "    bool setPrecipitation(const char* object, const char* quantity, const double* start, const double* end, const double* depth, int n) {\n"
               << "        ohq::TimeSeries* s = series(object, quantity); if (!s) return false;\n"
-              << "        s->t.clear(); s->c.clear(); s->d.clear();\n"
-              << "        for (int k = 0; k < n; ++k) {\n"
-              << "            const double w = end[k] - start[k]; if (w <= 0) continue;\n"
-              << "            if (k > 0 && start[k] > end[k - 1]) s->push(1.5 * start[k] - 0.5 * end[k], 0.0);\n"
-              << "            s->push(0.5 * (start[k] + end[k]), depth[k] / w);\n"
-              << "            if (k < n - 1 && end[k] < start[k + 1]) s->push(1.5 * end[k] - 0.5 * start[k], 0.0);\n"
-              << "        }\n"
-              << "        return true;\n    }\n"
+              << "        return s->setPrecipitation(start,end,depth,n);\n    }\n"
               << "    // ---- state values in/out (G5): what a hot restart needs -- never model structure ----\n"
               << "    // mass (N_MASS) / limited / limitFactor (N_STATES) may be null.\n"
               << "    void exportState(double* storage, double* mass, int* limited, double* limitFactor) const {\n"

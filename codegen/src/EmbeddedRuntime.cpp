@@ -339,6 +339,9 @@ public:
 
     double time() const { return t_; }
     double dt()   const { return dt_; }
+    // Native interval forcing integrates over the attempted/applied step, not
+    // the adaptive base (which may be larger after a forcing/end-time clamp).
+    double appliedDt() const { return dtApplied_ > 0 ? dtApplied_ : dt_; }
     double storage(int b) const { return storage_[b]; }
     bool   isLimited(int b) const { return limited_[b] != 0; }
     int    lastIterations() const { return last_iters_; }
@@ -1214,6 +1217,8 @@ R"OHQRT(/*
 #include <sstream>
 #include <cmath>
 #include <algorithm>
+#include <map>
+#include <limits>
 
 namespace ohq {
 
@@ -1230,6 +1235,45 @@ public:
     bool empty() const { return t.empty(); }
 
     void push(double ti, double ci) { t.push_back(ti); c.push_back(ci); }
+
+    // Native precipitation: ordered nonoverlapping interval TOTAL depths.
+    // Build on a temporary series so rejection cannot destroy existing forcing.
+    bool setPrecipitation(const double* start,const double* end,const double* depth,int n) {
+        if(n<0 || (n && (!start || !end || !depth)))return false;
+        std::map<double,double> knots;
+        for(int k=0;k<n;++k){
+            double w=end[k]-start[k];
+            if(!std::isfinite(start[k]) || !std::isfinite(end[k]) || !std::isfinite(depth[k])
+               || !std::isfinite(w) || w<=0 || depth[k]<0 || (k && start[k]<end[k-1]))return false;
+            double rate=depth[k]/w;if(!std::isfinite(rate))return false;
+            if(k==0 || start[k]>end[k-1]){
+                double before=start[k]-std::max(1.0,std::abs(start[k]))*std::numeric_limits<double>::epsilon();
+                if(!std::isfinite(before))return false;
+                knots[before]=0;
+            }
+            knots[start[k]]=rate;knots[std::nextafter(end[k],start[k])]=rate;knots[end[k]]=0;
+        }
+        TimeSeries replacement;
+        for(const auto& p:knots)replacement.push(p.first,p.second);
+        *this=replacement;return true;
+    }
+    double average(double time,double dt) const {
+        if(!std::isfinite(time) || !std::isfinite(dt) || dt<=0 || !std::isfinite(time+dt) || time+dt<=time)
+            return 0; // no active step during construction
+        if(t.size()<2)return 0;
+        double stop=std::min(time+dt,t.back()),x=std::max(time,t.front());
+        if(x>=stop)return 0;
+        auto it=std::upper_bound(t.begin(),t.end(),x);
+        size_t j=it==t.begin()?0:size_t(it-t.begin()-1);
+        long double volume=0;
+        while(x<stop && j+1<t.size()){
+            double y=std::min(stop,t[j+1]);
+            double a=(x-t[j])/(t[j+1]-t[j]),b=(y-t[j])/(t[j+1]-t[j]);
+            double v0=c[j]+(c[j+1]-c[j])*a,v1=c[j]+(c[j+1]-c[j])*b;
+            volume+=(static_cast<long double>(v0)+v1)*.5L*(y-x);x=y;++j;
+        }
+        return double(volume/dt);
+    }
 
     // ---- interpreter parity: TimeSeries::assign_D / interpol_D --------------
     // d[i] = time from sample i to the LAST sample of the constant run that

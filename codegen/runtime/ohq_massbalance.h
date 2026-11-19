@@ -163,6 +163,9 @@ public:
 
     double time() const { return t_; }
     double dt()   const { return dt_; }
+    // Native interval forcing integrates over the attempted/applied step, not
+    // the adaptive base (which may be larger after a forcing/end-time clamp).
+    double appliedDt() const { return dtApplied_ > 0 ? dtApplied_ : dt_; }
     double storage(int b) const { return storage_[b]; }
     bool   isLimited(int b) const { return limited_[b] != 0; }
     int    lastIterations() const { return last_iters_; }
