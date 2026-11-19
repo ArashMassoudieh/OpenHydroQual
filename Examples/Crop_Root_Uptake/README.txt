@@ -155,3 +155,16 @@ property is no longer recognized, so ET may otherwise be zero.
 
 Both models are also documented, with the full set of equations, in
 docs/plant_water_uptake.tex.
+
+NUMERICAL PRECISION AND GENERATED-MODEL PARITY
+
+The example explicitly sets nr_block_tolerance=1e-8 as well as its existing
+nr_tolerance=1e-6. The global residual tolerance alone did not prevent the default
+per-block stopping rule from leaving approximately -6e-5 m3 in dry Field_A/B.
+The generated solver keeps those storages at zero. Tightening the per-block
+numerical tolerance makes the native dry-storage error negligible and passes the
+existing per-block interpreter/kernel comparison, including the full 150-day
+season. No physical parameters, forcing data or global solver defaults change.
+The old-tolerance failed comparison remains in the audit; comparison limits were
+not relaxed. The cross-object code-generation ordering fix is independently
+required for this example's beta_alpha averages to compile correctly.

@@ -85,3 +85,20 @@ Time series are plain `time (day), value` CSVs written by `make_tests.py`:
 (9.0), `inflow_small.csv` (0.1), `inflow_pulse.csv` (square pulse),
 `tailwater_rise.csv` and `surge.csv` (boundary stage), `tracer_in.csv`
 (inflow concentration).
+
+## T4 connectivity and numerical precision correction
+
+The saved T4 file had lost its `Outlet` connection from `Barrel` to `DS_Channel`,
+although `make_tests.py` and the layout above include it. That missing connection
+caused very small solver steps and timeouts. The restored link uses the same
+exit-loss and HGL parameters as the other circular examples; physical parameters
+and forcing records are unchanged.
+
+T4 now explicitly sets `nr_block_tolerance=1e-8`. With only the outlet restored,
+the original default tolerance left a 5.54 m³ accepted-step water-balance residual
+on about 210,000 m³ inflow. The explicit tolerance reduces that residual to
+0.00038 m³, below the unchanged 0.219 m³ development gate, with positive flow
+through both the barrel and roadway and nonnegative storage. This is a local
+numerical-accuracy setting, not a change to global solver defaults or calibration.
+Both the original failed controls and corrected results are retained in the
+HydroPINN audit `ohq_remaining_failures_20261119`.

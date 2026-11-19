@@ -906,11 +906,10 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                 perIter[o->GetName() + "::" + q.GetName()] = {o, isLink, q.GetName()};
         }
     }
-    // Emit block per-iteration locals before link ones, each group topologically
-    // sorted. Links reference source/dest block quantities (head, area) — often
-    // via _ups/_bkw, whose bare arguments look self-located to the analyzer, so
-    // that cross-edge isn't in the graph; blocks never depend on link quantities,
-    // so blocks-before-links guarantees definitions precede uses.
+    // Sort the entire block/link dependency graph together. Block averages
+    // (.v) can depend on link quantities, while link expressions can depend on
+    // endpoint blocks; separating the groups emits some locals before their
+    // definitions (urban velocity and crop uptake are concrete examples).
     {
         // With constituents, transport expressions may read flow-phase geometry
         // (link `area`/`depth`, block `head`) that only exists as locals inside
@@ -918,28 +917,36 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
         // computeFlowLocals(), assigning to members (same symbols; the locals in
         // computeFluxes shadow them), called once per accepted flow step.
         const bool needFlowLocals = system.ConstituentsCount() > 0 || system.ObservationsCount() > 0 || !outSpecs.empty();
-        auto emitGroupF = [&](bool wantLink) {
+        {
             std::map<std::string, int> indeg;
             std::map<std::string, std::vector<std::string>> radj;
-            for (auto& kv : perIter) if (kv.second.isLink == wantLink) indeg[kv.first] = 0;
+            for (auto& kv : perIter) indeg[kv.first] = 0;
             for (auto& kv : perIter) {
-                if (kv.second.isLink != wantLink) continue;
                 auto ti = tiers.find(kv.first);
                 if (ti == tiers.end()) continue;
                 for (const std::string& dep : ti->second.dependencies) {
                     if (dep == kv.first) continue;
-                    if (perIter.count(dep) && perIter[dep].isLink == wantLink)
+                    if (perIter.count(dep))
                         { indeg[kv.first]++; radj[dep].push_back(kv.first); }
                 }
             }
             std::vector<std::string> ready, ordered;
             for (auto& kv : indeg) if (kv.second == 0) ready.push_back(kv.first);
             while (!ready.empty()) {
-                std::string n = ready.back(); ready.pop_back(); ordered.push_back(n);
+                // Prefer ready blocks, retaining the historical order whenever
+                // cross-object dependencies do not require a link first.
+                auto block = std::find_if(ready.rbegin(), ready.rend(),
+                    [&](const std::string& key) { return !perIter.at(key).isLink; });
+                auto next = block == ready.rend() ? std::prev(ready.end()) : std::prev(block.base());
+                std::string n = *next; ready.erase(next); ordered.push_back(n);
                 for (const std::string& m : radj[n]) if (--indeg[m] == 0) ready.push_back(m);
             }
-            for (auto& kv : indeg) if (std::find(ordered.begin(), ordered.end(), kv.first) == ordered.end())
-                ordered.push_back(kv.first);
+            if (ordered.size() != perIter.size()) {
+                std::string unresolved;
+                for (const auto& kv : indeg) if (kv.second > 0)
+                    unresolved += (unresolved.empty() ? "" : ", ") + kv.first;
+                throw std::runtime_error("CodeGenerator: cyclic per-iteration dependencies: " + unresolved);
+            }
             for (const std::string& key : ordered) {
                 const Node& nd = perIter[key];
                 emitQuantity(nd.o, nd.isLink, nd.qn, "t_new", resBody, /*asLocal=*/true);
@@ -948,9 +955,7 @@ bool CodeGenerator::generate(System& system, const GenOptions& opt)
                     emitQuantity(nd.o, nd.isLink, nd.qn, "t_new", flowLocalsBody, /*asLocal=*/false);
                 }
             }
-        };
-        emitGroupF(false);   // blocks first
-        emitGroupF(true);    // then links
+        }
     }
 
     // flowRaw[l] : raw link flow (before limiting factors)

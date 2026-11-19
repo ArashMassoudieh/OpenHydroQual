@@ -39,6 +39,7 @@ setvalue; object=system, quantity=n_threads, value=8
 setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
 setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
 setvalue; object=system, quantity=nr_tolerance, value=1e-06
+setvalue; object=system, quantity=nr_block_tolerance, value=1e-08
 setvalue; object=system, quantity=write_interval, value=100
 setvalue; object=system, quantity=write_solution_details, value=No
 create source;type=Precipitation,name=Rain,timeseries=rainfall.csv

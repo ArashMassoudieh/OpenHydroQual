@@ -50,6 +50,7 @@ setvalue; object=system, quantity=nr_niteration_upper, value=40
 setvalue; object=system, quantity=nr_timestep_reduction_factor, value=0.75
 setvalue; object=system, quantity=nr_timestep_reduction_factor_fail, value=0.2
 setvalue; object=system, quantity=nr_tolerance, value=0.001
+setvalue; object=system, quantity=nr_block_tolerance, value=1e-08
 setvalue; object=system, quantity=update_jacobian_every_iteration, value=No
 setvalue; object=system, quantity=verify_jacobian, value=
 setvalue; object=system, quantity=write_interval, value=20
@@ -59,5 +60,6 @@ create block;type=Culvert Barrel (Circular),ManningCoeff=0.013,Number_of_barrels
 create block;type=Trapezoidal Channel Segment,ManningCoeff=0.035,_height=200,_width=200,ag_area=0,ag_withdrawal_per_unit_area=,base_width=3,bottom_elevation=0.3,dam_height=0,depth=0.05,inflow=,length=100,name=DS_Channel,non_ag_area=0,non_ag_withdrawal_per_unit_area=,side_slope=2,x=600,y=0
 create block;type=fixed_head,Storage=100000,_height=200,_width=200,head=0.35,name=Outfall,x=900,y=0
 create link;from=US_Channel,to=Barrel,type=Channel_to_culvert (Circular),HDS5_K=0.0098,HDS5_M=2,HDS5_Y=0.67,HDS5_c=0.0398,HDS5_form1_switch=1,entrance_loss_coeff=0.5,name=Inlet,slope_correction_coeff=0.5
+create link;from=Barrel,to=DS_Channel,type=Culvert_to_channel (Circular),name=Outlet,exit_loss_coeff=1.0,hgl_rule_lower=0.75,hgl_rule_upper=1.8
 create link;from=DS_Channel,to=Outfall,type=channel2fixed,name=Tailwater
 create link;from=US_Channel,to=DS_Channel,type=Roadway_Overtopping,name=Road,road_crest_elevation=2.3,road_submergence_factor=1,road_weir_coeff=1.7,road_width=12
