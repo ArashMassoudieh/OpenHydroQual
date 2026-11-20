@@ -46,6 +46,7 @@ class Command
         void SetParent (Script *scr);
 		vector<Object*> Create2DGrid(System* sys, string name, string type, int n_x, int n_y);
         string Keyword() { return keyword; }
+        const vector<string>& Arguments() const { return arguments; }
         map<string, string>& GetAssignments() { return assignments; }
         const map<string, string>& GetAssignments() const { return assignments; }
     protected:

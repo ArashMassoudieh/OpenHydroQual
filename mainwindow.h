@@ -260,6 +260,16 @@ private:
     QList<NameConflict> checkForNameConflicts(System* importSystem);
     bool resolveNameConflicts(Script& importScript, const QList<NameConflict>& conflicts);
 
+    /**
+     * @brief Appends selected objects from another .ohq file to the open model
+     * @param reactions true: reactions and reaction parameters; false: sources
+     *
+     * The other file is parsed with Script and only its "create" commands of the
+     * requested classes are executed on the open system (plus the constituents
+     * and templates they need, after asking).
+     */
+    void importObjectsFromModelFile(bool reactions);
+
 private slots:
     void on_check_object_browser();
     void on_check_showlogwindow();
@@ -317,6 +327,9 @@ private slots:
     void onCreate2dArray();// Is called when 2D Array action is triggered
     void oncomponentdescriptions();
     void onimport();
+    void onImportReactions();
+    void onImportSources();
+    void onExportSources();
     void onVisualize();
 };
 

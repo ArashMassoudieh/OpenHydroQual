@@ -1007,6 +1007,24 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
     connect(ui->actionImport, SIGNAL(triggered()), this, SLOT(onimport()));
+    {
+        // File menu: partial imports from another model file, and source export
+        QAction *importReactionsAction = new QAction(tr("Import Reactions and Reaction Parameters..."), this);
+        QAction *importSourcesAction = new QAction(tr("Import Sources..."), this);
+        QAction *exportSourcesAction = new QAction(tr("Export Sources..."), this);
+        importReactionsAction->setToolTip(tr("Append the reactions and reaction parameters of another .ohq file to this model"));
+        importSourcesAction->setToolTip(tr("Append the sources of another .ohq file to this model"));
+        exportSourcesAction->setToolTip(tr("Write this model's sources to an .ohq file that can be imported into another model"));
+        QList<QAction*> fileActions = ui->menuFilw->actions();
+        int importIndex = fileActions.indexOf(ui->actionImport);
+        QAction *before = (importIndex >= 0 && importIndex + 1 < fileActions.size()) ? fileActions[importIndex + 1] : nullptr;
+        ui->menuFilw->insertAction(before, importReactionsAction);
+        ui->menuFilw->insertAction(before, importSourcesAction);
+        ui->menuFilw->insertAction(before, exportSourcesAction);
+        connect(importReactionsAction, SIGNAL(triggered()), this, SLOT(onImportReactions()));
+        connect(importSourcesAction, SIGNAL(triggered()), this, SLOT(onImportSources()));
+        connect(exportSourcesAction, SIGNAL(triggered()), this, SLOT(onExportSources()));
+    }
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(onsave()));
     connect(ui->actionSave_as,SIGNAL(triggered()),this,SLOT(onsaveas()));
     connect(ui->actionSave_State_to_Json,SIGNAL(triggered()),this,SLOT(onsaveasJson()));
@@ -5057,4 +5075,498 @@ void MainWindow::onVisualize()
         vizDialog->setAttribute(Qt::WA_DeleteOnClose);  // Auto-delete when closed
         vizDialog->show();
     }
+}
+
+// ========================================================================
+// Partial import from another model file: reactions / reaction parameters,
+// or sources. The other file is parsed with Script (same parser as File >
+// Open) and only the selected "create" commands are executed on the open
+// system, so the objects are built exactly as they would be when loading.
+// ========================================================================
+
+#include <QSet>
+
+namespace
+{
+    // Splits "file.csv [mg/L]" into "file.csv" and " [mg/L]"
+    QString splitUnitSuffix(const QString &value, QString *suffix)
+    {
+        static const QRegularExpression re("^(.*?)(\\s*\\[[^\\]]*\\])$");
+        QRegularExpressionMatch m = re.match(value);
+        if (m.hasMatch())
+        {
+            *suffix = m.captured(2);
+            return m.captured(1).trimmed();
+        }
+        suffix->clear();
+        return value.trimmed();
+    }
+
+    // A value that names an existing file relative to baseDir becomes an
+    // absolute path; anything else is returned unchanged.
+    QString absolutizeFileValue(const QString &value, const QString &baseDir)
+    {
+        QString suffix;
+        QString core = splitUnitSuffix(value, &suffix);
+        if (core.isEmpty() || baseDir.isEmpty() || QFileInfo(core).isAbsolute())
+            return value;
+        QFileInfo fi(QDir(baseDir), core);
+        if (fi.exists() && fi.isFile())
+            return QDir::cleanPath(fi.absoluteFilePath()) + suffix;
+        return value;
+    }
+
+    // Identifiers used as variables in an expression (function calls excluded)
+    QStringList expressionIdentifiers(const QString &expression)
+    {
+        static const QRegularExpression re("(?<![A-Za-z0-9_.])([A-Za-z_][A-Za-z0-9_]*)(?![A-Za-z0-9_]|\\s*\\()");
+        QStringList out;
+        QRegularExpressionMatchIterator it = re.globalMatch(expression);
+        while (it.hasNext())
+        {
+            QString id = it.next().captured(1);
+            if (!out.contains(id))
+                out << id;
+        }
+        return out;
+    }
+
+    QString renameIdentifier(const QString &expression, const QString &from, const QString &to)
+    {
+        QRegularExpression re("(?<![A-Za-z0-9_.])" + QRegularExpression::escape(from) + "(?![A-Za-z0-9_])");
+        QString out = expression;
+        return out.replace(re, to);
+    }
+
+    QString constituentPrefix(const string &key)
+    {
+        size_t pos = key.find(':');
+        if (pos == string::npos || pos == 0)
+            return QString();
+        return QString::fromStdString(key.substr(0, pos));
+    }
+}
+
+void MainWindow::onImportReactions()
+{
+    importObjectsFromModelFile(true);
+}
+
+void MainWindow::onImportSources()
+{
+    importObjectsFromModelFile(false);
+}
+
+void MainWindow::importObjectsFromModelFile(bool reactions)
+{
+    const QString what = reactions ? tr("reactions and reaction parameters") : tr("sources");
+    QString fileName = QFileDialog::getOpenFileName(this,
+        reactions ? tr("Import Reactions and Reaction Parameters") : tr("Import Sources"),
+        workingfolder, tr("OpenHydroQual files (*.ohq);; All files (*.*)"),
+        nullptr, QFileDialog::DontUseNativeDialog);
+    if (fileName.isEmpty())
+        return;
+
+    const QString importDir = QFileInfo(fileName).absolutePath();
+    const QString shortName = QFileInfo(fileName).fileName();
+    Script scr(fileName.toStdString());
+    if (scr.CommandsCount() == 0)
+    {
+        QMessageBox::critical(this, tr("Import"), tr("No commands could be read from '%1'.").arg(fileName));
+        return;
+    }
+
+    // ---- Scan the file ------------------------------------------------------
+    QStringList fileTemplates;
+    QMap<QString, int> fileConstituents;          // name -> command index
+    QList<int> wanted;                            // commands to import
+    QSet<QString> importedNames;
+    for (int i = 0; i < scr.CommandsCount(); i++)
+    {
+        Command *c = scr[i];
+        string kw = aquiutils::tolower(c->Keyword());
+        if (kw == "addtemplate" && c->GetAssignments().count("filename"))
+            fileTemplates << QString::fromStdString(c->GetAssignments().at("filename"));
+        if (kw != "create" || c->Arguments().empty() || c->GetAssignments().count("name") == 0)
+            continue;
+        string cls = aquiutils::tolower(c->Arguments()[0]);
+        QString name = QString::fromStdString(c->GetAssignments().at("name"));
+        if (cls == "constituent")
+            fileConstituents[name] = i;
+        bool take = reactions ? (cls == "reaction" || cls == "reaction_parameter") : (cls == "source");
+        if (take)
+        {
+            wanted << i;
+            importedNames << name;
+        }
+    }
+    if (wanted.isEmpty())
+    {
+        QMessageBox::information(this, tr("Import"), tr("'%1' has no %2.").arg(shortName, what));
+        return;
+    }
+    // Reaction parameters go first so the reactions that use them find them.
+    std::stable_sort(wanted.begin(), wanted.end(), [&scr](int a, int b) {
+        auto rank = [&scr](int i) { return aquiutils::tolower(scr[i]->Arguments()[0]) == "reaction_parameter" ? 0 : 1; };
+        return rank(a) < rank(b);
+    });
+
+    // ---- Types and templates -------------------------------------------------
+    QStringList missingTypes;
+    for (int i : wanted)
+    {
+        QString type = QString::fromStdString(scr[i]->GetAssignments()["type"]);
+        if (system.GetModel(type.toStdString()) == nullptr && !missingTypes.contains(type))
+            missingTypes << type;
+    }
+    QStringList templatesToLoad;
+    if (!missingTypes.isEmpty())
+    {
+        for (const QString &t : fileTemplates)
+        {
+            bool loaded = false;
+            for (const string &a : system.addedtemplates)
+                if (aquiutils::GetOnlyFileName(a) == aquiutils::GetOnlyFileName(t.toStdString()))
+                    loaded = true;
+            if (!loaded)
+                templatesToLoad << t;
+        }
+        QString msg = tr("This model has no object type(s): %1.").arg(missingTypes.join(", "));
+        if (!templatesToLoad.isEmpty())
+        {
+            msg += "\n\n" + tr("'%1' loads these templates/plugins that this model has not loaded:\n%2\n\nLoad them now?")
+                               .arg(shortName, templatesToLoad.join("\n"));
+            QMessageBox::StandardButton b = QMessageBox::question(this, tr("Templates needed"), msg,
+                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
+            if (b == QMessageBox::Cancel)
+                return;
+            if (b == QMessageBox::No)
+                templatesToLoad.clear();
+        }
+        else
+        {
+            msg += "\n\n" + tr("Objects of these types will be skipped. Add the plugin that defines them and import again.");
+            if (QMessageBox::warning(this, tr("Templates needed"), msg, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Cancel)
+                return;
+        }
+    }
+
+    // ---- Constituents the imported objects refer to ---------------------------
+    QSet<QString> knownParams;
+    for (unsigned int i = 0; i < system.ReactionParametersCount(); i++)
+        knownParams << QString::fromStdString(system.reactionparameter(i)->GetName());
+    for (int i : wanted)
+        if (aquiutils::tolower(scr[i]->Arguments()[0]) == "reaction_parameter")
+            knownParams << QString::fromStdString(scr[i]->GetAssignments()["name"]);
+
+    QStringList constituentsFromFile;   // missing here, defined in the file
+    QStringList constituentsMissing;    // missing here and not in the file
+    QMap<QString, QStringList> unresolvedIds; // object -> names nothing defines
+    auto noteConstituent = [&](const QString &c) {
+        if (system.constituent(c.toStdString()) != nullptr)
+            return;
+        if (fileConstituents.contains(c))
+        {
+            if (!constituentsFromFile.contains(c))
+                constituentsFromFile << c;
+        }
+        else if (!constituentsMissing.contains(c))
+            constituentsMissing << c;
+    };
+    for (int i : wanted)
+    {
+        const map<string, string> &as = scr[i]->GetAssignments();
+        for (const auto &kv : as)
+        {
+            QString c = constituentPrefix(kv.first);
+            if (!c.isEmpty())
+                noteConstituent(c);
+        }
+        // Reaction expressions: the rate and the stoichiometric coefficients
+        QString exprs;
+        bool isReaction = aquiutils::tolower(scr[i]->Arguments()[0]) == "reaction";
+        for (const auto &kv : as)
+            if (isReaction && (kv.first == "rate_expression" || !constituentPrefix(kv.first).isEmpty()))
+                exprs += " " + QString::fromStdString(kv.second);
+        if (!exprs.isEmpty())
+        {
+            for (const QString &id : expressionIdentifiers(exprs))
+            {
+                if (fileConstituents.contains(id) || system.constituent(id.toStdString()) != nullptr)
+                {
+                    noteConstituent(id);
+                    continue;
+                }
+                if (knownParams.contains(id))
+                    continue;
+                // Block/link quantities (e.g. temperature, Storage) are legal in rate expressions
+                bool isQuantity = false;
+                for (auto &m : *system.GetMetaModel())
+                    if (m.second.Count(id.toStdString()) > 0)
+                    {
+                        isQuantity = true;
+                        break;
+                    }
+                if (!isQuantity)
+                    if (!unresolvedIds[QString::fromStdString(as.at("name"))].contains(id))
+                        unresolvedIds[QString::fromStdString(as.at("name"))] << id;
+            }
+        }
+    }
+    bool importConstituents = false;
+    if (!constituentsFromFile.isEmpty())
+    {
+        QMessageBox::StandardButton b = QMessageBox::question(this, tr("Constituents needed"),
+            tr("The imported %1 refer to constituent(s) this model does not have:\n%2\n\n"
+               "They are defined in '%3'. Import them too?\n\n"
+               "Yes: import them.\nNo: leave them out; stoichiometric coefficients and other properties for them are dropped and listed in the log.")
+                .arg(what, constituentsFromFile.join(", "), shortName),
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
+        if (b == QMessageBox::Cancel)
+            return;
+        importConstituents = (b == QMessageBox::Yes);
+    }
+    QSet<QString> willHaveConstituent;
+    for (unsigned int i = 0; i < system.ConstituentsCount(); i++)
+        willHaveConstituent << QString::fromStdString(system.constituent(i)->GetName());
+    if (importConstituents)
+        for (const QString &c : constituentsFromFile)
+            willHaveConstituent << c;
+
+    // ---- Name clashes -------------------------------------------------------------
+    QStringList clashes;
+    for (int i : wanted)
+    {
+        QString name = QString::fromStdString(scr[i]->GetAssignments()["name"]);
+        if (system.object(name.toStdString()) != nullptr)
+            clashes << name;
+    }
+    if (importConstituents)
+        for (const QString &c : constituentsFromFile)
+            if (system.object(c.toStdString()) != nullptr)
+                clashes << c;   // a non-constituent object already uses the name
+    enum class ClashMode { Skip, Overwrite, Rename } clashMode = ClashMode::Skip;
+    if (!clashes.isEmpty())
+    {
+        QMessageBox box(QMessageBox::Question, tr("Name clashes"),
+            tr("These names already exist in this model:\n%1\n\nWhat should be done with the imported objects that have them?").arg(clashes.join(", ")),
+            QMessageBox::NoButton, this);
+        QPushButton *skipBtn = box.addButton(tr("Skip them"), QMessageBox::AcceptRole);
+        QPushButton *overwriteBtn = box.addButton(tr("Overwrite existing"), QMessageBox::AcceptRole);
+        QPushButton *renameBtn = box.addButton(tr("Import with new names"), QMessageBox::AcceptRole);
+        box.addButton(QMessageBox::Cancel);
+        box.setDefaultButton(skipBtn);
+        box.setInformativeText(tr("Overwrite copies the imported property values onto the existing object of the same kind. "
+                                  "New names get an \"_imported\" suffix; renamed reaction parameters are renamed in the imported rate and stoichiometry expressions too."));
+        box.exec();
+        if (box.clickedButton() == skipBtn) clashMode = ClashMode::Skip;
+        else if (box.clickedButton() == overwriteBtn) clashMode = ClashMode::Overwrite;
+        else if (box.clickedButton() == renameBtn) clashMode = ClashMode::Rename;
+        else return;
+    }
+    QMap<QString, QString> renames;
+    if (clashMode == ClashMode::Rename)
+        for (const QString &n : clashes)
+        {
+            QString candidate = n + "_imported";
+            for (int k = 2; system.object(candidate.toStdString()) != nullptr || importedNames.contains(candidate) || renames.values().contains(candidate); k++)
+                candidate = n + "_imported" + QString::number(k);
+            renames[n] = candidate;
+        }
+
+    // ---- Apply (one undo step) --------------------------------------------------------
+    undoData.SetActiveSystem(&system);
+    LogWindow->AppendBlue(tr("Importing %1 from '%2'").arg(what, fileName));
+    QStringList added, overwritten, skipped, failed, dropped;
+
+    bool templatesChanged = false;
+    for (const QString &t : templatesToLoad)
+    {
+        string fn = t.toStdString();
+        bool ok = system.AppendQuanTemplate(fn)
+               || system.AppendQuanTemplate(system.DefaultTemplatePath() + aquiutils::GetOnlyFileName(fn))
+               || system.AppendQuanTemplate((importDir + "/" + QString::fromStdString(aquiutils::GetOnlyFileName(fn))).toStdString());
+        if (ok)
+        {
+            templatesChanged = true;
+            LogWindow->AppendBlue(tr("Template '%1' was loaded").arg(t));
+        }
+        else
+            LogError(tr("Template '%1' could not be found; objects that need it are skipped").arg(t));
+    }
+    if (templatesChanged)
+        system.AddConstituentRelatePropertiestoMetalModel();
+
+    // Copy of a command with renames, absolute file paths and dropped constituent keys applied
+    auto prepare = [&](int idx, QString *objName) {
+        Command cmd = *scr[idx];
+        map<string, string> &as = cmd.GetAssignments();
+        QString name = QString::fromStdString(as["name"]);
+        if (renames.contains(name))
+            as["name"] = renames[name].toStdString();
+        *objName = QString::fromStdString(as["name"]);
+        bool isReaction = aquiutils::tolower(cmd.Arguments()[0]) == "reaction";
+        for (auto it = as.begin(); it != as.end();)
+        {
+            QString c = constituentPrefix(it->first);
+            if (!c.isEmpty() && !willHaveConstituent.contains(c))
+            {
+                dropped << tr("%1: %2=%3").arg(*objName, QString::fromStdString(it->first), QString::fromStdString(it->second));
+                it = as.erase(it);
+                continue;
+            }
+            if (isReaction && (it->first == "rate_expression" || !c.isEmpty()))
+            {
+                QString e = QString::fromStdString(it->second);
+                for (auto r = renames.constBegin(); r != renames.constEnd(); ++r)
+                    e = renameIdentifier(e, r.key(), r.value());
+                it->second = e.toStdString();
+            }
+            else if (it->first != "name" && it->first != "type")
+                it->second = absolutizeFileValue(QString::fromStdString(it->second), importDir).toStdString();
+            ++it;
+        }
+        return cmd;
+    };
+    auto run = [&](int idx) {
+        QString objName;
+        Command cmd = prepare(idx, &objName);
+        string cls = aquiutils::tolower(cmd.Arguments()[0]);
+        QString type = QString::fromStdString(cmd.GetAssignments()["type"]);
+        QString original = QString::fromStdString(scr[idx]->GetAssignments().at("name"));
+        if (system.GetModel(type.toStdString()) == nullptr)
+        {
+            failed << tr("%1 (type '%2' is not available)").arg(objName, type);
+            return;
+        }
+        if (clashes.contains(original) && clashMode == ClashMode::Skip)
+        {
+            skipped << objName;
+            return;
+        }
+        if (clashes.contains(original) && clashMode == ClashMode::Overwrite)
+        {
+            Object *existing = nullptr;
+            string n = objName.toStdString();
+            if (cls == "reaction") existing = system.reaction(n);
+            else if (cls == "reaction_parameter") existing = system.reactionparameter(n);
+            else if (cls == "source") existing = system.source(n);
+            if (existing == nullptr)
+            {
+                failed << tr("%1 (the existing object with this name is of another kind)").arg(objName);
+                return;
+            }
+            for (const auto &kv : cmd.GetAssignments())
+                if (kv.first != "name" && kv.first != "type")
+                    if (!existing->SetProperty(kv.first, kv.second, true, false))
+                        LogError(tr("%1: property '%2' could not be set to '%3'").arg(objName, QString::fromStdString(kv.first), QString::fromStdString(kv.second)));
+            overwritten << objName;
+            return;
+        }
+        if (cmd.Execute(&system) && system.object(objName.toStdString()) != nullptr)
+        {
+            added << (renames.contains(original) ? tr("%1 (renamed from %2)").arg(objName, original) : objName);
+            LogAddDelete(tr("'%1' was imported").arg(objName));
+        }
+        else
+            failed << tr("%1 (%2)").arg(objName, QString::fromStdString(cmd.LastError()));
+    };
+
+    if (importConstituents)
+        for (const QString &c : constituentsFromFile)
+            run(fileConstituents[c]);
+    for (int i : wanted)
+        run(i);
+
+    system.SetAllParents();
+    system.SetVariableParents();
+    addedtemplatefilenames = system.addedtemplates;
+
+    // ---- Report ---------------------------------------------------------------------
+    if (!skipped.isEmpty())
+        LogWindow->AppendText(tr("Skipped (name already exists): %1").arg(skipped.join(", ")));
+    if (!overwritten.isEmpty())
+        LogWindow->AppendText(tr("Overwritten: %1").arg(overwritten.join(", ")));
+    for (const QString &f : failed)
+        LogError(tr("Not imported: %1").arg(f));
+    for (const QString &d : dropped)
+        LogError(tr("Dropped (constituent not in model): %1").arg(d));
+    if (!importConstituents && !constituentsFromFile.isEmpty())
+        constituentsMissing += constituentsFromFile;
+    if (!constituentsMissing.isEmpty())
+        LogError(tr("The imported objects refer to constituent(s) this model does not have: %1").arg(constituentsMissing.join(", ")));
+    for (auto u = unresolvedIds.constBegin(); u != unresolvedIds.constEnd(); ++u)
+        LogError(tr("%1: expressions use name(s) nothing in the model defines: %2").arg(u.key(), u.value().join(", ")));
+
+    bool changed = !added.isEmpty() || !overwritten.isEmpty() || templatesChanged;
+    if (changed)
+    {
+        if (templatesChanged)
+        {
+            ui->mainToolBar->clear();
+            BuildObjectsToolBar();
+            ReCreateObjectsMenu();
+        }
+        PopulatePropertyTable(nullptr);
+        dView->DeleteAllItems();
+        RecreateGraphicItemsFromSystem(false);
+        RefreshTreeView();
+        AddStatetoUndoData();
+    }
+
+    QString summary = tr("Imported %1 object(s) from '%2'.").arg(added.size()).arg(shortName);
+    if (!added.isEmpty()) summary += "\n\n" + tr("Added: %1").arg(added.join(", "));
+    if (!overwritten.isEmpty()) summary += "\n" + tr("Overwritten: %1").arg(overwritten.join(", "));
+    if (!skipped.isEmpty()) summary += "\n" + tr("Skipped (name exists): %1").arg(skipped.join(", "));
+    int problems = failed.size() + dropped.size() + unresolvedIds.size() + (constituentsMissing.isEmpty() ? 0 : 1);
+    if (problems > 0)
+    {
+        summary += "\n\n" + tr("%1 problem(s) were found; see the log window.").arg(problems);
+        QMessageBox::warning(this, tr("Import"), summary);
+    }
+    else
+        QMessageBox::information(this, tr("Import"), summary);
+}
+
+void MainWindow::onExportSources()
+{
+    if (system.SourcesCount() == 0)
+    {
+        QMessageBox::information(this, tr("Export Sources"), tr("This model has no sources."));
+        return;
+    }
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Export Sources"), workingfolder,
+        tr("OpenHydroQual files (*.ohq)"), nullptr, QFileDialog::DontUseNativeDialog);
+    if (fileName.isEmpty())
+        return;
+    if (!fileName.toLower().endsWith(".ohq"))
+        fileName += ".ohq";
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QMessageBox::critical(this, tr("Export Sources"), tr("'%1' could not be written.").arg(fileName));
+        return;
+    }
+    // Relative file names are made absolute so the export works from any folder.
+    QString modelDir = QString::fromStdString(system.GetWorkingFolder());
+    QTextStream out(&file);
+    if (!maintemplatefilename.empty())
+        out << "loadtemplate; filename = " << QString::fromStdString(maintemplatefilename) << "\n";
+    for (const string &t : system.addedtemplates)
+        out << "addtemplate; filename = " << QString::fromStdString(t) << "\n";
+    for (unsigned int i = 0; i < system.SourcesCount(); i++)
+    {
+        Command cmd(string("create source;") + system.source(i)->toCommand());
+        QStringList parts;
+        for (const auto &kv : cmd.GetAssignments())
+        {
+            QString v = QString::fromStdString(kv.second);
+            if (kv.first != "name" && kv.first != "type")
+                v = absolutizeFileValue(v, modelDir);
+            parts << QString::fromStdString(kv.first) + "=" + v;
+        }
+        out << "create source;" << parts.join(",") << "\n";
+    }
+    file.close();
+    LogWindow->AppendBlue(tr("%1 source(s) were exported to '%2'").arg(system.SourcesCount()).arg(fileName));
 }
