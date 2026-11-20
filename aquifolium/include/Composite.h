@@ -115,6 +115,20 @@ public:
     string ResolvePort(const string &linktype, Expression::loc end);
 
     /**
+     * @brief Renames the members after the composite itself was renamed
+     * @param sys The owning system
+     * @return true if every member and internal link could be renamed
+     *
+     * Member names are "<composite name>__<member key>", fixed when the
+     * composite is instantiated. Renaming the composite (for instance from the
+     * GUI's Name property) changes GetName() only, so without this the members
+     * keep the old prefix while MemberName() builds the new one, and links can
+     * no longer attach to the composite. Called from Propagate(),
+     * ApplyGeometry() and ResolvePort(), so any edit brings the names in line.
+     */
+    bool SyncMemberNames(System *sys);
+
+    /**
      * @brief Instance-qualified names of the member blocks
      */
     const vector<string>& MemberNames() const {return members;}
@@ -181,6 +195,7 @@ public:
 private:
     vector<string> members;
     vector<string> internal_links;
+    string member_prefix;   ///< the composite name the members were instantiated with
 };
 
 #endif // COMPOSITE_H

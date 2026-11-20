@@ -33,6 +33,7 @@ Composite::Composite(const Composite& other) : Object(other)
 {
     members = other.members;
     internal_links = other.internal_links;
+    member_prefix = other.member_prefix;
 }
 
 Composite& Composite::operator=(const Composite& other)
@@ -41,6 +42,7 @@ Composite& Composite::operator=(const Composite& other)
     Object::operator=(other);
     members = other.members;
     internal_links = other.internal_links;
+    member_prefix = other.member_prefix;
     return *this;
 }
 
@@ -72,6 +74,7 @@ bool Composite::Instantiate(System *sys)
 
     members.clear();
     internal_links.clear();
+    member_prefix = GetName();
 
     bool success = true;
 
@@ -153,9 +156,42 @@ bool Composite::Instantiate(System *sys)
     return success;
 }
 
+bool Composite::SyncMemberNames(System *sys)
+{
+    if (!sys) return false;
+    if (member_prefix.empty()) { member_prefix = GetName(); return true; }
+    if (member_prefix == GetName()) return true;
+
+    const string oldprefix = member_prefix + COMPOSITE_MEMBER_SEPARATOR;
+    const string newprefix = GetName() + COMPOSITE_MEMBER_SEPARATOR;
+    bool success = true;
+    for (unsigned int i=0; i<members.size(); i++)
+    {
+        if (members[i].compare(0, oldprefix.size(), oldprefix) != 0) continue;
+        const string newname = newprefix + members[i].substr(oldprefix.size());
+        Block *blk = sys->block(members[i]);
+        if (!blk || sys->object(newname) != nullptr) { success = false; continue; }
+        blk->SetName(newname);
+        members[i] = newname;
+    }
+    for (unsigned int i=0; i<internal_links.size(); i++)
+    {
+        if (internal_links[i].compare(0, oldprefix.size(), oldprefix) != 0) continue;
+        const string newname = newprefix + internal_links[i].substr(oldprefix.size());
+        Link *lnk = sys->link(internal_links[i]);
+        if (!lnk || sys->object(newname) != nullptr) { success = false; continue; }
+        lnk->SetName(newname);
+        internal_links[i] = newname;
+    }
+    if (success) member_prefix = GetName();
+    else sys->errorhandler.Append(GetName(),"Composite","SyncMemberNames","Members of '" + member_prefix + "' could not all be renamed to '" + GetName() + "'",18036);
+    return success;
+}
+
 void Composite::ApplyGeometry(System *sys)
 {
     if (!sys) return;
+    SyncMemberNames(sys);
     QuanSet *model = sys->GetModel(GetType());
     if (!model) return;
 
@@ -225,6 +261,7 @@ void Composite::RestoreDerivedQuantities(System *sys, const map<string, bool> &s
 bool Composite::Propagate(System *sys)
 {
     if (!sys) return false;
+    SyncMemberNames(sys);
 
     bool success = true;
 
@@ -285,6 +322,7 @@ string Composite::ResolvePort(const string &linktype, Expression::loc end)
 {
     System *sys = GetParent();
     if (!sys) return "";
+    SyncMemberNames(sys);
     QuanSet *model = sys->GetModel(GetType());
     if (!model) return "";
 
