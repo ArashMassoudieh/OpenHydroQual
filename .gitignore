@@ -470,3 +470,11 @@ terminal/OHQ-GA/build_new/OHQ-GA
 terminal/OHQ-LM/build_new/OHQ-LM
 
 terminal/OHQ-MCMC/build_new/OHQ-MCMC
+
+# Generated CMake and Qt build trees
+OHQLib/build-*/
+codegen/build-*/
+
+# Generated Armadillo CMake configuration templates
+include/armadillo_bits/config.hpp.cmake
+aquifolium/armadillo-header/armadillo_bits/config.hpp.cmake
