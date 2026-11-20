@@ -183,6 +183,13 @@ int main(int argc, char *argv[])
     // aborts in Armadillo while sizing its work vectors.
     system->SetSystemSettings();
 
+    // KernelSystem::Solve() skips System::InitializeSolver(), which normally
+    // assigns the Object::Parent() pointers used when objective functions are
+    // evaluated. Set them here so reporting objective values works for both
+    // interpreter and generated-kernel runs.
+    if (!kernel.empty())
+        system->SetAllParents();
+
     system->SetSilent(quiet);
 
     if (!kernel.empty()) {
@@ -298,6 +305,12 @@ int main(int argc, char *argv[])
                   << ", " << ob->GetModeledEMC()->getValue(k) << endl;
             cout << "  " << ob->GetObservedEMC()->size() << " event(s) written to '" << emcfile << "'" << endl;
         }
+    }
+
+    for (unsigned int i = 0; i < system->ObjectiveFunctionsCount(); i++) {
+        Objective_Function *objective = system->objectivefunction(i);
+        cout << "Objective function '" << objective->GetName()
+             << "': " << objective->GetObjective() << endl;
     }
 
     const string outname = outfile.empty() ? system->OutputFileName() : outfile;

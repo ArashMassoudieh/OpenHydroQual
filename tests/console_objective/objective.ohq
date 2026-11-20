@@ -1,0 +1,17 @@
+loadtemplate; filename=main_components.json
+addtemplate; filename=groundwater.json
+
+# Active aquifer storage starts at 1,000 m3. With k=0.01/day, baseflow is
+# Q(t) = 10 exp(-0.01 t) m3/day, whose integral from day 0 to 100 is
+# 1000(1-exp(-1)) = 632.1205588 m3.
+create block;type=Groundwater cell,name=Aquifer,area=1000[m^2],depth=10[m],moisture_content=0.4,porosity=0.4,specific_storage=0.01[1/m],bottom_elevation=0[m],hydraulic_conductivity=1[m/day]
+create block;type=fixed_head,name=Stream,head=0[m],Storage=1000000[m^3]
+create link;type=Linear_baseflow,from=Aquifer,to=Stream,name=Baseflow,recession_rate=0.01[1/day],min_moisture_content=0.3
+create objectivefunction;type=Objective_Function,name=Integrated Baseflow,object=Baseflow,method=integrate,expression=flow,weight=1
+
+setvalue; object=system, quantity=simulation_start_time, value=0
+setvalue; object=system, quantity=simulation_end_time, value=100
+setvalue; object=system, quantity=initial_time_step, value=0.01
+setvalue; object=system, quantity=minimum_timestep, value=1e-08
+setvalue; object=system, quantity=write_interval, value=1
+setvalue; object=system, quantity=record_results, value=No

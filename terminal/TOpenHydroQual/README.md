@@ -15,6 +15,7 @@ The forward model can be solved in two ways:
 | Writes the bulk output file (`alloutputfile`) | Yes | No |
 | Writes the observed output file (`observed_outputfile`) | Yes | Yes |
 | Prints fit statistics for observations with data | Yes | Yes |
+| Prints declared objective-function values | Yes | Yes |
 | Model changes take effect | Immediately | Only after regenerating the kernel, except calibration parameter values |
 
 The two paths give the same observations to rounding; the kernel replaces only the solve.
@@ -131,7 +132,9 @@ $env:OHQ_RESOURCES = "C:\OpenHydroQual\resources"
 7. **Report fit statistics.** For every observation that has observed data, the console prints MSE, R²,
    NSE and the negative log-likelihood. EMC observations also get a per-event table in
    `<observation name>_EMC.txt`.
-8. **Write bulk outputs.** Every quantity marked for output is written to `alloutputfile` (or the
+8. **Report objective functions.** Every declared objective function is evaluated and printed after a
+   successful run.
+9. **Write bulk outputs.** Every quantity marked for output is written to `alloutputfile` (or the
    `--outputfile` name), resampled onto the `initial_time_step` grid. Nothing is written if the file name
    is empty or `record_results` is `No`.
 
@@ -249,6 +252,7 @@ Model parameter 'p_k' is not exposed by the kernel. Regenerate the kernel from t
 - `observed_outputfile`: every observation, resampled onto the `initial_time_step` grid, same format as
   an interpreter run.
 - Fit statistics for observations with observed data, and EMC tables, as in section 2.
+- Every declared objective function's calculated value.
 - **No bulk output file.** The kernel returns observations and objective functions only. The console
   says so at the end of the run. To see other quantities, declare them as observations before
   generating the kernel, or run the interpreter.
