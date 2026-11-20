@@ -5361,6 +5361,13 @@ void System::RenameConstituents(const string &oldname, const string &newname)
     {
         reactions[i].RenameConstituents(oldname, newname);
     }
+    // A composite carries its own copies of the constituent properties (for
+    // example "S:concentration" on a Clarifier); without this they keep the old
+    // constituent name and the saved model no longer loads.
+    for (unsigned int i=0; i<composites.size(); i++)
+    {
+        composites[i].RenameConstituents(oldname, newname);
+    }
 
     metamodel.RenameConstituent(oldname,newname);
 
