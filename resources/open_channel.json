@@ -139,6 +139,15 @@
       "includeinoutput": "true",
       "unit": "m;ft"
     },
+    "conveyance": {
+      "type": "expression",
+      "expression": "xsectionarea*(xsectionarea/(perimeter+0.001))^0.6667",
+      "description": "Conveyance factor A R^(2/3)",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m^(8/3)",
+      "helptext": "Q = sqrt(S)/n x conveyance. Lets Compound_Channel_link_divided connect a trapezoidal segment to a compound one."
+    },
     "inflow": {
       "type": "timeseries",
       "includeinoutput": "true",
@@ -223,6 +232,24 @@
       "unit": "m;ft;cm",
       "estimate": "true",
       "default": "0"
+    },
+    "datum_offset": {
+      "type": "value",
+      "description": "Gauge datum offset",
+      "ask_user": "false",
+      "helptext": "Added to the head in gauge_head; lets a stage observation carry an estimated datum offset. Not used by the hydraulics.",
+      "delegate": "UnitBox",
+      "unit": "m;ft;cm",
+      "estimate": "true",
+      "default": "0"
+    },
+    "gauge_head": {
+      "type": "expression",
+      "expression": "depth+bottom_elevation+datum_offset",
+      "description": "Head at the gauge datum",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m;ft"
     }
   },
   "Trapezoidal Channel Segment (Imposed depth)": {

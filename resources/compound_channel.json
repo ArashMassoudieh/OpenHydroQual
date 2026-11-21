@@ -213,6 +213,48 @@
       "ask_user": "false",
       "includeinoutput": "true",
       "unit": "m;ft"
+    },
+    "main_area": {
+      "type": "expression",
+      "expression": "_pos(channel_coeff*(_min(_pos(depth);bank_depth))^channel_exponent+channel_coeff*channel_exponent*bank_depth^(channel_exponent-1)*_pos(depth-bank_depth)-channel_coeff*pool_depth^channel_exponent)",
+      "description": "Flowing area of the main channel (divided-channel method)",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m^2;ft^2",
+      "helptext": "Main-channel subsection: the channel below bank level plus the water column directly above it (bank width x depth above bank), minus the pool. Vertical division at the banks; the interfaces are not counted as wetted perimeter."
+    },
+    "main_perimeter": {
+      "type": "expression",
+      "expression": "channel_coeff*channel_exponent*(_min(_pos(depth);bank_depth))^(channel_exponent-1)+2*_min(_pos(depth);bank_depth)",
+      "description": "Wetted perimeter of the main channel (divided-channel method)",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m;ft"
+    },
+    "floodplain_area": {
+      "type": "expression",
+      "expression": "floodplain_width*_pos(depth-bank_depth)+floodplain_side_slope*_pos(depth-bank_depth)^2",
+      "description": "Flowing area over the floodplain (divided-channel method)",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m^2;ft^2"
+    },
+    "floodplain_perimeter": {
+      "type": "expression",
+      "expression": "floodplain_width+2*_pos(depth-bank_depth)*_sqt(1+floodplain_side_slope^2)",
+      "description": "Wetted perimeter of the floodplain (divided-channel method)",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m;ft"
+    },
+    "conveyance": {
+      "type": "expression",
+      "expression": "main_area*(main_area/(main_perimeter+0.001))^0.6667+floodplain_area*(floodplain_area/(floodplain_perimeter+0.001))^0.6667",
+      "description": "Conveyance factor A R^(2/3) summed over main channel and floodplain",
+      "ask_user": "false",
+      "includeinoutput": "false",
+      "unit": "m^(8/3)",
+      "helptext": "Divided-channel conveyance (Chow 1959): main channel and floodplain each carry Manning flow with their own hydraulic radius; Q = sqrt(S)/n x conveyance. Unlike a single-section hydraulic radius it increases monotonically with stage when water spills onto a floodplain shelf. Used by Compound_Channel_link_divided."
     }
   },
   "Compound_Channel_link": {
@@ -279,5 +321,62 @@
       "unit": "m/s;m/day;ft/s"
     },
     "helptext": "Manning (diffusive-wave) connector between channel segments; identical to Trapezoidal_Channel_link (upwind flowing area, average wetted perimeter and roughness). Works with Compound Channel Segment and Trapezoidal Channel Segment."
+  },
+  "Compound_Channel_link_divided": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Channel link with divided-channel (main channel + floodplain) conveyance",
+    "icon": {
+      "filename": "Compound_Channel_Link.png"
+    },
+    "conveyance": {
+      "type": "expression",
+      "description": "Upwind conveyance A R^(2/3)",
+      "expression": "_max(_bkw(head;conveyance);0)",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "unit": "m^(8/3)"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Cross-sectional area",
+      "expression": "_max(_bkw(head;xsectionarea);0)",
+      "includeinoutput": "true",
+      "ask_user": "false",
+      "unit": "m^2;ft^2"
+    },
+    "ManningCoeff": {
+      "type": "expression",
+      "description": "Manning's roughness coefficient",
+      "expression": "(ManningCoeff.s+ManningCoeff.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "length": {
+      "type": "expression",
+      "description": "Connector length",
+      "expression": "(length.s+length.e)/2",
+      "includeinoutput": "false",
+      "ask_user": "false"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*conveyance",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
+    },
+    "velocity": {
+      "type": "expression",
+      "description": "Velocity",
+      "expression": "flow/(area+0.000001)/86400",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
+    },
+    "helptext": "Manning (diffusive-wave) connector using the upwind segment's divided-channel conveyance: main channel and floodplain carry flow with their own hydraulic radii, so the stage-discharge relation stays monotonic above bank level (a single-section hydraulic radius drops when the water spreads onto a floodplain shelf). Works between Compound Channel Segments and Trapezoidal Channel Segments (both define 'conveyance')."
   }
 }
