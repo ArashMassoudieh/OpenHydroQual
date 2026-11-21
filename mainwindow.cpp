@@ -79,6 +79,8 @@
 #include "CodeGenerator.h"
 #include "toolchainprobe.h"
 #include <QMessageBox>
+#include <QShortcut>
+#include <QSignalBlocker>
 #include <QCloseEvent>
 #include <QPushButton>
 #include <QStandardPaths>
@@ -1003,6 +1005,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ReCreateObjectsMenu();
     connect(ui->treeWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(preparetreeviewMenu(const QPoint&)));
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeSelectionChanged(QTreeWidgetItem*)));
+    // Objects are renamed in place by double-clicking them or pressing F2. Edits are
+    // started only from StartTreeRename, which checks that the item may be renamed.
+    ui->treeWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    connect(ui->treeWidget,SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),this,SLOT(onTreeItemDoubleClicked(QTreeWidgetItem*, int)));
+    connect(ui->treeWidget,SIGNAL(itemChanged(QTreeWidgetItem*, int)),this,SLOT(onTreeItemChanged(QTreeWidgetItem*, int)));
+    {
+        QShortcut *renameshortcut = new QShortcut(QKeySequence(Qt::Key_F2), ui->treeWidget);
+        renameshortcut->setContext(Qt::WidgetShortcut);
+        connect(renameshortcut, SIGNAL(activated()), this, SLOT(onTreeRenameShortcut()));
+    }
 
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(onopen()));
     connect(ui->actionImport, SIGNAL(triggered()), this, SLOT(onimport()));
@@ -2906,6 +2918,93 @@ void MainWindow::onTreeSelectionChanged(QTreeWidgetItem *current)
         }
         PopulatePropertyTable(system.object(current->text(0).toStdString())->GetVars());
     }
+}
+
+bool MainWindow::StartTreeRename(QTreeWidgetItem *item)
+{
+    if (item == nullptr || item->data(0,Qt::UserRole) != "child")
+        return false;
+    const QString name = item->text(0);
+    if (system.object(name.toStdString()) == nullptr)
+        return false;
+    // Composite members are named after their composite, and a composite's members
+    // carry its name as a prefix, so neither can be renamed on its own here.
+    if (system.composite(name.toStdString()) != nullptr || system.OwnerComposite(name.toStdString()) != nullptr)
+    {
+        ShowStatusHint("Composites and their members cannot be renamed from the Object Browser");
+        return false;
+    }
+    // Setting the flag emits itemChanged, so do it before the item is marked as renaming.
+    renamingTreeItem = nullptr;
+    item->setFlags(item->flags() | Qt::ItemIsEditable);
+    renamingTreeOldName = name;
+    renamingTreeItem = item;
+    ui->treeWidget->editItem(item, 0);
+    return true;
+}
+
+void MainWindow::onTreeItemDoubleClicked(QTreeWidgetItem *item, int /*column*/)
+{
+    StartTreeRename(item);
+}
+
+void MainWindow::onTreeRenameShortcut()
+{
+    StartTreeRename(ui->treeWidget->currentItem());
+}
+
+void MainWindow::onTreeItemChanged(QTreeWidgetItem *item, int /*column*/)
+{
+    if (item == nullptr || item != renamingTreeItem)
+        return;
+    renamingTreeItem = nullptr;
+    const QString oldname = renamingTreeOldName;
+    const QString newname = item->text(0).trimmed();
+
+    auto revert = [this, item, oldname]()
+    {
+        QSignalBlocker blocker(ui->treeWidget);
+        item->setText(0, oldname);
+        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+    };
+
+    if (newname == oldname)
+    {
+        revert();
+        return;
+    }
+    if (newname.isEmpty())
+    {
+        revert();
+        QMessageBox::warning(this, "Rename", "The name cannot be empty.");
+        return;
+    }
+    if (system.object(newname.toStdString()) != nullptr)
+    {
+        revert();
+        QMessageBox::warning(this, "Rename", "An object called '" + newname + "' already exists.");
+        return;
+    }
+    Object *obj = system.object(oldname.toStdString());
+    if (obj == nullptr || !obj->SetName(newname.toStdString(), true))
+    {
+        revert();
+        QMessageBox::warning(this, "Rename", "'" + oldname + "' could not be renamed to '" + newname + "'.");
+        return;
+    }
+
+    {
+        QSignalBlocker blocker(ui->treeWidget);
+        item->setText(0, newname);
+        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+    }
+    // Refresh the property panel if it shows the renamed object, so its Name row matches.
+    if (propmodel != nullptr && propmodel->GetQuanSet() == obj->GetVars())
+        PopulatePropertyTable(obj->GetVars());
+    if (dView != nullptr)
+        dView->viewport()->update();
+    AddStatetoUndoData();
+    Log("'" + oldname + "' was renamed to '" + newname + "'");
 }
 
 void MainWindow::PopulatePropertyTable(QuanSet* quanset)
