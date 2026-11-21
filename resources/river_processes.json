@@ -482,7 +482,8 @@
       "expression": "86400*((head.s-head.e)/length)/(_abs(((head.s-head.e)/length))+0.00000001)^0.5/ManningCoeff*area*hydraulic_radious^0.666667",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     }
   },
   "Suspended_sediment": {
