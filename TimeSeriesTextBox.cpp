@@ -56,6 +56,7 @@ TimeSeriesTextBox::TimeSeriesTextBox(const QStyleOptionViewItem &option, QWidget
     connect(clearButton, &QPushButton::clicked, this, &TimeSeriesTextBox::onClearClicked);
     connect(unitBox, QOverload<const QString &>::of(&QComboBox::currentTextChanged),
             this, &TimeSeriesTextBox::unitChanged);
+    connect(unitBox, &QComboBox::activated, this, [this](int) { emit unitPicked(unitBox->currentText()); });
 
     show();
 }

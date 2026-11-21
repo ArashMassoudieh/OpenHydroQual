@@ -62,4 +62,5 @@ private slots:
 signals:
     void fileSelected(const QString &filename);
     void unitChanged(const QString &unit);
+    void unitPicked(const QString &unit);   // the user chose a unit in the dropdown (not emitted by setUnit/setUnitsList)
 };

@@ -157,11 +157,28 @@ QWidget *Delegate::createEditor(QWidget *parent,
             if (mainwindow && mainwindow->GetWorkingFolder())
                 editor->setWorkingFolder(*mainwindow->GetWorkingFolder());
 
+            // The unit chosen in the dropdown must reach the model before a file is loaded (the file is read in
+            // that unit) and must not wait for setModelData: loading a file refreshes the property panel, which
+            // destroys this editor before it commits.
+            auto pushUnit = [editor, index]() {
+                QAbstractItemModel *model = const_cast<QAbstractItemModel*>(index.model());
+                const QString picked = XString::reformBack(editor->unit());
+                const QString current = XString::reformBack(model->data(index, CustomRoleCodes::Role::UnitRole).toString());
+                if (!picked.isEmpty() && picked != current)
+                    model->setData(index, picked, CustomRoleCodes::Role::UnitRole);
+            };
+            connect(editor, &TimeSeriesTextBox::unitPicked, this, [this, pushUnit](const QString &) {
+                pushUnit();
+                mainwindow->SetActiveUndo();
+                mainwindow->AddStatetoUndoData();
+            });
+
             // IMPORTANT: Connect the fileSelected signal to immediately update the model
-            connect(editor, &TimeSeriesTextBox::fileSelected, this, [this, editor, index](const QString &filename) {
+            connect(editor, &TimeSeriesTextBox::fileSelected, this, [this, editor, index, pushUnit](const QString &filename) {
                 qDebug() << "fileSelected signal received:" << filename;
                 // Get the model from the index
                 QAbstractItemModel *model = const_cast<QAbstractItemModel*>(index.model());
+                pushUnit();
                 if (filename.isEmpty())
                 {
                     // Clear the file
