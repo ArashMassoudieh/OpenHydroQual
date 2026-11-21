@@ -3025,6 +3025,7 @@ void MainWindow::onTreeItemChanged(QTreeWidgetItem *item, int /*column*/)
         return;
     }
 
+    system.RenameObjectReferences(oldname.toStdString(), newname.toStdString());
     {
         QSignalBlocker blocker(ui->treeWidget);
         item->setText(0, newname);
@@ -4352,6 +4353,7 @@ static void RenameTreeItems(QTreeWidgetItem *item, const QString &oldname, const
 
 void MainWindow::OnObjectRenamed(const QString &oldname, const QString &newname, QuanSet *quanset)
 {
+    system.RenameObjectReferences(oldname.toStdString(), newname.toStdString());
     for (int i = 0; i < ui->treeWidget->topLevelItemCount(); i++)
         RenameTreeItems(ui->treeWidget->topLevelItem(i), oldname, newname);
     if (quanset != nullptr)

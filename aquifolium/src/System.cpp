@@ -5343,6 +5343,74 @@ bool System::AddCompositeConstituentRelatedProperties()
 
 
 
+static void RenameReferencesInQuanSet(QuanSet *quanset, const string &oldname, const string &newname)
+{
+    if (quanset == nullptr)
+        return;
+    for (QuanSet::iterator it = quanset->begin(); it != quanset->end(); ++it)
+    {
+        Quan &quan = it->second;
+        if (quan.GetParameterAssignedTo() == oldname)
+            quan.SetParameterAssignedTo(newname);
+        if (quan.GetType() == Quan::_type::source && quan.SourceName() == oldname)
+            quan.SetSourceName(newname);
+    }
+}
+
+void System::RenameObjectReferences(const string &oldname, const string &newname)
+{
+    if (oldname.empty() || oldname == newname)
+        return;
+
+    for (unsigned int i=0; i<blocks.size(); i++)
+        RenameReferencesInQuanSet(blocks[i].GetVars(), oldname, newname);
+    for (unsigned int i=0; i<links.size(); i++)
+        RenameReferencesInQuanSet(links[i].GetVars(), oldname, newname);
+    for (unsigned int i=0; i<sources.size(); i++)
+        RenameReferencesInQuanSet(sources[i].GetVars(), oldname, newname);
+    for (unsigned int i=0; i<composites.size(); i++)
+        RenameReferencesInQuanSet(composites[i].GetVars(), oldname, newname);
+
+    for (unsigned int i=0; i<observations.size(); i++)
+    {
+        Quan *location = observations[i].Variable("object");
+        if (location != nullptr && location->GetProperty() == oldname)
+        {
+            location->SetProperty(newname);
+            observations[i].SetLocation(newname);
+        }
+    }
+    for (unsigned int i=0; i<objective_function_set.size(); i++)
+    {
+        Objective_Function *objfunc = objective_function_set[int(i)];
+        if (objfunc == nullptr)
+            continue;
+        Quan *location = objfunc->Variable("object");
+        if (location != nullptr && location->GetProperty() == oldname)
+        {
+            location->SetProperty(newname);
+            objfunc->SetLocation(newname);
+        }
+    }
+
+    for (unsigned int i=0; i<parameter_set.size(); i++)
+    {
+        Parameter *parameter = parameter_set[int(i)];
+        if (parameter == nullptr)
+            continue;
+        vector<string> locations = parameter->GetLocations();
+        bool changed = false;
+        for (unsigned int j=0; j<locations.size(); j++)
+            if (locations[j] == oldname)
+            {
+                locations[j] = newname;
+                changed = true;
+            }
+        if (changed)
+            parameter->SetLocations(locations);
+    }
+}
+
 void System::RenameConstituents(const string &oldname, const string &newname)
 {
     for (unsigned int i=0; i<blocks.size(); i++)

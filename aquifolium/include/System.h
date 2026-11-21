@@ -757,6 +757,18 @@ public:
     std::vector<std::string> AllConstituents();
     std::vector<std::string> AllReactionParameters();
     void RenameConstituents(const std::string& oldname, const std::string& newname);
+    /**
+     * @brief Points everything that refers to an object by name at its new name
+     * @param oldname The object's name before the rename
+     * @param newname The object's name after the rename
+     *
+     * Links hold their blocks directly and need nothing, but observations and
+     * objective functions name the object they read ("object"), parameters name
+     * the objects they drive, quantities name the parameter assigned to them, and
+     * source quantities name their source. Call after the object itself has been
+     * renamed.
+     */
+    void RenameObjectReferences(const std::string& oldname, const std::string& newname);
     bool EraseConstituentRelatedProperties(const std::string& constituent_name);
     void AddPropertytoAllBlocks(const std::string& name, Quan& quan);
     void AddPropertytoAllLinks(const std::string& name, Quan& quan);

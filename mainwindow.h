@@ -126,6 +126,8 @@ public:
     // Renames the Object Browser entry and the property panel header after an
     // object's Name property was edited. Does not rebuild the tree, because the
     // call comes from inside the property model the rebuild would delete.
+    // Also points observations, objective functions, parameters and source
+    // references that used the old name at the new one.
     void OnObjectRenamed(const QString &oldname, const QString &newname, QuanSet *quanset);
     bool IsModified() const { return modelModified; }
     /**
