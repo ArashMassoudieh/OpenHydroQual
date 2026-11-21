@@ -1,11 +1,12 @@
 {
-  "Bed_sediment": {
+  "Bed_sediment_layer": {
     "type": "block",
     "typecategory": "Blocks",
     "description": "Bed sediment layer",
     "icon": {
-      "filename": "bed_sediment.png"
+      "filename": "bed_sediment_layer.png"
     },
+    "helptext": "A porous sediment layer under a river segment (or pond): water content, porosity, specific storage and hydraulic conductivity. It exchanges water and dissolved constituents with the river through a River to bed sediment link, and with deeper layers or a fixed head below.",
     "Storage": {
       "type": "balance",
       "massbalance": "true",
@@ -122,13 +123,14 @@
       "ask_user": "false"
     }
   },
-  "River Segment": {
+  "River_segment": {
     "type": "block",
     "typecategory": "Blocks",
-    "description": "River Segment",
+    "description": "River segment (trapezoidal section, Manning)",
     "icon": {
-      "filename": "River.png"
+      "filename": "river_segment.png"
     },
+    "helptext": "A reach of river with a trapezoidal cross-section: base width, side slope, Manning n, bed elevation and length. Water storage sets the depth; flows to neighbouring segments follow Manning's equation through River segment links. Chain segments (Edit > Create 2D Array) to build a river.",
     "Storage": {
       "type": "balance",
       "massbalance": "true",
@@ -165,7 +167,7 @@
       "ask_user": "true",
       "delegate": "ValueBox",
       "estimate": "true",
-      "helptext": "Manning\u2019s roughness coefficient that defines flow resistance based on channel surface properties."
+      "helptext": "Manning’s roughness coefficient that defines flow resistance based on channel surface properties."
     },
     "bottom_elevation": {
       "type": "value",
@@ -178,7 +180,7 @@
     },
     "depth": {
       "type": "expression",
-      "expression": "(-base_width+_sqt(base_width^2+4*side_slope*Storage/length))/(2*side_slope)",
+      "expression": "(-base_width+_sqr(base_width^2+4*side_slope*_pos(Storage)/length))/(2*side_slope)",
       "precalcbasedon": "Storage:log:0.000001:1000000",
       "description": "Initial Water Depth; Water Depth",
       "ask_user": "true",
@@ -201,7 +203,8 @@
       "expression": "velocity.v*1",
       "description": "Velocity",
       "ask_user": "false",
-      "includeinoutput": "true"
+      "includeinoutput": "true",
+      "unit": "m/s;m/day;ft/s"
     },
     "length": {
       "type": "value",
@@ -294,13 +297,14 @@
       "delegate": "Browser"
     }
   },
-  "Trapezoidal_Channel_link": {
+  "River_link": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Link from a river segment to another",
+    "description": "River segment to river segment (Manning)",
     "icon": {
-      "filename": "River2River.png"
+      "filename": "river_link.png"
     },
+    "helptext": "Flow between two river segments from Manning's equation: V = (1/n) R^(2/3) S^(1/2), Q = V A, where S is the water-surface slope (head difference over the mean segment length), A the upstream-weighted flow area and R the hydraulic radius with the mean wetted perimeter. The square root of S is smoothed only for |S| below about 1e-8, so flat lowland rivers keep their full Manning flow.",
     "area": {
       "type": "expression",
       "description": "Cross-sectional area",
@@ -339,27 +343,30 @@
     "velocity": {
       "type": "expression",
       "description": "Velocity",
-      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*hydraulic_radious^0.6667",
+      "expression": "((head.s-head.e)/length)/(_abs(((head.s-head.e)/length))+0.00000001)^0.5/ManningCoeff*hydraulic_radious^0.666667",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
     },
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "velocity*area",
+      "expression": "86400*velocity*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     }
   },
-  "Fixedhead_to_channel": {
+  "Fixedhead_to_river": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Link from a fixed head boundary to a channel segment",
+    "description": "Fixed-head boundary to river segment (Manning)",
     "icon": {
-      "filename": "fixed2channel.png"
+      "filename": "fixedhead_to_river.png"
     },
+    "helptext": "Inflow to a river segment from a fixed-head (or time-variable fixed-head) boundary, by Manning's equation with the depth set by the boundary level above the segment bed. Use it to let the upstream water level, rather than a prescribed discharge, drive the river.",
     "name": {
       "description": "Name",
       "type": "string",
@@ -376,7 +383,7 @@
     "perimeter": {
       "type": "expression",
       "description": "Wetted Perimeter",
-      "expression": "base_width.e+2*_sqt(1+side_slope.e^2)*_pos(head.s-bottom_elevation.e)",
+      "expression": "base_width.e+2*_sqr(1+side_slope.e^2)*_pos(head.s-bottom_elevation.e)",
       "includeinoutput": "true",
       "ask_user": "false"
     },
@@ -404,27 +411,30 @@
     "velocity": {
       "type": "expression",
       "description": "Velocity",
-      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*hydraulic_radious^0.6667",
+      "expression": "((head.s-head.e)/length)/(_abs(((head.s-head.e)/length))+0.00000001)^0.5/ManningCoeff*hydraulic_radious^0.666667",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m/s;m/day;ft/s"
     },
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "velocity*area",
+      "expression": "86400*velocity*area",
       "includeinoutput": "true",
       "applylimit": "true",
-      "ask_user": "false"
+      "ask_user": "false",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     }
   },
-  "channel2fixed": {
+  "River_to_fixedhead": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Link from a channel segment to fixed head boundary",
+    "description": "River segment to fixed-head boundary (Manning)",
     "icon": {
-      "filename": "channel2fixed.png"
+      "filename": "river_to_fixedhead.png"
     },
+    "helptext": "Outflow from a river segment to a fixed-head boundary by Manning's equation. Setting the boundary level to the normal depth above the bed one segment downstream continues uniform flow out of the reach.",
     "name": {
       "description": "Name",
       "type": "string",
@@ -469,19 +479,20 @@
     "flow": {
       "type": "expression",
       "description": "Flow",
-      "expression": "86400*(_sqt((head.s-head.e)/length)/ManningCoeff)*area*hydraulic_radious^0.6667",
+      "expression": "86400*((head.s-head.e)/length)/(_abs(((head.s-head.e)/length))+0.00000001)^0.5/ManningCoeff*area*hydraulic_radious^0.666667",
       "includeinoutput": "true",
       "applylimit": "true",
       "ask_user": "false"
     }
   },
-  "Suspended Sediments": {
+  "Suspended_sediment": {
     "type": "constituent",
     "typecategory": "Constituents",
-    "description": "Suspended sediments",
+    "description": "Suspended sediment",
     "icon": {
-      "filename": "suspended_sediments.png"
+      "filename": "suspended_sediment.png"
     },
+    "helptext": "Suspended sediment carried by the river: it settles at its settling velocity and is resuspended from the bed when the velocity exceeds v0, at the rate e = alpha (v - v0)^beta.",
     "concentration": {
       "description": "Concentration",
       "type": "expression",
@@ -601,13 +612,14 @@
       "delegate": "ComboBox;Sources"
     }
   },
-  "River_bed_sediment_link": {
+  "River_to_bed_sediment": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "River to bed link",
+    "description": "River segment to bed sediment (Darcy exchange)",
     "icon": {
-      "filename": "River2BedLink.png"
+      "filename": "river_bed_exchange.png"
     },
+    "helptext": "Vertical exchange between a river segment (or pond) and the bed sediment under it by Darcy's law: Q = K A (h_river - h_bed) / L, with A the plan area of the bed layer and L half its thickness. Positive flow is downward (infiltration into the bed).",
     "length": {
       "type": "expression",
       "expression": "depth.e/2",
@@ -629,13 +641,14 @@
       "ask_user": "false"
     }
   },
-  "bed_sediment_to_fixedhead": {
+  "Bed_sediment_to_fixedhead": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Bed sediment to fixed head link",
+    "description": "Bed sediment to fixed-head boundary (Darcy)",
     "icon": {
-      "filename": "bed_sediment_2_fixed_head.png"
+      "filename": "bed_to_fixedhead.png"
     },
+    "helptext": "Drainage from a bed sediment layer to a fixed-head boundary (for example the regional water table) by Darcy's law, with its own length and hydraulic conductivity.",
     "length": {
       "type": "value",
       "description": "Length",
