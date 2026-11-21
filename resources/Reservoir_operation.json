@@ -1,8 +1,794 @@
 {
+  "Level_Pool_Reservoir": {
+    "type": "block",
+    "typecategory": "Blocks",
+    "description": "Level-pool reservoir",
+    "icon": {
+      "filename": "Reservoir_template.png"
+    },
+    "helptext": "Level-pool reservoir: one water level across the pool (storage indication / modified Puls routing). Storage curve S = S_ref (h/h_ref)^b; surface area A = dS/dh. Losses: evaporation and precipitation through sources, seepage through the bed.",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name of the component."
+    },
+    "color": {
+      "description": "Color",
+      "type": "string",
+      "default": "0,90,170",
+      "ask_user": "false",
+      "delegate": "String"
+    },
+    "Storage": {
+      "type": "balance",
+      "massbalance": "true",
+      "flow": "flow",
+      "inflow": "Precipitation,Evaporation,inflow,seepage",
+      "description": "Initial Storage;Storage",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3;acre-ft",
+      "estimate": "true",
+      "includeinoutput": "true",
+      "criteria": "Storage>-0.0000001",
+      "warningmessage": "Storage can not be negative!",
+      "helptext": "Volume of water in the reservoir at the start of the simulation (acre-ft, ft3 or m3)."
+    },
+    "inflow": {
+      "type": "timeseries",
+      "includeinoutput": "true",
+      "applylimit": "true",
+      "description": "Inflow hydrograph",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "unit": "m^3/day;m^3/s;ft^3/s;cfs",
+      "helptext": "Inflow time series (the inflow hydrograph)."
+    },
+    "Precipitation": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Precipitation on the water surface",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Optional precipitation source; it falls on the water surface area A(h)."
+    },
+    "Evaporation": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Evaporation from the water surface",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Optional evaporation source, e.g. Evapotranspiration Time Series (S) with pan evaporation and the pan coefficient as its correction factor; it acts on the water surface area A(h)."
+    },
+    "bottom_elevation": {
+      "type": "value",
+      "description": "Bottom elevation (lowest point of the pool)",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Elevation of the lowest point of the reservoir; depth is measured from here."
+    },
+    "storage_ref": {
+      "type": "value",
+      "description": "Reference storage S_ref",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^3;ft~^3;acre-ft",
+      "estimate": "true",
+      "criteria": "storage_ref>0",
+      "warningmessage": "S_ref must be positive!",
+      "helptext": "Storage at the reference depth h_ref, read from the elevation-storage curve (e.g. the storage at the spillway crest)."
+    },
+    "depth_ref": {
+      "type": "value",
+      "description": "Reference depth h_ref",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "criteria": "depth_ref>0",
+      "warningmessage": "h_ref must be positive!",
+      "helptext": "Depth above the bottom at which the storage is S_ref."
+    },
+    "storage_exponent": {
+      "type": "value",
+      "description": "Storage curve exponent b",
+      "ask_user": "true",
+      "default": "2",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "criteria": "storage_exponent>0.999",
+      "warningmessage": "b should be 1 or larger!",
+      "helptext": "S = S_ref (h/h_ref)^b. b = 1: vertical walls (constant area); b = 2: area grows linearly with depth; b = 3: a cone or a V-shaped valley. Fit it to two points of the elevation-storage curve: b = ln(S2/S1)/ln(h2/h1)."
+    },
+    "seepage_rate": {
+      "type": "value",
+      "description": "Seepage rate through the bed",
+      "ask_user": "true",
+      "default": "0",
+      "delegate": "UnitBox",
+      "unit": "m/day;mm/day;ft/day;in/day",
+      "estimate": "true",
+      "helptext": "Loss through the bed and banks per unit water surface area (optional)."
+    },
+    "depth": {
+      "type": "expression",
+      "description": "Water depth",
+      "expression": "depth_ref*_pos(Storage^2/(storage_ref*(Storage+1)))^(1/storage_exponent)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft",
+      "helptext": "h = h_ref (S/S_ref)^(1/b)"
+    },
+    "head": {
+      "type": "expression",
+      "description": "Water surface elevation",
+      "expression": "bottom_elevation+depth",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "area": {
+      "type": "expression",
+      "description": "Water surface area",
+      "expression": "storage_exponent*storage_ref/depth_ref*(depth/depth_ref)^(storage_exponent-1)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^2;ft~^2;acre",
+      "helptext": "A = dS/dh = b S_ref/h_ref (h/h_ref)^(b-1)"
+    },
+    "seepage": {
+      "type": "expression",
+      "description": "Seepage loss",
+      "expression": "0-seepage_rate*area",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+    }
+  },
+  "Overflow_Spillway": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Overflow (ogee) spillway, uncontrolled",
+    "icon": {
+      "filename": "Emergency_Spillway.png"
+    },
+    "helptext": "Uncontrolled overflow spillway: Q = Cd (2/3) sqrt(2g) L (H - H_crest)^1.5, free flow.",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name of the component."
+    },
+    "color": {
+      "description": "Color",
+      "type": "string",
+      "default": "0,120,200",
+      "ask_user": "false",
+      "delegate": "String"
+    },
+    "crest_elevation": {
+      "type": "value",
+      "description": "Crest elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Crest elevation"
+    },
+    "crest_length": {
+      "type": "value",
+      "description": "Effective crest length L",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Effective crest length L"
+    },
+    "discharge_coefficient": {
+      "type": "value",
+      "description": "Discharge coefficient Cd",
+      "ask_user": "true",
+      "default": "0.73",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "helptext": "Dimensionless discharge coefficient Cd in Q = Cd (2/3) sqrt(2g) L H^1.5, so it holds in any units. The weir coefficient C of Q = C L H^1.5 is C = 5.35 Cd in ft^0.5/s, or 2.95 Cd in m^0.5/s. Ogee at its design head: Cd about 0.73 (C = 3.9 ft^0.5/s)."
+    },
+    "head_over_crest": {
+      "type": "expression",
+      "description": "Head over the crest H",
+      "expression": "_pos(head.s-crest_elevation)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*discharge_coefficient*(2/3)*_sqr(2*9.81)*crest_length*_pos(head.s-crest_elevation)^1.5",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    }
+  },
+  "Emergency_Spillway_Broad_Crested": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Emergency spillway (broad-crested)",
+    "icon": {
+      "filename": "Emergency_Spillway.png"
+    },
+    "helptext": "Broad-crested emergency spillway, usually set above the service spillway crest: same weir equation, lower Cd.",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name of the component."
+    },
+    "color": {
+      "description": "Color",
+      "type": "string",
+      "default": "200,90,0",
+      "ask_user": "false",
+      "delegate": "String"
+    },
+    "crest_elevation": {
+      "type": "value",
+      "description": "Crest elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Crest elevation"
+    },
+    "crest_length": {
+      "type": "value",
+      "description": "Crest length L",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Crest length L"
+    },
+    "discharge_coefficient": {
+      "type": "value",
+      "description": "Discharge coefficient Cd",
+      "ask_user": "true",
+      "default": "0.58",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "helptext": "Dimensionless discharge coefficient Cd in Q = Cd (2/3) sqrt(2g) L H^1.5, so it holds in any units. The weir coefficient C of Q = C L H^1.5 is C = 5.35 Cd in ft^0.5/s, or 2.95 Cd in m^0.5/s. Broad-crested: Cd about 0.58 (C = 3.1 ft^0.5/s)."
+    },
+    "head_over_crest": {
+      "type": "expression",
+      "description": "Head over the crest H",
+      "expression": "_pos(head.s-crest_elevation)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*discharge_coefficient*(2/3)*_sqr(2*9.81)*crest_length*_pos(head.s-crest_elevation)^1.5",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    }
+  },
+  "Gated_Spillway": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Gated spillway (vertical lift gates)",
+    "icon": {
+      "filename": "Reservoir_Control.png"
+    },
+    "helptext": "Gated crest (USBR, Design of Small Dams): Q = Cd (2/3) sqrt(2g) b (H1^1.5 - H2^1.5), H1 the head over the crest and H2 the head over the gate lip. Below the gate lip H2 = 0 and it is a free weir; a = 0 closes the gates.",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name of the component."
+    },
+    "color": {
+      "description": "Color",
+      "type": "string",
+      "default": "0,150,150",
+      "ask_user": "false",
+      "delegate": "String"
+    },
+    "crest_elevation": {
+      "type": "value",
+      "description": "Crest elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Crest elevation"
+    },
+    "crest_length": {
+      "type": "value",
+      "description": "Total gate width b",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Total gate width b"
+    },
+    "gate_opening": {
+      "type": "value",
+      "description": "Gate opening a",
+      "ask_user": "true",
+      "default": "0",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Height of the gate bottom above the crest. 0 closes the gates."
+    },
+    "discharge_coefficient": {
+      "type": "value",
+      "description": "Discharge coefficient Cd",
+      "ask_user": "true",
+      "default": "0.7",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "helptext": "Dimensionless discharge coefficient Cd in Q = Cd (2/3) sqrt(2g) L H^1.5, so it holds in any units. The weir coefficient C of Q = C L H^1.5 is C = 5.35 Cd in ft^0.5/s, or 2.95 Cd in m^0.5/s. Partly open gates: Cd about 0.65 to 0.73."
+    },
+    "head_over_crest": {
+      "type": "expression",
+      "description": "Head over the crest H1",
+      "expression": "_pos(head.s-crest_elevation)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "head_over_gate_lip": {
+      "type": "expression",
+      "description": "Head over the gate lip H2",
+      "expression": "_pos(head.s-crest_elevation-gate_opening)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*discharge_coefficient*(2/3)*_sqr(2*9.81)*crest_length*(head_over_crest^1.5-head_over_gate_lip^1.5)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    }
+  },
+  "Outlet_Works": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Outlet works (conduit with valve)",
+    "icon": {
+      "filename": "Riser_Spillway.png"
+    },
+    "helptext": "Orifice / conduit outlet: Q = Cd (valve A) sqrt(2g dH). The downstream block must have a head (tailwater).",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name of the component."
+    },
+    "color": {
+      "description": "Color",
+      "type": "string",
+      "default": "90,60,160",
+      "ask_user": "false",
+      "delegate": "String"
+    },
+    "outlet_elevation": {
+      "type": "value",
+      "description": "Outlet centerline elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Outlet centerline elevation"
+    },
+    "outlet_area": {
+      "type": "value",
+      "description": "Conduit area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2",
+      "estimate": "true",
+      "helptext": "Conduit area"
+    },
+    "valve_opening": {
+      "type": "value",
+      "description": "Valve opening (0 to 1)",
+      "ask_user": "true",
+      "default": "1",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "criteria": "valve_opening>-0.000001",
+      "warningmessage": "The valve opening can not be negative!",
+      "helptext": "Fraction of the conduit area that is open."
+    },
+    "discharge_coefficient": {
+      "type": "value",
+      "description": "Discharge coefficient Cd",
+      "ask_user": "true",
+      "default": "0.8",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "helptext": "Cd in Q = Cd A sqrt(2g dH); it lumps the entrance, friction and valve losses."
+    },
+    "turbine_efficiency": {
+      "type": "value",
+      "description": "Turbine efficiency (hydropower only)",
+      "ask_user": "true",
+      "default": "0.85",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "helptext": "Turbine efficiency (hydropower only)"
+    },
+    "driving_head": {
+      "type": "expression",
+      "description": "Driving head dH",
+      "expression": "_pos(head.s-_max(outlet_elevation;head.e))",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft",
+      "helptext": "To the outlet centerline (free outfall) or to the tailwater when it is higher (submerged)."
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "86400*discharge_coefficient*valve_opening*outlet_area*_sqr(2*9.81*driving_head)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+    },
+    "power": {
+      "type": "expression",
+      "description": "Hydropower (kW)",
+      "expression": "9.81*flow/86400*driving_head*turbine_efficiency",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "helptext": "P = rho g Q H eta, in kW."
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    }
+  },
+  "Drop_Inlet_Spillway": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Drop-inlet (morning-glory) spillway",
+    "icon": {
+      "filename": "Riser_Spillway.png"
+    },
+    "helptext": "Crest control at low heads, conduit control once the throat submerges; the smaller governs.",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name of the component."
+    },
+    "color": {
+      "description": "Color",
+      "type": "string",
+      "default": "0,100,100",
+      "ask_user": "false",
+      "delegate": "String"
+    },
+    "crest_elevation": {
+      "type": "value",
+      "description": "Crest elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Crest elevation"
+    },
+    "crest_radius": {
+      "type": "value",
+      "description": "Crest radius R",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Crest radius R"
+    },
+    "discharge_coefficient": {
+      "type": "value",
+      "description": "Weir discharge coefficient Cd",
+      "ask_user": "true",
+      "default": "0.6",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "helptext": "Dimensionless discharge coefficient Cd in Q = Cd (2/3) sqrt(2g) L H^1.5, so it holds in any units. The weir coefficient C of Q = C L H^1.5 is C = 5.35 Cd in ft^0.5/s, or 2.95 Cd in m^0.5/s. Circular crest: crest length 2 pi R."
+    },
+    "outlet_elevation": {
+      "type": "value",
+      "description": "Conduit outlet elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Conduit outlet elevation"
+    },
+    "throat_area": {
+      "type": "value",
+      "description": "Throat / conduit area",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m~^2;ft~^2",
+      "estimate": "true",
+      "helptext": "Throat / conduit area"
+    },
+    "orifice_coefficient": {
+      "type": "value",
+      "description": "Conduit discharge coefficient",
+      "ask_user": "true",
+      "default": "0.8",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "helptext": "Cd in Q = Cd A sqrt(2g (H - H_outlet)); lumps the conduit losses."
+    },
+    "weir_flow": {
+      "type": "expression",
+      "description": "Crest (weir) control",
+      "expression": "86400*discharge_coefficient*(2/3)*_sqr(2*9.81)*2*3.14159265*crest_radius*_pos(head.s-crest_elevation)^1.5",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+    },
+    "conduit_flow": {
+      "type": "expression",
+      "description": "Conduit (orifice) control",
+      "expression": "86400*orifice_coefficient*throat_area*_sqr(2*9.81*(head.s-outlet_elevation))",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "_min(weir_flow;conduit_flow)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    }
+  },
+  "Rule_Release": {
+    "type": "link",
+    "typecategory": "Connectors",
+    "description": "Release by operating rule",
+    "icon": {
+      "filename": "Reservoir_Link_Arrow.png"
+    },
+    "helptext": "Operating rule by zones: the target release in the conservation pool, hedged between the hedging level and the dead pool, plus a flood-control release above the conservation pool, up to the maximum non-damaging release.",
+    "name": {
+      "description": "Name",
+      "type": "string",
+      "ask_user": "true",
+      "delegate": "String",
+      "helptext": "Name of the component."
+    },
+    "color": {
+      "description": "Color",
+      "type": "string",
+      "default": "200,0,120",
+      "ask_user": "false",
+      "delegate": "String"
+    },
+    "target_release": {
+      "type": "timeseries",
+      "description": "Target release (demand)",
+      "ask_user": "true",
+      "delegate": "Browser",
+      "unit": "m^3/day;m^3/s;ft^3/s;cfs",
+      "includeinoutput": "true",
+      "helptext": "Target release time series, e.g. monthly water supply demand."
+    },
+    "dead_pool_elevation": {
+      "type": "value",
+      "description": "Dead pool (minimum operating) elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "No release below this level."
+    },
+    "hedging_elevation": {
+      "type": "value",
+      "description": "Hedging elevation",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Below this level the release is cut back linearly, reaching zero at the dead pool."
+    },
+    "conservation_top_elevation": {
+      "type": "value",
+      "description": "Top of the conservation pool",
+      "ask_user": "true",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Above this level (the flood-control pool) extra water is released."
+    },
+    "max_safe_release": {
+      "type": "value",
+      "description": "Maximum non-damaging release",
+      "ask_user": "true",
+      "default": "0",
+      "delegate": "UnitBox",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs",
+      "estimate": "true",
+      "helptext": "The most that can be released downstream without flooding."
+    },
+    "flood_ramp": {
+      "type": "value",
+      "description": "Depth to reach the maximum release",
+      "ask_user": "true",
+      "default": "0.3",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "The extra release rises from 0 at the top of the conservation pool to the maximum over this depth."
+    },
+    "tailwater_elevation": {
+      "type": "value",
+      "description": "Tailwater elevation (hydropower only)",
+      "ask_user": "true",
+      "default": "0",
+      "delegate": "UnitBox",
+      "unit": "m;ft",
+      "estimate": "true",
+      "helptext": "Tailwater elevation (hydropower only)"
+    },
+    "turbine_efficiency": {
+      "type": "value",
+      "description": "Turbine efficiency (hydropower only)",
+      "ask_user": "true",
+      "default": "0.85",
+      "delegate": "ValueBox",
+      "estimate": "true",
+      "helptext": "Turbine efficiency (hydropower only)"
+    },
+    "hedging_factor": {
+      "type": "expression",
+      "description": "Hedging factor",
+      "expression": "_min(1;_pos(head.s-dead_pool_elevation)/(hedging_elevation-dead_pool_elevation))",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "flood_release": {
+      "type": "expression",
+      "description": "Flood-control release",
+      "expression": "max_safe_release*_min(1;_pos(head.s-conservation_top_elevation)/flood_ramp)",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+    },
+    "flow": {
+      "type": "expression",
+      "description": "Flow",
+      "expression": "target_release*hedging_factor+flood_release",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+    },
+    "power": {
+      "type": "expression",
+      "description": "Hydropower (kW)",
+      "expression": "9.81*flow/86400*_pos(head.s-tailwater_elevation)*turbine_efficiency",
+      "ask_user": "false",
+      "includeinoutput": "true"
+    },
+    "length": {
+      "type": "value",
+      "description": "Length",
+      "default": "1",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    },
+    "area": {
+      "type": "value",
+      "description": "Area",
+      "default": "0",
+      "includeinoutput": "false",
+      "ask_user": "false",
+      "helptext": "Used only for diffusive transport of constituents across this link; does not affect flow."
+    }
+  },
   "Reservoir": {
     "type": "block",
     "typecategory": "Blocks",
-    "description": "Reservoir",
+    "description": "Reservoir (legacy)",
     "icon": {
       "filename": "Reservoir_Rating_Curve.png"
     },
@@ -32,7 +818,7 @@
   "Controlled_Reservoir": {
     "type": "block",
     "typecategory": "Blocks",
-    "description": "Reservoir with controlled outflow",
+    "description": "Reservoir with controlled outflow (legacy)",
     "icon": {
       "filename": "Reservoid_Control.png"
     },
@@ -85,9 +871,9 @@
   "Spillway": {
     "type": "link",
     "typecategory": "Connectors",
-    "description": "Reservoir spillway",
+    "description": "Reservoir spillway (legacy)",
     "icon": {
-      "filename": "Splillway.png"
+      "filename": "Emergency_Spillway.png"
     },
     "reservoir_power": {
       "type": "value",
