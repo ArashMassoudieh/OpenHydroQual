@@ -349,6 +349,13 @@
       "ask_user": "false",
       "unit": "m/s;m/day;ft/s"
     },
+    "river_velocity": {
+      "type": "expression",
+      "expression": "0",
+      "description": "Velocity of the river segment above the bed (m/s), for the resuspension of suspended sediment",
+      "ask_user": "false",
+      "includeinoutput": "false"
+    },
     "sediment_exchange": {
       "type": "expression",
       "expression": "0",
@@ -424,6 +431,13 @@
       "ask_user": "false",
       "unit": "m/s;m/day;ft/s"
     },
+    "river_velocity": {
+      "type": "expression",
+      "expression": "0",
+      "description": "Velocity of the river segment above the bed (m/s), for the resuspension of suspended sediment",
+      "ask_user": "false",
+      "includeinoutput": "false"
+    },
     "sediment_exchange": {
       "type": "expression",
       "expression": "0",
@@ -490,6 +504,13 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "river_velocity": {
+      "type": "expression",
+      "expression": "0",
+      "description": "Velocity of the river segment above the bed (m/s), for the resuspension of suspended sediment",
+      "ask_user": "false",
+      "includeinoutput": "false"
+    },
     "sediment_exchange": {
       "type": "expression",
       "expression": "0",
@@ -536,7 +557,7 @@
     },
     "alpha": {
       "description": "Alpha coefficient in resuspension rate",
-      "helptext": "The resuspension flux from bed sediments (g/m2/day) is calculated as:\n e = alpha*max(|v|-v0, 0)^beta,\nwith v the velocity of the river segment. It applies only across River-to-bed-sediment links.",
+      "helptext": "The resuspension flux from bed sediments (g/m2/day) is calculated as:\n e = alpha*max(|v|-v0, 0)^beta,\nwith v the velocity of the river segment in m/s (v0 is entered with its unit and converted). It applies only across River-to-bed-sediment links.",
       "type": "value",
       "ask_user": "true",
       "delegate": "ValueBox",
@@ -544,7 +565,7 @@
     },
     "beta": {
       "description": "Beta exponent in resuspension rate",
-      "helptext": "The resuspension flux from bed sediments (g/m2/day) is calculated as:\n e = alpha*max(|v|-v0, 0)^beta,\nwith v the velocity of the river segment. It applies only across River-to-bed-sediment links.",
+      "helptext": "The resuspension flux from bed sediments (g/m2/day) is calculated as:\n e = alpha*max(|v|-v0, 0)^beta,\nwith v the velocity of the river segment in m/s (v0 is entered with its unit and converted). It applies only across River-to-bed-sediment links.",
       "type": "value",
       "ask_user": "true",
       "delegate": "ValueBox",
@@ -552,7 +573,7 @@
     },
     "velocity_0": {
       "description": "v0, velocity treshold for resuspension",
-      "helptext": "The resuspension flux from bed sediments (g/m2/day) is calculated as:\n e = alpha*max(|v|-v0, 0)^beta,\nwith v the velocity of the river segment. It applies only across River-to-bed-sediment links.",
+      "helptext": "The resuspension flux from bed sediments (g/m2/day) is calculated as:\n e = alpha*max(|v|-v0, 0)^beta,\nwith v the velocity of the river segment in m/s (v0 is entered with its unit and converted). It applies only across River-to-bed-sediment links.",
       "type": "value",
       "ask_user": "true",
       "delegate": "UnitBox",
@@ -578,17 +599,10 @@
       "role": "copytoblocks",
       "initial_value_expression": "concentration*Storage"
     },
-    "slope": {
-      "type": "expression",
-      "expression": "(bottom_elevation.s-bottom_elevation.e)/length",
-      "includeinoutput": "false",
-      "ask_user": "false",
-      "role": "copytolinks"
-    },
     "settling_transfer": {
       "description": "Mass transfer rate through depsition (g/day)",
       "type": "expression",
-      "expression": "sediment_exchange*settling_velocity*area*(_pos(_sgn(slope))*concentration.s-_pos(-_sgn(slope))*concentration.e)",
+      "expression": "sediment_exchange*settling_velocity*area*concentration.s",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"
@@ -612,7 +626,7 @@
     "resuspension_rate": {
       "description": "Resuspension rate",
       "type": "expression",
-      "expression": "sediment_exchange*alpha*_pos(_abs(velocity.s)-velocity_0)^beta*concentration.e/(concentration.e+0.0001)*area.e",
+      "expression": "sediment_exchange*alpha*_pos(_abs(river_velocity)-velocity_0/86400)^beta*concentration.e/(concentration.e+0.0001)*area",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"
@@ -652,6 +666,13 @@
       "type": "expression",
       "expression": "length.e*width.e",
       "description": "Length",
+      "includeinoutput": "false"
+    },
+    "river_velocity": {
+      "type": "expression",
+      "expression": "velocity.s",
+      "description": "Velocity of the river segment above the bed (m/s), for the resuspension of suspended sediment",
+      "ask_user": "false",
       "includeinoutput": "false"
     },
     "sediment_exchange": {
@@ -705,6 +726,13 @@
       "default": "1",
       "criteria": "hydraulic_conductivity>0",
       "warningmessage": "Hydraulic conductivity must be greater than zero"
+    },
+    "river_velocity": {
+      "type": "expression",
+      "expression": "0",
+      "description": "Velocity of the river segment above the bed (m/s), for the resuspension of suspended sediment",
+      "ask_user": "false",
+      "includeinoutput": "false"
     },
     "sediment_exchange": {
       "type": "expression",
