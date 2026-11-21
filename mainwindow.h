@@ -180,6 +180,10 @@ private:
     void addToolbarLabel(QToolBar* toolbar, const QString& text);
     bool ReCreateObjectsMenu();
     PropModel *propmodel = nullptr;
+    // Object Browser item being renamed in place, and its name before the edit
+    QTreeWidgetItem *renamingTreeItem = nullptr;
+    QString renamingTreeOldName;
+    bool StartTreeRename(QTreeWidgetItem *item);
     void Populate_General_ToolBar();
     string maintemplatefilename;
     vector<string> addedtemplatefilenames;
@@ -288,6 +292,10 @@ private slots:
     void onaddreactionparameter();
     void preparetreeviewMenu(const QPoint &pos);
     void onTreeSelectionChanged(QTreeWidgetItem *current);
+    // In-place renaming in the Object Browser (double-click or F2)
+    void onTreeItemDoubleClicked(QTreeWidgetItem *item, int column);
+    void onTreeRenameShortcut();
+    void onTreeItemChanged(QTreeWidgetItem *item, int column);
     void onzoomin();
     void onzoomout();
     void onzoomall(bool open_new=false);
