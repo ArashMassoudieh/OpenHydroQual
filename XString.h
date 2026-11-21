@@ -19,6 +19,8 @@
 #include "qstringlist.h"
 #include "qmath.h"
 #include "qdebug.h"
+#include <QSet>
+#include <QPair>
 #include "enums.h"
 #include <iostream>
 
@@ -243,23 +245,32 @@ public:
 		}
 		else{
             if (leftOperand.toDouble()) return leftOperand.toDouble();
-            QList <QString> UL;
-			QList <float> CL;
-            UL << "m" << "cm" << "mm" << "~microm" << "km" << "in" << "inch" << "ft" << "yd" <<
-				"kg" << "g" << "ton" << "lb" << "kip" <<
-				"day" << "hr" << "min" << "s" << "wk" <<
-				"L" << "N" << 
-                "~degreeC" << "Pa" << "J" << "W" << "si" << "SI" << "" << "" << "" << "" << "" << "" << "" << "" << "";
-            CL << 1.0 << 0.01 << 0.001 << 0.000001 << 1000 << 2.54 / 100 << 2.54 / 100 << 12 * 2.54 / 100 << 3 * 12 * 2.54 / 100 <<
-                1000 << 1 << 1000000 << 451000.0 / 1000 << 451000.0 <<
-                1.0 << 1.0 / 24.0 << 1.0 / 24 / 60 << 1.0 / 24 / 60 / 60 << 7.0 <<
-                .001 << 9.81
-                << 1.0 << 1.0 << 1.0 << 1.0 << 1.0 << 1.0;
-            //double a = CL[UL.indexOf(leftOperand)];
-            int _index = UL.indexOf(leftOperand);
-            if (_index==-1)
-                return 1;
-            return CL[UL.indexOf(leftOperand)];
+            // Unit names and their size in the internal base (m, g, day). Kept as one list of pairs so a name and
+            // its coefficient cannot drift apart. US customary: acre-ft, cfs and MGD are single tokens.
+            static const QList<QPair<QString, double>> units = {
+                {"m", 1.0}, {"cm", 0.01}, {"mm", 0.001}, {"~microm", 1e-6}, {"km", 1000.0},
+                {"in", 0.0254}, {"inch", 0.0254}, {"ft", 0.3048}, {"yd", 0.9144}, {"mi", 1609.344},
+                {"acre", 4046.8564224}, {"ha", 10000.0},
+                {"kg", 1000.0}, {"g", 1.0}, {"ton", 1.0e6}, {"lb", 453.59237}, {"kip", 453592.37},
+                {"day", 1.0}, {"hr", 1.0 / 24.0}, {"min", 1.0 / 24.0 / 60.0}, {"s", 1.0 / 24.0 / 60.0 / 60.0}, {"wk", 7.0},
+                {"L", 0.001}, {"gal", 0.003785411784},
+                {"acre-ft", 1233.48183754752},                  // 1 acre x 1 ft, m3
+                {"cfs", 0.028316846592 * 86400.0},              // ft3/s in m3/day
+                {"MGD", 3785.411784},                           // million US gallons per day, m3/day
+                {"N", 9.81},
+                {"~degreeC", 1.0}, {"Pa", 1.0}, {"J", 1.0}, {"W", 1.0}, {"si", 1.0}, {"SI", 1.0}};
+            if (leftOperand.isEmpty()) return 1;
+            for (const QPair<QString, double> &u : units)
+                if (u.first == leftOperand) return u.second;
+            // An unknown name keeps its number unconverted (as before), but say so once, so a typo or a missing
+            // unit in a plugin does not pass silently.
+            static QSet<QString> reported;
+            if (!reported.contains(leftOperand))
+            {
+                reported.insert(leftOperand);
+                qWarning() << "XString::coefficient: unknown unit" << leftOperand << "- treated as 1 (no conversion)";
+            }
+            return 1;
 		};
         return 0;
     };
