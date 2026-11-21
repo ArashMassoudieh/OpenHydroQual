@@ -164,6 +164,7 @@ SOURCES += \
     diagramview.cpp \
     edge.cpp \
     gridgenerator.cpp \
+    arrayconnector.cpp \
     main.cpp \
     mainwindow.cpp \
     ./aquifolium/src/Block.cpp \
@@ -253,6 +254,7 @@ HEADERS += \
     diagramview.h \
     edge.h \
     gridgenerator.h \
+    arrayconnector.h \
         mainwindow.h \
     ./aquifolium/include/Block.h \
     ./aquifolium/include/Expression.h \

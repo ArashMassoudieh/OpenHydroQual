@@ -23,6 +23,7 @@
 #include "node.h"
 #include "edge.h"
 #include <QMenu>
+#include <QMessageBox>
 
 GridGenerator::GridGenerator(MainWindow *parent) :
     QDialog(parent),
@@ -742,8 +743,35 @@ void GridGenerator::on_Canceled()
 {
     this->close();
 }
+// The block properties the selected link type reads from its source (.s) and end (.e) blocks that the selected
+// block type does not have; empty when the link type can connect the generated blocks.
+QString GridGenerator::LinkTypeMismatch()
+{
+    if (Link_type_selected == "" || Block_type_selected == "") return "";
+    Link link;
+    if (!link.SetQuantities(system()->GetMetaModel(), Link_type_selected.toStdString())) return "";
+    QuanSet *bq = system()->GetModel(Block_type_selected.toStdString());
+    if (!bq) return "";
+    QStringList missing;
+    for (const string &p : link.GetAllRequieredStartingBlockProperties())
+        if (bq->Count(p) == 0 && !missing.contains(QString::fromStdString(p))) missing << QString::fromStdString(p);
+    for (const string &p : link.GetAllRequieredDestinationBlockProperties())
+        if (bq->Count(p) == 0 && !missing.contains(QString::fromStdString(p))) missing << QString::fromStdString(p);
+    if (missing.isEmpty()) return "";
+    const QString linkdesc = QString::fromStdString(system()->GetModel(Link_type_selected.toStdString())->Description());
+    const QString blockdesc = QString::fromStdString(bq->Description());
+    return tr("'%1' links cannot connect '%2' blocks: the blocks have no %3.").arg(linkdesc, blockdesc, missing.join(", "));
+}
+
 void GridGenerator::on_Generate()
 {
+    const QString mismatch = LinkTypeMismatch();
+    if (!mismatch.isEmpty())
+    {
+        QMessageBox::warning(this, tr("Array Generator"), mismatch + "\n\n" + tr("Choose a link type that fits this block type."));
+        ui->tabWidget->setCurrentIndex(0);
+        return;
+    }
     mainwindow->undoData.SetActiveSystem(system());
     GenerateBlocks();
     if (Link_type_selected!="")
@@ -786,7 +814,11 @@ bool GridGenerator::GenerateBlocks()
             block.SetName(name);
             //qDebug() << "Adding Block to the system";
 
-            system()->AddBlock(block);
+            if (!system()->AddBlock(block) || system()->object(name) == nullptr)
+            {
+                mainwindow->LogError("Block '" + QString::fromStdString(name) + "' was not added: " + QString::fromStdString(system()->lasterror()));
+                continue;
+            }
             system()->object(name)->SetName(name);
             system()->AddAllConstituentRelateProperties(system()->block(name));
             //Node *node = new Node(mainwindow->GetDiagramView(),system());
@@ -855,7 +887,11 @@ bool GridGenerator::GenerateLinks()
             link.SetName(name);
             //qDebug() << "Adding Block to the system";
 
-            system()->AddLink(link,srcname,destname);
+            if (!system()->AddLink(link,srcname,destname) || system()->object(name) == nullptr)
+            {
+                mainwindow->LogError("Link '" + QString::fromStdString(name) + "' was not added: " + QString::fromStdString(system()->lasterror()));
+                continue;
+            }
             system()->object(name)->SetName(name);
             system()->AddAllConstituentRelateProperties(system()->link(name));
             for (QMap<string,quan_info>::iterator it = quan_info_Link_y.begin(); it!=quan_info_Link_y.end(); it++)
@@ -888,7 +924,11 @@ bool GridGenerator::GenerateLinks()
             link.SetName(name);
             //qDebug() << "Adding Block to the system";
 
-            system()->AddLink(link,srcname,destname);
+            if (!system()->AddLink(link,srcname,destname) || system()->object(name) == nullptr)
+            {
+                mainwindow->LogError("Link '" + QString::fromStdString(name) + "' was not added: " + QString::fromStdString(system()->lasterror()));
+                continue;
+            }
             system()->object(name)->SetName(name);
             system()->AddAllConstituentRelateProperties(system()->link(name));
             for (QMap<string,quan_info>::iterator it = quan_info_Link_x.begin(); it!=quan_info_Link_x.end(); it++)

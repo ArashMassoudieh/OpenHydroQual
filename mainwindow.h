@@ -335,6 +335,7 @@ private slots:
     void on_Undo();
     void on_Redo();
     void onCreate2dArray();// Is called when 2D Array action is triggered
+    void onConnectArrays();// Add Objects > Connect Two Arrays
     void oncomponentdescriptions();
     void onimport();
     void onImportReactions();

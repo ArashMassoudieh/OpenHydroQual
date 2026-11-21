@@ -75,6 +75,7 @@
 #include "options.h"
 #include <QFileInfo>
 #include "gridgenerator.h"
+#include "arrayconnector.h"
 #include "metamodelhelpdialog.h"
 #include "VisualizationDialog.h"
 #include "CodeGenerator.h"
@@ -1047,6 +1048,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionUndo,SIGNAL(triggered()),this,SLOT(on_Undo()));
     connect(ui->actionRedo,SIGNAL(triggered()),this,SLOT(on_Redo()));
     connect(ui->actionCreate_2D_Array,SIGNAL(triggered()),this,SLOT(onCreate2dArray()));
+    connect(ui->actionConnect_Two_Arrays,&QAction::triggered,this,&MainWindow::onConnectArrays);
     connect(this,SIGNAL(closed()),this,SLOT(onclosed()));
     connect(ui->actionLoad_a_new_template,SIGNAL(triggered()),this,SLOT(loadnewtemplate()));
     connect(ui->actionAddPlugin,SIGNAL(triggered()),this,SLOT(addplugin()));
@@ -4555,6 +4557,12 @@ void MainWindow::onCreate2dArray()
     GridGenerator gridgenerator(this);
     gridgenerator.exec();
     // Automatically deleted when going out of scope
+}
+
+void MainWindow::onConnectArrays()
+{
+    ArrayConnector connector(this);
+    connector.exec();
 }
 
 // Add this to your MainWindow class header (.h file):

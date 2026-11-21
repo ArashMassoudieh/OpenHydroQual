@@ -73,6 +73,7 @@ private:
     QuanSet linkQS;
     bool GenerateBlocks();
     bool GenerateLinks();
+    QString LinkTypeMismatch();
     std::string LinkName(int i1, int j1, int i2, int j2) const;
     void connectLinkTextBoxes();
     bool AssignProperty(const string &name, QuanSet &quanset, QMap<string,quan_info>::iterator it, int i, int j);

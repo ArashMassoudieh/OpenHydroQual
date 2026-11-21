@@ -137,6 +137,7 @@
     <addaction name="menuChemistry"/>
     <addaction name="separator"/>
     <addaction name="actionCreate_2D_Array"/>
+    <addaction name="actionConnect_Two_Arrays"/>
    </widget>
    <addaction name="menuFilw"/>
    <addaction name="menuEdit"/>
@@ -363,6 +364,14 @@
   <action name="actionCreate_2D_Array">
    <property name="text">
     <string>Create 2D Array</string>
+   </property>
+  </action>
+  <action name="actionConnect_Two_Arrays">
+   <property name="text">
+    <string>Connect Two Arrays</string>
+   </property>
+   <property name="toolTip">
+    <string>Link block (i:j) of one array to block (i:j) of another array of the same size</string>
    </property>
   </action>
   <action name="actionOpen_Results">

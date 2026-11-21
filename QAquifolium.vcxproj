@@ -420,6 +420,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClCompile Include="expEditor.cpp" />
     <ClCompile Include="expressioneditor.cpp" />
     <ClCompile Include="gridgenerator.cpp" />
+    <ClCompile Include="arrayconnector.cpp" />
     <ClCompile Include="ItemNavigator.cpp" />
     <ClCompile Include="ItemPropertiesWidget.cpp" />
     <ClCompile Include="jsoncpp\src\lib_json\json_reader.cpp" />
@@ -446,6 +447,7 @@ copy libs\gsl\*.dll $(OutDir)</Command>
     <ClCompile Include="wizard_select_dialog.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="arrayconnector.h" />
     <ClInclude Include="aquifolium\include\Composite.h" />
     <ClInclude Include="aquifolium\include\Condition.h" />
     <ClInclude Include="aquifolium\include\constituent.h" />
