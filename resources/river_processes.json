@@ -349,6 +349,13 @@
       "ask_user": "false",
       "unit": "m/s;m/day;ft/s"
     },
+    "sediment_exchange": {
+      "type": "expression",
+      "expression": "0",
+      "description": "Settling and resuspension of suspended sediment across this link (1 = yes, 0 = no)",
+      "ask_user": "false",
+      "includeinoutput": "false"
+    },
     "flow": {
       "type": "expression",
       "description": "Flow",
@@ -417,6 +424,13 @@
       "ask_user": "false",
       "unit": "m/s;m/day;ft/s"
     },
+    "sediment_exchange": {
+      "type": "expression",
+      "expression": "0",
+      "description": "Settling and resuspension of suspended sediment across this link (1 = yes, 0 = no)",
+      "ask_user": "false",
+      "includeinoutput": "false"
+    },
     "flow": {
       "type": "expression",
       "description": "Flow",
@@ -476,6 +490,13 @@
       "includeinoutput": "true",
       "ask_user": "false"
     },
+    "sediment_exchange": {
+      "type": "expression",
+      "expression": "0",
+      "description": "Settling and resuspension of suspended sediment across this link (1 = yes, 0 = no)",
+      "ask_user": "false",
+      "includeinoutput": "false"
+    },
     "flow": {
       "type": "expression",
       "description": "Flow",
@@ -515,7 +536,7 @@
     },
     "alpha": {
       "description": "Alpha coefficient in resuspension rate",
-      "helptext": "The resuspension flux from bed sediments is calculated as:\n e=alpha*(v-v0)^beta",
+      "helptext": "The resuspension flux from bed sediments (g/m2/day) is calculated as:\n e = alpha*max(|v|-v0, 0)^beta,\nwith v the velocity of the river segment. It applies only across River-to-bed-sediment links.",
       "type": "value",
       "ask_user": "true",
       "delegate": "ValueBox",
@@ -523,7 +544,7 @@
     },
     "beta": {
       "description": "Beta exponent in resuspension rate",
-      "helptext": "The resuspension flux from bed sediments is calculated as:\n e=alpha*(v-v0)^beta",
+      "helptext": "The resuspension flux from bed sediments (g/m2/day) is calculated as:\n e = alpha*max(|v|-v0, 0)^beta,\nwith v the velocity of the river segment. It applies only across River-to-bed-sediment links.",
       "type": "value",
       "ask_user": "true",
       "delegate": "ValueBox",
@@ -531,7 +552,7 @@
     },
     "velocity_0": {
       "description": "v0, velocity treshold for resuspension",
-      "helptext": "The resuspension flux from bed sediments is calculated as:\n e=alpha*(v-v0)^beta",
+      "helptext": "The resuspension flux from bed sediments (g/m2/day) is calculated as:\n e = alpha*max(|v|-v0, 0)^beta,\nwith v the velocity of the river segment. It applies only across River-to-bed-sediment links.",
       "type": "value",
       "ask_user": "true",
       "delegate": "UnitBox",
@@ -567,7 +588,7 @@
     "settling_transfer": {
       "description": "Mass transfer rate through depsition (g/day)",
       "type": "expression",
-      "expression": "settling_velocity*area*(_pos(slope)*concentration.s-_pos(-slope)*concentration.e)",
+      "expression": "sediment_exchange*settling_velocity*area*(_pos(_sgn(slope))*concentration.s-_pos(-_sgn(slope))*concentration.e)",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"
@@ -591,7 +612,7 @@
     "resuspension_rate": {
       "description": "Resuspension rate",
       "type": "expression",
-      "expression": "alpha*(velocity.s-velocity_0)^beta*concentration.e/(concentration.e+0.0001)*area.e",
+      "expression": "sediment_exchange*alpha*_pos(_abs(velocity.s)-velocity_0)^beta*concentration.e/(concentration.e+0.0001)*area.e",
       "includeinoutput": "true",
       "ask_user": "false",
       "role": "copytolinks"
@@ -631,6 +652,13 @@
       "type": "expression",
       "expression": "length.e*width.e",
       "description": "Length",
+      "includeinoutput": "false"
+    },
+    "sediment_exchange": {
+      "type": "expression",
+      "expression": "1",
+      "description": "Settling and resuspension of suspended sediment across this link (1 = yes, 0 = no)",
+      "ask_user": "false",
       "includeinoutput": "false"
     },
     "flow": {
@@ -677,6 +705,13 @@
       "default": "1",
       "criteria": "hydraulic_conductivity>0",
       "warningmessage": "Hydraulic conductivity must be greater than zero"
+    },
+    "sediment_exchange": {
+      "type": "expression",
+      "expression": "0",
+      "description": "Settling and resuspension of suspended sediment across this link (1 = yes, 0 = no)",
+      "ask_user": "false",
+      "includeinoutput": "false"
     },
     "flow": {
       "type": "expression",
