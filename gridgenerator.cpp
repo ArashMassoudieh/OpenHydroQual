@@ -1029,14 +1029,23 @@ bool GridGenerator::AssignProperty(const string &name, QuanSet &quanset, QMap<st
             return false;
         }
 
-        double coefficient = XString::coefficient(QString::fromStdString(quanset.GetVar(it.key()).Unit()));
-        value = valueWidget->text().toDouble() * coefficient;
+        // Convert with the unit picked in each box (as the property panel does), not the property's
+        // default unit: a width typed as 150 with ft selected must arrive as 45.72 m. The chosen unit
+        // also becomes the property's display unit, so the panel shows 150[ft].
+        auto unitOf = [&](UnitTextBox3* w) {
+            const QString u = w ? XString::reformBack(w->unit()) : QString();
+            return u.isEmpty() ? QString::fromStdString(quanset.GetVar(it.key()).Unit()) : u;
+        };
+        const QString valueUnit = unitOf(valueWidget);
+        if (!valueUnit.isEmpty())
+            system()->object(name)->Variable(it.key())->SetUnit(valueUnit.toStdString());
+        value = valueWidget->text().toDouble() * XString::coefficient(valueUnit);
 
         if (incrementHWidget)
-            increment_x = incrementHWidget->text().toDouble();
+            increment_x = incrementHWidget->text().toDouble() * XString::coefficient(unitOf(incrementHWidget));
 
         if (incrementVWidget)
-            increment_y = incrementVWidget->text().toDouble();
+            increment_y = incrementVWidget->text().toDouble() * XString::coefficient(unitOf(incrementVWidget));
 
         r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Expression::timing::both);
     }
