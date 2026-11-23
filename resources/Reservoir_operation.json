@@ -146,7 +146,7 @@
       "expression": "0-seepage_rate*area",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs"
     }
   },
   "Overflow_Spillway": {
@@ -212,7 +212,7 @@
       "expression": "86400*discharge_coefficient*(2/3)*_sqr(2*9.81)*crest_length*_pos(head.s-crest_elevation)^1.5",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs"
     },
     "length": {
       "type": "value",
@@ -294,7 +294,7 @@
       "expression": "86400*discharge_coefficient*(2/3)*_sqr(2*9.81)*crest_length*_pos(head.s-crest_elevation)^1.5",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs"
     },
     "length": {
       "type": "value",
@@ -394,7 +394,7 @@
       "expression": "86400*discharge_coefficient*(2/3)*_sqr(2*9.81)*crest_length*(head_over_crest^1.5-head_over_gate_lip^1.5)",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs"
     },
     "length": {
       "type": "value",
@@ -497,7 +497,7 @@
       "expression": "86400*discharge_coefficient*valve_opening*outlet_area*_sqr(2*9.81*driving_head)",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs"
     },
     "power": {
       "type": "expression",
@@ -606,7 +606,7 @@
       "expression": "86400*discharge_coefficient*(2/3)*_sqr(2*9.81)*2*3.14159265*crest_radius*_pos(head.s-crest_elevation)^1.5",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs"
     },
     "conduit_flow": {
       "type": "expression",
@@ -614,7 +614,7 @@
       "expression": "86400*orifice_coefficient*throat_area*_sqr(2*9.81*(head.s-outlet_elevation))",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs"
     },
     "flow": {
       "type": "expression",
@@ -622,7 +622,7 @@
       "expression": "_min(weir_flow;conduit_flow)",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs"
     },
     "length": {
       "type": "value",
@@ -705,7 +705,7 @@
       "ask_user": "true",
       "default": "0",
       "delegate": "UnitBox",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs",
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs",
       "estimate": "true",
       "helptext": "The most that can be released downstream without flooding."
     },
@@ -751,7 +751,7 @@
       "expression": "max_safe_release*_min(1;_pos(head.s-conservation_top_elevation)/flood_ramp)",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs"
     },
     "flow": {
       "type": "expression",
@@ -759,7 +759,7 @@
       "expression": "target_release*hedging_factor+flood_release",
       "ask_user": "false",
       "includeinoutput": "true",
-      "unit": "m~^3/s;ft~^3/s;m~^3/day;cfs"
+      "unit": "m~^3/day;m~^3/s;ft~^3/s;cfs"
     },
     "power": {
       "type": "expression",
