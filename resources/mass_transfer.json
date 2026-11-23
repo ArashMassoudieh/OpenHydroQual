@@ -139,7 +139,7 @@
       "default": "20",
       "includeinoutput": "false",
       "unit": "degC",
-      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value (9.09 g/m3)."
+      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value of the saturation polynomial (9.02 g/m3)."
     },
     "theta": {
       "type": "value",
@@ -200,7 +200,7 @@
       "default": "20",
       "includeinoutput": "false",
       "unit": "degC",
-      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value (9.09 g/m3)."
+      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value of the saturation polynomial (9.02 g/m3)."
     },
     "theta": {
       "type": "value",
@@ -261,7 +261,7 @@
       "default": "20",
       "includeinoutput": "false",
       "unit": "degC",
-      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value (9.09 g/m3)."
+      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value of the saturation polynomial (9.02 g/m3)."
     },
     "theta": {
       "type": "value",
@@ -332,7 +332,7 @@
       "default": "20",
       "includeinoutput": "false",
       "unit": "degC",
-      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value (9.09 g/m3)."
+      "helptext": "Optional water-temperature time series. If none is given, 20 C is used: no temperature correction is applied and the saturation concentration is the 20 C value of the saturation polynomial (9.02 g/m3)."
     },
     "theta": {
       "type": "value",

@@ -336,6 +336,15 @@
       "ask_user": "false",
       "includeinoutput": "true",
       "unit": "m;ft"
+    },
+    "pressure": {
+      "type": "expression",
+      "expression": "head-elevation",
+      "description": "Pressure Head",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft",
+      "helptext": "Pressure head at the junction: the hydraulic head minus the junction elevation, in meters (or feet) of water. Multiply by 9.81 for kPa (by 0.433 for psi when in feet)."
     }
   },
   "junction": {
@@ -377,6 +386,15 @@
       "ask_user": "false",
       "includeinoutput": "true",
       "unit": "m;ft"
+    },
+    "pressure": {
+      "type": "expression",
+      "expression": "head-elevation",
+      "description": "Pressure Head",
+      "ask_user": "false",
+      "includeinoutput": "true",
+      "unit": "m;ft",
+      "helptext": "Pressure head at the junction: the hydraulic head minus the junction elevation, in meters (or feet) of water. Multiply by 9.81 for kPa (by 0.433 for psi when in feet)."
     }
   },
   "pump": {
