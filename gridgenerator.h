@@ -20,6 +20,8 @@
 #include <QDialog>
 #include "System.h"
 #include <QMap>
+#include <QVector>
+#include <QToolButton>
 
 constexpr int max_size_x = 300;
 constexpr int max_size_y = 300;
@@ -37,6 +39,9 @@ struct quan_info
     string delegate = "";
     string parameter = "";      // parameter the generated objects' quantity is assigned to ("" = none)
     QString description;        // the label's plain text, without the parameter tag
+    QToolButton *csvButton = nullptr;       // numeric quantities: load one value per object from a CSV file
+    QVector<QVector<double>> table;         // the loaded values, table[row j][column i]; empty = use value + increments
+    QString tableFile;                      // the CSV file the table came from
 };
 
 class MainWindow;
@@ -80,6 +85,11 @@ private:
     QMap<string, quan_info>& quanInfo(objectType ObjectType);
     void showParameterMenu(objectType ObjectType, const string &quantity, const QPoint &globalPos);
     void setParameter(objectType ObjectType, const string &quantity, const string &parameter);
+    QToolButton *makeCsvButton(objectType ObjectType, const string &quantity);
+    void loadCsv(objectType ObjectType, const string &quantity);
+    void clearCsv(objectType ObjectType, const string &quantity);
+    void gridShape(objectType ObjectType, int &rows, int &cols) const;     // the CSV shape the objects of this type need
+    bool tablesMatchGrid();                                                 // checked again when generating
 protected:
     void closeEvent(QCloseEvent *event) override;
     void reject() override;

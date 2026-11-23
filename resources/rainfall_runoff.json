@@ -2,6 +2,7 @@
   "catchment-distributed": {
     "type": "block",
     "typecategory": "Blocks",
+    "description": "Distributed catchment cell (overland flow on the water-surface slope)",
     "icon": {
       "filename": "catchment.png"
     },
@@ -115,6 +116,7 @@
   "distributed_catchment_link": {
     "type": "link",
     "typecategory": "Connectors",
+    "description": "Two-way overland flow between distributed catchment cells",
     "icon": {
       "filename": "dcatchment-catchment-link.png"
     },
@@ -196,6 +198,7 @@
   "distributed_catchment_to_fixed_head_link": {
     "type": "link",
     "typecategory": "Connectors",
+    "description": "Overland flow from a distributed catchment cell to a fixed head",
     "icon": {
       "filename": "dcatchment-fixedhead-link.png"
     },
@@ -264,6 +267,7 @@
   "distributed_catchment_to_stream_link": {
     "type": "link",
     "typecategory": "Connectors",
+    "description": "Overland flow between a distributed catchment cell and a stream (with backwater)",
     "icon": {
       "filename": "dcatchment-stream-link.png"
     },

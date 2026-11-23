@@ -24,6 +24,11 @@
 #include "edge.h"
 #include <QMenu>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QFile>
+#include <QFileInfo>
+#include <QTextStream>
+#include <QRegularExpression>
 
 GridGenerator::GridGenerator(MainWindow *parent) :
     QDialog(parent),
@@ -272,6 +277,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             incrementTxtBox_V->setMinimumSize(min_size_x,min_size_y);
             layout->addWidget(incrementTxtBox_H,i+1,2);
             layout->addWidget(incrementTxtBox_V,i+1,3);
+            layout->addWidget(makeCsvButton(ObjectType, qs.GetVarAskable(i)->GetName()),i+1,4);
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("ValueBox"))
         {   QLineEdit *editor = new QLineEdit();
@@ -309,6 +315,7 @@ void GridGenerator::PopulatePropertiesTab(QuanSet& qs, QGridLayout *layout, obje
             incrementTxtBox_H->setMinimumSize(min_size_x,min_size_y);
             incrementTxtBox_V->setMaximumSize(max_size_x/2,max_size_y);
             incrementTxtBox_V->setMinimumSize(min_size_x,min_size_y);
+            layout->addWidget(makeCsvButton(ObjectType, qs.GetVarAskable(i)->GetName()),i+1,4);
         }
         else if (QString::fromStdString(qs.GetVarAskable(i)->Delegate()).contains("String"))
         {   QLineEdit *editor = new QLineEdit();
@@ -625,6 +632,10 @@ void GridGenerator::ClearPropertiesWindow(objectType ObjectType)
             {   ui->gridLayout_Block->removeWidget(i->increment_V);
                 delete i->increment_V;
             }
+            if (i->csvButton!=nullptr)
+            {   ui->gridLayout_Block->removeWidget(i->csvButton);
+                delete i->csvButton;
+            }
 
         }
 
@@ -650,6 +661,10 @@ void GridGenerator::ClearPropertiesWindow(objectType ObjectType)
             {   ui->gridLayout_Link_x->removeWidget(i->increment_V);
                 delete i->increment_V;
             }
+            if (i->csvButton!=nullptr)
+            {   ui->gridLayout_Link_x->removeWidget(i->csvButton);
+                delete i->csvButton;
+            }
 
         }
         if (verticalSpacer_links_x!=nullptr)
@@ -673,6 +688,10 @@ void GridGenerator::ClearPropertiesWindow(objectType ObjectType)
             if (i->increment_V!=nullptr)
             {   ui->gridLayout_Link_y->removeWidget(i->increment_V);
                 delete i->increment_V;
+            }
+            if (i->csvButton!=nullptr)
+            {   ui->gridLayout_Link_y->removeWidget(i->csvButton);
+                delete i->csvButton;
             }
 
         }
@@ -772,6 +791,8 @@ void GridGenerator::on_Generate()
         ui->tabWidget->setCurrentIndex(0);
         return;
     }
+    if (!tablesMatchGrid())
+        return;
     mainwindow->undoData.SetActiveSystem(system());
     GenerateBlocks();
     if (Link_type_selected!="")
@@ -995,7 +1016,8 @@ void GridGenerator::setParameter(objectType ObjectType, const string &quantity, 
         }
         // the parameter's value replaces the number, so the value and increments are not used
         for (QWidget *w : {q.value, q.increment_H, q.increment_V})
-            if (w) w->setEnabled(parameter == "");
+            if (w) w->setEnabled(parameter == "" && (w == q.value || q.table.isEmpty()));
+        if (q.csvButton) q.csvButton->setEnabled(parameter == "");
     }
 }
 
@@ -1047,7 +1069,10 @@ bool GridGenerator::AssignProperty(const string &name, QuanSet &quanset, QMap<st
         if (incrementVWidget)
             increment_y = incrementVWidget->text().toDouble() * XString::coefficient(unitOf(incrementVWidget));
 
-        r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Expression::timing::both);
+        if (!it->table.isEmpty())       // one value per object from the CSV file, in the unit picked in the value box
+            r = system()->object(name)->Variable(it.key())->SetVal(it->table[j][i] * XString::coefficient(valueUnit),Expression::timing::both);
+        else
+            r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Expression::timing::both);
     }
     else if (QString::fromStdString(it->delegate).contains("ValueBox"))
     {
@@ -1072,7 +1097,10 @@ bool GridGenerator::AssignProperty(const string &name, QuanSet &quanset, QMap<st
         if (incrementVWidget)
             increment_y = incrementVWidget->text().toDouble();
 
-        r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Expression::timing::both);
+        if (!it->table.isEmpty())       // one value per object from the CSV file
+            r = system()->object(name)->Variable(it.key())->SetVal(it->table[j][i],Expression::timing::both);
+        else
+            r = system()->object(name)->Variable(it.key())->SetVal(value+i*increment_x+j*increment_y,Expression::timing::both);
     }
     else if (QString::fromStdString(it->delegate).contains("String") && it.key()!="name")
     {
@@ -1178,4 +1206,129 @@ bool GridGenerator::event(QEvent *event)
         qDebug() << "Close event received!";
     }
     return QDialog::event(event);
+}
+
+
+// ---- CSV values: every numeric quantity can take one value per generated object from a CSV file.
+// The file must have exactly the shape of the objects it fills: rows top to bottom are the rows of the grid (j),
+// columns left to right are its columns (i). Values are in the unit picked in the row's value box.
+
+void GridGenerator::gridShape(objectType ObjectType, int &rows, int &cols) const
+{
+    const int nx = ui->spinBox_nx->text().toInt(), ny = ui->spinBox_ny->text().toInt();
+    rows = ny; cols = nx;
+    if (ObjectType == objectType::link_x) cols = nx - 1;        // links between horizontal neighbours
+    if (ObjectType == objectType::link_y) rows = ny - 1;        // links between vertical neighbours
+}
+
+QToolButton *GridGenerator::makeCsvButton(objectType ObjectType, const string &quantity)
+{
+    QToolButton *b = new QToolButton(this);
+    b->setText("CSV");
+    b->setMinimumSize(40, min_size_y);
+    b->setToolTip(tr("Load one value per object from a CSV file (rows: grid rows, columns: grid columns)"));
+    b->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(b, &QToolButton::clicked, this, [this, ObjectType, quantity]() { loadCsv(ObjectType, quantity); });
+    connect(b, &QToolButton::customContextMenuRequested, this, [this, b, ObjectType, quantity](const QPoint &pos)
+    {
+        if (quanInfo(ObjectType)[quantity].table.isEmpty()) return;
+        QMenu menu(this);
+        QAction *remove = menu.addAction(tr("Remove the CSV values"));
+        connect(remove, &QAction::triggered, this, [this, ObjectType, quantity]() { clearCsv(ObjectType, quantity); });
+        menu.exec(b->mapToGlobal(pos));
+    });
+    quanInfo(ObjectType)[quantity].csvButton = b;
+    return b;
+}
+
+void GridGenerator::loadCsv(objectType ObjectType, const string &quantity)
+{
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("Values for each object"), "",
+                                                          tr("CSV files (*.csv *.txt);;All files (*.*)"), nullptr, QFileDialog::DontUseNativeDialog);
+    if (fileName.isEmpty()) return;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QMessageBox::warning(this, tr("Array Generator"), tr("Could not open %1.").arg(fileName));
+        return;
+    }
+    QVector<QVector<double>> table;
+    QTextStream in(&file);
+    int lineNo = 0;
+    while (!in.atEnd())
+    {
+        QString line = in.readLine(); lineNo++;
+        line.remove(QChar(0xFEFF));
+        if (line.trimmed().isEmpty()) continue;
+        QStringList cells = line.split(QRegularExpression("[,;\t]"));
+        if (cells.size() > 1 && cells.last().trimmed().isEmpty()) cells.removeLast();      // a trailing separator
+        QVector<double> row;
+        for (int k = 0; k < cells.size(); k++)
+        {
+            bool ok = false;
+            const double v = cells[k].trimmed().toDouble(&ok);
+            if (!ok)
+            {
+                QMessageBox::warning(this, tr("Array Generator"),
+                                     tr("%1, line %2, column %3: '%4' is not a number.").arg(QFileInfo(fileName).fileName()).arg(lineNo).arg(k + 1).arg(cells[k].trimmed()));
+                return;
+            }
+            row.append(v);
+        }
+        table.append(row);
+    }
+    int rows, cols; gridShape(ObjectType, rows, cols);
+    bool shapeOk = (table.size() == rows);
+    for (const QVector<double> &row : table) shapeOk = shapeOk && row.size() == cols;
+    if (!shapeOk)
+    {
+        QString found = tr("%1 line(s)").arg(table.size());
+        if (!table.isEmpty()) found += tr(" with %1 values in the first").arg(table.first().size());
+        QMessageBox::warning(this, tr("Array Generator"),
+                             tr("%1 has %2, but these objects form a grid of %3 by %4 (rows by columns).\n\n"
+                                "The file must have exactly %3 line(s) of %4 values each: the top row of the grid first, its left column first.")
+                                 .arg(QFileInfo(fileName).fileName(), found).arg(rows).arg(cols));
+        return;
+    }
+    quan_info &q = quanInfo(ObjectType)[quantity];
+    q.table = table; q.tableFile = fileName;
+    q.csvButton->setText(QString("CSV ") + QChar(0x2713));
+    q.csvButton->setToolTip(tr("Values from %1 (%2 rows, %3 columns)\nRight-click to remove").arg(fileName).arg(rows).arg(cols));
+    for (QWidget *w : {q.increment_H, q.increment_V}) if (w) w->setEnabled(false);
+    if (UnitTextBox3 *u = dynamic_cast<UnitTextBox3*>(q.value)) u->setText("");          // the unit box still sets the unit
+    else if (QLineEdit *e = dynamic_cast<QLineEdit*>(q.value)) { e->setText(""); e->setEnabled(false); }
+    if (q.label) q.label->setText(q.description + "  [" + QFileInfo(fileName).fileName() + "]");
+}
+
+void GridGenerator::clearCsv(objectType ObjectType, const string &quantity)
+{
+    quan_info &q = quanInfo(ObjectType)[quantity];
+    q.table.clear(); q.tableFile.clear();
+    if (q.csvButton) { q.csvButton->setText("CSV"); q.csvButton->setToolTip(tr("Load one value per object from a CSV file (rows: grid rows, columns: grid columns)")); }
+    for (QWidget *w : {q.value, q.increment_H, q.increment_V}) if (w) w->setEnabled(true);
+    if (q.label) q.label->setText(q.parameter == "" ? q.description : q.description + " = " + QString::fromStdString(q.parameter));
+}
+
+bool GridGenerator::tablesMatchGrid()
+{
+    for (objectType t : {objectType::block, objectType::link_x, objectType::link_y})
+    {
+        if (t != objectType::block && Link_type_selected == "") continue;
+        int rows, cols; gridShape(t, rows, cols);
+        for (auto it = quanInfo(t).begin(); it != quanInfo(t).end(); ++it)
+        {
+            if (it->table.isEmpty() || it->parameter != "") continue;
+            bool ok = (it->table.size() == rows);
+            for (const QVector<double> &row : it->table) ok = ok && row.size() == cols;
+            if (!ok)
+            {
+                QMessageBox::warning(this, tr("Array Generator"),
+                                     tr("The values of '%1' come from %2, a grid of %3 by %4, but these objects now form a grid of %5 by %6 (rows by columns).\n\n"
+                                        "Change the grid size back, or load a file of the new size.")
+                                         .arg(it->description, QFileInfo(it->tableFile).fileName()).arg(it->table.size()).arg(it->table.first().size()).arg(rows).arg(cols));
+                return false;
+            }
+        }
+    }
+    return true;
 }
