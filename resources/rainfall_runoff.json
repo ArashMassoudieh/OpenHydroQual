@@ -141,7 +141,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "Width>0",
+      "warningmessage": "The width of flow must be greater than zero"
     },
     "Length": {
       "type": "value",
@@ -149,7 +151,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "Length>0",
+      "warningmessage": "The centroid to centroid distance (Length) must be greater than zero"
     },
     "depth": {
       "type": "expression",
@@ -223,7 +227,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "Width>0",
+      "warningmessage": "The width of flow must be greater than zero"
     },
     "Length": {
       "type": "value",
@@ -231,7 +237,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "Length>0",
+      "warningmessage": "The centroid to centroid distance (Length) must be greater than zero"
     },
     "hydraulic_gradient": {
       "type": "expression",
@@ -292,7 +300,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "Width>0",
+      "warningmessage": "The width of flow must be greater than zero"
     },
     "Length": {
       "type": "value",
@@ -300,7 +310,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "Length>0",
+      "warningmessage": "The centroid to centroid distance (Length) must be greater than zero"
     },
     "hydraulic_gradient": {
       "type": "expression",
@@ -422,7 +434,9 @@
       "ask_user": "true",
       "delegate": "UnitBox",
       "unit": "m;ft;cm;in",
-      "estimate": "true"
+      "estimate": "true",
+      "criteria": "Width>0",
+      "warningmessage": "The width of the catchment must be greater than zero"
     },
     "depth": {
       "type": "expression",
