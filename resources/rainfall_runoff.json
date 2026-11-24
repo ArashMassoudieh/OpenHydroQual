@@ -17,7 +17,7 @@
       "type": "balance",
       "massbalance": "true",
       "flow": "flow",
-      "inflow": "Precipitation,Evapotranspiration,loss",
+      "inflow": "Precipitation,Evapotranspiration,Inflow,loss",
       "includeinoutput": "true",
       "description": "Storage",
       "ask_user": "false",
@@ -42,6 +42,15 @@
       "delegate": "ComboBox;Sources",
       "helptext": "Select an evapotranspiration source object to represent water loss due to ET.",
       "unit": "m^3/day;ft^3/s"
+    },
+    "Inflow": {
+      "type": "source",
+      "includeinoutput": "true",
+      "description": "Inflow",
+      "ask_user": "true",
+      "delegate": "ComboBox;Sources",
+      "helptext": "Select an inflow source (a flow time series, for example a flood arriving from upstream) that adds water to this cell.",
+      "unit": "m^3/day;m^3/s;ft^3/s"
     },
     "loss": {
       "type": "expression",
@@ -508,6 +517,29 @@
       "ask_user": "false",
       "unit": "m^2;ft^2",
       "helptext": "Cross-sectional area used only for diffusive constituent transport across this link; does not affect flow."
+    }
+  },
+  "Inflow_timeseries": {
+    "type": "source",
+    "typecategory": "Sources",
+    "description": "Inflow from a flow time series (e.g. a flood arriving from upstream)",
+    "icon": {
+      "filename": "River.png"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name",
+      "ask_user": "true",
+      "delegate": "String"
+    },
+    "timeseries": {
+      "type": "timeseries",
+      "description": "Inflow time series",
+      "includeinoutput": "true",
+      "ask_user": "true",
+      "delegate": "Browser;time series",
+      "unit": "m^3/day;m^3/s;ft^3/s",
+      "helptext": "A flow time series (time, flow). The flow is added to every distributed catchment cell that selects this source as its Inflow."
     }
   }
 }
