@@ -1,0 +1,30 @@
+loadtemplate; filename = main_components.json
+addtemplate; filename = unsaturated_soil.json
+addtemplate; filename = unconfined_groundwater.json
+addtemplate; filename = open_channel.json
+addtemplate; filename = soil_evapotranspiration_models.json
+addtemplate; filename = Sewer_system.json
+addtemplate; filename = dual_drainage.json
+addtemplate; filename = Well.json
+addtemplate; filename = storm_sewershed.json
+setvalue; object=system, quantity=simulation_start_time, value=36526
+setvalue; object=system, quantity=simulation_end_time, value=36556
+setvalue; object=system, quantity=initial_time_step, value=0.001
+setvalue; object=system, quantity=minimum_timestep, value=1e-06
+setvalue; object=system, quantity=maximum_time_allowed, value=3600
+setvalue; object=system, quantity=write_interval, value=10
+setvalue; object=system, quantity=alloutputfile, value=output.txt
+setvalue; object=system, quantity=observed_outputfile, value=observedoutput.txt
+create source;type=Precipitation,name=Rain,timeseries=precipitation.csv
+create source;type=Evapotranspiration_Time_Series (Soil),name=ET,corr_fact=0.8,ET_timeseries=evapotranspiration.csv
+create composite;type=Storm_Sewershed,name=Sewershed,x=0,y=0,_width=260,_height=260,area=50000,impervious_fraction=0.6,connected_impervious_fraction=0.7,impervious_multiplier=1,surface_elevation=60,depth_to_groundwater=27,soil_1_thickness=3,soil_2_thickness=12,groundwater_thickness=70,Precipitation=Rain,Evapotranspiration=ET,catchment_slope=0.01,catchment_width=500,manning_coefficient=0.15,depression_storage=0.005,impervious_manning_coefficient=0.015,impervious_depression_storage=0.0015,K_sat_1=1.061,K_sat_2=3.502,K_sat_3=7.128,alpha_vG_1=7.5,alpha_vG_2=12.4,alpha_vG_3=14.5,n_vG_1=1.89,n_vG_2=2.28,n_vG_3=2.68,theta_sat_1=0.41,theta_sat_2=0.41,theta_sat_3=0.43,theta_res_1=0.065,theta_res_2=0.057,theta_res_3=0.045,soil_specific_storage=0.01,initial_moisture_content=0.12,K_sat_scale=1,groundwater_K=50,groundwater_porosity=0.15,initial_water_table_elevation=33,curb_height=0.15,gutter_length=1000,gutter_base_width=0,gutter_cross_slope=40,gutter_manning_coefficient=0.016,initial_gutter_depth=0.001,inlet_area=3,inlet_perimeter=30,inlet_discharge_coefficient=0.67,inlet_weir_coefficient=1.66,lateral_diameter=0.45,lateral_length=400,lateral_depth=1.5,trunk_diameter=0.9,trunk_length=300,trunk_depth=2.5,pipe_manning_coefficient=0.013,pipe_surcharge_coefficient=10000,initial_pipe_depth=0.001,pipe_leakage_coefficient=0.001
+create block;type=Well,name=Drywell,x=-400,y=700,_width=150,_height=200,diameter=1.2,bottom_elevation=48,depth=0
+create block;type=Trapezoidal Channel Segment,name=Channel,x=800,y=700,_width=240,_height=200,base_width=3,side_slope=2,ManningCoeff=0.035,bottom_elevation=56,length=500,depth=0.05
+create block;type=fixed_head,name=Outlet,x=1300,y=700,_width=200,_height=200,head=55.5,Storage=100000
+create block;type=fixed_head,name=Regional_groundwater,x=800,y=1300,_width=200,_height=200,head=33,Storage=100000
+create link;type=Pipe_outfall_link,from=Sewershed,to=Channel,name=Outfall,outfall_invert=57.5
+create link;type=Curb_cut,from=Sewershed,to=Channel,name=Street_overflow,width=2,crest_offset=0.15,discharge_coefficient=0.6
+create link;type=Surface water to well,from=Sewershed,to=Drywell,name=Drywell_inlet,length=2,ManningCoeff=0.1
+create link;type=Well2soil vertical link,from=Drywell,to=Sewershed,name=Drywell_discharge
+create link;type=unconfined_groundwater_to_fixedhead,from=Sewershed,to=Regional_groundwater,name=Regional_flow,length=500,width=200
+create link;type=channel2fixed,from=Channel,to=Outlet,name=Channel_outlet
